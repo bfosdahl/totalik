@@ -10,13 +10,15 @@ import {
   User,
   ChevronDown,
   Calendar,
-  Tag
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { NewDeviationDialog, NewDeviation } from "@/components/deviations/NewDeviationDialog";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 
 interface Deviation {
   id: string;
@@ -31,7 +33,7 @@ interface Deviation {
   dueDate: string;
 }
 
-const mockDeviations: Deviation[] = [
+const initialDeviations: Deviation[] = [
   {
     id: "DEV-001",
     title: "Manglende verneutstyr i lager",
@@ -115,10 +117,13 @@ const categoryConfig = {
 };
 
 const Deviations = () => {
+  const { toast } = useToast();
+  const [deviations, setDeviations] = useState<Deviation[]>(initialDeviations);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const filteredDeviations = mockDeviations.filter((dev) => {
+  const filteredDeviations = deviations.filter((dev) => {
     const matchesSearch = dev.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       dev.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = !filterStatus || dev.status === filterStatus;
@@ -126,10 +131,34 @@ const Deviations = () => {
   });
 
   const stats = {
-    total: mockDeviations.length,
-    open: mockDeviations.filter((d) => d.status === "open").length,
-    inProgress: mockDeviations.filter((d) => d.status === "in-progress").length,
-    resolved: mockDeviations.filter((d) => d.status === "resolved").length,
+    total: deviations.length,
+    open: deviations.filter((d) => d.status === "open").length,
+    inProgress: deviations.filter((d) => d.status === "in-progress").length,
+    resolved: deviations.filter((d) => d.status === "resolved").length,
+  };
+
+  const handleNewDeviation = (newDeviation: NewDeviation) => {
+    const nextId = `DEV-${String(deviations.length + 1).padStart(3, "0")}`;
+    
+    const deviation: Deviation = {
+      id: nextId,
+      title: newDeviation.title,
+      description: newDeviation.description,
+      category: newDeviation.category,
+      priority: newDeviation.priority,
+      status: "open",
+      assignee: newDeviation.assignee,
+      reporter: "Deg", // Current user
+      createdAt: format(new Date(), "yyyy-MM-dd"),
+      dueDate: newDeviation.dueDate,
+    };
+
+    setDeviations([deviation, ...deviations]);
+    
+    toast({
+      title: "Avvik registrert",
+      description: `${deviation.id}: ${deviation.title}`,
+    });
   };
 
   return (
@@ -147,7 +176,7 @@ const Deviations = () => {
               Registrer og følg opp avvik og hendelser
             </p>
           </div>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setIsDialogOpen(true)}>
             <Plus className="w-4 h-4" />
             Nytt avvik
           </Button>
@@ -165,7 +194,7 @@ const Deviations = () => {
             { label: "Åpne", value: stats.open, color: "text-destructive" },
             { label: "Under arbeid", value: stats.inProgress, color: "text-warning" },
             { label: "Løst", value: stats.resolved, color: "text-success" },
-          ].map((stat, index) => (
+          ].map((stat) => (
             <div
               key={stat.label}
               className="bg-card rounded-xl border border-border p-4 shadow-card"
@@ -235,69 +264,86 @@ const Deviations = () => {
           className="bg-card rounded-xl border border-border shadow-card overflow-hidden"
         >
           <div className="divide-y divide-border">
-            {filteredDeviations.map((deviation, index) => (
-              <motion.div
-                key={deviation.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.35 + index * 0.05 }}
-                className="p-4 hover:bg-secondary/50 transition-colors cursor-pointer group"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="p-2 rounded-lg bg-destructive/10 flex-shrink-0">
-                    <AlertTriangle className="w-5 h-5 text-destructive" />
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-xs font-mono text-muted-foreground">
-                        {deviation.id}
-                      </span>
-                      <Badge className={categoryConfig[deviation.category].color}>
-                        {deviation.category}
-                      </Badge>
-                      <Badge className={priorityConfig[deviation.priority].color}>
-                        {priorityConfig[deviation.priority].label}
-                      </Badge>
+            {filteredDeviations.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                <AlertTriangle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>Ingen avvik funnet</p>
+                {searchQuery && (
+                  <p className="text-sm mt-1">Prøv å endre søkekriteriene</p>
+                )}
+              </div>
+            ) : (
+              filteredDeviations.map((deviation, index) => (
+                <motion.div
+                  key={deviation.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.35 + index * 0.05 }}
+                  className="p-4 hover:bg-secondary/50 transition-colors cursor-pointer group"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 rounded-lg bg-destructive/10 flex-shrink-0">
+                      <AlertTriangle className="w-5 h-5 text-destructive" />
                     </div>
                     
-                    <h3 className="font-semibold text-sm group-hover:text-primary transition-colors mb-1">
-                      {deviation.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                      {deviation.description}
-                    </p>
-                    
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <User className="w-3 h-3" />
-                        {deviation.assignee}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        Frist: {deviation.dueDate}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {deviation.createdAt}
-                      </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="text-xs font-mono text-muted-foreground">
+                          {deviation.id}
+                        </span>
+                        <Badge className={categoryConfig[deviation.category].color}>
+                          {deviation.category}
+                        </Badge>
+                        <Badge className={priorityConfig[deviation.priority].color}>
+                          {priorityConfig[deviation.priority].label}
+                        </Badge>
+                      </div>
+                      
+                      <h3 className="font-semibold text-sm group-hover:text-primary transition-colors mb-1">
+                        {deviation.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                        {deviation.description}
+                      </p>
+                      
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <User className="w-3 h-3" />
+                          {deviation.assignee}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          Frist: {deviation.dueDate}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {deviation.createdAt}
+                        </span>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-2">
-                    <Badge className={statusConfig[deviation.status].color}>
-                      {statusConfig[deviation.status].label}
-                    </Badge>
-                    <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Badge className={statusConfig[deviation.status].color}>
+                        {statusConfig[deviation.status].label}
+                      </Badge>
+                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))
+            )}
           </div>
         </motion.div>
       </div>
+
+      {/* New Deviation Dialog */}
+      <NewDeviationDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onSubmit={handleNewDeviation}
+      />
     </AppLayout>
   );
 };
