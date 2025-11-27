@@ -14,7 +14,7 @@ interface CompanyInfoSettingsProps {
 }
 
 export function CompanyInfoSettings({ onBack }: CompanyInfoSettingsProps) {
-  const { company } = useAuth();
+  const { company, refreshCompany } = useAuth();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -80,9 +80,10 @@ export function CompanyInfoSettings({ onBack }: CompanyInfoSettingsProps) {
 
       if (error) throw error;
 
+      // Refresh company data in context
+      await refreshCompany();
+      
       toast.success("Bedriftsinformasjon oppdatert!");
-      // Refresh page to update company context
-      window.location.reload();
     } catch (error: any) {
       console.error("Error updating company:", error);
       toast.error(error.message || "Kunne ikke oppdatere bedriftsinformasjon");
