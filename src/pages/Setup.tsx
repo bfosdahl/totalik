@@ -496,6 +496,24 @@ const Setup = () => {
           </Button>
         </div>
       </div>
+
+      {/* Floating back to handbook button */}
+      {fromPage === "handbook" && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="fixed bottom-6 left-6 z-50"
+        >
+          <Button
+            variant="outline"
+            onClick={() => navigate("/handbook")}
+            className="gap-2 shadow-lg bg-card hover:bg-secondary border-border"
+          >
+            <BookOpen className="w-4 h-4" />
+            Tilbake til Handbok
+          </Button>
+        </motion.div>
+      )}
     </AppLayout>
   );
 };
