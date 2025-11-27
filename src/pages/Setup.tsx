@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSetupWizard } from "@/hooks/useSetupWizard";
 import { GoalsStep } from "@/components/setup/GoalsStep";
+import { OrganizationStep } from "@/components/setup/OrganizationStep";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -106,10 +107,12 @@ const Setup = () => {
     isLoading, 
     isSaving, 
     goals, 
+    organization,
     progress, 
     companyId,
     saveProgress, 
     saveGoals,
+    saveOrganization,
     completeStep 
   } = useSetupWizard();
   
@@ -156,6 +159,14 @@ const Setup = () => {
             existingGoals={goals} 
             onSave={saveGoals} 
             isSaving={isSaving} 
+          />
+        );
+      case "organization":
+        return (
+          <OrganizationStep
+            existingData={organization || undefined}
+            onSave={saveOrganization}
+            isSaving={isSaving}
           />
         );
       default:

@@ -97,6 +97,44 @@ export type Database = {
           },
         ]
       }
+      company_organization: {
+        Row: {
+          company_id: string
+          created_at: string
+          custom_content: string
+          id: string
+          is_custom: boolean | null
+          template_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          custom_content: string
+          id?: string
+          is_custom?: boolean | null
+          template_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          custom_content?: string
+          id?: string
+          is_custom?: boolean | null
+          template_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_organization_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

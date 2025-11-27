@@ -10,6 +10,12 @@ export interface CompanyGoal {
   sort_order: number;
 }
 
+export interface OrganizationData {
+  template_id: string | null;
+  custom_content: string;
+  is_custom: boolean;
+}
+
 export interface WizardProgress {
   current_step: number;
   completed_steps: string[];
@@ -22,6 +28,7 @@ export function useSetupWizard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [goals, setGoals] = useState<CompanyGoal[]>([]);
+  const [organization, setOrganization] = useState<OrganizationData | null>(null);
   const [progress, setProgress] = useState<WizardProgress>({
     current_step: 0,
     completed_steps: [],
@@ -30,7 +37,7 @@ export function useSetupWizard() {
 
   const companyId = profile?.company_id;
 
-  // Load wizard progress and goals
+  // Load wizard progress, goals, and organization
   useEffect(() => {
     if (!companyId) {
       setIsLoading(false);
@@ -64,6 +71,21 @@ export function useSetupWizard() {
 
         if (goalsData) {
           setGoals(goalsData);
+        }
+
+        // Load organization
+        const { data: orgData } = await supabase
+          .from("company_organization")
+          .select("*")
+          .eq("company_id", companyId)
+          .maybeSingle();
+
+        if (orgData) {
+          setOrganization({
+            template_id: orgData.template_id,
+            custom_content: orgData.custom_content,
+            is_custom: orgData.is_custom || false,
+          });
         }
       } catch (error) {
         console.error("Error loading wizard data:", error);
@@ -154,6 +176,40 @@ export function useSetupWizard() {
     }
   }, [companyId, toast]);
 
+  // Save organization
+  const saveOrganization = useCallback(async (data: OrganizationData) => {
+    if (!companyId) return;
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("company_organization")
+        .upsert({
+          company_id: companyId,
+          template_id: data.template_id,
+          custom_content: data.custom_content,
+          is_custom: data.is_custom,
+        }, { onConflict: "company_id" });
+
+      if (error) throw error;
+      setOrganization(data);
+
+      toast({
+        title: "Lagret",
+        description: "Organiseringen er lagret.",
+      });
+    } catch (error) {
+      console.error("Error saving organization:", error);
+      toast({
+        title: "Feil ved lagring",
+        description: "Kunne ikke lagre organisering. Prøv igjen.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }, [companyId, toast]);
+
   // Mark step as completed
   const completeStep = useCallback(async (stepId: string) => {
     const newCompletedSteps = progress.completed_steps.includes(stepId)
@@ -167,10 +223,12 @@ export function useSetupWizard() {
     isLoading,
     isSaving,
     goals,
+    organization,
     progress,
     companyId,
     saveProgress,
     saveGoals,
+    saveOrganization,
     completeStep,
   };
 }
