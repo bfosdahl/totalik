@@ -9,6 +9,8 @@ import {
   Trash2,
   Users,
   Power,
+  UserPlus,
+  Mail,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -45,6 +48,12 @@ const companySchema = z.object({
 
 type CompanyFormData = z.infer<typeof companySchema>;
 
+interface AdminInviteData {
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
 export default function AdminCompanies() {
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -59,6 +68,16 @@ export default function AdminCompanies() {
     postal_code: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // Admin invite state
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [inviteCompany, setInviteCompany] = useState<any>(null);
+  const [inviteAdmin, setInviteAdmin] = useState(false);
+  const [adminData, setAdminData] = useState<AdminInviteData>({
+    email: "",
+    firstName: "",
+    lastName: "",
+  });
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -78,7 +97,7 @@ export default function AdminCompanies() {
 
   const createMutation = useMutation({
     mutationFn: async (data: CompanyFormData) => {
-      const { error } = await supabase.from("companies").insert({
+      const { data: newCompany, error } = await supabase.from("companies").insert({
         name: data.name,
         org_number: data.org_number || null,
         email: data.email || null,
@@ -86,14 +105,76 @@ export default function AdminCompanies() {
         address: data.address || null,
         city: data.city || null,
         postal_code: data.postal_code || null,
-      });
+      }).select().single();
       if (error) throw error;
+      return newCompany;
     },
-    onSuccess: () => {
+    onSuccess: async (newCompany) => {
       queryClient.invalidateQueries({ queryKey: ["admin-companies"] });
       setIsDialogOpen(false);
+      
+      // If inviting admin, call the edge function
+      if (inviteAdmin && adminData.email) {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          const response = await supabase.functions.invoke("create-company-admin", {
+            body: {
+              email: adminData.email,
+              firstName: adminData.firstName,
+              lastName: adminData.lastName,
+              companyId: newCompany.id,
+            },
+          });
+          
+          if (response.error) {
+            toast({ 
+              title: "Bedrift opprettet", 
+              description: `Bedrift opprettet, men kunne ikke invitere admin: ${response.error.message}`,
+              variant: "destructive"
+            });
+          } else {
+            toast({ 
+              title: "Bedrift opprettet", 
+              description: "Bedrift opprettet og administrator invitert." 
+            });
+          }
+        } catch (err: any) {
+          toast({ 
+            title: "Bedrift opprettet", 
+            description: `Bedrift opprettet, men kunne ikke invitere admin: ${err.message}`,
+            variant: "destructive"
+          });
+        }
+      } else {
+        toast({ title: "Bedrift opprettet", description: "Ny bedrift er lagt til." });
+      }
+      
       resetForm();
-      toast({ title: "Bedrift opprettet", description: "Ny bedrift er lagt til." });
+    },
+    onError: (error) => {
+      toast({ title: "Feil", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const inviteAdminMutation = useMutation({
+    mutationFn: async ({ companyId, data }: { companyId: string; data: AdminInviteData }) => {
+      const response = await supabase.functions.invoke("create-company-admin", {
+        body: {
+          email: data.email,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          companyId,
+        },
+      });
+      
+      if (response.error) throw new Error(response.error.message);
+      return response.data;
+    },
+    onSuccess: () => {
+      setInviteDialogOpen(false);
+      setInviteCompany(null);
+      setAdminData({ email: "", firstName: "", lastName: "" });
+      toast({ title: "Administrator invitert", description: "E-post sendt til ny administrator." });
     },
     onError: (error) => {
       toast({ title: "Feil", description: error.message, variant: "destructive" });
@@ -171,6 +252,20 @@ export default function AdminCompanies() {
       postal_code: "",
     });
     setErrors({});
+    setInviteAdmin(false);
+    setAdminData({ email: "", firstName: "", lastName: "" });
+  };
+
+  const handleInviteAdmin = (company: any) => {
+    setInviteCompany(company);
+    setAdminData({ email: "", firstName: "", lastName: "" });
+    setInviteDialogOpen(true);
+  };
+
+  const submitInviteAdmin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteCompany || !adminData.email) return;
+    inviteAdminMutation.mutate({ companyId: inviteCompany.id, data: adminData });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -331,6 +426,59 @@ export default function AdminCompanies() {
                     />
                   </div>
                 </div>
+                
+                {/* Admin invite section - only for new companies */}
+                {!editingCompany && (
+                  <div className="border-t border-border pt-4 mt-4">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <Checkbox
+                        id="inviteAdmin"
+                        checked={inviteAdmin}
+                        onCheckedChange={(checked) => setInviteAdmin(checked === true)}
+                      />
+                      <Label htmlFor="inviteAdmin" className="text-sm font-medium cursor-pointer">
+                        Inviter bedriftsadministrator
+                      </Label>
+                    </div>
+                    
+                    {inviteAdmin && (
+                      <div className="grid grid-cols-2 gap-4 p-4 bg-secondary/30 rounded-lg">
+                        <div className="col-span-2 space-y-2">
+                          <Label htmlFor="adminEmail">Administrator e-post *</Label>
+                          <Input
+                            id="adminEmail"
+                            type="email"
+                            value={adminData.email}
+                            onChange={(e) => setAdminData({ ...adminData, email: e.target.value })}
+                            placeholder="admin@bedrift.no"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="adminFirstName">Fornavn</Label>
+                          <Input
+                            id="adminFirstName"
+                            value={adminData.firstName}
+                            onChange={(e) => setAdminData({ ...adminData, firstName: e.target.value })}
+                            placeholder="Fornavn"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="adminLastName">Etternavn</Label>
+                          <Input
+                            id="adminLastName"
+                            value={adminData.lastName}
+                            onChange={(e) => setAdminData({ ...adminData, lastName: e.target.value })}
+                            placeholder="Etternavn"
+                          />
+                        </div>
+                        <p className="col-span-2 text-xs text-muted-foreground">
+                          Administrator vil motta en e-post med innloggingsinformasjon.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
                 <div className="flex justify-end gap-3 pt-4">
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                     Avbryt
@@ -438,6 +586,10 @@ export default function AdminCompanies() {
                                 Se brukere
                               </a>
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleInviteAdmin(company)}>
+                              <UserPlus className="w-4 h-4 mr-2" />
+                              Inviter admin
+                            </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive"
                               onClick={() => {
@@ -459,6 +611,75 @@ export default function AdminCompanies() {
             </table>
           </div>
         </motion.div>
+
+        {/* Invite Admin Dialog */}
+        <Dialog open={inviteDialogOpen} onOpenChange={(open) => {
+          setInviteDialogOpen(open);
+          if (!open) {
+            setInviteCompany(null);
+            setAdminData({ email: "", firstName: "", lastName: "" });
+          }
+        }}>
+          <DialogContent className="sm:max-w-[400px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <UserPlus className="w-5 h-5" />
+                Inviter administrator
+              </DialogTitle>
+            </DialogHeader>
+            {inviteCompany && (
+              <form onSubmit={submitInviteAdmin} className="space-y-4 mt-4">
+                <div className="p-3 bg-secondary/30 rounded-lg">
+                  <p className="text-sm text-muted-foreground">Bedrift</p>
+                  <p className="font-medium">{inviteCompany.name}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="inviteEmail">E-post *</Label>
+                  <Input
+                    id="inviteEmail"
+                    type="email"
+                    value={adminData.email}
+                    onChange={(e) => setAdminData({ ...adminData, email: e.target.value })}
+                    placeholder="admin@bedrift.no"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="inviteFirstName">Fornavn</Label>
+                    <Input
+                      id="inviteFirstName"
+                      value={adminData.firstName}
+                      onChange={(e) => setAdminData({ ...adminData, firstName: e.target.value })}
+                      placeholder="Fornavn"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="inviteLastName">Etternavn</Label>
+                    <Input
+                      id="inviteLastName"
+                      value={adminData.lastName}
+                      onChange={(e) => setAdminData({ ...adminData, lastName: e.target.value })}
+                      placeholder="Etternavn"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Administrator vil motta en e-post med innloggingsinformasjon.
+                </p>
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button type="button" variant="outline" onClick={() => setInviteDialogOpen(false)}>
+                    Avbryt
+                  </Button>
+                  <Button type="submit" disabled={inviteAdminMutation.isPending} className="gap-2">
+                    <Mail className="w-4 h-4" />
+                    {inviteAdminMutation.isPending ? "Sender..." : "Send invitasjon"}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
