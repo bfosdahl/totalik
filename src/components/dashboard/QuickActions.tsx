@@ -71,11 +71,11 @@ export function QuickActions() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.4 }}
-      className="bg-card rounded-xl border border-border p-6 shadow-card"
+      className="bg-card rounded-xl border border-border p-4 md:p-6 shadow-card"
     >
-      <h3 className="text-lg font-semibold mb-4">Hurtighandlinger</h3>
+      <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Hurtighandlinger</h3>
       
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2 md:gap-3">
         {actions.map((action, index) => (
           <motion.button
             key={action.label}
@@ -84,13 +84,13 @@ export function QuickActions() {
             transition={{ duration: 0.2, delay: 0.5 + index * 0.1 }}
             onClick={() => handleClick(action)}
             className={cn(
-              "flex flex-col items-start p-4 rounded-xl transition-all duration-200 text-left cursor-pointer",
+              "flex flex-col items-start p-3 md:p-4 rounded-xl transition-all duration-200 text-left cursor-pointer",
               variantStyles[action.variant]
             )}
           >
-            <action.icon className="w-5 h-5 mb-2" />
-            <span className="font-medium text-sm">{action.label}</span>
-            <span className="text-xs opacity-80">{action.description}</span>
+            <action.icon className="w-4 h-4 md:w-5 md:h-5 mb-1.5 md:mb-2" />
+            <span className="font-medium text-xs md:text-sm">{action.label}</span>
+            <span className="text-xs opacity-80 hidden sm:block">{action.description}</span>
           </motion.button>
         ))}
       </div>

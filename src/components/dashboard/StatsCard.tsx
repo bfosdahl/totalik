@@ -55,14 +55,14 @@ export function StatsCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
-      className="bg-card rounded-xl border border-border p-6 shadow-card hover:shadow-card-hover transition-shadow duration-300"
+      className="bg-card rounded-xl border border-border p-4 md:p-6 shadow-card hover:shadow-card-hover transition-shadow duration-300"
     >
       <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-3xl font-bold tracking-tight">{value}</p>
+        <div className="space-y-0.5 md:space-y-1 min-w-0 flex-1">
+          <p className="text-xs md:text-sm font-medium text-muted-foreground truncate">{title}</p>
+          <p className="text-xl md:text-3xl font-bold tracking-tight">{value}</p>
           {description && (
-            <p className="text-sm text-muted-foreground">{description}</p>
+            <p className="text-xs md:text-sm text-muted-foreground truncate">{description}</p>
           )}
           {trend && (
             <div className="flex items-center gap-1 pt-1">
@@ -74,12 +74,12 @@ export function StatsCard({
               >
                 {trend.isPositive ? "+" : "-"}{Math.abs(trend.value)}%
               </span>
-              <span className="text-xs text-muted-foreground">fra forrige måned</span>
+              <span className="text-xs text-muted-foreground hidden sm:inline">fra forrige måned</span>
             </div>
           )}
         </div>
-        <div className={cn("p-3 rounded-xl", styles.iconBg)}>
-          <Icon className={cn("w-6 h-6", styles.iconColor)} />
+        <div className={cn("p-2 md:p-3 rounded-xl flex-shrink-0", styles.iconBg)}>
+          <Icon className={cn("w-5 h-5 md:w-6 md:h-6", styles.iconColor)} />
         </div>
       </div>
     </motion.div>

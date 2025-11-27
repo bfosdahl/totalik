@@ -1,4 +1,4 @@
-import { Bell, User, LogOut, ChevronDown } from "lucide-react";
+import { Bell, User, LogOut, ChevronDown, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,7 +10,11 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
-export function AppHeader() {
+interface AppHeaderProps {
+  onMenuClick?: () => void;
+}
+
+export function AppHeader({ onMenuClick }: AppHeaderProps) {
   const { user, profile, signOut, isSystemAdmin, isCompanyAdmin } = useAuth();
   const navigate = useNavigate();
 
@@ -30,12 +34,20 @@ export function AppHeader() {
     : "Bruker";
 
   return (
-    <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-6">
+    <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4 md:px-6">
       <div className="flex items-center gap-4">
-        {/* Breadcrumb or search could go here */}
+        {/* Mobile menu button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onMenuClick}
+          className="lg:hidden"
+        >
+          <Menu className="w-5 h-5" />
+        </Button>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 md:gap-3">
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="w-5 h-5" />
@@ -45,7 +57,7 @@ export function AppHeader() {
         {/* User menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2 px-3">
+            <Button variant="ghost" className="flex items-center gap-2 px-2 md:px-3">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <User className="w-4 h-4 text-primary" />
               </div>
@@ -53,7 +65,7 @@ export function AppHeader() {
                 <span className="text-sm font-medium">{displayName}</span>
                 <span className="text-xs text-muted-foreground">{roleLabel}</span>
               </div>
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              <ChevronDown className="w-4 h-4 text-muted-foreground hidden sm:block" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">

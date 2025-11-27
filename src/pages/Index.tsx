@@ -18,21 +18,21 @@ const Index = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Page header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col gap-1"
         >
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-sm md:text-base text-muted-foreground">
             Oversikt over din internkontroll og HMS-status
           </p>
         </motion.div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <StatsCard
             title="Samsvarsstatus"
             value={isLoading ? "..." : `${compliancePercent}%`}
@@ -68,15 +68,15 @@ const Index = () => {
         </div>
 
         {/* Main content grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Left column */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
             <ComplianceProgress />
             <RecentDeviations />
           </div>
 
           {/* Right column */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             <QuickActions />
             
             {/* Upcoming reviews */}
@@ -84,18 +84,18 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.5 }}
-              className="bg-card rounded-xl border border-border p-6 shadow-card"
+              className="bg-card rounded-xl border border-border p-4 md:p-6 shadow-card"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-info/10">
-                  <FileCheck className="w-5 h-5 text-info" />
+              <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+                <div className="p-1.5 md:p-2 rounded-lg bg-info/10">
+                  <FileCheck className="w-4 h-4 md:w-5 md:h-5 text-info" />
                 </div>
-                <h3 className="text-lg font-semibold">Kommende revisjoner</h3>
+                <h3 className="text-base md:text-lg font-semibold">Kommende revisjoner</h3>
               </div>
               
-              <div className="text-center py-6 text-muted-foreground">
-                <FileCheck className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">Ingen revisjoner planlagt</p>
+              <div className="text-center py-4 md:py-6 text-muted-foreground">
+                <FileCheck className="w-8 h-8 md:w-10 md:h-10 mx-auto mb-2 opacity-30" />
+                <p className="text-xs md:text-sm">Ingen revisjoner planlagt</p>
                 <p className="text-xs mt-1">Opprett en revisjon i Revisjoner-modulen</p>
               </div>
             </motion.div>
