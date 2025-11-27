@@ -10,7 +10,8 @@ import {
   ChevronRight,
   ChevronLeft,
   Check,
-  Loader2
+  Loader2,
+  ClipboardList
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import { useSetupWizard } from "@/hooks/useSetupWizard";
 import { GoalsStep } from "@/components/setup/GoalsStep";
 import { OrganizationStep } from "@/components/setup/OrganizationStep";
 import { RiskAssessmentStep } from "@/components/setup/RiskAssessmentStep";
+import { ActionPlanStep } from "@/components/setup/ActionPlanStep";
 import { RoutinesStep } from "@/components/setup/RoutinesStep";
 import { HandbookStep } from "@/components/setup/HandbookStep";
 import { useAuth } from "@/contexts/AuthContext";
@@ -112,6 +114,7 @@ const Setup = () => {
     goals, 
     organization,
     riskAssessment,
+    actionPlan,
     routines,
     companyInfo,
     progress, 
@@ -120,6 +123,7 @@ const Setup = () => {
     saveGoals,
     saveOrganization,
     saveRiskAssessment,
+    saveActionPlan,
     saveRoutines,
     completeStep 
   } = useSetupWizard();
@@ -182,6 +186,26 @@ const Setup = () => {
           <RiskAssessmentStep
             existingData={riskAssessment || undefined}
             onSave={saveRiskAssessment}
+            isSaving={isSaving}
+          />
+        );
+      case "actions":
+        return (
+          <ActionPlanStep
+            existingData={actionPlan}
+            risks={riskAssessment?.risks.map(r => ({
+              id: r.id,
+              category: "HMS",
+              description: r.description,
+              probability: r.probability,
+              consequence: r.consequence,
+              risk_value: r.probability * r.consequence,
+              measures: r.planned_measures,
+              responsible: "",
+              deadline: "",
+              status: "ikke_startet" as const
+            })) || []}
+            onSave={saveActionPlan}
             isSaving={isSaving}
           />
         );

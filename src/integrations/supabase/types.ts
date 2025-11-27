@@ -59,6 +59,38 @@ export type Database = {
         }
         Relationships: []
       }
+      company_action_plans: {
+        Row: {
+          actions: Json
+          company_id: string
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          actions?: Json
+          company_id: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          actions?: Json
+          company_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_action_plans_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_goals: {
         Row: {
           company_id: string
