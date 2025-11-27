@@ -12,7 +12,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <AdminSidebar />
       <div className="lg:pl-[280px] min-h-screen flex flex-col">
         <AppHeader />
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 pt-16 lg:pt-6">{children}</main>
       </div>
     </div>
   );
