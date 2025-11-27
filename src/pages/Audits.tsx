@@ -10,7 +10,8 @@ import {
   ChevronRight,
   Loader2,
   ClipboardCheck,
-  ListChecks
+  ListChecks,
+  Zap
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { useAudits, type Audit } from "@/hooks/useAudits";
 import { NewAuditDialog } from "@/components/audits/NewAuditDialog";
 import AnnualHmsRevisionForm from "@/components/audits/AnnualHmsRevisionForm";
+import ElKontrollForm from "@/components/audits/ElKontrollForm";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -94,7 +96,7 @@ const Audits = () => {
 
         {/* Tabs for different revision types */}
         <Tabs defaultValue="list" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:inline-grid">
+          <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:inline-grid">
             <TabsTrigger value="list" className="gap-2">
               <ListChecks className="w-4 h-4" />
               <span className="hidden sm:inline">Revisjoner</span>
@@ -102,8 +104,13 @@ const Audits = () => {
             </TabsTrigger>
             <TabsTrigger value="annual" className="gap-2">
               <ClipboardCheck className="w-4 h-4" />
-              <span className="hidden sm:inline">Årlig HMS-revisjon</span>
+              <span className="hidden sm:inline">Årlig HMS</span>
               <span className="sm:hidden">Årlig</span>
+            </TabsTrigger>
+            <TabsTrigger value="elkontroll" className="gap-2">
+              <Zap className="w-4 h-4" />
+              <span className="hidden sm:inline">El-Kontroll</span>
+              <span className="sm:hidden">El</span>
             </TabsTrigger>
           </TabsList>
 
@@ -255,6 +262,11 @@ const Audits = () => {
           {/* Annual HMS Revision Tab */}
           <TabsContent value="annual">
             <AnnualHmsRevisionForm />
+          </TabsContent>
+
+          {/* El Kontroll Tab */}
+          <TabsContent value="elkontroll">
+            <ElKontrollForm />
           </TabsContent>
         </Tabs>
       </div>
