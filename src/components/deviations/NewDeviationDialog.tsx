@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { nb } from "date-fns/locale";
+import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 
 export interface NewDeviation {
   title: string;
@@ -49,12 +50,13 @@ export function NewDeviationDialog({
   onOpenChange, 
   onSubmit 
 }: NewDeviationDialogProps) {
+  const { users, isLoading: usersLoading, getUserDisplayName } = useCompanyUsers();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<"HMS" | "MAT" | "BYGG">("HMS");
   const [priority, setPriority] = useState<"low" | "medium" | "high" | "critical">("medium");
-  const [assignee, setAssignee] = useState("");
+  const [assigneeId, setAssigneeId] = useState<string>("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,12 +67,15 @@ export function NewDeviationDialog({
     setIsSubmitting(true);
     
     try {
+      const selectedUser = users.find(u => u.id === assigneeId);
+      const assigneeName = selectedUser ? getUserDisplayName(selectedUser) : "Ikke tildelt";
+
       await onSubmit({
         title: title.trim(),
         description: description.trim(),
         category,
         priority,
-        assignee: assignee.trim() || "Ikke tildelt",
+        assignee: assigneeName,
         dueDate: format(dueDate, "yyyy-MM-dd"),
       });
       
@@ -79,7 +84,7 @@ export function NewDeviationDialog({
       setDescription("");
       setCategory("HMS");
       setPriority("medium");
-      setAssignee("");
+      setAssigneeId("");
       setDueDate(undefined);
       onOpenChange(false);
     } finally {
@@ -154,12 +159,19 @@ export function NewDeviationDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="assignee">Ansvarlig</Label>
-              <Input
-                id="assignee"
-                placeholder="Navn på ansvarlig"
-                value={assignee}
-                onChange={(e) => setAssignee(e.target.value)}
-              />
+              <Select value={assigneeId} onValueChange={setAssigneeId}>
+                <SelectTrigger>
+                  <SelectValue placeholder={usersLoading ? "Laster..." : "Velg ansvarlig"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unassigned">Ikke tildelt</SelectItem>
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {getUserDisplayName(user)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

@@ -1,12 +1,10 @@
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { 
-  AlertTriangle, 
   Calendar, 
   Clock, 
   User, 
   FileText,
-  Tag,
   Flag
 } from "lucide-react";
 import {
@@ -25,7 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
+import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 
 interface Deviation {
   id: string;
@@ -65,14 +64,18 @@ interface DeviationDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onStatusChange: (id: string, status: Deviation["status"]) => void;
+  onAssigneeChange?: (id: string, assignee: string) => void;
 }
 
 export function DeviationDetailDialog({ 
   deviation, 
   open, 
   onOpenChange,
-  onStatusChange
+  onStatusChange,
+  onAssigneeChange
 }: DeviationDetailDialogProps) {
+  const { users, getUserDisplayName } = useCompanyUsers();
+  
   if (!deviation) return null;
 
   const formatDate = (dateStr: string) => {
@@ -82,6 +85,11 @@ export function DeviationDetailDialog({
       return dateStr;
     }
   };
+
+  // Find current assignee in users list
+  const currentAssigneeUser = users.find(u => 
+    getUserDisplayName(u) === deviation.assignee
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -137,12 +145,35 @@ export function DeviationDetailDialog({
 
           {/* Details grid */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-sm text-muted-foreground">
                 <User className="w-4 h-4" />
                 Ansvarlig
-              </div>
-              <p className="text-sm font-medium pl-6">{deviation.assignee}</p>
+              </Label>
+              {onAssigneeChange ? (
+                <Select 
+                  value={currentAssigneeUser?.id || "unassigned"}
+                  onValueChange={(value) => {
+                    const selectedUser = users.find(u => u.id === value);
+                    const newAssignee = selectedUser ? getUserDisplayName(selectedUser) : "Ikke tildelt";
+                    onAssigneeChange(deviation.id, newAssignee);
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={deviation.assignee} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">Ikke tildelt</SelectItem>
+                    {users.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {getUserDisplayName(user)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-sm font-medium pl-6">{deviation.assignee}</p>
+              )}
             </div>
 
             <div className="space-y-1">
