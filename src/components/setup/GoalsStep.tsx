@@ -1,63 +1,36 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check, Info, Lightbulb, Plus, X } from "lucide-react";
+import { Check, Info, Lightbulb, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { CompanyGoal } from "@/hooks/useSetupWizard";
 
-// Comprehensive predefined goals for Norwegian companies (HMS, MAT, BYGG)
-const predefinedGoals = [
-  // HMS (Workplace Health & Safety)
+// Authentic Norwegian goal examples for internal control
+const goalExamples = [
   {
-    category: "HMS - Arbeidsmiljø",
-    goals: [
-      "Sikre at alle ansatte har et trygt og helsefremmende arbeidsmiljø",
-      "Forebygge arbeidsulykker og yrkessykdommer",
-      "Redusere sykefravær gjennom forebyggende tiltak",
-      "Sikre at alle ansatte har nødvendig opplæring og kompetanse innen HMS",
-      "Gjennomføre jevnlige vernerunder og risikovurderinger",
-    ],
+    id: "example1",
+    title: "Forebygging og trivsel",
+    description: "Vi vil forebygge ulykker, miljø- og helseskader for å skape trivsel på arbeidsplassen. Driften skal gi minst mulig påvirkning på det ytre miljø. Våre produkter og tjenester skal være sikre for våre kunder. Dette skal skje ved at helse, miljø og sikkerhet planlegges og prioriteres på lik linje med produksjon, service og økonomi.",
   },
-  // Compliance
   {
-    category: "Lovpålagte krav",
-    goals: [
-      "Overholde alle relevante lover og forskrifter innen HMS",
-      "Sikre samsvar med Arbeidstilsynets krav og retningslinjer",
-      "Dokumentere internkontrollarbeidet i henhold til forskriften",
-      "Oppfylle krav i Internkontrollforskriften (HMS-forskriften)",
-    ],
+    id: "example2",
+    title: "Trivsel og kontinuerlig forbedring",
+    description: "I vår virksomhet skal det skapes et trivelig og sikkert arbeidsmiljø for alle ansatte. Vi skal også ta vare på virksomhetens bygninger og materiell, forhindre belastning på det ytre miljø, og våre produkter skal ikke skade brukerne. Disse målene skal nås gjennom stadige forbedringer. Både ledelse og ansatte skal delta aktivt i forbedringsarbeidet.",
   },
-  // Continuous improvement
   {
-    category: "Kontinuerlig forbedring",
-    goals: [
-      "Kontinuerlig forbedre våre HMS-rutiner og prosedyrer",
-      "Etablere en kultur for rapportering av avvik og forbedringsforslag",
-      "Følge opp og lukke avvik innen fastsatte frister",
-      "Gjennomgå og oppdatere risikovurderinger årlig",
-    ],
+    id: "example3",
+    title: "Mennesket som ressurs",
+    description: "Mennesket er den viktigste ressurs i arbeidslivet, og god helse er viktig. Virksomheten vil derfor gjennom et HMS-system forebygge ulykker og helseskader, og skape trivsel på arbeidsplassen. Dette skal skje ved at sikkerhet og arbeidsmiljø planlegges og prioriteres på lik linje med produksjon, teknikk og økonomi.",
   },
-  // Food safety (MAT)
   {
-    category: "Matsikkerhet",
-    goals: [
-      "Sikre trygg håndtering av matvarer i henhold til Mattilsynets krav",
-      "Forebygge matbåren sykdom gjennom gode hygienrutiner",
-      "Opprettholde korrekt temperaturkontroll gjennom hele verdikjeden",
-      "Sikre sporbarhet av alle råvarer og produkter",
-    ],
+    id: "example4",
+    title: "Helsefremmende arbeidsplass",
+    description: "Vårt mål er en helsefremmende arbeidsplass med faglig og personlig utvikling for de ansatte. Konkrete mål for helse, miljø og sikkerhetsarbeidet: Den overordnede målsettingen må nedfelles i konkrete mål som skal være mulige å oppnå. For at du skal se om virksomheten har nådd de oppsatte mål, er det viktig at målene er konkrete og målbare.",
   },
-  // Construction (BYGG)
   {
-    category: "Bygg og anlegg",
-    goals: [
-      "Sikre trygg gjennomføring av byggeprosjekter",
-      "Forebygge fallulykker og ulykker med maskiner og utstyr",
-      "Sikre at alle har påkrevd sikkerhetsopplæring (HMS-kort)",
-      "Gjennomføre sikker jobb-analyser (SJA) ved risikofylt arbeid",
-    ],
+    id: "example5",
+    title: "Konkrete målbare mål",
+    description: "I vår virksomhet skal vi i år redusere sykefraværet med en prosent. For å fremme faglig og personlig utvikling skal hver av de ansatte i år ha mulighet for å gå på et kurs på et selvvalgt tema for å bedre arbeidsutførelsen.",
   },
 ];
 
@@ -68,81 +41,50 @@ interface GoalsStepProps {
 }
 
 export function GoalsStep({ existingGoals, onSave, isSaving }: GoalsStepProps) {
-  const [selectedGoals, setSelectedGoals] = useState<Map<string, boolean>>(new Map());
-  const [customGoals, setCustomGoals] = useState<string[]>([]);
-  const [customGoalInput, setCustomGoalInput] = useState("");
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(["HMS - Arbeidsmiljø"]));
+  const [selectedExample, setSelectedExample] = useState<string | null>(null);
+  const [customGoal, setCustomGoal] = useState("");
+  const [isCustomMode, setIsCustomMode] = useState(false);
 
   // Initialize from existing goals
   useEffect(() => {
     if (existingGoals.length > 0) {
-      const goalMap = new Map<string, boolean>();
-      const custom: string[] = [];
-
-      existingGoals.forEach((goal) => {
-        if (goal.is_predefined) {
-          goalMap.set(goal.goal_text, true);
-        } else {
-          custom.push(goal.goal_text);
+      const existingGoal = existingGoals[0];
+      if (existingGoal.is_predefined) {
+        // Find matching example
+        const match = goalExamples.find((e) => e.description === existingGoal.goal_text);
+        if (match) {
+          setSelectedExample(match.id);
         }
-      });
-
-      setSelectedGoals(goalMap);
-      setCustomGoals(custom);
+      } else {
+        setCustomGoal(existingGoal.goal_text);
+        setIsCustomMode(true);
+      }
     }
   }, [existingGoals]);
 
-  const toggleGoal = (goal: string) => {
-    setSelectedGoals((prev) => {
-      const newMap = new Map(prev);
-      if (newMap.has(goal)) {
-        newMap.delete(goal);
-      } else {
-        newMap.set(goal, true);
-      }
-      return newMap;
-    });
+  const selectExample = (exampleId: string) => {
+    setSelectedExample(exampleId);
+    setIsCustomMode(false);
+    setCustomGoal("");
   };
 
-  const toggleCategory = (category: string) => {
-    setExpandedCategories((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(category)) {
-        newSet.delete(category);
-      } else {
-        newSet.add(category);
-      }
-      return newSet;
-    });
-  };
-
-  const addCustomGoal = () => {
-    const trimmed = customGoalInput.trim();
-    if (trimmed && !customGoals.includes(trimmed)) {
-      setCustomGoals((prev) => [...prev, trimmed]);
-      setCustomGoalInput("");
-    }
-  };
-
-  const removeCustomGoal = (goal: string) => {
-    setCustomGoals((prev) => prev.filter((g) => g !== goal));
+  const handleCustomMode = () => {
+    setIsCustomMode(true);
+    setSelectedExample(null);
   };
 
   const handleSave = async () => {
-    const allGoals = [
-      ...Array.from(selectedGoals.keys()).map((goal) => ({
-        goal_text: goal,
-        is_predefined: true,
-      })),
-      ...customGoals.map((goal) => ({
-        goal_text: goal,
-        is_predefined: false,
-      })),
-    ];
-    await onSave(allGoals);
+    if (isCustomMode && customGoal.trim()) {
+      await onSave([{ goal_text: customGoal.trim(), is_predefined: false }]);
+    } else if (selectedExample) {
+      const example = goalExamples.find((e) => e.id === selectedExample);
+      if (example) {
+        await onSave([{ goal_text: example.description, is_predefined: true }]);
+      }
+    }
   };
 
-  const totalSelected = selectedGoals.size + customGoals.length;
+  const hasSelection = selectedExample || (isCustomMode && customGoal.trim());
 
   return (
     <div className="space-y-6">
@@ -150,123 +92,117 @@ export function GoalsStep({ existingGoals, onSave, isSaving }: GoalsStepProps) {
       <div className="flex items-start gap-3 p-4 rounded-lg bg-info/5 border border-info/20">
         <Info className="w-5 h-5 text-info mt-0.5 flex-shrink-0" />
         <div className="text-sm">
-          <p className="font-medium text-info mb-1">Slik velger du mål</p>
+          <p className="font-medium text-info mb-1">Velg målsetting for din virksomhet</p>
           <p className="text-muted-foreground">
-            Velg mål som er relevante for din bedrift og bransje. Du kan velge fra 
-            forhåndsdefinerte mål eller legge til egne. Målene blir en del av din IK-handbok.
+            Velg en av eksemplene under eller skriv din egen målsetting. 
+            Målsettingen blir en del av din IK-handbok.
           </p>
         </div>
       </div>
 
-      {/* Predefined goals by category */}
+      {/* Goal examples */}
       <div className="space-y-4">
         <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
           <Lightbulb className="w-4 h-4" />
-          Forhåndsdefinerte mål etter kategori
+          Eksempler på målsettinger
         </h4>
         
-        {predefinedGoals.map((category) => (
-          <div key={category.category} className="border border-border rounded-lg overflow-hidden">
-            <button
-              onClick={() => toggleCategory(category.category)}
-              className="w-full flex items-center justify-between p-4 bg-secondary/30 hover:bg-secondary/50 transition-colors"
+        <div className="space-y-3">
+          {goalExamples.map((example, index) => (
+            <motion.button
+              key={example.id}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              onClick={() => selectExample(example.id)}
+              className={cn(
+                "w-full flex items-start gap-3 p-4 rounded-lg border text-left transition-all",
+                selectedExample === example.id
+                  ? "border-primary bg-primary/5 shadow-sm"
+                  : "border-border hover:border-primary/30 hover:bg-secondary/30"
+              )}
             >
-              <span className="font-medium text-sm">{category.category}</span>
-              <span className="text-xs text-muted-foreground">
-                {category.goals.filter((g) => selectedGoals.has(g)).length} / {category.goals.length} valgt
-              </span>
-            </button>
-            
-            {expandedCategories.has(category.category) && (
-              <div className="p-3 space-y-2">
-                {category.goals.map((goal, index) => (
-                  <motion.button
-                    key={index}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.03 }}
-                    onClick={() => toggleGoal(goal)}
-                    className={cn(
-                      "w-full flex items-start gap-3 p-3 rounded-lg border text-left transition-all",
-                      selectedGoals.has(goal)
-                        ? "border-primary bg-primary/5 shadow-sm"
-                        : "border-border hover:border-primary/30 hover:bg-secondary/30"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors",
-                        selectedGoals.has(goal)
-                          ? "border-primary bg-primary"
-                          : "border-muted-foreground/30"
-                      )}
-                    >
-                      {selectedGoals.has(goal) && (
-                        <Check className="w-3 h-3 text-primary-foreground" />
-                      )}
-                    </div>
-                    <span className="text-sm">{goal}</span>
-                  </motion.button>
-                ))}
+              <div
+                className={cn(
+                  "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors",
+                  selectedExample === example.id
+                    ? "border-primary bg-primary"
+                    : "border-muted-foreground/30"
+                )}
+              >
+                {selectedExample === example.id && (
+                  <Check className="w-3 h-3 text-primary-foreground" />
+                )}
               </div>
-            )}
-          </div>
-        ))}
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm mb-1">{example.title}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {example.description}
+                </p>
+              </div>
+            </motion.button>
+          ))}
+        </div>
       </div>
 
-      {/* Custom goals */}
+      {/* Custom goal */}
       <div className="space-y-3">
-        <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Legg til egne mål
-        </h4>
-        <div className="flex gap-2">
-          <Input
-            value={customGoalInput}
-            onChange={(e) => setCustomGoalInput(e.target.value)}
-            placeholder="Skriv inn et eget mål..."
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addCustomGoal();
-              }
-            }}
-          />
-          <Button onClick={addCustomGoal} disabled={!customGoalInput.trim()}>
-            Legg til
-          </Button>
+        <div className="flex items-center gap-2">
+          <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Eller skriv din egen målsetting
+          </h4>
         </div>
-
-        {/* Custom goals list */}
-        {customGoals.length > 0 && (
-          <div className="space-y-2">
-            {customGoals.map((goal, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 p-3 rounded-lg border border-accent bg-accent/5"
-              >
-                <Check className="w-4 h-4 text-accent flex-shrink-0" />
-                <span className="text-sm flex-1">{goal}</span>
-                <button
-                  onClick={() => removeCustomGoal(goal)}
-                  className="p-1 hover:bg-destructive/10 rounded transition-colors"
-                >
-                  <X className="w-4 h-4 text-destructive" />
-                </button>
-              </div>
-            ))}
+        
+        <button
+          onClick={handleCustomMode}
+          className={cn(
+            "w-full p-4 rounded-lg border text-left transition-all",
+            isCustomMode
+              ? "border-primary bg-primary/5"
+              : "border-border hover:border-primary/30"
+          )}
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className={cn(
+                "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors",
+                isCustomMode
+                  ? "border-primary bg-primary"
+                  : "border-muted-foreground/30"
+              )}
+            >
+              {isCustomMode && (
+                <Check className="w-3 h-3 text-primary-foreground" />
+              )}
+            </div>
+            <span className="text-sm font-medium">Egen målsetting</span>
           </div>
+        </button>
+
+        {isCustomMode && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="overflow-hidden"
+          >
+            <textarea
+              value={customGoal}
+              onChange={(e) => setCustomGoal(e.target.value)}
+              placeholder="Skriv inn din egen målsetting her..."
+              className="w-full min-h-[120px] p-3 rounded-lg border border-border bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </motion.div>
         )}
       </div>
 
       {/* Summary and save */}
       <div className="pt-4 border-t border-border flex items-center justify-between">
-        <div className="text-sm">
-          <span className="font-medium">{totalSelected}</span>
-          <span className="text-muted-foreground"> mål valgt</span>
+        <div className="text-sm text-muted-foreground">
+          {hasSelection ? "Målsetting valgt" : "Velg en målsetting"}
         </div>
-        <Button onClick={handleSave} disabled={isSaving || totalSelected === 0}>
-          {isSaving ? "Lagrer..." : "Lagre mål"}
+        <Button onClick={handleSave} disabled={isSaving || !hasSelection}>
+          {isSaving ? "Lagrer..." : "Lagre målsetting"}
         </Button>
       </div>
     </div>
