@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,8 +15,10 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
     
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
     // Get the authorization header to verify the requesting user
     const authHeader = req.headers.get("Authorization");
@@ -67,6 +70,13 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Get company name for the email
+    const { data: company } = await supabaseAdmin
+      .from("companies")
+      .select("name")
+      .eq("id", requestingProfile.company_id)
+      .single();
 
     const { email, firstName, lastName, role } = await req.json();
 
@@ -153,8 +163,8 @@ serve(async (req) => {
       }
     }
 
-    // Send password reset email so user can set their own password
-    const { error: resetError } = await supabaseAdmin.auth.admin.generateLink({
+    // Generate password reset link
+    const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email,
     });
@@ -163,11 +173,74 @@ serve(async (req) => {
       console.error("Error generating recovery link:", resetError);
     }
 
+    // Send welcome email with Resend
+    let emailSent = false;
+    if (resend && resetData?.properties?.action_link) {
+      try {
+        const companyName = company?.name || "din bedrift";
+        const userName = firstName ? firstName : "bruker";
+        const roleName = role === "company_admin" ? "Administrator" : "Bruker";
+
+        const emailResponse = await resend.emails.send({
+          from: "Athena HMS <onboarding@resend.dev>",
+          to: [email],
+          subject: `Velkommen til ${companyName} - Din konto er opprettet`,
+          html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 24px;">Velkommen til ${companyName}!</h1>
+              </div>
+              
+              <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
+                <p style="font-size: 16px;">Hei ${userName},</p>
+                
+                <p>Du har blitt invitert til å bruke HMS-systemet til <strong>${companyName}</strong>.</p>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                  <p style="margin: 0;"><strong>Din rolle:</strong> ${roleName}</p>
+                  <p style="margin: 10px 0 0 0;"><strong>E-post:</strong> ${email}</p>
+                </div>
+                
+                <p>For å komme i gang, klikk på knappen nedenfor for å sette ditt passord:</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${resetData.properties.action_link}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Sett passord og logg inn</a>
+                </div>
+                
+                <p style="color: #666; font-size: 14px;">Hvis knappen ikke fungerer, kopier og lim inn denne lenken i nettleseren din:</p>
+                <p style="color: #667eea; font-size: 12px; word-break: break-all;">${resetData.properties.action_link}</p>
+                
+                <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+                
+                <p style="color: #888; font-size: 12px; text-align: center;">
+                  Denne e-posten ble sendt fra HMS-systemet til ${companyName}.<br>
+                  Hvis du ikke forventet denne invitasjonen, kan du trygt ignorere denne e-posten.
+                </p>
+              </div>
+            </body>
+            </html>
+          `,
+        });
+
+        console.log("Email sent successfully:", emailResponse);
+        emailSent = true;
+      } catch (emailError) {
+        console.error("Error sending email:", emailError);
+      }
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "User invited successfully",
-        userId: newUser.user.id 
+        message: emailSent ? "User invited successfully and email sent" : "User invited successfully (email not sent)",
+        userId: newUser.user.id,
+        emailSent
       }),
       {
         status: 200,
