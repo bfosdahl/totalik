@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { NewDeviationDialog, NewDeviation } from "@/components/deviations/NewDeviationDialog";
+import { DeviationDetailDialog } from "@/components/deviations/DeviationDetailDialog";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -122,6 +123,8 @@ const Deviations = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedDeviation, setSelectedDeviation] = useState<Deviation | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const filteredDeviations = deviations.filter((dev) => {
     const matchesSearch = dev.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -158,6 +161,22 @@ const Deviations = () => {
     toast({
       title: "Avvik registrert",
       description: `${deviation.id}: ${deviation.title}`,
+    });
+  };
+
+  const handleDeviationClick = (deviation: Deviation) => {
+    setSelectedDeviation(deviation);
+    setIsDetailOpen(true);
+  };
+
+  const handleStatusChange = (id: string, newStatus: Deviation["status"]) => {
+    setDeviations(deviations.map(dev => 
+      dev.id === id ? { ...dev, status: newStatus } : dev
+    ));
+    setSelectedDeviation(prev => prev ? { ...prev, status: newStatus } : null);
+    toast({
+      title: "Status oppdatert",
+      description: `Avvik ${id} er nå "${statusConfig[newStatus].label}"`,
     });
   };
 
@@ -280,6 +299,7 @@ const Deviations = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.35 + index * 0.05 }}
                   className="p-4 hover:bg-secondary/50 transition-colors cursor-pointer group"
+                  onClick={() => handleDeviationClick(deviation)}
                 >
                   <div className="flex items-start gap-4">
                     <div className="p-2 rounded-lg bg-destructive/10 flex-shrink-0">
@@ -343,6 +363,14 @@ const Deviations = () => {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         onSubmit={handleNewDeviation}
+      />
+
+      {/* Deviation Detail Dialog */}
+      <DeviationDetailDialog
+        deviation={selectedDeviation}
+        open={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+        onStatusChange={handleStatusChange}
       />
     </AppLayout>
   );
