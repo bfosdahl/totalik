@@ -16,10 +16,18 @@ interface UserProfile {
   is_active: boolean;
 }
 
+interface CompanyInfo {
+  id: string;
+  name: string;
+  org_number: string | null;
+  logo_url: string | null;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: UserProfile | null;
+  company: CompanyInfo | null;
   roles: AppRole[];
   isLoading: boolean;
   isSystemAdmin: boolean;
@@ -35,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [company, setCompany] = useState<CompanyInfo | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -52,6 +61,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (profileData) {
         setProfile(profileData as UserProfile);
+
+        // Fetch company if user has one
+        if (profileData.company_id) {
+          const { data: companyData } = await supabase
+            .from("companies")
+            .select("id, name, org_number, logo_url")
+            .eq("id", profileData.company_id)
+            .maybeSingle();
+
+          if (companyData) {
+            setCompany(companyData as CompanyInfo);
+          }
+        }
       }
 
       // Fetch roles
@@ -134,6 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setSession(null);
     setProfile(null);
+    setCompany(null);
     setRoles([]);
   };
 
@@ -143,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         session,
         profile,
+        company,
         roles,
         isLoading,
         isSystemAdmin,

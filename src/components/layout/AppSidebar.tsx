@@ -30,10 +30,11 @@ const navItems = [
 export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
-  const { profile, isSystemAdmin } = useAuth();
+  const { profile, company, isSystemAdmin } = useAuth();
 
-  // Get company name from profile or use default
-  const companyName = profile?.company_id ? "Min Bedrift AS" : "Ingen bedrift";
+  // Get company name from context
+  const companyName = company?.name || "Ingen bedrift";
+  const orgNumber = company?.org_number || null;
 
   return (
     <motion.aside
@@ -88,7 +89,7 @@ export function AppSidebar() {
                   {companyName}
                 </span>
                 <span className="text-xs text-sidebar-foreground/60">
-                  {profile?.company_id ? "Org: 123 456 789" : "Ikke tilknyttet"}
+                  {orgNumber ? `Org: ${orgNumber}` : "Ikke tilknyttet"}
                 </span>
               </motion.div>
             )}
