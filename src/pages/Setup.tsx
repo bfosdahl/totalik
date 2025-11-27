@@ -233,6 +233,7 @@ const Setup = () => {
                 status: "ikke_startet" as const
               }))
             } : null}
+            actionPlan={actionPlan}
             routines={routines}
             companyInfo={companyInfo}
           />
