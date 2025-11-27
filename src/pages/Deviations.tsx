@@ -137,15 +137,24 @@ const Deviations = () => {
 
   const handleAssigneeChange = async (id: string, assigneeName: string) => {
     const assigneeUser = users.find(u => getUserDisplayName(u) === assigneeName);
-    const success = await updateDeviation(id, { 
-      assignee_id: assigneeUser?.id || null,
-      assignee_name: assigneeName 
-    });
+    const success = await updateDeviation(
+      id, 
+      { 
+        assignee_id: assigneeUser?.id || null,
+        assignee_name: assigneeName 
+      },
+      {
+        sendNotification: true,
+        assigneeEmail: assigneeUser?.email || undefined,
+      }
+    );
     if (success) {
       setSelectedDeviation(prev => prev ? { ...prev, assignee: assigneeName } : null);
       toast({
         title: "Ansvarlig oppdatert",
-        description: `Avviket er nå tildelt "${assigneeName}"`,
+        description: assigneeUser?.email 
+          ? `${assigneeName} vil motta en e-postvarsling`
+          : `Avviket er nå tildelt "${assigneeName}"`,
       });
     }
   };

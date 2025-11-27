@@ -147,7 +147,8 @@ export function useDeviations() {
   // Update deviation
   const updateDeviation = useCallback(async (
     id: string, 
-    updates: Partial<Pick<Deviation, "status" | "assignee_id" | "assignee_name" | "priority">>
+    updates: Partial<Pick<Deviation, "status" | "assignee_id" | "assignee_name" | "priority">>,
+    options?: { sendNotification?: boolean; assigneeEmail?: string }
   ): Promise<boolean> => {
     setIsSaving(true);
     try {
@@ -158,9 +159,39 @@ export function useDeviations() {
 
       if (error) throw error;
 
+      // Update local state
+      const updatedDeviation = deviations.find(d => d.id === id);
       setDeviations(prev => prev.map(d => 
         d.id === id ? { ...d, ...updates } : d
       ));
+
+      // Send email notification if assignee changed and email provided
+      if (options?.sendNotification && options?.assigneeEmail && updates.assignee_name && updatedDeviation) {
+        const assignerName = profile 
+          ? [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.email || "En bruker"
+          : "En bruker";
+
+        try {
+          await supabase.functions.invoke("notify-deviation-assignment", {
+            body: {
+              deviation_id: id,
+              deviation_number: updatedDeviation.deviation_number,
+              deviation_title: updatedDeviation.title,
+              assignee_email: options.assigneeEmail,
+              assignee_name: updates.assignee_name,
+              assigner_name: assignerName,
+              due_date: updatedDeviation.due_date,
+              priority: updatedDeviation.priority,
+              category: updatedDeviation.category,
+            },
+          });
+          console.log("Email notification sent");
+        } catch (emailError) {
+          console.error("Failed to send email notification:", emailError);
+          // Don't fail the update if email fails
+        }
+      }
+
       return true;
     } catch (error) {
       console.error("Error updating deviation:", error);
@@ -173,7 +204,7 @@ export function useDeviations() {
     } finally {
       setIsSaving(false);
     }
-  }, [toast]);
+  }, [deviations, profile, toast]);
 
   // Delete deviation
   const deleteDeviation = useCallback(async (id: string): Promise<boolean> => {
