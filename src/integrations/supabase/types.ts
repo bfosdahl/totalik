@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      audits: {
+        Row: {
+          area: string | null
+          audit_number: string
+          checklist_completed: number
+          checklist_total: number
+          company_id: string
+          created_at: string
+          description: string | null
+          id: string
+          responsible_id: string | null
+          responsible_name: string | null
+          scheduled_date: string
+          status: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          area?: string | null
+          audit_number: string
+          checklist_completed?: number
+          checklist_total?: number
+          company_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          responsible_id?: string | null
+          responsible_name?: string | null
+          scheduled_date: string
+          status?: string
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          area?: string | null
+          audit_number?: string
+          checklist_completed?: number
+          checklist_total?: number
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          responsible_id?: string | null
+          responsible_name?: string | null
+          scheduled_date?: string
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audits_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audits_responsible_id_fkey"
+            columns: ["responsible_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string | null

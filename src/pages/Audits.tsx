@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   FileCheck, 
@@ -6,69 +7,17 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  ChevronRight
+  ChevronRight,
+  Loader2
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-interface Audit {
-  id: string;
-  title: string;
-  type: "internal" | "external" | "routine";
-  status: "scheduled" | "in-progress" | "completed" | "overdue";
-  date: string;
-  area: string;
-  responsible: string;
-  checklist: {
-    total: number;
-    completed: number;
-  };
-}
-
-const mockAudits: Audit[] = [
-  {
-    id: "AUD-001",
-    title: "Årlig HMS-revisjon",
-    type: "internal",
-    status: "scheduled",
-    date: "2024-01-20",
-    area: "Hele bedriften",
-    responsible: "Per Hansen",
-    checklist: { total: 25, completed: 0 },
-  },
-  {
-    id: "AUD-002",
-    title: "Brannrutiner kontroll",
-    type: "routine",
-    status: "in-progress",
-    date: "2024-01-18",
-    area: "Kontor og lager",
-    responsible: "Kari Olsen",
-    checklist: { total: 15, completed: 8 },
-  },
-  {
-    id: "AUD-003",
-    title: "Mattilsynet inspeksjon",
-    type: "external",
-    status: "completed",
-    date: "2024-01-10",
-    area: "Produksjon",
-    responsible: "Erik Berg",
-    checklist: { total: 30, completed: 30 },
-  },
-  {
-    id: "AUD-004",
-    title: "Førstehjelpsutstyr sjekk",
-    type: "routine",
-    status: "overdue",
-    date: "2024-01-05",
-    area: "Alle lokasjoner",
-    responsible: "Anna Nilsen",
-    checklist: { total: 10, completed: 3 },
-  },
-];
+import { useAudits, type Audit } from "@/hooks/useAudits";
+import { NewAuditDialog } from "@/components/audits/NewAuditDialog";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
 
 const typeConfig = {
   internal: { label: "Intern", color: "bg-primary/10 text-primary" },
@@ -104,6 +53,27 @@ const statusConfig = {
 };
 
 const Audits = () => {
+  const { audits, isLoading, createAudit, updateAudit } = useAudits();
+  const [isNewAuditOpen, setIsNewAuditOpen] = useState(false);
+
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), "d. MMM yyyy", { locale: nb });
+    } catch {
+      return dateString;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -119,7 +89,7 @@ const Audits = () => {
               Planlegg og gjennomfør internrevisjoner
             </p>
           </div>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setIsNewAuditOpen(true)}>
             <Plus className="w-4 h-4" />
             Ny revisjon
           </Button>
@@ -132,8 +102,8 @@ const Audits = () => {
           transition={{ delay: 0.1 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-4"
         >
-          {Object.entries(statusConfig).map(([key, config], index) => {
-            const count = mockAudits.filter((a) => a.status === key).length;
+          {Object.entries(statusConfig).map(([key, config]) => {
+            const count = audits.filter((a) => a.status === key).length;
             const StatusIcon = config.icon;
             return (
               <div
@@ -163,80 +133,108 @@ const Audits = () => {
         >
           <h2 className="text-lg font-semibold">Alle revisjoner</h2>
           
-          <div className="grid gap-4">
-            {mockAudits.map((audit, index) => {
-              const statusInfo = statusConfig[audit.status];
-              const StatusIcon = statusInfo.icon;
-              const progress = (audit.checklist.completed / audit.checklist.total) * 100;
+          {audits.length === 0 ? (
+            <div className="bg-card rounded-xl border border-border p-8 text-center">
+              <FileCheck className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <h3 className="text-lg font-medium mb-2">Ingen revisjoner</h3>
+              <p className="text-muted-foreground mb-4">
+                Du har ikke opprettet noen revisjoner ennå.
+              </p>
+              <Button onClick={() => setIsNewAuditOpen(true)} className="gap-2">
+                <Plus className="w-4 h-4" />
+                Opprett første revisjon
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {audits.map((audit, index) => {
+                const statusInfo = statusConfig[audit.status];
+                const StatusIcon = statusInfo.icon;
+                const progress = audit.checklist_total > 0 
+                  ? (audit.checklist_completed / audit.checklist_total) * 100 
+                  : 0;
 
-              return (
-                <motion.div
-                  key={audit.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.25 + index * 0.05 }}
-                  className="bg-card rounded-xl border border-border p-5 shadow-card hover:shadow-card-hover transition-all cursor-pointer group"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className={cn("p-3 rounded-xl", statusInfo.bg)}>
-                      <FileCheck className={cn("w-6 h-6", statusInfo.color)} />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge className={typeConfig[audit.type].color}>
-                          {typeConfig[audit.type].label}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground font-mono">
-                          {audit.id}
-                        </span>
+                return (
+                  <motion.div
+                    key={audit.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.25 + index * 0.05 }}
+                    className="bg-card rounded-xl border border-border p-5 shadow-card hover:shadow-card-hover transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className={cn("p-3 rounded-xl", statusInfo.bg)}>
+                        <FileCheck className={cn("w-6 h-6", statusInfo.color)} />
                       </div>
 
-                      <h3 className="font-semibold group-hover:text-primary transition-colors mb-1">
-                        {audit.title}
-                      </h3>
-                      
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
-                        <span>{audit.area}</span>
-                        <span>•</span>
-                        <span>{audit.responsible}</span>
-                        <span>•</span>
-                        <span>{audit.date}</span>
-                      </div>
-
-                      {/* Progress bar */}
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className={cn(
-                              "h-full rounded-full transition-all",
-                              audit.status === "completed" ? "bg-success" : "bg-primary"
-                            )}
-                            style={{ width: `${progress}%` }}
-                          />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge className={typeConfig[audit.type].color}>
+                            {typeConfig[audit.type].label}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground font-mono">
+                            {audit.audit_number}
+                          </span>
                         </div>
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {audit.checklist.completed} / {audit.checklist.total} punkter
-                        </span>
-                      </div>
-                    </div>
 
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2">
-                        <StatusIcon className={cn("w-4 h-4", statusInfo.color)} />
-                        <span className={cn("text-sm font-medium", statusInfo.color)}>
-                          {statusInfo.label}
-                        </span>
+                        <h3 className="font-semibold group-hover:text-primary transition-colors mb-1">
+                          {audit.title}
+                        </h3>
+                        
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3 flex-wrap">
+                          {audit.area && <span>{audit.area}</span>}
+                          {audit.responsible_name && (
+                            <>
+                              <span>•</span>
+                              <span>{audit.responsible_name}</span>
+                            </>
+                          )}
+                          <span>•</span>
+                          <span>{formatDate(audit.scheduled_date)}</span>
+                        </div>
+
+                        {/* Progress bar */}
+                        {audit.checklist_total > 0 && (
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className={cn(
+                                  "h-full rounded-full transition-all",
+                                  audit.status === "completed" ? "bg-success" : "bg-primary"
+                                )}
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {audit.checklist_completed} / {audit.checklist_total} punkter
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      <ChevronRight className="w-5 h-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <StatusIcon className={cn("w-4 h-4", statusInfo.color)} />
+                          <span className={cn("text-sm font-medium hidden sm:inline", statusInfo.color)}>
+                            {statusInfo.label}
+                          </span>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </motion.div>
       </div>
+
+      <NewAuditDialog 
+        open={isNewAuditOpen} 
+        onOpenChange={setIsNewAuditOpen}
+        onSubmit={createAudit}
+      />
     </AppLayout>
   );
 };
