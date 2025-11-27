@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   FileText, 
   Download, 
@@ -13,7 +14,8 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
-  ClipboardList
+  ClipboardList,
+  X
 } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
@@ -114,6 +116,8 @@ export function HandbookStep({
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(companyInfo?.logo_url || null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
 
   useEffect(() => {
     setLogoUrl(companyInfo?.logo_url || null);
@@ -653,8 +657,17 @@ export function HandbookStep({
       if (preview) {
         const pdfBlob = doc.output("blob");
         const pdfUrl = URL.createObjectURL(pdfBlob);
-        window.open(pdfUrl, "_blank");
-        toast.success("Forhåndsvisning åpnet i ny fane");
+        
+        // Try to open in new tab, but if blocked, show embedded preview
+        const newWindow = window.open(pdfUrl, "_blank");
+        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+          // Popup was blocked, show embedded preview
+          setPreviewUrl(pdfUrl);
+          setShowPreviewDialog(true);
+          toast.info("Forhåndsvisning åpnet i dialogvindu");
+        } else {
+          toast.success("Forhåndsvisning åpnet i ny fane");
+        }
       } else {
         doc.save(filename);
         toast.success("IK-håndbok lastet ned!");
@@ -852,6 +865,41 @@ export function HandbookStep({
           helse-, miljø- og sikkerhetsarbeid i virksomheter (Internkontrollforskriften).
         </p>
       </div>
+
+      {/* PDF Preview Dialog */}
+      <Dialog open={showPreviewDialog} onOpenChange={(open) => {
+        setShowPreviewDialog(open);
+        if (!open && previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl(null);
+        }
+      }}>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center justify-between">
+              <span>Forhåndsvisning av IK-håndbok</span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 min-h-0">
+            {previewUrl && (
+              <iframe 
+                src={previewUrl} 
+                className="w-full h-full border rounded-lg"
+                title="PDF Forhåndsvisning"
+              />
+            )}
+          </div>
+          <div className="flex gap-2 justify-end pt-4 border-t flex-shrink-0">
+            <Button variant="outline" onClick={() => setShowPreviewDialog(false)}>
+              Lukk
+            </Button>
+            <Button onClick={() => generatePDF(false)}>
+              <Download className="w-4 h-4 mr-2" />
+              Last ned PDF
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
