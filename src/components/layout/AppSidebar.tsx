@@ -67,8 +67,8 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
         className={cn(
           "fixed left-0 top-0 z-50 h-screen bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-300 ease-in-out",
           collapsed ? "w-20" : "w-[280px]",
-          "lg:translate-x-0",
-          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          "lg:translate-x-0 lg:pointer-events-auto",
+          isOpen ? "translate-x-0 pointer-events-auto" : "-translate-x-full pointer-events-none lg:pointer-events-auto"
         )}
       >
         {/* Logo */}
