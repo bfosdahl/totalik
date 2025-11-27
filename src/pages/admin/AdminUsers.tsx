@@ -228,12 +228,12 @@ export default function AdminUsers() {
           </div>
         </motion.div>
 
-        {/* Users list */}
+        {/* Users list - Desktop */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-card rounded-xl border border-border shadow-card overflow-hidden"
+          className="hidden md:block bg-card rounded-xl border border-border shadow-card overflow-hidden"
         >
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -352,6 +352,118 @@ export default function AdminUsers() {
               </tbody>
             </table>
           </div>
+        </motion.div>
+
+        {/* Users list - Mobile */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="md:hidden space-y-3"
+        >
+          {isLoading ? (
+            <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
+              Laster...
+            </div>
+          ) : filteredProfiles?.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
+              Ingen brukere funnet
+            </div>
+          ) : (
+            filteredProfiles?.map((profile) => (
+              <div
+                key={profile.id}
+                className="bg-card rounded-xl border border-border p-4 space-y-3"
+              >
+                {/* User info */}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Users className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">
+                        {profile.first_name || profile.last_name
+                          ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim()
+                          : "Ukjent bruker"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{profile.email}</p>
+                    </div>
+                  </div>
+                  <Badge variant={profile.is_active ? "success" : "secondary"}>
+                    {profile.is_active ? "Aktiv" : "Inaktiv"}
+                  </Badge>
+                </div>
+
+                {/* Company select */}
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Bedrift</Label>
+                  <Select
+                    value={profile.company_id || "none"}
+                    onValueChange={(value) =>
+                      assignCompanyMutation.mutate({
+                        userId: profile.user_id,
+                        companyId: value === "none" ? null : value,
+                      })
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Velg bedrift" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Ingen bedrift</SelectItem>
+                      {companies?.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          {company.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Roles */}
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Roller</Label>
+                  <div className="flex flex-wrap gap-1">
+                    {getUserRoles(profile.user_id).map((role) => (
+                      <span key={role}>{getRoleBadge(role)}</span>
+                    ))}
+                    {getUserRoles(profile.user_id).length === 0 && (
+                      <span className="text-muted-foreground text-sm">Ingen roller</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-2 border-t border-border">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      setSelectedUser(profile);
+                      setIsRoleDialogOpen(true);
+                    }}
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    Administrer roller
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      toggleActiveMutation.mutate({
+                        userId: profile.user_id,
+                        isActive: profile.is_active,
+                      })
+                    }
+                  >
+                    {profile.is_active ? "Deaktiver" : "Aktiver"}
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
         </motion.div>
 
         {/* Role management dialog */}
