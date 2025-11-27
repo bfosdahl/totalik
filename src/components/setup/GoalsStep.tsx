@@ -1,9 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { motion } from "framer-motion";
 import { Check, Info, Lightbulb, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CompanyGoal } from "@/hooks/useSetupWizard";
+
+export interface GoalsStepRef {
+  save: () => Promise<void>;
+  hasData: () => boolean;
+}
 
 // Authentic Norwegian goal examples for internal control
 const goalExamples = [
@@ -40,51 +45,58 @@ interface GoalsStepProps {
   isSaving: boolean;
 }
 
-export function GoalsStep({ existingGoals, onSave, isSaving }: GoalsStepProps) {
-  const [selectedExample, setSelectedExample] = useState<string | null>(null);
-  const [customGoal, setCustomGoal] = useState("");
-  const [isCustomMode, setIsCustomMode] = useState(false);
+export const GoalsStep = forwardRef<GoalsStepRef, GoalsStepProps>(
+  function GoalsStep({ existingGoals, onSave, isSaving }, ref) {
+    const [selectedExample, setSelectedExample] = useState<string | null>(null);
+    const [customGoal, setCustomGoal] = useState("");
+    const [isCustomMode, setIsCustomMode] = useState(false);
 
-  // Initialize from existing goals
-  useEffect(() => {
-    if (existingGoals.length > 0) {
-      const existingGoal = existingGoals[0];
-      if (existingGoal.is_predefined) {
-        // Find matching example
-        const match = goalExamples.find((e) => e.description === existingGoal.goal_text);
-        if (match) {
-          setSelectedExample(match.id);
+    // Initialize from existing goals
+    useEffect(() => {
+      if (existingGoals.length > 0) {
+        const existingGoal = existingGoals[0];
+        if (existingGoal.is_predefined) {
+          // Find matching example
+          const match = goalExamples.find((e) => e.description === existingGoal.goal_text);
+          if (match) {
+            setSelectedExample(match.id);
+          }
+        } else {
+          setCustomGoal(existingGoal.goal_text);
+          setIsCustomMode(true);
         }
-      } else {
-        setCustomGoal(existingGoal.goal_text);
-        setIsCustomMode(true);
       }
-    }
-  }, [existingGoals]);
+    }, [existingGoals]);
 
-  const selectExample = (exampleId: string) => {
-    setSelectedExample(exampleId);
-    setIsCustomMode(false);
-    setCustomGoal("");
-  };
+    const selectExample = (exampleId: string) => {
+      setSelectedExample(exampleId);
+      setIsCustomMode(false);
+      setCustomGoal("");
+    };
 
-  const handleCustomMode = () => {
-    setIsCustomMode(true);
-    setSelectedExample(null);
-  };
+    const handleCustomMode = () => {
+      setIsCustomMode(true);
+      setSelectedExample(null);
+    };
 
-  const handleSave = async () => {
-    if (isCustomMode && customGoal.trim()) {
-      await onSave([{ goal_text: customGoal.trim(), is_predefined: false }]);
-    } else if (selectedExample) {
-      const example = goalExamples.find((e) => e.id === selectedExample);
-      if (example) {
-        await onSave([{ goal_text: example.description, is_predefined: true }]);
+    const handleSave = async () => {
+      if (isCustomMode && customGoal.trim()) {
+        await onSave([{ goal_text: customGoal.trim(), is_predefined: false }]);
+      } else if (selectedExample) {
+        const example = goalExamples.find((e) => e.id === selectedExample);
+        if (example) {
+          await onSave([{ goal_text: example.description, is_predefined: true }]);
+        }
       }
-    }
-  };
+    };
 
-  const hasSelection = selectedExample || (isCustomMode && customGoal.trim());
+    const hasSelection = selectedExample || (isCustomMode && customGoal.trim());
+
+    // Expose save method to parent via ref
+    useImperativeHandle(ref, () => ({
+      save: handleSave,
+      hasData: () => !!hasSelection,
+    }));
 
   return (
     <div className="space-y-6">
@@ -207,4 +219,4 @@ export function GoalsStep({ existingGoals, onSave, isSaving }: GoalsStepProps) {
       </div>
     </div>
   );
-}
+});

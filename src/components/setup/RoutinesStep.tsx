@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, forwardRef, useImperativeHandle } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +21,11 @@ import {
   X
 } from "lucide-react";
 import { toast } from "sonner";
+
+export interface RoutinesStepRef {
+  save: () => Promise<void>;
+  hasData: () => boolean;
+}
 
 export interface RoutineItem {
   id: string;
@@ -689,14 +694,15 @@ Kontroll og revisjon
   }
 ];
 
-export function RoutinesStep({ existingData, onSave, isSaving }: RoutinesStepProps) {
-  const [routines, setRoutines] = useState<RoutineItem[]>(
-    existingData?.routines || []
-  );
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const [editingRoutine, setEditingRoutine] = useState<RoutineItem | null>(null);
-  const [expandedRoutines, setExpandedRoutines] = useState<Set<string>>(new Set());
+export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
+  function RoutinesStep({ existingData, onSave, isSaving }, ref) {
+    const [routines, setRoutines] = useState<RoutineItem[]>(
+      existingData?.routines || []
+    );
+    const [searchTerm, setSearchTerm] = useState("");
+    const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+    const [editingRoutine, setEditingRoutine] = useState<RoutineItem | null>(null);
+    const [expandedRoutines, setExpandedRoutines] = useState<Set<string>>(new Set());
 
   const filteredLibraryRoutines = PREDEFINED_ROUTINES.filter(
     routine =>
@@ -765,6 +771,12 @@ export function RoutinesStep({ existingData, onSave, isSaving }: RoutinesStepPro
     await onSave({ routines });
     toast.success("Rutiner lagret");
   };
+
+  // Expose save method to parent via ref
+  useImperativeHandle(ref, () => ({
+    save: handleSave,
+    hasData: () => routines.length > 0,
+  }));
 
   return (
     <div className="space-y-6">
@@ -962,7 +974,7 @@ export function RoutinesStep({ existingData, onSave, isSaving }: RoutinesStepPro
       </div>
     </div>
   );
-}
+});
 
 function RoutineEditForm({
   routine,

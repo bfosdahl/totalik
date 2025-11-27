@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Target, 
@@ -17,11 +17,11 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSetupWizard } from "@/hooks/useSetupWizard";
-import { GoalsStep } from "@/components/setup/GoalsStep";
-import { OrganizationStep } from "@/components/setup/OrganizationStep";
-import { RiskAssessmentStep } from "@/components/setup/RiskAssessmentStep";
-import { ActionPlanStep } from "@/components/setup/ActionPlanStep";
-import { RoutinesStep } from "@/components/setup/RoutinesStep";
+import { GoalsStep, GoalsStepRef } from "@/components/setup/GoalsStep";
+import { OrganizationStep, OrganizationStepRef } from "@/components/setup/OrganizationStep";
+import { RiskAssessmentStep, RiskAssessmentStepRef } from "@/components/setup/RiskAssessmentStep";
+import { ActionPlanStep, ActionPlanStepRef } from "@/components/setup/ActionPlanStep";
+import { RoutinesStep, RoutinesStepRef } from "@/components/setup/RoutinesStep";
 import { HandbookStep } from "@/components/setup/HandbookStep";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -131,6 +131,13 @@ const Setup = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [hasInitializedStep, setHasInitializedStep] = useState(false);
 
+  // Refs for step components to enable auto-save
+  const goalsRef = useRef<GoalsStepRef>(null);
+  const organizationRef = useRef<OrganizationStepRef>(null);
+  const riskRef = useRef<RiskAssessmentStepRef>(null);
+  const actionsRef = useRef<ActionPlanStepRef>(null);
+  const routinesRef = useRef<RoutinesStepRef>(null);
+
   // Sync current step with saved progress ONLY on initial load
   useEffect(() => {
     if (!isLoading && !hasInitializedStep && progress.current_step !== undefined) {
@@ -139,8 +146,30 @@ const Setup = () => {
     }
   }, [progress.current_step, isLoading, hasInitializedStep]);
 
+  // Get the current step's ref based on step id
+  const getCurrentStepRef = () => {
+    switch (steps[currentStep].id) {
+      case "goals": return goalsRef;
+      case "organization": return organizationRef;
+      case "risk": return riskRef;
+      case "actions": return actionsRef;
+      case "routines": return routinesRef;
+      default: return null;
+    }
+  };
+
   const goNext = async () => {
     if (currentStep < steps.length - 1) {
+      // Auto-save current step before progressing
+      const currentRef = getCurrentStepRef();
+      if (currentRef?.current?.hasData()) {
+        try {
+          await currentRef.current.save();
+        } catch (error) {
+          console.error("Error auto-saving step:", error);
+        }
+      }
+
       const newStep = currentStep + 1;
       setCurrentStep(newStep);
       await saveProgress({ current_step: newStep });
@@ -170,6 +199,7 @@ const Setup = () => {
       case "goals":
         return (
           <GoalsStep 
+            ref={goalsRef}
             existingGoals={goals} 
             onSave={saveGoals} 
             isSaving={isSaving} 
@@ -178,6 +208,7 @@ const Setup = () => {
       case "organization":
         return (
           <OrganizationStep
+            ref={organizationRef}
             existingData={organization || undefined}
             onSave={saveOrganization}
             isSaving={isSaving}
@@ -186,6 +217,7 @@ const Setup = () => {
       case "risk":
         return (
           <RiskAssessmentStep
+            ref={riskRef}
             existingData={riskAssessment || undefined}
             onSave={saveRiskAssessment}
             isSaving={isSaving}
@@ -194,6 +226,7 @@ const Setup = () => {
       case "actions":
         return (
           <ActionPlanStep
+            ref={actionsRef}
             existingData={actionPlan}
             risks={riskAssessment?.risks.map(r => ({
               id: r.id,
@@ -214,6 +247,7 @@ const Setup = () => {
       case "routines":
         return (
           <RoutinesStep
+            ref={routinesRef}
             existingData={routines || undefined}
             onSave={saveRoutines}
             isSaving={isSaving}

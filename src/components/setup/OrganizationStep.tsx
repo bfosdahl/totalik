@@ -1,9 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { motion } from "framer-motion";
 import { Check, Info, Lightbulb, Plus, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+
+export interface OrganizationStepRef {
+  save: () => Promise<void>;
+  hasData: () => boolean;
+}
 
 // Authentic Norwegian organization examples
 const organizationExamples = [
@@ -55,57 +60,64 @@ interface OrganizationStepProps {
   isSaving: boolean;
 }
 
-export function OrganizationStep({ existingData, onSave, isSaving }: OrganizationStepProps) {
-  const [selectedExample, setSelectedExample] = useState<string | null>(null);
-  const [customContent, setCustomContent] = useState("");
-  const [isCustomMode, setIsCustomMode] = useState(false);
+export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStepProps>(
+  function OrganizationStep({ existingData, onSave, isSaving }, ref) {
+    const [selectedExample, setSelectedExample] = useState<string | null>(null);
+    const [customContent, setCustomContent] = useState("");
+    const [isCustomMode, setIsCustomMode] = useState(false);
 
-  // Initialize from existing data
-  useEffect(() => {
-    if (existingData) {
-      if (existingData.is_custom) {
-        setCustomContent(existingData.custom_content);
-        setIsCustomMode(true);
-      } else if (existingData.template_id) {
-        setSelectedExample(existingData.template_id);
+    // Initialize from existing data
+    useEffect(() => {
+      if (existingData) {
+        if (existingData.is_custom) {
+          setCustomContent(existingData.custom_content);
+          setIsCustomMode(true);
+        } else if (existingData.template_id) {
+          setSelectedExample(existingData.template_id);
+        }
       }
-    }
-  }, [existingData]);
+    }, [existingData]);
 
-  const selectExample = (exampleId: string) => {
-    setSelectedExample(exampleId);
-    setIsCustomMode(false);
-    setCustomContent("");
-  };
+    const selectExample = (exampleId: string) => {
+      setSelectedExample(exampleId);
+      setIsCustomMode(false);
+      setCustomContent("");
+    };
 
-  const handleCustomMode = () => {
-    setIsCustomMode(true);
-    setSelectedExample(null);
-  };
+    const handleCustomMode = () => {
+      setIsCustomMode(true);
+      setSelectedExample(null);
+    };
 
-  const handleSave = async () => {
-    if (isCustomMode && customContent.trim()) {
-      await onSave({
-        template_id: null,
-        custom_content: customContent.trim(),
-        is_custom: true,
-      });
-    } else if (selectedExample) {
-      const example = organizationExamples.find((e) => e.id === selectedExample);
-      if (example) {
-        const fullContent = example.sections
-          .map((s) => `${s.heading}\n\n${s.content}`)
-          .join("\n\n");
+    const handleSave = async () => {
+      if (isCustomMode && customContent.trim()) {
         await onSave({
-          template_id: selectedExample,
-          custom_content: fullContent,
-          is_custom: false,
+          template_id: null,
+          custom_content: customContent.trim(),
+          is_custom: true,
         });
+      } else if (selectedExample) {
+        const example = organizationExamples.find((e) => e.id === selectedExample);
+        if (example) {
+          const fullContent = example.sections
+            .map((s) => `${s.heading}\n\n${s.content}`)
+            .join("\n\n");
+          await onSave({
+            template_id: selectedExample,
+            custom_content: fullContent,
+            is_custom: false,
+          });
+        }
       }
-    }
-  };
+    };
 
-  const hasSelection = selectedExample || (isCustomMode && customContent.trim());
+    const hasSelection = selectedExample || (isCustomMode && customContent.trim());
+
+    // Expose save method to parent via ref
+    useImperativeHandle(ref, () => ({
+      save: handleSave,
+      hasData: () => !!hasSelection,
+    }));
 
   return (
     <div className="space-y-6">
@@ -236,4 +248,4 @@ export function OrganizationStep({ existingData, onSave, isSaving }: Organizatio
       </div>
     </div>
   );
-}
+});
