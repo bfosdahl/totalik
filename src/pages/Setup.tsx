@@ -20,6 +20,7 @@ import { GoalsStep } from "@/components/setup/GoalsStep";
 import { OrganizationStep } from "@/components/setup/OrganizationStep";
 import { RiskAssessmentStep } from "@/components/setup/RiskAssessmentStep";
 import { RoutinesStep } from "@/components/setup/RoutinesStep";
+import { HandbookStep } from "@/components/setup/HandbookStep";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -112,6 +113,7 @@ const Setup = () => {
     organization,
     riskAssessment,
     routines,
+    companyInfo,
     progress, 
     companyId,
     saveProgress, 
@@ -189,6 +191,26 @@ const Setup = () => {
             existingData={routines || undefined}
             onSave={saveRoutines}
             isSaving={isSaving}
+          />
+        );
+      case "handbook":
+        return (
+          <HandbookStep
+            goals={goals}
+            organization={organization}
+            riskAssessment={riskAssessment ? {
+              risks: riskAssessment.risks.map(r => ({
+                ...r,
+                category: "HMS",
+                measures: r.planned_measures,
+                risk_value: r.probability * r.consequence,
+                responsible: "",
+                deadline: "",
+                status: "ikke_startet" as const
+              }))
+            } : null}
+            routines={routines}
+            companyInfo={companyInfo}
           />
         );
       default:
