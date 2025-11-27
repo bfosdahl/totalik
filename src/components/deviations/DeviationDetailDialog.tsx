@@ -231,19 +231,17 @@ export function DeviationDetailDialog({
 
           {/* Comments */}
           <DeviationComments deviationId={deviation.id} />
+        </div>
 
-          <Separator />
-
-          {/* Actions */}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={handleDownloadPDF}>
-              <Download className="w-4 h-4 mr-2" />
-              Last ned PDF
-            </Button>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Lukk
-            </Button>
-          </div>
+        {/* Actions - Fixed at bottom */}
+        <div className="flex justify-end gap-2 pt-4 border-t flex-shrink-0">
+          <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
+            <Download className="w-4 h-4 mr-2" />
+            Last ned PDF
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
+            Lukk
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
