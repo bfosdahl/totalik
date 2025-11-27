@@ -1,50 +1,53 @@
 import { motion } from "framer-motion";
 import { CheckCircle2, Circle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
+import { useSetupWizard } from "@/hooks/useSetupWizard";
 
 interface ComplianceStep {
   id: string;
   title: string;
   description: string;
   status: "completed" | "in-progress" | "pending";
+  stepIndex: number;
 }
 
-const steps: ComplianceStep[] = [
+const baseSteps = [
   {
     id: "goals",
     title: "Mål for internkontroll",
     description: "Definer bedriftens HMS-mål",
-    status: "completed",
+    stepIndex: 0,
   },
   {
     id: "organization",
     title: "Organisering",
     description: "Dokumenter ansvarsforhold",
-    status: "completed",
+    stepIndex: 1,
   },
   {
     id: "risk",
     title: "Risikovurdering",
     description: "Kartlegg farer og tiltak",
-    status: "in-progress",
+    stepIndex: 2,
   },
   {
     id: "actions",
     title: "Handlingsplan",
     description: "Planlegg forbedringstiltak",
-    status: "pending",
+    stepIndex: 3,
   },
   {
     id: "routines",
     title: "Rutiner",
     description: "Etabler sikre arbeidsrutiner",
-    status: "pending",
+    stepIndex: 4,
   },
   {
     id: "handbook",
     title: "Handbok",
     description: "Generer IK-dokumentasjon",
-    status: "pending",
+    stepIndex: 5,
   },
 ];
 
@@ -70,8 +73,32 @@ const statusConfig = {
 };
 
 export function ComplianceProgress() {
+  const navigate = useNavigate();
+  const { progress } = useSetupWizard();
+
+  // Calculate step status based on actual progress
+  const steps: ComplianceStep[] = baseSteps.map((step) => {
+    const completedSteps = progress?.completed_steps || [];
+    const currentStep = progress?.current_step || 0;
+    
+    let status: "completed" | "in-progress" | "pending";
+    if (completedSteps.includes(step.id)) {
+      status = "completed";
+    } else if (step.stepIndex === currentStep) {
+      status = "in-progress";
+    } else {
+      status = "pending";
+    }
+    
+    return { ...step, status };
+  });
+
   const completedCount = steps.filter((s) => s.status === "completed").length;
-  const progress = (completedCount / steps.length) * 100;
+  const progressPercent = (completedCount / steps.length) * 100;
+
+  const handleStepClick = (step: ComplianceStep) => {
+    navigate(`/setup?step=${step.stepIndex}`);
+  };
 
   return (
     <motion.div
@@ -88,7 +115,7 @@ export function ComplianceProgress() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-primary">{Math.round(progress)}%</span>
+          <span className="text-2xl font-bold text-primary">{Math.round(progressPercent)}%</span>
         </div>
       </div>
 
@@ -96,7 +123,7 @@ export function ComplianceProgress() {
       <div className="h-2 bg-muted rounded-full mb-6 overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
-          animate={{ width: `${progress}%` }}
+          animate={{ width: `${progressPercent}%` }}
           transition={{ duration: 0.8, delay: 0.5 }}
           className="h-full bg-gradient-primary rounded-full"
         />
@@ -114,8 +141,9 @@ export function ComplianceProgress() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
+              onClick={() => handleStepClick(step)}
               className={cn(
-                "flex items-center gap-4 p-3 rounded-lg transition-colors",
+                "flex items-center gap-4 p-3 rounded-lg transition-colors cursor-pointer hover:bg-accent/50",
                 step.status === "in-progress" && "bg-warning/5 border border-warning/20",
                 step.status === "completed" && "bg-success/5",
                 step.status === "pending" && "bg-muted/50"
