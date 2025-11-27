@@ -63,15 +63,10 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <motion.aside
-        initial={false}
-        animate={{ 
-          width: collapsed ? 80 : 280,
-          x: 0 
-        }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
+      <aside
         className={cn(
-          "fixed left-0 top-0 z-50 h-screen bg-sidebar border-r border-sidebar-border flex flex-col",
+          "fixed left-0 top-0 z-50 h-screen bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-300 ease-in-out",
+          collapsed ? "w-20" : "w-[280px]",
           "lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
@@ -241,7 +236,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             )}
           </Button>
         </div>
-      </motion.aside>
+      </aside>
     </>
   );
 }
