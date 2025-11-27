@@ -11,11 +11,20 @@ import {
   ChevronLeft,
   Check,
   Loader2,
-  ClipboardList
+  ClipboardList,
+  Home
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { useSetupWizard } from "@/hooks/useSetupWizard";
 import { GoalsStep, GoalsStepRef } from "@/components/setup/GoalsStep";
 import { OrganizationStep, OrganizationStepRef } from "@/components/setup/OrganizationStep";
@@ -130,6 +139,11 @@ const Setup = () => {
   
   const [currentStep, setCurrentStep] = useState(0);
   const [hasInitializedStep, setHasInitializedStep] = useState(false);
+  const navigate = useNavigate();
+
+  // Get navigation origin from URL params
+  const fromPage = searchParams.get("from");
+  const sectionName = searchParams.get("section");
 
   // Refs for step components to enable auto-save
   const goalsRef = useRef<GoalsStepRef>(null);
@@ -316,6 +330,45 @@ const Setup = () => {
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto space-y-6">
+        {/* Breadcrumb navigation */}
+        {fromPage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink 
+                    onClick={() => navigate("/")}
+                    className="flex items-center gap-1 cursor-pointer hover:text-primary"
+                  >
+                    <Home className="w-4 h-4" />
+                    Hjem
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                {fromPage === "handbook" && (
+                  <>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink 
+                        onClick={() => navigate("/handbook")}
+                        className="cursor-pointer hover:text-primary"
+                      >
+                        IK-Handbok
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                  </>
+                )}
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{sectionName || steps[currentStep].title}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </motion.div>
+        )}
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
