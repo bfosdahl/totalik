@@ -46,6 +46,22 @@ export interface RoutinesData {
   routines: RoutineItem[];
 }
 
+export interface ActionItem {
+  id: string;
+  risk_id: string | null;
+  risk_description: string;
+  action_description: string;
+  responsible: string;
+  deadline: string;
+  status: "ikke_startet" | "pågår" | "fullført";
+  priority: "lav" | "medium" | "høy" | "kritisk";
+  comments: string;
+}
+
+export interface ActionPlanData {
+  actions: ActionItem[];
+}
+
 export interface CompanyInfo {
   id: string;
   name: string;
@@ -72,6 +88,7 @@ export function useSetupWizard() {
   const [goals, setGoals] = useState<CompanyGoal[]>([]);
   const [organization, setOrganization] = useState<OrganizationData | null>(null);
   const [riskAssessment, setRiskAssessment] = useState<RiskAssessmentData | null>(null);
+  const [actionPlan, setActionPlan] = useState<ActionPlanData | null>(null);
   const [routines, setRoutines] = useState<RoutinesData | null>(null);
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
   const [progress, setProgress] = useState<WizardProgress>({
@@ -143,6 +160,19 @@ export function useSetupWizard() {
         if (riskData && riskData.risks) {
           setRiskAssessment({
             risks: riskData.risks as unknown as RiskItem[],
+          });
+        }
+
+        // Load action plans
+        const { data: actionPlanData } = await supabase
+          .from("company_action_plans")
+          .select("*")
+          .eq("company_id", companyId)
+          .maybeSingle();
+
+        if (actionPlanData && actionPlanData.actions) {
+          setActionPlan({
+            actions: actionPlanData.actions as unknown as ActionItem[],
           });
         }
 
@@ -334,6 +364,38 @@ export function useSetupWizard() {
     }
   }, [companyId, toast]);
 
+  // Save action plan
+  const saveActionPlan = useCallback(async (data: ActionPlanData) => {
+    if (!companyId) return;
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("company_action_plans")
+        .upsert({
+          company_id: companyId,
+          actions: JSON.parse(JSON.stringify(data.actions)),
+        }, { onConflict: "company_id" });
+
+      if (error) throw error;
+      setActionPlan(data);
+
+      toast({
+        title: "Lagret",
+        description: "Handlingsplanen er lagret.",
+      });
+    } catch (error) {
+      console.error("Error saving action plan:", error);
+      toast({
+        title: "Feil ved lagring",
+        description: "Kunne ikke lagre handlingsplan. Prøv igjen.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }, [companyId, toast]);
+
   // Save routines
   const saveRoutines = useCallback(async (data: RoutinesData) => {
     if (!companyId) return;
@@ -381,6 +443,7 @@ export function useSetupWizard() {
     goals,
     organization,
     riskAssessment,
+    actionPlan,
     routines,
     companyInfo,
     progress,
@@ -389,6 +452,7 @@ export function useSetupWizard() {
     saveGoals,
     saveOrganization,
     saveRiskAssessment,
+    saveActionPlan,
     saveRoutines,
     completeStep,
   };
