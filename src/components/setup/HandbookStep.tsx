@@ -658,16 +658,10 @@ export function HandbookStep({
         const pdfBlob = doc.output("blob");
         const pdfUrl = URL.createObjectURL(pdfBlob);
         
-        // Try to open in new tab, but if blocked, show embedded preview
-        const newWindow = window.open(pdfUrl, "_blank");
-        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-          // Popup was blocked, show embedded preview
-          setPreviewUrl(pdfUrl);
-          setShowPreviewDialog(true);
-          toast.info("Forhåndsvisning åpnet i dialogvindu");
-        } else {
-          toast.success("Forhåndsvisning åpnet i ny fane");
-        }
+        // Use embedded preview to avoid browser popup blockers
+        setPreviewUrl(pdfUrl);
+        setShowPreviewDialog(true);
+        toast.success("Forhåndsvisning klar");
       } else {
         doc.save(filename);
         toast.success("IK-håndbok lastet ned!");
