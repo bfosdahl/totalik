@@ -1,0 +1,135 @@
+import { motion } from "framer-motion";
+import { 
+  Building2, 
+  Users, 
+  Bell, 
+  Shield, 
+  Palette,
+  Database,
+  ChevronRight
+} from "lucide-react";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { cn } from "@/lib/utils";
+
+const settingsSections = [
+  {
+    icon: Building2,
+    title: "Bedriftsinformasjon",
+    description: "Administrer bedriftsdetaljer og kontaktinfo",
+    href: "#company",
+  },
+  {
+    icon: Users,
+    title: "Brukere og tilgang",
+    description: "Administrer brukere og tilgangsrettigheter",
+    href: "#users",
+  },
+  {
+    icon: Bell,
+    title: "Varsler",
+    description: "Konfigurer e-postvarsler og påminnelser",
+    href: "#notifications",
+  },
+  {
+    icon: Shield,
+    title: "Sikkerhet",
+    description: "Passord, tofaktorautentisering og sikkerhetspolicyer",
+    href: "#security",
+  },
+  {
+    icon: Palette,
+    title: "Tilpasning",
+    description: "Logo, farger og utseende",
+    href: "#customization",
+  },
+  {
+    icon: Database,
+    title: "Data og eksport",
+    description: "Sikkerhetskopi og dataeksport",
+    href: "#data",
+  },
+];
+
+const Settings = () => {
+  return (
+    <AppLayout>
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col gap-1"
+        >
+          <h1 className="text-2xl font-bold tracking-tight">Innstillinger</h1>
+          <p className="text-muted-foreground">
+            Administrer systeminnstillinger og preferanser
+          </p>
+        </motion.div>
+
+        {/* Settings grid */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-card rounded-xl border border-border shadow-card overflow-hidden"
+        >
+          <div className="divide-y divide-border">
+            {settingsSections.map((section, index) => (
+              <motion.a
+                key={section.title}
+                href={section.href}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15 + index * 0.05 }}
+                className="flex items-center gap-4 p-5 hover:bg-secondary/50 transition-colors group"
+              >
+                <div className="p-3 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <section.icon className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold group-hover:text-primary transition-colors">
+                    {section.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {section.description}
+                  </p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              </motion.a>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Quick info */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-card rounded-xl border border-border p-6 shadow-card"
+        >
+          <h3 className="font-semibold mb-4">Kontoinformasjon</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between py-2 border-b border-border">
+              <span className="text-muted-foreground">Abonnement</span>
+              <span className="font-medium">Premium</span>
+            </div>
+            <div className="flex justify-between py-2 border-b border-border">
+              <span className="text-muted-foreground">Brukere</span>
+              <span className="font-medium">5 / 10</span>
+            </div>
+            <div className="flex justify-between py-2 border-b border-border">
+              <span className="text-muted-foreground">Lagring brukt</span>
+              <span className="font-medium">2.3 GB / 10 GB</span>
+            </div>
+            <div className="flex justify-between py-2">
+              <span className="text-muted-foreground">Fornyes</span>
+              <span className="font-medium">15. februar 2024</span>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </AppLayout>
+  );
+};
+
+export default Settings;
