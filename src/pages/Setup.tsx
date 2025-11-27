@@ -129,13 +129,15 @@ const Setup = () => {
   } = useSetupWizard();
   
   const [currentStep, setCurrentStep] = useState(0);
+  const [hasInitializedStep, setHasInitializedStep] = useState(false);
 
-  // Sync current step with saved progress
+  // Sync current step with saved progress ONLY on initial load
   useEffect(() => {
-    if (progress.current_step !== currentStep && !isLoading) {
+    if (!isLoading && !hasInitializedStep && progress.current_step !== undefined) {
       setCurrentStep(progress.current_step);
+      setHasInitializedStep(true);
     }
-  }, [progress.current_step, isLoading]);
+  }, [progress.current_step, isLoading, hasInitializedStep]);
 
   const goNext = async () => {
     if (currentStep < steps.length - 1) {
