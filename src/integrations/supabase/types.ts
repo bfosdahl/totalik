@@ -322,6 +322,33 @@ export type Database = {
         }
         Relationships: []
       }
+      deviation_deadline_reminders: {
+        Row: {
+          company_id: string
+          deviation_id: string
+          id: string
+          recipient_email: string
+          reminder_type: string
+          sent_at: string
+        }
+        Insert: {
+          company_id: string
+          deviation_id: string
+          id?: string
+          recipient_email: string
+          reminder_type: string
+          sent_at?: string
+        }
+        Update: {
+          company_id?: string
+          deviation_id?: string
+          id?: string
+          recipient_email?: string
+          reminder_type?: string
+          sent_at?: string
+        }
+        Relationships: []
+      }
       deviations: {
         Row: {
           assignee_id: string | null
