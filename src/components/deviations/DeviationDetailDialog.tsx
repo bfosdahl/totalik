@@ -26,6 +26,7 @@ import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { DeviationAttachments } from "./DeviationAttachments";
+import { DeviationComments } from "./DeviationComments";
 
 interface Deviation {
   id: string;
@@ -206,6 +207,11 @@ export function DeviationDetailDialog({
 
           {/* Attachments */}
           <DeviationAttachments deviationId={deviation.id} />
+
+          <Separator />
+
+          {/* Comments */}
+          <DeviationComments deviationId={deviation.id} />
 
           <Separator />
 

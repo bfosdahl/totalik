@@ -292,6 +292,36 @@ export type Database = {
           },
         ]
       }
+      deviation_comments: {
+        Row: {
+          company_id: string
+          content: string
+          created_at: string
+          deviation_id: string
+          id: string
+          user_id: string | null
+          user_name: string
+        }
+        Insert: {
+          company_id: string
+          content: string
+          created_at?: string
+          deviation_id: string
+          id?: string
+          user_id?: string | null
+          user_name: string
+        }
+        Update: {
+          company_id?: string
+          content?: string
+          created_at?: string
+          deviation_id?: string
+          id?: string
+          user_id?: string | null
+          user_name?: string
+        }
+        Relationships: []
+      }
       deviations: {
         Row: {
           assignee_id: string | null
