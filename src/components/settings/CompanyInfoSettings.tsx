@@ -28,6 +28,17 @@ export function CompanyInfoSettings({ onBack }: CompanyInfoSettingsProps) {
     logo_url: "",
   });
 
+  // Refresh company data on mount to ensure we have the latest
+  useEffect(() => {
+    const loadFreshData = async () => {
+      setLoading(true);
+      await refreshCompany();
+      setLoading(false);
+    };
+    loadFreshData();
+  }, []);
+
+  // Update form when company data changes
   useEffect(() => {
     if (company) {
       setFormData({
@@ -92,7 +103,7 @@ export function CompanyInfoSettings({ onBack }: CompanyInfoSettingsProps) {
     }
   };
 
-  if (!company) {
+  if (!company || loading) {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
