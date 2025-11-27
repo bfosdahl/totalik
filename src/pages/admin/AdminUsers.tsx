@@ -48,9 +48,17 @@ export default function AdminUsers() {
   const [searchParams] = useSearchParams();
   const companyFilter = searchParams.get("company");
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
+  const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole>("user");
   const [selectedCompany, setSelectedCompany] = useState<string>("");
+  
+  // New user form state
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserFirstName, setNewUserFirstName] = useState("");
+  const [newUserLastName, setNewUserLastName] = useState("");
+  const [newUserCompanyId, setNewUserCompanyId] = useState("");
+  const [newUserRole, setNewUserRole] = useState<"user" | "company_admin">("user");
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -169,6 +177,44 @@ export default function AdminUsers() {
     },
   });
 
+  const createUserMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("create-user", {
+        body: {
+          email: newUserEmail,
+          firstName: newUserFirstName,
+          lastName: newUserLastName,
+          companyId: newUserCompanyId,
+          role: newUserRole,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
+      setIsCreateUserDialogOpen(false);
+      resetNewUserForm();
+      toast({ 
+        title: "Bruker opprettet", 
+        description: data.emailSent ? "E-post med innloggingslenke er sendt" : "Bruker opprettet (e-post ikke sendt)"
+      });
+    },
+    onError: (error) => {
+      toast({ title: "Feil", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const resetNewUserForm = () => {
+    setNewUserEmail("");
+    setNewUserFirstName("");
+    setNewUserLastName("");
+    setNewUserCompanyId("");
+    setNewUserRole("user");
+  };
+
   const getUserRoles = (userId: string): AppRole[] => {
     return userRoles?.filter((r) => r.user_id === userId).map((r) => r.role as AppRole) || [];
   };
@@ -208,6 +254,10 @@ export default function AdminUsers() {
               Administrer brukere og roller
             </p>
           </div>
+          <Button onClick={() => setIsCreateUserDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Ny bruker
+          </Button>
         </motion.div>
 
         {/* Search and filters */}
@@ -529,6 +579,92 @@ export default function AdminUsers() {
                 </div>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Create user dialog */}
+        <Dialog open={isCreateUserDialogOpen} onOpenChange={(open) => {
+          setIsCreateUserDialogOpen(open);
+          if (!open) resetNewUserForm();
+        }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Opprett ny bruker</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="newUserEmail">E-post *</Label>
+                <Input
+                  id="newUserEmail"
+                  type="email"
+                  placeholder="bruker@eksempel.no"
+                  value={newUserEmail}
+                  onChange={(e) => setNewUserEmail(e.target.value)}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="newUserFirstName">Fornavn</Label>
+                  <Input
+                    id="newUserFirstName"
+                    placeholder="Ola"
+                    value={newUserFirstName}
+                    onChange={(e) => setNewUserFirstName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="newUserLastName">Etternavn</Label>
+                  <Input
+                    id="newUserLastName"
+                    placeholder="Nordmann"
+                    value={newUserLastName}
+                    onChange={(e) => setNewUserLastName(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Bedrift *</Label>
+                <Select value={newUserCompanyId} onValueChange={setNewUserCompanyId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg bedrift" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {companies?.map((company) => (
+                      <SelectItem key={company.id} value={company.id}>
+                        {company.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Rolle</Label>
+                <Select value={newUserRole} onValueChange={(v) => setNewUserRole(v as "user" | "company_admin")}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">Bruker</SelectItem>
+                    <SelectItem value="company_admin">Bedriftsadmin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setIsCreateUserDialogOpen(false)}>
+                  Avbryt
+                </Button>
+                <Button
+                  onClick={() => createUserMutation.mutate()}
+                  disabled={!newUserEmail || !newUserCompanyId || createUserMutation.isPending}
+                >
+                  {createUserMutation.isPending ? "Oppretter..." : "Opprett bruker"}
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
