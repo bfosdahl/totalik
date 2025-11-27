@@ -1,1 +1,7 @@
 project_id = "sffkcqclfiffnpxorodd"
+
+[functions.invite-user]
+verify_jwt = false
+
+[functions.notify-deviation-assignment]
+verify_jwt = true
