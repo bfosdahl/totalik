@@ -198,6 +198,11 @@ const Setup = () => {
       setCurrentStep(newStep);
       await saveProgress({ current_step: newStep });
       await completeStep(steps[currentStep].id);
+    } else {
+      // Last step - mark as completed and navigate to dashboard or handbook
+      await completeStep(steps[currentStep].id);
+      await saveProgress({ is_completed: true });
+      navigate("/handbook");
     }
   };
 
