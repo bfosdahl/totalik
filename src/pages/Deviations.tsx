@@ -180,6 +180,17 @@ const Deviations = () => {
     });
   };
 
+  const handleAssigneeChange = (id: string, assignee: string) => {
+    setDeviations(deviations.map(dev => 
+      dev.id === id ? { ...dev, assignee } : dev
+    ));
+    setSelectedDeviation(prev => prev ? { ...prev, assignee } : null);
+    toast({
+      title: "Ansvarlig oppdatert",
+      description: `Avvik ${id} er nå tildelt "${assignee}"`,
+    });
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -371,6 +382,7 @@ const Deviations = () => {
         open={isDetailOpen}
         onOpenChange={setIsDetailOpen}
         onStatusChange={handleStatusChange}
+        onAssigneeChange={handleAssigneeChange}
       />
     </AppLayout>
   );
