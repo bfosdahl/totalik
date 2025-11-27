@@ -107,7 +107,7 @@ function NoCompanyMessage() {
 }
 
 const Setup = () => {
-  const { profile, isLoading: authLoading } = useAuth();
+  const { profile, company, isLoading: authLoading } = useAuth();
   const { 
     isLoading, 
     isSaving, 
@@ -116,7 +116,6 @@ const Setup = () => {
     riskAssessment,
     actionPlan,
     routines,
-    companyInfo,
     progress, 
     companyId,
     saveProgress, 
@@ -271,7 +270,17 @@ const Setup = () => {
             } : null}
             actionPlan={actionPlan}
             routines={routines}
-            companyInfo={companyInfo}
+            companyInfo={company ? {
+              id: company.id,
+              name: company.name,
+              org_number: company.org_number || undefined,
+              address: company.address || undefined,
+              postal_code: company.postal_code || undefined,
+              city: company.city || undefined,
+              phone: company.phone || undefined,
+              email: company.email || undefined,
+              logo_url: company.logo_url,
+            } : null}
           />
         );
       default:
