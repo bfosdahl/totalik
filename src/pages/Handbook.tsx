@@ -223,7 +223,7 @@ const Handbook = () => {
   const handleEditSection = (section: typeof handbookSections[0], e: React.MouseEvent) => {
     e.stopPropagation();
     if (section.stepIndex >= 0) {
-      navigate(`/setup?step=${section.stepIndex}`);
+      navigate(`/setup?step=${section.stepIndex}&from=handbook&section=${encodeURIComponent(section.title)}`);
     } else if (section.linkTo) {
       navigate(section.linkTo);
     }
@@ -255,11 +255,11 @@ const Handbook = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="gap-2" onClick={() => navigate("/setup?step=5")}>
+            <Button variant="outline" className="gap-2" onClick={() => navigate("/setup?step=5&from=handbook&section=Handbok")}>
               <Eye className="w-4 h-4" />
               Forhåndsvis
             </Button>
-            <Button className="gap-2" onClick={() => navigate("/setup?step=5")}>
+            <Button className="gap-2" onClick={() => navigate("/setup?step=5&from=handbook&section=Handbok")}>
               <Download className="w-4 h-4" />
               Last ned PDF
             </Button>
@@ -406,9 +406,9 @@ const Handbook = () => {
           <h3 className="font-semibold mb-4">Eksportvalg</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              { label: "Komplett handbok", format: "PDF", icon: BookOpen, action: () => navigate("/setup?step=5") },
-              { label: "Kun risikovurderinger", format: "PDF", icon: AlertTriangle, action: () => navigate("/setup?step=2") },
-              { label: "Handlingsplan", format: "PDF", icon: FileText, action: () => navigate("/setup?step=3") },
+              { label: "Komplett handbok", format: "PDF", icon: BookOpen, action: () => navigate("/setup?step=5&from=handbook&section=Komplett handbok") },
+              { label: "Kun risikovurderinger", format: "PDF", icon: AlertTriangle, action: () => navigate("/setup?step=2&from=handbook&section=Risikovurderinger") },
+              { label: "Handlingsplan", format: "PDF", icon: FileText, action: () => navigate("/setup?step=3&from=handbook&section=Handlingsplan") },
             ].map((option, index) => (
               <button
                 key={index}
