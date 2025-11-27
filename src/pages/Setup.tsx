@@ -19,6 +19,7 @@ import { useSetupWizard } from "@/hooks/useSetupWizard";
 import { GoalsStep } from "@/components/setup/GoalsStep";
 import { OrganizationStep } from "@/components/setup/OrganizationStep";
 import { RiskAssessmentStep } from "@/components/setup/RiskAssessmentStep";
+import { RoutinesStep } from "@/components/setup/RoutinesStep";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -110,12 +111,14 @@ const Setup = () => {
     goals, 
     organization,
     riskAssessment,
+    routines,
     progress, 
     companyId,
     saveProgress, 
     saveGoals,
     saveOrganization,
     saveRiskAssessment,
+    saveRoutines,
     completeStep 
   } = useSetupWizard();
   
@@ -177,6 +180,14 @@ const Setup = () => {
           <RiskAssessmentStep
             existingData={riskAssessment || undefined}
             onSave={saveRiskAssessment}
+            isSaving={isSaving}
+          />
+        );
+      case "routines":
+        return (
+          <RoutinesStep
+            existingData={routines || undefined}
+            onSave={saveRoutines}
             isSaving={isSaving}
           />
         );

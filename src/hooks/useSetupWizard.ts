@@ -29,6 +29,23 @@ export interface RiskAssessmentData {
   risks: RiskItem[];
 }
 
+export interface RoutineItem {
+  id: string;
+  routine_number: string;
+  routine_name: string;
+  category: string;
+  purpose: string;
+  responsibility: string;
+  procedure: string;
+  examples: string;
+  remember: string;
+  is_predefined: boolean;
+}
+
+export interface RoutinesData {
+  routines: RoutineItem[];
+}
+
 export interface WizardProgress {
   current_step: number;
   completed_steps: string[];
@@ -43,6 +60,7 @@ export function useSetupWizard() {
   const [goals, setGoals] = useState<CompanyGoal[]>([]);
   const [organization, setOrganization] = useState<OrganizationData | null>(null);
   const [riskAssessment, setRiskAssessment] = useState<RiskAssessmentData | null>(null);
+  const [routines, setRoutines] = useState<RoutinesData | null>(null);
   const [progress, setProgress] = useState<WizardProgress>({
     current_step: 0,
     completed_steps: [],
@@ -112,6 +130,19 @@ export function useSetupWizard() {
         if (riskData && riskData.risks) {
           setRiskAssessment({
             risks: riskData.risks as unknown as RiskItem[],
+          });
+        }
+
+        // Load routines
+        const { data: routinesData } = await supabase
+          .from("company_routines")
+          .select("*")
+          .eq("company_id", companyId)
+          .maybeSingle();
+
+        if (routinesData && routinesData.routines) {
+          setRoutines({
+            routines: routinesData.routines as unknown as RoutineItem[],
           });
         }
       } catch (error) {
@@ -269,6 +300,38 @@ export function useSetupWizard() {
     }
   }, [companyId, toast]);
 
+  // Save routines
+  const saveRoutines = useCallback(async (data: RoutinesData) => {
+    if (!companyId) return;
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("company_routines")
+        .upsert({
+          company_id: companyId,
+          routines: JSON.parse(JSON.stringify(data.routines)),
+        }, { onConflict: "company_id" });
+
+      if (error) throw error;
+      setRoutines(data);
+
+      toast({
+        title: "Lagret",
+        description: "Rutinene er lagret.",
+      });
+    } catch (error) {
+      console.error("Error saving routines:", error);
+      toast({
+        title: "Feil ved lagring",
+        description: "Kunne ikke lagre rutiner. Prøv igjen.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }, [companyId, toast]);
+
   // Mark step as completed
   const completeStep = useCallback(async (stepId: string) => {
     const newCompletedSteps = progress.completed_steps.includes(stepId)
@@ -284,12 +347,14 @@ export function useSetupWizard() {
     goals,
     organization,
     riskAssessment,
+    routines,
     progress,
     companyId,
     saveProgress,
     saveGoals,
     saveOrganization,
     saveRiskAssessment,
+    saveRoutines,
     completeStep,
   };
 }
