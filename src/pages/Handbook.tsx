@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useSetupWizard } from "@/hooks/useSetupWizard";
+import { useDeviations } from "@/hooks/useDeviations";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -55,8 +56,13 @@ const Handbook = () => {
     routines,
     progress 
   } = useSetupWizard();
+  const { deviations, isLoading: isLoadingDeviations } = useDeviations();
   
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+
+  // Calculate deviation status - complete if no open or in-progress deviations
+  const openDeviationsCount = deviations.filter(d => d.status === "open" || d.status === "in-progress").length;
+  const deviationStatus = openDeviationsCount === 0 ? "complete" : "incomplete";
 
   // Calculate section status based on actual data
   const handbookSections = [
@@ -179,16 +185,20 @@ const Handbook = () => {
     {
       id: "deviations",
       title: "6. Avviksbehandling",
-      status: "incomplete",
+      status: deviationStatus,
       stepIndex: -1, // Not part of wizard
       icon: AlertCircle,
       content: (
         <p className="text-sm text-muted-foreground">
-          Avvikssystemet brukes til å registrere og følge opp avvik. 
-          Gå til Avvik-modulen for å registrere og behandle avvik.
+          {openDeviationsCount > 0 
+            ? `${openDeviationsCount} åpne avvik som må behandles.`
+            : deviations.length > 0 
+              ? `Alle ${deviations.length} avvik er lukket.`
+              : "Ingen avvik er registrert. Gå til Avvik-modulen for å registrere avvik."
+          }
         </p>
       ),
-      summary: "Se Avvik-modul",
+      summary: openDeviationsCount > 0 ? `${openDeviationsCount} åpne avvik` : deviations.length > 0 ? "Alle avvik lukket" : "Ingen avvik",
       linkTo: "/deviations",
     },
     {
