@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 
 const adminNavItems = [
   { icon: LayoutDashboard, label: "Oversikt", path: "/admin" },
@@ -170,6 +170,7 @@ export function AdminSidebar() {
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="p-0 w-[280px] bg-sidebar border-sidebar-border">
+          <SheetTitle className="sr-only">Admin navigasjon</SheetTitle>
           <SidebarContent
             collapsed={false}
             onCollapse={() => {}}
