@@ -93,25 +93,10 @@ const Index = () => {
                 <h3 className="text-lg font-semibold">Kommende revisjoner</h3>
               </div>
               
-              <div className="space-y-3">
-                {[
-                  { name: "HMS-gjennomgang", date: "20. jan 2024", type: "Årlig" },
-                  { name: "Brannrutiner", date: "25. jan 2024", type: "Kvartalsvis" },
-                  { name: "Førstehjelpsutstyr", date: "1. feb 2024", type: "Månedlig" },
-                ].map((review, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                  >
-                    <div>
-                      <p className="font-medium text-sm">{review.name}</p>
-                      <p className="text-xs text-muted-foreground">{review.type}</p>
-                    </div>
-                    <span className="text-xs font-medium text-primary">
-                      {review.date}
-                    </span>
-                  </div>
-                ))}
+              <div className="text-center py-6 text-muted-foreground">
+                <FileCheck className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                <p className="text-sm">Ingen revisjoner planlagt</p>
+                <p className="text-xs mt-1">Opprett en revisjon i Revisjoner-modulen</p>
               </div>
             </motion.div>
           </div>
