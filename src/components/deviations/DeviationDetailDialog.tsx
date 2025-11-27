@@ -114,10 +114,10 @@ export function DeviationDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-[600px] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1 flex-wrap">
-            <span className="font-mono">{deviation.id}</span>
+            <span className="font-mono text-xs">{deviation.id}</span>
             <Badge className={categoryConfig[deviation.category].color}>
               {deviation.category}
             </Badge>
@@ -125,10 +125,10 @@ export function DeviationDetailDialog({
               {priorityConfig[deviation.priority].label}
             </Badge>
           </div>
-          <DialogTitle className="text-xl">{deviation.title}</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">{deviation.title}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 overflow-y-auto flex-1 pr-2">
+        <div className="space-y-4 sm:space-y-6 overflow-y-auto flex-1 min-h-0 pr-1">
           {/* Status selector */}
           <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
             <div className="flex items-center gap-2">
