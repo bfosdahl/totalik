@@ -314,13 +314,23 @@ const Deviations = () => {
                 )}
               </div>
             ) : (
-              filteredDeviations.map((deviation, index) => (
+              filteredDeviations.map((deviation, index) => {
+                const statusBgColors: Record<string, string> = {
+                  open: "bg-destructive/5 border-l-4 border-l-destructive",
+                  "in-progress": "bg-warning/5 border-l-4 border-l-warning",
+                  resolved: "bg-success/5 border-l-4 border-l-success",
+                  closed: "bg-success/5 border-l-4 border-l-success",
+                };
+                return (
                 <motion.div
                   key={deviation.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.35 + index * 0.05 }}
-                  className="p-4 hover:bg-secondary/50 transition-colors cursor-pointer group"
+                  className={cn(
+                    "p-4 hover:bg-secondary/50 transition-colors cursor-pointer group",
+                    statusBgColors[deviation.status]
+                  )}
                   onClick={() => handleDeviationClick(deviation)}
                 >
                   <div className="flex items-start gap-4">
@@ -374,7 +384,7 @@ const Deviations = () => {
                     </div>
                   </div>
                 </motion.div>
-              ))
+              )})
             )}
           </div>
         </motion.div>
