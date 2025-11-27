@@ -9,9 +9,12 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowLeft,
+  Menu,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const adminNavItems = [
   { icon: LayoutDashboard, label: "Oversikt", path: "/admin" },
@@ -19,17 +22,17 @@ const adminNavItems = [
   { icon: Users, label: "Brukere", path: "/admin/users" },
 ];
 
-export function AdminSidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+interface SidebarContentProps {
+  collapsed: boolean;
+  onCollapse: (collapsed: boolean) => void;
+  onNavClick?: () => void;
+}
+
+function SidebarContent({ collapsed, onCollapse, onNavClick }: SidebarContentProps) {
   const location = useLocation();
 
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: collapsed ? 80 : 280 }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="fixed left-0 top-0 z-40 h-screen bg-sidebar border-r border-sidebar-border flex flex-col"
-    >
+    <div className="flex flex-col h-full bg-sidebar">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 h-16 border-b border-sidebar-border">
         <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-warning/20">
@@ -59,6 +62,7 @@ export function AdminSidebar() {
       <div className="px-3 py-4 border-b border-sidebar-border">
         <NavLink
           to="/"
+          onClick={onNavClick}
           className={cn(
             "flex items-center gap-3 w-full p-3 rounded-lg bg-sidebar-accent/50 hover:bg-sidebar-accent transition-colors text-sidebar-foreground/70 hover:text-sidebar-foreground",
             collapsed && "justify-center"
@@ -91,6 +95,7 @@ export function AdminSidebar() {
             <NavLink
               key={item.path}
               to={item.path}
+              onClick={onNavClick}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
                 collapsed && "justify-center",
@@ -122,12 +127,12 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      {/* Collapse toggle */}
-      <div className="p-3 border-t border-sidebar-border">
+      {/* Collapse toggle - desktop only */}
+      <div className="hidden lg:block p-3 border-t border-sidebar-border">
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={() => onCollapse(!collapsed)}
           className={cn(
             "w-full text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent",
             collapsed && "px-0"
@@ -143,6 +148,48 @@ export function AdminSidebar() {
           )}
         </Button>
       </div>
-    </motion.aside>
+    </div>
+  );
+}
+
+export function AdminSidebar() {
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <>
+      {/* Mobile menu button */}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden fixed top-4 left-4 z-50 bg-sidebar text-sidebar-foreground shadow-md"
+          >
+            <Menu className="w-5 h-5" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="p-0 w-[280px] bg-sidebar border-sidebar-border">
+          <SidebarContent
+            collapsed={false}
+            onCollapse={() => {}}
+            onNavClick={() => setMobileOpen(false)}
+          />
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop sidebar */}
+      <motion.aside
+        initial={false}
+        animate={{ width: collapsed ? 80 : 280 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="hidden lg:flex fixed left-0 top-0 z-40 h-screen border-r border-sidebar-border flex-col"
+      >
+        <SidebarContent
+          collapsed={collapsed}
+          onCollapse={setCollapsed}
+        />
+      </motion.aside>
+    </>
   );
 }
