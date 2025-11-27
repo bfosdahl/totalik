@@ -12,9 +12,11 @@ import {
   ChevronRight,
   Shield,
   Building2,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -28,6 +30,10 @@ const navItems = [
 export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const { profile, isSystemAdmin } = useAuth();
+
+  // Get company name from profile or use default
+  const companyName = profile?.company_id ? "Min Bedrift AS" : "Ingen bedrift";
 
   return (
     <motion.aside
@@ -79,10 +85,10 @@ export function AppSidebar() {
                 className="flex flex-col items-start text-left min-w-0"
               >
                 <span className="text-sm font-medium text-sidebar-foreground truncate w-full">
-                  Demo Bedrift AS
+                  {companyName}
                 </span>
                 <span className="text-xs text-sidebar-foreground/60">
-                  Org: 123 456 789
+                  {profile?.company_id ? "Org: 123 456 789" : "Ikke tilknyttet"}
                 </span>
               </motion.div>
             )}
@@ -127,6 +133,46 @@ export function AppSidebar() {
             </NavLink>
           );
         })}
+
+        {/* Admin link for system admins */}
+        {isSystemAdmin && (
+          <>
+            <div className="pt-4 pb-2">
+              {!collapsed && (
+                <span className="px-3 text-xs font-medium text-sidebar-foreground/50 uppercase">
+                  Administrasjon
+                </span>
+              )}
+            </div>
+            <NavLink
+              to="/admin"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
+                collapsed && "justify-center",
+                location.pathname.startsWith("/admin")
+                  ? "bg-warning text-warning-foreground shadow-md"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              )}
+            >
+              <ShieldCheck className={cn(
+                "w-5 h-5 flex-shrink-0 transition-transform",
+                !location.pathname.startsWith("/admin") && "group-hover:scale-110"
+              )} />
+              <AnimatePresence mode="wait">
+                {!collapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    className="font-medium text-sm"
+                  >
+                    Admin Panel
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </NavLink>
+          </>
+        )}
       </nav>
 
       {/* Collapse toggle */}
