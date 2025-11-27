@@ -45,7 +45,7 @@ const statusConfig = {
   open: { label: "Åpen", color: "bg-destructive/10 text-destructive" },
   "in-progress": { label: "Under arbeid", color: "bg-warning/10 text-warning" },
   resolved: { label: "Løst", color: "bg-success/10 text-success" },
-  closed: { label: "Lukket", color: "bg-muted text-muted-foreground" },
+  closed: { label: "Lukket", color: "bg-success/10 text-success" },
 };
 
 const categoryConfig = {
