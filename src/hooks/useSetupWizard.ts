@@ -16,6 +16,19 @@ export interface OrganizationData {
   is_custom: boolean;
 }
 
+export interface RiskItem {
+  id: string;
+  description: string;
+  consequence: number;
+  probability: number;
+  existing_measures: string;
+  planned_measures: string;
+}
+
+export interface RiskAssessmentData {
+  risks: RiskItem[];
+}
+
 export interface WizardProgress {
   current_step: number;
   completed_steps: string[];
@@ -29,6 +42,7 @@ export function useSetupWizard() {
   const [isSaving, setIsSaving] = useState(false);
   const [goals, setGoals] = useState<CompanyGoal[]>([]);
   const [organization, setOrganization] = useState<OrganizationData | null>(null);
+  const [riskAssessment, setRiskAssessment] = useState<RiskAssessmentData | null>(null);
   const [progress, setProgress] = useState<WizardProgress>({
     current_step: 0,
     completed_steps: [],
@@ -37,7 +51,7 @@ export function useSetupWizard() {
 
   const companyId = profile?.company_id;
 
-  // Load wizard progress, goals, and organization
+  // Load wizard progress, goals, organization, and risk assessment
   useEffect(() => {
     if (!companyId) {
       setIsLoading(false);
@@ -85,6 +99,19 @@ export function useSetupWizard() {
             template_id: orgData.template_id,
             custom_content: orgData.custom_content,
             is_custom: orgData.is_custom || false,
+          });
+        }
+
+        // Load risk assessment
+        const { data: riskData } = await supabase
+          .from("company_risk_assessments")
+          .select("*")
+          .eq("company_id", companyId)
+          .maybeSingle();
+
+        if (riskData && riskData.risks) {
+          setRiskAssessment({
+            risks: riskData.risks as unknown as RiskItem[],
           });
         }
       } catch (error) {
@@ -210,6 +237,38 @@ export function useSetupWizard() {
     }
   }, [companyId, toast]);
 
+  // Save risk assessment
+  const saveRiskAssessment = useCallback(async (data: RiskAssessmentData) => {
+    if (!companyId) return;
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("company_risk_assessments")
+        .upsert({
+          company_id: companyId,
+          risks: JSON.parse(JSON.stringify(data.risks)),
+        }, { onConflict: "company_id" });
+
+      if (error) throw error;
+      setRiskAssessment(data);
+
+      toast({
+        title: "Lagret",
+        description: "Risikovurderingen er lagret.",
+      });
+    } catch (error) {
+      console.error("Error saving risk assessment:", error);
+      toast({
+        title: "Feil ved lagring",
+        description: "Kunne ikke lagre risikovurdering. Prøv igjen.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }, [companyId, toast]);
+
   // Mark step as completed
   const completeStep = useCallback(async (stepId: string) => {
     const newCompletedSteps = progress.completed_steps.includes(stepId)
@@ -224,11 +283,13 @@ export function useSetupWizard() {
     isSaving,
     goals,
     organization,
+    riskAssessment,
     progress,
     companyId,
     saveProgress,
     saveGoals,
     saveOrganization,
+    saveRiskAssessment,
     completeStep,
   };
 }
