@@ -80,9 +80,11 @@ export function ComplianceProgress() {
   const steps: ComplianceStep[] = baseSteps.map((step) => {
     const completedSteps = progress?.completed_steps || [];
     const currentStep = progress?.current_step || 0;
+    const isWizardCompleted = progress?.is_completed || false;
     
     let status: "completed" | "in-progress" | "pending";
-    if (completedSteps.includes(step.id)) {
+    // If wizard is completed, mark handbook as completed too
+    if (completedSteps.includes(step.id) || (step.id === "handbook" && isWizardCompleted)) {
       status = "completed";
     } else if (step.stepIndex === currentStep) {
       status = "in-progress";
