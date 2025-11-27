@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   Building2, 
@@ -10,47 +11,78 @@ import {
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { toast } from "sonner";
+import { CompanyInfoSettings } from "@/components/settings/CompanyInfoSettings";
+
+type SettingsSection = "main" | "company" | "users" | "notifications" | "security" | "customization" | "data";
 
 const settingsSections = [
   {
+    id: "company" as const,
     icon: Building2,
     title: "Bedriftsinformasjon",
     description: "Administrer bedriftsdetaljer og kontaktinfo",
-    href: "#company",
+    implemented: true,
   },
   {
+    id: "users" as const,
     icon: Users,
     title: "Brukere og tilgang",
     description: "Administrer brukere og tilgangsrettigheter",
-    href: "#users",
+    implemented: false,
   },
   {
+    id: "notifications" as const,
     icon: Bell,
     title: "Varsler",
     description: "Konfigurer e-postvarsler og påminnelser",
-    href: "#notifications",
+    implemented: false,
   },
   {
+    id: "security" as const,
     icon: Shield,
     title: "Sikkerhet",
     description: "Passord, tofaktorautentisering og sikkerhetspolicyer",
-    href: "#security",
+    implemented: false,
   },
   {
+    id: "customization" as const,
     icon: Palette,
     title: "Tilpasning",
     description: "Logo, farger og utseende",
-    href: "#customization",
+    implemented: false,
   },
   {
+    id: "data" as const,
     icon: Database,
     title: "Data og eksport",
     description: "Sikkerhetskopi og dataeksport",
-    href: "#data",
+    implemented: false,
   },
 ];
 
 const Settings = () => {
+  const [activeSection, setActiveSection] = useState<SettingsSection>("main");
+
+  const handleSectionClick = (section: typeof settingsSections[0]) => {
+    if (section.implemented) {
+      setActiveSection(section.id);
+    } else {
+      toast.info(`${section.title} kommer snart!`);
+    }
+  };
+
+  // Render sub-section
+  if (activeSection === "company") {
+    return (
+      <AppLayout>
+        <div className="max-w-3xl mx-auto">
+          <CompanyInfoSettings onBack={() => setActiveSection("main")} />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // Main settings menu
   return (
     <AppLayout>
       <div className="max-w-3xl mx-auto space-y-6">
@@ -76,8 +108,8 @@ const Settings = () => {
           <div className="divide-y divide-border">
             {settingsSections.map((section, index) => (
               <motion.button
-                key={section.title}
-                onClick={() => toast.info(`${section.title} kommer snart!`)}
+                key={section.id}
+                onClick={() => handleSectionClick(section)}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.15 + index * 0.05 }}
