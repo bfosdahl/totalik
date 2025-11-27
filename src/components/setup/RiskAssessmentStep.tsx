@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Info, 
@@ -20,6 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+
+export interface RiskAssessmentStepRef {
+  save: () => Promise<void>;
+  hasData: () => boolean;
+}
 
 // Consequence levels based on Arbeidstilsynet methodology
 const consequenceLevels = [
@@ -226,53 +231,60 @@ function HelpSection() {
   );
 }
 
-export function RiskAssessmentStep({ existingData, onSave, isSaving }: RiskAssessmentStepProps) {
-  const [risks, setRisks] = useState<RiskItem[]>([]);
-  const [newRisk, setNewRisk] = useState<Partial<RiskItem>>({
-    description: "",
-    consequence: 0,
-    probability: 0,
-    existing_measures: "",
-    planned_measures: "",
-  });
-
-  useEffect(() => {
-    if (existingData?.risks) {
-      setRisks(existingData.risks);
-    }
-  }, [existingData]);
-
-  const addRisk = () => {
-    if (!newRisk.description || !newRisk.consequence || !newRisk.probability) return;
-
-    const risk: RiskItem = {
-      id: crypto.randomUUID(),
-      description: newRisk.description,
-      consequence: newRisk.consequence,
-      probability: newRisk.probability,
-      existing_measures: newRisk.existing_measures || "",
-      planned_measures: newRisk.planned_measures || "",
-    };
-
-    setRisks((prev) => [...prev, risk]);
-    setNewRisk({
+export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessmentStepProps>(
+  function RiskAssessmentStep({ existingData, onSave, isSaving }, ref) {
+    const [risks, setRisks] = useState<RiskItem[]>([]);
+    const [newRisk, setNewRisk] = useState<Partial<RiskItem>>({
       description: "",
       consequence: 0,
       probability: 0,
       existing_measures: "",
       planned_measures: "",
     });
-  };
 
-  const removeRisk = (id: string) => {
-    setRisks((prev) => prev.filter((r) => r.id !== id));
-  };
+    useEffect(() => {
+      if (existingData?.risks) {
+        setRisks(existingData.risks);
+      }
+    }, [existingData]);
 
-  const handleSave = async () => {
-    await onSave({ risks });
-  };
+    const addRisk = () => {
+      if (!newRisk.description || !newRisk.consequence || !newRisk.probability) return;
 
-  const canAddRisk = newRisk.description && newRisk.consequence && newRisk.probability;
+      const risk: RiskItem = {
+        id: crypto.randomUUID(),
+        description: newRisk.description,
+        consequence: newRisk.consequence,
+        probability: newRisk.probability,
+        existing_measures: newRisk.existing_measures || "",
+        planned_measures: newRisk.planned_measures || "",
+      };
+
+      setRisks((prev) => [...prev, risk]);
+      setNewRisk({
+        description: "",
+        consequence: 0,
+        probability: 0,
+        existing_measures: "",
+        planned_measures: "",
+      });
+    };
+
+    const removeRisk = (id: string) => {
+      setRisks((prev) => prev.filter((r) => r.id !== id));
+    };
+
+    const handleSave = async () => {
+      await onSave({ risks });
+    };
+
+    const canAddRisk = newRisk.description && newRisk.consequence && newRisk.probability;
+
+    // Expose save method to parent via ref
+    useImperativeHandle(ref, () => ({
+      save: handleSave,
+      hasData: () => risks.length > 0,
+    }));
 
   return (
     <div className="space-y-6">
@@ -455,4 +467,4 @@ export function RiskAssessmentStep({ existingData, onSave, isSaving }: RiskAsses
       </div>
     </div>
   );
-}
+});

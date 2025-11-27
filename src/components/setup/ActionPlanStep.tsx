@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, forwardRef, useImperativeHandle } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,11 @@ import {
   X
 } from "lucide-react";
 import { toast } from "sonner";
+
+export interface ActionPlanStepRef {
+  save: () => Promise<void>;
+  hasData: () => boolean;
+}
 
 export interface ActionItem {
   id: string;
@@ -81,18 +86,19 @@ const priorityConfig = {
 const priorityOrder = { kritisk: 4, høy: 3, medium: 2, lav: 1 };
 const statusOrder = { ikke_startet: 1, pågår: 2, fullført: 3 };
 
-export function ActionPlanStep({ existingData, risks, onSave, isSaving }: ActionPlanStepProps) {
-  const [actions, setActions] = useState<ActionItem[]>(existingData?.actions || []);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("alle");
-  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("alle");
-  const [sortOption, setSortOption] = useState<SortOption>("none");
+export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>(
+  function ActionPlanStep({ existingData, risks, onSave, isSaving }, ref) {
+    const [actions, setActions] = useState<ActionItem[]>(existingData?.actions || []);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>("alle");
+    const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("alle");
+    const [sortOption, setSortOption] = useState<SortOption>("none");
 
-  useEffect(() => {
-    if (existingData?.actions) {
-      setActions(existingData.actions);
-    }
-  }, [existingData]);
+    useEffect(() => {
+      if (existingData?.actions) {
+        setActions(existingData.actions);
+      }
+    }, [existingData]);
 
   const filteredAndSortedActions = useMemo(() => {
     let result = [...actions];
@@ -200,6 +206,12 @@ export function ActionPlanStep({ existingData, risks, onSave, isSaving }: Action
       toast.error("Kunne ikke lagre handlingsplan");
     }
   };
+
+  // Expose save method to parent via ref
+  useImperativeHandle(ref, () => ({
+    save: handleSave,
+    hasData: () => true, // Action plan can be empty
+  }));
 
   const getUnlinkedRisks = () => {
     const linkedRiskIds = actions.map(a => a.risk_id).filter(Boolean);
@@ -616,4 +628,4 @@ export function ActionPlanStep({ existingData, risks, onSave, isSaving }: Action
       )}
     </div>
   );
-}
+});
