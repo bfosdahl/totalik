@@ -47,6 +47,7 @@ export interface RoutinesData {
 }
 
 export interface CompanyInfo {
+  id: string;
   name: string;
   org_number?: string;
   address?: string;
@@ -54,6 +55,7 @@ export interface CompanyInfo {
   city?: string;
   phone?: string;
   email?: string;
+  logo_url?: string | null;
 }
 
 export interface WizardProgress {
@@ -160,12 +162,13 @@ export function useSetupWizard() {
         // Load company info
         const { data: companyData } = await supabase
           .from("companies")
-          .select("name, org_number, address, postal_code, city, phone, email")
+          .select("id, name, org_number, address, postal_code, city, phone, email, logo_url")
           .eq("id", companyId)
           .maybeSingle();
 
         if (companyData) {
           setCompanyInfo({
+            id: companyData.id,
             name: companyData.name,
             org_number: companyData.org_number || undefined,
             address: companyData.address || undefined,
@@ -173,6 +176,7 @@ export function useSetupWizard() {
             city: companyData.city || undefined,
             phone: companyData.phone || undefined,
             email: companyData.email || undefined,
+            logo_url: companyData.logo_url,
           });
         }
       } catch (error) {

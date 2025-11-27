@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { 
   FileText, 
@@ -18,6 +17,7 @@ import {
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { LogoUpload } from "./LogoUpload";
 
 interface GoalData {
   id: string;
@@ -66,6 +66,7 @@ interface RoutinesData {
 }
 
 interface CompanyInfo {
+  id: string;
   name: string;
   org_number?: string;
   address?: string;
@@ -73,6 +74,7 @@ interface CompanyInfo {
   city?: string;
   phone?: string;
   email?: string;
+  logo_url?: string | null;
 }
 
 interface HandbookStepProps {
@@ -92,6 +94,11 @@ export function HandbookStep({
 }: HandbookStepProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(companyInfo?.logo_url || null);
+
+  useEffect(() => {
+    setLogoUrl(companyInfo?.logo_url || null);
+  }, [companyInfo?.logo_url]);
 
   const completionStatus = {
     goals: goals.length > 0,
@@ -124,6 +131,28 @@ export function HandbookStep({
     });
   };
 
+  // Helper function to load image as base64
+  const loadImageAsBase64 = (url: string): Promise<string | null> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL("image/png"));
+        } else {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+  };
+
   const generatePDF = async (preview: boolean = false) => {
     if (preview) {
       setIsPreviewing(true);
@@ -144,6 +173,12 @@ export function HandbookStep({
       const contentWidth = pageWidth - (margin * 2);
       let yPos = margin;
 
+      // Load logo if available
+      let logoBase64: string | null = null;
+      if (logoUrl) {
+        logoBase64 = await loadImageAsBase64(logoUrl);
+      }
+
       // Helper function to add a new page if needed
       const checkPageBreak = (requiredSpace: number) => {
         if (yPos + requiredSpace > pageHeight - margin) {
@@ -155,7 +190,7 @@ export function HandbookStep({
       };
 
       // Helper function to add section header
-      const addSectionHeader = (title: string, icon?: string) => {
+      const addSectionHeader = (title: string) => {
         checkPageBreak(20);
         doc.setFillColor(59, 130, 246);
         doc.rect(margin, yPos, contentWidth, 10, "F");
@@ -172,6 +207,15 @@ export function HandbookStep({
       doc.setFillColor(30, 64, 175);
       doc.rect(0, 0, pageWidth, 80, "F");
 
+      // Add logo to cover page if available
+      if (logoBase64) {
+        try {
+          doc.addImage(logoBase64, "PNG", pageWidth / 2 - 15, 85, 30, 30);
+        } catch (e) {
+          console.warn("Could not add logo to PDF:", e);
+        }
+      }
+
       // Title
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(28);
@@ -180,17 +224,18 @@ export function HandbookStep({
       doc.setFontSize(20);
       doc.text("HMS-HÅNDBOK", pageWidth / 2, 50, { align: "center" });
 
-      // Company name
+      // Company name - adjust position based on logo
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(22);
       doc.setFont("helvetica", "bold");
       const companyName = companyInfo?.name || "Bedriftsnavn";
-      doc.text(companyName, pageWidth / 2, 110, { align: "center" });
+      const nameY = logoBase64 ? 130 : 110;
+      doc.text(companyName, pageWidth / 2, nameY, { align: "center" });
 
       // Company details
       doc.setFontSize(11);
       doc.setFont("helvetica", "normal");
-      let detailsY = 125;
+      let detailsY = logoBase64 ? 145 : 125;
       
       if (companyInfo?.org_number) {
         doc.text(`Org.nr: ${companyInfo.org_number}`, pageWidth / 2, detailsY, { align: "center" });
@@ -583,6 +628,16 @@ export function HandbookStep({
           </div>
         </CardContent>
       </Card>
+
+      {/* Logo Upload Section */}
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium">Bedriftslogo</h3>
+        <LogoUpload
+          currentLogoUrl={logoUrl}
+          companyId={companyInfo?.id || null}
+          onLogoChange={setLogoUrl}
+        />
+      </div>
 
       <Separator />
 
