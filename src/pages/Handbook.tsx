@@ -300,7 +300,7 @@ const Handbook = () => {
                   <p className="text-sm text-primary-foreground/70">Seksjoner fullført</p>
                 </div>
                 <div>
-                  <p className="text-3xl font-bold">{goals.length + (riskAssessment?.risks?.length ?? 0) + (actionPlan?.actions?.length ?? 0) + (routines?.routines?.length ?? 0)}</p>
+                  <p className="text-3xl font-bold">{goals.length + (riskAssessment?.risks?.length ?? 0) + (actionPlan?.actions?.length ?? 0) + (routines?.routines?.length ?? 0) + deviations.length}</p>
                   <p className="text-sm text-primary-foreground/70">Elementer totalt</p>
                 </div>
                 <div>
