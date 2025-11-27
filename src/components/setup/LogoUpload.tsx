@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
@@ -15,6 +15,16 @@ export function LogoUpload({ currentLogoUrl, companyId, onLogoChange }: LogoUplo
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentLogoUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync previewUrl when currentLogoUrl prop changes
+  useEffect(() => {
+    if (currentLogoUrl) {
+      // Add cache-busting to ensure fresh image
+      setPreviewUrl(`${currentLogoUrl}?t=${Date.now()}`);
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [currentLogoUrl]);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
