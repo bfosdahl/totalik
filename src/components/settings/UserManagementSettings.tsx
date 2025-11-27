@@ -1,0 +1,606 @@
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Users, 
+  ArrowLeft, 
+  Plus, 
+  Mail, 
+  Loader2, 
+  MoreVertical,
+  Shield,
+  User as UserIcon,
+  Trash2,
+  Edit2,
+  Check,
+  X
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+
+interface UserManagementSettingsProps {
+  onBack: () => void;
+}
+
+interface CompanyUser {
+  id: string;
+  user_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  avatar_url: string | null;
+  is_active: boolean;
+  role: "system_admin" | "company_admin" | "user";
+}
+
+export function UserManagementSettings({ onBack }: UserManagementSettingsProps) {
+  const { company, user } = useAuth();
+  const [users, setUsers] = useState<CompanyUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<CompanyUser | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Invite form state
+  const [inviteForm, setInviteForm] = useState({
+    email: "",
+    firstName: "",
+    lastName: "",
+    role: "user" as "company_admin" | "user",
+  });
+
+  // Edit form state
+  const [editForm, setEditForm] = useState({
+    firstName: "",
+    lastName: "",
+    role: "user" as "company_admin" | "user",
+  });
+
+  const loadUsers = async () => {
+    if (!company?.id) return;
+
+    setLoading(true);
+    try {
+      // Get all profiles for this company
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("company_id", company.id);
+
+      if (profilesError) throw profilesError;
+
+      // Get roles for all users
+      const userIds = profiles?.map(p => p.user_id) || [];
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .in("user_id", userIds);
+
+      // Combine profile and role data
+      const usersWithRoles: CompanyUser[] = (profiles || []).map(profile => {
+        const userRole = roles?.find(r => r.user_id === profile.user_id);
+        return {
+          id: profile.id,
+          user_id: profile.user_id,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          email: profile.email,
+          avatar_url: profile.avatar_url,
+          is_active: profile.is_active,
+          role: (userRole?.role as "system_admin" | "company_admin" | "user") || "user",
+        };
+      });
+
+      setUsers(usersWithRoles);
+    } catch (error) {
+      console.error("Error loading users:", error);
+      toast.error("Kunne ikke laste brukere");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, [company?.id]);
+
+  const handleInviteUser = async () => {
+    if (!inviteForm.email.trim()) {
+      toast.error("E-post er påkrevd");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("invite-user", {
+        body: {
+          email: inviteForm.email.trim(),
+          firstName: inviteForm.firstName.trim(),
+          lastName: inviteForm.lastName.trim(),
+          role: inviteForm.role,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success("Bruker invitert!");
+      setInviteDialogOpen(false);
+      setInviteForm({ email: "", firstName: "", lastName: "", role: "user" });
+      loadUsers();
+    } catch (error: any) {
+      console.error("Error inviting user:", error);
+      toast.error(error.message || "Kunne ikke invitere bruker");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEditUser = async () => {
+    if (!selectedUser) return;
+
+    setIsSubmitting(true);
+    try {
+      // Update profile
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          first_name: editForm.firstName.trim() || null,
+          last_name: editForm.lastName.trim() || null,
+        })
+        .eq("id", selectedUser.id);
+
+      if (profileError) throw profileError;
+
+      // Update role if changed
+      if (editForm.role !== selectedUser.role) {
+        // Remove existing role
+        await supabase
+          .from("user_roles")
+          .delete()
+          .eq("user_id", selectedUser.user_id)
+          .neq("role", "system_admin"); // Don't remove system_admin role
+
+        // Add new role if not just "user"
+        if (editForm.role === "company_admin") {
+          const { error: roleError } = await supabase
+            .from("user_roles")
+            .insert({
+              user_id: selectedUser.user_id,
+              role: editForm.role,
+            });
+
+          if (roleError) throw roleError;
+        }
+      }
+
+      toast.success("Bruker oppdatert!");
+      setEditDialogOpen(false);
+      setSelectedUser(null);
+      loadUsers();
+    } catch (error: any) {
+      console.error("Error updating user:", error);
+      toast.error(error.message || "Kunne ikke oppdatere bruker");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeactivateUser = async () => {
+    if (!selectedUser) return;
+
+    // Prevent deactivating yourself
+    if (selectedUser.user_id === user?.id) {
+      toast.error("Du kan ikke deaktivere din egen konto");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ is_active: false })
+        .eq("id", selectedUser.id);
+
+      if (error) throw error;
+
+      toast.success("Bruker deaktivert");
+      setDeleteDialogOpen(false);
+      setSelectedUser(null);
+      loadUsers();
+    } catch (error: any) {
+      console.error("Error deactivating user:", error);
+      toast.error(error.message || "Kunne ikke deaktivere bruker");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openEditDialog = (companyUser: CompanyUser) => {
+    setSelectedUser(companyUser);
+    setEditForm({
+      firstName: companyUser.first_name || "",
+      lastName: companyUser.last_name || "",
+      role: companyUser.role === "system_admin" ? "company_admin" : companyUser.role,
+    });
+    setEditDialogOpen(true);
+  };
+
+  const openDeleteDialog = (companyUser: CompanyUser) => {
+    setSelectedUser(companyUser);
+    setDeleteDialogOpen(true);
+  };
+
+  const getRoleBadge = (role: string) => {
+    switch (role) {
+      case "system_admin":
+        return <Badge variant="default" className="bg-primary">System Admin</Badge>;
+      case "company_admin":
+        return <Badge variant="secondary">Administrator</Badge>;
+      default:
+        return <Badge variant="outline">Bruker</Badge>;
+    }
+  };
+
+  const getInitials = (firstName: string | null, lastName: string | null, email: string | null) => {
+    if (firstName && lastName) {
+      return `${firstName[0]}${lastName[0]}`.toUpperCase();
+    }
+    if (firstName) return firstName[0].toUpperCase();
+    if (email) return email[0].toUpperCase();
+    return "?";
+  };
+
+  if (!company) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={onBack}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-xl bg-primary/10">
+              <Users className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Brukere og tilgang</h1>
+              <p className="text-muted-foreground">
+                Administrer brukere i {company.name}
+              </p>
+            </div>
+          </div>
+        </div>
+        <Button onClick={() => setInviteDialogOpen(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Inviter bruker
+        </Button>
+      </motion.div>
+
+      {/* Users List */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-card rounded-xl border border-border shadow-card"
+      >
+        {loading ? (
+          <div className="flex items-center justify-center p-12">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : users.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-12 text-center">
+            <Users className="w-12 h-12 text-muted-foreground/50 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Ingen brukere ennå</h3>
+            <p className="text-muted-foreground mb-4">
+              Inviter brukere for å gi dem tilgang til bedriftens HMS-system.
+            </p>
+            <Button onClick={() => setInviteDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Inviter første bruker
+            </Button>
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {users.map((companyUser) => (
+              <div
+                key={companyUser.id}
+                className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <Avatar>
+                    <AvatarImage src={companyUser.avatar_url || undefined} />
+                    <AvatarFallback>
+                      {getInitials(companyUser.first_name, companyUser.last_name, companyUser.email)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">
+                        {companyUser.first_name && companyUser.last_name
+                          ? `${companyUser.first_name} ${companyUser.last_name}`
+                          : companyUser.email || "Ukjent bruker"}
+                      </span>
+                      {!companyUser.is_active && (
+                        <Badge variant="outline" className="text-destructive border-destructive">
+                          Deaktivert
+                        </Badge>
+                      )}
+                      {companyUser.user_id === user?.id && (
+                        <Badge variant="outline" className="text-primary border-primary">
+                          Deg
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">{companyUser.email}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  {getRoleBadge(companyUser.role)}
+                  {companyUser.user_id !== user?.id && companyUser.role !== "system_admin" && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openEditDialog(companyUser)}>
+                          <Edit2 className="w-4 h-4 mr-2" />
+                          Rediger
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => openDeleteDialog(companyUser)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Deaktiver
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </motion.div>
+
+      {/* Invite User Dialog */}
+      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Inviter ny bruker</DialogTitle>
+            <DialogDescription>
+              Send en invitasjon til en ny bruker. De vil motta en e-post med innloggingsinformasjon.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="invite-email">E-post *</Label>
+              <Input
+                id="invite-email"
+                type="email"
+                value={inviteForm.email}
+                onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
+                placeholder="bruker@eksempel.no"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="invite-firstname">Fornavn</Label>
+                <Input
+                  id="invite-firstname"
+                  value={inviteForm.firstName}
+                  onChange={(e) => setInviteForm({ ...inviteForm, firstName: e.target.value })}
+                  placeholder="Ola"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="invite-lastname">Etternavn</Label>
+                <Input
+                  id="invite-lastname"
+                  value={inviteForm.lastName}
+                  onChange={(e) => setInviteForm({ ...inviteForm, lastName: e.target.value })}
+                  placeholder="Nordmann"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="invite-role">Rolle</Label>
+              <Select
+                value={inviteForm.role}
+                onValueChange={(value: "company_admin" | "user") => 
+                  setInviteForm({ ...inviteForm, role: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">
+                    <div className="flex items-center gap-2">
+                      <UserIcon className="w-4 h-4" />
+                      Bruker
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="company_admin">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      Administrator
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Administratorer kan administrere brukere og innstillinger.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
+              Avbryt
+            </Button>
+            <Button onClick={handleInviteUser} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Mail className="w-4 h-4 mr-2" />
+              )}
+              Send invitasjon
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rediger bruker</DialogTitle>
+            <DialogDescription>
+              Oppdater brukerens informasjon og tilgangsnivå.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-firstname">Fornavn</Label>
+                <Input
+                  id="edit-firstname"
+                  value={editForm.firstName}
+                  onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
+                  placeholder="Fornavn"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-lastname">Etternavn</Label>
+                <Input
+                  id="edit-lastname"
+                  value={editForm.lastName}
+                  onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
+                  placeholder="Etternavn"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-role">Rolle</Label>
+              <Select
+                value={editForm.role}
+                onValueChange={(value: "company_admin" | "user") => 
+                  setEditForm({ ...editForm, role: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">
+                    <div className="flex items-center gap-2">
+                      <UserIcon className="w-4 h-4" />
+                      Bruker
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="company_admin">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      Administrator
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Avbryt
+            </Button>
+            <Button onClick={handleEditUser} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Check className="w-4 h-4 mr-2" />
+              )}
+              Lagre endringer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deaktiver bruker?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Er du sikker på at du vil deaktivere denne brukeren? 
+              De vil ikke lenger ha tilgang til bedriftens HMS-system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeactivateUser}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : null}
+              Deaktiver
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}

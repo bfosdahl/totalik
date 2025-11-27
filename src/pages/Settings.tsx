@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { CompanyInfoSettings } from "@/components/settings/CompanyInfoSettings";
+import { UserManagementSettings } from "@/components/settings/UserManagementSettings";
 import { SettingsPlaceholder } from "@/components/settings/SettingsPlaceholder";
 
 type SettingsSection = "main" | "company" | "users" | "notifications" | "security" | "customization" | "data";
@@ -76,6 +77,16 @@ const Settings = () => {
       <AppLayout>
         <div className="max-w-3xl mx-auto">
           <CompanyInfoSettings onBack={goBack} />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (activeSection === "users") {
+    return (
+      <AppLayout>
+        <div className="max-w-3xl mx-auto">
+          <UserManagementSettings onBack={goBack} />
         </div>
       </AppLayout>
     );
