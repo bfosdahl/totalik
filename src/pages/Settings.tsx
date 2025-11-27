@@ -9,7 +9,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const settingsSections = [
   {
@@ -75,13 +75,13 @@ const Settings = () => {
         >
           <div className="divide-y divide-border">
             {settingsSections.map((section, index) => (
-              <motion.a
+              <motion.button
                 key={section.title}
-                href={section.href}
+                onClick={() => toast.info(`${section.title} kommer snart!`)}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.15 + index * 0.05 }}
-                className="flex items-center gap-4 p-5 hover:bg-secondary/50 transition-colors group"
+                className="flex items-center gap-4 p-5 hover:bg-secondary/50 transition-colors group w-full text-left"
               >
                 <div className="p-3 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
                   <section.icon className="w-6 h-6 text-primary" />
@@ -95,7 +95,7 @@ const Settings = () => {
                   </p>
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-              </motion.a>
+              </motion.button>
             ))}
           </div>
         </motion.div>
