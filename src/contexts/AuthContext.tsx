@@ -21,6 +21,11 @@ interface CompanyInfo {
   name: string;
   org_number: string | null;
   logo_url: string | null;
+  address: string | null;
+  postal_code: string | null;
+  city: string | null;
+  phone: string | null;
+  email: string | null;
 }
 
 interface AuthContextType {
@@ -66,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (profileData.company_id) {
           const { data: companyData } = await supabase
             .from("companies")
-            .select("id, name, org_number, logo_url")
+            .select("id, name, org_number, logo_url, address, postal_code, city, phone, email")
             .eq("id", profileData.company_id)
             .maybeSingle();
 
