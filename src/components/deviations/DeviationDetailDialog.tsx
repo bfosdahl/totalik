@@ -5,7 +5,8 @@ import {
   Clock, 
   User, 
   FileText,
-  Flag
+  Flag,
+  Download
 } from "lucide-react";
 import {
   Dialog,
@@ -27,6 +28,8 @@ import { Label } from "@/components/ui/label";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { DeviationAttachments } from "./DeviationAttachments";
 import { DeviationComments } from "./DeviationComments";
+import { exportSingleDeviationToPDF } from "@/utils/deviationExport";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Deviation {
   id: string;
@@ -77,8 +80,24 @@ export function DeviationDetailDialog({
   onAssigneeChange
 }: DeviationDetailDialogProps) {
   const { users, getUserDisplayName } = useCompanyUsers();
+  const { company } = useAuth();
   
   if (!deviation) return null;
+
+  const handleDownloadPDF = () => {
+    exportSingleDeviationToPDF({
+      id: deviation.id,
+      title: deviation.title,
+      description: deviation.description,
+      category: deviation.category,
+      priority: deviation.priority,
+      status: deviation.status,
+      assignee: deviation.assignee,
+      reporter: deviation.reporter,
+      createdAt: deviation.createdAt,
+      dueDate: deviation.dueDate,
+    }, company?.name);
+  };
 
   const formatDate = (dateStr: string) => {
     try {
@@ -217,6 +236,10 @@ export function DeviationDetailDialog({
 
           {/* Actions */}
           <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={handleDownloadPDF}>
+              <Download className="w-4 h-4 mr-2" />
+              Last ned PDF
+            </Button>
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Lukk
             </Button>
