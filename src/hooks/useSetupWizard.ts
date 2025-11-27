@@ -46,6 +46,16 @@ export interface RoutinesData {
   routines: RoutineItem[];
 }
 
+export interface CompanyInfo {
+  name: string;
+  org_number?: string;
+  address?: string;
+  postal_code?: string;
+  city?: string;
+  phone?: string;
+  email?: string;
+}
+
 export interface WizardProgress {
   current_step: number;
   completed_steps: string[];
@@ -61,6 +71,7 @@ export function useSetupWizard() {
   const [organization, setOrganization] = useState<OrganizationData | null>(null);
   const [riskAssessment, setRiskAssessment] = useState<RiskAssessmentData | null>(null);
   const [routines, setRoutines] = useState<RoutinesData | null>(null);
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
   const [progress, setProgress] = useState<WizardProgress>({
     current_step: 0,
     completed_steps: [],
@@ -143,6 +154,25 @@ export function useSetupWizard() {
         if (routinesData && routinesData.routines) {
           setRoutines({
             routines: routinesData.routines as unknown as RoutineItem[],
+          });
+        }
+
+        // Load company info
+        const { data: companyData } = await supabase
+          .from("companies")
+          .select("name, org_number, address, postal_code, city, phone, email")
+          .eq("id", companyId)
+          .maybeSingle();
+
+        if (companyData) {
+          setCompanyInfo({
+            name: companyData.name,
+            org_number: companyData.org_number || undefined,
+            address: companyData.address || undefined,
+            postal_code: companyData.postal_code || undefined,
+            city: companyData.city || undefined,
+            phone: companyData.phone || undefined,
+            email: companyData.email || undefined,
           });
         }
       } catch (error) {
@@ -348,6 +378,7 @@ export function useSetupWizard() {
     organization,
     riskAssessment,
     routines,
+    companyInfo,
     progress,
     companyId,
     saveProgress,
