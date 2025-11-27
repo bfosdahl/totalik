@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,10 @@ import {
   CheckCircle2,
   Clock,
   Circle,
-  Link2
+  Link2,
+  Filter,
+  ArrowUpDown,
+  X
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -58,6 +61,10 @@ interface ActionPlanStepProps {
   isSaving: boolean;
 }
 
+type StatusFilter = "alle" | "ikke_startet" | "pågår" | "fullført";
+type PriorityFilter = "alle" | "lav" | "medium" | "høy" | "kritisk";
+type SortOption = "none" | "deadline_asc" | "deadline_desc" | "priority_asc" | "priority_desc" | "status";
+
 const statusConfig = {
   ikke_startet: { label: "Ikke startet", icon: Circle, color: "text-muted-foreground", bg: "bg-muted" },
   pågår: { label: "Pågår", icon: Clock, color: "text-warning", bg: "bg-warning/10" },
@@ -71,15 +78,72 @@ const priorityConfig = {
   kritisk: { label: "Kritisk", color: "bg-red-500/10 text-red-700 border-red-200" },
 };
 
+const priorityOrder = { kritisk: 4, høy: 3, medium: 2, lav: 1 };
+const statusOrder = { ikke_startet: 1, pågår: 2, fullført: 3 };
+
 export function ActionPlanStep({ existingData, risks, onSave, isSaving }: ActionPlanStepProps) {
   const [actions, setActions] = useState<ActionItem[]>(existingData?.actions || []);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("alle");
+  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("alle");
+  const [sortOption, setSortOption] = useState<SortOption>("none");
 
   useEffect(() => {
     if (existingData?.actions) {
       setActions(existingData.actions);
     }
   }, [existingData]);
+
+  const filteredAndSortedActions = useMemo(() => {
+    let result = [...actions];
+
+    // Apply status filter
+    if (statusFilter !== "alle") {
+      result = result.filter(a => a.status === statusFilter);
+    }
+
+    // Apply priority filter
+    if (priorityFilter !== "alle") {
+      result = result.filter(a => a.priority === priorityFilter);
+    }
+
+    // Apply sorting
+    switch (sortOption) {
+      case "deadline_asc":
+        result.sort((a, b) => {
+          if (!a.deadline) return 1;
+          if (!b.deadline) return -1;
+          return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+        });
+        break;
+      case "deadline_desc":
+        result.sort((a, b) => {
+          if (!a.deadline) return 1;
+          if (!b.deadline) return -1;
+          return new Date(b.deadline).getTime() - new Date(a.deadline).getTime();
+        });
+        break;
+      case "priority_asc":
+        result.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+        break;
+      case "priority_desc":
+        result.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+        break;
+      case "status":
+        result.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+        break;
+    }
+
+    return result;
+  }, [actions, statusFilter, priorityFilter, sortOption]);
+
+  const hasActiveFilters = statusFilter !== "alle" || priorityFilter !== "alle" || sortOption !== "none";
+
+  const clearFilters = () => {
+    setStatusFilter("alle");
+    setPriorityFilter("alle");
+    setSortOption("none");
+  };
 
   const createEmptyAction = (): ActionItem => ({
     id: crypto.randomUUID(),
@@ -244,12 +308,81 @@ export function ActionPlanStep({ existingData, risks, onSave, isSaving }: Action
 
       {/* Actions List */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-medium">Tiltak ({actions.length})</h3>
-          <Button variant="outline" onClick={addAction}>
-            <Plus className="w-4 h-4 mr-2" />
-            Legg til tiltak
-          </Button>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-medium">Tiltak ({actions.length})</h3>
+            <Button variant="outline" onClick={addAction}>
+              <Plus className="w-4 h-4 mr-2" />
+              Legg til tiltak
+            </Button>
+          </div>
+
+          {/* Filter and Sort Controls */}
+          {actions.length > 0 && (
+            <Card className="bg-muted/30">
+              <CardContent className="pt-4 pb-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex items-center gap-2 flex-1">
+                    <Filter className="w-4 h-4 text-muted-foreground" />
+                    <Select value={statusFilter} onValueChange={(v: StatusFilter) => setStatusFilter(v)}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="alle">Alle statuser</SelectItem>
+                        <SelectItem value="ikke_startet">Ikke startet</SelectItem>
+                        <SelectItem value="pågår">Pågår</SelectItem>
+                        <SelectItem value="fullført">Fullført</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={priorityFilter} onValueChange={(v: PriorityFilter) => setPriorityFilter(v)}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Prioritet" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="alle">Alle prioriteter</SelectItem>
+                        <SelectItem value="kritisk">Kritisk</SelectItem>
+                        <SelectItem value="høy">Høy</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="lav">Lav</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+                    <Select value={sortOption} onValueChange={(v: SortOption) => setSortOption(v)}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Sortering" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Ingen sortering</SelectItem>
+                        <SelectItem value="deadline_asc">Frist (tidligst først)</SelectItem>
+                        <SelectItem value="deadline_desc">Frist (senest først)</SelectItem>
+                        <SelectItem value="priority_desc">Prioritet (høyest først)</SelectItem>
+                        <SelectItem value="priority_asc">Prioritet (lavest først)</SelectItem>
+                        <SelectItem value="status">Status</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {hasActiveFilters && (
+                      <Button variant="ghost" size="sm" onClick={clearFilters}>
+                        <X className="w-4 h-4 mr-1" />
+                        Nullstill
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {hasActiveFilters && (
+                  <div className="mt-3 text-sm text-muted-foreground">
+                    Viser {filteredAndSortedActions.length} av {actions.length} tiltak
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {actions.length === 0 ? (
@@ -262,15 +395,27 @@ export function ActionPlanStep({ existingData, risks, onSave, isSaving }: Action
               </p>
             </CardContent>
           </Card>
+        ) : filteredAndSortedActions.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="py-8 text-center">
+              <Filter className="w-10 h-10 mx-auto text-muted-foreground/50 mb-3" />
+              <p className="text-muted-foreground">Ingen tiltak matcher filtrene</p>
+              <Button variant="link" onClick={clearFilters} className="mt-2">
+                Nullstill filtre
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
           <div className="space-y-4">
-            {actions.map((action, index) => (
+            {filteredAndSortedActions.map((action) => {
+              const originalIndex = actions.findIndex(a => a.id === action.id);
+              return (
               <Card key={action.id} className={editingId === action.id ? "ring-2 ring-primary" : ""}>
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-muted-foreground">
-                        Tiltak #{index + 1}
+                        Tiltak #{originalIndex + 1}
                       </span>
                       {action.risk_id && (
                         <Badge variant="outline" className="text-xs">
@@ -432,7 +577,8 @@ export function ActionPlanStep({ existingData, risks, onSave, isSaving }: Action
                   )}
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
