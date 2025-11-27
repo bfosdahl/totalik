@@ -7,76 +7,91 @@ import {
   Shield, 
   Palette,
   Database,
-  ChevronRight
+  ChevronRight,
+  LucideIcon
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { toast } from "sonner";
 import { CompanyInfoSettings } from "@/components/settings/CompanyInfoSettings";
+import { SettingsPlaceholder } from "@/components/settings/SettingsPlaceholder";
 
 type SettingsSection = "main" | "company" | "users" | "notifications" | "security" | "customization" | "data";
 
-const settingsSections = [
+interface SettingsSectionConfig {
+  id: SettingsSection;
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}
+
+const settingsSections: SettingsSectionConfig[] = [
   {
-    id: "company" as const,
+    id: "company",
     icon: Building2,
     title: "Bedriftsinformasjon",
     description: "Administrer bedriftsdetaljer og kontaktinfo",
-    implemented: true,
   },
   {
-    id: "users" as const,
+    id: "users",
     icon: Users,
     title: "Brukere og tilgang",
     description: "Administrer brukere og tilgangsrettigheter",
-    implemented: false,
   },
   {
-    id: "notifications" as const,
+    id: "notifications",
     icon: Bell,
     title: "Varsler",
     description: "Konfigurer e-postvarsler og påminnelser",
-    implemented: false,
   },
   {
-    id: "security" as const,
+    id: "security",
     icon: Shield,
     title: "Sikkerhet",
     description: "Passord, tofaktorautentisering og sikkerhetspolicyer",
-    implemented: false,
   },
   {
-    id: "customization" as const,
+    id: "customization",
     icon: Palette,
     title: "Tilpasning",
     description: "Logo, farger og utseende",
-    implemented: false,
   },
   {
-    id: "data" as const,
+    id: "data",
     icon: Database,
     title: "Data og eksport",
     description: "Sikkerhetskopi og dataeksport",
-    implemented: false,
   },
 ];
 
 const Settings = () => {
   const [activeSection, setActiveSection] = useState<SettingsSection>("main");
 
-  const handleSectionClick = (section: typeof settingsSections[0]) => {
-    if (section.implemented) {
-      setActiveSection(section.id);
-    } else {
-      toast.info(`${section.title} kommer snart!`);
-    }
-  };
+  const goBack = () => setActiveSection("main");
 
-  // Render sub-section
+  // Get current section config
+  const currentSection = settingsSections.find(s => s.id === activeSection);
+
+  // Render sub-sections
   if (activeSection === "company") {
     return (
       <AppLayout>
         <div className="max-w-3xl mx-auto">
-          <CompanyInfoSettings onBack={() => setActiveSection("main")} />
+          <CompanyInfoSettings onBack={goBack} />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // Render placeholder for other sections
+  if (activeSection !== "main" && currentSection) {
+    return (
+      <AppLayout>
+        <div className="max-w-3xl mx-auto">
+          <SettingsPlaceholder
+            title={currentSection.title}
+            description={currentSection.description}
+            icon={currentSection.icon}
+            onBack={goBack}
+          />
         </div>
       </AppLayout>
     );
@@ -109,7 +124,7 @@ const Settings = () => {
             {settingsSections.map((section, index) => (
               <motion.button
                 key={section.id}
-                onClick={() => handleSectionClick(section)}
+                onClick={() => setActiveSection(section.id)}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.15 + index * 0.05 }}
