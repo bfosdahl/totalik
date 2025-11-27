@@ -40,6 +40,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  refreshCompany: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -165,6 +166,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRoles([]);
   };
 
+  const refreshCompany = async () => {
+    if (!profile?.company_id) return;
+    
+    try {
+      const { data: companyData } = await supabase
+        .from("companies")
+        .select("id, name, org_number, logo_url, address, postal_code, city, phone, email")
+        .eq("id", profile.company_id)
+        .maybeSingle();
+
+      if (companyData) {
+        setCompany(companyData as CompanyInfo);
+      }
+    } catch (error) {
+      console.error("Error refreshing company:", error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -179,6 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signIn,
         signUp,
         signOut,
+        refreshCompany,
       }}
     >
       {children}
