@@ -10,7 +10,10 @@ import {
   User,
   ChevronDown,
   Calendar,
-  Loader2
+  Loader2,
+  Download,
+  FileText,
+  FileSpreadsheet
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -23,6 +26,13 @@ import { useDeviations, Deviation, NewDeviationInput } from "@/hooks/useDeviatio
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { exportDeviationsToPDF, exportDeviationsToExcel } from "@/utils/deviationExport";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const priorityConfig = {
   low: { label: "Lav", color: "bg-muted text-muted-foreground" },
@@ -184,10 +194,31 @@ const Deviations = () => {
               Registrer og følg opp avvik og hendelser
             </p>
           </div>
-          <Button className="gap-2" onClick={() => setIsDialogOpen(true)}>
-            <Plus className="w-4 h-4" />
-            Nytt avvik
-          </Button>
+          <div className="flex gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <Download className="w-4 h-4" />
+                  Eksporter
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => exportDeviationsToPDF(filteredDeviations)}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Last ned som PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => exportDeviationsToExcel(filteredDeviations)}>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Last ned som Excel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button className="gap-2" onClick={() => setIsDialogOpen(true)}>
+              <Plus className="w-4 h-4" />
+              Nytt avvik
+            </Button>
+          </div>
         </motion.div>
 
         {/* Stats */}
