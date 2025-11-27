@@ -234,8 +234,12 @@ serve(async (req) => {
           `,
         });
 
-        console.log("Email sent successfully:", emailResponse);
-        emailSent = true;
+        if (emailResponse.error) {
+          console.error("Email sending failed:", emailResponse.error);
+        } else {
+          console.log("Email sent successfully:", emailResponse);
+          emailSent = true;
+        }
       } catch (emailError) {
         console.error("Error sending email:", emailError);
       }

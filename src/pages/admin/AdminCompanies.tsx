@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import {
   Building2,
   Plus,
@@ -581,10 +582,10 @@ export default function AdminCompanies() {
                               {company.status === "active" ? "Deaktiver" : "Aktiver"}
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                              <a href={`/admin/users?company=${company.id}`}>
+                              <Link to={`/admin/users?company=${company.id}`}>
                                 <Users className="w-4 h-4 mr-2" />
                                 Se brukere
-                              </a>
+                              </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleInviteAdmin(company)}>
                               <UserPlus className="w-4 h-4 mr-2" />
