@@ -59,6 +59,44 @@ export type Database = {
         }
         Relationships: []
       }
+      company_goals: {
+        Row: {
+          company_id: string
+          created_at: string
+          goal_text: string
+          id: string
+          is_predefined: boolean | null
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          goal_text: string
+          id?: string
+          is_predefined?: boolean | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          goal_text?: string
+          id?: string
+          is_predefined?: boolean | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_goals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -104,6 +142,44 @@ export type Database = {
             foreignKeyName: "profiles_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      setup_wizard_progress: {
+        Row: {
+          company_id: string
+          completed_steps: string[] | null
+          created_at: string
+          current_step: number
+          id: string
+          is_completed: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          completed_steps?: string[] | null
+          created_at?: string
+          current_step?: number
+          id?: string
+          is_completed?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          completed_steps?: string[] | null
+          created_at?: string
+          current_step?: number
+          id?: string
+          is_completed?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "setup_wizard_progress_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
