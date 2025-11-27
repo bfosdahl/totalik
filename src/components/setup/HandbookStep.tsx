@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -15,12 +16,14 @@ import {
   XCircle,
   Loader2,
   ClipboardList,
-  X
+  Settings,
+  ImageIcon,
+  RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { LogoUpload } from "./LogoUpload";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GoalData {
   id: string;
@@ -113,15 +116,60 @@ export function HandbookStep({
   routines,
   companyInfo
 }: HandbookStepProps) {
+  const navigate = useNavigate();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(companyInfo?.logo_url || null);
+  const [currentCompanyInfo, setCurrentCompanyInfo] = useState(companyInfo);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
 
+  // Refresh company info to get latest logo
+  const refreshCompanyInfo = async () => {
+    if (!companyInfo?.id) return;
+    
+    setIsRefreshing(true);
+    try {
+      const { data } = await supabase
+        .from("companies")
+        .select("id, name, org_number, address, postal_code, city, phone, email, logo_url")
+        .eq("id", companyInfo.id)
+        .maybeSingle();
+      
+      if (data) {
+        setLogoUrl(data.logo_url);
+        setCurrentCompanyInfo({
+          id: data.id,
+          name: data.name,
+          org_number: data.org_number || undefined,
+          address: data.address || undefined,
+          postal_code: data.postal_code || undefined,
+          city: data.city || undefined,
+          phone: data.phone || undefined,
+          email: data.email || undefined,
+          logo_url: data.logo_url,
+        });
+        toast.success("Bedriftsinformasjon oppdatert");
+      }
+    } catch (error) {
+      console.error("Error refreshing company info:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Auto-refresh on mount to get latest data
+  useEffect(() => {
+    if (companyInfo?.id) {
+      refreshCompanyInfo();
+    }
+  }, [companyInfo?.id]);
+
   useEffect(() => {
     setLogoUrl(companyInfo?.logo_url || null);
-  }, [companyInfo?.logo_url]);
+    setCurrentCompanyInfo(companyInfo);
+  }, [companyInfo]);
 
   const completionStatus = {
     goals: goals.length > 0,
@@ -252,7 +300,7 @@ export function HandbookStep({
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(22);
       doc.setFont("helvetica", "bold");
-      const companyName = companyInfo?.name || "Bedriftsnavn";
+      const companyName = currentCompanyInfo?.name || "Bedriftsnavn";
       const nameY = logoBase64 ? 130 : 110;
       doc.text(companyName, pageWidth / 2, nameY, { align: "center" });
 
@@ -261,24 +309,24 @@ export function HandbookStep({
       doc.setFont("helvetica", "normal");
       let detailsY = logoBase64 ? 145 : 125;
       
-      if (companyInfo?.org_number) {
-        doc.text(`Org.nr: ${companyInfo.org_number}`, pageWidth / 2, detailsY, { align: "center" });
+      if (currentCompanyInfo?.org_number) {
+        doc.text(`Org.nr: ${currentCompanyInfo.org_number}`, pageWidth / 2, detailsY, { align: "center" });
         detailsY += 7;
       }
-      if (companyInfo?.address) {
-        doc.text(companyInfo.address, pageWidth / 2, detailsY, { align: "center" });
+      if (currentCompanyInfo?.address) {
+        doc.text(currentCompanyInfo.address, pageWidth / 2, detailsY, { align: "center" });
         detailsY += 7;
       }
-      if (companyInfo?.postal_code && companyInfo?.city) {
-        doc.text(`${companyInfo.postal_code} ${companyInfo.city}`, pageWidth / 2, detailsY, { align: "center" });
+      if (currentCompanyInfo?.postal_code && currentCompanyInfo?.city) {
+        doc.text(`${currentCompanyInfo.postal_code} ${currentCompanyInfo.city}`, pageWidth / 2, detailsY, { align: "center" });
         detailsY += 7;
       }
-      if (companyInfo?.phone) {
-        doc.text(`Tlf: ${companyInfo.phone}`, pageWidth / 2, detailsY, { align: "center" });
+      if (currentCompanyInfo?.phone) {
+        doc.text(`Tlf: ${currentCompanyInfo.phone}`, pageWidth / 2, detailsY, { align: "center" });
         detailsY += 7;
       }
-      if (companyInfo?.email) {
-        doc.text(`E-post: ${companyInfo.email}`, pageWidth / 2, detailsY, { align: "center" });
+      if (currentCompanyInfo?.email) {
+        doc.text(`E-post: ${currentCompanyInfo.email}`, pageWidth / 2, detailsY, { align: "center" });
       }
 
       // Date
@@ -779,15 +827,52 @@ export function HandbookStep({
         </CardContent>
       </Card>
 
-      {/* Logo Upload Section */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-medium">Bedriftslogo</h3>
-        <LogoUpload
-          currentLogoUrl={logoUrl}
-          companyId={companyInfo?.id || null}
-          onLogoChange={setLogoUrl}
-        />
-      </div>
+      {/* Logo Preview Section */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium">Bedriftslogo</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={refreshCompanyInfo}
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={`w-4 h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Oppdater
+            </Button>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/50 overflow-hidden">
+              {logoUrl ? (
+                <img
+                  src={`${logoUrl}?t=${Date.now()}`}
+                  alt="Bedriftslogo"
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <ImageIcon className="w-8 h-8 text-muted-foreground/50" />
+              )}
+            </div>
+            <div className="flex-1 space-y-2">
+              <p className="text-sm text-muted-foreground">
+                {logoUrl 
+                  ? "Logoen vil vises på forsiden av håndboken."
+                  : "Ingen logo lastet opp. Logoen vises på forsiden av håndboken."
+                }
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/settings")}
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                {logoUrl ? "Endre logo i innstillinger" : "Last opp logo i innstillinger"}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Separator />
 
