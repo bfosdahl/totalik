@@ -500,18 +500,35 @@ const Setup = () => {
       {/* Floating back to handbook button */}
       {fromPage === "handbook" && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
           className="fixed bottom-6 left-6 z-50"
         >
-          <Button
-            variant="outline"
-            onClick={() => navigate("/handbook")}
-            className="gap-2 shadow-lg bg-card hover:bg-secondary border-border"
+          <motion.div
+            animate={{ 
+              boxShadow: [
+                "0 0 0 0 hsl(var(--primary) / 0)",
+                "0 0 0 8px hsl(var(--primary) / 0.15)",
+                "0 0 0 0 hsl(var(--primary) / 0)"
+              ]
+            }}
+            transition={{ 
+              duration: 2,
+              repeat: Infinity,
+              repeatDelay: 1
+            }}
+            className="rounded-md"
           >
-            <BookOpen className="w-4 h-4" />
-            Tilbake til Handbok
-          </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/handbook")}
+              className="gap-2 shadow-lg bg-card hover:bg-secondary border-primary/30 hover:border-primary transition-colors"
+            >
+              <BookOpen className="w-4 h-4 text-primary" />
+              Tilbake til Handbok
+            </Button>
+          </motion.div>
         </motion.div>
       )}
     </AppLayout>
