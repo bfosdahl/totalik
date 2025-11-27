@@ -25,6 +25,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
+import { DeviationAttachments } from "./DeviationAttachments";
 
 interface Deviation {
   id: string;
@@ -200,6 +201,11 @@ export function DeviationDetailDialog({
               <p className="text-sm font-medium pl-6">{formatDate(deviation.createdAt)}</p>
             </div>
           </div>
+
+          <Separator />
+
+          {/* Attachments */}
+          <DeviationAttachments deviationId={deviation.id} />
 
           <Separator />
 
