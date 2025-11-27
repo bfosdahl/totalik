@@ -24,7 +24,7 @@ import { ActionPlanStep, ActionPlanStepRef } from "@/components/setup/ActionPlan
 import { RoutinesStep, RoutinesStepRef } from "@/components/setup/RoutinesStep";
 import { HandbookStep } from "@/components/setup/HandbookStep";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface SetupStep {
   id: string;
@@ -108,6 +108,7 @@ function NoCompanyMessage() {
 
 const Setup = () => {
   const { profile, company, isLoading: authLoading } = useAuth();
+  const [searchParams] = useSearchParams();
   const { 
     isLoading, 
     isSaving, 
@@ -137,13 +138,23 @@ const Setup = () => {
   const actionsRef = useRef<ActionPlanStepRef>(null);
   const routinesRef = useRef<RoutinesStepRef>(null);
 
-  // Sync current step with saved progress ONLY on initial load
+  // Sync current step with URL param or saved progress on initial load
   useEffect(() => {
-    if (!isLoading && !hasInitializedStep && progress.current_step !== undefined) {
-      setCurrentStep(progress.current_step);
+    if (!isLoading && !hasInitializedStep) {
+      const stepParam = searchParams.get("step");
+      if (stepParam !== null) {
+        const stepIndex = parseInt(stepParam, 10);
+        if (!isNaN(stepIndex) && stepIndex >= 0 && stepIndex < steps.length) {
+          setCurrentStep(stepIndex);
+        } else {
+          setCurrentStep(progress.current_step);
+        }
+      } else {
+        setCurrentStep(progress.current_step);
+      }
       setHasInitializedStep(true);
     }
-  }, [progress.current_step, isLoading, hasInitializedStep]);
+  }, [progress.current_step, isLoading, hasInitializedStep, searchParams]);
 
   // Get the current step's ref based on step id
   const getCurrentStepRef = () => {
