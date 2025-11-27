@@ -5,15 +5,17 @@ import {
   CheckCircle2, 
   Clock,
   FileCheck,
-  TrendingUp
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { ComplianceProgress } from "@/components/dashboard/ComplianceProgress";
 import { RecentDeviations } from "@/components/dashboard/RecentDeviations";
 import { QuickActions } from "@/components/dashboard/QuickActions";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
 
 const Index = () => {
+  const { compliancePercent, openDeviations, completedActions, dueSoon, isLoading } = useDashboardStats();
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -33,16 +35,15 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatsCard
             title="Samsvarsstatus"
-            value="78%"
+            value={isLoading ? "..." : `${compliancePercent}%`}
             description="Oppfyller krav"
             icon={Shield}
             variant="success"
-            trend={{ value: 5, isPositive: true }}
             delay={0}
           />
           <StatsCard
             title="Åpne avvik"
-            value={12}
+            value={isLoading ? "..." : openDeviations}
             description="Krever handling"
             icon={AlertTriangle}
             variant="warning"
@@ -50,16 +51,15 @@ const Index = () => {
           />
           <StatsCard
             title="Fullførte tiltak"
-            value={47}
-            description="Denne måneden"
+            value={isLoading ? "..." : completedActions}
+            description="Totalt"
             icon={CheckCircle2}
             variant="success"
-            trend={{ value: 12, isPositive: true }}
             delay={0.2}
           />
           <StatsCard
             title="Forfallende"
-            value={3}
+            value={isLoading ? "..." : dueSoon}
             description="Neste 7 dager"
             icon={Clock}
             variant="destructive"
