@@ -12,7 +12,8 @@ import {
   ListChecks,
   CheckCircle2,
   XCircle,
-  Loader2
+  Loader2,
+  ClipboardList
 } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
@@ -48,6 +49,22 @@ interface RiskAssessmentData {
   risks: RiskItem[];
 }
 
+interface ActionItem {
+  id: string;
+  risk_id: string | null;
+  risk_description: string;
+  action_description: string;
+  responsible: string;
+  deadline: string;
+  status: "ikke_startet" | "pågår" | "fullført";
+  priority: "lav" | "medium" | "høy" | "kritisk";
+  comments: string;
+}
+
+interface ActionPlanData {
+  actions: ActionItem[];
+}
+
 interface RoutineItem {
   id: string;
   routine_number: string;
@@ -81,6 +98,7 @@ interface HandbookStepProps {
   goals: GoalData[];
   organization: OrganizationData | null;
   riskAssessment: RiskAssessmentData | null;
+  actionPlan: ActionPlanData | null;
   routines: RoutinesData | null;
   companyInfo: CompanyInfo | null;
 }
@@ -89,6 +107,7 @@ export function HandbookStep({
   goals, 
   organization, 
   riskAssessment, 
+  actionPlan,
   routines,
   companyInfo
 }: HandbookStepProps) {
@@ -104,6 +123,7 @@ export function HandbookStep({
     goals: goals.length > 0,
     organization: organization && organization.custom_content.trim() !== "",
     riskAssessment: riskAssessment && riskAssessment.risks.length > 0,
+    actionPlan: actionPlan && actionPlan.actions.length > 0,
     routines: routines && routines.routines.length > 0,
   };
 
@@ -283,7 +303,8 @@ export function HandbookStep({
         { title: "1. Mål for internkontroll", page: 3 },
         { title: "2. Organisering og ansvar", page: 4 },
         { title: "3. Risikovurdering", page: 5 },
-        { title: "4. Rutiner og prosedyrer", page: 6 },
+        { title: "4. Handlingsplan", page: 6 },
+        { title: "5. Rutiner og prosedyrer", page: 7 },
       ];
 
       tocItems.forEach(item => {
@@ -429,11 +450,116 @@ export function HandbookStep({
         doc.setTextColor(0, 0, 0);
       }
 
-      // ============= SECTION 4: ROUTINES =============
+      // ============= SECTION 4: ACTION PLAN =============
       doc.addPage();
       yPos = margin;
 
-      addSectionHeader("4. Rutiner og prosedyrer");
+      addSectionHeader("4. Handlingsplan");
+
+      doc.setFontSize(11);
+      doc.text("Handlingsplanen viser tiltak som skal gjennomføres for å redusere identifiserte risikoer.", margin, yPos);
+      yPos += 10;
+
+      if (actionPlan && actionPlan.actions.length > 0) {
+        // Status summary
+        const statusCounts = {
+          ikke_startet: actionPlan.actions.filter(a => a.status === "ikke_startet").length,
+          pågår: actionPlan.actions.filter(a => a.status === "pågår").length,
+          fullført: actionPlan.actions.filter(a => a.status === "fullført").length,
+        };
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Statusoversikt:", margin, yPos);
+        yPos += 6;
+        doc.setFont("helvetica", "normal");
+        doc.text(`• Ikke startet: ${statusCounts.ikke_startet}`, margin + 5, yPos);
+        yPos += 5;
+        doc.text(`• Pågår: ${statusCounts.pågår}`, margin + 5, yPos);
+        yPos += 5;
+        doc.text(`• Fullført: ${statusCounts.fullført}`, margin + 5, yPos);
+        yPos += 10;
+
+        // Action plan table
+        const getStatusText = (status: string): string => {
+          switch (status) {
+            case "ikke_startet": return "Ikke startet";
+            case "pågår": return "Pågår";
+            case "fullført": return "Fullført";
+            default: return status;
+          }
+        };
+
+        const getPriorityText = (priority: string): string => {
+          switch (priority) {
+            case "lav": return "Lav";
+            case "medium": return "Medium";
+            case "høy": return "Høy";
+            case "kritisk": return "Kritisk";
+            default: return priority;
+          }
+        };
+
+        const getPriorityColor = (priority: string): [number, number, number] => {
+          switch (priority) {
+            case "lav": return [34, 197, 94];
+            case "medium": return [234, 179, 8];
+            case "høy": return [249, 115, 22];
+            case "kritisk": return [239, 68, 68];
+            default: return [0, 0, 0];
+          }
+        };
+
+        const actionTableData = actionPlan.actions.map(action => [
+          action.action_description.substring(0, 40) + (action.action_description.length > 40 ? "..." : ""),
+          action.responsible || "-",
+          action.deadline ? new Date(action.deadline).toLocaleDateString("nb-NO") : "-",
+          getPriorityText(action.priority),
+          getStatusText(action.status)
+        ]);
+
+        autoTable(doc, {
+          startY: yPos,
+          head: [["Tiltak", "Ansvarlig", "Frist", "Prioritet", "Status"]],
+          body: actionTableData,
+          theme: "striped",
+          headStyles: { 
+            fillColor: [59, 130, 246],
+            fontSize: 9,
+            fontStyle: "bold"
+          },
+          bodyStyles: { fontSize: 9 },
+          columnStyles: {
+            0: { cellWidth: 55 },
+            1: { cellWidth: 35 },
+            2: { cellWidth: 25, halign: "center" },
+            3: { cellWidth: 25, halign: "center" },
+            4: { cellWidth: 25, halign: "center" }
+          },
+          margin: { left: margin, right: margin },
+          didDrawCell: (data) => {
+            if (data.section === "body" && data.column.index === 3) {
+              const priority = actionPlan.actions[data.row.index].priority;
+              const color = getPriorityColor(priority);
+              doc.setTextColor(color[0], color[1], color[2]);
+            }
+          },
+          willDrawCell: () => {
+            doc.setTextColor(0, 0, 0);
+          }
+        });
+
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+      } else {
+        doc.setTextColor(150, 150, 150);
+        doc.text("Ingen handlinger er registrert.", margin, yPos);
+        doc.setTextColor(0, 0, 0);
+      }
+
+      // ============= SECTION 5: ROUTINES =============
+      doc.addPage();
+      yPos = margin;
+
+      addSectionHeader("5. Rutiner og prosedyrer");
 
       if (routines && routines.routines.length > 0) {
         routines.routines.forEach((routine, index) => {
@@ -557,7 +683,7 @@ export function HandbookStep({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
               {completionStatus.goals ? (
                 <CheckCircle2 className="w-5 h-5 text-success" />
@@ -605,6 +731,23 @@ export function HandbookStep({
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {riskAssessment?.risks.length || 0} registrert
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+              {completionStatus.actionPlan ? (
+                <CheckCircle2 className="w-5 h-5 text-success" />
+              ) : (
+                <XCircle className="w-5 h-5 text-destructive" />
+              )}
+              <div>
+                <div className="flex items-center gap-2">
+                  <ClipboardList className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Handlinger</span>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {actionPlan?.actions.length || 0} tiltak
                 </span>
               </div>
             </div>
@@ -658,6 +801,7 @@ export function HandbookStep({
               <li>• Mål for internkontroll</li>
               <li>• Organisering og ansvarsfordeling</li>
               <li>• Risikovurdering med tiltak</li>
+              <li>• Handlingsplan med status og frister</li>
               <li>• Rutiner og prosedyrer</li>
             </ul>
           </div>
