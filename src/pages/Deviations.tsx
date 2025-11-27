@@ -10,92 +10,19 @@ import {
   User,
   ChevronDown,
   Calendar,
+  Loader2
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { NewDeviationDialog, NewDeviation } from "@/components/deviations/NewDeviationDialog";
+import { NewDeviationDialog } from "@/components/deviations/NewDeviationDialog";
 import { DeviationDetailDialog } from "@/components/deviations/DeviationDetailDialog";
+import { useDeviations, Deviation, NewDeviationInput } from "@/hooks/useDeviations";
+import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-
-interface Deviation {
-  id: string;
-  title: string;
-  description: string;
-  category: "HMS" | "MAT" | "BYGG";
-  priority: "low" | "medium" | "high" | "critical";
-  status: "open" | "in-progress" | "resolved" | "closed";
-  assignee: string;
-  reporter: string;
-  createdAt: string;
-  dueDate: string;
-}
-
-const initialDeviations: Deviation[] = [
-  {
-    id: "DEV-001",
-    title: "Manglende verneutstyr i lager",
-    description: "Det mangler tilstrekkelig verneutstyr for ansatte som jobber i lagerområdet.",
-    category: "HMS",
-    priority: "high",
-    status: "open",
-    assignee: "Per Hansen",
-    reporter: "Kari Olsen",
-    createdAt: "2024-01-15",
-    dueDate: "2024-01-25",
-  },
-  {
-    id: "DEV-002",
-    title: "Temperaturavvik i kjølerom",
-    description: "Temperaturen i kjølerom 2 har vært for høy de siste dagene.",
-    category: "MAT",
-    priority: "critical",
-    status: "in-progress",
-    assignee: "Kari Olsen",
-    reporter: "Erik Berg",
-    createdAt: "2024-01-14",
-    dueDate: "2024-01-16",
-  },
-  {
-    id: "DEV-003",
-    title: "Utdatert førstehjelpsutstyr",
-    description: "Førstehjelpskoffertene på kontoret har utdatert innhold.",
-    category: "HMS",
-    priority: "medium",
-    status: "open",
-    assignee: "Erik Berg",
-    reporter: "Anna Nilsen",
-    createdAt: "2024-01-13",
-    dueDate: "2024-01-30",
-  },
-  {
-    id: "DEV-004",
-    title: "Manglende sikkerhetsskilt på byggeplass",
-    description: "Flere sikkerhetsskilt mangler ved inngangsområdet til byggeplassen.",
-    category: "BYGG",
-    priority: "high",
-    status: "resolved",
-    assignee: "Lars Johansen",
-    reporter: "Per Hansen",
-    createdAt: "2024-01-10",
-    dueDate: "2024-01-15",
-  },
-  {
-    id: "DEV-005",
-    title: "Defekt nøddusj",
-    description: "Nøddusjen i laboratoriet fungerer ikke som den skal.",
-    category: "HMS",
-    priority: "critical",
-    status: "in-progress",
-    assignee: "Anna Nilsen",
-    reporter: "Kari Olsen",
-    createdAt: "2024-01-12",
-    dueDate: "2024-01-14",
-  },
-];
 
 const priorityConfig = {
   low: { label: "Lav", color: "bg-muted text-muted-foreground" },
@@ -117,18 +44,33 @@ const categoryConfig = {
   BYGG: { color: "bg-info/10 text-info" },
 };
 
+// Helper type for the detail dialog
+interface DeviationForDialog {
+  id: string;
+  title: string;
+  description: string;
+  category: "HMS" | "MAT" | "BYGG";
+  priority: "low" | "medium" | "high" | "critical";
+  status: "open" | "in-progress" | "resolved" | "closed";
+  assignee: string;
+  reporter: string;
+  createdAt: string;
+  dueDate: string;
+}
+
 const Deviations = () => {
   const { toast } = useToast();
-  const [deviations, setDeviations] = useState<Deviation[]>(initialDeviations);
+  const { deviations, isLoading, createDeviation, updateDeviation } = useDeviations();
+  const { users, getUserDisplayName } = useCompanyUsers();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedDeviation, setSelectedDeviation] = useState<Deviation | null>(null);
+  const [selectedDeviation, setSelectedDeviation] = useState<DeviationForDialog | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const filteredDeviations = deviations.filter((dev) => {
     const matchesSearch = dev.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      dev.description.toLowerCase().includes(searchQuery.toLowerCase());
+      (dev.description || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = !filterStatus || dev.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
@@ -140,56 +82,83 @@ const Deviations = () => {
     resolved: deviations.filter((d) => d.status === "resolved").length,
   };
 
-  const handleNewDeviation = (newDeviation: NewDeviation) => {
-    const nextId = `DEV-${String(deviations.length + 1).padStart(3, "0")}`;
+  const handleNewDeviation = async (input: { 
+    title: string; 
+    description: string; 
+    category: "HMS" | "MAT" | "BYGG"; 
+    priority: "low" | "medium" | "high" | "critical"; 
+    assignee: string; 
+    dueDate: string; 
+  }) => {
+    // Find assignee user by name
+    const assigneeUser = users.find(u => getUserDisplayName(u) === input.assignee);
     
-    const deviation: Deviation = {
-      id: nextId,
-      title: newDeviation.title,
-      description: newDeviation.description,
-      category: newDeviation.category,
-      priority: newDeviation.priority,
-      status: "open",
-      assignee: newDeviation.assignee,
-      reporter: "Deg", // Current user
-      createdAt: format(new Date(), "yyyy-MM-dd"),
-      dueDate: newDeviation.dueDate,
+    const newDeviation: NewDeviationInput = {
+      title: input.title,
+      description: input.description,
+      category: input.category,
+      priority: input.priority,
+      assignee_id: assigneeUser?.id || null,
+      assignee_name: input.assignee,
+      due_date: input.dueDate,
     };
 
-    setDeviations([deviation, ...deviations]);
-    
-    toast({
-      title: "Avvik registrert",
-      description: `${deviation.id}: ${deviation.title}`,
-    });
+    await createDeviation(newDeviation);
   };
 
   const handleDeviationClick = (deviation: Deviation) => {
-    setSelectedDeviation(deviation);
+    // Convert to dialog format
+    const dialogDeviation: DeviationForDialog = {
+      id: deviation.id,
+      title: deviation.title,
+      description: deviation.description || "",
+      category: deviation.category,
+      priority: deviation.priority,
+      status: deviation.status,
+      assignee: deviation.assignee_name || "Ikke tildelt",
+      reporter: deviation.reporter_name,
+      createdAt: deviation.created_at.split("T")[0],
+      dueDate: deviation.due_date,
+    };
+    setSelectedDeviation(dialogDeviation);
     setIsDetailOpen(true);
   };
 
-  const handleStatusChange = (id: string, newStatus: Deviation["status"]) => {
-    setDeviations(deviations.map(dev => 
-      dev.id === id ? { ...dev, status: newStatus } : dev
-    ));
-    setSelectedDeviation(prev => prev ? { ...prev, status: newStatus } : null);
-    toast({
-      title: "Status oppdatert",
-      description: `Avvik ${id} er nå "${statusConfig[newStatus].label}"`,
-    });
+  const handleStatusChange = async (id: string, newStatus: DeviationForDialog["status"]) => {
+    const success = await updateDeviation(id, { status: newStatus });
+    if (success) {
+      setSelectedDeviation(prev => prev ? { ...prev, status: newStatus } : null);
+      toast({
+        title: "Status oppdatert",
+        description: `Avviket er nå "${statusConfig[newStatus].label}"`,
+      });
+    }
   };
 
-  const handleAssigneeChange = (id: string, assignee: string) => {
-    setDeviations(deviations.map(dev => 
-      dev.id === id ? { ...dev, assignee } : dev
-    ));
-    setSelectedDeviation(prev => prev ? { ...prev, assignee } : null);
-    toast({
-      title: "Ansvarlig oppdatert",
-      description: `Avvik ${id} er nå tildelt "${assignee}"`,
+  const handleAssigneeChange = async (id: string, assigneeName: string) => {
+    const assigneeUser = users.find(u => getUserDisplayName(u) === assigneeName);
+    const success = await updateDeviation(id, { 
+      assignee_id: assigneeUser?.id || null,
+      assignee_name: assigneeName 
     });
+    if (success) {
+      setSelectedDeviation(prev => prev ? { ...prev, assignee: assigneeName } : null);
+      toast({
+        title: "Ansvarlig oppdatert",
+        description: `Avviket er nå tildelt "${assigneeName}"`,
+      });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -298,8 +267,10 @@ const Deviations = () => {
               <div className="p-8 text-center text-muted-foreground">
                 <AlertTriangle className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>Ingen avvik funnet</p>
-                {searchQuery && (
+                {searchQuery ? (
                   <p className="text-sm mt-1">Prøv å endre søkekriteriene</p>
+                ) : (
+                  <p className="text-sm mt-1">Klikk "Nytt avvik" for å registrere det første avviket</p>
                 )}
               </div>
             ) : (
@@ -320,7 +291,7 @@ const Deviations = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <span className="text-xs font-mono text-muted-foreground">
-                          {deviation.id}
+                          {deviation.deviation_number}
                         </span>
                         <Badge className={categoryConfig[deviation.category].color}>
                           {deviation.category}
@@ -340,15 +311,15 @@ const Deviations = () => {
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <User className="w-3 h-3" />
-                          {deviation.assignee}
+                          {deviation.assignee_name || "Ikke tildelt"}
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          Frist: {deviation.dueDate}
+                          Frist: {deviation.due_date}
                         </span>
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          {deviation.createdAt}
+                          {deviation.created_at.split("T")[0]}
                         </span>
                       </div>
                     </div>

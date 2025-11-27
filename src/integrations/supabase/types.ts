@@ -231,6 +231,82 @@ export type Database = {
           },
         ]
       }
+      deviations: {
+        Row: {
+          assignee_id: string | null
+          assignee_name: string | null
+          category: string
+          company_id: string
+          created_at: string
+          description: string | null
+          deviation_number: string
+          due_date: string
+          id: string
+          priority: string
+          reporter_id: string | null
+          reporter_name: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          assignee_name?: string | null
+          category: string
+          company_id: string
+          created_at?: string
+          description?: string | null
+          deviation_number: string
+          due_date: string
+          id?: string
+          priority: string
+          reporter_id?: string | null
+          reporter_name: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignee_id?: string | null
+          assignee_name?: string | null
+          category?: string
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          deviation_number?: string
+          due_date?: string
+          id?: string
+          priority?: string
+          reporter_id?: string | null
+          reporter_name?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deviations_assignee_id_fkey"
+            columns: ["assignee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deviations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deviations_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
