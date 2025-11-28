@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Upload, Download, Trash2, Plus, FileImage, FileCheck, Shield, AlertTriangle, Package, FileSignature, Loader2 } from "lucide-react";
+import { FileText, Upload, Download, Trash2, Plus, FileImage, FileCheck, Shield, AlertTriangle, Package, FileSignature, Loader2, GraduationCap, FileStack } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useKsProjectDocuments, NewKsProjectDocumentInput, KsProjectDocument } from "@/hooks/useKsProjectDocuments";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -32,6 +33,8 @@ const CATEGORY_CONFIG = {
   endringsmeldinger: { label: "Endringsmeldinger", icon: AlertTriangle, color: "bg-orange-500" },
   fdv: { label: "FDV-dokumentasjon", icon: Package, color: "bg-cyan-500" },
   samsvar: { label: "Samsvarserklæringer", icon: FileSignature, color: "bg-emerald-500" },
+  kompetanse: { label: "Kompetanse/Kurs", icon: GraduationCap, color: "bg-indigo-500" },
+  maler: { label: "Maler for nedlastning", icon: FileStack, color: "bg-pink-500" },
 };
 
 interface KsProjectDocumentsProps {
@@ -39,7 +42,7 @@ interface KsProjectDocumentsProps {
 }
 
 export const KsProjectDocuments = ({ projectId }: KsProjectDocumentsProps) => {
-  const { documents, isLoading, uploadDocument, isUploading, deleteDocument, downloadDocument } = useKsProjectDocuments(projectId);
+  const { documents, isLoading, uploadDocument, isUploading, deleteDocument, downloadDocument, toggleIncludeInReport } = useKsProjectDocuments(projectId);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("tegninger");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -270,6 +273,7 @@ export const KsProjectDocuments = ({ projectId }: KsProjectDocumentsProps) => {
                         <TableHead>Versjon</TableHead>
                         <TableHead>Opplastet</TableHead>
                         <TableHead>Opplastet av</TableHead>
+                        <TableHead className="text-center">Inkluder i rapport</TableHead>
                         <TableHead className="text-right">Handlinger</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -306,6 +310,17 @@ export const KsProjectDocuments = ({ projectId }: KsProjectDocumentsProps) => {
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {doc.uploaded_by_name}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Checkbox
+                              checked={doc.include_in_report}
+                              onCheckedChange={(checked) => 
+                                toggleIncludeInReport({ 
+                                  documentId: doc.id, 
+                                  include: checked === true 
+                                })
+                              }
+                            />
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">

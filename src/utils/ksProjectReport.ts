@@ -221,24 +221,34 @@ export const generateProjectReport = (data: ProjectData, options: IncludeOptions
   if (options.documents && data.documents && data.documents.length > 0) {
     addSectionHeader("3. DOKUMENTER");
 
-    const docData = data.documents.map(doc => [
-      doc.document_name || "-",
-      doc.category || "-",
-      doc.document_number || "-",
-      `v${doc.version || 1}`,
-      doc.created_at ? format(new Date(doc.created_at), "dd.MM.yyyy", { locale: nb }) : "-",
-    ]);
+    // Filter to only included documents
+    const includedDocs = data.documents.filter(d => d.include_in_report);
+    
+    if (includedDocs.length > 0) {
+      const docData = includedDocs.map(docItem => [
+        docItem.document_name || "-",
+        docItem.category || "-",
+        docItem.document_number || "-",
+        `v${docItem.version || 1}`,
+        docItem.created_at ? format(new Date(docItem.created_at), "dd.MM.yyyy", { locale: nb }) : "-",
+      ]);
 
-    autoTable(doc, {
-      startY: yPosition,
-      head: [["Dokumentnavn", "Kategori", "Dok.nr", "Versjon", "Dato"]],
-      body: docData,
-      theme: "grid",
-      headStyles: { fillColor: [71, 85, 105] },
-      margin: { left: 20, right: 20 },
-    });
+      autoTable(doc, {
+        startY: yPosition,
+        head: [["Dokumentnavn", "Kategori", "Dok.nr", "Versjon", "Dato"]],
+        body: docData,
+        theme: "grid",
+        headStyles: { fillColor: [71, 85, 105] },
+        margin: { left: 20, right: 20 },
+      });
 
-    yPosition = (doc as any).lastAutoTable.finalY + 10;
+      yPosition = (doc as any).lastAutoTable.finalY + 10;
+    } else {
+      doc.setFont("helvetica", "normal");
+      doc.text("Ingen dokumenter merket for inkludering i rapport", 20, yPosition);
+      yPosition += 10;
+    }
+    
     doc.addPage();
     yPosition = 20;
   }

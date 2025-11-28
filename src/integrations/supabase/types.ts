@@ -1496,6 +1496,7 @@ export type Database = {
           file_size: number | null
           file_type: string | null
           id: string
+          include_in_report: boolean | null
           is_latest_version: boolean
           project_id: string
           supersedes_document_id: string | null
@@ -1516,6 +1517,7 @@ export type Database = {
           file_size?: number | null
           file_type?: string | null
           id?: string
+          include_in_report?: boolean | null
           is_latest_version?: boolean
           project_id: string
           supersedes_document_id?: string | null
@@ -1536,6 +1538,7 @@ export type Database = {
           file_size?: number | null
           file_type?: string | null
           id?: string
+          include_in_report?: boolean | null
           is_latest_version?: boolean
           project_id?: string
           supersedes_document_id?: string | null
