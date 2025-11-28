@@ -36,12 +36,15 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [savingColor, setSavingColor] = useState(false);
+  
+  const savedColor = company?.accent_color || "blue";
+  const [previewColor, setPreviewColor] = useState<string | null>(null);
   const [customHex, setCustomHex] = useState(() => {
-    const current = company?.accent_color || "blue";
-    return isCustomColor(current) ? current : "#3b82f6";
+    return isCustomColor(savedColor) ? savedColor : "#3b82f6";
   });
 
-  const currentAccentColor = company?.accent_color || "blue";
+  const isPreviewMode = previewColor !== null && previewColor !== savedColor;
+  const displayedColor = previewColor ?? savedColor;
 
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -116,27 +119,42 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
     }
   };
 
-  const applyColor = (color: string) => {
+  const applyColorToUI = (color: string) => {
     const colors = getColorValues(color);
     const root = document.documentElement;
     root.style.setProperty("--primary", colors.primary);
     root.style.setProperty("--primary-foreground", colors.primaryForeground);
   };
 
-  const handleAccentColorChange = async (color: string) => {
-    if (!company?.id) return;
+  const previewColorHandler = (color: string) => {
+    setPreviewColor(color);
+    applyColorToUI(color);
+  };
+
+  const cancelPreview = () => {
+    setPreviewColor(null);
+    applyColorToUI(savedColor);
+    if (!isCustomColor(savedColor)) {
+      setCustomHex("#3b82f6");
+    } else {
+      setCustomHex(savedColor);
+    }
+  };
+
+  const saveColor = async () => {
+    if (!company?.id || !previewColor) return;
 
     setSavingColor(true);
     try {
       const { error } = await supabase
         .from("companies")
-        .update({ accent_color: color })
+        .update({ accent_color: previewColor })
         .eq("id", company.id);
 
       if (error) throw error;
 
-      applyColor(color);
-      toast.success("Aksentfarge oppdatert!");
+      setPreviewColor(null);
+      toast.success("Aksentfarge lagret!");
       refreshCompany?.();
     } catch (error: any) {
       console.error("Error updating accent color:", error);
@@ -149,15 +167,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
   const handleCustomHexChange = (hex: string) => {
     setCustomHex(hex);
     if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
-      applyColor(hex);
-    }
-  };
-
-  const saveCustomColor = () => {
-    if (/^#[0-9A-Fa-f]{6}$/.test(customHex)) {
-      handleAccentColorChange(customHex);
-    } else {
-      toast.error("Ugyldig HEX-farge. Bruk format #RRGGBB");
+      previewColorHandler(hex);
     }
   };
 
@@ -333,31 +343,46 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
         transition={{ delay: 0.3 }}
         className="bg-card rounded-xl border border-border shadow-card p-6"
       >
-        <h3 className="text-lg font-semibold mb-4">Aksentfarge</h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Velg hovedfargen som brukes i grensesnittet
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold">Aksentfarge</h3>
+            <p className="text-sm text-muted-foreground">
+              Velg hovedfargen som brukes i grensesnittet
+            </p>
+          </div>
+          {isPreviewMode && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30">
+              <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Forhåndsvisning</span>
+            </div>
+          )}
+        </div>
 
         <div className="flex flex-wrap gap-3 mb-6">
-          {accentColorOptions.map((accent) => (
-            <button
-              key={accent.value}
-              disabled={savingColor}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
-                currentAccentColor === accent.value
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/50"
-              }`}
-              onClick={() => handleAccentColorChange(accent.value)}
-            >
-              <div className={`w-5 h-5 rounded-full ${accent.tailwindClass} flex items-center justify-center`}>
-                {currentAccentColor === accent.value && (
-                  <Check className="w-3 h-3 text-white" />
+          {accentColorOptions.map((accent) => {
+            const isSelected = displayedColor === accent.value;
+            const isSaved = savedColor === accent.value;
+            return (
+              <button
+                key={accent.value}
+                disabled={savingColor}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                  isSelected
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50"
+                }`}
+                onClick={() => previewColorHandler(accent.value)}
+              >
+                <div className={`w-5 h-5 rounded-full ${accent.tailwindClass} flex items-center justify-center`}>
+                  {isSelected && <Check className="w-3 h-3 text-white" />}
+                </div>
+                <span className="text-sm font-medium">{accent.name}</span>
+                {isSaved && !isSelected && (
+                  <span className="text-xs text-muted-foreground">(lagret)</span>
                 )}
-              </div>
-              <span className="text-sm font-medium">{accent.name}</span>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
 
         {/* Custom HEX Color */}
@@ -382,27 +407,46 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
               onChange={(e) => handleCustomHexChange(e.target.value)}
               className="w-10 h-10 rounded cursor-pointer border-0 p-0"
             />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={saveCustomColor}
-              disabled={savingColor || !/^#[0-9A-Fa-f]{6}$/.test(customHex)}
-            >
-              Bruk farge
-            </Button>
           </div>
-          {isCustomColor(currentAccentColor) && (
+          {isCustomColor(savedColor) && !isPreviewMode && (
             <p className="text-xs text-muted-foreground mt-2">
-              Aktiv egendefinert farge: {currentAccentColor}
+              Aktiv egendefinert farge: {savedColor}
             </p>
           )}
         </div>
 
-        {savingColor && (
-          <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Lagrer...
-          </div>
+        {/* Preview Actions */}
+        {isPreviewMode && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 mt-6 pt-4 border-t border-border"
+          >
+            <Button
+              onClick={saveColor}
+              disabled={savingColor}
+              className="flex-1 sm:flex-none"
+            >
+              {savingColor ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Lagrer...
+                </>
+              ) : (
+                "Lagre farge"
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={cancelPreview}
+              disabled={savingColor}
+            >
+              Avbryt
+            </Button>
+            <span className="text-sm text-muted-foreground hidden sm:inline">
+              Forhåndsviser: <span className="font-medium">{displayedColor}</span>
+            </span>
+          </motion.div>
         )}
       </motion.div>
     </div>
