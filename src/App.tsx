@@ -18,6 +18,10 @@ import AdminCompanies from "./pages/admin/AdminCompanies";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminHmsRequests from "./pages/admin/AdminHmsRequests";
 import SetupSystemAdmin from "./pages/admin/SetupSystemAdmin";
+import KsProjects from "./pages/ks/KsProjects";
+import KsProjectDetail from "./pages/ks/KsProjectDetail";
+import KsChecklistDetail from "./pages/ks/KsChecklistDetail";
+import KsTemplates from "./pages/ks/KsTemplates";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +46,12 @@ const App = () => (
             <Route path="/audits" element={<ProtectedRoute><Audits /></ProtectedRoute>} />
             <Route path="/handbook" element={<ProtectedRoute><Handbook /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            
+            {/* KS Bygg routes */}
+            <Route path="/ks/projects" element={<ProtectedRoute><KsProjects /></ProtectedRoute>} />
+            <Route path="/ks/projects/:id" element={<ProtectedRoute><KsProjectDetail /></ProtectedRoute>} />
+            <Route path="/ks/checklists/:id" element={<ProtectedRoute><KsChecklistDetail /></ProtectedRoute>} />
+            <Route path="/ks/templates" element={<ProtectedRoute><KsTemplates /></ProtectedRoute>} />
             
             {/* Admin routes - require system_admin role */}
             <Route path="/admin" element={<ProtectedRoute requireSystemAdmin><AdminDashboard /></ProtectedRoute>} />
