@@ -2,7 +2,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   FileCheck, 
-  Plus, 
   Calendar,
   CheckCircle2,
   Clock,
@@ -21,7 +20,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useAudits, type Audit } from "@/hooks/useAudits";
-import { NewAuditDialog } from "@/components/audits/NewAuditDialog";
 import AnnualHmsRevisionForm from "@/components/audits/AnnualHmsRevisionForm";
 import ElKontrollForm from "@/components/audits/ElKontrollForm";
 import FysiskeArbeidsforholdForm from "@/components/audits/FysiskeArbeidsforholdForm";
@@ -63,8 +61,7 @@ const statusConfig = {
 };
 
 const Audits = () => {
-  const { audits, isLoading, createAudit, updateAudit } = useAudits();
-  const [isNewAuditOpen, setIsNewAuditOpen] = useState(false);
+  const { audits, isLoading } = useAudits();
   const [activeTab, setActiveTab] = useState("list");
 
   const formatDate = (dateString: string) => {
@@ -215,14 +212,8 @@ const Audits = () => {
               })}
             </motion.div>
 
-            {/* Planned revisions header with new button */}
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Planlagte revisjoner</h2>
-              <Button className="gap-2" onClick={() => setIsNewAuditOpen(true)}>
-                <Plus className="w-4 h-4" />
-                Ny revisjon
-              </Button>
-            </div>
+            {/* Planned revisions header */}
+            <h2 className="text-lg font-semibold">Planlagte revisjoner</h2>
 
             {/* Audits list */}
             <motion.div
@@ -235,13 +226,9 @@ const Audits = () => {
                 <div className="bg-card rounded-xl border border-border p-8 text-center">
                   <FileCheck className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                   <h3 className="text-lg font-medium mb-2">Ingen planlagte revisjoner</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Du kan opprette planlagte revisjoner for å holde oversikt, eller gå direkte til et revisjonsskjema ovenfor.
+                  <p className="text-muted-foreground">
+                    Bruk knappene ovenfor for å gå direkte til et revisjonsskjema.
                   </p>
-                  <Button onClick={() => setIsNewAuditOpen(true)} className="gap-2">
-                    <Plus className="w-4 h-4" />
-                    Opprett planlagt revisjon
-                  </Button>
                 </div>
               ) : (
                 <div className="grid gap-4">
@@ -349,12 +336,6 @@ const Audits = () => {
           </TabsContent>
         </Tabs>
       </div>
-
-      <NewAuditDialog 
-        open={isNewAuditOpen} 
-        onOpenChange={setIsNewAuditOpen}
-        onSubmit={createAudit}
-      />
     </AppLayout>
   );
 };
