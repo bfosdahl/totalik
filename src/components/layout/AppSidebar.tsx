@@ -60,7 +60,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const { hasModule } = useCompanyModules();
   
   // Check if KS Bygg module is active for this company
-  const hasKsBygg = hasModule("KS_BYGG");
+  const hasKsBygg = hasModule("IK_BYGG");
 
   // Get company name from context
   const companyName = company?.name || "Ingen bedrift";

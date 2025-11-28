@@ -38,7 +38,7 @@ const MODULE_DEFINITIONS = [
     description: "Internkontroll for alkoholhåndtering",
   },
   {
-    type: "KS_BYGG",
+    type: "IK_BYGG",
     name: "KS Bygg",
     description: "Kvalitetssikring for byggprosjekter",
   },
