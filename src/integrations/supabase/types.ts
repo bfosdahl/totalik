@@ -236,6 +236,65 @@ export type Database = {
           },
         ]
       }
+      company_notification_settings: {
+        Row: {
+          company_id: string
+          course_expiry_days_before: number[]
+          course_expiry_enabled: boolean
+          created_at: string
+          deviation_assignment_enabled: boolean
+          deviation_deadline_days_before: number[]
+          deviation_deadline_reminder_enabled: boolean
+          hms_card_expiry_days_before: number[]
+          hms_card_expiry_enabled: boolean
+          id: string
+          notify_company_admin: boolean
+          notify_employee: boolean
+          notify_hms_responsible: boolean
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          course_expiry_days_before?: number[]
+          course_expiry_enabled?: boolean
+          created_at?: string
+          deviation_assignment_enabled?: boolean
+          deviation_deadline_days_before?: number[]
+          deviation_deadline_reminder_enabled?: boolean
+          hms_card_expiry_days_before?: number[]
+          hms_card_expiry_enabled?: boolean
+          id?: string
+          notify_company_admin?: boolean
+          notify_employee?: boolean
+          notify_hms_responsible?: boolean
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          course_expiry_days_before?: number[]
+          course_expiry_enabled?: boolean
+          created_at?: string
+          deviation_assignment_enabled?: boolean
+          deviation_deadline_days_before?: number[]
+          deviation_deadline_reminder_enabled?: boolean
+          hms_card_expiry_days_before?: number[]
+          hms_card_expiry_enabled?: boolean
+          id?: string
+          notify_company_admin?: boolean
+          notify_employee?: boolean
+          notify_hms_responsible?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_notification_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_organization: {
         Row: {
           company_id: string
