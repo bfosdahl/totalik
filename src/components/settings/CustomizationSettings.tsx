@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Palette, ArrowLeft, Moon, Sun, Monitor, Upload, Loader2, Trash2, Check } from "lucide-react";
+import { Palette, ArrowLeft, Moon, Sun, Monitor, Upload, Loader2, Trash2, Check, Star, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AccentColorKey, accentColors, getColorValues, isCustomColor } from "@/hooks/useAccentColor";
+import { useFavoriteColors } from "@/hooks/useFavoriteColors";
 
 interface CustomizationSettingsProps {
   onBack: () => void;
@@ -33,9 +34,12 @@ const accentColorOptions: { name: string; value: AccentColorKey; tailwindClass: 
 export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
   const { theme, setTheme } = useTheme();
   const { company, refreshCompany } = useAuth();
+  const { favorites, addFavorite, removeFavorite } = useFavoriteColors();
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [savingColor, setSavingColor] = useState(false);
+  const [favoriteName, setFavoriteName] = useState("");
+  const [showFavoriteInput, setShowFavoriteInput] = useState(false);
   
   const savedColor = company?.accent_color || "blue";
   const [previewColor, setPreviewColor] = useState<string | null>(null);
@@ -169,6 +173,32 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
     if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
       previewColorHandler(hex);
     }
+  };
+
+  const handleSaveFavorite = async () => {
+    const colorToSave = displayedColor;
+    const name = favoriteName.trim().slice(0, 50) || undefined;
+    const success = await addFavorite(colorToSave, name);
+    if (success) {
+      setFavoriteName("");
+      setShowFavoriteInput(false);
+    }
+  };
+
+  const getColorDisplay = (color: string) => {
+    if (isCustomColor(color)) {
+      return color;
+    }
+    const preset = accentColorOptions.find(o => o.value === color);
+    return preset?.name || color;
+  };
+
+  const getColorStyle = (color: string): React.CSSProperties => {
+    if (isCustomColor(color)) {
+      return { backgroundColor: color };
+    }
+    const colors = getColorValues(color);
+    return { backgroundColor: `hsl(${colors.primary})` };
   };
 
   return (
@@ -420,12 +450,11 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 mt-6 pt-4 border-t border-border"
+            className="flex flex-wrap items-center gap-3 mt-6 pt-4 border-t border-border"
           >
             <Button
               onClick={saveColor}
               disabled={savingColor}
-              className="flex-1 sm:flex-none"
             >
               {savingColor ? (
                 <>
@@ -443,12 +472,108 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
             >
               Avbryt
             </Button>
-            <span className="text-sm text-muted-foreground hidden sm:inline">
-              Forhåndsviser: <span className="font-medium">{displayedColor}</span>
-            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowFavoriteInput(true)}
+              className="text-amber-600 hover:text-amber-700"
+            >
+              <Star className="w-4 h-4 mr-1" />
+              Lagre som favoritt
+            </Button>
+          </motion.div>
+        )}
+
+        {/* Save as Favorite Input */}
+        {showFavoriteInput && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 mt-4 pt-4 border-t border-border"
+          >
+            <div 
+              className="w-8 h-8 rounded-lg border border-border flex-shrink-0"
+              style={getColorStyle(displayedColor)}
+            />
+            <Input
+              type="text"
+              value={favoriteName}
+              onChange={(e) => setFavoriteName(e.target.value)}
+              placeholder="Navn på fargen (valgfritt)"
+              className="flex-1 max-w-xs"
+              maxLength={50}
+            />
+            <Button size="sm" onClick={handleSaveFavorite}>
+              <Plus className="w-4 h-4 mr-1" />
+              Lagre
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              onClick={() => {
+                setShowFavoriteInput(false);
+                setFavoriteName("");
+              }}
+            >
+              Avbryt
+            </Button>
           </motion.div>
         )}
       </motion.div>
+
+      {/* Favorite Colors Section */}
+      {favorites.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-card rounded-xl border border-border shadow-card p-6"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Star className="w-5 h-5 text-amber-500" />
+            <h3 className="text-lg font-semibold">Favorittfarger</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Dine lagrede farger for rask tilgang
+          </p>
+
+          <div className="flex flex-wrap gap-3">
+            {favorites.map((fav) => {
+              const isSelected = displayedColor === fav.color;
+              return (
+                <div
+                  key={fav.id}
+                  className={`group relative flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all cursor-pointer ${
+                    isSelected
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                  onClick={() => previewColorHandler(fav.color)}
+                >
+                  <div 
+                    className="w-5 h-5 rounded-full flex items-center justify-center"
+                    style={getColorStyle(fav.color)}
+                  >
+                    {isSelected && <Check className="w-3 h-3 text-white" />}
+                  </div>
+                  <span className="text-sm font-medium">
+                    {fav.name || getColorDisplay(fav.color)}
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFavorite(fav.id);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 p-1 rounded hover:bg-destructive/10"
+                  >
+                    <Trash2 className="w-3 h-3 text-destructive" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }

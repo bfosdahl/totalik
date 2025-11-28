@@ -163,6 +163,38 @@ export type Database = {
           },
         ]
       }
+      company_favorite_colors: {
+        Row: {
+          color: string
+          company_id: string
+          created_at: string
+          id: string
+          name: string | null
+        }
+        Insert: {
+          color: string
+          company_id: string
+          created_at?: string
+          id?: string
+          name?: string | null
+        }
+        Update: {
+          color?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_favorite_colors_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_goals: {
         Row: {
           company_id: string
