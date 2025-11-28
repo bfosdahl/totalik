@@ -39,6 +39,7 @@ const ksByggItems = [
   { label: "Maler", path: "/ks/templates" },
   { label: "SJA", path: "/ks/sja" },
   { label: "Avvik", path: "/ks/avvik" },
+  { label: "Prosjektperm PDF", path: "/ks/report" },
 ];
 
 interface AppSidebarProps {
