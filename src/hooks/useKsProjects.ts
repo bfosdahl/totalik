@@ -269,15 +269,23 @@ export function useKsProjects() {
 }
 
 export function useKsTemplates() {
+  const { profile } = useAuth();
   const [templates, setTemplates] = useState<KsTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchTemplates = async () => {
+      if (!profile?.company_id) {
+        setIsLoading(false);
+        return;
+      }
+      
       try {
+        // Fetch both system default templates and company-specific templates
         const { data, error } = await supabase
           .from('ks_templates')
           .select('*')
+          .or(`is_system_default.eq.true,company_id.eq.${profile.company_id}`)
           .order('phase', { ascending: true });
 
         if (error) throw error;
@@ -291,7 +299,7 @@ export function useKsTemplates() {
     };
 
     fetchTemplates();
-  }, []);
+  }, [profile?.company_id]);
 
   return { templates, isLoading };
 }

@@ -127,6 +127,45 @@ export default function KsSja() {
     },
   });
 
+  // Update SJA mutation
+  const updateSjaMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: typeof formData }) => {
+      const { data: result, error } = await supabase
+        .from("ks_sja")
+        .update({
+          project_id: data.project_id || null,
+          sja_nr: data.sja_nr,
+          title: data.title,
+          aktivitet: data.aktivitet,
+          identifisert_risiko: data.identifisert_risiko,
+          risikoreduserende_tiltak: data.risikoreduserende_tiltak,
+          utfort_sted: data.utfort_sted || null,
+          utfort_dato: data.utfort_dato || null,
+          utfort_navn: data.utfort_navn || null,
+          tiltak_sted: data.tiltak_sted || null,
+          tiltak_dato: data.tiltak_dato || null,
+          tiltak_navn: data.tiltak_navn || null,
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ks-sja"] });
+      toast.success("SJA oppdatert");
+      setShowNewDialog(false);
+      setSelectedSja(null);
+      resetForm();
+    },
+    onError: (error) => {
+      console.error("Error updating SJA:", error);
+      toast.error("Kunne ikke oppdatere SJA");
+    },
+  });
+
   // Delete SJA mutation
   const deleteSjaMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -165,8 +204,12 @@ export default function KsSja() {
     });
   };
 
-  const handleCreate = () => {
-    createSjaMutation.mutate(formData);
+  const handleSubmit = () => {
+    if (selectedSja) {
+      updateSjaMutation.mutate({ id: selectedSja.id, data: formData });
+    } else {
+      createSjaMutation.mutate(formData);
+    }
   };
 
   const handleEdit = (sja: KsSja) => {
@@ -442,10 +485,10 @@ export default function KsSja() {
                 Avbryt
               </Button>
               <Button 
-                onClick={handleCreate}
-                disabled={!formData.sja_nr || !formData.title || !formData.aktivitet || !formData.identifisert_risiko || !formData.risikoreduserende_tiltak || createSjaMutation.isPending}
+                onClick={handleSubmit}
+                disabled={!formData.sja_nr || !formData.title || !formData.aktivitet || !formData.identifisert_risiko || !formData.risikoreduserende_tiltak || createSjaMutation.isPending || updateSjaMutation.isPending}
               >
-                {selectedSja ? 'Lagre' : 'Opprett SJA'}
+                {createSjaMutation.isPending || updateSjaMutation.isPending ? 'Lagrer...' : selectedSja ? 'Lagre endringer' : 'Opprett SJA'}
               </Button>
             </DialogFooter>
           </DialogContent>
