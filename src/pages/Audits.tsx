@@ -11,7 +11,9 @@ import {
   Loader2,
   ClipboardCheck,
   ListChecks,
-  Zap
+  Zap,
+  Building2,
+  Settings
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -22,6 +24,8 @@ import { useAudits, type Audit } from "@/hooks/useAudits";
 import { NewAuditDialog } from "@/components/audits/NewAuditDialog";
 import AnnualHmsRevisionForm from "@/components/audits/AnnualHmsRevisionForm";
 import ElKontrollForm from "@/components/audits/ElKontrollForm";
+import FysiskeArbeidsforholdForm from "@/components/audits/FysiskeArbeidsforholdForm";
+import DagligDriftForm from "@/components/audits/DagligDriftForm";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -96,7 +100,7 @@ const Audits = () => {
 
         {/* Tabs for different revision types */}
         <Tabs defaultValue="list" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:inline-grid">
+          <TabsList className="grid w-full grid-cols-5 sm:w-auto sm:inline-grid">
             <TabsTrigger value="list" className="gap-2">
               <ListChecks className="w-4 h-4" />
               <span className="hidden sm:inline">Revisjoner</span>
@@ -105,12 +109,22 @@ const Audits = () => {
             <TabsTrigger value="annual" className="gap-2">
               <ClipboardCheck className="w-4 h-4" />
               <span className="hidden sm:inline">Årlig HMS</span>
-              <span className="sm:hidden">Årlig</span>
+              <span className="sm:hidden">HMS</span>
             </TabsTrigger>
             <TabsTrigger value="elkontroll" className="gap-2">
               <Zap className="w-4 h-4" />
               <span className="hidden sm:inline">El-Kontroll</span>
               <span className="sm:hidden">El</span>
+            </TabsTrigger>
+            <TabsTrigger value="fysiske" className="gap-2">
+              <Building2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Fysiske forhold</span>
+              <span className="sm:hidden">Fysisk</span>
+            </TabsTrigger>
+            <TabsTrigger value="drift" className="gap-2">
+              <Settings className="w-4 h-4" />
+              <span className="hidden sm:inline">Daglig drift</span>
+              <span className="sm:hidden">Drift</span>
             </TabsTrigger>
           </TabsList>
 
@@ -267,6 +281,16 @@ const Audits = () => {
           {/* El Kontroll Tab */}
           <TabsContent value="elkontroll">
             <ElKontrollForm />
+          </TabsContent>
+
+          {/* Fysiske arbeidsforhold Tab */}
+          <TabsContent value="fysiske">
+            <FysiskeArbeidsforholdForm />
+          </TabsContent>
+
+          {/* Daglig drift Tab */}
+          <TabsContent value="drift">
+            <DagligDriftForm />
           </TabsContent>
         </Tabs>
       </div>
