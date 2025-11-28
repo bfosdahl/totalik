@@ -16,12 +16,14 @@ import {
   EyeOff,
   Copy,
   Check,
+  Upload,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { BulkUserImportDialog } from "@/components/admin/BulkUserImportDialog";
 import {
   Dialog,
   DialogContent,
@@ -57,6 +59,7 @@ export default function AdminUsers() {
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [isBulkImportDialogOpen, setIsBulkImportDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole>("user");
   const [showPassword, setShowPassword] = useState(false);
@@ -326,10 +329,16 @@ export default function AdminUsers() {
               Administrer brukere og roller
             </p>
           </div>
-          <Button onClick={() => setIsCreateUserDialogOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Ny bruker
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setIsBulkImportDialogOpen(true)}>
+              <Upload className="w-4 h-4 mr-2" />
+              Importer
+            </Button>
+            <Button onClick={() => setIsCreateUserDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Ny bruker
+            </Button>
+          </div>
         </motion.div>
 
         {/* Search and filters */}
@@ -870,6 +879,17 @@ export default function AdminUsers() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Bulk import dialog */}
+        <BulkUserImportDialog
+          open={isBulkImportDialogOpen}
+          onOpenChange={setIsBulkImportDialogOpen}
+          companies={companies || []}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+            queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
+          }}
+        />
       </div>
     </AdminLayout>
   );
