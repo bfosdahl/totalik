@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   FileText,
   ShieldCheck,
+  ExternalLink,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ import { useKsChecklists, useKsTemplates, KsProject } from "@/hooks/useKsProject
 import { useKsHmsPlan } from "@/hooks/useKsHmsPlan";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   planlagt: { label: "Planlagt", variant: "secondary" },
@@ -55,10 +57,44 @@ export default function KsProjectDetail() {
   const [showNewChecklistDialog, setShowNewChecklistDialog] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [checklistStats, setChecklistStats] = useState({ total: 0, completed: 0, avvik: 0 });
+  const [selectedSja, setSelectedSja] = useState<any>(null);
+  const [selectedDeviation, setSelectedDeviation] = useState<any>(null);
 
   const { checklists, isLoading: checklistsLoading, createChecklist } = useKsChecklists(id || null);
   const { templates } = useKsTemplates();
   const { progress: hmsProgress, goals, risks, actions, sjaList } = useKsHmsPlan(id || null);
+
+  // Fetch project SJAs
+  const { data: projectSjas = [] } = useQuery({
+    queryKey: ["project-sjas", id],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data, error } = await supabase
+        .from("ks_sja")
+        .select("*")
+        .eq("project_id", id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  // Fetch project deviations
+  const { data: projectDeviations = [] } = useQuery({
+    queryKey: ["project-deviations", id],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data, error } = await supabase
+        .from("deviations")
+        .select("*")
+        .eq("project_id", id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -283,6 +319,109 @@ export default function KsProjectDetail() {
           )}
         </Card>
 
+        {/* SJA Section */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Sikker Jobb Analyse (SJA)</CardTitle>
+              <CardDescription>{projectSjas.length} SJA registrert for dette prosjektet</CardDescription>
+            </div>
+            <Button variant="outline" onClick={() => navigate('/ks/sja')}>
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Gå til SJA-register
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {projectSjas.length === 0 ? (
+              <div className="text-center py-8">
+                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-2">Ingen SJA registrert for dette prosjektet</p>
+                <p className="text-sm text-muted-foreground mb-4">Gå til SJA-registeret for å opprette ny SJA</p>
+                <Button variant="outline" onClick={() => navigate('/ks/sja')}>
+                  Gå til SJA-register
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {projectSjas.map((sja: any) => (
+                  <div
+                    key={sja.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                    onClick={() => setSelectedSja(sja)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">SJA {sja.sja_nr}</Badge>
+                          <p className="font-medium">{sja.title}</p>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {sja.utfort_dato && new Date(sja.utfort_dato).toLocaleDateString("nb-NO")}
+                          {sja.utfort_navn && ` • ${sja.utfort_navn}`}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Deviations Section */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Avvik</CardTitle>
+              <CardDescription>{projectDeviations.length} avvik registrert for dette prosjektet</CardDescription>
+            </div>
+            <Button variant="outline" onClick={() => navigate('/ks/avvik')}>
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Gå til avviksregister
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {projectDeviations.length === 0 ? (
+              <div className="text-center py-8">
+                <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-2">Ingen avvik registrert for dette prosjektet</p>
+                <p className="text-sm text-muted-foreground mb-4">Gå til avviksregisteret for å registrere avvik</p>
+                <Button variant="outline" onClick={() => navigate('/ks/avvik')}>
+                  Gå til avviksregister
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {projectDeviations.map((deviation: any) => (
+                  <div
+                    key={deviation.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                    onClick={() => setSelectedDeviation(deviation)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <AlertTriangle className="h-5 w-5 text-destructive" />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">{deviation.deviation_number}</Badge>
+                          <p className="font-medium">{deviation.title}</p>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {deviation.category} • {deviation.priority}
+                          {deviation.due_date && ` • Frist: ${new Date(deviation.due_date).toLocaleDateString("nb-NO")}`}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant={deviation.status === 'open' ? 'destructive' : deviation.status === 'in_progress' ? 'default' : 'secondary'}>
+                      {deviation.status === 'open' ? 'Åpen' : deviation.status === 'in_progress' ? 'Under arbeid' : 'Lukket'}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Checklists Section */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -371,6 +510,159 @@ export default function KsProjectDetail() {
             <Button onClick={handleCreateChecklist} disabled={!selectedTemplateId}>
               Start sjekkliste
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* SJA Detail Dialog */}
+      <Dialog open={!!selectedSja} onOpenChange={() => setSelectedSja(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>SJA {selectedSja?.sja_nr} - {selectedSja?.title}</DialogTitle>
+            <DialogDescription>Sikker Jobb Analyse detaljer</DialogDescription>
+          </DialogHeader>
+          {selectedSja && (
+            <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-3 text-sm">
+                {selectedSja.utfort_sted && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Sted</p>
+                    <p>{selectedSja.utfort_sted}</p>
+                  </div>
+                )}
+                {selectedSja.utfort_dato && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Dato</p>
+                    <p>{new Date(selectedSja.utfort_dato).toLocaleDateString("nb-NO")}</p>
+                  </div>
+                )}
+                {selectedSja.utfort_navn && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Utført av</p>
+                    <p>{selectedSja.utfort_navn}</p>
+                  </div>
+                )}
+              </div>
+              
+              {selectedSja.aktivitet && (
+                <div>
+                  <p className="font-medium mb-1">1. Aktivitet - Hva skal gjøres?</p>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedSja.aktivitet}</p>
+                </div>
+              )}
+              
+              {selectedSja.identifisert_risiko && (
+                <div>
+                  <p className="font-medium mb-1">2. Identifisert risiko - Hva kan gå galt?</p>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedSja.identifisert_risiko}</p>
+                </div>
+              )}
+              
+              {selectedSja.risikoreduserende_tiltak && (
+                <div>
+                  <p className="font-medium mb-1">3. Risikoreduserende tiltak</p>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedSja.risikoreduserende_tiltak}</p>
+                </div>
+              )}
+
+              {(selectedSja.tiltak_sted || selectedSja.tiltak_dato || selectedSja.tiltak_navn) && (
+                <div>
+                  <p className="font-medium mb-2">Tiltak gjennomført</p>
+                  <div className="grid gap-4 md:grid-cols-3 text-sm">
+                    {selectedSja.tiltak_sted && (
+                      <div>
+                        <p className="font-medium text-muted-foreground">Sted</p>
+                        <p>{selectedSja.tiltak_sted}</p>
+                      </div>
+                    )}
+                    {selectedSja.tiltak_dato && (
+                      <div>
+                        <p className="font-medium text-muted-foreground">Dato</p>
+                        <p>{new Date(selectedSja.tiltak_dato).toLocaleDateString("nb-NO")}</p>
+                      </div>
+                    )}
+                    {selectedSja.tiltak_navn && (
+                      <div>
+                        <p className="font-medium text-muted-foreground">Ansvarlig</p>
+                        <p>{selectedSja.tiltak_navn}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => navigate('/ks/sja')}>
+              Gå til SJA-register
+            </Button>
+            <Button onClick={() => setSelectedSja(null)}>Lukk</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Deviation Detail Dialog */}
+      <Dialog open={!!selectedDeviation} onOpenChange={() => setSelectedDeviation(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedDeviation?.deviation_number} - {selectedDeviation?.title}</DialogTitle>
+            <DialogDescription>Avviksdetaljer</DialogDescription>
+          </DialogHeader>
+          {selectedDeviation && (
+            <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2 text-sm">
+                <div>
+                  <p className="font-medium text-muted-foreground">Kategori</p>
+                  <p>{selectedDeviation.category}</p>
+                </div>
+                <div>
+                  <p className="font-medium text-muted-foreground">Prioritet</p>
+                  <p>{selectedDeviation.priority}</p>
+                </div>
+                <div>
+                  <p className="font-medium text-muted-foreground">Status</p>
+                  <Badge variant={selectedDeviation.status === 'open' ? 'destructive' : selectedDeviation.status === 'in_progress' ? 'default' : 'secondary'}>
+                    {selectedDeviation.status === 'open' ? 'Åpen' : selectedDeviation.status === 'in_progress' ? 'Under arbeid' : 'Lukket'}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="font-medium text-muted-foreground">Frist</p>
+                  <p>{selectedDeviation.due_date && new Date(selectedDeviation.due_date).toLocaleDateString("nb-NO")}</p>
+                </div>
+              </div>
+
+              {selectedDeviation.description && (
+                <div>
+                  <p className="font-medium mb-1">Beskrivelse</p>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedDeviation.description}</p>
+                </div>
+              )}
+
+              {selectedDeviation.assignee_name && (
+                <div>
+                  <p className="font-medium text-muted-foreground">Ansvarlig</p>
+                  <p>{selectedDeviation.assignee_name}</p>
+                </div>
+              )}
+
+              {selectedDeviation.reporter_name && (
+                <div>
+                  <p className="font-medium text-muted-foreground">Rapportert av</p>
+                  <p>{selectedDeviation.reporter_name}</p>
+                </div>
+              )}
+
+              <div>
+                <p className="font-medium text-muted-foreground">Opprettet</p>
+                <p className="text-sm">{new Date(selectedDeviation.created_at).toLocaleDateString("nb-NO")}</p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => navigate('/ks/avvik')}>
+              Gå til avviksregister
+            </Button>
+            <Button onClick={() => setSelectedDeviation(null)}>Lukk</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
