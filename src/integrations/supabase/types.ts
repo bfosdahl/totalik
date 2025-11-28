@@ -2292,6 +2292,7 @@ export type Database = {
       ks_template_items: {
         Row: {
           category: string | null
+          company_id: string | null
           created_at: string | null
           help_text: string | null
           id: string
@@ -2301,6 +2302,7 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          company_id?: string | null
           created_at?: string | null
           help_text?: string | null
           id?: string
@@ -2310,6 +2312,7 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          company_id?: string | null
           created_at?: string | null
           help_text?: string | null
           id?: string
@@ -2318,6 +2321,13 @@ export type Database = {
           text?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "ks_template_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ks_template_items_template_id_fkey"
             columns: ["template_id"]
@@ -2329,6 +2339,7 @@ export type Database = {
       }
       ks_templates: {
         Row: {
+          company_id: string | null
           created_at: string | null
           description: string | null
           id: string
@@ -2339,6 +2350,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          company_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -2349,6 +2361,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          company_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -2358,7 +2371,15 @@ export type Database = {
           trade?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ks_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

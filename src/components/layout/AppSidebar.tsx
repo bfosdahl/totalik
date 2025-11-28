@@ -39,6 +39,10 @@ const ksByggItems = [
   { label: "Maler", path: "/ks/templates" },
   { label: "SJA", path: "/ks/sja" },
   { label: "Avvik", path: "/ks/avvik" },
+  { label: "Vernerunder", path: "/ks/vernerunder" },
+  { label: "Farlige forhold", path: "/ks/farlige-fohold" },
+  { label: "Tiltakslogg", path: "/ks/tiltakslogg" },
+  { label: "Sjekkliste Generator", path: "/ks/checklist-generator" },
   { label: "Prosjektperm PDF", path: "/ks/report" },
 ];
 
