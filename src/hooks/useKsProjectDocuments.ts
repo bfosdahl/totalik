@@ -9,7 +9,7 @@ export interface KsProjectDocument {
   company_id: string;
   document_name: string;
   document_number: string | null;
-  category: 'tegninger' | 'beskrivelser' | 'sha_plan' | 'bilder' | 'endringsmeldinger' | 'fdv' | 'samsvar';
+  category: 'tegninger' | 'beskrivelser' | 'sha_plan' | 'bilder' | 'endringsmeldinger' | 'fdv' | 'samsvar' | 'kompetanse' | 'maler';
   version: number;
   is_latest_version: boolean;
   supersedes_document_id: string | null;
@@ -22,6 +22,7 @@ export interface KsProjectDocument {
   uploaded_by_name: string;
   created_at: string;
   updated_at: string;
+  include_in_report: boolean;
 }
 
 export interface NewKsProjectDocumentInput {
@@ -185,6 +186,24 @@ export const useKsProjectDocuments = (projectId: string) => {
     }
   };
 
+  const toggleIncludeInReport = useMutation({
+    mutationFn: async ({ documentId, include }: { documentId: string; include: boolean }) => {
+      const { error } = await supabase
+        .from('ks_project_documents')
+        .update({ include_in_report: include })
+        .eq('id', documentId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ks-project-documents', projectId] });
+    },
+    onError: (error) => {
+      console.error('Toggle error:', error);
+      toast.error("Kunne ikke oppdatere dokument");
+    },
+  });
+
   return {
     documents: documents || [],
     isLoading,
@@ -193,5 +212,6 @@ export const useKsProjectDocuments = (projectId: string) => {
     deleteDocument: deleteMutation.mutate,
     isDeleting: deleteMutation.isPending,
     downloadDocument,
+    toggleIncludeInReport: toggleIncludeInReport.mutate,
   };
 };
