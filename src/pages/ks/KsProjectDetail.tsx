@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { KsProjectDocuments } from "@/components/ks/KsProjectDocuments";
 import {
   Dialog,
   DialogContent,
@@ -318,6 +319,9 @@ export default function KsProjectDetail() {
             </CardContent>
           )}
         </Card>
+
+        {/* Documents Section */}
+        <KsProjectDocuments projectId={id!} />
 
         {/* SJA Section */}
         <Card>

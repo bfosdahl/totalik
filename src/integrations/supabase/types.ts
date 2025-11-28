@@ -1265,6 +1265,98 @@ export type Database = {
           },
         ]
       }
+      ks_project_documents: {
+        Row: {
+          category: string
+          company_id: string
+          created_at: string
+          description: string | null
+          document_name: string
+          document_number: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          is_latest_version: boolean
+          project_id: string
+          supersedes_document_id: string | null
+          updated_at: string
+          uploaded_by: string | null
+          uploaded_by_name: string
+          version: number
+        }
+        Insert: {
+          category: string
+          company_id: string
+          created_at?: string
+          description?: string | null
+          document_name: string
+          document_number?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_latest_version?: boolean
+          project_id: string
+          supersedes_document_id?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name: string
+          version?: number
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          document_name?: string
+          document_number?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_latest_version?: boolean
+          project_id?: string
+          supersedes_document_id?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_documents_supersedes_document_id_fkey"
+            columns: ["supersedes_document_id"]
+            isOneToOne: false
+            referencedRelation: "ks_project_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_project_goals: {
         Row: {
           created_at: string | null
