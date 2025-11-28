@@ -1,11 +1,14 @@
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { toast } from 'sonner';
+import { useAuditFormResponses, type AuditFormResponse } from '@/hooks/useAuditFormResponses';
+import type { Json } from '@/integrations/supabase/types';
+import SavedFormsList from './SavedFormsList';
 import { 
   MessageSquare, 
   Users, 
@@ -17,7 +20,11 @@ import {
   AlertCircle,
   UserCheck,
   Briefcase,
-  FileQuestion
+  FileQuestion,
+  Save,
+  Loader2,
+  CheckCircle2,
+  ArrowLeft
 } from 'lucide-react';
 
 type YesNoNa = 'yes' | 'no' | 'na' | '';
@@ -171,8 +178,13 @@ function initializeChecklistAnswers(): ChecklistAnswers {
 }
 
 const DagligDriftForm = () => {
-  const [formData, setFormData] = useState<FormData>({
-    companyName: '',
+  const { company } = useAuth();
+  const { responses, saveFormResponse, deleteFormResponse, isSaving } = useAuditFormResponses();
+  const [existingId, setExistingId] = useState<string | undefined>();
+  const [showForm, setShowForm] = useState(false);
+
+  const getInitialFormData = (): FormData => ({
+    companyName: company?.name || '',
     date: new Date().toISOString().split('T')[0],
     participants: '',
     auditor: '',
@@ -181,6 +193,40 @@ const DagligDriftForm = () => {
     auditorSignature: '',
     managerSignature: '',
   });
+
+  const [formData, setFormData] = useState<FormData>(getInitialFormData());
+  const formTypeResponses = responses.filter(r => r.form_type === "daglig_drift");
+
+  const handleCreateNew = () => {
+    setFormData(getInitialFormData());
+    setExistingId(undefined);
+    setShowForm(true);
+  };
+
+  const handleSelectResponse = (response: AuditFormResponse) => {
+    if (response.form_data) {
+      const savedData = response.form_data as unknown as FormData;
+      setFormData({
+        ...getInitialFormData(),
+        ...savedData,
+        companyName: savedData.companyName || company?.name || "",
+      });
+    }
+    setExistingId(response.id);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteFormResponse(id);
+    if (existingId === id) {
+      setExistingId(undefined);
+      setShowForm(false);
+    }
+  };
+
+  const handleBackToList = () => {
+    setShowForm(false);
+  };
 
   const updateChecklistAnswer = (sectionId: string, questionId: string, field: 'answer' | 'comment', value: string) => {
     setFormData(prev => ({
@@ -198,10 +244,38 @@ const DagligDriftForm = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSaveDraft = async () => {
+    await saveFormResponse(
+      "daglig_drift",
+      formData as unknown as Json,
+      {
+        revision_date: formData.date,
+        participants: formData.participants,
+        auditor_name: formData.auditor,
+        manager_name: formData.managerSignature,
+      },
+      "draft",
+      existingId
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form data:', formData);
-    toast.success('Kartlegging av daglig drift lagret');
+    const result = await saveFormResponse(
+      "daglig_drift",
+      formData as unknown as Json,
+      {
+        revision_date: formData.date,
+        participants: formData.participants,
+        auditor_name: formData.auditor,
+        manager_name: formData.managerSignature,
+      },
+      "completed",
+      existingId
+    );
+    if (result) {
+      setExistingId(result.id);
+    }
   };
 
   const renderChecklistSection = (section: typeof sections[0]) => {
@@ -268,16 +342,35 @@ const DagligDriftForm = () => {
     );
   };
 
+  if (!showForm) {
+    return (
+      <SavedFormsList
+        responses={formTypeResponses}
+        onDelete={handleDelete}
+        onSelect={handleSelectResponse}
+        onCreateNew={handleCreateNew}
+        isDeleting={isSaving}
+        title="Daglig drift"
+      />
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Basic Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Kartlegging av daglig drift</CardTitle>
-          <CardDescription>
-            Kartlegging av den daglige driften i bedriften
-          </CardDescription>
-        </CardHeader>
+    <div className="space-y-6">
+      <Button variant="ghost" onClick={handleBackToList} className="gap-2 mb-4">
+        <ArrowLeft className="w-4 h-4" />
+        Tilbake til oversikt
+      </Button>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Kartlegging av daglig drift</CardTitle>
+            <CardDescription>
+              Kartlegging av den daglige driften i bedriften
+            </CardDescription>
+          </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="companyName">Bedriftsnavn</Label>
@@ -343,12 +436,19 @@ const DagligDriftForm = () => {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button type="submit" size="lg">
-          Lagre kartlegging
-        </Button>
-      </div>
-    </form>
+        {/* Submit */}
+        <div className="flex flex-col sm:flex-row justify-end gap-3">
+          <Button type="button" variant="outline" size="lg" className="gap-2" onClick={handleSaveDraft} disabled={isSaving}>
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Lagre utkast
+          </Button>
+          <Button type="submit" size="lg" className="gap-2" disabled={isSaving}>
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+            Fullfør og lagre i handbok
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 };
 

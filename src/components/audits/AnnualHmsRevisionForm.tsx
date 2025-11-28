@@ -5,13 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Save, FileText, Loader2, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { useAuditFormResponses } from "@/hooks/useAuditFormResponses";
+import { Save, FileText, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
+import { useAuditFormResponses, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import type { Json } from "@/integrations/supabase/types";
 import ResponsiveChecklist from "./ResponsiveChecklist";
 import ResponsiveActionTable from "./ResponsiveActionTable";
+import SavedFormsList from "./SavedFormsList";
 
 type YesNoNa = "yes" | "no" | "na" | "";
 
@@ -112,10 +111,11 @@ const initializeChecklistAnswers = (items: ChecklistRow[]): ChecklistAnswers => 
 
 const AnnualHmsRevisionForm: React.FC = () => {
   const { company } = useAuth();
-  const { saveFormResponse, getDraftByFormType, getLatestByFormType, isSaving } = useAuditFormResponses();
+  const { responses, saveFormResponse, deleteFormResponse, isSaving } = useAuditFormResponses();
   const [existingId, setExistingId] = useState<string | undefined>();
+  const [showForm, setShowForm] = useState(false);
   
-  const [formData, setFormData] = useState<FormData>({
+  const getInitialFormData = (): FormData => ({
     companyName: company?.name || "",
     revisionDate: new Date().toISOString().split('T')[0],
     revisionYear: new Date().getFullYear().toString(),
@@ -136,19 +136,40 @@ const AnnualHmsRevisionForm: React.FC = () => {
     managerSignature: ""
   });
 
-  // Load existing draft on mount
-  useEffect(() => {
-    const draft = getDraftByFormType("annual_hms");
-    if (draft && draft.form_data) {
-      const savedData = draft.form_data as unknown as FormData;
-      setFormData(prev => ({
-        ...prev,
+  const [formData, setFormData] = useState<FormData>(getInitialFormData());
+
+  const formTypeResponses = responses.filter(r => r.form_type === "annual_hms");
+
+  const handleCreateNew = () => {
+    setFormData(getInitialFormData());
+    setExistingId(undefined);
+    setShowForm(true);
+  };
+
+  const handleSelectResponse = (response: AuditFormResponse) => {
+    if (response.form_data) {
+      const savedData = response.form_data as unknown as FormData;
+      setFormData({
+        ...getInitialFormData(),
         ...savedData,
         companyName: savedData.companyName || company?.name || "",
-      }));
-      setExistingId(draft.id);
+      });
     }
-  }, [getDraftByFormType, company?.name]);
+    setExistingId(response.id);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteFormResponse(id);
+    if (existingId === id) {
+      setExistingId(undefined);
+      setShowForm(false);
+    }
+  };
+
+  const handleBackToList = () => {
+    setShowForm(false);
+  };
 
   const updateChecklistAnswer = (
     section: keyof Pick<FormData, 'goalsSection' | 'organizationSection' | 'riskSection' | 'routinesSection' | 'trainingSection' | 'deviationsSection' | 'inspectionsSection' | 'workEnvSection'>,
@@ -241,10 +262,29 @@ const AnnualHmsRevisionForm: React.FC = () => {
     updateChecklistAnswer(section, itemId, 'comment', value);
   };
 
+  if (!showForm) {
+    return (
+      <SavedFormsList
+        responses={formTypeResponses}
+        onDelete={handleDelete}
+        onSelect={handleSelectResponse}
+        onCreateNew={handleCreateNew}
+        isDeleting={isSaving}
+        title="Årlig HMS-revisjon"
+      />
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Basic information */}
-      <Card>
+    <div className="space-y-6">
+      <Button variant="ghost" onClick={handleBackToList} className="gap-2 mb-4">
+        <ArrowLeft className="w-4 h-4" />
+        Tilbake til oversikt
+      </Button>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic information */}
+        <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="w-5 h-5" />
@@ -431,18 +471,19 @@ const AnnualHmsRevisionForm: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Submit */}
-      <div className="flex flex-col sm:flex-row justify-end gap-3">
-        <Button type="button" variant="outline" size="lg" className="gap-2" onClick={handleSaveDraft} disabled={isSaving}>
-          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          Lagre utkast
-        </Button>
-        <Button type="submit" size="lg" className="gap-2" disabled={isSaving}>
-          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-          Fullfør og lagre i handbok
-        </Button>
-      </div>
-    </form>
+        {/* Submit */}
+        <div className="flex flex-col sm:flex-row justify-end gap-3">
+          <Button type="button" variant="outline" size="lg" className="gap-2" onClick={handleSaveDraft} disabled={isSaving}>
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Lagre utkast
+          </Button>
+          <Button type="submit" size="lg" className="gap-2" disabled={isSaving}>
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+            Fullfør og lagre i handbok
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 };
 

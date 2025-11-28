@@ -12,9 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Save, Zap, AlertTriangle } from "lucide-react";
-import { toast } from "sonner";
+import { Save, Zap, AlertTriangle, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
 import ResponsiveActionTable from "./ResponsiveActionTable";
+import SavedFormsList from "./SavedFormsList";
+import { useAuditFormResponses, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
+import type { Json } from "@/integrations/supabase/types";
 
 type DeviationType = "hms" | "quality" | "environment" | "other";
 type Severity = "low" | "medium" | "high" | "critical";
@@ -50,8 +52,11 @@ interface FormData {
 
 const ElKontrollForm: React.FC = () => {
   const { company } = useAuth();
+  const { responses, saveFormResponse, deleteFormResponse, isSaving } = useAuditFormResponses();
+  const [existingId, setExistingId] = useState<string | undefined>();
+  const [showForm, setShowForm] = useState(false);
 
-  const [formData, setFormData] = useState<FormData>({
+  const getInitialFormData = (): FormData => ({
     companyName: company?.name || "",
     reportDate: new Date().toISOString().split("T")[0],
     discoveredAt: "",
@@ -71,6 +76,40 @@ const ElKontrollForm: React.FC = () => {
     handlerName: "",
     closedDate: "",
   });
+
+  const [formData, setFormData] = useState<FormData>(getInitialFormData());
+  const formTypeResponses = responses.filter(r => r.form_type === "elkontroll");
+
+  const handleCreateNew = () => {
+    setFormData(getInitialFormData());
+    setExistingId(undefined);
+    setShowForm(true);
+  };
+
+  const handleSelectResponse = (response: AuditFormResponse) => {
+    if (response.form_data) {
+      const savedData = response.form_data as unknown as FormData;
+      setFormData({
+        ...getInitialFormData(),
+        ...savedData,
+        companyName: savedData.companyName || company?.name || "",
+      });
+    }
+    setExistingId(response.id);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteFormResponse(id);
+    if (existingId === id) {
+      setExistingId(undefined);
+      setShowForm(false);
+    }
+  };
+
+  const handleBackToList = () => {
+    setShowForm(false);
+  };
 
   const updateField = <K extends keyof FormData>(field: K, value: FormData[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -108,10 +147,34 @@ const ElKontrollForm: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSaveDraft = async () => {
+    await saveFormResponse(
+      "elkontroll",
+      formData as unknown as Json,
+      {
+        revision_date: formData.reportDate,
+        auditor_name: formData.reportedBy,
+      },
+      "draft",
+      existingId
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("El Kontroll form data:", formData);
-    toast.success("Avviksrapport lagret");
+    const result = await saveFormResponse(
+      "elkontroll",
+      formData as unknown as Json,
+      {
+        revision_date: formData.reportDate,
+        auditor_name: formData.reportedBy,
+      },
+      "completed",
+      existingId
+    );
+    if (result) {
+      setExistingId(result.id);
+    }
   };
 
   const severityConfig = {
@@ -127,16 +190,35 @@ const ElKontrollForm: React.FC = () => {
     closed: { label: "Lukket", color: "text-success" },
   };
 
+  if (!showForm) {
+    return (
+      <SavedFormsList
+        responses={formTypeResponses}
+        onDelete={handleDelete}
+        onSelect={handleSelectResponse}
+        onCreateNew={handleCreateNew}
+        isDeleting={isSaving}
+        title="El-Kontroll"
+      />
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Basic information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="w-5 h-5" />
-            Grunninformasjon
-          </CardTitle>
-        </CardHeader>
+    <div className="space-y-6">
+      <Button variant="ghost" onClick={handleBackToList} className="gap-2 mb-4">
+        <ArrowLeft className="w-4 h-4" />
+        Tilbake til oversikt
+      </Button>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              Grunninformasjon
+            </CardTitle>
+          </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="companyName">Virksomhet</Label>
@@ -394,14 +476,19 @@ const ElKontrollForm: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Submit */}
-      <div className="flex justify-end">
-        <Button type="submit" size="lg" className="gap-2">
-          <Save className="w-4 h-4" />
-          Lagre avviksrapport
-        </Button>
-      </div>
-    </form>
+        {/* Submit */}
+        <div className="flex flex-col sm:flex-row justify-end gap-3">
+          <Button type="button" variant="outline" size="lg" className="gap-2" onClick={handleSaveDraft} disabled={isSaving}>
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Lagre utkast
+          </Button>
+          <Button type="submit" size="lg" className="gap-2" disabled={isSaving}>
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+            Fullfør og lagre i handbok
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 };
 
