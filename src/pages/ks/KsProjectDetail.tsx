@@ -21,6 +21,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { KsProjectDocuments } from "@/components/ks/KsProjectDocuments";
+import { KsProjectSubcontractors } from "@/components/ks/KsProjectSubcontractors";
 import {
   Dialog,
   DialogContent,
@@ -322,6 +323,9 @@ export default function KsProjectDetail() {
 
         {/* Documents Section */}
         <KsProjectDocuments projectId={id!} />
+
+        {/* Subcontractors Section */}
+        <KsProjectSubcontractors projectId={id!} />
 
         {/* SJA Section */}
         <Card>

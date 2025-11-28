@@ -1167,6 +1167,7 @@ export type Database = {
           incident_time: string | null
           incident_type: string | null
           involved_persons: string | null
+          is_subcontractor_deviation: boolean | null
           kategori: string
           notify_arbeidstilsynet: boolean | null
           notify_insurance: boolean | null
@@ -1180,6 +1181,7 @@ export type Database = {
           root_cause_analysis: string | null
           severity: string | null
           status: string
+          subcontractor_id: string | null
           tittel: string
           type: string
           updated_at: string
@@ -1199,6 +1201,7 @@ export type Database = {
           incident_time?: string | null
           incident_type?: string | null
           involved_persons?: string | null
+          is_subcontractor_deviation?: boolean | null
           kategori: string
           notify_arbeidstilsynet?: boolean | null
           notify_insurance?: boolean | null
@@ -1212,6 +1215,7 @@ export type Database = {
           root_cause_analysis?: string | null
           severity?: string | null
           status?: string
+          subcontractor_id?: string | null
           tittel: string
           type?: string
           updated_at?: string
@@ -1231,6 +1235,7 @@ export type Database = {
           incident_time?: string | null
           incident_type?: string | null
           involved_persons?: string | null
+          is_subcontractor_deviation?: boolean | null
           kategori?: string
           notify_arbeidstilsynet?: boolean | null
           notify_insurance?: boolean | null
@@ -1244,6 +1249,7 @@ export type Database = {
           root_cause_analysis?: string | null
           severity?: string | null
           status?: string
+          subcontractor_id?: string | null
           tittel?: string
           type?: string
           updated_at?: string
@@ -1261,6 +1267,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_deviations_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "ks_project_subcontractors"
             referencedColumns: ["id"]
           },
         ]
@@ -1554,6 +1567,79 @@ export type Database = {
           },
         ]
       }
+      ks_project_subcontractors: {
+        Row: {
+          company_id: string
+          contact_email: string
+          contact_person: string
+          contact_phone: string | null
+          created_at: string
+          id: string
+          org_number: string | null
+          project_id: string
+          status: string
+          subcontractor_name: string
+          updated_at: string
+          user_id: string | null
+          work_description: string | null
+          work_scope: string
+        }
+        Insert: {
+          company_id: string
+          contact_email: string
+          contact_person: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          org_number?: string | null
+          project_id: string
+          status?: string
+          subcontractor_name: string
+          updated_at?: string
+          user_id?: string | null
+          work_description?: string | null
+          work_scope: string
+        }
+        Update: {
+          company_id?: string
+          contact_email?: string
+          contact_person?: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          org_number?: string | null
+          project_id?: string
+          status?: string
+          subcontractor_name?: string
+          updated_at?: string
+          user_id?: string | null
+          work_description?: string | null
+          work_scope?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_subcontractors_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_subcontractors_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_subcontractors_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_projects: {
         Row: {
           address: string | null
@@ -1779,6 +1865,237 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_subcontractor_competence: {
+        Row: {
+          company_id: string
+          created_at: string
+          document_name: string
+          document_number: string | null
+          document_type: string
+          expiry_date: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          issue_date: string | null
+          notes: string | null
+          subcontractor_id: string
+          updated_at: string
+          uploaded_by: string | null
+          uploaded_by_name: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          document_name: string
+          document_number?: string | null
+          document_type: string
+          expiry_date?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          issue_date?: string | null
+          notes?: string | null
+          subcontractor_id: string
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          document_name?: string
+          document_number?: string | null
+          document_type?: string
+          expiry_date?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          issue_date?: string | null
+          notes?: string | null
+          subcontractor_id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_subcontractor_competence_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_subcontractor_competence_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "ks_project_subcontractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_subcontractor_competence_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_subcontractor_contracts: {
+        Row: {
+          company_id: string
+          contract_date: string | null
+          contract_name: string
+          contract_number: string | null
+          contract_value: number | null
+          created_at: string
+          description: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          subcontractor_id: string
+          updated_at: string
+          uploaded_by: string | null
+          uploaded_by_name: string
+        }
+        Insert: {
+          company_id: string
+          contract_date?: string | null
+          contract_name: string
+          contract_number?: string | null
+          contract_value?: number | null
+          created_at?: string
+          description?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          subcontractor_id: string
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name: string
+        }
+        Update: {
+          company_id?: string
+          contract_date?: string | null
+          contract_name?: string
+          contract_number?: string | null
+          contract_value?: number | null
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          subcontractor_id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_subcontractor_contracts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_subcontractor_contracts_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "ks_project_subcontractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_subcontractor_contracts_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_subcontractor_inspections: {
+        Row: {
+          company_id: string
+          corrective_actions: string | null
+          created_at: string
+          findings: string | null
+          id: string
+          inspection_date: string
+          inspector_name: string
+          photo_paths: string[] | null
+          project_id: string
+          status: string
+          subcontractor_id: string
+          updated_at: string
+          work_area: string
+        }
+        Insert: {
+          company_id: string
+          corrective_actions?: string | null
+          created_at?: string
+          findings?: string | null
+          id?: string
+          inspection_date: string
+          inspector_name: string
+          photo_paths?: string[] | null
+          project_id: string
+          status: string
+          subcontractor_id: string
+          updated_at?: string
+          work_area: string
+        }
+        Update: {
+          company_id?: string
+          corrective_actions?: string | null
+          created_at?: string
+          findings?: string | null
+          id?: string
+          inspection_date?: string
+          inspector_name?: string
+          photo_paths?: string[] | null
+          project_id?: string
+          status?: string
+          subcontractor_id?: string
+          updated_at?: string
+          work_area?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_subcontractor_inspections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_subcontractor_inspections_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_subcontractor_inspections_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "ks_project_subcontractors"
             referencedColumns: ["id"]
           },
         ]
@@ -2014,7 +2331,7 @@ export type Database = {
       is_system_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "system_admin" | "company_admin" | "user"
+      app_role: "system_admin" | "company_admin" | "user" | "subcontractor"
       company_status: "active" | "inactive" | "suspended"
     }
     CompositeTypes: {
@@ -2143,7 +2460,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["system_admin", "company_admin", "user"],
+      app_role: ["system_admin", "company_admin", "user", "subcontractor"],
       company_status: ["active", "inactive", "suspended"],
     },
   },
