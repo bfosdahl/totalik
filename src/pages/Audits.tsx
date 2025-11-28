@@ -65,6 +65,7 @@ const statusConfig = {
 const Audits = () => {
   const { audits, isLoading, createAudit, updateAudit } = useAudits();
   const [isNewAuditOpen, setIsNewAuditOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("list");
 
   const formatDate = (dateString: string) => {
     try {
@@ -99,7 +100,7 @@ const Audits = () => {
         </motion.div>
 
         {/* Tabs for different revision types */}
-        <Tabs defaultValue="list" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="bg-card border border-border rounded-xl p-2 shadow-card">
             <TabsList className="flex flex-wrap gap-2 h-auto bg-transparent p-0 w-full">
               <TabsTrigger 
@@ -153,10 +154,7 @@ const Audits = () => {
                 <Button
                   variant="outline"
                   className="h-auto py-4 flex flex-col gap-2 items-center justify-center"
-                  onClick={() => {
-                    const tabTrigger = document.querySelector('[value="annual"]') as HTMLButtonElement;
-                    tabTrigger?.click();
-                  }}
+                  onClick={() => setActiveTab("annual")}
                 >
                   <ClipboardCheck className="w-6 h-6 text-primary" />
                   <span className="text-xs text-center">Årlig HMS-revisjon</span>
@@ -164,10 +162,7 @@ const Audits = () => {
                 <Button
                   variant="outline"
                   className="h-auto py-4 flex flex-col gap-2 items-center justify-center"
-                  onClick={() => {
-                    const tabTrigger = document.querySelector('[value="elkontroll"]') as HTMLButtonElement;
-                    tabTrigger?.click();
-                  }}
+                  onClick={() => setActiveTab("elkontroll")}
                 >
                   <Zap className="w-6 h-6 text-warning" />
                   <span className="text-xs text-center">El-Kontroll</span>
@@ -175,10 +170,7 @@ const Audits = () => {
                 <Button
                   variant="outline"
                   className="h-auto py-4 flex flex-col gap-2 items-center justify-center"
-                  onClick={() => {
-                    const tabTrigger = document.querySelector('[value="fysiske"]') as HTMLButtonElement;
-                    tabTrigger?.click();
-                  }}
+                  onClick={() => setActiveTab("fysiske")}
                 >
                   <Building2 className="w-6 h-6 text-info" />
                   <span className="text-xs text-center">Fysiske forhold</span>
@@ -186,10 +178,7 @@ const Audits = () => {
                 <Button
                   variant="outline"
                   className="h-auto py-4 flex flex-col gap-2 items-center justify-center"
-                  onClick={() => {
-                    const tabTrigger = document.querySelector('[value="drift"]') as HTMLButtonElement;
-                    tabTrigger?.click();
-                  }}
+                  onClick={() => setActiveTab("drift")}
                 >
                   <Settings className="w-6 h-6 text-accent" />
                   <span className="text-xs text-center">Daglig drift</span>
