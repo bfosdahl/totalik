@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProjectData {
   project: any;
@@ -242,26 +243,84 @@ export const generateProjectReport = (data: ProjectData, options: IncludeOptions
     yPosition = 20;
   }
 
-  // Checklists
+  // Checklists with details
   if (options.checklists && data.checklists && data.checklists.length > 0) {
     addSectionHeader("4. SJEKKLISTER");
 
-    const checklistData = data.checklists.map(cl => [
-      cl.template?.name || "-",
-      cl.template?.phase || "-",
-      cl.filled_at ? format(new Date(cl.filled_at), "dd.MM.yyyy", { locale: nb }) : "-",
-    ]);
+    for (const checklist of data.checklists) {
+      checkPageBreak(30);
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text(checklist.template?.name || "Sjekkliste", 20, yPosition);
+      yPosition += 7;
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      if (checklist.template?.phase) {
+        doc.text(`Fase: ${checklist.template.phase}`, 25, yPosition);
+        yPosition += 5;
+      }
+      if (checklist.filled_at) {
+        doc.text(`Utført: ${format(new Date(checklist.filled_at), "dd.MM.yyyy", { locale: nb })}`, 25, yPosition);
+        yPosition += 5;
+      }
+      
+      yPosition += 5;
+      
+      // Show checklist items
+      if (checklist.items && checklist.items.length > 0) {
+        for (const item of checklist.items) {
+          checkPageBreak(40);
+          
+          doc.setFont("helvetica", "bold");
+          doc.text(`${item.template_item?.text || 'Punkt'}`, 25, yPosition);
+          yPosition += 5;
+          
+          doc.setFont("helvetica", "normal");
+          doc.text(`Status: ${item.status || 'Ikke utfylt'}`, 30, yPosition);
+          yPosition += 5;
+          
+          if (item.comment) {
+            doc.text(`Kommentar: ${item.comment}`, 30, yPosition, { maxWidth: 160 });
+            yPosition += Math.ceil(item.comment.length / 80) * 5 + 3;
+          }
+          
+          // Add photos if any
+          if (item.photos && item.photos.length > 0) {
+            doc.text(`Bilder (${item.photos.length}):`, 30, yPosition);
+            yPosition += 5;
+            
+            for (const photo of item.photos) {
+              try {
+                checkPageBreak(60);
+                
+                // Fetch photo from storage
+                const { data: photoData } = supabase.storage
+                  .from('project-documents')
+                  .getPublicUrl(photo.file_path);
+                
+                if (photoData?.publicUrl) {
+                  // Note: jsPDF addImage requires base64 or data URL
+                  // For production, you'd need to fetch and convert the image
+                  doc.text(`- Bilde tatt: ${format(new Date(photo.taken_at), "dd.MM.yyyy HH:mm", { locale: nb })}`, 35, yPosition);
+                  yPosition += 5;
+                }
+              } catch (error) {
+                console.error('Error adding photo to PDF:', error);
+              }
+            }
+            
+            yPosition += 3;
+          }
+          
+          yPosition += 3;
+        }
+      }
+      
+      yPosition += 5;
+    }
 
-    autoTable(doc, {
-      startY: yPosition,
-      head: [["Sjekkliste", "Fase", "Utført dato"]],
-      body: checklistData,
-      theme: "grid",
-      headStyles: { fillColor: [71, 85, 105] },
-      margin: { left: 20, right: 20 },
-    });
-
-    yPosition = (doc as any).lastAutoTable.finalY + 10;
     doc.addPage();
     yPosition = 20;
   }

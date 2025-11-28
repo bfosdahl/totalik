@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, 
@@ -8,6 +8,8 @@ import {
   Save,
   HelpCircle,
   Camera,
+  X,
+  ImageIcon,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -26,6 +28,8 @@ import { useKsChecklistItems, KsChecklist, KsTemplate } from "@/hooks/useKsProje
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
 
 const statusOptions = [
   { value: "OK", label: "OK", icon: CheckCircle2, color: "text-green-600" },
@@ -40,6 +44,9 @@ export default function KsChecklistDetail() {
   const [projectId, setProjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [comments, setComments] = useState<Record<string, string>>({});
+  const [photos, setPhotos] = useState<Record<string, any[]>>({});
+  const [uploadingPhotos, setUploadingPhotos] = useState<Record<string, boolean>>({});
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const { items, isLoading: itemsLoading, updateItem } = useKsChecklistItems(id || null);
 
@@ -83,6 +90,36 @@ export default function KsChecklistDetail() {
     setComments(initialComments);
   }, [items]);
 
+  // Fetch photos for each item
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      if (!items.length) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('ks_photos')
+          .select('*')
+          .in('checklist_item_id', items.map(i => i.id));
+        
+        if (error) throw error;
+        
+        const photosByItem: Record<string, any[]> = {};
+        data?.forEach(photo => {
+          if (!photosByItem[photo.checklist_item_id]) {
+            photosByItem[photo.checklist_item_id] = [];
+          }
+          photosByItem[photo.checklist_item_id].push(photo);
+        });
+        
+        setPhotos(photosByItem);
+      } catch (error) {
+        console.error('Error fetching photos:', error);
+      }
+    };
+    
+    fetchPhotos();
+  }, [items]);
+
   const handleStatusChange = async (itemId: string, status: string) => {
     await updateItem(itemId, { status });
   };
@@ -95,6 +132,98 @@ export default function KsChecklistDetail() {
     const comment = comments[itemId] || "";
     await updateItem(itemId, { comment });
     toast.success("Kommentar lagret");
+  };
+
+  const handlePhotoUpload = async (itemId: string, files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    
+    setUploadingPhotos(prev => ({ ...prev, [itemId]: true }));
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      
+      const uploadedPhotos = [];
+      
+      for (const file of Array.from(files)) {
+        // Upload to storage
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${itemId}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `${projectId}/checklist-photos/${fileName}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('project-documents')
+          .upload(filePath, file);
+        
+        if (uploadError) throw uploadError;
+        
+        // Save photo record to database
+        const { data: photoData, error: dbError } = await supabase
+          .from('ks_photos')
+          .insert({
+            checklist_item_id: itemId,
+            file_path: filePath,
+            taken_by_user_id: user.id,
+            taken_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
+        
+        if (dbError) throw dbError;
+        
+        uploadedPhotos.push(photoData);
+      }
+      
+      // Update photos state
+      setPhotos(prev => ({
+        ...prev,
+        [itemId]: [...(prev[itemId] || []), ...uploadedPhotos]
+      }));
+      
+      toast.success(`${uploadedPhotos.length} bilde(r) lastet opp`);
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      toast.error('Kunne ikke laste opp bilde');
+    } finally {
+      setUploadingPhotos(prev => ({ ...prev, [itemId]: false }));
+    }
+  };
+
+  const handleDeletePhoto = async (photoId: string, itemId: string, filePath: string) => {
+    try {
+      // Delete from storage
+      const { error: storageError } = await supabase.storage
+        .from('project-documents')
+        .remove([filePath]);
+      
+      if (storageError) throw storageError;
+      
+      // Delete from database
+      const { error: dbError } = await supabase
+        .from('ks_photos')
+        .delete()
+        .eq('id', photoId);
+      
+      if (dbError) throw dbError;
+      
+      // Update photos state
+      setPhotos(prev => ({
+        ...prev,
+        [itemId]: (prev[itemId] || []).filter(p => p.id !== photoId)
+      }));
+      
+      toast.success('Bilde slettet');
+    } catch (error) {
+      console.error('Error deleting photo:', error);
+      toast.error('Kunne ikke slette bilde');
+    }
+  };
+
+  const getPhotoUrl = (filePath: string) => {
+    const { data } = supabase.storage
+      .from('project-documents')
+      .getPublicUrl(filePath);
+    return data.publicUrl;
   };
 
   const completedCount = items.filter(i => i.status !== 'pending').length;
@@ -244,31 +373,75 @@ export default function KsChecklistDetail() {
                             </div>
                           </div>
                           
-                          {/* Comment section - always visible when AVVIK */}
-                          {(item.status === 'AVVIK' || comments[item.id]) && (
-                            <div className="space-y-2">
-                              <Textarea
-                                placeholder="Legg til kommentar..."
-                                value={comments[item.id] || ""}
-                                onChange={(e) => handleCommentChange(item.id, e.target.value)}
-                                className="min-h-[60px]"
+                          {/* Comment and photo section */}
+                          <div className="space-y-3">
+                            <Textarea
+                              placeholder="Legg til kommentar..."
+                              value={comments[item.id] || ""}
+                              onChange={(e) => handleCommentChange(item.id, e.target.value)}
+                              className="min-h-[60px]"
+                            />
+                            <div className="flex items-center gap-2">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleSaveComment(item.id)}
+                              >
+                                <Save className="h-4 w-4 mr-1" />
+                                Lagre kommentar
+                              </Button>
+                              <input
+                                type="file"
+                                ref={el => fileInputRefs.current[item.id] = el}
+                                onChange={(e) => handlePhotoUpload(item.id, e.target.files)}
+                                accept="image/*"
+                                multiple
+                                capture="environment"
+                                className="hidden"
                               />
-                              <div className="flex items-center gap-2">
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => handleSaveComment(item.id)}
-                                >
-                                  <Save className="h-4 w-4 mr-1" />
-                                  Lagre
-                                </Button>
-                                <Button size="sm" variant="outline" disabled>
-                                  <Camera className="h-4 w-4 mr-1" />
-                                  Last opp bilde
-                                </Button>
-                              </div>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => fileInputRefs.current[item.id]?.click()}
+                                disabled={uploadingPhotos[item.id]}
+                              >
+                                <Camera className="h-4 w-4 mr-1" />
+                                {uploadingPhotos[item.id] ? 'Laster opp...' : 'Last opp bilde'}
+                              </Button>
                             </div>
-                          )}
+                            
+                            {/* Display uploaded photos */}
+                            {photos[item.id]?.length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-sm font-medium text-muted-foreground">
+                                  <ImageIcon className="h-4 w-4 inline mr-1" />
+                                  Bilder ({photos[item.id].length})
+                                </p>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                  {photos[item.id].map((photo) => (
+                                    <div key={photo.id} className="relative group">
+                                      <img
+                                        src={getPhotoUrl(photo.file_path)}
+                                        alt="Checklist photo"
+                                        className="w-full h-24 object-cover rounded border"
+                                      />
+                                      <Button
+                                        size="icon"
+                                        variant="destructive"
+                                        className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        onClick={() => handleDeletePhoto(photo.id, item.id, photo.file_path)}
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </Button>
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        {format(new Date(photo.taken_at), "dd.MM.yyyy HH:mm", { locale: nb })}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       ))}
                   </CardContent>
