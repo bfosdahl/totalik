@@ -11,6 +11,7 @@ import type { Json } from "@/integrations/supabase/types";
 import ResponsiveChecklist, { type ChecklistRow } from "./ResponsiveChecklist";
 import ResponsiveActionTable from "./ResponsiveActionTable";
 import SavedFormsList from "./SavedFormsList";
+import UserSelect from "./UserSelect";
 
 type YesNoNa = "yes" | "no" | "na" | "";
 
@@ -369,12 +370,11 @@ const AnnualHmsRevisionForm: React.FC = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="auditor">Revisor (navn + rolle)</Label>
-            <Input
-              id="auditor"
+            <Label htmlFor="auditor">Revisor</Label>
+            <UserSelect
               value={formData.auditor}
-              onChange={(e) => setFormData(prev => ({ ...prev, auditor: e.target.value }))}
-              placeholder="f.eks. Ola Nordmann, daglig leder"
+              onValueChange={(value) => setFormData(prev => ({ ...prev, auditor: value }))}
+              placeholder="Velg revisor"
             />
           </div>
           <div className="space-y-2 sm:col-span-2">

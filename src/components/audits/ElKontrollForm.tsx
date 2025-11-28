@@ -17,6 +17,7 @@ import ResponsiveActionTable from "./ResponsiveActionTable";
 import SavedFormsList from "./SavedFormsList";
 import { useAuditFormResponses, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import type { Json } from "@/integrations/supabase/types";
+import UserSelect from "./UserSelect";
 
 type DeviationType = "hms" | "quality" | "environment" | "other";
 type Severity = "low" | "medium" | "high" | "critical";
@@ -249,13 +250,11 @@ const ElKontrollForm: React.FC = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="reportedBy">Rapportert av (navn / rolle)</Label>
-            <Input
-              id="reportedBy"
+            <Label htmlFor="reportedBy">Rapportert av</Label>
+            <UserSelect
               value={formData.reportedBy}
-              onChange={(e) => updateField("reportedBy", e.target.value)}
-              placeholder="f.eks. Ola Nordmann, montør"
-              required
+              onValueChange={(value) => updateField("reportedBy", value)}
+              placeholder="Velg bruker"
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
@@ -456,12 +455,11 @@ const ElKontrollForm: React.FC = () => {
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="handlerName">Ansvarlig for behandling (navn)</Label>
-            <Input
-              id="handlerName"
+            <Label htmlFor="handlerName">Ansvarlig for behandling</Label>
+            <UserSelect
               value={formData.handlerName}
-              onChange={(e) => updateField("handlerName", e.target.value)}
-              placeholder="f.eks. HMS-ansvarlig"
+              onValueChange={(value) => updateField("handlerName", value)}
+              placeholder="Velg ansvarlig"
             />
           </div>
           <div className="space-y-2">

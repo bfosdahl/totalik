@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import UserSelect from "./UserSelect";
 
 interface ActionRow {
   id: string;
@@ -74,10 +75,10 @@ const ResponsiveActionTable: React.FC<ResponsiveActionTableProps> = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label className="text-xs">Ansvarlig</Label>
-                    <Input
+                    <UserSelect
                       value={row.responsible}
-                      onChange={(e) => onUpdate(row.id, 'responsible', e.target.value)}
-                      placeholder="Navn"
+                      onValueChange={(value) => onUpdate(row.id, 'responsible', value)}
+                      placeholder="Velg ansvarlig"
                       className="h-9"
                     />
                   </div>
@@ -118,10 +119,10 @@ const ResponsiveActionTable: React.FC<ResponsiveActionTableProps> = ({
                       />
                     </td>
                     <td className="py-2 px-3">
-                      <Input
+                      <UserSelect
                         value={row.responsible}
-                        onChange={(e) => onUpdate(row.id, 'responsible', e.target.value)}
-                        placeholder="Ansvarlig"
+                        onValueChange={(value) => onUpdate(row.id, 'responsible', value)}
+                        placeholder="Velg ansvarlig"
                         className="h-9"
                       />
                     </td>
