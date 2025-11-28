@@ -255,6 +255,39 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                         </NavLink>
                       );
                     })}
+                    <NavLink
+                      to="/ks/vernerunder"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ks/vernerunder"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Vernerunder
+                    </NavLink>
+                    <NavLink
+                      to="/ks/farlige-forhold"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ks/farlige-forhold"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Farlige forhold
+                    </NavLink>
+                    <NavLink
+                      to="/ks/tiltakslogg"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ks/tiltakslogg"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Tiltakslogg
+                    </NavLink>
                   </div>
                 </motion.div>
               )}
