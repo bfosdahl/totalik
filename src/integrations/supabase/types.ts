@@ -1219,6 +1219,7 @@ export type Database = {
           end_date: string | null
           id: string
           name: string
+          project_number: string | null
           start_date: string
           status: string | null
           tiltaksklasse: string | null
@@ -1242,6 +1243,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           name: string
+          project_number?: string | null
           start_date: string
           status?: string | null
           tiltaksklasse?: string | null
@@ -1265,6 +1267,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           name?: string
+          project_number?: string | null
           start_date?: string
           status?: string | null
           tiltaksklasse?: string | null
@@ -1644,6 +1647,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_project_number: { Args: never; Returns: string }
       get_user_company_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {

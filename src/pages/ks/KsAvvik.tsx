@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, Trash2, AlertCircle } from "lucide-react";
+import { useKsProjects } from "@/hooks/useKsProjects";
 
 interface KsAvvik {
   id: string;
@@ -55,9 +56,11 @@ export default function KsAvvik() {
   const { toast } = useToast();
   const { company } = useAuth();
   const queryClient = useQueryClient();
+  const { projects } = useKsProjects();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAvvik, setEditingAvvik] = useState<KsAvvik | null>(null);
   const [formData, setFormData] = useState({
+    project_id: "",
     avvik_nummer: "",
     tittel: "",
     beskrivelse: "",
@@ -119,6 +122,7 @@ export default function KsAvvik() {
           due_date: data.frist || new Date().toISOString().split('T')[0],
           reporter_name: "System",
           company_id: company.id,
+          project_id: data.project_id || null,
         })
         .select()
         .single();
@@ -181,6 +185,7 @@ export default function KsAvvik() {
 
   const resetForm = () => {
     setFormData({
+      project_id: "",
       avvik_nummer: "",
       tittel: "",
       beskrivelse: "",
@@ -210,6 +215,7 @@ export default function KsAvvik() {
   const handleEdit = (avvik: KsAvvik) => {
     setEditingAvvik(avvik);
     setFormData({
+      project_id: avvik.project_id || "",
       avvik_nummer: avvik.avvik_nummer,
       tittel: avvik.tittel,
       beskrivelse: avvik.beskrivelse || "",
@@ -254,21 +260,38 @@ export default function KsAvvik() {
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingAvvik ? "Rediger Avvik" : "Nytt Avvik"}</DialogTitle>
-                <DialogDescription>
-                  Registrer avvik oppdaget under byggeprosjekt
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="avvik_nummer">Avviksnummer *</Label>
-                    <Input
-                      id="avvik_nummer"
-                      value={formData.avvik_nummer}
-                      onChange={(e) => setFormData(prev => ({ ...prev, avvik_nummer: e.target.value }))}
-                      placeholder="F.eks. AVK-001"
-                    />
-                  </div>
+              <DialogDescription>
+                Registrer avvik oppdaget under byggeprosjekt
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="project_id">Prosjekt (valgfritt)</Label>
+                <Select value={formData.project_id} onValueChange={(value) => setFormData(prev => ({ ...prev, project_id: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg prosjekt eller la stå tom for mal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Ingen (mal)</SelectItem>
+                    {projects.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.project_number} - {project.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="avvik_nummer">Avviksnummer *</Label>
+                  <Input
+                    id="avvik_nummer"
+                    value={formData.avvik_nummer}
+                    onChange={(e) => setFormData(prev => ({ ...prev, avvik_nummer: e.target.value }))}
+                    placeholder="F.eks. AVK-001"
+                  />
+                </div>
                   <div className="space-y-2">
                     <Label htmlFor="oppdaget_dato">Oppdaget dato *</Label>
                     <Input

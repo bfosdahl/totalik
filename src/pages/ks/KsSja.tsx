@@ -14,15 +14,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useKsProjects } from "@/hooks/useKsProjects";
 
 interface KsSja {
   id: string;
   company_id: string;
+  project_id?: string | null;
   sja_nr: string;
   title: string;
   aktivitet: string;
@@ -41,9 +50,11 @@ interface KsSja {
 export default function KsSja() {
   const { company } = useAuth();
   const queryClient = useQueryClient();
+  const { projects } = useKsProjects();
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [selectedSja, setSelectedSja] = useState<KsSja | null>(null);
   const [formData, setFormData] = useState({
+    project_id: "",
     sja_nr: "",
     title: "",
     aktivitet: "",
@@ -85,6 +96,7 @@ export default function KsSja() {
         .from("ks_sja")
         .insert({
           company_id: company.id,
+          project_id: data.project_id || null,
           sja_nr: data.sja_nr,
           title: data.title,
           aktivitet: data.aktivitet,
@@ -139,6 +151,7 @@ export default function KsSja() {
 
   const resetForm = () => {
     setFormData({
+      project_id: "",
       sja_nr: "",
       title: "",
       aktivitet: "",
@@ -159,6 +172,7 @@ export default function KsSja() {
 
   const handleEdit = (sja: KsSja) => {
     setFormData({
+      project_id: sja.project_id || "",
       sja_nr: sja.sja_nr || "",
       title: sja.title || "",
       aktivitet: sja.aktivitet || "",
@@ -287,6 +301,23 @@ export default function KsSja() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-6 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="project_id">Prosjekt (valgfritt)</Label>
+                <Select value={formData.project_id} onValueChange={(value) => setFormData(prev => ({ ...prev, project_id: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg prosjekt eller la stå tom for mal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Ingen (mal)</SelectItem>
+                    {projects.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.project_number} - {project.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="sja_nr">SJA Nr *</Label>
