@@ -25,6 +25,7 @@ import KsTemplates from "./pages/ks/KsTemplates";
 import KsHmsPlanWizard from "./pages/ks/KsHmsPlanWizard";
 import KsRoutines from "./pages/ks/KsRoutines";
 import KsSja from "./pages/ks/KsSja";
+import KsAvvik from "./pages/ks/KsAvvik";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/ks/routines" element={<ProtectedRoute><KsRoutines /></ProtectedRoute>} />
             <Route path="/ks/templates" element={<ProtectedRoute><KsTemplates /></ProtectedRoute>} />
             <Route path="/ks/sja" element={<ProtectedRoute><KsSja /></ProtectedRoute>} />
+            <Route path="/ks/avvik" element={<ProtectedRoute><KsAvvik /></ProtectedRoute>} />
             
             {/* Admin routes - require system_admin role */}
             <Route path="/admin" element={<ProtectedRoute requireSystemAdmin><AdminDashboard /></ProtectedRoute>} />
