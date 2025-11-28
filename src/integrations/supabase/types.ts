@@ -458,57 +458,111 @@ export type Database = {
       }
       deviations: {
         Row: {
+          additional_info: string | null
           assignee_id: string | null
           assignee_name: string | null
           category: string
           company_id: string
+          consequences: string | null
           created_at: string
           description: string | null
           deviation_number: string
           due_date: string
           id: string
+          immediate_actions: string | null
+          incident_location: string | null
+          incident_time: string | null
+          incident_type: string | null
+          involved_persons: string | null
+          notify_arbeidstilsynet: boolean | null
+          notify_insurance: boolean | null
+          preventive_measures: string | null
           priority: string
           project_id: string | null
+          receiver_signature: string | null
+          reporter_contact: string | null
           reporter_id: string | null
           reporter_name: string
+          reporter_signature: string | null
+          responsible_receiver: string | null
+          root_cause_analysis: string | null
+          severity: string | null
+          signed_at: string | null
           status: string
           title: string
+          type: string
           updated_at: string
         }
         Insert: {
+          additional_info?: string | null
           assignee_id?: string | null
           assignee_name?: string | null
           category: string
           company_id: string
+          consequences?: string | null
           created_at?: string
           description?: string | null
           deviation_number: string
           due_date: string
           id?: string
+          immediate_actions?: string | null
+          incident_location?: string | null
+          incident_time?: string | null
+          incident_type?: string | null
+          involved_persons?: string | null
+          notify_arbeidstilsynet?: boolean | null
+          notify_insurance?: boolean | null
+          preventive_measures?: string | null
           priority: string
           project_id?: string | null
+          receiver_signature?: string | null
+          reporter_contact?: string | null
           reporter_id?: string | null
           reporter_name: string
+          reporter_signature?: string | null
+          responsible_receiver?: string | null
+          root_cause_analysis?: string | null
+          severity?: string | null
+          signed_at?: string | null
           status?: string
           title: string
+          type?: string
           updated_at?: string
         }
         Update: {
+          additional_info?: string | null
           assignee_id?: string | null
           assignee_name?: string | null
           category?: string
           company_id?: string
+          consequences?: string | null
           created_at?: string
           description?: string | null
           deviation_number?: string
           due_date?: string
           id?: string
+          immediate_actions?: string | null
+          incident_location?: string | null
+          incident_time?: string | null
+          incident_type?: string | null
+          involved_persons?: string | null
+          notify_arbeidstilsynet?: boolean | null
+          notify_insurance?: boolean | null
+          preventive_measures?: string | null
           priority?: string
           project_id?: string | null
+          receiver_signature?: string | null
+          reporter_contact?: string | null
           reporter_id?: string | null
           reporter_name?: string
+          reporter_signature?: string | null
+          responsible_receiver?: string | null
+          root_cause_analysis?: string | null
+          severity?: string | null
+          signed_at?: string | null
           status?: string
           title?: string
+          type?: string
           updated_at?: string
         }
         Relationships: [
