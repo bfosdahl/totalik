@@ -12,6 +12,7 @@ import {
   Power,
   UserPlus,
   Mail,
+  Boxes,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { CompanyModulesDialog } from "@/components/admin/CompanyModulesDialog";
 
 const companySchema = z.object({
   name: z.string().min(1, "Bedriftsnavn er påkrevd").max(100),
@@ -79,6 +81,10 @@ export default function AdminCompanies() {
     firstName: "",
     lastName: "",
   });
+  
+  // Modules dialog state
+  const [modulesDialogOpen, setModulesDialogOpen] = useState(false);
+  const [modulesCompany, setModulesCompany] = useState<any>(null);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -591,6 +597,13 @@ export default function AdminCompanies() {
                               <UserPlus className="w-4 h-4 mr-2" />
                               Inviter admin
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setModulesCompany(company);
+                              setModulesDialogOpen(true);
+                            }}>
+                              <Boxes className="w-4 h-4 mr-2" />
+                              Moduler
+                            </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive"
                               onClick={() => {
@@ -681,6 +694,13 @@ export default function AdminCompanies() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Company Modules Dialog */}
+        <CompanyModulesDialog
+          open={modulesDialogOpen}
+          onOpenChange={setModulesDialogOpen}
+          company={modulesCompany}
+        />
       </div>
     </AdminLayout>
   );
