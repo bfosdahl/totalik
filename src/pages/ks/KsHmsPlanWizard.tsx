@@ -24,7 +24,7 @@ const steps = [
 ];
 
 export default function KsHmsPlanWizard() {
-  const { id } = useParams<{ id: string }>();
+  const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const [project, setProject] = useState<any>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -42,17 +42,17 @@ export default function KsHmsPlanWizard() {
     saveRisks,
     saveActions,
     createSja,
-  } = useKsHmsPlan(id || null);
+  } = useKsHmsPlan(projectId || null);
 
   useEffect(() => {
     const fetchProject = async () => {
-      if (!id) return;
+      if (!projectId) return;
 
       try {
         const { data, error } = await supabase
           .from('ks_projects')
           .select('*')
-          .eq('id', id)
+          .eq('id', projectId)
           .single();
 
         if (error) throw error;
@@ -65,7 +65,7 @@ export default function KsHmsPlanWizard() {
     };
 
     fetchProject();
-  }, [id, navigate]);
+  }, [projectId, navigate]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -97,7 +97,7 @@ export default function KsHmsPlanWizard() {
         is_completed: true,
       });
       toast.success('HMS-plan fullført!');
-      navigate(`/ks/projects/${id}`);
+      navigate(`/ks/projects/${projectId}`);
     }
   };
 
@@ -135,7 +135,7 @@ export default function KsHmsPlanWizard() {
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(`/ks/projects/${id}`)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(`/ks/projects/${projectId}`)}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1">
