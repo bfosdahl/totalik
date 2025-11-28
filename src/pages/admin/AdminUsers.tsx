@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Users,
@@ -11,6 +11,11 @@ import {
   Building2,
   Mail,
   Key,
+  RefreshCw,
+  Eye,
+  EyeOff,
+  Copy,
+  Check,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -53,6 +58,8 @@ export default function AdminUsers() {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole>("user");
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordCopied, setPasswordCopied] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<string>("");
   const [newPassword, setNewPassword] = useState("");
   
@@ -237,6 +244,40 @@ export default function AdminUsers() {
     setNewUserCompanyId("");
     setNewUserRole("user");
   };
+
+  const generatePassword = useCallback(() => {
+    const lowercase = 'abcdefghijkmnopqrstuvwxyz';
+    const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const numbers = '23456789';
+    const symbols = '!@#$%&*';
+    
+    const allChars = lowercase + uppercase + numbers + symbols;
+    
+    // Ensure at least one of each type
+    let password = '';
+    password += lowercase[Math.floor(Math.random() * lowercase.length)];
+    password += uppercase[Math.floor(Math.random() * uppercase.length)];
+    password += numbers[Math.floor(Math.random() * numbers.length)];
+    password += symbols[Math.floor(Math.random() * symbols.length)];
+    
+    // Fill remaining 8 characters randomly
+    for (let i = 0; i < 8; i++) {
+      password += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+    
+    // Shuffle the password
+    password = password.split('').sort(() => Math.random() - 0.5).join('');
+    
+    setNewPassword(password);
+    setShowPassword(true);
+    setPasswordCopied(false);
+  }, []);
+
+  const copyPassword = useCallback(async () => {
+    await navigator.clipboard.writeText(newPassword);
+    setPasswordCopied(true);
+    setTimeout(() => setPasswordCopied(false), 2000);
+  }, [newPassword]);
 
   const getUserRoles = (userId: string): AppRole[] => {
     return userRoles?.filter((r) => r.user_id === userId).map((r) => r.role as AppRole) || [];
@@ -720,6 +761,8 @@ export default function AdminUsers() {
           if (!open) {
             setNewPassword("");
             setSelectedUser(null);
+            setShowPassword(false);
+            setPasswordCopied(false);
           }
         }}>
           <DialogContent>
@@ -733,16 +776,56 @@ export default function AdminUsers() {
                 </p>
 
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword">Nytt passord *</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    placeholder="Minst 6 tegn"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                  />
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="newPassword">Nytt passord *</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={generatePassword}
+                      className="h-7 text-xs"
+                    >
+                      <RefreshCw className="w-3 h-3 mr-1" />
+                      Generer passord
+                    </Button>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="newPassword"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Minst 6 tegn"
+                      value={newPassword}
+                      onChange={(e) => {
+                        setNewPassword(e.target.value);
+                        setPasswordCopied(false);
+                      }}
+                      className="pr-20"
+                    />
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </Button>
+                      {newPassword && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={copyPassword}
+                        >
+                          {passwordCopied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    Passordet må være minst 6 tegn langt
+                    Passordet må være minst 6 tegn langt. Husk å dele passordet med brukeren.
                   </p>
                 </div>
 
