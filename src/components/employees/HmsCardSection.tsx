@@ -312,16 +312,29 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           
-          <div className="py-4">
-            <Label htmlFor="helpNotes">Tilleggsinformasjon (valgfritt)</Label>
-            <Textarea
-              id="helpNotes"
-              value={helpNotes}
-              onChange={(e) => setHelpNotes(e.target.value)}
-              placeholder="F.eks. bransje, spesielle behov, etc."
-              rows={3}
-              className="mt-2"
-            />
+          <div className="py-4 space-y-4">
+            <div className="bg-muted/50 border border-border rounded-lg p-4">
+              <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-primary" />
+                For å bestille HMS-kort trenger vi:
+              </h4>
+              <ul className="text-sm text-muted-foreground space-y-1 ml-6 list-disc">
+                <li>Gyldig ID (pass, førerkort eller bankkort med bilde)</li>
+                <li>Bilde (selfie) av personen som skal ha kortet</li>
+              </ul>
+            </div>
+
+            <div>
+              <Label htmlFor="helpNotes">Tilleggsinformasjon (valgfritt)</Label>
+              <Textarea
+                id="helpNotes"
+                value={helpNotes}
+                onChange={(e) => setHelpNotes(e.target.value)}
+                placeholder="F.eks. bransje, spesielle behov, etc."
+                rows={3}
+                className="mt-2"
+              />
+            </div>
           </div>
 
           <AlertDialogFooter>
