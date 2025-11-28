@@ -14,6 +14,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { CompanyInfoSettings } from "@/components/settings/CompanyInfoSettings";
 import { UserManagementSettings } from "@/components/settings/UserManagementSettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
+import { CustomizationSettings } from "@/components/settings/CustomizationSettings";
 import { SettingsPlaceholder } from "@/components/settings/SettingsPlaceholder";
 
 type SettingsSection = "main" | "company" | "users" | "notifications" | "security" | "customization" | "data";
@@ -98,6 +99,16 @@ const Settings = () => {
       <AppLayout>
         <div className="max-w-3xl mx-auto">
           <NotificationSettings onBack={goBack} />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (activeSection === "customization") {
+    return (
+      <AppLayout>
+        <div className="max-w-3xl mx-auto">
+          <CustomizationSettings onBack={goBack} />
         </div>
       </AppLayout>
     );
