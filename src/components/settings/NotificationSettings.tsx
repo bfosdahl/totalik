@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Bell, Save, ArrowLeft, Loader2 } from "lucide-react";
+import { Bell, Save, ArrowLeft, Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -45,9 +45,10 @@ const HMS_CARD_EXPIRY_OPTIONS = [
 ];
 
 export function NotificationSettings({ onBack }: NotificationSettingsProps) {
-  const { company } = useAuth();
+  const { company, user, profile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [sendingTest, setSendingTest] = useState(false);
   const [settings, setSettings] = useState<NotificationSettings>({
     deviation_assignment_enabled: true,
     deviation_deadline_reminder_enabled: true,
@@ -146,6 +147,47 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
       toast.error(error.message || "Kunne ikke oppdatere varslingsinnstillinger");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSendTestNotification = async () => {
+    if (!company?.id || !profile?.email) {
+      toast.error("Kunne ikke finne mottaker for test-e-post");
+      return;
+    }
+
+    setSendingTest(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
+      if (!accessToken) {
+        throw new Error("Ikke innlogget");
+      }
+
+      const response = await supabase.functions.invoke("send-test-notification", {
+        body: {
+          company_id: company.id,
+          recipient_emails: [profile.email],
+          company_name: company.name,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      const result = response.data;
+      if (result.success) {
+        toast.success(`Test-e-post sendt til ${profile.email}`);
+      } else {
+        toast.error("Kunne ikke sende test-e-post");
+      }
+    } catch (error: any) {
+      console.error("Error sending test notification:", error);
+      toast.error(error.message || "Kunne ikke sende test-e-post");
+    } finally {
+      setSendingTest(false);
     }
   };
 
@@ -405,8 +447,25 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
           </div>
         </div>
 
-        {/* Save Button */}
-        <div className="flex justify-end">
+        {/* Test and Save Buttons */}
+        <div className="flex justify-between items-center">
+          <Button 
+            variant="outline" 
+            onClick={handleSendTestNotification} 
+            disabled={sendingTest || !profile?.email}
+          >
+            {sendingTest ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Sender...
+              </>
+            ) : (
+              <>
+                <Send className="w-4 h-4 mr-2" />
+                Send test-e-post
+              </>
+            )}
+          </Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving ? (
               <>
