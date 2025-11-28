@@ -341,39 +341,6 @@ export default function KsSja() {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <h3 className="font-medium text-sm">Tiltak gjennomført</h3>
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="tiltak_sted">Sted</Label>
-                    <Input
-                      id="tiltak_sted"
-                      value={formData.tiltak_sted}
-                      onChange={(e) => setFormData(prev => ({ ...prev, tiltak_sted: e.target.value }))}
-                      placeholder="F.eks. 2. etasje"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="tiltak_dato">Dato</Label>
-                    <Input
-                      type="date"
-                      id="tiltak_dato"
-                      value={formData.tiltak_dato}
-                      onChange={(e) => setFormData(prev => ({ ...prev, tiltak_dato: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="tiltak_navn">Navn</Label>
-                    <Input
-                      id="tiltak_navn"
-                      value={formData.tiltak_navn}
-                      onChange={(e) => setFormData(prev => ({ ...prev, tiltak_navn: e.target.value }))}
-                      placeholder="Navn på ansvarlig"
-                    />
-                  </div>
-                </div>
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="aktivitet">1. Aktivitet - Hva skal gjøres? *</Label>
                 <Textarea
@@ -405,6 +372,39 @@ export default function KsSja() {
                   placeholder="Beskriv tiltak for å redusere risiko..."
                   className="min-h-[100px]"
                 />
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-medium text-sm">Tiltak gjennomført</h3>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="tiltak_sted">Sted</Label>
+                    <Input
+                      id="tiltak_sted"
+                      value={formData.tiltak_sted}
+                      onChange={(e) => setFormData(prev => ({ ...prev, tiltak_sted: e.target.value }))}
+                      placeholder="F.eks. 2. etasje"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tiltak_dato">Dato</Label>
+                    <Input
+                      type="date"
+                      id="tiltak_dato"
+                      value={formData.tiltak_dato}
+                      onChange={(e) => setFormData(prev => ({ ...prev, tiltak_dato: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tiltak_navn">Navn</Label>
+                    <Input
+                      id="tiltak_navn"
+                      value={formData.tiltak_navn}
+                      onChange={(e) => setFormData(prev => ({ ...prev, tiltak_navn: e.target.value }))}
+                      placeholder="Navn på ansvarlig"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
             <DialogFooter>
