@@ -10,6 +10,7 @@ import {
   Camera,
   X,
   ImageIcon,
+  Printer,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { generateChecklistPdf } from "@/utils/ksChecklistPdf";
 
 const statusOptions = [
   { value: "OK", label: "OK", icon: CheckCircle2, color: "text-green-600" },
@@ -226,6 +228,35 @@ export default function KsChecklistDetail() {
     return data.publicUrl;
   };
 
+  const handlePrintChecklist = async () => {
+    if (!checklist) return;
+    
+    try {
+      // Fetch project details
+      const { data: projectData } = await supabase
+        .from('ks_projects')
+        .select('name, project_number, address')
+        .eq('id', projectId)
+        .single();
+      
+      await generateChecklistPdf({
+        id: checklist.id,
+        created_at: checklist.created_at,
+        filled_at: checklist.filled_at,
+        phase: checklist.phase,
+        template: checklist.template,
+        project: projectData || undefined,
+        items: items,
+        photos: photos,
+      });
+      
+      toast.success('PDF generert');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Kunne ikke generere PDF');
+    }
+  };
+
   const completedCount = items.filter(i => i.status !== 'pending').length;
   const totalCount = items.length;
   const progressPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
@@ -283,6 +314,10 @@ export default function KsChecklistDetail() {
                 Opprettet {new Date(checklist.created_at).toLocaleDateString("nb-NO")}
               </p>
             </div>
+            <Button onClick={handlePrintChecklist}>
+              <Printer className="h-4 w-4 mr-2" />
+              Skriv ut sjekkliste
+            </Button>
           </div>
 
           {/* Progress Card */}
