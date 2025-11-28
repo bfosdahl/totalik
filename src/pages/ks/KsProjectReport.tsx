@@ -51,10 +51,121 @@ export default function KsProjectReport() {
       return;
     }
 
-    toast.info("PDF-generering kommer snart...");
-    // TODO: Implement PDF generation with selected options
-    console.log("Generating PDF for project:", selectedProjectId);
-    console.log("Include options:", includeOptions);
+    try {
+      toast.info("Genererer PDF...");
+
+      // Fetch project details
+      const { data: projectData, error: projectError } = await supabase
+        .from("ks_projects")
+        .select("*")
+        .eq("id", selectedProjectId)
+        .single();
+
+      if (projectError) throw projectError;
+
+      // Fetch all related data based on selected options
+      const fetchPromises: Promise<any>[] = [];
+      const dataKeys: string[] = [];
+
+      if (includeOptions.hmsPlan) {
+        fetchPromises.push(
+          Promise.resolve(supabase.from("ks_project_goals").select("*").eq("project_id", selectedProjectId).order("sort_order")),
+          Promise.resolve(supabase.from("ks_project_organization").select("*").eq("project_id", selectedProjectId)),
+          Promise.resolve(supabase.from("ks_project_risks").select("*").eq("project_id", selectedProjectId).order("risk_score", { ascending: false })),
+          Promise.resolve(supabase.from("ks_project_actions").select("*").eq("project_id", selectedProjectId).order("created_at", { ascending: false }))
+        );
+        dataKeys.push("goals", "organization", "risks", "actions");
+      }
+
+      if (includeOptions.documents) {
+        fetchPromises.push(
+          Promise.resolve(supabase.from("ks_project_documents").select("*").eq("project_id", selectedProjectId).eq("is_latest_version", true).order("created_at", { ascending: false }))
+        );
+        dataKeys.push("documents");
+      }
+
+      if (includeOptions.checklists) {
+        fetchPromises.push(
+          Promise.resolve(supabase.from("ks_checklists").select("*, template:ks_templates(*)").eq("project_id", selectedProjectId).order("created_at", { ascending: false }))
+        );
+        dataKeys.push("checklists");
+      }
+
+      if (includeOptions.sja) {
+        fetchPromises.push(
+          Promise.resolve(supabase.from("ks_sja").select("*").eq("project_id", selectedProjectId).order("date", { ascending: false }))
+        );
+        dataKeys.push("sja");
+      }
+
+      if (includeOptions.deviations) {
+        fetchPromises.push(
+          Promise.resolve(supabase.from("ks_project_deviations").select("*").eq("project_id", selectedProjectId).order("created_at", { ascending: false }))
+        );
+        dataKeys.push("deviations");
+      }
+
+      if (includeOptions.changeOrders) {
+        fetchPromises.push(
+          Promise.resolve(supabase.from("ks_change_orders").select("*").eq("project_id", selectedProjectId).order("created_at", { ascending: false }))
+        );
+        dataKeys.push("changeOrders");
+      }
+
+      if (includeOptions.safetyRounds) {
+        fetchPromises.push(
+          Promise.resolve(supabase.from("ks_safety_rounds").select("*").eq("project_id", selectedProjectId).order("round_date", { ascending: false }))
+        );
+        dataKeys.push("safetyRounds");
+      }
+
+      if (includeOptions.hazardousConditions) {
+        fetchPromises.push(
+          Promise.resolve(supabase.from("ks_hazardous_conditions").select("*").eq("project_id", selectedProjectId).order("discovered_date", { ascending: false }))
+        );
+        dataKeys.push("hazardousConditions");
+      }
+
+      if (includeOptions.subcontractors) {
+        fetchPromises.push(
+          Promise.resolve(supabase.from("ks_project_subcontractors").select("*").eq("project_id", selectedProjectId).order("created_at", { ascending: false }))
+        );
+        dataKeys.push("subcontractors");
+      }
+
+      if (includeOptions.activityLog) {
+        fetchPromises.push(
+          Promise.resolve(supabase.from("ks_project_activity_log").select("*").eq("project_id", selectedProjectId).order("created_at", { ascending: false }))
+        );
+        dataKeys.push("activityLog");
+      }
+
+      // Fetch all data
+      const results = await Promise.all(fetchPromises);
+
+      // Build data object
+      const reportData: any = {
+        project: projectData,
+      };
+
+      results.forEach((result, index) => {
+        const key = dataKeys[index];
+        if (key === "organization") {
+          reportData[key] = result.data?.[0] || null;
+        } else {
+          reportData[key] = result.data || [];
+        }
+      });
+
+      // Generate PDF
+      const { generateProjectReport } = await import("@/utils/ksProjectReport");
+      generateProjectReport(reportData, includeOptions);
+
+      toast.success("PDF generert!");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Kunne ikke generere PDF");
+    }
   };
 
   const toggleOption = (key: keyof typeof includeOptions) => {
