@@ -198,6 +198,44 @@ export type Database = {
           },
         ]
       }
+      company_modules: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          module_type: string
+          settings: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          module_type: string
+          settings?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          module_type?: string
+          settings?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_modules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_organization: {
         Row: {
           company_id: string
@@ -688,6 +726,346 @@ export type Database = {
           },
         ]
       }
+      ks_change_orders: {
+        Row: {
+          approved_at: string | null
+          created_at: string | null
+          created_by_user_id: string | null
+          customer_approved: boolean | null
+          description: string | null
+          estimated_hours: number | null
+          id: string
+          pdf_url: string | null
+          price_ex_vat: number | null
+          project_id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          created_at?: string | null
+          created_by_user_id?: string | null
+          customer_approved?: boolean | null
+          description?: string | null
+          estimated_hours?: number | null
+          id?: string
+          pdf_url?: string | null
+          price_ex_vat?: number | null
+          project_id: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          created_at?: string | null
+          created_by_user_id?: string | null
+          customer_approved?: boolean | null
+          description?: string | null
+          estimated_hours?: number | null
+          id?: string
+          pdf_url?: string | null
+          price_ex_vat?: number | null
+          project_id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_change_orders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_checklist_items: {
+        Row: {
+          checklist_id: string
+          comment: string | null
+          created_at: string | null
+          id: string
+          status: string | null
+          template_item_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          checklist_id: string
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          status?: string | null
+          template_item_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          checklist_id?: string
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          status?: string | null
+          template_item_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_checklist_items_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "ks_checklists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_checklist_items_template_item_id_fkey"
+            columns: ["template_item_id"]
+            isOneToOne: false
+            referencedRelation: "ks_template_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_checklists: {
+        Row: {
+          created_at: string | null
+          filled_at: string | null
+          filled_by_user_id: string | null
+          id: string
+          phase: string | null
+          project_id: string
+          template_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          filled_at?: string | null
+          filled_by_user_id?: string | null
+          id?: string
+          phase?: string | null
+          project_id: string
+          template_id: string
+        }
+        Update: {
+          created_at?: string | null
+          filled_at?: string | null
+          filled_by_user_id?: string | null
+          id?: string
+          phase?: string | null
+          project_id?: string
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_checklists_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_checklists_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "ks_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_photos: {
+        Row: {
+          checklist_item_id: string
+          file_path: string
+          id: string
+          taken_at: string | null
+          taken_by_user_id: string | null
+        }
+        Insert: {
+          checklist_item_id: string
+          file_path: string
+          id?: string
+          taken_at?: string | null
+          taken_by_user_id?: string | null
+        }
+        Update: {
+          checklist_item_id?: string
+          file_path?: string
+          id?: string
+          taken_at?: string | null
+          taken_by_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_photos_checklist_item_id_fkey"
+            columns: ["checklist_item_id"]
+            isOneToOne: false
+            referencedRelation: "ks_checklist_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_projects: {
+        Row: {
+          address: string | null
+          ansvarsrolle: string | null
+          client_name: string | null
+          company_id: string
+          created_at: string | null
+          created_by_user_id: string | null
+          end_date: string | null
+          id: string
+          name: string
+          start_date: string
+          status: string | null
+          tiltaksklasse: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          ansvarsrolle?: string | null
+          client_name?: string | null
+          company_id: string
+          created_at?: string | null
+          created_by_user_id?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          start_date: string
+          status?: string | null
+          tiltaksklasse?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          ansvarsrolle?: string | null
+          client_name?: string | null
+          company_id?: string
+          created_at?: string | null
+          created_by_user_id?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          start_date?: string
+          status?: string | null
+          tiltaksklasse?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_projects_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_sja: {
+        Row: {
+          created_at: string | null
+          created_by_user_id: string | null
+          hazards_json: Json | null
+          id: string
+          project_id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_user_id?: string | null
+          hazards_json?: Json | null
+          id?: string
+          project_id: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by_user_id?: string | null
+          hazards_json?: Json | null
+          id?: string
+          project_id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_sja_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_template_items: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          help_text: string | null
+          id: string
+          order_index: number
+          template_id: string
+          text: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          help_text?: string | null
+          id?: string
+          order_index: number
+          template_id: string
+          text: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          help_text?: string | null
+          id?: string
+          order_index?: number
+          template_id?: string
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_template_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "ks_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_templates: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_system_default: boolean | null
+          name: string
+          phase: string | null
+          trade: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_system_default?: boolean | null
+          name: string
+          phase?: string | null
+          trade?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_system_default?: boolean | null
+          name?: string
+          phase?: string | null
+          trade?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -699,7 +1077,9 @@ export type Database = {
           hms_card_number: string | null
           hms_card_obtained: boolean | null
           hms_card_reminder_sent_30_days: boolean | null
+          hms_card_reminder_sent_60_days: boolean | null
           hms_card_reminder_sent_7_days: boolean | null
+          hms_card_reminder_sent_90_days: boolean | null
           hms_card_required: boolean | null
           id: string
           is_active: boolean
@@ -721,7 +1101,9 @@ export type Database = {
           hms_card_number?: string | null
           hms_card_obtained?: boolean | null
           hms_card_reminder_sent_30_days?: boolean | null
+          hms_card_reminder_sent_60_days?: boolean | null
           hms_card_reminder_sent_7_days?: boolean | null
+          hms_card_reminder_sent_90_days?: boolean | null
           hms_card_required?: boolean | null
           id?: string
           is_active?: boolean
@@ -743,7 +1125,9 @@ export type Database = {
           hms_card_number?: string | null
           hms_card_obtained?: boolean | null
           hms_card_reminder_sent_30_days?: boolean | null
+          hms_card_reminder_sent_60_days?: boolean | null
           hms_card_reminder_sent_7_days?: boolean | null
+          hms_card_reminder_sent_90_days?: boolean | null
           hms_card_required?: boolean | null
           id?: string
           is_active?: boolean
