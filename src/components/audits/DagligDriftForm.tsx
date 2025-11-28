@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useAuditFormResponses, type AuditFormResponse } from '@/hooks/useAuditFormResponses';
 import type { Json } from '@/integrations/supabase/types';
 import SavedFormsList from './SavedFormsList';
+import EditableChecklistSection, { type ChecklistQuestion, type ChecklistAnswer } from './EditableChecklistSection';
 import { 
   MessageSquare, 
   Users, 
@@ -27,11 +27,8 @@ import {
   ArrowLeft
 } from 'lucide-react';
 
-type YesNoNa = 'yes' | 'no' | 'na' | '';
-
-interface ChecklistAnswer {
-  answer: YesNoNa;
-  comment: string;
+interface SectionQuestions {
+  [sectionId: string]: ChecklistQuestion[];
 }
 
 interface ChecklistAnswers {
@@ -45,13 +42,14 @@ interface FormData {
   date: string;
   participants: string;
   auditor: string;
+  sectionQuestions: SectionQuestions;
   checklistAnswers: ChecklistAnswers;
   otherComments: string;
   auditorSignature: string;
   managerSignature: string;
 }
 
-// Define all sections with their questions
+// Define all sections with their default questions
 const sections = [
   {
     id: 'informasjon',
@@ -166,12 +164,23 @@ const sections = [
   },
 ];
 
-function initializeChecklistAnswers(): ChecklistAnswers {
-  const answers: ChecklistAnswers = {};
+function initializeSectionQuestions(): SectionQuestions {
+  const sectionQuestions: SectionQuestions = {};
   sections.forEach(section => {
-    answers[section.id] = {};
-    section.questions.forEach(q => {
-      answers[section.id][q.id] = { answer: '', comment: '' };
+    sectionQuestions[section.id] = section.questions.map(q => ({
+      id: q.id,
+      question: q.question
+    }));
+  });
+  return sectionQuestions;
+}
+
+function initializeChecklistAnswers(sectionQuestions: SectionQuestions): ChecklistAnswers {
+  const answers: ChecklistAnswers = {};
+  Object.keys(sectionQuestions).forEach(sectionId => {
+    answers[sectionId] = {};
+    sectionQuestions[sectionId].forEach(q => {
+      answers[sectionId][q.id] = { answer: '', comment: '' };
     });
   });
   return answers;
@@ -183,16 +192,20 @@ const DagligDriftForm = () => {
   const [existingId, setExistingId] = useState<string | undefined>();
   const [showForm, setShowForm] = useState(false);
 
-  const getInitialFormData = (): FormData => ({
-    companyName: company?.name || '',
-    date: new Date().toISOString().split('T')[0],
-    participants: '',
-    auditor: '',
-    checklistAnswers: initializeChecklistAnswers(),
-    otherComments: '',
-    auditorSignature: '',
-    managerSignature: '',
-  });
+  const getInitialFormData = (): FormData => {
+    const sectionQuestions = initializeSectionQuestions();
+    return {
+      companyName: company?.name || '',
+      date: new Date().toISOString().split('T')[0],
+      participants: '',
+      auditor: '',
+      sectionQuestions,
+      checklistAnswers: initializeChecklistAnswers(sectionQuestions),
+      otherComments: '',
+      auditorSignature: '',
+      managerSignature: '',
+    };
+  };
 
   const [formData, setFormData] = useState<FormData>(getInitialFormData());
   const formTypeResponses = responses.filter(r => r.form_type === "daglig_drift");
@@ -236,12 +249,62 @@ const DagligDriftForm = () => {
         [sectionId]: {
           ...prev.checklistAnswers[sectionId],
           [questionId]: {
-            ...prev.checklistAnswers[sectionId][questionId],
+            ...prev.checklistAnswers[sectionId]?.[questionId] || { answer: '', comment: '' },
             [field]: value
           }
         }
       }
     }));
+  };
+
+  const handleAddQuestion = (sectionId: string, question: string) => {
+    const newId = `custom_${Date.now()}`;
+    setFormData(prev => ({
+      ...prev,
+      sectionQuestions: {
+        ...prev.sectionQuestions,
+        [sectionId]: [
+          ...prev.sectionQuestions[sectionId],
+          { id: newId, question }
+        ]
+      },
+      checklistAnswers: {
+        ...prev.checklistAnswers,
+        [sectionId]: {
+          ...prev.checklistAnswers[sectionId],
+          [newId]: { answer: '', comment: '' }
+        }
+      }
+    }));
+  };
+
+  const handleEditQuestion = (sectionId: string, questionId: string, newQuestion: string) => {
+    setFormData(prev => ({
+      ...prev,
+      sectionQuestions: {
+        ...prev.sectionQuestions,
+        [sectionId]: prev.sectionQuestions[sectionId].map(q =>
+          q.id === questionId ? { ...q, question: newQuestion } : q
+        )
+      }
+    }));
+  };
+
+  const handleDeleteQuestion = (sectionId: string, questionId: string) => {
+    setFormData(prev => {
+      const { [questionId]: removed, ...remainingAnswers } = prev.checklistAnswers[sectionId] || {};
+      return {
+        ...prev,
+        sectionQuestions: {
+          ...prev.sectionQuestions,
+          [sectionId]: prev.sectionQuestions[sectionId].filter(q => q.id !== questionId)
+        },
+        checklistAnswers: {
+          ...prev.checklistAnswers,
+          [sectionId]: remainingAnswers
+        }
+      };
+    });
   };
 
   const handleSaveDraft = async () => {
@@ -276,70 +339,6 @@ const DagligDriftForm = () => {
     if (result) {
       setExistingId(result.id);
     }
-  };
-
-  const renderChecklistSection = (section: typeof sections[0]) => {
-    const SectionIcon = section.icon;
-    
-    return (
-      <Card key={section.id} className="mb-6">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <SectionIcon className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <CardTitle className="text-lg">{section.title}</CardTitle>
-              {section.subtitle && (
-                <CardDescription>{section.subtitle}</CardDescription>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {section.questions.length > 0 ? (
-            section.questions.map((q, index) => (
-              <div key={q.id} className="space-y-3 pb-4 border-b border-border last:border-0 last:pb-0">
-                <p className="font-medium text-sm">{index + 1}. {q.question}</p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <RadioGroup
-                    value={formData.checklistAnswers[section.id]?.[q.id]?.answer || ''}
-                    onValueChange={(value) => updateChecklistAnswer(section.id, q.id, 'answer', value)}
-                    className="flex gap-4"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="yes" id={`${section.id}-${q.id}-yes`} />
-                      <Label htmlFor={`${section.id}-${q.id}-yes`} className="text-sm">Ja</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id={`${section.id}-${q.id}-no`} />
-                      <Label htmlFor={`${section.id}-${q.id}-no`} className="text-sm">Nei</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="na" id={`${section.id}-${q.id}-na`} />
-                      <Label htmlFor={`${section.id}-${q.id}-na`} className="text-sm">Ikke aktuelt</Label>
-                    </div>
-                  </RadioGroup>
-                  <Input
-                    placeholder="Kommentar"
-                    value={formData.checklistAnswers[section.id]?.[q.id]?.comment || ''}
-                    onChange={(e) => updateChecklistAnswer(section.id, q.id, 'comment', e.target.value)}
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-            ))
-          ) : (
-            <Textarea
-              placeholder="Skriv inn andre ting som bør kartlegges..."
-              value={formData.otherComments}
-              onChange={(e) => setFormData(prev => ({ ...prev, otherComments: e.target.value }))}
-              rows={4}
-            />
-          )}
-        </CardContent>
-      </Card>
-    );
   };
 
   if (!showForm) {
@@ -409,7 +408,56 @@ const DagligDriftForm = () => {
       </Card>
 
       {/* All Checklist Sections */}
-      {sections.map(section => renderChecklistSection(section))}
+      {sections.map(section => {
+        // Skip the "annet" section as it has special handling with textarea
+        if (section.id === 'annet') {
+          return (
+            <Card key={section.id} className="mb-6">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <section.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">{section.title}</CardTitle>
+                    {section.subtitle && (
+                      <CardDescription>{section.subtitle}</CardDescription>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  placeholder="Skriv inn andre ting som bør kartlegges..."
+                  value={formData.otherComments}
+                  onChange={(e) => setFormData(prev => ({ ...prev, otherComments: e.target.value }))}
+                  rows={4}
+                />
+              </CardContent>
+            </Card>
+          );
+        }
+        
+        return (
+          <EditableChecklistSection
+            key={section.id}
+            sectionId={section.id}
+            title={section.title}
+            subtitle={section.subtitle}
+            icon={section.icon}
+            questions={formData.sectionQuestions[section.id] || []}
+            answers={formData.checklistAnswers[section.id] || {}}
+            onAnswerChange={(questionId, field, value) => 
+              updateChecklistAnswer(section.id, questionId, field, value)
+            }
+            onAddQuestion={(question) => handleAddQuestion(section.id, question)}
+            onEditQuestion={(questionId, newQuestion) => 
+              handleEditQuestion(section.id, questionId, newQuestion)
+            }
+            onDeleteQuestion={(questionId) => handleDeleteQuestion(section.id, questionId)}
+          />
+        );
+      })}
 
       {/* Signatures */}
       <Card>
