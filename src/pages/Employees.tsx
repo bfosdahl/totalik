@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Users, GraduationCap, FileText, AlertCircle, ChevronRight } from "lucide-react";
+import { Search, Users, GraduationCap, FileText, AlertCircle, ChevronRight, CreditCard } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEmployees } from "@/hooks/useEmployees";
 import { EmployeeDetailDialog } from "@/components/employees/EmployeeDetailDialog";
@@ -39,6 +39,15 @@ export default function Employees() {
     return isPast(new Date(course.expiry_date));
   }) || [];
 
+  // Calculate HMS card stats
+  const hmsCardIssues = employees?.filter(emp => {
+    if (!emp.hms_card_required) return false;
+    if (!emp.hms_card_obtained) return true;
+    if (emp.hms_card_expiry_date && isPast(new Date(emp.hms_card_expiry_date))) return true;
+    if (emp.hms_card_expiry_date && differenceInDays(new Date(emp.hms_card_expiry_date), new Date()) <= 30) return true;
+    return false;
+  }) || [];
+
   const getInitials = (firstName?: string | null, lastName?: string | null) => {
     const first = firstName?.charAt(0) || "";
     const last = lastName?.charAt(0) || "";
@@ -59,7 +68,7 @@ export default function Employees() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
@@ -96,7 +105,7 @@ export default function Employees() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{expiringCourses.length}</p>
-                  <p className="text-sm text-muted-foreground">Utløper snart</p>
+                  <p className="text-sm text-muted-foreground">Kurs utløper</p>
                 </div>
               </div>
             </CardContent>
@@ -111,6 +120,20 @@ export default function Employees() {
                 <div>
                   <p className="text-2xl font-bold">{expiredCourses.length}</p>
                   <p className="text-sm text-muted-foreground">Utgåtte kurs</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${hmsCardIssues.length > 0 ? "bg-red-500/10" : "bg-green-500/10"}`}>
+                  <CreditCard className={`w-5 h-5 ${hmsCardIssues.length > 0 ? "text-red-500" : "text-green-500"}`} />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{hmsCardIssues.length}</p>
+                  <p className="text-sm text-muted-foreground">HMS-kort problemer</p>
                 </div>
               </div>
             </CardContent>
@@ -168,6 +191,15 @@ export default function Employees() {
                         c.expiry_date && isPast(new Date(c.expiry_date))
                       ).length;
 
+                      // HMS card status
+                      const hmsCardMissing = employee.hms_card_required && !employee.hms_card_obtained;
+                      const hmsCardExpired = employee.hms_card_required && employee.hms_card_obtained && 
+                        employee.hms_card_expiry_date && isPast(new Date(employee.hms_card_expiry_date));
+                      const hmsCardExpiring = employee.hms_card_required && employee.hms_card_obtained && 
+                        employee.hms_card_expiry_date && 
+                        differenceInDays(new Date(employee.hms_card_expiry_date), new Date()) <= 30 &&
+                        differenceInDays(new Date(employee.hms_card_expiry_date), new Date()) >= 0;
+
                       return (
                         <button
                           key={employee.id}
@@ -190,15 +222,25 @@ export default function Employees() {
                             </p>
                           </div>
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap justify-end">
+                            {(hmsCardMissing || hmsCardExpired) && (
+                              <Badge variant="destructive" className="text-xs">
+                                HMS-kort {hmsCardExpired ? "utgått" : "mangler"}
+                              </Badge>
+                            )}
+                            {hmsCardExpiring && (
+                              <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">
+                                HMS-kort utløper
+                              </Badge>
+                            )}
                             {expiredCount > 0 && (
                               <Badge variant="destructive" className="text-xs">
-                                {expiredCount} utgått
+                                {expiredCount} kurs utgått
                               </Badge>
                             )}
                             {expiringCount > 0 && (
                               <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">
-                                {expiringCount} utløper snart
+                                {expiringCount} kurs utløper
                               </Badge>
                             )}
                             <Badge variant="secondary" className="text-xs">
