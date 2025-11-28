@@ -1116,6 +1116,42 @@ export type Database = {
           },
         ]
       }
+      ks_project_routines: {
+        Row: {
+          created_at: string | null
+          id: string
+          project_id: string
+          routine_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          project_id: string
+          routine_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          project_id?: string
+          routine_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_routines_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_routines_routine_id_fkey"
+            columns: ["routine_id"]
+            isOneToOne: false
+            referencedRelation: "ks_routines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_projects: {
         Row: {
           address: string | null
@@ -1180,6 +1216,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "ks_projects_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_routines: {
+        Row: {
+          category: string | null
+          company_id: string
+          created_at: string | null
+          examples: string | null
+          id: string
+          name: string
+          notes: string | null
+          procedure: string | null
+          purpose: string | null
+          responsibility: string | null
+          routine_number: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          company_id: string
+          created_at?: string | null
+          examples?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          procedure?: string | null
+          purpose?: string | null
+          responsibility?: string | null
+          routine_number: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          company_id?: string
+          created_at?: string | null
+          examples?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          procedure?: string | null
+          purpose?: string | null
+          responsibility?: string | null
+          routine_number?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_routines_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
