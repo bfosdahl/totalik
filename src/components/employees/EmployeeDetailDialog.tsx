@@ -26,12 +26,14 @@ import {
   Trash2,
   Download,
   AlertCircle,
-  Upload
+  Upload,
+  CreditCard
 } from "lucide-react";
 import { Employee, useUpdateEmployee, useEmployeeDocuments, useEmployeeCourses } from "@/hooks/useEmployees";
 import { useAuth } from "@/contexts/AuthContext";
 import { AddCourseDialog } from "./AddCourseDialog";
 import { UploadDocumentDialog } from "./UploadDocumentDialog";
+import { HmsCardSection } from "./HmsCardSection";
 import { format, differenceInDays, isPast } from "date-fns";
 import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -268,6 +270,9 @@ export function EmployeeDetailDialog({
                   )}
                 </CardContent>
               </Card>
+
+              {/* HMS Card Section */}
+              <HmsCardSection employee={employee} canManage={canManage} />
             </TabsContent>
 
             {/* Documents Tab */}

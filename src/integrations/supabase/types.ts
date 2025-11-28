@@ -630,6 +630,64 @@ export type Database = {
           },
         ]
       }
+      hms_card_requests: {
+        Row: {
+          company_id: string
+          created_at: string
+          employee_id: string
+          id: string
+          notes: string | null
+          requested_by: string | null
+          requested_by_name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          requested_by?: string | null
+          requested_by_name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          requested_by?: string | null
+          requested_by_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hms_card_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hms_card_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hms_card_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -637,6 +695,12 @@ export type Database = {
           created_at: string
           email: string | null
           first_name: string | null
+          hms_card_expiry_date: string | null
+          hms_card_number: string | null
+          hms_card_obtained: boolean | null
+          hms_card_reminder_sent_30_days: boolean | null
+          hms_card_reminder_sent_7_days: boolean | null
+          hms_card_required: boolean | null
           id: string
           is_active: boolean
           last_name: string | null
@@ -653,6 +717,12 @@ export type Database = {
           created_at?: string
           email?: string | null
           first_name?: string | null
+          hms_card_expiry_date?: string | null
+          hms_card_number?: string | null
+          hms_card_obtained?: boolean | null
+          hms_card_reminder_sent_30_days?: boolean | null
+          hms_card_reminder_sent_7_days?: boolean | null
+          hms_card_required?: boolean | null
           id?: string
           is_active?: boolean
           last_name?: string | null
@@ -669,6 +739,12 @@ export type Database = {
           created_at?: string
           email?: string | null
           first_name?: string | null
+          hms_card_expiry_date?: string | null
+          hms_card_number?: string | null
+          hms_card_obtained?: boolean | null
+          hms_card_reminder_sent_30_days?: boolean | null
+          hms_card_reminder_sent_7_days?: boolean | null
+          hms_card_required?: boolean | null
           id?: string
           is_active?: boolean
           last_name?: string | null

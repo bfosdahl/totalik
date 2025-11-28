@@ -49,6 +49,24 @@ export interface Employee {
   next_of_kin_name: string | null;
   next_of_kin_phone: string | null;
   next_of_kin_relation: string | null;
+  hms_card_required: boolean | null;
+  hms_card_obtained: boolean | null;
+  hms_card_number: string | null;
+  hms_card_expiry_date: string | null;
+  hms_card_reminder_sent_30_days: boolean | null;
+  hms_card_reminder_sent_7_days: boolean | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HmsCardRequest {
+  id: string;
+  company_id: string;
+  employee_id: string;
+  status: string;
+  notes: string | null;
+  requested_by: string | null;
+  requested_by_name: string;
   created_at: string;
   updated_at: string;
 }
