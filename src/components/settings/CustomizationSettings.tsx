@@ -3,12 +3,13 @@ import { motion } from "framer-motion";
 import { Palette, ArrowLeft, Moon, Sun, Monitor, Upload, Loader2, Trash2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { AccentColorKey, accentColors } from "@/hooks/useAccentColor";
+import { AccentColorKey, accentColors, getColorValues, isCustomColor } from "@/hooks/useAccentColor";
 
 interface CustomizationSettingsProps {
   onBack: () => void;
@@ -21,6 +22,12 @@ const accentColorOptions: { name: string; value: AccentColorKey; tailwindClass: 
   { name: "Oransje", value: "orange", tailwindClass: "bg-orange-500" },
   { name: "Rosa", value: "pink", tailwindClass: "bg-pink-500" },
   { name: "Rød", value: "red", tailwindClass: "bg-red-500" },
+  { name: "Teal", value: "teal", tailwindClass: "bg-teal-500" },
+  { name: "Amber", value: "amber", tailwindClass: "bg-amber-500" },
+  { name: "Indigo", value: "indigo", tailwindClass: "bg-indigo-500" },
+  { name: "Cyan", value: "cyan", tailwindClass: "bg-cyan-500" },
+  { name: "Rose", value: "rose", tailwindClass: "bg-rose-500" },
+  { name: "Slate", value: "slate", tailwindClass: "bg-slate-500" },
 ];
 
 export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
@@ -29,8 +36,12 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [savingColor, setSavingColor] = useState(false);
+  const [customHex, setCustomHex] = useState(() => {
+    const current = company?.accent_color || "blue";
+    return isCustomColor(current) ? current : "#3b82f6";
+  });
 
-  const currentAccentColor = (company?.accent_color as AccentColorKey) || "blue";
+  const currentAccentColor = company?.accent_color || "blue";
 
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -105,7 +116,14 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
     }
   };
 
-  const handleAccentColorChange = async (color: AccentColorKey) => {
+  const applyColor = (color: string) => {
+    const colors = getColorValues(color);
+    const root = document.documentElement;
+    root.style.setProperty("--primary", colors.primary);
+    root.style.setProperty("--primary-foreground", colors.primaryForeground);
+  };
+
+  const handleAccentColorChange = async (color: string) => {
     if (!company?.id) return;
 
     setSavingColor(true);
@@ -117,12 +135,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
 
       if (error) throw error;
 
-      // Apply color immediately
-      const colors = accentColors[color];
-      const root = document.documentElement;
-      root.style.setProperty("--primary", colors.primary);
-      root.style.setProperty("--primary-foreground", colors.primaryForeground);
-
+      applyColor(color);
       toast.success("Aksentfarge oppdatert!");
       refreshCompany?.();
     } catch (error: any) {
@@ -130,6 +143,21 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
       toast.error(error.message || "Kunne ikke oppdatere aksentfarge");
     } finally {
       setSavingColor(false);
+    }
+  };
+
+  const handleCustomHexChange = (hex: string) => {
+    setCustomHex(hex);
+    if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+      applyColor(hex);
+    }
+  };
+
+  const saveCustomColor = () => {
+    if (/^#[0-9A-Fa-f]{6}$/.test(customHex)) {
+      handleAccentColorChange(customHex);
+    } else {
+      toast.error("Ugyldig HEX-farge. Bruk format #RRGGBB");
     }
   };
 
@@ -310,7 +338,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
           Velg hovedfargen som brukes i grensesnittet
         </p>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 mb-6">
           {accentColorOptions.map((accent) => (
             <button
               key={accent.value}
@@ -331,6 +359,45 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
             </button>
           ))}
         </div>
+
+        {/* Custom HEX Color */}
+        <div className="border-t border-border pt-4">
+          <h4 className="text-sm font-medium mb-3">Egendefinert farge</h4>
+          <div className="flex items-center gap-3">
+            <div 
+              className="w-10 h-10 rounded-lg border border-border flex-shrink-0"
+              style={{ backgroundColor: /^#[0-9A-Fa-f]{6}$/.test(customHex) ? customHex : "#3b82f6" }}
+            />
+            <Input
+              type="text"
+              value={customHex}
+              onChange={(e) => handleCustomHexChange(e.target.value)}
+              placeholder="#3b82f6"
+              className="w-32 font-mono"
+              maxLength={7}
+            />
+            <input
+              type="color"
+              value={/^#[0-9A-Fa-f]{6}$/.test(customHex) ? customHex : "#3b82f6"}
+              onChange={(e) => handleCustomHexChange(e.target.value)}
+              className="w-10 h-10 rounded cursor-pointer border-0 p-0"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={saveCustomColor}
+              disabled={savingColor || !/^#[0-9A-Fa-f]{6}$/.test(customHex)}
+            >
+              Bruk farge
+            </Button>
+          </div>
+          {isCustomColor(currentAccentColor) && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Aktiv egendefinert farge: {currentAccentColor}
+            </p>
+          )}
+        </div>
+
         {savingColor && (
           <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
             <Loader2 className="w-4 h-4 animate-spin" />
