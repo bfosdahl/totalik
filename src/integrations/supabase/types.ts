@@ -468,6 +468,7 @@ export type Database = {
           due_date: string
           id: string
           priority: string
+          project_id: string | null
           reporter_id: string | null
           reporter_name: string
           status: string
@@ -485,6 +486,7 @@ export type Database = {
           due_date: string
           id?: string
           priority: string
+          project_id?: string | null
           reporter_id?: string | null
           reporter_name: string
           status?: string
@@ -502,6 +504,7 @@ export type Database = {
           due_date?: string
           id?: string
           priority?: string
+          project_id?: string | null
           reporter_id?: string | null
           reporter_name?: string
           status?: string
@@ -521,6 +524,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deviations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
             referencedColumns: ["id"]
           },
           {
