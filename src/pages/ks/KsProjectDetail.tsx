@@ -369,6 +369,20 @@ export default function KsProjectDetail() {
               <Button
                 variant="outline"
                 className="h-auto flex flex-col items-center gap-2 p-4"
+                onClick={() => navigate('/ks/checklists')}
+              >
+                <div className="p-2 bg-teal-100 dark:bg-teal-900/20 rounded-lg">
+                  <ListTodo className="h-6 w-6 text-teal-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold">Se sjekklister</p>
+                  <p className="text-xs text-muted-foreground">Alle utførte sjekklister</p>
+                </div>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center gap-2 p-4"
                 onClick={() => navigate('/ks/templates')}
               >
                 <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
