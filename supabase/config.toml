@@ -14,3 +14,12 @@ verify_jwt = true
 
 [functions.bulk-create-users]
 verify_jwt = true
+
+[functions.check-course-expiry]
+verify_jwt = false
+
+[functions.create-company-admin]
+verify_jwt = true
+
+[functions.create-user]
+verify_jwt = true

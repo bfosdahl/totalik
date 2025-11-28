@@ -14,6 +14,7 @@ import {
   Building2,
   ShieldCheck,
   X,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: ClipboardList, label: "Oppsett", path: "/setup" },
+  { icon: Users, label: "Ansatte", path: "/employees" },
   { icon: AlertTriangle, label: "Avvik", path: "/deviations" },
   { icon: FileCheck, label: "Revisjoner", path: "/audits" },
   { icon: BookOpen, label: "Handbok", path: "/handbook" },
