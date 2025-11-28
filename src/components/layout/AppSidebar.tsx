@@ -16,6 +16,8 @@ import {
   X,
   Users,
   HardHat,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,8 +30,13 @@ const navItems = [
   { icon: AlertTriangle, label: "Avvik", path: "/deviations" },
   { icon: FileCheck, label: "Revisjoner", path: "/audits" },
   { icon: BookOpen, label: "Handbok", path: "/handbook" },
-  { icon: HardHat, label: "KS Bygg", path: "/ks/projects" },
   { icon: Settings, label: "Innstillinger", path: "/settings" },
+];
+
+const ksByggItems = [
+  { label: "Prosjekter", path: "/ks/projects" },
+  { label: "Rutiner", path: "/ks/routines" },
+  { label: "Maler", path: "/ks/templates" },
 ];
 
 interface AppSidebarProps {
@@ -39,6 +46,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [ksByggExpanded, setKsByggExpanded] = useState(false);
   const location = useLocation();
   const { profile, company, isSystemAdmin } = useAuth();
 
@@ -177,6 +185,78 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               </NavLink>
             );
           })}
+
+          {/* KS Bygg collapsible section */}
+          <div>
+            <button
+              onClick={() => setKsByggExpanded(!ksByggExpanded)}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
+                collapsed && "justify-center",
+                location.pathname.startsWith("/ks")
+                  ? "text-sidebar-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              )}
+            >
+              <HardHat className={cn(
+                "w-5 h-5 flex-shrink-0 transition-transform",
+                !location.pathname.startsWith("/ks") && "group-hover:scale-110"
+              )} />
+              <AnimatePresence mode="wait">
+                {!collapsed && (
+                  <>
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      className="font-medium text-sm flex-1 text-left"
+                    >
+                      KS Bygg
+                    </motion.span>
+                    {ksByggExpanded ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </>
+                )}
+              </AnimatePresence>
+            </button>
+            
+            {/* KS Bygg submenu */}
+            <AnimatePresence>
+              {ksByggExpanded && !collapsed && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-6 space-y-1 mt-1">
+                    {ksByggItems.map((item) => {
+                      const isActive = location.pathname === item.path ||
+                        location.pathname.startsWith(item.path + "/");
+                      
+                      return (
+                        <NavLink
+                          key={item.path}
+                          to={item.path}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                            isActive
+                              ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                              : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                          )}
+                        >
+                          {item.label}
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Admin link for system admins */}
           {isSystemAdmin && (
