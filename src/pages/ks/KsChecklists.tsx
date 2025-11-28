@@ -87,7 +87,7 @@ export default function KsChecklists() {
   const getCompletionPercentage = (items: any[]) => {
     if (!items || items.length === 0) return 0;
     const completedItems = items.filter(item => 
-      item.status === 'ok' || item.status === 'avvik' || item.status === 'ikke_aktuelt'
+      item.status && item.status !== 'pending'
     ).length;
     return Math.round((completedItems / items.length) * 100);
   };
