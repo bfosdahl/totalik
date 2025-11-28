@@ -21,6 +21,7 @@ import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -60,6 +61,7 @@ export default function AdminUsers() {
   const [selectedRole, setSelectedRole] = useState<AppRole>("user");
   const [showPassword, setShowPassword] = useState(false);
   const [passwordCopied, setPasswordCopied] = useState(false);
+  const [sendPasswordEmail, setSendPasswordEmail] = useState(true);
   const [selectedCompany, setSelectedCompany] = useState<string>("");
   const [newPassword, setNewPassword] = useState("");
   
@@ -218,19 +220,25 @@ export default function AdminUsers() {
   });
 
   const resetPasswordMutation = useMutation({
-    mutationFn: async ({ userId, newPassword }: { userId: string; newPassword: string }) => {
+    mutationFn: async ({ userId, newPassword, sendEmail }: { userId: string; newPassword: string; sendEmail: boolean }) => {
       const { data, error } = await supabase.functions.invoke("reset-user-password", {
-        body: { userId, newPassword },
+        body: { userId, newPassword, sendEmail },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       setIsPasswordDialogOpen(false);
       setNewPassword("");
       setSelectedUser(null);
-      toast({ title: "Passord oppdatert", description: "Brukerens passord er endret" });
+      setSendPasswordEmail(true);
+      toast({ 
+        title: "Passord oppdatert", 
+        description: data.emailSent 
+          ? "Brukerens passord er endret og sendt på e-post" 
+          : "Brukerens passord er endret"
+      });
     },
     onError: (error) => {
       toast({ title: "Feil", description: error.message, variant: "destructive" });
@@ -825,8 +833,22 @@ export default function AdminUsers() {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Passordet må være minst 6 tegn langt. Husk å dele passordet med brukeren.
+                    Passordet må være minst 6 tegn langt.
                   </p>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="sendEmail" 
+                    checked={sendPasswordEmail}
+                    onCheckedChange={(checked) => setSendPasswordEmail(checked === true)}
+                  />
+                  <label
+                    htmlFor="sendEmail"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Send passord på e-post til brukeren
+                  </label>
                 </div>
 
                 <div className="flex justify-end gap-2 pt-4">
@@ -837,6 +859,7 @@ export default function AdminUsers() {
                     onClick={() => resetPasswordMutation.mutate({
                       userId: selectedUser.user_id,
                       newPassword: newPassword,
+                      sendEmail: sendPasswordEmail,
                     })}
                     disabled={newPassword.length < 6 || resetPasswordMutation.isPending}
                   >
