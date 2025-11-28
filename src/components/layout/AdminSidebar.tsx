@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   Menu,
   X,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ const adminNavItems = [
   { icon: LayoutDashboard, label: "Oversikt", path: "/admin" },
   { icon: Building2, label: "Bedrifter", path: "/admin/companies" },
   { icon: Users, label: "Brukere", path: "/admin/users" },
+  { icon: CreditCard, label: "HMS-kort", path: "/admin/hms-requests" },
 ];
 
 interface SidebarContentProps {
