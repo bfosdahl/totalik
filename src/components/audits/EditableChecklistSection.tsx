@@ -36,6 +36,9 @@ interface EditableChecklistSectionProps {
   onAddQuestion: (question: string) => void;
   onEditQuestion: (questionId: string, newQuestion: string) => void;
   onDeleteQuestion: (questionId: string) => void;
+  onTitleChange?: (newTitle: string) => void;
+  onSubtitleChange?: (newSubtitle: string) => void;
+  onDeleteSection?: () => void;
 }
 
 const EditableChecklistSection: React.FC<EditableChecklistSectionProps> = ({
@@ -49,11 +52,32 @@ const EditableChecklistSection: React.FC<EditableChecklistSectionProps> = ({
   onAddQuestion,
   onEditQuestion,
   onDeleteQuestion,
+  onTitleChange,
+  onSubtitleChange,
+  onDeleteSection,
 }) => {
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newQuestion, setNewQuestion] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(title);
+  const [isEditingSubtitle, setIsEditingSubtitle] = useState(false);
+  const [editingSubtitle, setEditingSubtitle] = useState(subtitle || '');
+
+  const handleSaveTitle = () => {
+    if (editingTitle.trim() && onTitleChange) {
+      onTitleChange(editingTitle.trim());
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleSaveSubtitle = () => {
+    if (onSubtitleChange) {
+      onSubtitleChange(editingSubtitle.trim());
+    }
+    setIsEditingSubtitle(false);
+  };
 
   const handleAddQuestion = () => {
     if (newQuestion.trim()) {
@@ -89,23 +113,121 @@ const EditableChecklistSection: React.FC<EditableChecklistSectionProps> = ({
             <div className="p-2 rounded-lg bg-primary/10">
               <SectionIcon className="w-5 h-5 text-primary" />
             </div>
-            <div>
-              <CardTitle className="text-lg">{title}</CardTitle>
-              {subtitle && (
-                <CardDescription>{subtitle}</CardDescription>
+            <div className="flex-1">
+              {isEditingTitle ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={editingTitle}
+                    onChange={(e) => setEditingTitle(e.target.value)}
+                    className="text-lg font-semibold h-8"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveTitle();
+                      if (e.key === 'Escape') {
+                        setIsEditingTitle(false);
+                        setEditingTitle(title);
+                      }
+                    }}
+                  />
+                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={handleSaveTitle}>
+                    <Check className="w-4 h-4 text-green-600" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                    setIsEditingTitle(false);
+                    setEditingTitle(title);
+                  }}>
+                    <X className="w-4 h-4 text-destructive" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 group">
+                  <CardTitle className="text-lg">{title}</CardTitle>
+                  {onTitleChange && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => {
+                        setEditingTitle(title);
+                        setIsEditingTitle(true);
+                      }}
+                    >
+                      <Pencil className="w-3 h-3 text-muted-foreground" />
+                    </Button>
+                  )}
+                </div>
               )}
+              {isEditingSubtitle ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <Input
+                    value={editingSubtitle}
+                    onChange={(e) => setEditingSubtitle(e.target.value)}
+                    className="text-sm h-7"
+                    placeholder="Legg til beskrivelse..."
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveSubtitle();
+                      if (e.key === 'Escape') {
+                        setIsEditingSubtitle(false);
+                        setEditingSubtitle(subtitle || '');
+                      }
+                    }}
+                  />
+                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={handleSaveSubtitle}>
+                    <Check className="w-3 h-3 text-green-600" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                    setIsEditingSubtitle(false);
+                    setEditingSubtitle(subtitle || '');
+                  }}>
+                    <X className="w-3 h-3 text-destructive" />
+                  </Button>
+                </div>
+              ) : subtitle || onSubtitleChange ? (
+                <div className="flex items-center gap-2 group">
+                  <CardDescription>{subtitle || 'Klikk for å legge til beskrivelse'}</CardDescription>
+                  {onSubtitleChange && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => {
+                        setEditingSubtitle(subtitle || '');
+                        setIsEditingSubtitle(true);
+                      }}
+                    >
+                      <Pencil className="w-2.5 h-2.5 text-muted-foreground" />
+                    </Button>
+                  )}
+                </div>
+              ) : null}
             </div>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setIsAddingNew(true)}
-            className="gap-1"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Legg til</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsAddingNew(true)}
+              className="gap-1"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Legg til</span>
+            </Button>
+            {onDeleteSection && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onDeleteSection}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
