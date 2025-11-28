@@ -48,7 +48,7 @@ const statusConfig = {
   closed: { label: "Lukket", color: "bg-success/10 text-success" },
 };
 
-const categoryConfig = {
+const categoryConfig: Record<string, { color: string }> = {
   HMS: { color: "bg-primary/10 text-primary" },
   MAT: { color: "bg-accent/10 text-accent" },
   BYGG: { color: "bg-info/10 text-info" },
@@ -343,7 +343,7 @@ const Deviations = () => {
                         <span className="text-xs font-mono text-muted-foreground">
                           {deviation.deviation_number}
                         </span>
-                        <Badge className={categoryConfig[deviation.category].color}>
+                        <Badge className={(categoryConfig[deviation.category] || { color: "bg-muted text-muted-foreground" }).color}>
                           {deviation.category}
                         </Badge>
                         <Badge className={priorityConfig[deviation.priority].color}>
