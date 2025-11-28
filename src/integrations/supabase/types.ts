@@ -1119,6 +1119,11 @@ export type Database = {
       ks_projects: {
         Row: {
           address: string | null
+          ansvarlig_kontrollerende: string | null
+          ansvarlig_prosjekterende: string | null
+          ansvarlig_soker: string | null
+          ansvarlig_utforende: string | null
+          ansvarlig_utforende_funksjon: string | null
           ansvarsrolle: string | null
           client_name: string | null
           company_id: string
@@ -1134,6 +1139,11 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          ansvarlig_kontrollerende?: string | null
+          ansvarlig_prosjekterende?: string | null
+          ansvarlig_soker?: string | null
+          ansvarlig_utforende?: string | null
+          ansvarlig_utforende_funksjon?: string | null
           ansvarsrolle?: string | null
           client_name?: string | null
           company_id: string
@@ -1149,6 +1159,11 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          ansvarlig_kontrollerende?: string | null
+          ansvarlig_prosjekterende?: string | null
+          ansvarlig_soker?: string | null
+          ansvarlig_utforende?: string | null
+          ansvarlig_utforende_funksjon?: string | null
           ansvarsrolle?: string | null
           client_name?: string | null
           company_id?: string

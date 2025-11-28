@@ -17,6 +17,11 @@ export interface KsProject {
   created_by_user_id: string | null;
   created_at: string;
   updated_at: string;
+  ansvarlig_soker: string | null;
+  ansvarlig_prosjekterende: string | null;
+  ansvarlig_utforende: string | null;
+  ansvarlig_utforende_funksjon: string | null;
+  ansvarlig_kontrollerende: string | null;
 }
 
 export interface KsTemplate {
@@ -65,6 +70,11 @@ export interface NewKsProjectInput {
   ansvarsrolle?: string;
   start_date: string;
   end_date?: string;
+  ansvarlig_soker?: string;
+  ansvarlig_prosjekterende?: string;
+  ansvarlig_utforende?: string;
+  ansvarlig_utforende_funksjon?: string;
+  ansvarlig_kontrollerende?: string;
 }
 
 export function useKsProjects() {

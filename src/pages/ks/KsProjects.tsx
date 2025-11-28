@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { useKsProjects, NewKsProjectInput } from "@/hooks/useKsProjects";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   planlagt: { label: "Planlagt", variant: "secondary" },
@@ -54,6 +55,18 @@ export default function KsProjects() {
     client_name: "",
     tiltaksklasse: "",
     start_date: new Date().toISOString().split("T")[0],
+    ansvarlig_soker: "",
+    ansvarlig_prosjekterende: "",
+    ansvarlig_utforende: "",
+    ansvarlig_utforende_funksjon: "",
+    ansvarlig_kontrollerende: "",
+  });
+
+  const [selectedRoles, setSelectedRoles] = useState({
+    soker: false,
+    prosjekterende: false,
+    utforende: false,
+    kontrollerende: false,
   });
 
   const handleCreateProject = async () => {
@@ -68,6 +81,17 @@ export default function KsProjects() {
         client_name: "",
         tiltaksklasse: "",
         start_date: new Date().toISOString().split("T")[0],
+        ansvarlig_soker: "",
+        ansvarlig_prosjekterende: "",
+        ansvarlig_utforende: "",
+        ansvarlig_utforende_funksjon: "",
+        ansvarlig_kontrollerende: "",
+      });
+      setSelectedRoles({
+        soker: false,
+        prosjekterende: false,
+        utforende: false,
+        kontrollerende: false,
       });
     }
   };
@@ -236,6 +260,151 @@ export default function KsProjects() {
                 placeholder="F.eks. Storgata 1, 3600 Kongsberg"
               />
             </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label>Funksjoner i byggesak</Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Velg hvilke ansvarsroller som er aktuelle for prosjektet
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="role-soker"
+                      checked={selectedRoles.soker}
+                      onCheckedChange={(checked) => {
+                        setSelectedRoles({ ...selectedRoles, soker: !!checked });
+                        if (!checked) setFormData({ ...formData, ansvarlig_soker: "" });
+                      }}
+                    />
+                    <Label htmlFor="role-soker" className="text-sm font-normal cursor-pointer">
+                      Ansvarlig søker
+                    </Label>
+                  </div>
+                  {selectedRoles.soker && (
+                    <Input
+                      placeholder="Navn på ansvarlig søker"
+                      value={formData.ansvarlig_soker}
+                      onChange={(e) => setFormData({ ...formData, ansvarlig_soker: e.target.value })}
+                      className="ml-6"
+                    />
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="role-prosjekterende"
+                      checked={selectedRoles.prosjekterende}
+                      onCheckedChange={(checked) => {
+                        setSelectedRoles({ ...selectedRoles, prosjekterende: !!checked });
+                        if (!checked) setFormData({ ...formData, ansvarlig_prosjekterende: "" });
+                      }}
+                    />
+                    <Label htmlFor="role-prosjekterende" className="text-sm font-normal cursor-pointer">
+                      Ansvarlig prosjekterende
+                    </Label>
+                  </div>
+                  {selectedRoles.prosjekterende && (
+                    <Input
+                      placeholder="Navn på ansvarlig prosjekterende"
+                      value={formData.ansvarlig_prosjekterende}
+                      onChange={(e) => setFormData({ ...formData, ansvarlig_prosjekterende: e.target.value })}
+                      className="ml-6"
+                    />
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="role-utforende"
+                      checked={selectedRoles.utforende}
+                      onCheckedChange={(checked) => {
+                        setSelectedRoles({ ...selectedRoles, utforende: !!checked });
+                        if (!checked) {
+                          setFormData({ 
+                            ...formData, 
+                            ansvarlig_utforende: "",
+                            ansvarlig_utforende_funksjon: ""
+                          });
+                        }
+                      }}
+                    />
+                    <Label htmlFor="role-utforende" className="text-sm font-normal cursor-pointer">
+                      Ansvarlig utførende
+                    </Label>
+                  </div>
+                  {selectedRoles.utforende && (
+                    <div className="ml-6 space-y-2">
+                      <Select
+                        value={formData.ansvarlig_utforende_funksjon}
+                        onValueChange={(value) => setFormData({ ...formData, ansvarlig_utforende_funksjon: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Velg funksjon" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="UTF">g. Tømrerarbeid og montering av trekonstruksjoner</SelectItem>
+                          <SelectItem value="INM">a. Innmåling og utstikking av tiltak</SelectItem>
+                          <SelectItem value="VEG">b. Veg- og grunnarbeider</SelectItem>
+                          <SelectItem value="LAN">c. Landskapsutforming</SelectItem>
+                          <SelectItem value="VAA">d. Vannforsynings- og avløpsanlegg</SelectItem>
+                          <SelectItem value="FJE">e. Fjernvarmeanlegg</SelectItem>
+                          <SelectItem value="BET">f. Plasstøpte betongkonstruksjoner</SelectItem>
+                          <SelectItem value="MUR">h. Murarbeid</SelectItem>
+                          <SelectItem value="MET">i. Montering av bærende metall- eller betongkonstruksjoner</SelectItem>
+                          <SelectItem value="GLA">j. Montering av glasskonstruksjoner og fasadekledning</SelectItem>
+                          <SelectItem value="TAK">k. Taktekkingsarbeid</SelectItem>
+                          <SelectItem value="BEV">l. Arbeid på bevaringsverdige byggverk</SelectItem>
+                          <SelectItem value="BRA">m. Installasjon av brannalarmanlegg</SelectItem>
+                          <SelectItem value="LED">n. Installasjon av ledesystem</SelectItem>
+                          <SelectItem value="SAN">o. Sanitærinstallasjoner</SelectItem>
+                          <SelectItem value="VAR">p. Varme- og kuldeinstallasjoner</SelectItem>
+                          <SelectItem value="SLU">q. Slukkeinstallasjoner</SelectItem>
+                          <SelectItem value="VEN">r. Ventilasjon- og klimainstallasjoner</SelectItem>
+                          <SelectItem value="LOF">s. Løfteinnretninger</SelectItem>
+                          <SelectItem value="RIV">t. Riving og miljøsanering</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        placeholder="Navn på ansvarlig utførende eller fritekst"
+                        value={formData.ansvarlig_utforende}
+                        onChange={(e) => setFormData({ ...formData, ansvarlig_utforende: e.target.value })}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="role-kontrollerende"
+                      checked={selectedRoles.kontrollerende}
+                      onCheckedChange={(checked) => {
+                        setSelectedRoles({ ...selectedRoles, kontrollerende: !!checked });
+                        if (!checked) setFormData({ ...formData, ansvarlig_kontrollerende: "" });
+                      }}
+                    />
+                    <Label htmlFor="role-kontrollerende" className="text-sm font-normal cursor-pointer">
+                      Ansvarlig kontrollerende
+                    </Label>
+                  </div>
+                  {selectedRoles.kontrollerende && (
+                    <Input
+                      placeholder="Navn på ansvarlig kontrollerende"
+                      value={formData.ansvarlig_kontrollerende}
+                      onChange={(e) => setFormData({ ...formData, ansvarlig_kontrollerende: e.target.value })}
+                      className="ml-6"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="tiltaksklasse">Tiltaksklasse</Label>
               <Select
