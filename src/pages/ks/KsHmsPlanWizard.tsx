@@ -9,7 +9,6 @@ import { useKsHmsPlan } from "@/hooks/useKsHmsPlan";
 import { KsHmsGoalsStep } from "@/components/ks/hms/KsHmsGoalsStep";
 import { KsHmsOrganizationStep } from "@/components/ks/hms/KsHmsOrganizationStep";
 import { KsHmsRiskAssessmentStep } from "@/components/ks/hms/KsHmsRiskAssessmentStep";
-import { KsHmsSjaStep } from "@/components/ks/hms/KsHmsSjaStep";
 import { KsHmsActionPlanStep } from "@/components/ks/hms/KsHmsActionPlanStep";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +18,6 @@ const steps = [
   { id: "goals", title: "HMS-mål", description: "Definer HMS-målene for prosjektet" },
   { id: "organization", title: "Organisering", description: "Definer prosjektorganisering og roller" },
   { id: "risks", title: "Risikovurdering", description: "Identifiser og vurder risikoer" },
-  { id: "sja", title: "Sikker Jobb Analyse", description: "Opprett SJA for kritiske arbeidsoppgaver" },
   { id: "actions", title: "Handlingsplan", description: "Definer tiltak og ansvar" },
 ];
 
@@ -33,7 +31,6 @@ export default function KsHmsPlanWizard() {
     organization, 
     risks, 
     actions, 
-    sjaList, 
     progress, 
     isLoading,
     saveProgress,
@@ -41,7 +38,6 @@ export default function KsHmsPlanWizard() {
     saveOrganization,
     saveRisks,
     saveActions,
-    createSja,
   } = useKsHmsPlan(projectId || null);
 
   useEffect(() => {
@@ -207,12 +203,6 @@ export default function KsHmsPlanWizard() {
               <KsHmsRiskAssessmentStep 
                 risks={risks} 
                 onSave={saveRisks}
-              />
-            )}
-            {currentStep.id === "sja" && (
-              <KsHmsSjaStep 
-                sjaList={sjaList} 
-                onCreate={createSja}
               />
             )}
             {currentStep.id === "actions" && (
