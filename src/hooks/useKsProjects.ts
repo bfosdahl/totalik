@@ -3,6 +3,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
+export interface KsProjectResponsibility {
+  id?: string;
+  project_id?: string;
+  role_type: 'SØK' | 'PRO' | 'UTF' | 'KTR';
+  funksjon: string;
+  ansvarlig_navn: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface KsProject {
   id: string;
   company_id: string;
@@ -25,6 +35,7 @@ export interface KsProject {
   ansvarlig_utforende_funksjon: string | null;
   ansvarlig_kontrollerende: string | null;
   ansvarlig_kontrollerende_funksjon: string | null;
+  responsibilities?: KsProjectResponsibility[];
 }
 
 export interface KsTemplate {
@@ -81,6 +92,7 @@ export interface NewKsProjectInput {
   ansvarlig_utforende_funksjon?: string;
   ansvarlig_kontrollerende?: string;
   ansvarlig_kontrollerende_funksjon?: string;
+  responsibilities?: Omit<KsProjectResponsibility, 'id' | 'project_id' | 'created_at' | 'updated_at'>[];
 }
 
 export function useKsProjects() {
@@ -96,12 +108,15 @@ export function useKsProjects() {
     try {
       const { data, error } = await supabase
         .from('ks_projects')
-        .select('*')
+        .select(`
+          *,
+          responsibilities:ks_project_responsibilities(*)
+        `)
         .eq('company_id', profile.company_id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProjects(data || []);
+      setProjects((data || []) as KsProject[]);
     } catch (error) {
       console.error('Error fetching KS projects:', error);
       toast.error('Kunne ikke hente prosjekter');
@@ -124,18 +139,20 @@ export function useKsProjects() {
 
     setIsSaving(true);
     try {
+      const { responsibilities, ...projectData } = input;
+      
       const { data, error } = await supabase
         .from('ks_projects')
         .insert({
           company_id: profile.company_id,
           created_by_user_id: user.id,
-          name: input.name,
-          address: input.address || null,
-          client_name: input.client_name || null,
-          tiltaksklasse: input.tiltaksklasse || null,
-          ansvarsrolle: input.ansvarsrolle || 'UTF – Tømrerarbeid og montering av trekonstruksjoner',
-          start_date: input.start_date,
-          end_date: input.end_date || null,
+          name: projectData.name,
+          address: projectData.address || null,
+          client_name: projectData.client_name || null,
+          tiltaksklasse: projectData.tiltaksklasse || null,
+          ansvarsrolle: projectData.ansvarsrolle || 'UTF – Tømrerarbeid og montering av trekonstruksjoner',
+          start_date: projectData.start_date,
+          end_date: projectData.end_date || null,
           status: 'planlagt',
         })
         .select()
@@ -143,8 +160,23 @@ export function useKsProjects() {
 
       if (error) throw error;
       
+      // Insert responsibilities if provided
+      if (responsibilities && responsibilities.length > 0) {
+        const responsibilitiesData = responsibilities.map(r => ({
+          ...r,
+          project_id: data.id,
+        }));
+        
+        const { error: respError } = await supabase
+          .from('ks_project_responsibilities')
+          .insert(responsibilitiesData);
+          
+        if (respError) throw respError;
+      }
+      
       setProjects(prev => [data, ...prev]);
       toast.success('Prosjekt opprettet');
+      await fetchProjects(); // Refresh to get responsibilities
       return data;
     } catch (error) {
       console.error('Error creating KS project:', error);
@@ -153,22 +185,48 @@ export function useKsProjects() {
     } finally {
       setIsSaving(false);
     }
-  }, [profile?.company_id, user?.id]);
+  }, [profile?.company_id, user?.id, fetchProjects]);
 
-  const updateProject = useCallback(async (id: string, updates: Partial<KsProject>) => {
+  const updateProject = useCallback(async (id: string, updates: Partial<NewKsProjectInput>) => {
     setIsSaving(true);
     try {
+      const { responsibilities, ...projectUpdates } = updates;
+      
       const { data, error } = await supabase
         .from('ks_projects')
-        .update(updates)
+        .update(projectUpdates)
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
       
+      // Update responsibilities if provided
+      if (responsibilities !== undefined) {
+        // Delete existing responsibilities
+        await supabase
+          .from('ks_project_responsibilities')
+          .delete()
+          .eq('project_id', id);
+        
+        // Insert new responsibilities
+        if (responsibilities.length > 0) {
+          const responsibilitiesData = responsibilities.map(r => ({
+            ...r,
+            project_id: id,
+          }));
+          
+          const { error: respError } = await supabase
+            .from('ks_project_responsibilities')
+            .insert(responsibilitiesData);
+            
+          if (respError) throw respError;
+        }
+      }
+      
       setProjects(prev => prev.map(p => p.id === id ? data : p));
       toast.success('Prosjekt oppdatert');
+      await fetchProjects(); // Refresh to get responsibilities
       return data;
     } catch (error) {
       console.error('Error updating KS project:', error);
@@ -177,7 +235,7 @@ export function useKsProjects() {
     } finally {
       setIsSaving(false);
     }
-  }, []);
+  }, [fetchProjects]);
 
   const deleteProject = useCallback(async (id: string) => {
     try {

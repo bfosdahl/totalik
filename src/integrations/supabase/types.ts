@@ -1063,6 +1063,44 @@ export type Database = {
           },
         ]
       }
+      ks_project_responsibilities: {
+        Row: {
+          ansvarlig_navn: string
+          created_at: string | null
+          funksjon: string
+          id: string
+          project_id: string
+          role_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          ansvarlig_navn: string
+          created_at?: string | null
+          funksjon: string
+          id?: string
+          project_id: string
+          role_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          ansvarlig_navn?: string
+          created_at?: string | null
+          funksjon?: string
+          id?: string
+          project_id?: string
+          role_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_responsibilities_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_project_risks: {
         Row: {
           consequence: number
