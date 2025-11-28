@@ -5,11 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Save, FileText, Loader2, CheckCircle2 } from "lucide-react";
+import { Save, FileText, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAuditFormResponses } from "@/hooks/useAuditFormResponses";
 import type { Json } from "@/integrations/supabase/types";
+import ResponsiveChecklist from "./ResponsiveChecklist";
+import ResponsiveActionTable from "./ResponsiveActionTable";
 
 type YesNoNa = "yes" | "no" | "na" | "";
 
@@ -223,74 +225,21 @@ const AnnualHmsRevisionForm: React.FC = () => {
     }
   };
 
-  const renderChecklistSection = (
-    sectionKey: keyof Pick<FormData, 'goalsSection' | 'organizationSection' | 'riskSection' | 'routinesSection' | 'trainingSection' | 'deviationsSection' | 'inspectionsSection' | 'workEnvSection'>,
-    title: string,
-    items: ChecklistRow[]
-  ) => (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base sm:text-lg">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto -mx-4 sm:mx-0">
-          <table className="w-full min-w-[600px]">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left py-2 px-2 sm:px-3 text-sm font-medium text-muted-foreground">Kontrollpunkt</th>
-                <th className="text-center py-2 px-1 sm:px-2 text-sm font-medium text-muted-foreground w-14">Ja</th>
-                <th className="text-center py-2 px-1 sm:px-2 text-sm font-medium text-muted-foreground w-14">Nei</th>
-                <th className="text-center py-2 px-1 sm:px-2 text-sm font-medium text-muted-foreground w-14">N/A</th>
-                <th className="text-left py-2 px-2 sm:px-3 text-sm font-medium text-muted-foreground w-48">Kommentar</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id} className="border-b border-border/50 last:border-0">
-                  <td className="py-3 px-2 sm:px-3 text-sm">{item.label}</td>
-                  <td className="text-center py-3 px-1 sm:px-2">
-                    <input
-                      type="radio"
-                      name={`${sectionKey}-${item.id}`}
-                      checked={formData[sectionKey][item.id]?.answer === "yes"}
-                      onChange={() => updateChecklistAnswer(sectionKey, item.id, 'answer', 'yes')}
-                      className="w-4 h-4 text-primary border-border focus:ring-primary"
-                    />
-                  </td>
-                  <td className="text-center py-3 px-1 sm:px-2">
-                    <input
-                      type="radio"
-                      name={`${sectionKey}-${item.id}`}
-                      checked={formData[sectionKey][item.id]?.answer === "no"}
-                      onChange={() => updateChecklistAnswer(sectionKey, item.id, 'answer', 'no')}
-                      className="w-4 h-4 text-primary border-border focus:ring-primary"
-                    />
-                  </td>
-                  <td className="text-center py-3 px-1 sm:px-2">
-                    <input
-                      type="radio"
-                      name={`${sectionKey}-${item.id}`}
-                      checked={formData[sectionKey][item.id]?.answer === "na"}
-                      onChange={() => updateChecklistAnswer(sectionKey, item.id, 'answer', 'na')}
-                      className="w-4 h-4 text-primary border-border focus:ring-primary"
-                    />
-                  </td>
-                  <td className="py-3 px-2 sm:px-3">
-                    <Input
-                      value={formData[sectionKey][item.id]?.comment || ""}
-                      onChange={(e) => updateChecklistAnswer(sectionKey, item.id, 'comment', e.target.value)}
-                      placeholder="Kommentar..."
-                      className="h-8 text-sm"
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  const handleChecklistAnswerChange = (
+    section: keyof Pick<FormData, 'goalsSection' | 'organizationSection' | 'riskSection' | 'routinesSection' | 'trainingSection' | 'deviationsSection' | 'inspectionsSection' | 'workEnvSection'>,
+    itemId: string,
+    value: string
+  ) => {
+    updateChecklistAnswer(section, itemId, 'answer', value);
+  };
+
+  const handleChecklistCommentChange = (
+    section: keyof Pick<FormData, 'goalsSection' | 'organizationSection' | 'riskSection' | 'routinesSection' | 'trainingSection' | 'deviationsSection' | 'inspectionsSection' | 'workEnvSection'>,
+    itemId: string,
+    value: string
+  ) => {
+    updateChecklistAnswer(section, itemId, 'comment', value);
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -354,14 +303,70 @@ const AnnualHmsRevisionForm: React.FC = () => {
       </Card>
 
       {/* Checklist sections */}
-      {renderChecklistSection("goalsSection", "1. Mål og planer for HMS-arbeidet", goalsItems)}
-      {renderChecklistSection("organizationSection", "2. Organisering og ansvar", organizationItems)}
-      {renderChecklistSection("riskSection", "3. Risikovurdering", riskItems)}
-      {renderChecklistSection("routinesSection", "4. Rutiner og prosedyrer", routinesItems)}
-      {renderChecklistSection("trainingSection", "5. Opplæring og kompetanse", trainingItems)}
-      {renderChecklistSection("deviationsSection", "6. Avviksbehandling og hendelser", deviationsItems)}
-      {renderChecklistSection("inspectionsSection", "7. Vernerunder / inspeksjoner", inspectionsItems)}
-      {renderChecklistSection("workEnvSection", "8. Arbeidsmiljø og trivsel", workEnvItems)}
+      <ResponsiveChecklist
+        title="1. Mål og planer for HMS-arbeidet"
+        items={goalsItems}
+        answers={formData.goalsSection}
+        sectionKey="goalsSection"
+        onAnswerChange={(id, val) => handleChecklistAnswerChange("goalsSection", id, val)}
+        onCommentChange={(id, val) => handleChecklistCommentChange("goalsSection", id, val)}
+      />
+      <ResponsiveChecklist
+        title="2. Organisering og ansvar"
+        items={organizationItems}
+        answers={formData.organizationSection}
+        sectionKey="organizationSection"
+        onAnswerChange={(id, val) => handleChecklistAnswerChange("organizationSection", id, val)}
+        onCommentChange={(id, val) => handleChecklistCommentChange("organizationSection", id, val)}
+      />
+      <ResponsiveChecklist
+        title="3. Risikovurdering"
+        items={riskItems}
+        answers={formData.riskSection}
+        sectionKey="riskSection"
+        onAnswerChange={(id, val) => handleChecklistAnswerChange("riskSection", id, val)}
+        onCommentChange={(id, val) => handleChecklistCommentChange("riskSection", id, val)}
+      />
+      <ResponsiveChecklist
+        title="4. Rutiner og prosedyrer"
+        items={routinesItems}
+        answers={formData.routinesSection}
+        sectionKey="routinesSection"
+        onAnswerChange={(id, val) => handleChecklistAnswerChange("routinesSection", id, val)}
+        onCommentChange={(id, val) => handleChecklistCommentChange("routinesSection", id, val)}
+      />
+      <ResponsiveChecklist
+        title="5. Opplæring og kompetanse"
+        items={trainingItems}
+        answers={formData.trainingSection}
+        sectionKey="trainingSection"
+        onAnswerChange={(id, val) => handleChecklistAnswerChange("trainingSection", id, val)}
+        onCommentChange={(id, val) => handleChecklistCommentChange("trainingSection", id, val)}
+      />
+      <ResponsiveChecklist
+        title="6. Avviksbehandling og hendelser"
+        items={deviationsItems}
+        answers={formData.deviationsSection}
+        sectionKey="deviationsSection"
+        onAnswerChange={(id, val) => handleChecklistAnswerChange("deviationsSection", id, val)}
+        onCommentChange={(id, val) => handleChecklistCommentChange("deviationsSection", id, val)}
+      />
+      <ResponsiveChecklist
+        title="7. Vernerunder / inspeksjoner"
+        items={inspectionsItems}
+        answers={formData.inspectionsSection}
+        sectionKey="inspectionsSection"
+        onAnswerChange={(id, val) => handleChecklistAnswerChange("inspectionsSection", id, val)}
+        onCommentChange={(id, val) => handleChecklistCommentChange("inspectionsSection", id, val)}
+      />
+      <ResponsiveChecklist
+        title="8. Arbeidsmiljø og trivsel"
+        items={workEnvItems}
+        answers={formData.workEnvSection}
+        sectionKey="workEnvSection"
+        onAnswerChange={(id, val) => handleChecklistAnswerChange("workEnvSection", id, val)}
+        onCommentChange={(id, val) => handleChecklistCommentChange("workEnvSection", id, val)}
+      />
 
       {/* Summary */}
       <Card>
@@ -391,71 +396,13 @@ const AnnualHmsRevisionForm: React.FC = () => {
       </Card>
 
       {/* Actions */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Nye tiltak og ansvarsfordeling</CardTitle>
-          <Button type="button" variant="outline" size="sm" onClick={addActionRow} className="gap-1">
-            <Plus className="w-4 h-4" />
-            Legg til
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto -mx-4 sm:mx-0">
-            <table className="w-full min-w-[500px]">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-2 px-2 sm:px-3 text-sm font-medium text-muted-foreground">Tiltak</th>
-                  <th className="text-left py-2 px-2 sm:px-3 text-sm font-medium text-muted-foreground w-36">Ansvarlig</th>
-                  <th className="text-left py-2 px-2 sm:px-3 text-sm font-medium text-muted-foreground w-36">Frist</th>
-                  <th className="w-10"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {formData.actions.map((row) => (
-                  <tr key={row.id} className="border-b border-border/50 last:border-0">
-                    <td className="py-2 px-2 sm:px-3">
-                      <Input
-                        value={row.action}
-                        onChange={(e) => updateAction(row.id, 'action', e.target.value)}
-                        placeholder="Beskriv tiltak..."
-                        className="h-9"
-                      />
-                    </td>
-                    <td className="py-2 px-2 sm:px-3">
-                      <Input
-                        value={row.responsible}
-                        onChange={(e) => updateAction(row.id, 'responsible', e.target.value)}
-                        placeholder="Ansvarlig"
-                        className="h-9"
-                      />
-                    </td>
-                    <td className="py-2 px-2 sm:px-3">
-                      <Input
-                        type="date"
-                        value={row.deadline}
-                        onChange={(e) => updateAction(row.id, 'deadline', e.target.value)}
-                        className="h-9"
-                      />
-                    </td>
-                    <td className="py-2 px-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeActionRow(row.id)}
-                        disabled={formData.actions.length === 1}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      <ResponsiveActionTable
+        title="Nye tiltak og ansvarsfordeling"
+        actions={formData.actions}
+        onAdd={addActionRow}
+        onRemove={removeActionRow}
+        onUpdate={updateAction}
+      />
 
       {/* Signatures */}
       <Card>

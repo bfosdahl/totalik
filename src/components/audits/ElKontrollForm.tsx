@@ -12,8 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, Save, Zap, AlertTriangle } from "lucide-react";
+import { Save, Zap, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import ResponsiveActionTable from "./ResponsiveActionTable";
 
 type DeviationType = "hms" | "quality" | "environment" | "other";
 type Severity = "low" | "medium" | "high" | "critical";
@@ -337,89 +338,13 @@ const ElKontrollForm: React.FC = () => {
       </Card>
 
       {/* Action Plan */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Oppfølging / handlingsplan</CardTitle>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={addActionRow}
-            className="gap-1"
-          >
-            <Plus className="w-4 h-4" />
-            Legg til
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto -mx-4 sm:mx-0">
-            <table className="w-full min-w-[500px]">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-2 px-2 sm:px-3 text-sm font-medium text-muted-foreground">
-                    Tiltak
-                  </th>
-                  <th className="text-left py-2 px-2 sm:px-3 text-sm font-medium text-muted-foreground w-36">
-                    Ansvarlig
-                  </th>
-                  <th className="text-left py-2 px-2 sm:px-3 text-sm font-medium text-muted-foreground w-36">
-                    Frist
-                  </th>
-                  <th className="w-10"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {formData.actions.map((row) => (
-                  <tr key={row.id} className="border-b border-border/50 last:border-0">
-                    <td className="py-2 px-2 sm:px-3">
-                      <Input
-                        value={row.action}
-                        onChange={(e) =>
-                          updateAction(row.id, "action", e.target.value)
-                        }
-                        placeholder="Beskriv tiltak..."
-                        className="h-9"
-                      />
-                    </td>
-                    <td className="py-2 px-2 sm:px-3">
-                      <Input
-                        value={row.responsible}
-                        onChange={(e) =>
-                          updateAction(row.id, "responsible", e.target.value)
-                        }
-                        placeholder="Navn / rolle"
-                        className="h-9"
-                      />
-                    </td>
-                    <td className="py-2 px-2 sm:px-3">
-                      <Input
-                        type="date"
-                        value={row.deadline}
-                        onChange={(e) =>
-                          updateAction(row.id, "deadline", e.target.value)
-                        }
-                        className="h-9"
-                      />
-                    </td>
-                    <td className="py-2 px-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeActionRow(row.id)}
-                        disabled={formData.actions.length === 1}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      <ResponsiveActionTable
+        title="Oppfølging / handlingsplan"
+        actions={formData.actions}
+        onAdd={addActionRow}
+        onRemove={removeActionRow}
+        onUpdate={updateAction}
+      />
 
       {/* Attachments */}
       <Card>
