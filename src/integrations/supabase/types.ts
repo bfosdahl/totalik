@@ -494,6 +494,142 @@ export type Database = {
           },
         ]
       }
+      employee_courses: {
+        Row: {
+          certificate_number: string | null
+          company_id: string
+          completed_date: string
+          course_name: string
+          course_provider: string | null
+          created_at: string
+          employee_id: string
+          expiry_date: string | null
+          id: string
+          notes: string | null
+          reminder_sent_30_days: boolean | null
+          reminder_sent_7_days: boolean | null
+          status: string
+          updated_at: string
+          validity_years: number | null
+        }
+        Insert: {
+          certificate_number?: string | null
+          company_id: string
+          completed_date: string
+          course_name: string
+          course_provider?: string | null
+          created_at?: string
+          employee_id: string
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          reminder_sent_30_days?: boolean | null
+          reminder_sent_7_days?: boolean | null
+          status?: string
+          updated_at?: string
+          validity_years?: number | null
+        }
+        Update: {
+          certificate_number?: string | null
+          company_id?: string
+          completed_date?: string
+          course_name?: string
+          course_provider?: string | null
+          created_at?: string
+          employee_id?: string
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          reminder_sent_30_days?: boolean | null
+          reminder_sent_7_days?: boolean | null
+          status?: string
+          updated_at?: string
+          validity_years?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_courses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_courses_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_documents: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          employee_id: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          updated_at: string
+          uploaded_by: string | null
+          uploaded_by_name: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          employee_id: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          employee_id?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_documents_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -504,6 +640,9 @@ export type Database = {
           id: string
           is_active: boolean
           last_name: string | null
+          next_of_kin_name: string | null
+          next_of_kin_phone: string | null
+          next_of_kin_relation: string | null
           phone: string | null
           updated_at: string
           user_id: string
@@ -517,6 +656,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_name?: string | null
+          next_of_kin_name?: string | null
+          next_of_kin_phone?: string | null
+          next_of_kin_relation?: string | null
           phone?: string | null
           updated_at?: string
           user_id: string
@@ -530,6 +672,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_name?: string | null
+          next_of_kin_name?: string | null
+          next_of_kin_phone?: string | null
+          next_of_kin_relation?: string | null
           phone?: string | null
           updated_at?: string
           user_id?: string
