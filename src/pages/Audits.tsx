@@ -100,33 +100,45 @@ const Audits = () => {
 
         {/* Tabs for different revision types */}
         <Tabs defaultValue="list" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 sm:w-auto sm:inline-grid">
-            <TabsTrigger value="list" className="gap-2">
-              <ListChecks className="w-4 h-4" />
-              <span className="hidden sm:inline">Revisjoner</span>
-              <span className="sm:hidden">Liste</span>
-            </TabsTrigger>
-            <TabsTrigger value="annual" className="gap-2">
-              <ClipboardCheck className="w-4 h-4" />
-              <span className="hidden sm:inline">Årlig HMS</span>
-              <span className="sm:hidden">HMS</span>
-            </TabsTrigger>
-            <TabsTrigger value="elkontroll" className="gap-2">
-              <Zap className="w-4 h-4" />
-              <span className="hidden sm:inline">El-Kontroll</span>
-              <span className="sm:hidden">El</span>
-            </TabsTrigger>
-            <TabsTrigger value="fysiske" className="gap-2">
-              <Building2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Fysiske forhold</span>
-              <span className="sm:hidden">Fysisk</span>
-            </TabsTrigger>
-            <TabsTrigger value="drift" className="gap-2">
-              <Settings className="w-4 h-4" />
-              <span className="hidden sm:inline">Daglig drift</span>
-              <span className="sm:hidden">Drift</span>
-            </TabsTrigger>
-          </TabsList>
+          <div className="bg-card border border-border rounded-xl p-2 shadow-card">
+            <TabsList className="flex flex-wrap gap-2 h-auto bg-transparent p-0 w-full">
+              <TabsTrigger 
+                value="list" 
+                className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
+              >
+                <ListChecks className="w-4 h-4" />
+                <span>Revisjoner</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="annual" 
+                className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
+              >
+                <ClipboardCheck className="w-4 h-4" />
+                <span>Årlig HMS-revisjon</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="elkontroll" 
+                className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
+              >
+                <Zap className="w-4 h-4" />
+                <span>El-Kontroll</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="fysiske" 
+                className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
+              >
+                <Building2 className="w-4 h-4" />
+                <span>Fysiske forhold</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="drift" 
+                className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Daglig drift</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Revisions List Tab */}
           <TabsContent value="list" className="space-y-6">
