@@ -1,12 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
-  ArrowLeft, 
-  CheckCircle2, 
-  XCircle, 
-  MinusCircle,
-  Save,
-  HelpCircle,
+  ArrowLeft,
   Camera,
   X,
   ImageIcon,
@@ -15,15 +10,10 @@ import {
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useKsChecklistItems, KsChecklist, KsTemplate } from "@/hooks/useKsProjects";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,12 +22,6 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { generateChecklistPdf } from "@/utils/ksChecklistPdf";
-
-const statusOptions = [
-  { value: "OK", label: "OK", icon: CheckCircle2, color: "text-green-600" },
-  { value: "AVVIK", label: "Avvik", icon: XCircle, color: "text-destructive" },
-  { value: "IKKE_AKTUELT", label: "Ikke aktuelt", icon: MinusCircle, color: "text-muted-foreground" },
-];
 
 export default function KsChecklistDetail() {
   const { id } = useParams<{ id: string }>();
@@ -126,14 +110,10 @@ export default function KsChecklistDetail() {
     await updateItem(itemId, { status });
   };
 
-  const handleCommentChange = (itemId: string, comment: string) => {
+  const handleCommentChange = async (itemId: string, comment: string) => {
     setComments(prev => ({ ...prev, [itemId]: comment }));
-  };
-
-  const handleSaveComment = async (itemId: string) => {
-    const comment = comments[itemId] || "";
+    // Auto-save comment
     await updateItem(itemId, { comment });
-    toast.success("Kommentar lagret");
   };
 
   const handlePhotoUpload = async (itemId: string, files: FileList | null) => {
@@ -300,192 +280,179 @@ export default function KsChecklistDetail() {
 
   return (
     <AppLayout>
-      <TooltipProvider>
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(`/ks/projects/${projectId}`)}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-foreground">{checklist.template?.name}</h1>
-              <p className="text-muted-foreground">
-                {checklist.phase && `${checklist.phase} • `}
-                Opprettet {new Date(checklist.created_at).toLocaleDateString("nb-NO")}
-              </p>
-            </div>
-            <Button onClick={handlePrintChecklist}>
-              <Printer className="h-4 w-4 mr-2" />
-              Skriv ut sjekkliste
-            </Button>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(`/ks/projects/${projectId}`)}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-foreground">{checklist.template?.name}</h1>
+            <p className="text-muted-foreground">
+              {checklist.phase && `${checklist.phase} • `}
+              Opprettet {new Date(checklist.created_at).toLocaleDateString("nb-NO")}
+            </p>
           </div>
+          <Button onClick={handlePrintChecklist}>
+            <Printer className="h-4 w-4 mr-2" />
+            Skriv ut sjekkliste
+          </Button>
+        </div>
 
-          {/* Progress Card */}
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">Fremdrift</CardTitle>
-                  <CardDescription>{completedCount} av {totalCount} punkter utfylt</CardDescription>
-                </div>
-                <span className="text-2xl font-bold">{progressPercentage}%</span>
+        {/* Progress Card */}
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg">Fremdrift</CardTitle>
+                <CardDescription>{completedCount} av {totalCount} punkter utfylt</CardDescription>
               </div>
-            </CardHeader>
-            <CardContent>
-              <Progress value={progressPercentage} className="h-3" />
-            </CardContent>
-          </Card>
-
-          {/* Checklist Items */}
-          {itemsLoading ? (
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-24" />)}
+              <span className="text-2xl font-bold">{progressPercentage}%</span>
             </div>
-          ) : (
-            <div className="space-y-6">
-              {Object.entries(itemsByCategory).map(([category, categoryItems]) => (
-                <Card key={category}>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{category}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {categoryItems
-                      .sort((a, b) => (a.template_item?.order_index || 0) - (b.template_item?.order_index || 0))
-                      .map((item, index) => (
-                        <div 
-                          key={item.id} 
-                          className={cn(
-                            "p-4 border rounded-lg space-y-3",
-                            item.status === 'OK' && "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900",
-                            item.status === 'AVVIK' && "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900",
-                            item.status === 'IKKE_AKTUELT' && "bg-muted/50"
-                          )}
-                        >
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-muted-foreground">
-                                  {index + 1}.
-                                </span>
-                                <p className="font-medium">{item.template_item?.text}</p>
-                                {item.template_item?.help_text && (
-                                  <Tooltip>
-                                    <TooltipTrigger>
-                                      <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-xs">
-                                      <p>{item.template_item.help_text}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              {statusOptions.map((option) => {
-                                const Icon = option.icon;
-                                const isSelected = item.status === option.value;
-                                return (
-                                  <Tooltip key={option.value}>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        variant={isSelected ? "secondary" : "ghost"}
-                                        size="icon"
-                                        className={cn(
-                                          "h-9 w-9",
-                                          isSelected && option.color
-                                        )}
-                                        onClick={() => handleStatusChange(item.id, option.value)}
-                                      >
-                                        <Icon className={cn("h-5 w-5", isSelected && option.color)} />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>{option.label}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                );
-                              })}
-                            </div>
-                          </div>
-                          
-                          {/* Comment and photo section */}
-                          <div className="space-y-3">
-                            <Textarea
-                              placeholder="Legg til kommentar..."
-                              value={comments[item.id] || ""}
-                              onChange={(e) => handleCommentChange(item.id, e.target.value)}
-                              className="min-h-[60px]"
-                            />
-                            <div className="flex items-center gap-2">
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => handleSaveComment(item.id)}
-                              >
-                                <Save className="h-4 w-4 mr-1" />
-                                Lagre kommentar
-                              </Button>
-                              <input
-                                type="file"
-                                ref={el => fileInputRefs.current[item.id] = el}
-                                onChange={(e) => handlePhotoUpload(item.id, e.target.files)}
-                                accept="image/*"
-                                multiple
-                                capture="environment"
-                                className="hidden"
-                              />
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => fileInputRefs.current[item.id]?.click()}
-                                disabled={uploadingPhotos[item.id]}
-                              >
-                                <Camera className="h-4 w-4 mr-1" />
-                                {uploadingPhotos[item.id] ? 'Laster opp...' : 'Last opp bilde'}
-                              </Button>
-                            </div>
-                            
-                            {/* Display uploaded photos */}
-                            {photos[item.id]?.length > 0 && (
-                              <div className="space-y-2">
-                                <p className="text-sm font-medium text-muted-foreground">
-                                  <ImageIcon className="h-4 w-4 inline mr-1" />
-                                  Bilder ({photos[item.id].length})
-                                </p>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                  {photos[item.id].map((photo) => (
-                                    <div key={photo.id} className="relative group">
-                                      <img
-                                        src={getPhotoUrl(photo.file_path)}
-                                        alt="Checklist photo"
-                                        className="w-full h-24 object-cover rounded border"
-                                      />
-                                      <Button
-                                        size="icon"
-                                        variant="destructive"
-                                        className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        onClick={() => handleDeletePhoto(photo.id, item.id, photo.file_path)}
-                                      >
-                                        <X className="h-3 w-3" />
-                                      </Button>
-                                      <p className="text-xs text-muted-foreground mt-1">
-                                        {format(new Date(photo.taken_at), "dd.MM.yyyy HH:mm", { locale: nb })}
-                                      </p>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
+          </CardHeader>
+          <CardContent>
+            <Progress value={progressPercentage} className="h-3" />
+          </CardContent>
+        </Card>
+
+        {/* Checklist Items */}
+        {itemsLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-24" />)}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {Object.entries(itemsByCategory).map(([category, categoryItems]) => (
+              <Card key={category}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">{category}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-0 p-0">
+                  {/* Table Header */}
+                  <div className="grid grid-cols-12 gap-2 px-6 py-3 bg-muted/50 border-y font-medium text-sm text-muted-foreground">
+                    <div className="col-span-4">Kontrollpunkt</div>
+                    <div className="col-span-1 text-center">Ja</div>
+                    <div className="col-span-1 text-center">Nei</div>
+                    <div className="col-span-1 text-center">N/A</div>
+                    <div className="col-span-4">Kommentar</div>
+                    <div className="col-span-1 text-center">Handlinger</div>
+                  </div>
+
+                  {/* Table Rows */}
+                  {categoryItems
+                    .sort((a, b) => (a.template_item?.order_index || 0) - (b.template_item?.order_index || 0))
+                    .map((item, index) => (
+                      <div key={item.id} className="border-b last:border-0">
+                        <div className="grid grid-cols-12 gap-2 px-6 py-4 items-start">
+                          {/* Question */}
+                          <div className="col-span-4 text-sm">
+                            <span className="font-medium">{index + 1}. {item.template_item?.text}</span>
+                            {item.template_item?.help_text && (
+                              <p className="text-xs text-muted-foreground mt-1">{item.template_item.help_text}</p>
                             )}
                           </div>
+
+                          {/* Radio Buttons */}
+                          <div className="col-span-1 flex justify-center">
+                            <input
+                              type="radio"
+                              name={`status-${item.id}`}
+                              checked={item.status === 'OK'}
+                              onChange={() => handleStatusChange(item.id, 'OK')}
+                              className="h-4 w-4 cursor-pointer"
+                            />
+                          </div>
+                          <div className="col-span-1 flex justify-center">
+                            <input
+                              type="radio"
+                              name={`status-${item.id}`}
+                              checked={item.status === 'AVVIK'}
+                              onChange={() => handleStatusChange(item.id, 'AVVIK')}
+                              className="h-4 w-4 cursor-pointer"
+                            />
+                          </div>
+                          <div className="col-span-1 flex justify-center">
+                            <input
+                              type="radio"
+                              name={`status-${item.id}`}
+                              checked={item.status === 'IKKE_AKTUELT'}
+                              onChange={() => handleStatusChange(item.id, 'IKKE_AKTUELT')}
+                              className="h-4 w-4 cursor-pointer"
+                            />
+                          </div>
+
+                          {/* Comment */}
+                          <div className="col-span-4">
+                            <Input
+                              placeholder="Kommentar..."
+                              value={comments[item.id] || ""}
+                              onChange={(e) => handleCommentChange(item.id, e.target.value)}
+                              className="h-9 text-sm"
+                            />
+                          </div>
+
+                          {/* Actions - Photo Upload */}
+                          <div className="col-span-1 flex justify-center">
+                            <input
+                              type="file"
+                              ref={el => fileInputRefs.current[item.id] = el}
+                              onChange={(e) => handlePhotoUpload(item.id, e.target.files)}
+                              accept="image/*"
+                              multiple
+                              capture="environment"
+                              className="hidden"
+                            />
+                            <Button 
+                              size="icon"
+                              variant="outline"
+                              className="h-9 w-9"
+                              onClick={() => fileInputRefs.current[item.id]?.click()}
+                              disabled={uploadingPhotos[item.id]}
+                            >
+                              <Camera className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                      ))}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      </TooltipProvider>
+
+                        {/* Display uploaded photos */}
+                        {photos[item.id]?.length > 0 && (
+                          <div className="px-6 pb-4 space-y-2">
+                            <p className="text-sm font-medium text-muted-foreground">
+                              <ImageIcon className="h-4 w-4 inline mr-1" />
+                              Bilder ({photos[item.id].length})
+                            </p>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                              {photos[item.id].map((photo) => (
+                                <div key={photo.id} className="relative group">
+                                  <img
+                                    src={getPhotoUrl(photo.file_path)}
+                                    alt="Checklist photo"
+                                    className="w-full h-24 object-cover rounded border"
+                                  />
+                                  <Button
+                                    size="icon"
+                                    variant="destructive"
+                                    className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => handleDeletePhoto(photo.id, item.id, photo.file_path)}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {format(new Date(photo.taken_at), "dd.MM.yyyy HH:mm", { locale: nb })}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
     </AppLayout>
   );
 }
