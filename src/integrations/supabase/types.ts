@@ -1156,8 +1156,11 @@ export type Database = {
         Row: {
           address: string | null
           ansvarlig_kontrollerende: string | null
+          ansvarlig_kontrollerende_funksjon: string | null
           ansvarlig_prosjekterende: string | null
+          ansvarlig_prosjekterende_funksjon: string | null
           ansvarlig_soker: string | null
+          ansvarlig_soker_funksjon: string | null
           ansvarlig_utforende: string | null
           ansvarlig_utforende_funksjon: string | null
           ansvarsrolle: string | null
@@ -1176,8 +1179,11 @@ export type Database = {
         Insert: {
           address?: string | null
           ansvarlig_kontrollerende?: string | null
+          ansvarlig_kontrollerende_funksjon?: string | null
           ansvarlig_prosjekterende?: string | null
+          ansvarlig_prosjekterende_funksjon?: string | null
           ansvarlig_soker?: string | null
+          ansvarlig_soker_funksjon?: string | null
           ansvarlig_utforende?: string | null
           ansvarlig_utforende_funksjon?: string | null
           ansvarsrolle?: string | null
@@ -1196,8 +1202,11 @@ export type Database = {
         Update: {
           address?: string | null
           ansvarlig_kontrollerende?: string | null
+          ansvarlig_kontrollerende_funksjon?: string | null
           ansvarlig_prosjekterende?: string | null
+          ansvarlig_prosjekterende_funksjon?: string | null
           ansvarlig_soker?: string | null
+          ansvarlig_soker_funksjon?: string | null
           ansvarlig_utforende?: string | null
           ansvarlig_utforende_funksjon?: string | null
           ansvarsrolle?: string | null

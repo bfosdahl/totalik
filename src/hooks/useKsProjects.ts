@@ -18,10 +18,13 @@ export interface KsProject {
   created_at: string;
   updated_at: string;
   ansvarlig_soker: string | null;
+  ansvarlig_soker_funksjon: string | null;
   ansvarlig_prosjekterende: string | null;
+  ansvarlig_prosjekterende_funksjon: string | null;
   ansvarlig_utforende: string | null;
   ansvarlig_utforende_funksjon: string | null;
   ansvarlig_kontrollerende: string | null;
+  ansvarlig_kontrollerende_funksjon: string | null;
 }
 
 export interface KsTemplate {
@@ -71,10 +74,13 @@ export interface NewKsProjectInput {
   start_date: string;
   end_date?: string;
   ansvarlig_soker?: string;
+  ansvarlig_soker_funksjon?: string;
   ansvarlig_prosjekterende?: string;
+  ansvarlig_prosjekterende_funksjon?: string;
   ansvarlig_utforende?: string;
   ansvarlig_utforende_funksjon?: string;
   ansvarlig_kontrollerende?: string;
+  ansvarlig_kontrollerende_funksjon?: string;
 }
 
 export function useKsProjects() {
