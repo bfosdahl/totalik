@@ -85,6 +85,7 @@ export type Database = {
       }
       companies: {
         Row: {
+          accent_color: string | null
           address: string | null
           city: string | null
           created_at: string
@@ -99,6 +100,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accent_color?: string | null
           address?: string | null
           city?: string | null
           created_at?: string
@@ -113,6 +115,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accent_color?: string | null
           address?: string | null
           city?: string | null
           created_at?: string
