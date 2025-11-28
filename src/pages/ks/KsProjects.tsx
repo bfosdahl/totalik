@@ -210,7 +210,12 @@ export default function KsProjects() {
               >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0">
                   <div className="space-y-1">
-                    <CardTitle className="text-lg">{project.name}</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-lg">{project.name}</CardTitle>
+                      <Badge variant="secondary" className="text-xs">
+                        {project.project_number}
+                      </Badge>
+                    </div>
                     <CardDescription className="flex items-center gap-1">
                       <Users className="h-3 w-3" />
                       {project.client_name || "Ingen kunde"}

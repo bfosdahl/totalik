@@ -17,6 +17,7 @@ export interface KsProject {
   id: string;
   company_id: string;
   name: string;
+  project_number: string;
   address: string | null;
   client_name: string | null;
   tiltaksklasse: string | null;
