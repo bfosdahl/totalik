@@ -22,6 +22,10 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { KsProjectDocuments } from "@/components/ks/KsProjectDocuments";
 import { KsProjectSubcontractors } from "@/components/ks/KsProjectSubcontractors";
+import { KsChangeOrders } from "@/components/ks/KsChangeOrders";
+import { KsSafetyRounds } from "@/components/ks/KsSafetyRounds";
+import { KsHazardousConditions } from "@/components/ks/KsHazardousConditions";
+import { KsActivityLog } from "@/components/ks/KsActivityLog";
 import {
   Dialog,
   DialogContent,
@@ -326,6 +330,18 @@ export default function KsProjectDetail() {
 
         {/* Subcontractors Section */}
         <KsProjectSubcontractors projectId={id!} />
+
+        {/* Change Orders Section */}
+        <KsChangeOrders projectId={id!} />
+
+        {/* Safety Rounds Section */}
+        <KsSafetyRounds projectId={id!} />
+
+        {/* Hazardous Conditions Section */}
+        <KsHazardousConditions projectId={id!} />
+
+        {/* Activity Log Section */}
+        <KsActivityLog projectId={id!} />
 
         {/* SJA Section */}
         <Card>

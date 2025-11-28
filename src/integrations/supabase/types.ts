@@ -1027,6 +1027,78 @@ export type Database = {
           },
         ]
       }
+      ks_hazardous_conditions: {
+        Row: {
+          closed_date: string | null
+          company_id: string
+          condition_number: string
+          created_at: string | null
+          deadline: string | null
+          description: string
+          discovered_date: string
+          id: string
+          location: string
+          measures_taken: string | null
+          photo_paths: string[] | null
+          project_id: string
+          responsible: string | null
+          severity: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          closed_date?: string | null
+          company_id: string
+          condition_number: string
+          created_at?: string | null
+          deadline?: string | null
+          description: string
+          discovered_date: string
+          id?: string
+          location: string
+          measures_taken?: string | null
+          photo_paths?: string[] | null
+          project_id: string
+          responsible?: string | null
+          severity: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          closed_date?: string | null
+          company_id?: string
+          condition_number?: string
+          created_at?: string | null
+          deadline?: string | null
+          description?: string
+          discovered_date?: string
+          id?: string
+          location?: string
+          measures_taken?: string | null
+          photo_paths?: string[] | null
+          project_id?: string
+          responsible?: string | null
+          severity?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_hazardous_conditions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_hazardous_conditions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_hms_plan_progress: {
         Row: {
           completed_steps: string[] | null
@@ -1147,6 +1219,60 @@ export type Database = {
             columns: ["risk_id"]
             isOneToOne: false
             referencedRelation: "ks_project_risks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_project_activity_log: {
+        Row: {
+          activity_description: string
+          activity_type: string
+          company_id: string
+          created_at: string | null
+          id: string
+          performed_by_name: string | null
+          performed_by_user_id: string | null
+          project_id: string
+          reference_id: string | null
+          reference_type: string | null
+        }
+        Insert: {
+          activity_description: string
+          activity_type: string
+          company_id: string
+          created_at?: string | null
+          id?: string
+          performed_by_name?: string | null
+          performed_by_user_id?: string | null
+          project_id: string
+          reference_id?: string | null
+          reference_type?: string | null
+        }
+        Update: {
+          activity_description?: string
+          activity_type?: string
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          performed_by_name?: string | null
+          performed_by_user_id?: string | null
+          project_id?: string
+          reference_id?: string | null
+          reference_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_activity_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_activity_log_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
             referencedColumns: ["id"]
           },
         ]
@@ -1772,6 +1898,69 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_safety_rounds: {
+        Row: {
+          actions_required: string | null
+          company_id: string
+          created_at: string | null
+          deadline: string | null
+          findings: string | null
+          id: string
+          participants: string | null
+          photo_paths: string[] | null
+          project_id: string
+          responsible: string | null
+          round_date: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          actions_required?: string | null
+          company_id: string
+          created_at?: string | null
+          deadline?: string | null
+          findings?: string | null
+          id?: string
+          participants?: string | null
+          photo_paths?: string[] | null
+          project_id: string
+          responsible?: string | null
+          round_date: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          actions_required?: string | null
+          company_id?: string
+          created_at?: string | null
+          deadline?: string | null
+          findings?: string | null
+          id?: string
+          participants?: string | null
+          photo_paths?: string[] | null
+          project_id?: string
+          responsible?: string | null
+          round_date?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_safety_rounds_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_safety_rounds_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
             referencedColumns: ["id"]
           },
         ]
