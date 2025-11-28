@@ -26,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useSetupWizard } from "@/hooks/useSetupWizard";
 import { useDeviations } from "@/hooks/useDeviations";
+import { useAudits } from "@/hooks/useAudits";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -57,12 +58,18 @@ const Handbook = () => {
     progress 
   } = useSetupWizard();
   const { deviations, isLoading: isLoadingDeviations } = useDeviations();
+  const { audits, isLoading: isLoadingAudits } = useAudits();
   
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   // Calculate deviation status - complete if no open or in-progress deviations
   const openDeviationsCount = deviations.filter(d => d.status === "open" || d.status === "in-progress").length;
-  const deviationStatus = openDeviationsCount === 0 ? "complete" : "incomplete";
+  const deviationStatus = openDeviationsCount === 0 && deviations.length > 0 ? "complete" : "incomplete";
+
+  // Calculate audit status - complete if at least one audit is completed
+  const completedAuditsCount = audits.filter(a => a.status === "completed").length;
+  const pendingAuditsCount = audits.filter(a => a.status === "scheduled" || a.status === "in-progress").length;
+  const auditStatus = completedAuditsCount > 0 && pendingAuditsCount === 0 ? "complete" : "incomplete";
 
   // Calculate section status based on actual data
   const handbookSections = [
@@ -204,16 +211,20 @@ const Handbook = () => {
     {
       id: "audits",
       title: "7. Revisjoner og evaluering",
-      status: "incomplete",
+      status: auditStatus,
       stepIndex: -1, // Not part of wizard
       icon: Search,
       content: (
         <p className="text-sm text-muted-foreground">
-          Revisjonsmodulen brukes til å gjennomføre internkontrollrevisjoner.
-          Gå til Revisjoner for å planlegge og gjennomføre revisjoner.
+          {pendingAuditsCount > 0 
+            ? `${pendingAuditsCount} planlagte/pågående revisjoner som må gjennomføres.`
+            : completedAuditsCount > 0 
+              ? `${completedAuditsCount} revisjoner er gjennomført.`
+              : "Ingen revisjoner er planlagt. Gå til Revisjoner for å opprette revisjoner."
+          }
         </p>
       ),
-      summary: "Se Revisjoner",
+      summary: pendingAuditsCount > 0 ? `${pendingAuditsCount} ventende revisjoner` : completedAuditsCount > 0 ? `${completedAuditsCount} gjennomført` : "Ingen revisjoner",
       linkTo: "/audits",
     },
   ];
