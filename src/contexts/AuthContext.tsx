@@ -26,6 +26,7 @@ interface CompanyInfo {
   city: string | null;
   phone: string | null;
   email: string | null;
+  accent_color: string | null;
 }
 
 interface AuthContextType {
@@ -72,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (profileData.company_id) {
           const { data: companyData } = await supabase
             .from("companies")
-            .select("id, name, org_number, logo_url, address, postal_code, city, phone, email")
+            .select("id, name, org_number, logo_url, address, postal_code, city, phone, email, accent_color")
             .eq("id", profileData.company_id)
             .maybeSingle();
 
@@ -172,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data: companyData } = await supabase
         .from("companies")
-        .select("id, name, org_number, logo_url, address, postal_code, city, phone, email")
+        .select("id, name, org_number, logo_url, address, postal_code, city, phone, email, accent_color")
         .eq("id", profile.company_id)
         .maybeSingle();
 

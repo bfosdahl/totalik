@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Palette, ArrowLeft, Moon, Sun, Monitor, Upload, Loader2, Trash2 } from "lucide-react";
+import { Palette, ArrowLeft, Moon, Sun, Monitor, Upload, Loader2, Trash2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -8,28 +8,39 @@ import { useTheme } from "next-themes";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AccentColorKey, accentColors } from "@/hooks/useAccentColor";
 
 interface CustomizationSettingsProps {
   onBack: () => void;
 }
+
+const accentColorOptions: { name: string; value: AccentColorKey; tailwindClass: string }[] = [
+  { name: "Blå", value: "blue", tailwindClass: "bg-blue-500" },
+  { name: "Grønn", value: "green", tailwindClass: "bg-emerald-500" },
+  { name: "Lilla", value: "violet", tailwindClass: "bg-violet-500" },
+  { name: "Oransje", value: "orange", tailwindClass: "bg-orange-500" },
+  { name: "Rosa", value: "pink", tailwindClass: "bg-pink-500" },
+  { name: "Rød", value: "red", tailwindClass: "bg-red-500" },
+];
 
 export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
   const { theme, setTheme } = useTheme();
   const { company, refreshCompany } = useAuth();
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
+  const [savingColor, setSavingColor] = useState(false);
+
+  const currentAccentColor = (company?.accent_color as AccentColorKey) || "blue";
 
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !company?.id) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       toast.error("Kun bildefiler er tillatt");
       return;
     }
 
-    // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
       toast.error("Filen er for stor. Maksimal størrelse er 2MB");
       return;
@@ -40,19 +51,16 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
       const fileExt = file.name.split(".").pop();
       const filePath = `${company.id}/logo.${fileExt}`;
 
-      // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from("company-logos")
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: urlData } = supabase.storage
         .from("company-logos")
         .getPublicUrl(filePath);
 
-      // Update company record
       const { error: updateError } = await supabase
         .from("companies")
         .update({ logo_url: urlData.publicUrl })
@@ -75,14 +83,11 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
 
     setRemoving(true);
     try {
-      // Extract file path from URL
       const urlParts = company.logo_url.split("/");
       const filePath = `${company.id}/${urlParts[urlParts.length - 1]}`;
 
-      // Remove from storage
       await supabase.storage.from("company-logos").remove([filePath]);
 
-      // Update company record
       const { error: updateError } = await supabase
         .from("companies")
         .update({ logo_url: null })
@@ -97,6 +102,34 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
       toast.error(error.message || "Kunne ikke fjerne logo");
     } finally {
       setRemoving(false);
+    }
+  };
+
+  const handleAccentColorChange = async (color: AccentColorKey) => {
+    if (!company?.id) return;
+
+    setSavingColor(true);
+    try {
+      const { error } = await supabase
+        .from("companies")
+        .update({ accent_color: color })
+        .eq("id", company.id);
+
+      if (error) throw error;
+
+      // Apply color immediately
+      const colors = accentColors[color];
+      const root = document.documentElement;
+      root.style.setProperty("--primary", colors.primary);
+      root.style.setProperty("--primary-foreground", colors.primaryForeground);
+
+      toast.success("Aksentfarge oppdatert!");
+      refreshCompany?.();
+    } catch (error: any) {
+      console.error("Error updating accent color:", error);
+      toast.error(error.message || "Kunne ikke oppdatere aksentfarge");
+    } finally {
+      setSavingColor(false);
     }
   };
 
@@ -137,7 +170,6 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
         </p>
 
         <div className="flex items-start gap-6">
-          {/* Logo Preview */}
           <div className="w-32 h-32 rounded-xl border-2 border-dashed border-border bg-secondary/30 flex items-center justify-center overflow-hidden">
             {company?.logo_url ? (
               <img
@@ -153,7 +185,6 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
             )}
           </div>
 
-          {/* Upload Controls */}
           <div className="flex-1 space-y-3">
             <div className="flex gap-2">
               <Button
@@ -280,31 +311,32 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
         </p>
 
         <div className="flex flex-wrap gap-3">
-          {[
-            { name: "Blå", color: "bg-blue-500", value: "blue" },
-            { name: "Grønn", color: "bg-emerald-500", value: "green" },
-            { name: "Lilla", color: "bg-violet-500", value: "violet" },
-            { name: "Oransje", color: "bg-orange-500", value: "orange" },
-            { name: "Rosa", color: "bg-pink-500", value: "pink" },
-            { name: "Rød", color: "bg-red-500", value: "red" },
-          ].map((accent) => (
+          {accentColorOptions.map((accent) => (
             <button
               key={accent.value}
+              disabled={savingColor}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
-                accent.value === "blue"
+                currentAccentColor === accent.value
                   ? "border-primary bg-primary/5"
                   : "border-border hover:border-primary/50"
               }`}
-              onClick={() => toast.info("Aksentfarge-funksjon kommer snart")}
+              onClick={() => handleAccentColorChange(accent.value)}
             >
-              <div className={`w-5 h-5 rounded-full ${accent.color}`} />
+              <div className={`w-5 h-5 rounded-full ${accent.tailwindClass} flex items-center justify-center`}>
+                {currentAccentColor === accent.value && (
+                  <Check className="w-3 h-3 text-white" />
+                )}
+              </div>
               <span className="text-sm font-medium">{accent.name}</span>
             </button>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground mt-3">
-          Aksentfarge-tilpasning kommer i en fremtidig oppdatering
-        </p>
+        {savingColor && (
+          <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Lagrer...
+          </div>
+        )}
       </motion.div>
     </div>
   );
