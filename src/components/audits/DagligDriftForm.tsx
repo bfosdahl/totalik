@@ -9,6 +9,7 @@ import { useAuditFormResponses, type AuditFormResponse } from '@/hooks/useAuditF
 import type { Json } from '@/integrations/supabase/types';
 import SavedFormsList from './SavedFormsList';
 import EditableChecklistSection, { type ChecklistQuestion, type ChecklistAnswer } from './EditableChecklistSection';
+import UserSelect from './UserSelect';
 import { 
   MessageSquare, 
   Users, 
@@ -398,10 +399,10 @@ const DagligDriftForm = () => {
           </div>
           <div className="space-y-2">
             <Label htmlFor="auditor">Utført av</Label>
-            <Input
-              id="auditor"
+            <UserSelect
               value={formData.auditor}
-              onChange={(e) => setFormData(prev => ({ ...prev, auditor: e.target.value }))}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, auditor: value }))}
+              placeholder="Velg ansvarlig"
             />
           </div>
         </CardContent>
