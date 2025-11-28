@@ -9,44 +9,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, Trash2, AlertCircle } from "lucide-react";
 import { useKsProjects } from "@/hooks/useKsProjects";
-
-interface KsAvvik {
-  id: string;
-  avvik_nummer: string;
-  tittel: string;
-  beskrivelse: string | null;
-  kategori: string;
-  prioritet: string;
-  status: string;
-  ansvarlig: string | null;
-  frist: string | null;
-  oppdaget_dato: string;
-  oppdaget_sted: string | null;
-  company_id: string;
-  project_id: string | null;
-  created_at: string;
-  type?: 'avvik' | 'ruh';
-  // RUH-specific fields
-  incident_time?: string;
-  incident_location?: string;
-  incident_type?: string;
-  severity?: string;
-  consequences?: string;
-  involved_persons?: string;
-  root_cause_analysis?: string;
-  immediate_actions?: string;
-  preventive_measures?: string;
-  reporter_contact?: string;
-  responsible_receiver?: string;
-  notify_arbeidstilsynet?: boolean;
-  notify_insurance?: boolean;
-  additional_info?: string;
-}
+import { useKsAvvik, type KsAvvik, type NewKsAvvikInput } from "@/hooks/useKsAvvik";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const priorityConfig = {
   low: { label: "Lav", color: "bg-blue-500" },
@@ -70,9 +36,9 @@ const categoryConfig = {
 
 export default function KsAvvik() {
   const { toast } = useToast();
-  const { company } = useAuth();
-  const queryClient = useQueryClient();
   const { projects } = useKsProjects();
+  const { avvikList, isLoading, createAvvik, updateAvvik, deleteAvvik } = useKsAvvik();
+  
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAvvik, setEditingAvvik] = useState<KsAvvik | null>(null);
   const [reportType, setReportType] = useState<'avvik' | 'ruh'>('avvik');
@@ -88,159 +54,6 @@ export default function KsAvvik() {
     frist: "",
     oppdaget_dato: new Date().toISOString().split('T')[0],
     oppdaget_sted: "",
-  });
-
-  const { data: avvikList = [], isLoading } = useQuery({
-    queryKey: ['ks-avvik', company?.id],
-    queryFn: async () => {
-      if (!company?.id) return [];
-      const { data, error } = await supabase
-        .from('deviations')
-        .select('*')
-        .eq('company_id', company.id)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data.map(d => ({
-        id: d.id,
-        avvik_nummer: d.deviation_number,
-        tittel: d.title,
-        beskrivelse: d.description,
-        kategori: d.category,
-        prioritet: d.priority,
-        status: d.status,
-        ansvarlig: d.assignee_name,
-        frist: d.due_date,
-        oppdaget_dato: d.created_at.split('T')[0],
-        oppdaget_sted: d.description?.split('\n')[0] || null,
-        company_id: d.company_id,
-        project_id: d.project_id,
-        created_at: d.created_at,
-        type: d.type || 'avvik',
-        incident_time: d.incident_time,
-        incident_location: d.incident_location,
-        incident_type: d.incident_type,
-        severity: d.severity,
-        consequences: d.consequences,
-        involved_persons: d.involved_persons,
-        root_cause_analysis: d.root_cause_analysis,
-        immediate_actions: d.immediate_actions,
-        preventive_measures: d.preventive_measures,
-        reporter_contact: d.reporter_contact,
-        responsible_receiver: d.responsible_receiver,
-        notify_arbeidstilsynet: d.notify_arbeidstilsynet,
-        notify_insurance: d.notify_insurance,
-        additional_info: d.additional_info,
-      })) as KsAvvik[];
-    },
-    enabled: !!company?.id,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
-      if (!company?.id) throw new Error("No company");
-      
-      const { data: result, error } = await supabase
-        .from('deviations')
-        .insert({
-          deviation_number: data.avvik_nummer,
-          title: data.tittel,
-          description: reportType === 'ruh' 
-            ? data.beskrivelse 
-            : `Sted: ${data.oppdaget_sted || 'Ikke oppgitt'}\n\n${data.beskrivelse || ''}`,
-          category: data.kategori,
-          priority: data.prioritet,
-          status: data.status,
-          assignee_name: data.ansvarlig || null,
-          due_date: data.frist || new Date().toISOString().split('T')[0],
-          reporter_name: "System",
-          company_id: company.id,
-          project_id: data.project_id || null,
-          type: reportType,
-          // RUH-specific fields
-          incident_time: reportType === 'ruh' ? data.incident_time : null,
-          incident_location: reportType === 'ruh' ? data.incident_location : null,
-          incident_type: reportType === 'ruh' ? data.incident_type : null,
-          severity: reportType === 'ruh' ? data.severity : null,
-          consequences: reportType === 'ruh' ? data.consequences : null,
-          involved_persons: reportType === 'ruh' ? data.involved_persons : null,
-          root_cause_analysis: reportType === 'ruh' ? data.root_cause_analysis : null,
-          immediate_actions: reportType === 'ruh' ? data.immediate_actions : null,
-          preventive_measures: reportType === 'ruh' ? data.preventive_measures : null,
-          reporter_contact: reportType === 'ruh' ? data.reporter_contact : null,
-          responsible_receiver: reportType === 'ruh' ? data.responsible_receiver : null,
-          notify_arbeidstilsynet: reportType === 'ruh' ? data.notify_arbeidstilsynet : false,
-          notify_insurance: reportType === 'ruh' ? data.notify_insurance : false,
-          additional_info: reportType === 'ruh' ? data.additional_info : null,
-        })
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('Error creating deviation:', error);
-        throw error;
-      }
-      return result;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ks-avvik'] });
-      toast({ 
-        title: reportType === 'avvik' ? "Avvik opprettet" : "RUH opprettet", 
-        description: reportType === 'avvik' ? "Avviket er registrert." : "Rapporten er registrert." 
-      });
-      setIsDialogOpen(false);
-      resetForm();
-    },
-    onError: (error: any) => {
-      console.error('Mutation error:', error);
-      toast({ 
-        title: "Feil", 
-        description: error?.message || "Kunne ikke opprette rapport.", 
-        variant: "destructive" 
-      });
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: typeof formData }) => {
-      const { error } = await supabase
-        .from('deviations')
-        .update({
-          deviation_number: data.avvik_nummer,
-          title: data.tittel,
-          description: data.beskrivelse,
-          category: data.kategori,
-          priority: data.prioritet,
-          status: data.status,
-          assignee_name: data.ansvarlig || null,
-          due_date: data.frist || new Date().toISOString().split('T')[0],
-        })
-        .eq('id', id);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ks-avvik'] });
-      toast({ title: "Rapport oppdatert", description: "Endringene er lagret." });
-      setIsDialogOpen(false);
-      setEditingAvvik(null);
-      resetForm();
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('deviations')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ks-avvik'] });
-      toast({ title: "Rapport slettet", description: "Rapporten er fjernet." });
-    },
   });
 
   const resetForm = () => {
@@ -262,15 +75,20 @@ export default function KsAvvik() {
   };
 
   const handleSubmit = () => {
-    if (!formData.avvik_nummer || !formData.tittel) {
-      toast({ title: "Feil", description: "Nummer og tittel er påkrevd.", variant: "destructive" });
+    if (!formData.avvik_nummer || !formData.tittel || !formData.project_id) {
+      toast({ title: "Feil", description: "Nummer, tittel og prosjekt er påkrevd.", variant: "destructive" });
       return;
     }
 
     if (editingAvvik) {
-      updateMutation.mutate({ id: editingAvvik.id, data: formData });
+      updateAvvik({ id: editingAvvik.id, updates: { ...formData, type: reportType } });
+      setIsDialogOpen(false);
+      setEditingAvvik(null);
+      resetForm();
     } else {
-      createMutation.mutate(formData);
+      createAvvik({ ...formData, type: reportType } as NewKsAvvikInput);
+      setIsDialogOpen(false);
+      resetForm();
     }
   };
 
@@ -309,7 +127,7 @@ export default function KsAvvik() {
 
   const handleDelete = (id: string) => {
     if (confirm("Er du sikker på at du vil slette denne rapporten?")) {
-      deleteMutation.mutate(id);
+      deleteAvvik(id);
     }
   };
 
@@ -365,13 +183,12 @@ export default function KsAvvik() {
               
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="project_id">Prosjekt (valgfritt)</Label>
-                  <Select value={formData.project_id || "none"} onValueChange={(value) => setFormData((prev: any) => ({ ...prev, project_id: value === "none" ? "" : value }))}>
+                  <Label htmlFor="project_id">Prosjekt *</Label>
+                  <Select value={formData.project_id} onValueChange={(value) => setFormData((prev: any) => ({ ...prev, project_id: value }))}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Velg prosjekt eller la stå tom for mal" />
+                      <SelectValue placeholder="Velg prosjekt" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Ingen (mal)</SelectItem>
                       {projects.map((project) => (
                         <SelectItem key={project.id} value={project.id}>
                           {project.project_number} - {project.name}

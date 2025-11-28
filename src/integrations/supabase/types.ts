@@ -1151,6 +1151,120 @@ export type Database = {
           },
         ]
       }
+      ks_project_deviations: {
+        Row: {
+          additional_info: string | null
+          ansvarlig: string | null
+          avvik_nummer: string
+          beskrivelse: string | null
+          company_id: string
+          consequences: string | null
+          created_at: string
+          frist: string | null
+          id: string
+          immediate_actions: string | null
+          incident_location: string | null
+          incident_time: string | null
+          incident_type: string | null
+          involved_persons: string | null
+          kategori: string
+          notify_arbeidstilsynet: boolean | null
+          notify_insurance: boolean | null
+          oppdaget_dato: string
+          oppdaget_sted: string | null
+          preventive_measures: string | null
+          prioritet: string
+          project_id: string
+          reporter_contact: string | null
+          responsible_receiver: string | null
+          root_cause_analysis: string | null
+          severity: string | null
+          status: string
+          tittel: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          additional_info?: string | null
+          ansvarlig?: string | null
+          avvik_nummer: string
+          beskrivelse?: string | null
+          company_id: string
+          consequences?: string | null
+          created_at?: string
+          frist?: string | null
+          id?: string
+          immediate_actions?: string | null
+          incident_location?: string | null
+          incident_time?: string | null
+          incident_type?: string | null
+          involved_persons?: string | null
+          kategori: string
+          notify_arbeidstilsynet?: boolean | null
+          notify_insurance?: boolean | null
+          oppdaget_dato?: string
+          oppdaget_sted?: string | null
+          preventive_measures?: string | null
+          prioritet: string
+          project_id: string
+          reporter_contact?: string | null
+          responsible_receiver?: string | null
+          root_cause_analysis?: string | null
+          severity?: string | null
+          status?: string
+          tittel: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          additional_info?: string | null
+          ansvarlig?: string | null
+          avvik_nummer?: string
+          beskrivelse?: string | null
+          company_id?: string
+          consequences?: string | null
+          created_at?: string
+          frist?: string | null
+          id?: string
+          immediate_actions?: string | null
+          incident_location?: string | null
+          incident_time?: string | null
+          incident_type?: string | null
+          involved_persons?: string | null
+          kategori?: string
+          notify_arbeidstilsynet?: boolean | null
+          notify_insurance?: boolean | null
+          oppdaget_dato?: string
+          oppdaget_sted?: string | null
+          preventive_measures?: string | null
+          prioritet?: string
+          project_id?: string
+          reporter_contact?: string | null
+          responsible_receiver?: string | null
+          root_cause_analysis?: string | null
+          severity?: string | null
+          status?: string
+          tittel?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_deviations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_deviations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_project_goals: {
         Row: {
           created_at: string | null
