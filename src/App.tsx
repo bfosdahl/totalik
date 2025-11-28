@@ -22,6 +22,7 @@ import KsProjects from "./pages/ks/KsProjects";
 import KsProjectDetail from "./pages/ks/KsProjectDetail";
 import KsChecklistDetail from "./pages/ks/KsChecklistDetail";
 import KsTemplates from "./pages/ks/KsTemplates";
+import KsHmsPlanWizard from "./pages/ks/KsHmsPlanWizard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
             {/* KS Bygg routes */}
             <Route path="/ks/projects" element={<ProtectedRoute><KsProjects /></ProtectedRoute>} />
             <Route path="/ks/projects/:id" element={<ProtectedRoute><KsProjectDetail /></ProtectedRoute>} />
+            <Route path="/ks/projects/:id/hms-plan" element={<ProtectedRoute><KsHmsPlanWizard /></ProtectedRoute>} />
             <Route path="/ks/checklists/:id" element={<ProtectedRoute><KsChecklistDetail /></ProtectedRoute>} />
             <Route path="/ks/templates" element={<ProtectedRoute><KsTemplates /></ProtectedRoute>} />
             
