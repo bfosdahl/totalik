@@ -27,6 +27,9 @@ import KsHmsPlanWizard from "./pages/ks/KsHmsPlanWizard";
 import KsRoutines from "./pages/ks/KsRoutines";
 import KsSja from "./pages/ks/KsSja";
 import KsAvvik from "./pages/ks/KsAvvik";
+import KsVernerunder from "./pages/ks/KsVernerunder";
+import KsFarligeFohold from "./pages/ks/KsFarligeFohold";
+import KsTiltakslogg from "./pages/ks/KsTiltakslogg";
 import KsProjectReport from "./pages/ks/KsProjectReport";
 import KsSubcontractorView from "./pages/ks/KsSubcontractorView";
 import NotFound from "./pages/NotFound";
@@ -64,6 +67,9 @@ const App = () => (
             <Route path="/ks/templates" element={<ProtectedRoute><KsTemplates /></ProtectedRoute>} />
             <Route path="/ks/sja" element={<ProtectedRoute><KsSja /></ProtectedRoute>} />
             <Route path="/ks/avvik" element={<ProtectedRoute><KsAvvik /></ProtectedRoute>} />
+            <Route path="/ks/vernerunder" element={<ProtectedRoute><KsVernerunder /></ProtectedRoute>} />
+            <Route path="/ks/farlige-forhold" element={<ProtectedRoute><KsFarligeFohold /></ProtectedRoute>} />
+            <Route path="/ks/tiltakslogg" element={<ProtectedRoute><KsTiltakslogg /></ProtectedRoute>} />
             <Route path="/ks/report" element={<ProtectedRoute><KsProjectReport /></ProtectedRoute>} />
             
             {/* Subcontractor view - limited access */}

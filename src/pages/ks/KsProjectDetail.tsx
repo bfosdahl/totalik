@@ -334,15 +334,6 @@ export default function KsProjectDetail() {
         {/* Change Orders Section */}
         <KsChangeOrders projectId={id!} />
 
-        {/* Safety Rounds Section */}
-        <KsSafetyRounds projectId={id!} />
-
-        {/* Hazardous Conditions Section */}
-        <KsHazardousConditions projectId={id!} />
-
-        {/* Activity Log Section */}
-        <KsActivityLog projectId={id!} />
-
         {/* SJA Section */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
