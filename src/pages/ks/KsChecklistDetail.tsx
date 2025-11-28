@@ -237,6 +237,32 @@ export default function KsChecklistDetail() {
     }
   };
 
+  const handleCompleteChecklist = async () => {
+    if (!checklist || !id) return;
+
+    try {
+      const { error } = await supabase
+        .from('ks_checklists')
+        .update({ 
+          filled_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Update local state
+      setChecklist({
+        ...checklist,
+        filled_at: new Date().toISOString()
+      });
+
+      toast.success('Sjekkliste fullført!');
+    } catch (error) {
+      console.error('Error completing checklist:', error);
+      toast.error('Kunne ikke fullføre sjekkliste');
+    }
+  };
+
   const completedCount = items.filter(i => i.status !== 'pending').length;
   const totalCount = items.length;
   const progressPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
@@ -451,6 +477,55 @@ export default function KsChecklistDetail() {
               </Card>
             ))}
           </div>
+        )}
+
+        {/* Complete Checklist Button */}
+        {!checklist.filled_at && (
+          <Card className="border-2 border-dashed">
+            <CardContent className="py-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-lg">Fullfør sjekkliste</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {completedCount} av {totalCount} punkter er utfylt ({progressPercentage}%)
+                  </p>
+                </div>
+                <Button 
+                  onClick={handleCompleteChecklist}
+                  size="lg"
+                  disabled={progressPercentage < 100}
+                >
+                  Fullfør sjekkliste
+                </Button>
+              </div>
+              {progressPercentage < 100 && (
+                <p className="text-sm text-amber-600 mt-3">
+                  ⚠️ Du må fullføre alle sjekkpunkter før du kan markere sjekklisten som fullført
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Completed Status */}
+        {checklist.filled_at && (
+          <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+            <CardContent className="py-6">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-full bg-green-500 flex items-center justify-center text-white">
+                  ✓
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">
+                    Sjekkliste fullført
+                  </h3>
+                  <p className="text-sm text-green-700 dark:text-green-300">
+                    Utført {format(new Date(checklist.filled_at), "dd.MM.yyyy 'kl.' HH:mm", { locale: nb })}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </AppLayout>
