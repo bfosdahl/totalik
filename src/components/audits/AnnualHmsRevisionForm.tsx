@@ -1,14 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Save, FileText } from "lucide-react";
+import { Plus, Trash2, Save, FileText, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useAuditFormResponses } from "@/hooks/useAuditFormResponses";
+import type { Json } from "@/integrations/supabase/types";
 
 type YesNoNa = "yes" | "no" | "na" | "";
 
@@ -109,6 +110,8 @@ const initializeChecklistAnswers = (items: ChecklistRow[]): ChecklistAnswers => 
 
 const AnnualHmsRevisionForm: React.FC = () => {
   const { company } = useAuth();
+  const { saveFormResponse, getDraftByFormType, getLatestByFormType, isSaving } = useAuditFormResponses();
+  const [existingId, setExistingId] = useState<string | undefined>();
   
   const [formData, setFormData] = useState<FormData>({
     companyName: company?.name || "",
@@ -130,6 +133,20 @@ const AnnualHmsRevisionForm: React.FC = () => {
     auditorSignature: "",
     managerSignature: ""
   });
+
+  // Load existing draft on mount
+  useEffect(() => {
+    const draft = getDraftByFormType("annual_hms");
+    if (draft && draft.form_data) {
+      const savedData = draft.form_data as unknown as FormData;
+      setFormData(prev => ({
+        ...prev,
+        ...savedData,
+        companyName: savedData.companyName || company?.name || "",
+      }));
+      setExistingId(draft.id);
+    }
+  }, [getDraftByFormType, company?.name]);
 
   const updateChecklistAnswer = (
     section: keyof Pick<FormData, 'goalsSection' | 'organizationSection' | 'riskSection' | 'routinesSection' | 'trainingSection' | 'deviationsSection' | 'inspectionsSection' | 'workEnvSection'>,
@@ -172,10 +189,38 @@ const AnnualHmsRevisionForm: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSaveDraft = async () => {
+    await saveFormResponse(
+      "annual_hms",
+      formData as unknown as Json,
+      {
+        revision_date: formData.revisionDate,
+        participants: formData.participants,
+        auditor_name: formData.auditor,
+        manager_name: formData.managerSignature,
+      },
+      "draft",
+      existingId
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form data:", formData);
-    toast.success("Årlig HMS-revisjon lagret");
+    const result = await saveFormResponse(
+      "annual_hms",
+      formData as unknown as Json,
+      {
+        revision_date: formData.revisionDate,
+        participants: formData.participants,
+        auditor_name: formData.auditor,
+        manager_name: formData.managerSignature,
+      },
+      "completed",
+      existingId
+    );
+    if (result) {
+      setExistingId(result.id);
+    }
   };
 
   const renderChecklistSection = (
@@ -440,10 +485,14 @@ const AnnualHmsRevisionForm: React.FC = () => {
       </Card>
 
       {/* Submit */}
-      <div className="flex justify-end">
-        <Button type="submit" size="lg" className="gap-2">
-          <Save className="w-4 h-4" />
-          Lagre årlig HMS-revisjon
+      <div className="flex flex-col sm:flex-row justify-end gap-3">
+        <Button type="button" variant="outline" size="lg" className="gap-2" onClick={handleSaveDraft} disabled={isSaving}>
+          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          Lagre utkast
+        </Button>
+        <Button type="submit" size="lg" className="gap-2" disabled={isSaving}>
+          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+          Fullfør og lagre i handbok
         </Button>
       </div>
     </form>

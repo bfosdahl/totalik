@@ -14,6 +14,82 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_form_responses: {
+        Row: {
+          audit_id: string | null
+          auditor_name: string | null
+          company_id: string
+          completed_at: string | null
+          completed_by_id: string | null
+          completed_by_name: string | null
+          created_at: string
+          form_data: Json
+          form_type: string
+          id: string
+          manager_name: string | null
+          participants: string | null
+          revision_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          audit_id?: string | null
+          auditor_name?: string | null
+          company_id: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name?: string | null
+          created_at?: string
+          form_data?: Json
+          form_type: string
+          id?: string
+          manager_name?: string | null
+          participants?: string | null
+          revision_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          audit_id?: string | null
+          auditor_name?: string | null
+          company_id?: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name?: string | null
+          created_at?: string
+          form_data?: Json
+          form_type?: string
+          id?: string
+          manager_name?: string | null
+          participants?: string | null
+          revision_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_form_responses_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "audits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_form_responses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_form_responses_completed_by_id_fkey"
+            columns: ["completed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audits: {
         Row: {
           area: string | null
@@ -23,6 +99,7 @@ export type Database = {
           company_id: string
           created_at: string
           description: string | null
+          form_type: string | null
           id: string
           responsible_id: string | null
           responsible_name: string | null
@@ -40,6 +117,7 @@ export type Database = {
           company_id: string
           created_at?: string
           description?: string | null
+          form_type?: string | null
           id?: string
           responsible_id?: string | null
           responsible_name?: string | null
@@ -57,6 +135,7 @@ export type Database = {
           company_id?: string
           created_at?: string
           description?: string | null
+          form_type?: string | null
           id?: string
           responsible_id?: string | null
           responsible_name?: string | null

@@ -142,13 +142,60 @@ const Audits = () => {
 
           {/* Revisions List Tab */}
           <TabsContent value="list" className="space-y-6">
-            {/* New audit button */}
-            <div className="flex justify-end">
-              <Button className="gap-2" onClick={() => setIsNewAuditOpen(true)}>
-                <Plus className="w-4 h-4" />
-                Ny revisjon
-              </Button>
-            </div>
+            {/* Quick links to form types */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-card rounded-xl border border-border p-5 shadow-card"
+            >
+              <h2 className="text-lg font-semibold mb-4">Gå direkte til revisjonsskjema</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 flex flex-col gap-2 items-center justify-center"
+                  onClick={() => {
+                    const tabTrigger = document.querySelector('[value="annual"]') as HTMLButtonElement;
+                    tabTrigger?.click();
+                  }}
+                >
+                  <ClipboardCheck className="w-6 h-6 text-primary" />
+                  <span className="text-xs text-center">Årlig HMS-revisjon</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 flex flex-col gap-2 items-center justify-center"
+                  onClick={() => {
+                    const tabTrigger = document.querySelector('[value="elkontroll"]') as HTMLButtonElement;
+                    tabTrigger?.click();
+                  }}
+                >
+                  <Zap className="w-6 h-6 text-warning" />
+                  <span className="text-xs text-center">El-Kontroll</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 flex flex-col gap-2 items-center justify-center"
+                  onClick={() => {
+                    const tabTrigger = document.querySelector('[value="fysiske"]') as HTMLButtonElement;
+                    tabTrigger?.click();
+                  }}
+                >
+                  <Building2 className="w-6 h-6 text-info" />
+                  <span className="text-xs text-center">Fysiske forhold</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 flex flex-col gap-2 items-center justify-center"
+                  onClick={() => {
+                    const tabTrigger = document.querySelector('[value="drift"]') as HTMLButtonElement;
+                    tabTrigger?.click();
+                  }}
+                >
+                  <Settings className="w-6 h-6 text-accent" />
+                  <span className="text-xs text-center">Daglig drift</span>
+                </Button>
+              </div>
+            </motion.div>
 
             {/* Stats overview */}
             <motion.div
@@ -179,6 +226,15 @@ const Audits = () => {
               })}
             </motion.div>
 
+            {/* Planned revisions header with new button */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Planlagte revisjoner</h2>
+              <Button className="gap-2" onClick={() => setIsNewAuditOpen(true)}>
+                <Plus className="w-4 h-4" />
+                Ny revisjon
+              </Button>
+            </div>
+
             {/* Audits list */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -186,18 +242,16 @@ const Audits = () => {
               transition={{ delay: 0.2 }}
               className="space-y-4"
             >
-              <h2 className="text-lg font-semibold">Alle revisjoner</h2>
-              
               {audits.length === 0 ? (
                 <div className="bg-card rounded-xl border border-border p-8 text-center">
                   <FileCheck className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">Ingen revisjoner</h3>
+                  <h3 className="text-lg font-medium mb-2">Ingen planlagte revisjoner</h3>
                   <p className="text-muted-foreground mb-4">
-                    Du har ikke opprettet noen revisjoner ennå.
+                    Du kan opprette planlagte revisjoner for å holde oversikt, eller gå direkte til et revisjonsskjema ovenfor.
                   </p>
                   <Button onClick={() => setIsNewAuditOpen(true)} className="gap-2">
                     <Plus className="w-4 h-4" />
-                    Opprett første revisjon
+                    Opprett planlagt revisjon
                   </Button>
                 </div>
               ) : (
