@@ -22,6 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCompanyModules } from "@/hooks/useCompanyModules";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -56,6 +57,10 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const [ksByggExpanded, setKsByggExpanded] = useState(false);
   const location = useLocation();
   const { profile, company, isSystemAdmin } = useAuth();
+  const { hasModule } = useCompanyModules();
+  
+  // Check if KS Bygg module is active for this company
+  const hasKsBygg = hasModule("KS_BYGG");
 
   // Get company name from context
   const companyName = company?.name || "Ingen bedrift";
@@ -193,110 +198,79 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             );
           })}
 
-          {/* KS Bygg collapsible section */}
-          <div>
-            <button
-              onClick={() => setKsByggExpanded(!ksByggExpanded)}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
-                collapsed && "justify-center",
-                location.pathname.startsWith("/ks")
-                  ? "text-sidebar-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-              )}
-            >
-              <HardHat className={cn(
-                "w-5 h-5 flex-shrink-0 transition-transform",
-                !location.pathname.startsWith("/ks") && "group-hover:scale-110"
-              )} />
-              <AnimatePresence mode="wait">
-                {!collapsed && (
-                  <>
-                    <motion.span
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                      className="font-medium text-sm flex-1 text-left"
-                    >
-                      KS Bygg
-                    </motion.span>
-                    {ksByggExpanded ? (
-                      <ChevronUp className="w-4 h-4" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4" />
-                    )}
-                  </>
+          {/* KS Bygg collapsible section - only show if module is active */}
+          {hasKsBygg && (
+            <div>
+              <button
+                onClick={() => setKsByggExpanded(!ksByggExpanded)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
+                  collapsed && "justify-center",
+                  location.pathname.startsWith("/ks")
+                    ? "text-sidebar-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                )}
+              >
+                <HardHat className={cn(
+                  "w-5 h-5 flex-shrink-0 transition-transform",
+                  !location.pathname.startsWith("/ks") && "group-hover:scale-110"
+                )} />
+                <AnimatePresence mode="wait">
+                  {!collapsed && (
+                    <>
+                      <motion.span
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        className="font-medium text-sm flex-1 text-left"
+                      >
+                        KS Bygg
+                      </motion.span>
+                      {ksByggExpanded ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </>
+                  )}
+                </AnimatePresence>
+              </button>
+              
+              {/* KS Bygg submenu */}
+              <AnimatePresence>
+                {ksByggExpanded && !collapsed && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pl-6 space-y-1 mt-1">
+                      {ksByggItems.map((item) => {
+                        const isActive = location.pathname === item.path ||
+                          location.pathname.startsWith(item.path + "/");
+                        
+                        return (
+                          <NavLink
+                            key={item.path}
+                            to={item.path}
+                            className={cn(
+                              "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                              isActive
+                                ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                                : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                            )}
+                          >
+                            {item.label}
+                          </NavLink>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
                 )}
               </AnimatePresence>
-            </button>
-            
-            {/* KS Bygg submenu */}
-            <AnimatePresence>
-              {ksByggExpanded && !collapsed && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="pl-6 space-y-1 mt-1">
-                    {ksByggItems.map((item) => {
-                      const isActive = location.pathname === item.path ||
-                        location.pathname.startsWith(item.path + "/");
-                      
-                      return (
-                        <NavLink
-                          key={item.path}
-                          to={item.path}
-                          className={cn(
-                            "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                            isActive
-                              ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                              : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                          )}
-                        >
-                          {item.label}
-                        </NavLink>
-                      );
-                    })}
-                    <NavLink
-                      to="/ks/vernerunder"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ks/vernerunder"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Vernerunder
-                    </NavLink>
-                    <NavLink
-                      to="/ks/farlige-forhold"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ks/farlige-forhold"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Farlige forhold
-                    </NavLink>
-                    <NavLink
-                      to="/ks/tiltakslogg"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ks/tiltakslogg"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Tiltakslogg
-                    </NavLink>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+            </div>
+          )}
 
           {/* Admin link for system admins */}
           {isSystemAdmin && (
