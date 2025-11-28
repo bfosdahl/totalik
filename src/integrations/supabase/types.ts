@@ -869,6 +869,44 @@ export type Database = {
           },
         ]
       }
+      ks_hms_plan_progress: {
+        Row: {
+          completed_steps: string[] | null
+          created_at: string | null
+          current_step: number | null
+          id: string
+          is_completed: boolean | null
+          project_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          completed_steps?: string[] | null
+          created_at?: string | null
+          current_step?: number | null
+          id?: string
+          is_completed?: boolean | null
+          project_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          completed_steps?: string[] | null
+          created_at?: string | null
+          current_step?: number | null
+          id?: string
+          is_completed?: boolean | null
+          project_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_hms_plan_progress_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_photos: {
         Row: {
           checklist_item_id: string
@@ -897,6 +935,183 @@ export type Database = {
             columns: ["checklist_item_id"]
             isOneToOne: false
             referencedRelation: "ks_checklist_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_project_actions: {
+        Row: {
+          created_at: string | null
+          deadline: string | null
+          description: string
+          id: string
+          priority: string | null
+          project_id: string
+          responsible: string | null
+          risk_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deadline?: string | null
+          description: string
+          id?: string
+          priority?: string | null
+          project_id: string
+          responsible?: string | null
+          risk_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deadline?: string | null
+          description?: string
+          id?: string
+          priority?: string | null
+          project_id?: string
+          responsible?: string | null
+          risk_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_actions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_actions_risk_id_fkey"
+            columns: ["risk_id"]
+            isOneToOne: false
+            referencedRelation: "ks_project_risks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_project_goals: {
+        Row: {
+          created_at: string | null
+          goal_text: string
+          id: string
+          is_predefined: boolean | null
+          project_id: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          goal_text: string
+          id?: string
+          is_predefined?: boolean | null
+          project_id: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          goal_text?: string
+          id?: string
+          is_predefined?: boolean | null
+          project_id?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_goals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_project_organization: {
+        Row: {
+          content: Json
+          created_at: string | null
+          id: string
+          project_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          content?: Json
+          created_at?: string | null
+          id?: string
+          project_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: Json
+          created_at?: string | null
+          id?: string
+          project_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_organization_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_project_risks: {
+        Row: {
+          consequence: number
+          created_at: string | null
+          deadline: string | null
+          hazard: string
+          id: string
+          measures: string | null
+          probability: number
+          project_id: string
+          responsible: string | null
+          risk_score: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          consequence: number
+          created_at?: string | null
+          deadline?: string | null
+          hazard: string
+          id?: string
+          measures?: string | null
+          probability: number
+          project_id: string
+          responsible?: string | null
+          risk_score?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          consequence?: number
+          created_at?: string | null
+          deadline?: string | null
+          hazard?: string
+          id?: string
+          measures?: string | null
+          probability?: number
+          project_id?: string
+          responsible?: string | null
+          risk_score?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_risks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
             referencedColumns: ["id"]
           },
         ]
@@ -961,29 +1176,44 @@ export type Database = {
         Row: {
           created_at: string | null
           created_by_user_id: string | null
+          date: string | null
           hazards_json: Json | null
           id: string
+          location: string | null
+          participants: string | null
           project_id: string
+          status: string | null
           title: string
           updated_at: string | null
+          work_description: string | null
         }
         Insert: {
           created_at?: string | null
           created_by_user_id?: string | null
+          date?: string | null
           hazards_json?: Json | null
           id?: string
+          location?: string | null
+          participants?: string | null
           project_id: string
+          status?: string | null
           title: string
           updated_at?: string | null
+          work_description?: string | null
         }
         Update: {
           created_at?: string | null
           created_by_user_id?: string | null
+          date?: string | null
           hazards_json?: Json | null
           id?: string
+          location?: string | null
+          participants?: string | null
           project_id?: string
+          status?: string | null
           title?: string
           updated_at?: string | null
+          work_description?: string | null
         }
         Relationships: [
           {

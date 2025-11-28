@@ -12,6 +12,7 @@ import {
   XCircle,
   AlertTriangle,
   FileText,
+  ShieldCheck,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useKsChecklists, useKsTemplates, KsProject } from "@/hooks/useKsProjects";
+import { useKsHmsPlan } from "@/hooks/useKsHmsPlan";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
@@ -56,6 +58,7 @@ export default function KsProjectDetail() {
 
   const { checklists, isLoading: checklistsLoading, createChecklist } = useKsChecklists(id || null);
   const { templates } = useKsTemplates();
+  const { progress: hmsProgress, goals, risks, actions, sjaList } = useKsHmsPlan(id || null);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -230,6 +233,55 @@ export default function KsProjectDetail() {
             </CardContent>
           </Card>
         </div>
+
+        {/* HMS Plan Section */}
+        <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 border-blue-200 dark:border-blue-900">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-600 rounded-lg">
+                <ShieldCheck className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <CardTitle>HMS-plan</CardTitle>
+                <CardDescription>
+                  {hmsProgress.is_completed 
+                    ? "HMS-planen er fullført" 
+                    : goals.length > 0
+                    ? `Steg ${hmsProgress.current_step + 1} av 5 fullført`
+                    : "Opprett HMS-plan for prosjektet"}
+                </CardDescription>
+              </div>
+            </div>
+            <Button 
+              onClick={() => navigate(`/ks/projects/${id}/hms-plan`)}
+              variant={hmsProgress.is_completed ? "outline" : "default"}
+            >
+              {hmsProgress.is_completed ? "Se HMS-plan" : goals.length > 0 ? "Fortsett" : "Start HMS-plan"}
+            </Button>
+          </CardHeader>
+          {(goals.length > 0 || risks.length > 0 || actions.length > 0) && (
+            <CardContent>
+              <div className="grid gap-3 md:grid-cols-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                  <span>{goals.length} HMS-mål</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-orange-600" />
+                  <span>{risks.length} Risikoer</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ClipboardCheck className="h-4 w-4 text-green-600" />
+                  <span>{actions.length} Tiltak</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-purple-600" />
+                  <span>{sjaList.length} SJA</span>
+                </div>
+              </div>
+            </CardContent>
+          )}
+        </Card>
 
         {/* Checklists Section */}
         <Card>
