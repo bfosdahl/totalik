@@ -8,3 +8,6 @@ verify_jwt = true
 
 [functions.check-deviation-deadlines]
 verify_jwt = false
+
+[functions.reset-user-password]
+verify_jwt = true

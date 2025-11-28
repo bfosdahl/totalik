@@ -10,6 +10,7 @@ import {
   Shield,
   Building2,
   Mail,
+  Key,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -49,9 +50,11 @@ export default function AdminUsers() {
   const companyFilter = searchParams.get("company");
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole>("user");
   const [selectedCompany, setSelectedCompany] = useState<string>("");
+  const [newPassword, setNewPassword] = useState("");
   
   // New user form state
   const [newUserEmail, setNewUserEmail] = useState("");
@@ -201,6 +204,26 @@ export default function AdminUsers() {
         title: "Bruker opprettet", 
         description: data.emailSent ? "E-post med innloggingslenke er sendt" : "Bruker opprettet (e-post ikke sendt)"
       });
+    },
+    onError: (error) => {
+      toast({ title: "Feil", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({ userId, newPassword }: { userId: string; newPassword: string }) => {
+      const { data, error } = await supabase.functions.invoke("reset-user-password", {
+        body: { userId, newPassword },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      setIsPasswordDialogOpen(false);
+      setNewPassword("");
+      setSelectedUser(null);
+      toast({ title: "Passord oppdatert", description: "Brukerens passord er endret" });
     },
     onError: (error) => {
       toast({ title: "Feil", description: error.message, variant: "destructive" });
@@ -383,6 +406,16 @@ export default function AdminUsers() {
                               Administrer roller
                             </DropdownMenuItem>
                             <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedUser(profile);
+                                setNewPassword("");
+                                setIsPasswordDialogOpen(true);
+                              }}
+                            >
+                              <Key className="w-4 h-4 mr-2" />
+                              Endre passord
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
                               onClick={() =>
                                 toggleActiveMutation.mutate({
                                   userId: profile.user_id,
@@ -485,7 +518,7 @@ export default function AdminUsers() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-2 border-t border-border">
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
                   <Button
                     variant="outline"
                     size="sm"
@@ -496,7 +529,20 @@ export default function AdminUsers() {
                     }}
                   >
                     <Shield className="w-4 h-4 mr-2" />
-                    Administrer roller
+                    Roller
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      setSelectedUser(profile);
+                      setNewPassword("");
+                      setIsPasswordDialogOpen(true);
+                    }}
+                  >
+                    <Key className="w-4 h-4 mr-2" />
+                    Passord
                   </Button>
                   <Button
                     variant="outline"
@@ -665,6 +711,57 @@ export default function AdminUsers() {
                 </Button>
               </div>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Password reset dialog */}
+        <Dialog open={isPasswordDialogOpen} onOpenChange={(open) => {
+          setIsPasswordDialogOpen(open);
+          if (!open) {
+            setNewPassword("");
+            setSelectedUser(null);
+          }
+        }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Endre passord</DialogTitle>
+            </DialogHeader>
+            {selectedUser && (
+              <div className="space-y-4 mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Endre passord for: {selectedUser.first_name} {selectedUser.last_name} ({selectedUser.email})
+                </p>
+
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">Nytt passord *</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    placeholder="Minst 6 tegn"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Passordet må være minst 6 tegn langt
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button variant="outline" onClick={() => setIsPasswordDialogOpen(false)}>
+                    Avbryt
+                  </Button>
+                  <Button
+                    onClick={() => resetPasswordMutation.mutate({
+                      userId: selectedUser.user_id,
+                      newPassword: newPassword,
+                    })}
+                    disabled={newPassword.length < 6 || resetPasswordMutation.isPending}
+                  >
+                    {resetPasswordMutation.isPending ? "Oppdaterer..." : "Endre passord"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
