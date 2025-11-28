@@ -38,7 +38,7 @@ export function KsSafetyRounds({ projectId }: KsSafetyRoundsProps) {
       actions_required: formData.actions_required || null,
       responsible: formData.responsible || null,
       deadline: formData.deadline || null,
-      status: "open",
+      status: "pending",
       photo_paths: null,
     });
 
@@ -112,8 +112,8 @@ export function KsSafetyRounds({ projectId }: KsSafetyRoundsProps) {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <p className="font-medium">Vernerunde {new Date(round.round_date).toLocaleDateString("nb-NO")}</p>
-                        <Badge variant={round.status === "closed" ? "default" : "secondary"}>
-                          {round.status === "closed" ? "Lukket" : "Åpen"}
+                        <Badge variant={round.status === "completed" ? "default" : "secondary"}>
+                          {round.status === "completed" ? "Gjennomført" : round.status === "cancelled" ? "Kansellert" : "Planlagt"}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
@@ -249,17 +249,17 @@ export function KsSafetyRounds({ projectId }: KsSafetyRoundsProps) {
               <div>
                 <Label>Status</Label>
                 <div className="mt-2 flex gap-2">
-                  {selectedRound.status === "open" ? (
-                    <Button onClick={() => handleStatusChange(selectedRound.id, "closed")}>
+                  {selectedRound.status === "pending" ? (
+                    <Button onClick={() => handleStatusChange(selectedRound.id, "completed")}>
                       <CheckCircle className="mr-2 h-4 w-4" />
-                      Marker som lukket
+                      Marker som gjennomført
                     </Button>
-                  ) : (
-                    <Button variant="outline" onClick={() => handleStatusChange(selectedRound.id, "open")}>
+                  ) : selectedRound.status === "completed" ? (
+                    <Button variant="outline" onClick={() => handleStatusChange(selectedRound.id, "pending")}>
                       <AlertCircle className="mr-2 h-4 w-4" />
-                      Åpne igjen
+                      Marker som planlagt
                     </Button>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </div>
