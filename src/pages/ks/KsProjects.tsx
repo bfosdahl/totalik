@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Building2, MapPin, Users, Calendar, MoreVertical, Eye, Pencil, Trash2 } from "lucide-react";
+import { Plus, Building2, MapPin, Users, Calendar, MoreVertical, Eye, Pencil, Trash2, X } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,9 +28,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useKsProjects, NewKsProjectInput } from "@/hooks/useKsProjects";
+import { useKsProjects, NewKsProjectInput, KsProjectResponsibility } from "@/hooks/useKsProjects";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -102,7 +101,10 @@ const kontrollendeFunksjoner = [
   { value: "KTR-KON", label: "KTR – Konstruksjon" },
   { value: "KTR-GEO", label: "KTR – Geoteknikk" },
   { value: "KTR-BRA", label: "KTR – Brann" },
+  { value: "KTR-ANN", label: "KTR – Annet" },
 ];
+
+type RoleType = 'SØK' | 'PRO' | 'UTF' | 'KTR';
 
 export default function KsProjects() {
   const navigate = useNavigate();
@@ -114,27 +116,27 @@ export default function KsProjects() {
     client_name: "",
     tiltaksklasse: "",
     start_date: new Date().toISOString().split("T")[0],
-    ansvarlig_soker: "",
-    ansvarlig_soker_funksjon: "",
-    ansvarlig_prosjekterende: "",
-    ansvarlig_prosjekterende_funksjon: "",
-    ansvarlig_utforende: "",
-    ansvarlig_utforende_funksjon: "",
-    ansvarlig_kontrollerende: "",
-    ansvarlig_kontrollerende_funksjon: "",
   });
 
-  const [selectedRoles, setSelectedRoles] = useState({
-    soker: false,
-    prosjekterende: false,
-    utforende: false,
-    kontrollerende: false,
-  });
+  const [responsibilities, setResponsibilities] = useState<Omit<KsProjectResponsibility, 'id' | 'project_id' | 'created_at' | 'updated_at'>[]>([]);
+
+  const handleAddResponsibility = (roleType: RoleType, funksjon: string, navn: string) => {
+    if (!funksjon || !navn) return;
+    setResponsibilities(prev => [...prev, { role_type: roleType, funksjon, ansvarlig_navn: navn }]);
+  };
+
+  const handleRemoveResponsibility = (index: number) => {
+    setResponsibilities(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleCreateProject = async () => {
     if (!formData.name || !formData.start_date) return;
     
-    const result = await createProject(formData);
+    const result = await createProject({
+      ...formData,
+      responsibilities,
+    });
+    
     if (result) {
       setShowNewDialog(false);
       setFormData({
@@ -143,21 +145,8 @@ export default function KsProjects() {
         client_name: "",
         tiltaksklasse: "",
         start_date: new Date().toISOString().split("T")[0],
-        ansvarlig_soker: "",
-        ansvarlig_soker_funksjon: "",
-        ansvarlig_prosjekterende: "",
-        ansvarlig_prosjekterende_funksjon: "",
-        ansvarlig_utforende: "",
-        ansvarlig_utforende_funksjon: "",
-        ansvarlig_kontrollerende: "",
-        ansvarlig_kontrollerende_funksjon: "",
       });
-      setSelectedRoles({
-        soker: false,
-        prosjekterende: false,
-        utforende: false,
-        kontrollerende: false,
-      });
+      setResponsibilities([]);
     }
   };
 
@@ -282,6 +271,15 @@ export default function KsProjects() {
                       </span>
                     )}
                   </div>
+                  {project.responsibilities && project.responsibilities.length > 0 && (
+                    <div className="flex flex-wrap gap-1 pt-2">
+                      {project.responsibilities.map((resp, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs">
+                          {resp.role_type}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -329,175 +327,60 @@ export default function KsProjects() {
 
               <div className="space-y-4">
                 <div>
-                  <Label>Funksjoner i byggesak</Label>
+                  <Label>Ansvarlige i byggesak</Label>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Velg hvilke ansvarsroller som er aktuelle for prosjektet
+                    Legg til ansvarlige personer for ulike funksjoner i prosjektet
                   </p>
                 </div>
 
-                <div className="space-y-3">
-                  {/* Ansvarlig søker */}
+                {/* Display added responsibilities */}
+                {responsibilities.length > 0 && (
                   <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="role-soker"
-                        checked={selectedRoles.soker}
-                        onCheckedChange={(checked) => {
-                          setSelectedRoles({ ...selectedRoles, soker: !!checked });
-                          if (!checked) setFormData({ ...formData, ansvarlig_soker: "", ansvarlig_soker_funksjon: "" });
-                        }}
-                      />
-                      <Label htmlFor="role-soker" className="text-sm font-normal cursor-pointer">
-                        Ansvarlig søker
-                      </Label>
-                    </div>
-                    {selectedRoles.soker && (
-                      <div className="ml-6 space-y-2">
-                        <Select
-                          value={formData.ansvarlig_soker_funksjon}
-                          onValueChange={(value) => setFormData({ ...formData, ansvarlig_soker_funksjon: value })}
+                    {responsibilities.map((resp, idx) => (
+                      <div key={idx} className="flex items-center justify-between gap-2 p-2 border rounded-md">
+                        <div className="flex-1">
+                          <Badge variant="outline" className="mr-2">{resp.role_type}</Badge>
+                          <span className="text-sm">{resp.funksjon}</span>
+                          <span className="text-xs text-muted-foreground ml-2">- {resp.ansvarlig_navn}</span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => handleRemoveResponsibility(idx)}
                         >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Velg funksjon" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {sokerFunksjoner.map(f => (
-                              <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Input
-                          placeholder="Navn på ansvarlig søker eller fritekst"
-                          value={formData.ansvarlig_soker}
-                          onChange={(e) => setFormData({ ...formData, ansvarlig_soker: e.target.value })}
-                        />
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
-                    )}
+                    ))}
                   </div>
+                )}
 
-                  {/* Ansvarlig prosjekterende */}
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="role-prosjekterende"
-                        checked={selectedRoles.prosjekterende}
-                        onCheckedChange={(checked) => {
-                          setSelectedRoles({ ...selectedRoles, prosjekterende: !!checked });
-                          if (!checked) setFormData({ ...formData, ansvarlig_prosjekterende: "", ansvarlig_prosjekterende_funksjon: "" });
-                        }}
-                      />
-                      <Label htmlFor="role-prosjekterende" className="text-sm font-normal cursor-pointer">
-                        Ansvarlig prosjekterende
-                      </Label>
-                    </div>
-                    {selectedRoles.prosjekterende && (
-                      <div className="ml-6 space-y-2">
-                        <Select
-                          value={formData.ansvarlig_prosjekterende_funksjon}
-                          onValueChange={(value) => setFormData({ ...formData, ansvarlig_prosjekterende_funksjon: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Velg funksjon" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {projektorendeFunksjoner.map(f => (
-                              <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Input
-                          placeholder="Navn på ansvarlig prosjekterende eller fritekst"
-                          value={formData.ansvarlig_prosjekterende}
-                          onChange={(e) => setFormData({ ...formData, ansvarlig_prosjekterende: e.target.value })}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Ansvarlig utførende */}
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="role-utforende"
-                        checked={selectedRoles.utforende}
-                        onCheckedChange={(checked) => {
-                          setSelectedRoles({ ...selectedRoles, utforende: !!checked });
-                          if (!checked) {
-                            setFormData({ 
-                              ...formData, 
-                              ansvarlig_utforende: "",
-                              ansvarlig_utforende_funksjon: ""
-                            });
-                          }
-                        }}
-                      />
-                      <Label htmlFor="role-utforende" className="text-sm font-normal cursor-pointer">
-                        Ansvarlig utførende
-                      </Label>
-                    </div>
-                    {selectedRoles.utforende && (
-                      <div className="ml-6 space-y-2">
-                        <Select
-                          value={formData.ansvarlig_utforende_funksjon}
-                          onValueChange={(value) => setFormData({ ...formData, ansvarlig_utforende_funksjon: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Velg funksjon" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {utforendeFunksjoner.map(f => (
-                              <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Input
-                          placeholder="Navn på ansvarlig utførende eller fritekst"
-                          value={formData.ansvarlig_utforende}
-                          onChange={(e) => setFormData({ ...formData, ansvarlig_utforende: e.target.value })}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Ansvarlig kontrollerende */}
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="role-kontrollerende"
-                        checked={selectedRoles.kontrollerende}
-                        onCheckedChange={(checked) => {
-                          setSelectedRoles({ ...selectedRoles, kontrollerende: !!checked });
-                          if (!checked) setFormData({ ...formData, ansvarlig_kontrollerende: "", ansvarlig_kontrollerende_funksjon: "" });
-                        }}
-                      />
-                      <Label htmlFor="role-kontrollerende" className="text-sm font-normal cursor-pointer">
-                        Ansvarlig kontrollerende
-                      </Label>
-                    </div>
-                    {selectedRoles.kontrollerende && (
-                      <div className="ml-6 space-y-2">
-                        <Select
-                          value={formData.ansvarlig_kontrollerende_funksjon}
-                          onValueChange={(value) => setFormData({ ...formData, ansvarlig_kontrollerende_funksjon: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Velg funksjon" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {kontrollendeFunksjoner.map(f => (
-                              <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Input
-                          placeholder="Navn på ansvarlig kontrollerende eller fritekst"
-                          value={formData.ansvarlig_kontrollerende}
-                          onChange={(e) => setFormData({ ...formData, ansvarlig_kontrollerende: e.target.value })}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
+                {/* Add new responsibility */}
+                <ResponsibilityForm
+                  roleType="SØK"
+                  label="Ansvarlig søker"
+                  funksjoner={sokerFunksjoner}
+                  onAdd={handleAddResponsibility}
+                />
+                <ResponsibilityForm
+                  roleType="PRO"
+                  label="Ansvarlig prosjekterende"
+                  funksjoner={projektorendeFunksjoner}
+                  onAdd={handleAddResponsibility}
+                />
+                <ResponsibilityForm
+                  roleType="UTF"
+                  label="Ansvarlig utførende"
+                  funksjoner={utforendeFunksjoner}
+                  onAdd={handleAddResponsibility}
+                />
+                <ResponsibilityForm
+                  roleType="KTR"
+                  label="Ansvarlig kontrollerende"
+                  funksjoner={kontrollendeFunksjoner}
+                  onAdd={handleAddResponsibility}
+                />
               </div>
 
               <div className="space-y-2">
@@ -543,5 +426,58 @@ export default function KsProjects() {
         </DialogContent>
       </Dialog>
     </AppLayout>
+  );
+}
+
+interface ResponsibilityFormProps {
+  roleType: RoleType;
+  label: string;
+  funksjoner: { value: string; label: string }[];
+  onAdd: (roleType: RoleType, funksjon: string, navn: string) => void;
+}
+
+function ResponsibilityForm({ roleType, label, funksjoner, onAdd }: ResponsibilityFormProps) {
+  const [funksjon, setFunksjon] = useState('');
+  const [navn, setNavn] = useState('');
+
+  const handleAdd = () => {
+    if (funksjon && navn) {
+      onAdd(roleType, funksjon, navn);
+      setFunksjon('');
+      setNavn('');
+    }
+  };
+
+  return (
+    <div className="space-y-2 p-3 border rounded-md">
+      <Label className="text-sm font-semibold">{label}</Label>
+      <div className="space-y-2">
+        <Select value={funksjon} onValueChange={setFunksjon}>
+          <SelectTrigger>
+            <SelectValue placeholder="Velg funksjon" />
+          </SelectTrigger>
+          <SelectContent>
+            {funksjoner.map(f => (
+              <SelectItem key={f.value} value={f.label}>{f.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="flex gap-2">
+          <Input
+            placeholder="Navn på ansvarlig"
+            value={navn}
+            onChange={(e) => setNavn(e.target.value)}
+          />
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleAdd}
+            disabled={!funksjon || !navn}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
