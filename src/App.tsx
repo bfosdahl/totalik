@@ -71,7 +71,7 @@ const App = () => (
             <Route path="/ks/vernerunder" element={<ProtectedRoute><KsVernerunder /></ProtectedRoute>} />
             <Route path="/ks/farlige-forhold" element={<ProtectedRoute><KsFarligeFohold /></ProtectedRoute>} />
             <Route path="/ks/tiltakslogg" element={<ProtectedRoute><KsTiltakslogg /></ProtectedRoute>} />
-            <Route path="/ks/checklist-generator" element={<ProtectedRoute><KsChecklistGenerator /></ProtectedRoute>} />
+              <Route path="/ks/checklist-generator" element={<ProtectedRoute><KsChecklistGenerator /></ProtectedRoute>} />
             <Route path="/ks/report" element={<ProtectedRoute><KsProjectReport /></ProtectedRoute>} />
             
             {/* Subcontractor view - limited access */}
