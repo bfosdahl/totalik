@@ -114,7 +114,7 @@ export default function KsAvvik() {
         .insert({
           deviation_number: data.avvik_nummer,
           title: data.tittel,
-          description: data.beskrivelse,
+          description: `Sted: ${data.oppdaget_sted || 'Ikke oppgitt'}\n\n${data.beskrivelse || ''}`,
           category: data.kategori,
           priority: data.prioritet,
           status: data.status,
@@ -127,7 +127,10 @@ export default function KsAvvik() {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating deviation:', error);
+        throw error;
+      }
       return result;
     },
     onSuccess: () => {
@@ -136,8 +139,13 @@ export default function KsAvvik() {
       setIsDialogOpen(false);
       resetForm();
     },
-    onError: () => {
-      toast({ title: "Feil", description: "Kunne ikke opprette avvik.", variant: "destructive" });
+    onError: (error: any) => {
+      console.error('Mutation error:', error);
+      toast({ 
+        title: "Feil", 
+        description: error?.message || "Kunne ikke opprette avvik.", 
+        variant: "destructive" 
+      });
     },
   });
 
