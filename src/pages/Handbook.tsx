@@ -18,7 +18,10 @@ import {
   FileCheck,
   AlertCircle,
   Search,
-  Loader2
+  Loader2,
+  Zap,
+  Building2,
+  Settings
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -27,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { useSetupWizard } from "@/hooks/useSetupWizard";
 import { useDeviations } from "@/hooks/useDeviations";
 import { useAudits } from "@/hooks/useAudits";
+import { useAuditFormResponses, formTypeLabels, type FormType } from "@/hooks/useAuditFormResponses";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -59,6 +63,7 @@ const Handbook = () => {
   } = useSetupWizard();
   const { deviations, isLoading: isLoadingDeviations } = useDeviations();
   const { audits, isLoading: isLoadingAudits } = useAudits();
+  const { completedForms, isLoading: isLoadingForms, getLatestByFormType } = useAuditFormResponses();
   
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
@@ -70,6 +75,43 @@ const Handbook = () => {
   const completedAuditsCount = audits.filter(a => a.status === "completed").length;
   const pendingAuditsCount = audits.filter(a => a.status === "scheduled" || a.status === "in-progress").length;
   const auditStatus = completedAuditsCount > 0 && pendingAuditsCount === 0 ? "complete" : "incomplete";
+
+  // Form type icons
+  const formTypeIcons: Record<FormType, typeof FileCheck> = {
+    annual_hms: ClipboardList,
+    elkontroll: Zap,
+    fysiske_forhold: Building2,
+    daglig_drift: Settings,
+  };
+
+  // Generate sections for completed audit forms
+  const auditFormSections = (["annual_hms", "elkontroll", "fysiske_forhold", "daglig_drift"] as FormType[])
+    .map((formType, index) => {
+      const latestForm = getLatestByFormType(formType);
+      const Icon = formTypeIcons[formType];
+      return {
+        id: `audit_form_${formType}`,
+        title: `${8 + index}. ${formTypeLabels[formType]}`,
+        status: latestForm ? "complete" as const : "incomplete" as const,
+        stepIndex: -1,
+        icon: Icon,
+        content: latestForm ? (
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>Sist fullført: {latestForm.completed_at ? format(new Date(latestForm.completed_at), "d. MMMM yyyy", { locale: nb }) : "Ukjent"}</p>
+            {latestForm.auditor_name && <p>Revisor: {latestForm.auditor_name}</p>}
+            {latestForm.participants && <p>Deltakere: {latestForm.participants}</p>}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Ingen {formTypeLabels[formType].toLowerCase()} er gjennomført ennå. Gå til Revisjoner for å fylle ut skjemaet.
+          </p>
+        ),
+        summary: latestForm 
+          ? `Fullført ${latestForm.completed_at ? format(new Date(latestForm.completed_at), "d. MMM yyyy", { locale: nb }) : ""}`
+          : "Ikke utført",
+        linkTo: "/audits",
+      };
+    });
 
   // Calculate section status based on actual data
   const handbookSections = [
@@ -174,14 +216,15 @@ const Handbook = () => {
       icon: FileCheck,
       content: (routines?.routines?.length ?? 0) > 0 ? (
         <div className="space-y-2">
-          {routines?.routines.slice(0, 5).map((routine) => (
+          {routines?.routines.slice(0, 8).map((routine, index) => (
             <div key={routine.id} className="flex items-center gap-2 text-sm">
+              <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded">5.{index + 1}</span>
               <span className="font-mono text-xs text-muted-foreground">{routine.routine_number}</span>
               <span className="text-muted-foreground truncate">{routine.routine_name}</span>
             </div>
           ))}
-          {(routines?.routines?.length ?? 0) > 5 && (
-            <p className="text-xs text-muted-foreground">+ {(routines?.routines?.length ?? 0) - 5} flere rutiner</p>
+          {(routines?.routines?.length ?? 0) > 8 && (
+            <p className="text-xs text-muted-foreground">+ {(routines?.routines?.length ?? 0) - 8} flere rutiner</p>
           )}
         </div>
       ) : (
@@ -227,6 +270,8 @@ const Handbook = () => {
       summary: pendingAuditsCount > 0 ? `${pendingAuditsCount} ventende revisjoner` : completedAuditsCount > 0 ? `${completedAuditsCount} gjennomført` : "Ingen revisjoner",
       linkTo: "/audits",
     },
+    // Add dynamic audit form sections
+    ...auditFormSections,
   ];
 
   const completeSections = handbookSections.filter((s) => s.status === "complete").length;
@@ -237,6 +282,9 @@ const Handbook = () => {
       navigate(section.linkTo);
     } else if (section.stepIndex >= 0) {
       // Toggle expand/collapse for wizard sections
+      setExpandedSection(expandedSection === section.id ? null : section.id);
+    } else {
+      // For audit form sections, allow expand/collapse
       setExpandedSection(expandedSection === section.id ? null : section.id);
     }
   };
@@ -250,7 +298,7 @@ const Handbook = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingForms) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-64">
