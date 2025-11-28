@@ -98,7 +98,6 @@ export default function KsAvvik() {
         .from('deviations')
         .select('*')
         .eq('company_id', company.id)
-        .is('project_id', null)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -115,7 +114,7 @@ export default function KsAvvik() {
         oppdaget_dato: d.created_at.split('T')[0],
         oppdaget_sted: d.description?.split('\n')[0] || null,
         company_id: d.company_id,
-        project_id: null,
+        project_id: d.project_id,
         created_at: d.created_at,
         type: d.type || 'avvik',
         incident_time: d.incident_time,
