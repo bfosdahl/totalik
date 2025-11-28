@@ -86,7 +86,15 @@ export default function KsProjectReport() {
 
       if (includeOptions.checklists) {
         fetchPromises.push(
-          Promise.resolve(supabase.from("ks_checklists").select("*, template:ks_templates(*)").eq("project_id", selectedProjectId).order("created_at", { ascending: false }))
+          Promise.resolve(supabase.from("ks_checklists").select(`
+            *,
+            template:ks_templates(*),
+            items:ks_checklist_items(
+              *,
+              template_item:ks_template_items(*),
+              photos:ks_photos(*)
+            )
+          `).eq("project_id", selectedProjectId).order("created_at", { ascending: false }))
         );
         dataKeys.push("checklists");
       }
