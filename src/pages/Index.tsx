@@ -12,6 +12,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { ComplianceProgress } from "@/components/dashboard/ComplianceProgress";
 import { RecentDeviations } from "@/components/dashboard/RecentDeviations";
+import { ExpiryAlerts } from "@/components/dashboard/ExpiryAlerts";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useAudits } from "@/hooks/useAudits";
@@ -94,6 +95,7 @@ const Index = () => {
 
           {/* Right column */}
           <div className="space-y-4 md:space-y-6">
+            <ExpiryAlerts />
             <QuickActions />
             
             {/* Upcoming reviews */}
