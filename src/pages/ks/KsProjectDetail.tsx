@@ -14,6 +14,11 @@ import {
   FileText,
   ShieldCheck,
   ExternalLink,
+  ListTodo,
+  Shield,
+  AlertCircle,
+  FileEdit,
+  Layers,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -229,83 +234,98 @@ export default function KsProjectDetail() {
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>KS Fremdrift</CardDescription>
-              <CardTitle className="text-2xl">{progressPercentage}%</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Progress value={progressPercentage} className="h-2" />
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">KS Fremdrift</p>
+                  <p className="text-3xl font-bold mt-2">{progressPercentage}%</p>
+                  <p className="text-xs text-muted-foreground mt-1">Oppfyller krav</p>
+                </div>
+                <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-full">
+                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+              <Progress value={progressPercentage} className="h-2 mt-4" />
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Sjekklister</CardDescription>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <ClipboardCheck className="h-5 w-5 text-muted-foreground" />
-                {checklists.length}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {checklistStats.completed} av {checklistStats.total} punkter OK
-              </p>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Sjekklister</p>
+                  <p className="text-3xl font-bold mt-2">{checklists.length}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{checklistStats.completed} av {checklistStats.total} OK</p>
+                </div>
+                <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full">
+                  <ClipboardCheck className="h-6 w-6 text-blue-600" />
+                </div>
+              </div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Avvik</CardDescription>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-                {checklistStats.avvik}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">Åpne avvik</p>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Åpne avvik</p>
+                  <p className="text-3xl font-bold mt-2">{checklistStats.avvik}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Krever handling</p>
+                </div>
+                <div className="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-full">
+                  <AlertTriangle className="h-6 w-6 text-orange-600" />
+                </div>
+              </div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Tiltaksklasse</CardDescription>
-              <CardTitle className="text-2xl">
-                {project.tiltaksklasse || "-"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">{project.ansvarsrolle}</p>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">SJA</p>
+                  <p className="text-3xl font-bold mt-2">{projectSjas.length}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Neste 7 dager</p>
+                </div>
+                <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-full">
+                  <FileText className="h-6 w-6 text-purple-600" />
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* HMS Plan Section */}
-        <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 border-blue-200 dark:border-blue-900">
-          <CardHeader className="flex flex-row items-center justify-between">
+        {/* HMS Plan Progress */}
+        <Card>
+          <CardHeader>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-600 rounded-lg">
                 <ShieldCheck className="h-6 w-6 text-white" />
               </div>
-              <div>
+              <div className="flex-1">
                 <CardTitle>HMS-plan</CardTitle>
                 <CardDescription>
                   {hmsProgress.is_completed 
-                    ? "HMS-planen er fullført" 
+                    ? "6 av 6 steg fullført" 
                     : goals.length > 0
-                    ? `Steg ${hmsProgress.current_step + 1} av 5 fullført`
+                    ? `${hmsProgress.current_step + 1} av 6 steg fullført`
                     : "Opprett HMS-plan for prosjektet"}
                 </CardDescription>
               </div>
+              <Button 
+                onClick={() => navigate(`/ks/projects/${id}/hms-plan`)}
+                variant={hmsProgress.is_completed ? "outline" : "default"}
+              >
+                {hmsProgress.is_completed ? "Se HMS-plan" : goals.length > 0 ? "Fortsett" : "Start HMS-plan"}
+              </Button>
             </div>
-            <Button 
-              onClick={() => navigate(`/ks/projects/${id}/hms-plan`)}
-              variant={hmsProgress.is_completed ? "outline" : "default"}
-            >
-              {hmsProgress.is_completed ? "Se HMS-plan" : goals.length > 0 ? "Fortsett" : "Start HMS-plan"}
-            </Button>
           </CardHeader>
           {(goals.length > 0 || risks.length > 0 || actions.length > 0) && (
             <CardContent>
+              <Progress 
+                value={hmsProgress.is_completed ? 100 : ((hmsProgress.current_step + 1) / 6) * 100} 
+                className="h-2 mb-4" 
+              />
               <div className="grid gap-3 md:grid-cols-4 text-sm">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
                   <span>{goals.length} HMS-mål</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -313,7 +333,7 @@ export default function KsProjectDetail() {
                   <span>{risks.length} Risikoer</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <ClipboardCheck className="h-4 w-4 text-green-600" />
+                  <ClipboardCheck className="h-4 w-4 text-blue-600" />
                   <span>{actions.length} Tiltak</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -325,167 +345,211 @@ export default function KsProjectDetail() {
           )}
         </Card>
 
-        {/* Documents Section */}
-        <KsProjectDocuments projectId={id!} />
-
-        {/* Subcontractors Section */}
-        <KsProjectSubcontractors projectId={id!} />
-
-        {/* Change Orders Section */}
-        <KsChangeOrders projectId={id!} />
-
-        {/* SJA Section */}
+        {/* Quick Actions */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Sikker Jobb Analyse (SJA)</CardTitle>
-              <CardDescription>{projectSjas.length} SJA registrert for dette prosjektet</CardDescription>
-            </div>
-            <Button variant="outline" onClick={() => navigate('/ks/sja')}>
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Gå til SJA-register
-            </Button>
+          <CardHeader>
+            <CardTitle>Hurtighandlinger</CardTitle>
           </CardHeader>
           <CardContent>
-            {projectSjas.length === 0 ? (
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-2">Ingen SJA registrert for dette prosjektet</p>
-                <p className="text-sm text-muted-foreground mb-4">Gå til SJA-registeret for å opprette ny SJA</p>
-                <Button variant="outline" onClick={() => navigate('/ks/sja')}>
-                  Gå til SJA-register
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {projectSjas.map((sja: any) => (
-                  <div
-                    key={sja.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => setSelectedSja(sja)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">SJA {sja.sja_nr}</Badge>
-                          <p className="font-medium">{sja.title}</p>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {sja.utfort_dato && new Date(sja.utfort_dato).toLocaleDateString("nb-NO")}
-                          {sja.utfort_navn && ` • ${sja.utfort_navn}`}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="grid gap-4 md:grid-cols-4">
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center gap-2 p-4"
+                onClick={() => setShowNewChecklistDialog(true)}
+              >
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                  <ClipboardCheck className="h-6 w-6 text-blue-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold">Start sjekkliste</p>
+                  <p className="text-xs text-muted-foreground">Intern gjennomgang</p>
+                </div>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center gap-2 p-4"
+                onClick={() => navigate('/ks/templates')}
+              >
+                <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+                  <Layers className="h-6 w-6 text-green-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold">Se maler</p>
+                  <p className="text-xs text-muted-foreground">Tilgjengelige sjekklister</p>
+                </div>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center gap-2 p-4"
+                onClick={() => navigate('/ks/sja')}
+              >
+                <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+                  <FileText className="h-6 w-6 text-purple-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold">SJA</p>
+                  <p className="text-xs text-muted-foreground">Sikker jobb analyse</p>
+                </div>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center gap-2 p-4"
+                onClick={() => navigate('/ks/avvik')}
+              >
+                <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+                  <AlertTriangle className="h-6 w-6 text-orange-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold">Registrer avvik</p>
+                  <p className="text-xs text-muted-foreground">Logg nytt avvik</p>
+                </div>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center gap-2 p-4"
+                onClick={() => navigate('/ks/vernerunder')}
+              >
+                <div className="p-2 bg-cyan-100 dark:bg-cyan-900/20 rounded-lg">
+                  <Shield className="h-6 w-6 text-cyan-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold">Vernerunde</p>
+                  <p className="text-xs text-muted-foreground">HMS-inspeksjon</p>
+                </div>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center gap-2 p-4"
+                onClick={() => navigate('/ks/farlige-fohold')}
+              >
+                <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
+                  <AlertCircle className="h-6 w-6 text-red-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold">Farlige forhold</p>
+                  <p className="text-xs text-muted-foreground">Registrer fare</p>
+                </div>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center gap-2 p-4"
+                onClick={() => navigate(`/ks/projects/${id}/report`)}
+              >
+                <div className="p-2 bg-indigo-100 dark:bg-indigo-900/20 rounded-lg">
+                  <FileEdit className="h-6 w-6 text-indigo-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold">Eksporter rapport</p>
+                  <p className="text-xs text-muted-foreground">Last ned PDF</p>
+                </div>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center gap-2 p-4"
+                onClick={() => navigate('/ks/routines')}
+              >
+                <div className="p-2 bg-teal-100 dark:bg-teal-900/20 rounded-lg">
+                  <ListTodo className="h-6 w-6 text-teal-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold">Rutiner</p>
+                  <p className="text-xs text-muted-foreground">Se rutinebank</p>
+                </div>
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Deviations Section */}
+        {/* Nylige aktiviteter */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Avvik</CardTitle>
-              <CardDescription>{projectDeviations.length} avvik registrert for dette prosjektet</CardDescription>
-            </div>
-            <Button variant="outline" onClick={() => navigate('/ks/avvik')}>
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Gå til avviksregister
-            </Button>
+          <CardHeader>
+            <CardTitle>Siste aktivitet</CardTitle>
+            <CardDescription>Nylige hendelser på prosjektet</CardDescription>
           </CardHeader>
           <CardContent>
-            {projectDeviations.length === 0 ? (
-              <div className="text-center py-8">
-                <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-2">Ingen avvik registrert for dette prosjektet</p>
-                <p className="text-sm text-muted-foreground mb-4">Gå til avviksregisteret for å registrere avvik</p>
-                <Button variant="outline" onClick={() => navigate('/ks/avvik')}>
-                  Gå til avviksregister
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {projectDeviations.map((deviation: any) => (
-                  <div
-                    key={deviation.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => setSelectedDeviation(deviation)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <AlertTriangle className="h-5 w-5 text-destructive" />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">{deviation.deviation_number}</Badge>
-                          <p className="font-medium">{deviation.title}</p>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {deviation.category} • {deviation.priority}
-                          {deviation.due_date && ` • Frist: ${new Date(deviation.due_date).toLocaleDateString("nb-NO")}`}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant={deviation.status === 'open' ? 'destructive' : deviation.status === 'in_progress' ? 'default' : 'secondary'}>
-                      {deviation.status === 'open' ? 'Åpen' : deviation.status === 'in_progress' ? 'Under arbeid' : 'Lukket'}
-                    </Badge>
+            <div className="space-y-3">
+              {checklists.length > 0 && (
+                <div className="flex items-start gap-3 p-3 border rounded-lg">
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                    <ClipboardCheck className="h-4 w-4 text-blue-600" />
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">Sjekkliste opprettet</p>
+                    <p className="text-xs text-muted-foreground">{checklists[0].template?.name}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {new Date(checklists[0].created_at).toLocaleDateString("nb-NO")}
+                    </p>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    variant="ghost"
+                    onClick={() => navigate(`/ks/checklists/${checklists[0].id}`)}
+                  >
+                    Se
+                  </Button>
+                </div>
+              )}
+              
+              {projectSjas.length > 0 && (
+                <div className="flex items-start gap-3 p-3 border rounded-lg">
+                  <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+                    <FileText className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">SJA registrert</p>
+                    <p className="text-xs text-muted-foreground">{projectSjas[0].title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {new Date(projectSjas[0].created_at).toLocaleDateString("nb-NO")}
+                    </p>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    variant="ghost"
+                    onClick={() => setSelectedSja(projectSjas[0])}
+                  >
+                    Se
+                  </Button>
+                </div>
+              )}
 
-        {/* Checklists Section */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Sjekklister</CardTitle>
-              <CardDescription>Kvalitetssikring og dokumentasjon</CardDescription>
-            </div>
-            <Button onClick={() => setShowNewChecklistDialog(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Start sjekkliste
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {checklistsLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}
-              </div>
-            ) : checklists.length === 0 ? (
-              <div className="text-center py-8">
-                <ClipboardCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">Ingen sjekklister enda</p>
-                <Button variant="outline" onClick={() => setShowNewChecklistDialog(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Start første sjekkliste
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {checklists.map((checklist) => (
-                  <div
-                    key={checklist.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => navigate(`/ks/checklists/${checklist.id}`)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">{checklist.template?.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {checklist.phase && `${checklist.phase} • `}
-                          {new Date(checklist.created_at).toLocaleDateString("nb-NO")}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant="outline">Åpne</Badge>
+              {projectDeviations.length > 0 && (
+                <div className="flex items-start gap-3 p-3 border rounded-lg">
+                  <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+                    <AlertTriangle className="h-4 w-4 text-orange-600" />
                   </div>
-                ))}
-              </div>
-            )}
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">Avvik rapportert</p>
+                    <p className="text-xs text-muted-foreground">{projectDeviations[0].title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {new Date(projectDeviations[0].created_at).toLocaleDateString("nb-NO")}
+                    </p>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    variant="ghost"
+                    onClick={() => setSelectedDeviation(projectDeviations[0])}
+                  >
+                    Se
+                  </Button>
+                </div>
+              )}
+
+              {checklists.length === 0 && projectSjas.length === 0 && projectDeviations.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">Ingen aktivitet enda</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Start med å opprette en sjekkliste eller registrere en SJA
+                  </p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
