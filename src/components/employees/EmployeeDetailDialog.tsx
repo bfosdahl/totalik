@@ -139,10 +139,14 @@ export function EmployeeDetailDialog({
           </DialogHeader>
 
           <Tabs defaultValue="info" className="mt-4">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="info" className="gap-2">
                 <User className="w-4 h-4" />
                 Informasjon
+              </TabsTrigger>
+              <TabsTrigger value="hmscard" className="gap-2">
+                <CreditCard className="w-4 h-4" />
+                HMS-kort
               </TabsTrigger>
               <TabsTrigger value="documents" className="gap-2">
                 <FileText className="w-4 h-4" />
@@ -270,8 +274,10 @@ export function EmployeeDetailDialog({
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
 
-              {/* HMS Card Section */}
+            {/* HMS Card Tab */}
+            <TabsContent value="hmscard" className="space-y-4 mt-4">
               <HmsCardSection employee={employee} canManage={canManage} />
             </TabsContent>
 
