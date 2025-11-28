@@ -17,6 +17,7 @@ import {
   Copy,
   Check,
   Upload,
+  Download,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -290,9 +291,9 @@ export default function AdminUsers() {
     setTimeout(() => setPasswordCopied(false), 2000);
   }, [newPassword]);
 
-  const getUserRoles = (userId: string): AppRole[] => {
+  const getUserRoles = useCallback((userId: string): AppRole[] => {
     return userRoles?.filter((r) => r.user_id === userId).map((r) => r.role as AppRole) || [];
-  };
+  }, [userRoles]);
 
   const getRoleBadge = (role: AppRole) => {
     switch (role) {
@@ -314,6 +315,47 @@ export default function AdminUsers() {
       p.email?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const exportUsersToCSV = useCallback(() => {
+    if (!profiles || profiles.length === 0) {
+      toast({ title: "Ingen brukere", description: "Det er ingen brukere å eksportere", variant: "destructive" });
+      return;
+    }
+
+    const dataToExport = filteredProfiles || profiles;
+    
+    // Build CSV content
+    const headers = ["E-post", "Fornavn", "Etternavn", "Bedrift", "Roller", "Status"];
+    const rows = dataToExport.map(profile => {
+      const roles = getUserRoles(profile.user_id).join(", ");
+      const companyName = (profile as any).companies?.name || "Ingen bedrift";
+      return [
+        profile.email || "",
+        profile.first_name || "",
+        profile.last_name || "",
+        companyName,
+        roles || "Ingen roller",
+        profile.is_active ? "Aktiv" : "Inaktiv"
+      ];
+    });
+
+    const csvContent = [
+      headers.join(";"),
+      ...rows.map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(";"))
+    ].join("\n");
+
+    // Add BOM for Excel UTF-8 compatibility
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `brukere-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    toast({ title: "Eksport fullført", description: `${dataToExport.length} brukere eksportert til CSV` });
+  }, [profiles, filteredProfiles, getUserRoles, toast]);
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -330,6 +372,10 @@ export default function AdminUsers() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={exportUsersToCSV}>
+              <Download className="w-4 h-4 mr-2" />
+              Eksporter
+            </Button>
             <Button variant="outline" onClick={() => setIsBulkImportDialogOpen(true)}>
               <Upload className="w-4 h-4 mr-2" />
               Importer
