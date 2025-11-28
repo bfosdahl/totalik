@@ -78,7 +78,6 @@ export default function KsSja() {
         .from("ks_sja")
         .select("*")
         .eq("company_id", company.id)
-        .is("project_id", null)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
