@@ -303,12 +303,12 @@ export default function KsSja() {
             <div className="space-y-6 py-4">
               <div className="space-y-2">
                 <Label htmlFor="project_id">Prosjekt (valgfritt)</Label>
-                <Select value={formData.project_id} onValueChange={(value) => setFormData(prev => ({ ...prev, project_id: value }))}>
+                <Select value={formData.project_id || "none"} onValueChange={(value) => setFormData(prev => ({ ...prev, project_id: value === "none" ? "" : value }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Velg prosjekt eller la stå tom for mal" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Ingen (mal)</SelectItem>
+                    <SelectItem value="none">Ingen (mal)</SelectItem>
                     {projects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.project_number} - {project.name}
