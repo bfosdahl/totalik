@@ -1325,48 +1325,88 @@ export type Database = {
       }
       ks_sja: {
         Row: {
+          aktivitet: string | null
+          company_id: string | null
           created_at: string | null
           created_by_user_id: string | null
           date: string | null
           hazards_json: Json | null
           id: string
+          identifisert_risiko: string | null
           location: string | null
           participants: string | null
-          project_id: string
+          project_id: string | null
+          risikoreduserende_tiltak: string | null
+          sja_nr: string | null
           status: string | null
+          tiltak_dato: string | null
+          tiltak_navn: string | null
+          tiltak_sted: string | null
           title: string
           updated_at: string | null
+          utfort_dato: string | null
+          utfort_navn: string | null
+          utfort_sted: string | null
           work_description: string | null
         }
         Insert: {
+          aktivitet?: string | null
+          company_id?: string | null
           created_at?: string | null
           created_by_user_id?: string | null
           date?: string | null
           hazards_json?: Json | null
           id?: string
+          identifisert_risiko?: string | null
           location?: string | null
           participants?: string | null
-          project_id: string
+          project_id?: string | null
+          risikoreduserende_tiltak?: string | null
+          sja_nr?: string | null
           status?: string | null
+          tiltak_dato?: string | null
+          tiltak_navn?: string | null
+          tiltak_sted?: string | null
           title: string
           updated_at?: string | null
+          utfort_dato?: string | null
+          utfort_navn?: string | null
+          utfort_sted?: string | null
           work_description?: string | null
         }
         Update: {
+          aktivitet?: string | null
+          company_id?: string | null
           created_at?: string | null
           created_by_user_id?: string | null
           date?: string | null
           hazards_json?: Json | null
           id?: string
+          identifisert_risiko?: string | null
           location?: string | null
           participants?: string | null
-          project_id?: string
+          project_id?: string | null
+          risikoreduserende_tiltak?: string | null
+          sja_nr?: string | null
           status?: string | null
+          tiltak_dato?: string | null
+          tiltak_navn?: string | null
+          tiltak_sted?: string | null
           title?: string
           updated_at?: string | null
+          utfort_dato?: string | null
+          utfort_navn?: string | null
+          utfort_sted?: string | null
           work_description?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "ks_sja_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ks_sja_project_id_fkey"
             columns: ["project_id"]
