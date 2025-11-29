@@ -538,7 +538,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
           </p>
 
           <div className="flex flex-wrap gap-3">
-            {favorites.map((fav) => {
+            {favorites.filter(fav => fav && fav.color).map((fav) => {
               const isSelected = displayedColor === fav.color;
               return (
                 <div
