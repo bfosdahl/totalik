@@ -13,7 +13,7 @@ import { Plus, Pencil, Trash2, AlertCircle, Download, FileSpreadsheet } from "lu
 import { useKsProjects } from "@/hooks/useKsProjects";
 import { useKsAvvik, type KsAvvik, type NewKsAvvikInput } from "@/hooks/useKsAvvik";
 import { Checkbox } from "@/components/ui/checkbox";
-import { exportKsAvvikToPDF, exportKsAvvikToExcel } from "@/utils/ksAvvikExport";
+import { exportKsAvvikToPDF, exportKsAvvikToExcel, exportSingleKsAvvikToPDF } from "@/utils/ksAvvikExport";
 import { useAuth } from "@/contexts/AuthContext";
 
 const priorityConfig = {
@@ -553,6 +553,14 @@ export default function KsAvvik() {
                       <CardDescription>{avvik.beskrivelse}</CardDescription>
                     </div>
                     <div className="flex gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => exportSingleKsAvvikToPDF(avvik, company?.name)}
+                        title="Last ned PDF"
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => handleEdit(avvik)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
