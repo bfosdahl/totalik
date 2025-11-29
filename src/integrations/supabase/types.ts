@@ -2463,6 +2463,89 @@ export type Database = {
           },
         ]
       }
+      ks_vernerunde_checkpoints: {
+        Row: {
+          category: string | null
+          company_id: string
+          created_at: string | null
+          id: string
+          order_index: number
+          template_id: string
+          text: string
+        }
+        Insert: {
+          category?: string | null
+          company_id: string
+          created_at?: string | null
+          id?: string
+          order_index?: number
+          template_id: string
+          text: string
+        }
+        Update: {
+          category?: string | null
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          order_index?: number
+          template_id?: string
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_vernerunde_checkpoints_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_vernerunde_checkpoints_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "ks_vernerunde_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_vernerunde_templates: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_predefined: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_predefined?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_predefined?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_vernerunde_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
