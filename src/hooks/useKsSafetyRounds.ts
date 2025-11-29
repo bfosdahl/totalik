@@ -25,18 +25,23 @@ export const useKsSafetyRounds = (projectId: string | null) => {
   const { profile } = useAuth();
 
   const fetchSafetyRounds = async () => {
-    if (!projectId) {
+    if (!profile?.company_id) {
       setSafetyRounds([]);
       setIsLoading(false);
       return;
     }
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("ks_safety_rounds")
         .select("*")
-        .eq("project_id", projectId)
-        .order("round_date", { ascending: false });
+        .eq("company_id", profile.company_id);
+
+      if (projectId) {
+        query = query.eq("project_id", projectId);
+      }
+
+      const { data, error } = await query.order("round_date", { ascending: false });
 
       if (error) throw error;
       setSafetyRounds(data || []);
