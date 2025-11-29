@@ -179,3 +179,251 @@ export const exportKsAvvikToExcel = (avvikList: KsAvvik[], companyName?: string)
   const filename = `ks-avvik-rapport_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
   XLSX.writeFile(workbook, filename);
 };
+
+export const exportSingleKsAvvikToPDF = (avvik: KsAvvik, companyName?: string) => {
+  const doc = new jsPDF();
+  const title = avvik.type === 'ruh' ? 'RUH Rapport' : 'Avviksrapport';
+  const generatedDate = format(new Date(), "dd.MM.yyyy HH:mm", { locale: nb });
+
+  // Header
+  doc.setFontSize(20);
+  doc.setTextColor(40, 40, 40);
+  doc.text(title, 14, 20);
+  
+  doc.setFontSize(12);
+  doc.setTextColor(100, 100, 100);
+  if (companyName) {
+    doc.text(companyName, 14, 28);
+    doc.text(`Generert: ${generatedDate}`, 14, 35);
+  } else {
+    doc.text(`Generert: ${generatedDate}`, 14, 28);
+  }
+
+  // Content
+  let yPos = companyName ? 45 : 38;
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+
+  // Basic info
+  doc.setFont(undefined, 'bold');
+  doc.text('Grunnleggende informasjon', 14, yPos);
+  yPos += 7;
+  doc.setFont(undefined, 'normal');
+  
+  doc.text(`${avvik.type === 'ruh' ? 'RUH-nummer' : 'Avviksnummer'}: ${avvik.avvik_nummer}`, 14, yPos);
+  yPos += 6;
+  doc.text(`Type: ${avvik.type === 'ruh' ? 'RUH' : 'Avvik'}`, 14, yPos);
+  yPos += 6;
+  doc.text(`Tittel: ${avvik.tittel}`, 14, yPos);
+  yPos += 6;
+  doc.text(`Status: ${statusLabels[avvik.status] || avvik.status}`, 14, yPos);
+  yPos += 6;
+  doc.text(`Dato: ${formatDate(avvik.oppdaget_dato)}`, 14, yPos);
+  yPos += 6;
+  
+  if (avvik.type === 'avvik' && avvik.oppdaget_sted) {
+    doc.text(`Sted: ${avvik.oppdaget_sted}`, 14, yPos);
+    yPos += 6;
+  }
+
+  if (avvik.type === 'ruh') {
+    if (avvik.incident_location) {
+      doc.text(`Sted: ${avvik.incident_location}`, 14, yPos);
+      yPos += 6;
+    }
+    if (avvik.incident_time) {
+      doc.text(`Klokkeslett: ${avvik.incident_time}`, 14, yPos);
+      yPos += 6;
+    }
+    if (avvik.incident_type) {
+      doc.text(`Hendelsestype: ${avvik.incident_type}`, 14, yPos);
+      yPos += 6;
+    }
+    if (avvik.severity) {
+      const severityLabels: Record<string, string> = {
+        observation: 'Observasjon',
+        near_miss: 'Nestenulykke',
+        injury: 'Personskade',
+        serious_injury: 'Alvorlig personskade'
+      };
+      doc.text(`Alvorlighetsgrad: ${severityLabels[avvik.severity] || avvik.severity}`, 14, yPos);
+      yPos += 6;
+    }
+  }
+
+  yPos += 3;
+
+  // Description
+  if (avvik.beskrivelse) {
+    doc.setFont(undefined, 'bold');
+    doc.text('Beskrivelse', 14, yPos);
+    yPos += 7;
+    doc.setFont(undefined, 'normal');
+    
+    const descLines = doc.splitTextToSize(avvik.beskrivelse, 180);
+    doc.text(descLines, 14, yPos);
+    yPos += descLines.length * 5 + 5;
+  }
+
+  // Category/Priority info
+  if (avvik.type === 'avvik') {
+    doc.setFont(undefined, 'bold');
+    doc.text('Detaljer', 14, yPos);
+    yPos += 7;
+    doc.setFont(undefined, 'normal');
+    
+    doc.text(`Kategori: ${categoryLabels[avvik.kategori] || avvik.kategori}`, 14, yPos);
+    yPos += 6;
+    doc.text(`Prioritet: ${priorityLabels[avvik.prioritet] || avvik.prioritet}`, 14, yPos);
+    yPos += 6;
+  }
+
+  // RUH-specific fields
+  if (avvik.type === 'ruh') {
+    if (avvik.consequences) {
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.setFont(undefined, 'bold');
+      doc.text('Konsekvenser', 14, yPos);
+      yPos += 7;
+      doc.setFont(undefined, 'normal');
+      const consLines = doc.splitTextToSize(avvik.consequences, 180);
+      doc.text(consLines, 14, yPos);
+      yPos += consLines.length * 5 + 5;
+    }
+
+    if (avvik.involved_persons) {
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.setFont(undefined, 'bold');
+      doc.text('Involverte personer', 14, yPos);
+      yPos += 7;
+      doc.setFont(undefined, 'normal');
+      const involvedLines = doc.splitTextToSize(avvik.involved_persons, 180);
+      doc.text(involvedLines, 14, yPos);
+      yPos += involvedLines.length * 5 + 5;
+    }
+
+    if (avvik.root_cause_analysis) {
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.setFont(undefined, 'bold');
+      doc.text('Rotårsaksanalyse', 14, yPos);
+      yPos += 7;
+      doc.setFont(undefined, 'normal');
+      const rootLines = doc.splitTextToSize(avvik.root_cause_analysis, 180);
+      doc.text(rootLines, 14, yPos);
+      yPos += rootLines.length * 5 + 5;
+    }
+
+    if (avvik.immediate_actions) {
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.setFont(undefined, 'bold');
+      doc.text('Umiddelbare tiltak', 14, yPos);
+      yPos += 7;
+      doc.setFont(undefined, 'normal');
+      const immLines = doc.splitTextToSize(avvik.immediate_actions, 180);
+      doc.text(immLines, 14, yPos);
+      yPos += immLines.length * 5 + 5;
+    }
+
+    if (avvik.preventive_measures) {
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.setFont(undefined, 'bold');
+      doc.text('Forebyggende tiltak', 14, yPos);
+      yPos += 7;
+      doc.setFont(undefined, 'normal');
+      const prevLines = doc.splitTextToSize(avvik.preventive_measures, 180);
+      doc.text(prevLines, 14, yPos);
+      yPos += prevLines.length * 5 + 5;
+    }
+
+    if (avvik.reporter_contact || avvik.responsible_receiver) {
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.setFont(undefined, 'bold');
+      doc.text('Kontaktinformasjon', 14, yPos);
+      yPos += 7;
+      doc.setFont(undefined, 'normal');
+      
+      if (avvik.reporter_contact) {
+        doc.text(`Melder: ${avvik.reporter_contact}`, 14, yPos);
+        yPos += 6;
+      }
+      if (avvik.responsible_receiver) {
+        doc.text(`Ansvarlig mottaker: ${avvik.responsible_receiver}`, 14, yPos);
+        yPos += 6;
+      }
+    }
+
+    if (avvik.notify_arbeidstilsynet || avvik.notify_insurance) {
+      yPos += 3;
+      doc.setFont(undefined, 'bold');
+      doc.text('Varsling', 14, yPos);
+      yPos += 7;
+      doc.setFont(undefined, 'normal');
+      
+      if (avvik.notify_arbeidstilsynet) {
+        doc.text('✓ Arbeidstilsynet skal varsles', 14, yPos);
+        yPos += 6;
+      }
+      if (avvik.notify_insurance) {
+        doc.text('✓ Forsikring skal varsles', 14, yPos);
+        yPos += 6;
+      }
+    }
+  }
+
+  // Responsible and deadline
+  if (avvik.ansvarlig || avvik.frist) {
+    if (yPos > 250) {
+      doc.addPage();
+      yPos = 20;
+    }
+    yPos += 3;
+    doc.setFont(undefined, 'bold');
+    doc.text('Ansvar og frister', 14, yPos);
+    yPos += 7;
+    doc.setFont(undefined, 'normal');
+    
+    if (avvik.ansvarlig) {
+      doc.text(`Ansvarlig: ${avvik.ansvarlig}`, 14, yPos);
+      yPos += 6;
+    }
+    if (avvik.frist) {
+      doc.text(`Frist: ${formatDate(avvik.frist)}`, 14, yPos);
+      yPos += 6;
+    }
+  }
+
+  // Footer
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text(
+      `Side ${i} av ${pageCount}`,
+      doc.internal.pageSize.width / 2,
+      doc.internal.pageSize.height - 10,
+      { align: "center" }
+    );
+  }
+
+  const filename = `${avvik.type === 'ruh' ? 'ruh' : 'avvik'}-${avvik.avvik_nummer.replace(/[^a-zA-Z0-9]/g, '-')}_${format(new Date(), "yyyy-MM-dd")}.pdf`;
+  doc.save(filename);
+};
