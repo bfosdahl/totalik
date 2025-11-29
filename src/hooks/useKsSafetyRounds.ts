@@ -15,6 +15,7 @@ export interface KsSafetyRound {
   deadline: string | null;
   status: string;
   photo_paths: string[] | null;
+  template_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -57,7 +58,7 @@ export const useKsSafetyRounds = (projectId: string | null) => {
     fetchSafetyRounds();
   }, [projectId]);
 
-  const createSafetyRound = async (input: Omit<KsSafetyRound, "id" | "created_at" | "updated_at" | "company_id">) => {
+  const createSafetyRound = async (input: Omit<KsSafetyRound, "id" | "created_at" | "updated_at" | "company_id" | "template_id"> & { template_id?: string | null }) => {
     if (!profile?.company_id) {
       toast.error("Kunne ikke finne bedrift");
       return null;

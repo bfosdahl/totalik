@@ -1984,6 +1984,61 @@ export type Database = {
           },
         ]
       }
+      ks_safety_round_results: {
+        Row: {
+          checkpoint_id: string
+          comment: string | null
+          company_id: string
+          created_at: string | null
+          id: string
+          safety_round_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          checkpoint_id: string
+          comment?: string | null
+          company_id: string
+          created_at?: string | null
+          id?: string
+          safety_round_id: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          checkpoint_id?: string
+          comment?: string | null
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          safety_round_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_safety_round_results_checkpoint_id_fkey"
+            columns: ["checkpoint_id"]
+            isOneToOne: false
+            referencedRelation: "ks_vernerunde_checkpoints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_safety_round_results_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_safety_round_results_safety_round_id_fkey"
+            columns: ["safety_round_id"]
+            isOneToOne: false
+            referencedRelation: "ks_safety_rounds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_safety_rounds: {
         Row: {
           actions_required: string | null
@@ -1998,6 +2053,7 @@ export type Database = {
           responsible: string | null
           round_date: string
           status: string | null
+          template_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -2013,6 +2069,7 @@ export type Database = {
           responsible?: string | null
           round_date: string
           status?: string | null
+          template_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -2028,6 +2085,7 @@ export type Database = {
           responsible?: string | null
           round_date?: string
           status?: string | null
+          template_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -2043,6 +2101,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_safety_rounds_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "ks_vernerunde_templates"
             referencedColumns: ["id"]
           },
         ]
