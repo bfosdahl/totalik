@@ -34,6 +34,7 @@ import KsChecklistGenerator from "./pages/ks/KsChecklistGenerator";
 import KsProjectReport from "./pages/ks/KsProjectReport";
 import KsSubcontractorView from "./pages/ks/KsSubcontractorView";
 import KsChecklists from "./pages/ks/KsChecklists";
+import KsVernerundeGenerator from "./pages/ks/KsVernerundeGenerator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -74,6 +75,7 @@ const App = () => (
             <Route path="/ks/farlige-forhold" element={<ProtectedRoute><KsFarligeFohold /></ProtectedRoute>} />
             <Route path="/ks/tiltakslogg" element={<ProtectedRoute><KsTiltakslogg /></ProtectedRoute>} />
               <Route path="/ks/checklist-generator" element={<ProtectedRoute><KsChecklistGenerator /></ProtectedRoute>} />
+              <Route path="/ks/vernerunde-generator" element={<ProtectedRoute><KsVernerundeGenerator /></ProtectedRoute>} />
             <Route path="/ks/report" element={<ProtectedRoute><KsProjectReport /></ProtectedRoute>} />
             
             {/* Subcontractor view - limited access */}

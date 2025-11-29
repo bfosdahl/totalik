@@ -46,6 +46,7 @@ const ksByggItems = [
   { label: "Farlige forhold", path: "/ks/farlige-fohold" },
   { label: "Tiltakslogg", path: "/ks/tiltakslogg" },
   { label: "Sjekkliste Generator", path: "/ks/checklist-generator" },
+  { label: "Vernerunde Generator", path: "/ks/vernerunde-generator" },
   { label: "Prosjektperm PDF", path: "/ks/report" },
 ];
 
