@@ -9,10 +9,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, AlertCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, AlertCircle, Download, FileSpreadsheet } from "lucide-react";
 import { useKsProjects } from "@/hooks/useKsProjects";
 import { useKsAvvik, type KsAvvik, type NewKsAvvikInput } from "@/hooks/useKsAvvik";
 import { Checkbox } from "@/components/ui/checkbox";
+import { exportKsAvvikToPDF, exportKsAvvikToExcel } from "@/utils/ksAvvikExport";
+import { useAuth } from "@/contexts/AuthContext";
 
 const priorityConfig = {
   low: { label: "Lav", color: "bg-blue-500" },
@@ -36,6 +38,7 @@ const categoryConfig = {
 
 export default function KsAvvik() {
   const { toast } = useToast();
+  const { company } = useAuth();
   const { projects } = useKsProjects();
   const { avvikList, isLoading, createAvvik, updateAvvik, deleteAvvik } = useKsAvvik();
   
@@ -134,23 +137,42 @@ export default function KsAvvik() {
   return (
     <AppLayout>
       <div className="container mx-auto py-6 space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center flex-wrap gap-4">
           <div>
             <h1 className="text-3xl font-bold">Avvik / RUH</h1>
             <p className="text-muted-foreground">Registrer avvik og rapporter uønskede hendelser</p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) {
-              resetForm();
-            }
-          }}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Ny Rapport
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            {avvikList.length > 0 && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => exportKsAvvikToPDF(avvikList, company?.name)}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Last ned PDF
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => exportKsAvvikToExcel(avvikList, company?.name)}
+                >
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                  Last ned Excel
+                </Button>
+              </>
+            )}
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (!open) {
+                resetForm();
+              }
+            }}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Ny Rapport
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
@@ -501,6 +523,7 @@ export default function KsAvvik() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {isLoading ? (
