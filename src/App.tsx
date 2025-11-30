@@ -19,7 +19,7 @@ import AdminCompanies from "./pages/admin/AdminCompanies";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminHmsRequests from "./pages/admin/AdminHmsRequests";
 import SetupSystemAdmin from "./pages/admin/SetupSystemAdmin";
-import KsProjects from "./pages/ks/KsProjects";
+import KsProjectsOverview from "./pages/ks/KsProjectsOverview";
 import KsProjectDetail from "./pages/ks/KsProjectDetail";
 import KsChecklistDetail from "./pages/ks/KsChecklistDetail";
 import KsTemplates from "./pages/ks/KsTemplates";
@@ -62,7 +62,7 @@ const App = () => (
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             
             {/* KS Bygg routes */}
-            <Route path="/ks/projects" element={<ProtectedRoute><KsProjects /></ProtectedRoute>} />
+            <Route path="/ks/projects" element={<ProtectedRoute><KsProjectsOverview /></ProtectedRoute>} />
             <Route path="/ks/projects/:id" element={<ProtectedRoute><KsProjectDetail /></ProtectedRoute>} />
             <Route path="/ks/projects/:projectId/hms-plan" element={<ProtectedRoute><KsHmsPlanWizard /></ProtectedRoute>} />
             <Route path="/ks/checklists" element={<ProtectedRoute><KsChecklists /></ProtectedRoute>} />

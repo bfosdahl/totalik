@@ -31,6 +31,7 @@ import { KsChangeOrders } from "@/components/ks/KsChangeOrders";
 import { KsSafetyRounds } from "@/components/ks/KsSafetyRounds";
 import { KsHazardousConditions } from "@/components/ks/KsHazardousConditions";
 import { KsActivityLog } from "@/components/ks/KsActivityLog";
+import { CopyProjectDialog } from "@/components/ks/CopyProjectDialog";
 import {
   Dialog,
   DialogContent,
@@ -70,6 +71,7 @@ export default function KsProjectDetail() {
   const [checklistStats, setChecklistStats] = useState({ total: 0, completed: 0, avvik: 0 });
   const [selectedSja, setSelectedSja] = useState<any>(null);
   const [selectedDeviation, setSelectedDeviation] = useState<any>(null);
+  const [showCopyDialog, setShowCopyDialog] = useState(false);
 
   const { checklists, isLoading: checklistsLoading, createChecklist } = useKsChecklists(id || null);
   const { templates } = useKsTemplates();
@@ -481,6 +483,20 @@ export default function KsProjectDetail() {
               <Button
                 variant="outline"
                 className="h-auto flex flex-col items-center gap-2 p-4"
+                onClick={() => setShowCopyDialog(true)}
+              >
+                <div className="p-2 bg-gray-100 dark:bg-gray-900/20 rounded-lg">
+                  <Layers className="h-6 w-6 text-gray-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold">Kopier prosjekt</p>
+                  <p className="text-xs text-muted-foreground">Gjenbruk oppsett</p>
+                </div>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center gap-2 p-4"
                 onClick={() => navigate('/ks/routines')}
               >
                 <div className="p-2 bg-teal-100 dark:bg-teal-900/20 rounded-lg">
@@ -773,6 +789,15 @@ export default function KsProjectDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CopyProjectDialog
+        open={showCopyDialog}
+        onOpenChange={setShowCopyDialog}
+        sourceProject={project}
+        onSuccess={() => {
+          navigate("/ks/projects");
+        }}
+      />
     </AppLayout>
   );
 }
