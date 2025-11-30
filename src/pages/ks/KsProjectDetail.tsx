@@ -453,6 +453,20 @@ export default function KsProjectDetail() {
               <Button
                 variant="outline"
                 className="h-auto flex flex-col items-center gap-2 p-4"
+                onClick={() => navigate(`/ks/client/${id}`)}
+              >
+                <div className="p-2 bg-indigo-100 dark:bg-indigo-900/20 rounded-lg">
+                  <Building2 className="h-6 w-6 text-indigo-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold">Byggherre</p>
+                  <p className="text-xs text-muted-foreground">BH-dokumentasjon</p>
+                </div>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center gap-2 p-4"
                 onClick={() => navigate(`/ks/projects/${id}/report`)}
               >
                 <div className="p-2 bg-indigo-100 dark:bg-indigo-900/20 rounded-lg">

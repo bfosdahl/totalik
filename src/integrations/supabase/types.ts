@@ -1356,6 +1356,304 @@ export type Database = {
           },
         ]
       }
+      ks_project_client: {
+        Row: {
+          address: string | null
+          city: string | null
+          client_name: string
+          client_type: string
+          company_id: string
+          created_at: string | null
+          email: string | null
+          id: string
+          phone: string | null
+          postal_code: string | null
+          project_id: string
+          project_manager: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          client_name: string
+          client_type?: string
+          company_id: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          phone?: string | null
+          postal_code?: string | null
+          project_id: string
+          project_manager?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          client_name?: string
+          client_type?: string
+          company_id?: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          phone?: string | null
+          postal_code?: string | null
+          project_id?: string
+          project_manager?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_client_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_client_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_project_client_approvals: {
+        Row: {
+          approval_date: string
+          approval_description: string | null
+          approval_type: string
+          approved_by_name: string
+          company_id: string
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          notes: string | null
+          project_id: string
+          signature_data: string | null
+        }
+        Insert: {
+          approval_date?: string
+          approval_description?: string | null
+          approval_type: string
+          approved_by_name: string
+          company_id: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          project_id: string
+          signature_data?: string | null
+        }
+        Update: {
+          approval_date?: string
+          approval_description?: string | null
+          approval_type?: string
+          approved_by_name?: string
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          project_id?: string
+          signature_data?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_client_approvals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_client_approvals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_project_client_checklist: {
+        Row: {
+          checklist_item: string
+          company_id: string
+          completed_by_name: string | null
+          completed_date: string | null
+          created_at: string | null
+          id: string
+          is_completed: boolean | null
+          notes: string | null
+          project_id: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          checklist_item: string
+          company_id: string
+          completed_by_name?: string | null
+          completed_date?: string | null
+          created_at?: string | null
+          id?: string
+          is_completed?: boolean | null
+          notes?: string | null
+          project_id: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          checklist_item?: string
+          company_id?: string
+          completed_by_name?: string | null
+          completed_date?: string | null
+          created_at?: string | null
+          id?: string
+          is_completed?: boolean | null
+          notes?: string | null
+          project_id?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_client_checklist_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_client_checklist_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_project_client_messages: {
+        Row: {
+          attachment_paths: string[] | null
+          company_id: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message_content: string
+          message_type: string
+          project_id: string
+          sent_by_name: string
+          sent_by_user_id: string | null
+          subject: string
+        }
+        Insert: {
+          attachment_paths?: string[] | null
+          company_id: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_content: string
+          message_type?: string
+          project_id: string
+          sent_by_name: string
+          sent_by_user_id?: string | null
+          subject: string
+        }
+        Update: {
+          attachment_paths?: string[] | null
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_content?: string
+          message_type?: string
+          project_id?: string
+          sent_by_name?: string
+          sent_by_user_id?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_client_messages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_client_messages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_client_messages_sent_by_user_id_fkey"
+            columns: ["sent_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_project_coordinators: {
+        Row: {
+          company_id: string
+          contract_document_path: string | null
+          coordinator_company: string | null
+          coordinator_name: string
+          created_at: string | null
+          email: string | null
+          id: string
+          phone: string | null
+          project_id: string
+          role_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          contract_document_path?: string | null
+          coordinator_company?: string | null
+          coordinator_name: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          phone?: string | null
+          project_id: string
+          role_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          contract_document_path?: string | null
+          coordinator_company?: string | null
+          coordinator_name?: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          phone?: string | null
+          project_id?: string
+          role_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_coordinators_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_coordinators_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_project_deviations: {
         Row: {
           additional_info: string | null
