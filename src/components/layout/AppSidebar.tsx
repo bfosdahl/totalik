@@ -36,7 +36,7 @@ const navItems = [
 ];
 
 const ksByggItems = [
-  { label: "Prosjekter", path: "/ks/projects" },
+  { label: "Oversikt", path: "/ks/projects" },
   { label: "Sjekklister", path: "/ks/checklists" },
   { label: "Rutiner", path: "/ks/routines" },
   { label: "Maler", path: "/ks/templates" },
