@@ -33,6 +33,7 @@ import KsTiltakslogg from "./pages/ks/KsTiltakslogg";
 import KsChecklistGenerator from "./pages/ks/KsChecklistGenerator";
 import KsProjectReport from "./pages/ks/KsProjectReport";
 import KsSubcontractorView from "./pages/ks/KsSubcontractorView";
+import KsClientManagement from "./pages/ks/KsClientManagement";
 import KsChecklists from "./pages/ks/KsChecklists";
 import NotFound from "./pages/NotFound";
 
@@ -73,8 +74,9 @@ const App = () => (
             <Route path="/ks/vernerunder" element={<ProtectedRoute><KsVernerunder /></ProtectedRoute>} />
             <Route path="/ks/farlige-forhold" element={<ProtectedRoute><KsFarligeFohold /></ProtectedRoute>} />
             <Route path="/ks/tiltakslogg" element={<ProtectedRoute><KsTiltakslogg /></ProtectedRoute>} />
-              <Route path="/ks/checklist-generator" element={<ProtectedRoute><KsChecklistGenerator /></ProtectedRoute>} />
+            <Route path="/ks/checklist-generator" element={<ProtectedRoute><KsChecklistGenerator /></ProtectedRoute>} />
             <Route path="/ks/report" element={<ProtectedRoute><KsProjectReport /></ProtectedRoute>} />
+            <Route path="/ks/client/:projectId" element={<ProtectedRoute><KsClientManagement /></ProtectedRoute>} />
             
             {/* Subcontractor view - limited access */}
             <Route path="/ks/subcontractor" element={<ProtectedRoute><KsSubcontractorView /></ProtectedRoute>} />
