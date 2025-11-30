@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.send-test-notification]
 verify_jwt = true
+
+[functions.hms-chat]
+verify_jwt = true

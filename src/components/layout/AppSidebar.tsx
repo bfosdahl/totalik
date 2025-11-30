@@ -19,6 +19,7 @@ import {
   ChevronDown,
   ChevronUp,
   Lock,
+  MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ const navItems = [
   { icon: AlertTriangle, label: "Avvik", path: "/deviations" },
   { icon: FileCheck, label: "Revisjoner", path: "/audits" },
   { icon: BookOpen, label: "Handbok", path: "/handbook" },
+  { icon: MessageCircle, label: "HMS Assistent", path: "/hms-chat" },
   { icon: Settings, label: "Innstillinger", path: "/settings" },
 ];
 
