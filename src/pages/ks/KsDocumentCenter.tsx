@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   ArrowLeft, 
   FileText, 
@@ -19,7 +20,8 @@ import {
   GraduationCap,
   FileStack,
   ClipboardCheck,
-  Printer
+  Printer,
+  Eye
 } from "lucide-react";
 import { useKsProjectDocuments } from "@/hooks/useKsProjectDocuments";
 import { useQuery } from "@tanstack/react-query";
@@ -46,6 +48,7 @@ export default function KsDocumentCenter() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [previewDoc, setPreviewDoc] = useState<any>(null);
   
   const { documents, downloadDocument } = useKsProjectDocuments(projectId || "");
 
@@ -149,6 +152,16 @@ export default function KsDocumentCenter() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const getDocumentPreviewUrl = (doc: any) => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    return `${supabaseUrl}/storage/v1/object/project-documents/${doc.file_path}`;
+  };
+
+  const isPreviewable = (doc: any) => {
+    const previewableTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    return previewableTypes.includes(doc.file_type);
   };
 
   const filteredDocuments = documents.filter(doc => 
@@ -263,13 +276,24 @@ export default function KsDocumentCenter() {
                               <p className="text-sm text-muted-foreground mt-1">{doc.description}</p>
                             )}
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => downloadDocument(doc)}
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
+                          <div className="flex gap-2">
+                            {isPreviewable(doc) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setPreviewDoc(doc)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => downloadDocument(doc)}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -419,6 +443,44 @@ export default function KsDocumentCenter() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Document Preview Dialog */}
+      <Dialog open={!!previewDoc} onOpenChange={() => setPreviewDoc(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>{previewDoc?.document_name}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto">
+            {previewDoc && (
+              <>
+                {previewDoc.file_type === 'application/pdf' && (
+                  <iframe
+                    src={getDocumentPreviewUrl(previewDoc)}
+                    className="w-full h-[70vh] border-0"
+                    title={previewDoc.document_name}
+                  />
+                )}
+                {previewDoc.file_type?.startsWith('image/') && (
+                  <img
+                    src={getDocumentPreviewUrl(previewDoc)}
+                    alt={previewDoc.document_name}
+                    className="w-full h-auto"
+                  />
+                )}
+              </>
+            )}
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setPreviewDoc(null)}>
+              Lukk
+            </Button>
+            <Button onClick={() => previewDoc && downloadDocument(previewDoc)}>
+              <Download className="h-4 w-4 mr-2" />
+              Last ned
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
