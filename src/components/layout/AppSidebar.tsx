@@ -163,7 +163,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto min-h-0">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path || 
               (item.path !== "/" && location.pathname.startsWith(item.path));
