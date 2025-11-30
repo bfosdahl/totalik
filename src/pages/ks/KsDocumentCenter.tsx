@@ -49,8 +49,26 @@ export default function KsDocumentCenter() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [previewDoc, setPreviewDoc] = useState<any>(null);
-  
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+
   const { documents, downloadDocument } = useKsProjectDocuments(projectId || "");
+
+  // Generate signed URL for preview
+  const handlePreviewDocument = async (doc: any) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('project-documents')
+        .createSignedUrl(doc.file_path, 3600); // 1 hour expiry
+      
+      if (error) throw error;
+      
+      setPreviewUrl(data.signedUrl);
+      setPreviewDoc(doc);
+    } catch (error) {
+      console.error('Error creating preview URL:', error);
+      toast.error('Kunne ikke forhåndsvise dokumentet');
+    }
+  };
 
   // Fetch project details
   const { data: project } = useQuery({
@@ -152,11 +170,6 @@ export default function KsDocumentCenter() {
 
   const handlePrint = () => {
     window.print();
-  };
-
-  const getDocumentPreviewUrl = (doc: any) => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    return `${supabaseUrl}/storage/v1/object/project-documents/${doc.file_path}`;
   };
 
   const isPreviewable = (doc: any) => {
@@ -281,7 +294,7 @@ export default function KsDocumentCenter() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => setPreviewDoc(doc)}
+                                onClick={() => handlePreviewDocument(doc)}
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
@@ -445,24 +458,24 @@ export default function KsDocumentCenter() {
       </div>
 
       {/* Document Preview Dialog */}
-      <Dialog open={!!previewDoc} onOpenChange={() => setPreviewDoc(null)}>
+      <Dialog open={!!previewDoc} onOpenChange={() => { setPreviewDoc(null); setPreviewUrl(""); }}>
         <DialogContent className="max-w-4xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>{previewDoc?.document_name}</DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-auto">
-            {previewDoc && (
+            {previewDoc && previewUrl && (
               <>
                 {previewDoc.file_type === 'application/pdf' && (
                   <iframe
-                    src={getDocumentPreviewUrl(previewDoc)}
+                    src={previewUrl}
                     className="w-full h-[70vh] border-0"
                     title={previewDoc.document_name}
                   />
                 )}
                 {previewDoc.file_type?.startsWith('image/') && (
                   <img
-                    src={getDocumentPreviewUrl(previewDoc)}
+                    src={previewUrl}
                     alt={previewDoc.document_name}
                     className="w-full h-auto"
                   />
@@ -471,7 +484,7 @@ export default function KsDocumentCenter() {
             )}
           </div>
           <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setPreviewDoc(null)}>
+            <Button variant="outline" onClick={() => { setPreviewDoc(null); setPreviewUrl(""); }}>
               Lukk
             </Button>
             <Button onClick={() => previewDoc && downloadDocument(previewDoc)}>
