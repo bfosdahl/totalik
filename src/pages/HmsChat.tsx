@@ -68,50 +68,56 @@ export default function HmsChat() {
       const reader = resp.body.getReader();
       const decoder = new TextDecoder();
       let textBuffer = "";
+      let streamDone = false;
 
-      while (true) {
+      while (!streamDone) {
         const { done, value } = await reader.read();
         if (done) break;
         
         textBuffer += decoder.decode(value, { stream: true });
 
-        let newlineIndex: number;
-        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
+        // Process complete lines
+        const lines = textBuffer.split("\n");
+        // Keep the last potentially incomplete line in buffer
+        textBuffer = lines.pop() || "";
 
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (line.startsWith(":") || line.trim() === "") continue;
-          if (!line.startsWith("data: ")) continue;
+        for (const rawLine of lines) {
+          const line = rawLine.trim();
+          
+          // Skip empty lines and SSE comments
+          if (!line || line.startsWith(":")) continue;
+          
+          // Only process data lines
+          if (!line.startsWith("data:")) continue;
 
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") break;
+          const jsonStr = line.slice(5).trim();
+          
+          if (jsonStr === "[DONE]") {
+            streamDone = true;
+            break;
+          }
 
           try {
             const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) updateAssistant(content);
-          } catch {
-            textBuffer = line + "\n" + textBuffer;
-            break;
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              updateAssistant(content);
+            }
+          } catch (e) {
+            console.log("Parse error for line:", line, e);
           }
         }
       }
 
-      // Final flush
+      // Process any remaining buffer
       if (textBuffer.trim()) {
-        for (let raw of textBuffer.split("\n")) {
-          if (!raw) continue;
-          if (raw.endsWith("\r")) raw = raw.slice(0, -1);
-          if (raw.startsWith(":") || raw.trim() === "") continue;
-          if (!raw.startsWith("data: ")) continue;
-          const jsonStr = raw.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
+        const line = textBuffer.trim();
+        if (line.startsWith("data:") && !line.includes("[DONE]")) {
           try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            const parsed = JSON.parse(line.slice(5).trim());
+            const content = parsed.choices?.[0]?.delta?.content;
             if (content) updateAssistant(content);
-          } catch { /* ignore */ }
+          } catch { /* ignore incomplete data */ }
         }
       }
     } catch (error) {
