@@ -7,7 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Camera, Upload, X } from "lucide-react";
+import { Camera, Upload, X, Plus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,6 +26,7 @@ interface Checkpoint {
   text: string;
   category: string | null;
   order_index: number;
+  isCustom?: boolean;
 }
 
 interface KsSafetyRoundChecklistProps {
@@ -38,6 +39,9 @@ interface KsSafetyRoundChecklistProps {
 export function KsSafetyRoundChecklist({ round, open, onOpenChange, onComplete }: KsSafetyRoundChecklistProps) {
   const { profile } = useAuth();
   const [checkpointResults, setCheckpointResults] = useState<CheckpointResult[]>([]);
+  const [customCheckpoints, setCustomCheckpoints] = useState<Checkpoint[]>([]);
+  const [newCheckpointText, setNewCheckpointText] = useState("");
+  const [isAddingCheckpoint, setIsAddingCheckpoint] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: checkpoints } = useQuery({
@@ -68,6 +72,38 @@ export function KsSafetyRoundChecklist({ round, open, onOpenChange, onComplete }
     }
   }, [checkpoints]);
 
+  const allCheckpoints = [...(checkpoints || []), ...customCheckpoints];
+
+  const addCustomCheckpoint = () => {
+    if (!newCheckpointText.trim()) {
+      toast.error("Sjekkpunkt må ha en beskrivelse");
+      return;
+    }
+
+    const newCheckpoint: Checkpoint = {
+      id: `custom-${Date.now()}`,
+      text: newCheckpointText,
+      category: "Egendefinert",
+      order_index: allCheckpoints.length,
+      isCustom: true,
+    };
+
+    setCustomCheckpoints((prev) => [...prev, newCheckpoint]);
+    setCheckpointResults((prev) => [
+      ...prev,
+      {
+        checkpoint_id: newCheckpoint.id,
+        status: "ok" as const,
+        comment: "",
+        photos: [],
+      },
+    ]);
+
+    setNewCheckpointText("");
+    setIsAddingCheckpoint(false);
+    toast.success("Sjekkpunkt lagt til");
+  };
+
   const updateCheckpointResult = (checkpointId: string, field: keyof CheckpointResult, value: any) => {
     setCheckpointResults((prev) =>
       prev.map((r) => (r.checkpoint_id === checkpointId ? { ...r, [field]: value } : r))
@@ -95,10 +131,41 @@ export function KsSafetyRoundChecklist({ round, open, onOpenChange, onComplete }
   };
 
   const handleComplete = async () => {
-    if (!round || !profile?.company_id) return;
+    if (!round || !profile?.company_id || !round.template_id) return;
 
     setIsSubmitting(true);
     try {
+      // First, save custom checkpoints to database and get their real IDs
+      const checkpointIdMapping: Record<string, string> = {};
+
+      if (customCheckpoints.length > 0) {
+        const customCheckpointsToSave = customCheckpoints.map((cp) => ({
+          template_id: round.template_id!,
+          company_id: profile.company_id!,
+          text: cp.text,
+          category: cp.category,
+          order_index: cp.order_index,
+        }));
+
+        const { data: savedCheckpoints, error: checkpointError } = await supabase
+          .from("ks_vernerunde_checkpoints")
+          .insert(customCheckpointsToSave)
+          .select();
+
+        if (checkpointError) {
+          console.error("Error saving custom checkpoints:", checkpointError);
+          toast.error("Kunne ikke lagre egendefinerte sjekkpunkter");
+          return;
+        }
+
+        // Create mapping from temporary IDs to real IDs
+        customCheckpoints.forEach((cp, index) => {
+          if (savedCheckpoints && savedCheckpoints[index]) {
+            checkpointIdMapping[cp.id] = savedCheckpoints[index].id;
+          }
+        });
+      }
+
       // Upload photos and get paths
       const resultsWithPhotoPaths = await Promise.all(
         checkpointResults.map(async (result) => {
@@ -118,9 +185,12 @@ export function KsSafetyRoundChecklist({ round, open, onOpenChange, onComplete }
             photoPaths.push(fileName);
           }
 
+          // Use real checkpoint ID if this was a custom checkpoint
+          const finalCheckpointId = checkpointIdMapping[result.checkpoint_id] || result.checkpoint_id;
+
           return {
             safety_round_id: round.id,
-            checkpoint_id: result.checkpoint_id,
+            checkpoint_id: finalCheckpointId,
             company_id: profile.company_id!,
             status: result.status,
             comment: result.comment || null,
@@ -154,6 +224,9 @@ export function KsSafetyRoundChecklist({ round, open, onOpenChange, onComplete }
       onComplete();
       onOpenChange(false);
       setCheckpointResults([]);
+      setCustomCheckpoints([]);
+      setNewCheckpointText("");
+      setIsAddingCheckpoint(false);
     } catch (error) {
       console.error("Error completing safety round:", error);
       toast.error("En feil oppstod");
@@ -196,8 +269,48 @@ export function KsSafetyRoundChecklist({ round, open, onOpenChange, onComplete }
         )}
 
         <div className="space-y-4">
-          {checkpoints && checkpoints.length > 0 ? (
-            checkpoints.map((checkpoint) => {
+          {isAddingCheckpoint && (
+            <Card className="p-4 border-primary">
+              <div className="space-y-3">
+                <Label htmlFor="new-checkpoint">Nytt sjekkpunkt</Label>
+                <Textarea
+                  id="new-checkpoint"
+                  value={newCheckpointText}
+                  onChange={(e) => setNewCheckpointText(e.target.value)}
+                  placeholder="Beskriv sjekkpunktet..."
+                  rows={2}
+                />
+                <div className="flex gap-2">
+                  <Button onClick={addCustomCheckpoint} size="sm">
+                    Legg til
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setIsAddingCheckpoint(false);
+                      setNewCheckpointText("");
+                    }}
+                  >
+                    Avbryt
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          <Button
+            variant="outline"
+            onClick={() => setIsAddingCheckpoint(true)}
+            disabled={isAddingCheckpoint}
+            className="w-full"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Legg til sjekkpunkt
+          </Button>
+
+          {allCheckpoints && allCheckpoints.length > 0 ? (
+            allCheckpoints.map((checkpoint) => {
               const result = getCheckpointResult(checkpoint.id);
               return (
                 <Card key={checkpoint.id} className="p-4">
@@ -328,12 +441,15 @@ export function KsSafetyRoundChecklist({ round, open, onOpenChange, onComplete }
             onClick={() => {
               onOpenChange(false);
               setCheckpointResults([]);
+              setCustomCheckpoints([]);
+              setNewCheckpointText("");
+              setIsAddingCheckpoint(false);
             }}
             disabled={isSubmitting}
           >
             Avbryt
           </Button>
-          <Button onClick={handleComplete} disabled={isSubmitting || !checkpoints || checkpoints.length === 0}>
+          <Button onClick={handleComplete} disabled={isSubmitting || allCheckpoints.length === 0}>
             {isSubmitting ? "Lagrer..." : "Fullfør vernerunde"}
           </Button>
         </DialogFooter>
