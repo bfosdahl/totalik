@@ -167,60 +167,60 @@ export function CompanyModulesDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Boxes className="w-5 h-5" />
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Boxes className="w-4 h-4 sm:w-5 sm:h-5" />
             Administrer moduler
           </DialogTitle>
         </DialogHeader>
 
         {company && (
-          <div className="space-y-4 mt-4">
-            <div className="p-3 bg-secondary/30 rounded-lg flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Bedrift</p>
-                <p className="font-medium">{company.name}</p>
+          <div className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+            <div className="p-2.5 sm:p-3 bg-secondary/30 rounded-lg flex items-center justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-muted-foreground">Bedrift</p>
+                <p className="font-medium text-sm sm:text-base truncate">{company.name}</p>
               </div>
-              <Badge variant="secondary">
-                {activeCount} aktive moduler
+              <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                {activeCount} aktive
               </Badge>
             </div>
 
             {isLoading ? (
-              <div className="py-8 text-center text-muted-foreground">
+              <div className="py-6 sm:py-8 text-center text-muted-foreground text-sm">
                 Laster moduler...
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {modules.map((module) => (
                   <div
                     key={module.type}
-                    className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
+                    className={`flex items-center justify-between p-3 sm:p-4 rounded-lg border transition-colors gap-3 ${
                       module.isActive
                         ? "border-primary/50 bg-primary/5"
                         : "border-border bg-secondary/20"
                     }`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                       <div
-                        className={`p-2 rounded-lg ${
+                        className={`p-1.5 sm:p-2 rounded-lg shrink-0 ${
                           module.isActive
                             ? "bg-primary/20 text-primary"
                             : "bg-muted text-muted-foreground"
                         }`}
                       >
                         {module.isActive ? (
-                          <Check className="w-4 h-4" />
+                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         ) : (
-                          <X className="w-4 h-4" />
+                          <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         )}
                       </div>
-                      <div>
-                        <Label className="font-medium cursor-pointer">
+                      <div className="min-w-0 flex-1">
+                        <Label className="font-medium cursor-pointer text-sm sm:text-base block">
                           {module.name}
                         </Label>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground line-clamp-2">
                           {module.description}
                         </p>
                       </div>
@@ -228,20 +228,23 @@ export function CompanyModulesDialog({
                     <Switch
                       checked={module.isActive}
                       onCheckedChange={() => toggleModule(module.type)}
+                      className="shrink-0"
                     />
                   </div>
                 ))}
               </div>
             )}
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-border">
+            <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-border">
               <Button
                 variant="outline"
                 onClick={() => onOpenChange(false)}
+                size="sm"
+                className="text-sm"
               >
                 Avbryt
               </Button>
-              <Button onClick={handleSave} disabled={isSaving}>
+              <Button onClick={handleSave} disabled={isSaving} size="sm" className="text-sm">
                 {isSaving ? "Lagrer..." : "Lagre endringer"}
               </Button>
             </div>
