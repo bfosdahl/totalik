@@ -31,7 +31,7 @@ const navItems = [
   { icon: ClipboardList, label: "Oppsett", path: "/setup" },
   { icon: Users, label: "Ansatte", path: "/employees" },
   { icon: AlertTriangle, label: "Avvik", path: "/deviations" },
-  { icon: FileCheck, label: "Revisjoner", path: "/audits" },
+  { icon: FileCheck, label: "HMS aktiviteter", path: "/audits" },
   { icon: BookOpen, label: "Handbok", path: "/handbook" },
   { icon: MessageCircle, label: "HMS Assistent", path: "/hms-chat" },
   { icon: Settings, label: "Innstillinger", path: "/settings" },

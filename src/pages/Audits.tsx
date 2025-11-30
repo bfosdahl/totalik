@@ -90,9 +90,9 @@ const Audits = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-2xl font-bold tracking-tight">Revisjoner</h1>
+          <h1 className="text-2xl font-bold tracking-tight">HMS aktiviteter</h1>
           <p className="text-muted-foreground">
-            Planlegg og gjennomfør internrevisjoner
+            Planlegg og gjennomfør HMS-aktiviteter og revisjoner
           </p>
         </motion.div>
 
@@ -105,7 +105,7 @@ const Audits = () => {
                 className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <ListChecks className="w-4 h-4" />
-                <span>Revisjoner</span>
+                <span>Oversikt</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="annual" 
@@ -146,7 +146,7 @@ const Audits = () => {
               animate={{ opacity: 1, y: 0 }}
               className="bg-card rounded-xl border border-border p-5 shadow-card"
             >
-              <h2 className="text-lg font-semibold mb-4">Gå direkte til revisjonsskjema</h2>
+              <h2 className="text-lg font-semibold mb-4">Gå direkte til aktivitetsskjema</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Button
                   variant="outline"
@@ -212,8 +212,8 @@ const Audits = () => {
               })}
             </motion.div>
 
-            {/* Planned revisions header */}
-            <h2 className="text-lg font-semibold">Planlagte revisjoner</h2>
+            {/* Planned activities header */}
+            <h2 className="text-lg font-semibold">Planlagte aktiviteter</h2>
 
             {/* Audits list */}
             <motion.div
@@ -225,9 +225,9 @@ const Audits = () => {
               {audits.length === 0 ? (
                 <div className="bg-card rounded-xl border border-border p-8 text-center">
                   <FileCheck className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">Ingen planlagte revisjoner</h3>
+                  <h3 className="text-lg font-medium mb-2">Ingen planlagte aktiviteter</h3>
                   <p className="text-muted-foreground">
-                    Bruk knappene ovenfor for å gå direkte til et revisjonsskjema.
+                    Bruk knappene ovenfor for å gå direkte til et aktivitetsskjema.
                   </p>
                 </div>
               ) : (
