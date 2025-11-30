@@ -75,9 +75,9 @@ export default function KsProjectsOverview() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold mb-2">Prosjektoversikt</h1>
+          <h1 className="text-3xl font-bold mb-2">Prosjekt</h1>
           <p className="text-muted-foreground">
-            Oversikt over alle KS Bygg prosjekter med status og fremdrift
+            Alle KS Bygg prosjekter med status og fremdrift
           </p>
         </div>
 
