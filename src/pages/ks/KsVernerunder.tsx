@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Shield, Edit2, Trash2, List, CheckCircle2 } from "lucide-react";
+import { Plus, Shield, Edit2, Trash2, CheckCircle2, Clock, Users, Calendar, CheckCircle } from "lucide-react";
 import { useKsProjects } from "@/hooks/useKsProjects";
 import { useKsSafetyRounds, type KsSafetyRound } from "@/hooks/useKsSafetyRounds";
 import { format } from "date-fns";
@@ -126,6 +126,7 @@ export default function KsVernerunder() {
   const [showChecklistDialog, setShowChecklistDialog] = useState(false);
   const [editingRound, setEditingRound] = useState<KsSafetyRound | null>(null);
   const [activeRound, setActiveRound] = useState<KsSafetyRound | null>(null);
+  const [statusTab, setStatusTab] = useState<"pending" | "completed">("pending");
   const [formData, setFormData] = useState<{
     project_id: string;
     round_date: string;
@@ -158,8 +159,8 @@ export default function KsVernerunder() {
   const [newCheckpoint, setNewCheckpoint] = useState({ text: "", category: "Sikkerhet" });
 
   const filteredRounds = selectedProjectId
-    ? safetyRounds.filter((r) => r.project_id === selectedProjectId)
-    : safetyRounds;
+    ? safetyRounds.filter((r) => r.project_id === selectedProjectId && r.status === statusTab)
+    : safetyRounds.filter((r) => r.status === statusTab);
 
   const resetForm = () => {
     setFormData({
@@ -481,90 +482,180 @@ export default function KsVernerunder() {
               </CardContent>
             </Card>
 
-            {isLoading ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">Laster...</p>
-              </div>
-            ) : filteredRounds.length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <Shield className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Ingen vernerunder</h3>
-                  <p className="text-muted-foreground text-center mb-4">
-                    {selectedProjectId ? "Ingen vernerunder for valgt prosjekt" : "Opprett din første vernerunde"}
-                  </p>
-                  <Button
-                    onClick={() => {
-                      resetForm();
-                      setShowDialog(true);
-                    }}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Ny vernerunde
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-4">
-                {filteredRounds.map((round) => (
-                  <Card key={round.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="outline">{getProjectInfo(round.project_id)}</Badge>
-                            <Badge variant={statusConfig[round.status]?.variant || "secondary"}>
-                              {statusConfig[round.status]?.label || round.status}
-                            </Badge>
-                          </div>
-                          <CardTitle className="text-base">
-                            Vernerunde {format(new Date(round.round_date), "d. MMMM yyyy", { locale: nb })}
-                          </CardTitle>
-                        </div>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => handleEdit(round)}>
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(round.id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {round.participants && (
-                        <div>
-                          <p className="text-xs font-medium text-muted-foreground">Deltakere</p>
-                          <p className="text-sm">{round.participants}</p>
-                        </div>
-                      )}
-                      {round.responsible && (
-                        <div>
-                          <p className="text-xs font-medium text-muted-foreground">Ansvarlig</p>
-                          <p className="text-sm">
-                            {round.responsible}
-                            {round.deadline && ` • Frist: ${format(new Date(round.deadline), "d. MMM yyyy", { locale: nb })}`}
-                          </p>
-                        </div>
-                      )}
-                      
-                      {round.status === "pending" && (
-                        <Button 
-                          onClick={() => handleStartRound(round)} 
-                          className="w-full mt-4"
-                          variant="default"
-                        >
-                          <CheckCircle2 className="mr-2 h-4 w-4" />
-                          Start vernerunde
-                        </Button>
-                      )}
+            {/* Status tabs */}
+            <Tabs value={statusTab} onValueChange={(v) => setStatusTab(v as "pending" | "completed")}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="pending">
+                  <Clock className="h-4 w-4 mr-2" />
+                  Pågående
+                </TabsTrigger>
+                <TabsTrigger value="completed">
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Fullførte
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="pending" className="mt-6">
+                {isLoading ? (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">Laster...</p>
+                  </div>
+                ) : filteredRounds.length === 0 ? (
+                  <Card>
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <Shield className="h-12 w-12 text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">Ingen pågående vernerunder</h3>
+                      <p className="text-muted-foreground text-center mb-4">
+                        {selectedProjectId ? "Ingen pågående vernerunder for valgt prosjekt" : "Opprett din første vernerunde"}
+                      </p>
+                      <Button
+                        onClick={() => {
+                          resetForm();
+                          setShowDialog(true);
+                        }}
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Ny vernerunde
+                      </Button>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-            )}
+                ) : (
+                  <div className="grid gap-4">
+                    {filteredRounds.map((round) => (
+                      <Card key={round.id} className="hover:shadow-md transition-shadow">
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge variant="outline">{getProjectInfo(round.project_id)}</Badge>
+                                <Badge variant={statusConfig[round.status]?.variant || "secondary"}>
+                                  {statusConfig[round.status]?.label || round.status}
+                                </Badge>
+                              </div>
+                              <CardTitle className="text-base">
+                                Vernerunde {format(new Date(round.round_date), "d. MMMM yyyy", { locale: nb })}
+                              </CardTitle>
+                            </div>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="icon" onClick={() => handleEdit(round)}>
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDelete(round.id)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          {round.participants && (
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground">Deltakere</p>
+                              <p className="text-sm">{round.participants}</p>
+                            </div>
+                          )}
+                          {round.responsible && (
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground">Ansvarlig</p>
+                              <p className="text-sm">
+                                {round.responsible}
+                                {round.deadline && ` • Frist: ${format(new Date(round.deadline), "d. MMM yyyy", { locale: nb })}`}
+                              </p>
+                            </div>
+                          )}
+                          
+                          <Button 
+                            onClick={() => handleStartRound(round)} 
+                            className="w-full mt-4"
+                            variant="default"
+                          >
+                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            Start vernerunde
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="completed" className="mt-6">
+                {isLoading ? (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">Laster...</p>
+                  </div>
+                ) : filteredRounds.length === 0 ? (
+                  <Card>
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <CheckCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                      <p className="text-lg font-medium text-muted-foreground">Ingen fullførte vernerunder</p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        {selectedProjectId ? "Ingen fullførte vernerunder for valgt prosjekt" : "Fullførte vernerunder vises her"}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid gap-4">
+                    {filteredRounds.map((round) => (
+                      <Card key={round.id} className="hover:shadow-md transition-shadow">
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge variant="outline">{getProjectInfo(round.project_id)}</Badge>
+                                <Badge className="bg-green-50 text-green-700 border-green-200">
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Fullført
+                                </Badge>
+                              </div>
+                              <CardTitle className="text-base">
+                                Vernerunde {format(new Date(round.round_date), "d. MMMM yyyy", { locale: nb })}
+                              </CardTitle>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="grid gap-3 md:grid-cols-2">
+                            {round.participants && (
+                              <div>
+                                <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                                  <Users className="h-3 w-3" />
+                                  Deltakere
+                                </p>
+                                <p className="text-sm">{round.participants}</p>
+                              </div>
+                            )}
+                            {round.responsible && (
+                              <div>
+                                <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  Ansvarlig
+                                </p>
+                                <p className="text-sm">{round.responsible}</p>
+                              </div>
+                            )}
+                          </div>
+                          {round.findings && (
+                            <div className="border-t pt-3">
+                              <p className="text-xs font-medium text-muted-foreground">Funn</p>
+                              <p className="text-sm">{round.findings}</p>
+                            </div>
+                          )}
+                          {round.actions_required && (
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground">Tiltak påkrevet</p>
+                              <p className="text-sm">{round.actions_required}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
+          {/* Generator Tab */}
           <TabsContent value="generator" className="space-y-6 mt-6">
             <div className="flex items-center justify-end">
               <Button onClick={() => { resetTemplateForm(); setIsTemplateDialogOpen(true); }}>
@@ -639,37 +730,30 @@ export default function KsVernerunder() {
                             )}
                           </div>
                           <div className="flex gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => handleEditCheckpoints(template)}>
-                              <List className="h-4 w-4" />
-                            </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleEditTemplate(template)}>
                               <Edit2 className="h-4 w-4" />
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                if (confirm("Er du sikker på at du vil slette denne malen?")) {
-                                  deleteTemplateMutation.mutate(template.id);
-                                }
-                              }}
-                            >
+                            <Button variant="ghost" size="icon" onClick={() => deleteTemplateMutation.mutate(template.id)}>
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           </div>
                         </div>
                       </CardHeader>
+                      <CardContent>
+                        <Button variant="outline" size="sm" onClick={() => handleEditCheckpoints(template)}>
+                          <Edit2 className="mr-2 h-4 w-4" />
+                          Rediger kontrollpunkter
+                        </Button>
+                      </CardContent>
                     </Card>
                   ))}
                 </div>
               ) : (
                 <Card>
                   <CardContent className="flex flex-col items-center justify-center py-12">
-                    <List className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Ingen egne maler enda</h3>
-                    <p className="text-muted-foreground text-center mb-4">
-                      Opprett din første vernerunde-mal eller bruk en forhåndsdefinert mal
-                    </p>
+                    <Shield className="h-12 w-12 text-muted-foreground mb-4" />
+                    <p className="text-lg font-medium text-muted-foreground">Ingen egne maler</p>
+                    <p className="text-sm text-muted-foreground mt-2">Opprett en mal for å komme i gang</p>
                   </CardContent>
                 </Card>
               )}
@@ -677,21 +761,22 @@ export default function KsVernerunder() {
           </TabsContent>
         </Tabs>
 
-        {/* Create Safety Round Dialog */}
+        {/* Dialogs */}
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingRound ? "Rediger vernerunde" : "Ny vernerunde"}</DialogTitle>
               <DialogDescription>
-                Dokumenter gjennomført vernerunde på prosjekt
+                Registrer informasjon om vernerunden
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="project_id">Prosjekt *</Label>
+                <Label htmlFor="project">Prosjekt *</Label>
                 <Select
                   value={formData.project_id}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, project_id: value }))}
+                  onValueChange={(value) => setFormData({ ...formData, project_id: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Velg prosjekt" />
@@ -706,34 +791,33 @@ export default function KsVernerunder() {
                 </Select>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="round_date">Dato *</Label>
-                  <Input
-                    type="date"
-                    id="round_date"
-                    value={formData.round_date}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, round_date: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="template">Mal *</Label>
-                  <Select
-                    value={formData.template_id}
-                    onValueChange={(value) => setFormData((prev) => ({ ...prev, template_id: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Velg mal..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {templates && templates.map((template) => (
-                        <SelectItem key={template.id} value={template.id}>
-                          {template.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="template">Mal *</Label>
+                <Select
+                  value={formData.template_id}
+                  onValueChange={(value) => setFormData({ ...formData, template_id: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg mal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {templates?.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        {template.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="round_date">Dato *</Label>
+                <Input
+                  id="round_date"
+                  type="date"
+                  value={formData.round_date}
+                  onChange={(e) => setFormData({ ...formData, round_date: e.target.value })}
+                />
               </div>
 
               <div className="space-y-2">
@@ -741,131 +825,128 @@ export default function KsVernerunder() {
                 <Input
                   id="participants"
                   value={formData.participants}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, participants: e.target.value }))}
-                  placeholder="Navn på deltakere"
+                  onChange={(e) => setFormData({ ...formData, participants: e.target.value })}
+                  placeholder="Hvem deltok?"
                 />
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="responsible">Ansvarlig</Label>
-                  <Input
-                    id="responsible"
-                    value={formData.responsible}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, responsible: e.target.value }))}
-                    placeholder="Navn på ansvarlig"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="deadline">Frist</Label>
-                  <Input
-                    type="date"
-                    id="deadline"
-                    value={formData.deadline}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, deadline: e.target.value }))}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="responsible">Ansvarlig</Label>
+                <Input
+                  id="responsible"
+                  value={formData.responsible}
+                  onChange={(e) => setFormData({ ...formData, responsible: e.target.value })}
+                  placeholder="Hvem er ansvarlig?"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="deadline">Frist for oppfølging</Label>
+                <Input
+                  id="deadline"
+                  type="date"
+                  value={formData.deadline}
+                  onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="findings">Funn/Observasjoner</Label>
+                <Textarea
+                  id="findings"
+                  value={formData.findings}
+                  onChange={(e) => setFormData({ ...formData, findings: e.target.value })}
+                  placeholder="Beskriv eventuelle funn..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="actions_required">Tiltak påkrevet</Label>
+                <Textarea
+                  id="actions_required"
+                  value={formData.actions_required}
+                  onChange={(e) => setFormData({ ...formData, actions_required: e.target.value })}
+                  placeholder="Beskriv tiltak som må gjøres..."
+                  rows={3}
+                />
               </div>
             </div>
+
             <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowDialog(false);
-                  resetForm();
-                }}
-              >
+              <Button variant="outline" onClick={() => setShowDialog(false)}>
                 Avbryt
               </Button>
-              <Button onClick={handleSubmit} disabled={!formData.project_id || !formData.round_date || !formData.template_id}>
+              <Button onClick={handleSubmit}>
                 {editingRound ? "Lagre endringer" : "Opprett vernerunde"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* Create/Edit Template Dialog */}
+        {/* Template Dialog */}
         <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editingTemplate ? "Rediger mal" : "Ny vernerunde-mal"}</DialogTitle>
+              <DialogTitle>{editingTemplate ? "Rediger mal" : "Ny mal"}</DialogTitle>
               <DialogDescription>
-                Opprett en ny mal for vernerunde-sjekkliste
+                Opprett en egen mal for vernerunde
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Navn *</Label>
+                <Label htmlFor="template_name">Malnavn *</Label>
                 <Input
-                  id="name"
+                  id="template_name"
                   value={templateForm.name}
-                  onChange={(e) => setTemplateForm((prev) => ({ ...prev, name: e.target.value }))}
-                  placeholder="F.eks. Ukentlig vernerunde byggeplass"
+                  onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })}
+                  placeholder="F.eks. 'Standard vernerunde'"
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="description">Beskrivelse</Label>
+                <Label htmlFor="template_description">Beskrivelse</Label>
                 <Textarea
-                  id="description"
+                  id="template_description"
                   value={templateForm.description}
-                  onChange={(e) => setTemplateForm((prev) => ({ ...prev, description: e.target.value }))}
-                  placeholder="Beskrivelse av vernerunde-malen..."
-                  className="min-h-[80px]"
+                  onChange={(e) => setTemplateForm({ ...templateForm, description: e.target.value })}
+                  placeholder="Beskriv når denne malen skal brukes"
+                  rows={3}
                 />
               </div>
             </div>
+
             <DialogFooter>
-              <Button variant="outline" onClick={() => { setIsTemplateDialogOpen(false); resetTemplateForm(); }}>
+              <Button variant="outline" onClick={() => setIsTemplateDialogOpen(false)}>
                 Avbryt
               </Button>
-              <Button onClick={handleCreateTemplate} disabled={!templateForm.name.trim()}>
+              <Button onClick={handleCreateTemplate}>
                 {editingTemplate ? "Lagre endringer" : "Opprett mal"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* Edit Checkpoints Dialog */}
+        {/* Checkpoints Dialog */}
         <Dialog open={isCheckpointsDialogOpen} onOpenChange={setIsCheckpointsDialogOpen}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Rediger kontrollpunkter</DialogTitle>
               <DialogDescription>
-                Legg til eller fjern kontrollpunkter for vernerunden
+                Legg til kontrollpunkter for vernerunden
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              {/* Add new checkpoint */}
-              <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
-                <Label>Legg til nytt kontrollpunkt</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={newCheckpoint.text}
-                    onChange={(e) => setNewCheckpoint((prev) => ({ ...prev, text: e.target.value }))}
-                    placeholder="Kontrollpunkt..."
-                    onKeyPress={(e) => e.key === "Enter" && handleAddCheckpoint()}
-                    className="flex-1"
-                  />
-                  <Input
-                    value={newCheckpoint.category}
-                    onChange={(e) => setNewCheckpoint((prev) => ({ ...prev, category: e.target.value }))}
-                    placeholder="Kategori"
-                    className="w-32"
-                  />
-                  <Button onClick={handleAddCheckpoint} size="sm">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
 
-              {/* Existing checkpoints from template */}
+            <div className="space-y-4">
+              {/* Existing checkpoints */}
               {templateCheckpoints && templateCheckpoints.length > 0 && (
                 <div className="space-y-2">
                   <Label>Eksisterende kontrollpunkter</Label>
                   <div className="space-y-2">
                     {templateCheckpoints.map((checkpoint, index) => (
-                      <div key={checkpoint.id || index} className="flex items-center gap-2 p-2 border rounded">
-                        <Badge variant="outline" className="text-xs">{checkpoint.category}</Badge>
+                      <div key={checkpoint.id} className="flex items-center gap-2 p-2 border rounded">
+                        <Badge variant="outline">{checkpoint.category}</Badge>
                         <span className="flex-1 text-sm">{checkpoint.text}</span>
                       </div>
                     ))}
@@ -873,18 +954,18 @@ export default function KsVernerunder() {
                 </div>
               )}
 
-              {/* New checkpoints being added */}
+              {/* New checkpoints */}
               {checkpoints.length > 0 && (
                 <div className="space-y-2">
                   <Label>Nye kontrollpunkter</Label>
                   <div className="space-y-2">
                     {checkpoints.map((checkpoint, index) => (
-                      <div key={index} className="flex items-center gap-2 p-2 border rounded bg-green-50 dark:bg-green-950/20">
-                        <Badge variant="outline" className="text-xs">{checkpoint.category}</Badge>
+                      <div key={index} className="flex items-center gap-2 p-2 border rounded">
+                        <Badge variant="outline">{checkpoint.category}</Badge>
                         <span className="flex-1 text-sm">{checkpoint.text}</span>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
                           onClick={() => handleRemoveCheckpoint(index)}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
@@ -894,16 +975,44 @@ export default function KsVernerunder() {
                   </div>
                 </div>
               )}
+
+              {/* Add new checkpoint */}
+              <div className="border-t pt-4 space-y-4">
+                <Label>Legg til nytt kontrollpunkt</Label>
+                <div className="space-y-2">
+                  <Select
+                    value={newCheckpoint.category}
+                    onValueChange={(value) => setNewCheckpoint({ ...newCheckpoint, category: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Sikkerhet">Sikkerhet</SelectItem>
+                      <SelectItem value="Orden">Orden</SelectItem>
+                      <SelectItem value="Helse">Helse</SelectItem>
+                      <SelectItem value="Brann">Brann</SelectItem>
+                      <SelectItem value="Verneutstyr">Verneutstyr</SelectItem>
+                      <SelectItem value="Utstyr">Utstyr</SelectItem>
+                      <SelectItem value="Arbeidsmiljø">Arbeidsmiljø</SelectItem>
+                      <SelectItem value="Kjemikalie">Kjemikalie</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    value={newCheckpoint.text}
+                    onChange={(e) => setNewCheckpoint({ ...newCheckpoint, text: e.target.value })}
+                    placeholder="Beskrivelse av kontrollpunkt"
+                  />
+                  <Button onClick={handleAddCheckpoint} className="w-full">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Legg til
+                  </Button>
+                </div>
+              </div>
             </div>
+
             <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsCheckpointsDialogOpen(false);
-                  setCheckpoints([]);
-                  setSelectedTemplateId(null);
-                }}
-              >
+              <Button variant="outline" onClick={() => setIsCheckpointsDialogOpen(false)}>
                 Avbryt
               </Button>
               <Button onClick={handleSaveCheckpoints}>
@@ -913,14 +1022,14 @@ export default function KsVernerunder() {
           </DialogContent>
         </Dialog>
 
+        {/* Checklist Dialog */}
         <KsSafetyRoundChecklist
           round={activeRound}
           open={showChecklistDialog}
           onOpenChange={setShowChecklistDialog}
           onComplete={() => {
+            setShowChecklistDialog(false);
             setActiveRound(null);
-            // Refetch to get updated status
-            queryClient.invalidateQueries({ queryKey: ["ks-safety-rounds"] });
           }}
         />
       </div>
