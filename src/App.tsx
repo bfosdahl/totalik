@@ -35,6 +35,7 @@ import KsProjectReport from "./pages/ks/KsProjectReport";
 import KsSubcontractorView from "./pages/ks/KsSubcontractorView";
 import KsClientManagement from "./pages/ks/KsClientManagement";
 import KsChecklists from "./pages/ks/KsChecklists";
+import KsDocumentCenter from "./pages/ks/KsDocumentCenter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,6 +66,7 @@ const App = () => (
             <Route path="/ks/projects" element={<ProtectedRoute><KsProjectsOverview /></ProtectedRoute>} />
             <Route path="/ks/projects/:id" element={<ProtectedRoute><KsProjectDetail /></ProtectedRoute>} />
             <Route path="/ks/projects/:projectId/hms-plan" element={<ProtectedRoute><KsHmsPlanWizard /></ProtectedRoute>} />
+            <Route path="/ks/projects/:projectId/documents" element={<ProtectedRoute><KsDocumentCenter /></ProtectedRoute>} />
             <Route path="/ks/checklists" element={<ProtectedRoute><KsChecklists /></ProtectedRoute>} />
             <Route path="/ks/checklists/:id" element={<ProtectedRoute><KsChecklistDetail /></ProtectedRoute>} />
             <Route path="/ks/routines" element={<ProtectedRoute><KsRoutines /></ProtectedRoute>} />

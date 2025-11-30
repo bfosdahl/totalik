@@ -469,6 +469,20 @@ export default function KsProjectDetail() {
               <Button
                 variant="outline"
                 className="h-auto flex flex-col items-center gap-2 p-4"
+                onClick={() => navigate(`/ks/projects/${id}/documents`)}
+              >
+                <div className="p-2 bg-slate-100 dark:bg-slate-900/20 rounded-lg">
+                  <FileText className="h-6 w-6 text-slate-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold">Dokumentsenter</p>
+                  <p className="text-xs text-muted-foreground">Alle dokumenter</p>
+                </div>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center gap-2 p-4"
                 onClick={() => navigate(`/ks/projects/${id}/report`)}
               >
                 <div className="p-2 bg-indigo-100 dark:bg-indigo-900/20 rounded-lg">
