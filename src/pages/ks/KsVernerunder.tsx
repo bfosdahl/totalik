@@ -31,6 +31,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { KsSafetyRoundChecklist } from "@/components/ks/KsSafetyRoundChecklist";
 
 interface VernerundeCheckpoint {
   id?: string;
@@ -122,7 +123,9 @@ export default function KsVernerunder() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const { safetyRounds, isLoading, createSafetyRound, updateSafetyRound, deleteSafetyRound } = useKsSafetyRounds(null);
   const [showDialog, setShowDialog] = useState(false);
+  const [showChecklistDialog, setShowChecklistDialog] = useState(false);
   const [editingRound, setEditingRound] = useState<KsSafetyRound | null>(null);
+  const [activeRound, setActiveRound] = useState<KsSafetyRound | null>(null);
   const [formData, setFormData] = useState<{
     project_id: string;
     round_date: string;
@@ -132,6 +135,7 @@ export default function KsVernerunder() {
     responsible: string;
     deadline: string;
     status: "pending" | "completed" | "cancelled";
+    template_id: string;
   }>({
     project_id: "",
     round_date: new Date().toISOString().split("T")[0],
@@ -141,6 +145,7 @@ export default function KsVernerunder() {
     responsible: "",
     deadline: "",
     status: "pending",
+    template_id: "",
   });
 
   // Generator state
@@ -166,12 +171,14 @@ export default function KsVernerunder() {
       responsible: "",
       deadline: "",
       status: "pending",
+      template_id: "",
     });
     setEditingRound(null);
   };
 
   const handleSubmit = async () => {
-    if (!formData.project_id || !formData.round_date) {
+    if (!formData.project_id || !formData.round_date || !formData.template_id) {
+      toast({ title: "Feil", description: "Fyll ut alle påkrevde felt", variant: "destructive" });
       return;
     }
 
@@ -199,8 +206,14 @@ export default function KsVernerunder() {
       responsible: round.responsible || "",
       deadline: round.deadline || "",
       status: round.status as "pending" | "completed" | "cancelled",
+      template_id: round.template_id || "",
     });
     setShowDialog(true);
+  };
+
+  const handleStartRound = (round: KsSafetyRound) => {
+    setActiveRound(round);
+    setShowChecklistDialog(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -525,18 +538,6 @@ export default function KsVernerunder() {
                           <p className="text-sm">{round.participants}</p>
                         </div>
                       )}
-                      {round.findings && (
-                        <div>
-                          <p className="text-xs font-medium text-muted-foreground">Funn</p>
-                          <p className="text-sm">{round.findings}</p>
-                        </div>
-                      )}
-                      {round.actions_required && (
-                        <div>
-                          <p className="text-xs font-medium text-muted-foreground">Tiltak påkrevd</p>
-                          <p className="text-sm">{round.actions_required}</p>
-                        </div>
-                      )}
                       {round.responsible && (
                         <div>
                           <p className="text-xs font-medium text-muted-foreground">Ansvarlig</p>
@@ -545,6 +546,17 @@ export default function KsVernerunder() {
                             {round.deadline && ` • Frist: ${format(new Date(round.deadline), "d. MMM yyyy", { locale: nb })}`}
                           </p>
                         </div>
+                      )}
+                      
+                      {round.status === "pending" && (
+                        <Button 
+                          onClick={() => handleStartRound(round)} 
+                          className="w-full mt-4"
+                          variant="default"
+                        >
+                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          Start vernerunde
+                        </Button>
                       )}
                     </CardContent>
                   </Card>
@@ -705,18 +717,20 @@ export default function KsVernerunder() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
+                  <Label htmlFor="template">Mal *</Label>
                   <Select
-                    value={formData.status}
-                    onValueChange={(value: any) => setFormData((prev) => ({ ...prev, status: value }))}
+                    value={formData.template_id}
+                    onValueChange={(value) => setFormData((prev) => ({ ...prev, template_id: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Velg mal..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pending">Planlagt</SelectItem>
-                      <SelectItem value="completed">Gjennomført</SelectItem>
-                      <SelectItem value="cancelled">Kansellert</SelectItem>
+                      {templates && templates.map((template) => (
+                        <SelectItem key={template.id} value={template.id}>
+                          {template.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -729,28 +743,6 @@ export default function KsVernerunder() {
                   value={formData.participants}
                   onChange={(e) => setFormData((prev) => ({ ...prev, participants: e.target.value }))}
                   placeholder="Navn på deltakere"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="findings">Funn</Label>
-                <Textarea
-                  id="findings"
-                  value={formData.findings}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, findings: e.target.value }))}
-                  placeholder="Beskriv funn fra vernerunden..."
-                  className="min-h-[100px]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="actions_required">Tiltak påkrevd</Label>
-                <Textarea
-                  id="actions_required"
-                  value={formData.actions_required}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, actions_required: e.target.value }))}
-                  placeholder="Beskriv nødvendige tiltak..."
-                  className="min-h-[100px]"
                 />
               </div>
 
@@ -785,7 +777,7 @@ export default function KsVernerunder() {
               >
                 Avbryt
               </Button>
-              <Button onClick={handleSubmit} disabled={!formData.project_id || !formData.round_date}>
+              <Button onClick={handleSubmit} disabled={!formData.project_id || !formData.round_date || !formData.template_id}>
                 {editingRound ? "Lagre endringer" : "Opprett vernerunde"}
               </Button>
             </DialogFooter>
@@ -920,6 +912,17 @@ export default function KsVernerunder() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <KsSafetyRoundChecklist
+          round={activeRound}
+          open={showChecklistDialog}
+          onOpenChange={setShowChecklistDialog}
+          onComplete={() => {
+            setActiveRound(null);
+            // Refetch to get updated status
+            queryClient.invalidateQueries({ queryKey: ["ks-safety-rounds"] });
+          }}
+        />
       </div>
     </AppLayout>
   );

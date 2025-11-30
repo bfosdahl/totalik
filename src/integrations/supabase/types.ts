@@ -2289,6 +2289,7 @@ export type Database = {
           company_id: string
           created_at: string | null
           id: string
+          photo_paths: string[] | null
           safety_round_id: string
           status: string
           updated_at: string | null
@@ -2299,6 +2300,7 @@ export type Database = {
           company_id: string
           created_at?: string | null
           id?: string
+          photo_paths?: string[] | null
           safety_round_id: string
           status?: string
           updated_at?: string | null
@@ -2309,6 +2311,7 @@ export type Database = {
           company_id?: string
           created_at?: string | null
           id?: string
+          photo_paths?: string[] | null
           safety_round_id?: string
           status?: string
           updated_at?: string | null
