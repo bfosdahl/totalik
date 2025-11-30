@@ -269,46 +269,6 @@ export function KsSafetyRoundChecklist({ round, open, onOpenChange, onComplete }
         )}
 
         <div className="space-y-4">
-          {isAddingCheckpoint && (
-            <Card className="p-4 border-primary">
-              <div className="space-y-3">
-                <Label htmlFor="new-checkpoint">Nytt sjekkpunkt</Label>
-                <Textarea
-                  id="new-checkpoint"
-                  value={newCheckpointText}
-                  onChange={(e) => setNewCheckpointText(e.target.value)}
-                  placeholder="Beskriv sjekkpunktet..."
-                  rows={2}
-                />
-                <div className="flex gap-2">
-                  <Button onClick={addCustomCheckpoint} size="sm">
-                    Legg til
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setIsAddingCheckpoint(false);
-                      setNewCheckpointText("");
-                    }}
-                  >
-                    Avbryt
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          )}
-
-          <Button
-            variant="outline"
-            onClick={() => setIsAddingCheckpoint(true)}
-            disabled={isAddingCheckpoint}
-            className="w-full"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Legg til sjekkpunkt
-          </Button>
-
           {allCheckpoints && allCheckpoints.length > 0 ? (
             allCheckpoints.map((checkpoint) => {
               const result = getCheckpointResult(checkpoint.id);
@@ -433,6 +393,46 @@ export function KsSafetyRoundChecklist({ round, open, onOpenChange, onComplete }
               Ingen kontrollpunkter funnet for denne malen
             </p>
           )}
+
+          {isAddingCheckpoint && (
+            <Card className="p-4 border-primary">
+              <div className="space-y-3">
+                <Label htmlFor="new-checkpoint">Nytt sjekkpunkt</Label>
+                <Textarea
+                  id="new-checkpoint"
+                  value={newCheckpointText}
+                  onChange={(e) => setNewCheckpointText(e.target.value)}
+                  placeholder="Beskriv sjekkpunktet..."
+                  rows={2}
+                />
+                <div className="flex gap-2">
+                  <Button onClick={addCustomCheckpoint} size="sm">
+                    Legg til
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setIsAddingCheckpoint(false);
+                      setNewCheckpointText("");
+                    }}
+                  >
+                    Avbryt
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          <Button
+            variant="outline"
+            onClick={() => setIsAddingCheckpoint(true)}
+            disabled={isAddingCheckpoint}
+            className="w-full"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Legg til sjekkpunkt
+          </Button>
         </div>
 
         <DialogFooter>
