@@ -18,7 +18,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useKsProjects } from "@/hooks/useKsProjects";
+import { useCompanyModules } from "@/hooks/useCompanyModules";
 
 interface NewTimeEntryDialogProps {
   open: boolean;
@@ -27,6 +36,7 @@ interface NewTimeEntryDialogProps {
     entry_date: string;
     hours: number;
     project_name?: string;
+    project_id?: string;
     description?: string;
   }) => Promise<boolean>;
 }
@@ -38,9 +48,20 @@ export function NewTimeEntryDialog({
 }: NewTimeEntryDialogProps) {
   const [date, setDate] = useState<Date>(new Date());
   const [hours, setHours] = useState("");
-  const [projectName, setProjectName] = useState("");
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [customProjectName, setCustomProjectName] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [useCustomProject, setUseCustomProject] = useState(false);
+
+  const { projects, isLoading: isLoadingProjects } = useKsProjects();
+  const { hasModule } = useCompanyModules();
+  const hasKsBygg = hasModule("IK_BYGG");
+
+  // Filter active projects
+  const activeProjects = projects.filter(
+    (p) => p.status !== "arkivert" && p.status !== "ferdig"
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,22 +71,49 @@ export function NewTimeEntryDialog({
       return;
     }
 
+    // Get project name from selected project or custom input
+    let projectName: string | undefined;
+    let projectId: string | undefined;
+
+    if (hasKsBygg && selectedProjectId && selectedProjectId !== "custom" && selectedProjectId !== "none") {
+      const selectedProject = projects.find((p) => p.id === selectedProjectId);
+      if (selectedProject) {
+        projectName = `${selectedProject.project_number} - ${selectedProject.name}`;
+        projectId = selectedProject.id;
+      }
+    } else if (useCustomProject && customProjectName) {
+      projectName = customProjectName;
+    }
+
     setIsSubmitting(true);
     const success = await onSubmit({
       entry_date: format(date, "yyyy-MM-dd"),
       hours: hoursNum,
-      project_name: projectName || undefined,
+      project_name: projectName,
+      project_id: projectId,
       description: description || undefined,
     });
 
     if (success) {
       setDate(new Date());
       setHours("");
-      setProjectName("");
+      setSelectedProjectId("");
+      setCustomProjectName("");
       setDescription("");
+      setUseCustomProject(false);
       onOpenChange(false);
     }
     setIsSubmitting(false);
+  };
+
+  const handleProjectChange = (value: string) => {
+    setSelectedProjectId(value);
+    if (value === "custom") {
+      setUseCustomProject(true);
+    } else {
+      setUseCustomProject(false);
+      setCustomProjectName("");
+    }
   };
 
   return (
@@ -124,16 +172,49 @@ export function NewTimeEntryDialog({
 
           <div className="space-y-2">
             <Label htmlFor="project">Prosjekt (valgfritt)</Label>
-            <div className="relative">
-              <FolderOpen className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                id="project"
-                placeholder="F.eks. Kundeprosjekt A"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+            {hasKsBygg && activeProjects.length > 0 ? (
+              <>
+                <Select value={selectedProjectId} onValueChange={handleProjectChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg prosjekt" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Ingen prosjekt</SelectItem>
+                    {activeProjects.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        <span className="font-mono text-xs text-muted-foreground mr-2">
+                          {project.project_number}
+                        </span>
+                        {project.name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Annet (fritekst)</SelectItem>
+                  </SelectContent>
+                </Select>
+                {useCustomProject && (
+                  <div className="relative mt-2">
+                    <FolderOpen className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="Skriv inn prosjektnavn"
+                      value={customProjectName}
+                      onChange={(e) => setCustomProjectName(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="relative">
+                <FolderOpen className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="project"
+                  placeholder="F.eks. Kundeprosjekt A"
+                  value={customProjectName}
+                  onChange={(e) => setCustomProjectName(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
