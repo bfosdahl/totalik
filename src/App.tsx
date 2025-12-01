@@ -37,6 +37,8 @@ import KsClientManagement from "./pages/ks/KsClientManagement";
 import KsChecklists from "./pages/ks/KsChecklists";
 import KsDocumentCenter from "./pages/ks/KsDocumentCenter";
 import HmsChat from "./pages/HmsChat";
+import MyCourseCard from "./pages/MyCourseCard";
+import InstallApp from "./pages/InstallApp";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +55,7 @@ const App = () => (
               {/* Public routes */}
               <Route path="/auth" element={<Auth />} />
               <Route path="/setup-admin" element={<SetupSystemAdmin />} />
+              <Route path="/install" element={<InstallApp />} />
             
             {/* Protected app routes */}
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
@@ -62,6 +65,7 @@ const App = () => (
             <Route path="/audits" element={<ProtectedRoute><Audits /></ProtectedRoute>} />
             <Route path="/handbook" element={<ProtectedRoute><Handbook /></ProtectedRoute>} />
             <Route path="/hms-chat" element={<ProtectedRoute><HmsChat /></ProtectedRoute>} />
+            <Route path="/my-courses" element={<ProtectedRoute><MyCourseCard /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             
             {/* KS Bygg routes */}
