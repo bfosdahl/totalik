@@ -8,9 +8,13 @@ import {
   Palette,
   Database,
   ChevronRight,
-  LucideIcon
+  LucideIcon,
+  Download,
+  Smartphone
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { Button } from "@/components/ui/button";
 import { CompanyInfoSettings } from "@/components/settings/CompanyInfoSettings";
 import { UserManagementSettings } from "@/components/settings/UserManagementSettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
@@ -68,6 +72,7 @@ const settingsSections: SettingsSectionConfig[] = [
 
 const Settings = () => {
   const [activeSection, setActiveSection] = useState<SettingsSection>("main");
+  const navigate = useNavigate();
 
   const goBack = () => setActiveSection("main");
 
@@ -188,6 +193,30 @@ const Settings = () => {
                 <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
               </motion.button>
             ))}
+          </div>
+        </motion.div>
+
+        {/* Mobile App */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border border-primary/20 p-6 shadow-card"
+        >
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-xl bg-primary/20">
+              <Smartphone className="w-6 h-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold mb-2">Last ned mobilapp</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Installer Athena HMS på mobilen din for rask tilgang til kursbevis og dokumenter
+              </p>
+              <Button onClick={() => navigate("/install")} className="gap-2">
+                <Download className="w-4 h-4" />
+                Last ned app
+              </Button>
+            </div>
           </div>
         </motion.div>
 
