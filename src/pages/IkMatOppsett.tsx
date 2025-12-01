@@ -76,8 +76,8 @@ const IkMatOppsett = () => {
               </AlertDescription>
             </Alert>
             <div className="flex gap-4">
-              <Button onClick={() => navigate('/')}>
-                Gå til dashboard
+              <Button onClick={() => navigate('/ik-mat/handbok')}>
+                Se generert innhold
               </Button>
               <Button 
                 variant="outline" 
