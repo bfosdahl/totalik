@@ -95,18 +95,15 @@ export const generateChecklistPdf = async (data: ChecklistPdfData): Promise<void
     alternateRowStyles: {
       fillColor: [245, 245, 245]
     },
-    didDrawCell: (data) => {
+    didParseCell: (data) => {
       // Color code status column
       if (data.column.index === 1 && data.section === 'body') {
         const statusText = data.cell.text[0];
         if (statusText.includes('✓ OK')) {
-          doc.setTextColor(0, 150, 0);
-          doc.text(statusText, data.cell.x + 2, data.cell.y + data.cell.height / 2 + 2);
+          data.cell.styles.textColor = [0, 150, 0];
         } else if (statusText.includes('✗ Ikke OK')) {
-          doc.setTextColor(200, 0, 0);
-          doc.text(statusText, data.cell.x + 2, data.cell.y + data.cell.height / 2 + 2);
+          data.cell.styles.textColor = [200, 0, 0];
         }
-        doc.setTextColor(0, 0, 0); // Reset color
       }
     }
   });
