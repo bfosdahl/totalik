@@ -653,55 +653,61 @@ export default function AdminUsers() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => {
-                      setSelectedUser(profile);
-                      setIsRoleDialogOpen(true);
-                    }}
-                  >
-                    <Shield className="w-4 h-4 mr-2" />
-                    Roller
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => {
-                      setSelectedUser(profile);
-                      setNewPassword("");
-                      setIsPasswordDialogOpen(true);
-                    }}
-                  >
-                    <Key className="w-4 h-4 mr-2" />
-                    Passord
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      toggleActiveMutation.mutate({
-                        userId: profile.user_id,
-                        isActive: profile.is_active,
-                      })
-                    }
-                  >
-                    {profile.is_active ? "Deaktiver" : "Aktiver"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-destructive border-destructive/50 hover:bg-destructive/10"
-                    onClick={() => {
-                      setSelectedUser(profile);
-                      setIsDeleteDialogOpen(true);
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 pt-2 border-t border-border">
+                  <div className="flex gap-2 flex-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 min-w-0"
+                      onClick={() => {
+                        setSelectedUser(profile);
+                        setIsRoleDialogOpen(true);
+                      }}
+                    >
+                      <Shield className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Roller</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 min-w-0"
+                      onClick={() => {
+                        setSelectedUser(profile);
+                        setNewPassword("");
+                        setIsPasswordDialogOpen(true);
+                      }}
+                    >
+                      <Key className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Passord</span>
+                    </Button>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 sm:flex-none"
+                      onClick={() =>
+                        toggleActiveMutation.mutate({
+                          userId: profile.user_id,
+                          isActive: profile.is_active,
+                        })
+                      }
+                    >
+                      {profile.is_active ? "Deaktiver" : "Aktiver"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive border-destructive/50 hover:bg-destructive/10"
+                      onClick={() => {
+                        setSelectedUser(profile);
+                        setIsDeleteDialogOpen(true);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span className="hidden sm:inline ml-2">Slett</span>
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))
@@ -970,35 +976,40 @@ export default function AdminUsers() {
 
         {/* Delete confirmation dialog */}
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Slett bruker</DialogTitle>
+              <DialogTitle className="text-lg sm:text-xl">Slett bruker</DialogTitle>
             </DialogHeader>
             {selectedUser && (
               <div className="space-y-4 mt-4">
-                <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                  <p className="text-sm text-destructive font-medium">
+                <div className="p-3 sm:p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  <p className="text-xs sm:text-sm text-destructive font-medium">
                     Advarsel: Denne handlingen kan ikke angres!
                   </p>
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                     All data knyttet til brukeren vil bli slettet permanent, inkludert profil, roller og tilganger.
                   </p>
                 </div>
-                <p className="text-sm">
+                <p className="text-xs sm:text-sm leading-relaxed">
                   Er du sikker på at du vil slette brukeren{" "}
                   <span className="font-medium">
                     {selectedUser.first_name} {selectedUser.last_name}
                   </span>{" "}
                   ({selectedUser.email})?
                 </p>
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsDeleteDialogOpen(false)}
+                    className="w-full sm:w-auto"
+                  >
                     Avbryt
                   </Button>
                   <Button
                     variant="destructive"
                     onClick={() => deleteUserMutation.mutate(selectedUser.user_id)}
                     disabled={deleteUserMutation.isPending}
+                    className="w-full sm:w-auto"
                   >
                     {deleteUserMutation.isPending ? "Sletter..." : "Slett bruker"}
                   </Button>

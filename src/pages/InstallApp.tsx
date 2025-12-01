@@ -63,14 +63,14 @@ export default function InstallApp() {
 
   if (isInstalled) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-primary/10 to-background p-4 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-primary/10 to-background p-4 sm:p-6 flex items-center justify-center">
         <Card className="max-w-md w-full">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
-              <CheckCircle2 className="w-8 h-8 text-green-500" />
+          <CardHeader className="text-center space-y-4 p-6 sm:p-8">
+            <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-green-500/10 flex items-center justify-center">
+              <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-green-500" />
             </div>
-            <CardTitle>Appen er installert!</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl sm:text-2xl">Appen er installert!</CardTitle>
+            <CardDescription className="text-base">
               Du kan nå bruke Athena HMS direkte fra startskjermen din.
             </CardDescription>
           </CardHeader>
@@ -80,44 +80,44 @@ export default function InstallApp() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/10 to-background p-4">
-      <div className="max-w-md mx-auto space-y-6 pt-8">
+    <div className="min-h-screen bg-gradient-to-b from-primary/10 to-background p-4 sm:p-6">
+      <div className="max-w-md mx-auto space-y-4 sm:space-y-6 pt-6 sm:pt-8 pb-8">
         {/* Header */}
-        <div className="text-center">
-          <div className="mx-auto w-20 h-20 rounded-2xl bg-primary flex items-center justify-center mb-4 shadow-lg">
-            <Smartphone className="w-10 h-10 text-primary-foreground" />
+        <div className="text-center space-y-3 sm:space-y-4">
+          <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-primary flex items-center justify-center shadow-lg">
+            <Smartphone className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold">Installer Athena HMS</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold px-4">Installer Athena HMS</h1>
+          <p className="text-sm sm:text-base text-muted-foreground px-4">
             Få rask tilgang til dine kursbevis og HMS-dokumenter
           </p>
         </div>
 
         {/* Benefits */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Fordeler med appen</CardTitle>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">Fordeler med appen</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
               <div>
-                <p className="font-medium">Rask tilgang til kursbevis</p>
-                <p className="text-sm text-muted-foreground">Vis kursbevis ved tilsyn med ett klikk</p>
+                <p className="font-medium text-sm sm:text-base">Rask tilgang til kursbevis</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Vis kursbevis ved tilsyn med ett klikk</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
               <div>
-                <p className="font-medium">Fungerer offline</p>
-                <p className="text-sm text-muted-foreground">Se kursbeviset selv uten internett</p>
+                <p className="font-medium text-sm sm:text-base">Fungerer offline</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Se kursbeviset selv uten internett</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
               <div>
-                <p className="font-medium">Ingen app-butikk nødvendig</p>
-                <p className="text-sm text-muted-foreground">Installer direkte fra nettleseren</p>
+                <p className="font-medium text-sm sm:text-base">Ingen app-butikk nødvendig</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Installer direkte fra nettleseren</p>
               </div>
             </div>
           </CardContent>
@@ -126,106 +126,106 @@ export default function InstallApp() {
         {/* Install Instructions */}
         {isIOS ? (
           <Card>
-            <CardHeader>
+            <CardHeader className="p-4 sm:p-6">
               <div className="flex items-center gap-2">
                 <Apple className="w-5 h-5" />
-                <CardTitle className="text-lg">Installer på iPhone/iPad</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Installer på iPhone/iPad</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="font-bold text-primary">1</span>
+            <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
+              <div className="flex items-start gap-2 sm:gap-3">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="font-bold text-sm sm:text-base text-primary">1</span>
                 </div>
                 <div>
-                  <p className="font-medium">Trykk på Del-knappen</p>
+                  <p className="font-medium text-sm sm:text-base">Trykk på Del-knappen</p>
                   <div className="flex items-center gap-1 mt-1">
-                    <Share className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">i Safari-menyen nederst</span>
+                    <Share className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
+                    <span className="text-xs sm:text-sm text-muted-foreground">i Safari-menyen nederst</span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="font-bold text-primary">2</span>
+              <div className="flex items-start gap-2 sm:gap-3">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="font-bold text-sm sm:text-base text-primary">2</span>
                 </div>
                 <div>
-                  <p className="font-medium">Velg "Legg til på Hjem-skjerm"</p>
+                  <p className="font-medium text-sm sm:text-base">Velg "Legg til på Hjem-skjerm"</p>
                   <div className="flex items-center gap-1 mt-1">
-                    <Plus className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">fra menyen som vises</span>
+                    <Plus className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
+                    <span className="text-xs sm:text-sm text-muted-foreground">fra menyen som vises</span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="font-bold text-primary">3</span>
+              <div className="flex items-start gap-2 sm:gap-3">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="font-bold text-sm sm:text-base text-primary">3</span>
                 </div>
                 <div>
-                  <p className="font-medium">Trykk "Legg til"</p>
-                  <span className="text-sm text-muted-foreground">for å bekrefte installasjonen</span>
+                  <p className="font-medium text-sm sm:text-base">Trykk "Legg til"</p>
+                  <span className="text-xs sm:text-sm text-muted-foreground">for å bekrefte installasjonen</span>
                 </div>
               </div>
             </CardContent>
           </Card>
         ) : deferredPrompt ? (
           <Card>
-            <CardHeader>
+            <CardHeader className="p-4 sm:p-6">
               <div className="flex items-center gap-2">
                 <Chrome className="w-5 h-5" />
-                <CardTitle className="text-lg">Installer på Android</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Installer på Android</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+            <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 Klikk på knappen under for å installere appen på telefonen din. Appen vil være tilgjengelig fra startskjermen, og du kan bruke den som en vanlig app.
               </p>
               <Button onClick={handleInstallClick} className="w-full gap-2" size="lg">
                 <Download className="w-5 h-5" />
                 Installer appen
               </Button>
-              <div className="pt-2 space-y-3 border-t">
-                <p className="text-sm font-medium">Etter installasjon:</p>
-                <div className="flex items-start gap-3">
+              <div className="pt-2 space-y-2 sm:space-y-3 border-t">
+                <p className="text-xs sm:text-sm font-medium">Etter installasjon:</p>
+                <div className="flex items-start gap-2 sm:gap-3">
                   <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                  <p className="text-sm text-muted-foreground">Finn appen på startskjermen din</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Finn appen på startskjermen din</p>
                 </div>
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-2 sm:gap-3">
                   <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                  <p className="text-sm text-muted-foreground">Åpne den som en vanlig app</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Åpne den som en vanlig app</p>
                 </div>
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-2 sm:gap-3">
                   <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                  <p className="text-sm text-muted-foreground">Bruk den offline når du trenger det</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Bruk den offline når du trenger det</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         ) : (
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Installer appen</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg">Installer appen</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+            <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 For å installere appen på Android:
               </p>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="font-bold text-primary">1</span>
+              <div className="flex items-start gap-2 sm:gap-3">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="font-bold text-sm sm:text-base text-primary">1</span>
                 </div>
                 <div>
-                  <p className="font-medium">Åpne meny i Chrome</p>
-                  <span className="text-sm text-muted-foreground">⋮ øverst til høyre</span>
+                  <p className="font-medium text-sm sm:text-base">Åpne meny i Chrome</p>
+                  <span className="text-xs sm:text-sm text-muted-foreground">⋮ øverst til høyre</span>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="font-bold text-primary">2</span>
+              <div className="flex items-start gap-2 sm:gap-3">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="font-bold text-sm sm:text-base text-primary">2</span>
                 </div>
                 <div>
-                  <p className="font-medium">Velg "Legg til på startskjerm"</p>
-                  <span className="text-sm text-muted-foreground">eller "Installer app"</span>
+                  <p className="font-medium text-sm sm:text-base">Velg "Legg til på startskjerm"</p>
+                  <span className="text-xs sm:text-sm text-muted-foreground">eller "Installer app"</span>
                 </div>
               </div>
             </CardContent>
@@ -233,7 +233,7 @@ export default function InstallApp() {
         )}
 
         {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground pb-8">
+        <p className="text-center text-xs sm:text-sm text-muted-foreground pb-4 px-4">
           Athena HMS fungerer best i Chrome (Android) eller Safari (iPhone)
         </p>
       </div>
