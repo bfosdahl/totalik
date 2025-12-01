@@ -1038,6 +1038,60 @@ export type Database = {
           },
         ]
       }
+      ik_mat_cleaning_plan_responses: {
+        Row: {
+          cleaning_records: Json
+          company_id: string
+          completed_at: string | null
+          completed_by_id: string | null
+          completed_by_name: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          cleaning_records?: Json
+          company_id: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          cleaning_records?: Json
+          company_id?: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_cleaning_plan_responses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_cleaning_plan_responses_completed_by_id_fkey"
+            columns: ["completed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_mat_traceability_records: {
         Row: {
           batch_number: string | null
