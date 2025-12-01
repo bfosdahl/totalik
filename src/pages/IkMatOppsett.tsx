@@ -4,7 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { IkMatChatSetup } from "@/components/setup/IkMatChatSetup";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Building2, CheckCircle2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Building2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 
@@ -13,6 +14,7 @@ const IkMatOppsett = () => {
   const navigate = useNavigate();
   const { hasModule, modules, isLoading } = useCompanyModules();
   const [setupCompleted, setSetupCompleted] = useState(false);
+  const [showRestartDialog, setShowRestartDialog] = useState(false);
 
   useEffect(() => {
     // Check if IK/MAT module is active
@@ -102,7 +104,7 @@ const IkMatOppsett = () => {
               </Button>
               <Button 
                 variant="outline" 
-                onClick={() => setSetupCompleted(false)}
+                onClick={() => setShowRestartDialog(true)}
               >
                 Kjør oppsett på nytt
               </Button>
@@ -116,6 +118,35 @@ const IkMatOppsett = () => {
             }}
           />
         )}
+
+        <AlertDialog open={showRestartDialog} onOpenChange={setShowRestartDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-warning" />
+                Kjør oppsett på nytt?
+              </AlertDialogTitle>
+              <AlertDialogDescription className="space-y-2">
+                <p>
+                  Du er i ferd med å starte et nytt AI-oppsett. Dette vil ta 5-10 minutter å fullføre.
+                </p>
+                <p className="font-medium text-foreground">
+                  ⚠️ Viktig: Ditt nåværende oppsett beholdes helt til det nye oppsettet er 100% fullført. 
+                  Hvis du avbryter underveis, beholdes det opprinnelige oppsettet.
+                </p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogAction onClick={() => {
+                setShowRestartDialog(false);
+                setSetupCompleted(false);
+              }}>
+                Start nytt oppsett
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AppLayout>
   );
