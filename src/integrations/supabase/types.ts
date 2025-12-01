@@ -978,6 +978,65 @@ export type Database = {
           },
         ]
       }
+      ik_mat_traceability_records: {
+        Row: {
+          batch_number: string | null
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          document_path: string | null
+          expiry_date: string | null
+          id: string
+          notes: string | null
+          product_name: string
+          production_date: string | null
+          receipt_date: string
+          receipt_temperature: number | null
+          supplier_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          batch_number?: string | null
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          document_path?: string | null
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          product_name: string
+          production_date?: string | null
+          receipt_date?: string
+          receipt_temperature?: number | null
+          supplier_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          batch_number?: string | null
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          document_path?: string | null
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          product_name?: string
+          production_date?: string | null
+          receipt_date?: string
+          receipt_temperature?: number | null
+          supplier_name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_traceability_records_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_change_orders: {
         Row: {
           approved_at: string | null
