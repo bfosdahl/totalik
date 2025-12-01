@@ -237,29 +237,30 @@ export default function KsSja() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex items-center gap-4 flex-1">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Sikker Jobb Analyse (SJA)</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Sikker Jobb Analyse (SJA)</h1>
+              <p className="text-muted-foreground text-sm sm:text-base">
                 Analyser risikoer før oppstart av farlige arbeidsoppgaver
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             {sjaList.length > 0 && (
               <Button
                 variant="outline"
                 onClick={() => exportKsSjaToPDF(sjaList, company?.name)}
+                className="w-full sm:w-auto"
               >
                 <Download className="mr-2 h-4 w-4" />
                 Last ned oversikt
               </Button>
             )}
-            <Button onClick={() => { resetForm(); setShowNewDialog(true); }}>
+            <Button onClick={() => { resetForm(); setShowNewDialog(true); }} className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               Ny SJA
             </Button>

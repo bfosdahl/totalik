@@ -354,8 +354,8 @@ export default function KsChecklistDetail() {
                   <CardTitle className="text-lg">{category}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-0 p-0">
-                  {/* Table Header */}
-                  <div className="grid grid-cols-12 gap-2 px-6 py-3 bg-muted/50 border-y font-medium text-sm text-muted-foreground">
+                  {/* Desktop Table Header */}
+                  <div className="hidden md:grid grid-cols-12 gap-2 px-6 py-3 bg-muted/50 border-y font-medium text-sm text-muted-foreground">
                     <div className="col-span-4">Kontrollpunkt</div>
                     <div className="col-span-1 text-center">Ja</div>
                     <div className="col-span-1 text-center">Nei</div>
@@ -369,7 +369,8 @@ export default function KsChecklistDetail() {
                     .sort((a, b) => (a.template_item?.order_index || 0) - (b.template_item?.order_index || 0))
                     .map((item, index) => (
                       <div key={item.id} className="border-b last:border-0">
-                        <div className="grid grid-cols-12 gap-2 px-6 py-4 items-start">
+                        {/* Desktop View */}
+                        <div className="hidden md:grid grid-cols-12 gap-2 px-6 py-4 items-start">
                           {/* Question */}
                           <div className="col-span-4 text-sm">
                             <span className="font-medium">{index + 1}. {item.template_item?.text}</span>
@@ -440,9 +441,81 @@ export default function KsChecklistDetail() {
                           </div>
                         </div>
 
+                        {/* Mobile View */}
+                        <div className="md:hidden p-4 space-y-4">
+                          {/* Question */}
+                          <div className="text-sm">
+                            <span className="font-medium">{index + 1}. {item.template_item?.text}</span>
+                            {item.template_item?.help_text && (
+                              <p className="text-xs text-muted-foreground mt-1">{item.template_item.help_text}</p>
+                            )}
+                          </div>
+
+                          {/* Status Radio Buttons */}
+                          <div className="flex items-center justify-between gap-2 p-2 bg-muted/50 rounded-lg">
+                            <label className="flex items-center gap-2 cursor-pointer flex-1 justify-center">
+                              <input
+                                type="radio"
+                                name={`status-mobile-${item.id}`}
+                                checked={item.status === 'OK'}
+                                onChange={() => handleStatusChange(item.id, 'OK')}
+                                className="h-4 w-4"
+                              />
+                              <span className="text-sm">Ja</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer flex-1 justify-center">
+                              <input
+                                type="radio"
+                                name={`status-mobile-${item.id}`}
+                                checked={item.status === 'AVVIK'}
+                                onChange={() => handleStatusChange(item.id, 'AVVIK')}
+                                className="h-4 w-4"
+                              />
+                              <span className="text-sm">Nei</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer flex-1 justify-center">
+                              <input
+                                type="radio"
+                                name={`status-mobile-${item.id}`}
+                                checked={item.status === 'IKKE_AKTUELT'}
+                                onChange={() => handleStatusChange(item.id, 'IKKE_AKTUELT')}
+                                className="h-4 w-4"
+                              />
+                              <span className="text-sm">N/A</span>
+                            </label>
+                          </div>
+
+                          {/* Comment and Photo */}
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="Kommentar..."
+                              value={comments[item.id] || ""}
+                              onChange={(e) => handleCommentChange(item.id, e.target.value)}
+                              className="flex-1 text-sm"
+                            />
+                            <input
+                              type="file"
+                              ref={el => fileInputRefs.current[`mobile-${item.id}`] = el}
+                              onChange={(e) => handlePhotoUpload(item.id, e.target.files)}
+                              accept="image/*"
+                              multiple
+                              capture="environment"
+                              className="hidden"
+                            />
+                            <Button 
+                              size="icon"
+                              variant="outline"
+                              onClick={() => fileInputRefs.current[`mobile-${item.id}`]?.click()}
+                              disabled={uploadingPhotos[item.id]}
+                            >
+                              <Camera className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+
                         {/* Display uploaded photos */}
                         {photos[item.id]?.length > 0 && (
-                          <div className="px-6 pb-4 space-y-2">
+                          <div className="px-4 md:px-6 pb-4 space-y-2">
                             <p className="text-sm font-medium text-muted-foreground">
                               <ImageIcon className="h-4 w-4 inline mr-1" />
                               Bilder ({photos[item.id].length})

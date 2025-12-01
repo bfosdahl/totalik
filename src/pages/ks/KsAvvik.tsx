@@ -139,34 +139,38 @@ export default function KsAvvik() {
   return (
     <AppLayout>
       <div className="container mx-auto py-6 space-y-6">
-        <div className="flex justify-between items-center flex-wrap gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex items-center gap-4 flex-1">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Avvik / RUH</h1>
-              <p className="text-muted-foreground">Registrer avvik og rapporter uønskede hendelser</p>
+              <h1 className="text-2xl sm:text-3xl font-bold">Avvik / RUH</h1>
+              <p className="text-muted-foreground text-sm sm:text-base">Registrer avvik og rapporter uønskede hendelser</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             {avvikList.length > 0 && (
-              <>
+              <div className="flex gap-2">
                 <Button
                   variant="outline"
                   onClick={() => exportKsAvvikToPDF(avvikList, company?.name)}
+                  size="sm"
+                  className="flex-1 sm:flex-none"
                 >
                   <Download className="mr-2 h-4 w-4" />
-                  Last ned PDF
+                  <span className="hidden sm:inline">Last ned </span>PDF
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => exportKsAvvikToExcel(avvikList, company?.name)}
+                  size="sm"
+                  className="flex-1 sm:flex-none"
                 >
                   <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  Last ned Excel
+                  <span className="hidden sm:inline">Last ned </span>Excel
                 </Button>
-              </>
+              </div>
             )}
             <Dialog open={isDialogOpen} onOpenChange={(open) => {
               setIsDialogOpen(open);
@@ -175,7 +179,7 @@ export default function KsAvvik() {
               }
             }}>
               <DialogTrigger asChild>
-                <Button>
+                <Button className="w-full sm:w-auto">
                   <Plus className="mr-2 h-4 w-4" />
                   Ny Rapport
                 </Button>
@@ -547,38 +551,44 @@ export default function KsAvvik() {
           <div className="grid gap-4">
             {avvikList.map((avvik) => (
               <Card key={avvik.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1 flex-1">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-lg">{avvik.tittel}</CardTitle>
-                        <Badge variant="outline">{avvik.avvik_nummer}</Badge>
-                        <Badge variant={avvik.type === 'ruh' ? 'destructive' : 'default'}>
+                <CardHeader className="pb-2">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="outline" className="text-xs">{avvik.avvik_nummer}</Badge>
+                        <Badge variant={avvik.type === 'ruh' ? 'destructive' : 'default'} className="text-xs">
                           {avvik.type === 'ruh' ? 'RUH' : 'Avvik'}
                         </Badge>
+                        <Badge className={statusConfig[avvik.status as keyof typeof statusConfig]?.color + " text-xs"}>
+                          {statusConfig[avvik.status as keyof typeof statusConfig]?.label}
+                        </Badge>
                       </div>
-                      <CardDescription>{avvik.beskrivelse}</CardDescription>
+                      <CardTitle className="text-base sm:text-lg">{avvik.tittel}</CardTitle>
+                      {avvik.beskrivelse && (
+                        <CardDescription className="line-clamp-2">{avvik.beskrivelse}</CardDescription>
+                      )}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1 sm:gap-2 shrink-0">
                       <Button 
                         variant="ghost" 
                         size="icon" 
+                        className="h-8 w-8"
                         onClick={() => exportSingleKsAvvikToPDF(avvik, company?.name)}
                         title="Last ned PDF"
                       >
                         <Download className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleEdit(avvik)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(avvik)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(avvik.id)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(avvik.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-4 text-sm">
+                  <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
                     {avvik.type !== 'ruh' && (
                       <div className="flex items-center gap-2">
                         <span className="text-muted-foreground">Kategori:</span>
@@ -587,7 +597,7 @@ export default function KsAvvik() {
                     )}
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">
-                        {avvik.type === 'ruh' ? 'Alvorlighetsgrad:' : 'Prioritet:'}
+                        {avvik.type === 'ruh' ? 'Alvorlighet:' : 'Prioritet:'}
                       </span>
                       <span>
                         {avvik.type === 'ruh' 
@@ -597,12 +607,6 @@ export default function KsAvvik() {
                              avvik.severity === 'serious_injury' ? 'Alvorlig personskade' : '-')
                           : priorityConfig[avvik.prioritet as keyof typeof priorityConfig]?.label}
                       </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">Status:</span>
-                      <Badge className={statusConfig[avvik.status as keyof typeof statusConfig]?.color}>
-                        {statusConfig[avvik.status as keyof typeof statusConfig]?.label}
-                      </Badge>
                     </div>
                     {avvik.ansvarlig && (
                       <div className="flex items-center gap-2">

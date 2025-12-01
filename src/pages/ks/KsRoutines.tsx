@@ -102,21 +102,21 @@ export default function KsRoutines() {
   return (
     <AppLayout>
       <div className="p-6 max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-1">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">KS Rutiner</h1>
-              <p className="text-muted-foreground mt-2">
+              <h1 className="text-2xl sm:text-3xl font-bold">KS Rutiner</h1>
+              <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
                 Kvalitetssikringsrutiner i henhold til SAK10 § 10-1
               </p>
             </div>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => {
+              <Button className="w-full sm:w-auto" onClick={() => {
                 setEditingRoutine(null);
                 setFormData({
                   routine_number: '',
@@ -140,7 +140,7 @@ export default function KsRoutines() {
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="routine_number">Rutine nr.</Label>
                     <Input

@@ -168,95 +168,157 @@ export default function KsChecklists() {
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : filteredChecklists && filteredChecklists.length > 0 ? (
-              <div className="border rounded-lg">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Sjekkliste</TableHead>
-                      <TableHead>Prosjekt</TableHead>
-                      <TableHead>Fase</TableHead>
-                      <TableHead>Opprettet</TableHead>
-                      <TableHead>Utført dato</TableHead>
-                      <TableHead>Fremdrift</TableHead>
-                      <TableHead className="text-right">Handling</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredChecklists.map((checklist) => {
-                      const completion = getCompletionPercentage(checklist.items || []);
-                      
-                      return (
-                        <TableRow key={checklist.id} className="cursor-pointer hover:bg-muted/50">
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
-                              <FileCheck className="h-4 w-4 text-muted-foreground" />
-                              {checklist.template?.name || "Ukjent mal"}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="space-y-1">
-                              <div className="font-medium">
-                                {checklist.project?.name || "-"}
+              <>
+                {/* Desktop Table View */}
+                <div className="border rounded-lg hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Sjekkliste</TableHead>
+                        <TableHead>Prosjekt</TableHead>
+                        <TableHead>Fase</TableHead>
+                        <TableHead>Opprettet</TableHead>
+                        <TableHead>Utført dato</TableHead>
+                        <TableHead>Fremdrift</TableHead>
+                        <TableHead className="text-right">Handling</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredChecklists.map((checklist) => {
+                        const completion = getCompletionPercentage(checklist.items || []);
+                        
+                        return (
+                          <TableRow key={checklist.id} className="cursor-pointer hover:bg-muted/50">
+                            <TableCell className="font-medium">
+                              <div className="flex items-center gap-2">
+                                <FileCheck className="h-4 w-4 text-muted-foreground" />
+                                {checklist.template?.name || "Ukjent mal"}
                               </div>
-                              {checklist.project?.project_number && (
-                                <Badge variant="outline" className="text-xs">
-                                  {checklist.project.project_number}
-                                </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="space-y-1">
+                                <div className="font-medium">
+                                  {checklist.project?.name || "-"}
+                                </div>
+                                {checklist.project?.project_number && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {checklist.project.project_number}
+                                  </Badge>
+                                 )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {checklist.phase ? (
+                                <Badge variant="secondary">{checklist.phase}</Badge>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
                               )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {checklist.phase ? (
-                              <Badge variant="secondary">{checklist.phase}</Badge>
-                            ) : (
-                              <span className="text-muted-foreground">-</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Calendar className="h-4 w-4" />
-                              {format(new Date(checklist.created_at), "dd.MM.yyyy", { locale: nb })}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {checklist.filled_at ? (
-                              <div className="flex items-center gap-2 text-sm">
-                                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                                {format(new Date(checklist.filled_at), "dd.MM.yyyy HH:mm", { locale: nb })}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Calendar className="h-4 w-4" />
+                                {format(new Date(checklist.created_at), "dd.MM.yyyy", { locale: nb })}
                               </div>
-                            ) : (
-                              <span className="text-muted-foreground text-sm">Ikke utført</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full bg-primary transition-all"
-                                  style={{ width: `${completion}%` }}
-                                />
+                            </TableCell>
+                            <TableCell>
+                              {checklist.filled_at ? (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                  {format(new Date(checklist.filled_at), "dd.MM.yyyy HH:mm", { locale: nb })}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">Ikke utført</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-primary transition-all"
+                                    style={{ width: `${completion}%` }}
+                                  />
+                                </div>
+                                <span className="text-sm font-medium min-w-[3ch]">
+                                  {completion}%
+                                </span>
                               </div>
-                              <span className="text-sm font-medium min-w-[3ch]">
-                                {completion}%
-                              </span>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => navigate(`/ks/checklists/${checklist.id}`)}
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                Åpne
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="space-y-3 md:hidden">
+                  {filteredChecklists.map((checklist) => {
+                    const completion = getCompletionPercentage(checklist.items || []);
+                    
+                    return (
+                      <div 
+                        key={checklist.id} 
+                        className="border rounded-lg p-4 space-y-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => navigate(`/ks/checklists/${checklist.id}`)}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <FileCheck className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            <span className="font-medium">{checklist.template?.name || "Ukjent mal"}</span>
+                          </div>
+                          {checklist.phase && (
+                            <Badge variant="secondary" className="text-xs">{checklist.phase}</Badge>
+                          )}
+                        </div>
+                        
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                          <span>{checklist.project?.name || "-"}</span>
+                          {checklist.project?.project_number && (
+                            <Badge variant="outline" className="text-xs">
+                              {checklist.project.project_number}
+                            </Badge>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Calendar className="h-4 w-4" />
+                            {format(new Date(checklist.created_at), "dd.MM.yyyy", { locale: nb })}
+                          </div>
+                          {checklist.filled_at ? (
+                            <div className="flex items-center gap-1 text-green-600">
+                              <CheckCircle2 className="h-4 w-4" />
+                              <span className="text-xs">Utført</span>
                             </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => navigate(`/ks/checklists/${checklist.id}`)}
-                            >
-                              <Eye className="h-4 w-4 mr-2" />
-                              Åpne
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Ikke utført</span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-primary transition-all"
+                              style={{ width: `${completion}%` }}
+                            />
+                          </div>
+                          <span className="text-sm font-medium">{completion}%</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <FileCheck className="h-12 w-12 mx-auto mb-4 opacity-50" />
