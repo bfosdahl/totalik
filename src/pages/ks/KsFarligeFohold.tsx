@@ -137,7 +137,7 @@ export default function KsFarligeFohold() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-1">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-4 w-4" />
@@ -154,6 +154,7 @@ export default function KsFarligeFohold() {
               resetForm();
               setShowDialog(true);
             }}
+            className="w-full sm:w-auto"
           >
             <Plus className="mr-2 h-4 w-4" />
             Nytt farlig forhold
