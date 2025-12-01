@@ -431,7 +431,7 @@ export function HandbookStep({
       if (riskAssessment && riskAssessment.risks.length > 0) {
         const riskTableData = riskAssessment.risks.map(risk => [
           risk.category,
-          risk.description.substring(0, 50) + (risk.description.length > 50 ? "..." : ""),
+          (risk.description || "").substring(0, 50) + ((risk.description?.length || 0) > 50 ? "..." : ""),
           risk.probability.toString(),
           risk.consequence.toString(),
           risk.risk_value.toString(),

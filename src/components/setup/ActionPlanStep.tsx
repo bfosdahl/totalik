@@ -306,7 +306,7 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
                   <SelectItem key={risk.id} value={risk.id}>
                     <span className="flex items-center gap-2">
                       <Badge variant="outline" className="text-xs">R: {risk.risk_value}</Badge>
-                      {risk.category}: {risk.description.substring(0, 40)}...
+                      {risk.category}: {risk.description ? risk.description.substring(0, 40) : "Ingen beskrivelse"}...
                     </span>
                   </SelectItem>
                 ))}
