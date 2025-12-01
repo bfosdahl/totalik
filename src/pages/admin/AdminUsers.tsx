@@ -61,6 +61,7 @@ export default function AdminUsers() {
   const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isBulkImportDialogOpen, setIsBulkImportDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole>("user");
   const [showPassword, setShowPassword] = useState(false);
@@ -75,7 +76,6 @@ export default function AdminUsers() {
   const [newUserLastName, setNewUserLastName] = useState("");
   const [newUserCompanyId, setNewUserCompanyId] = useState("");
   const [newUserRole, setNewUserRole] = useState<"user" | "company_admin">("user");
-
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -243,6 +243,27 @@ export default function AdminUsers() {
           ? "Brukerens passord er endret og sendt på e-post" 
           : "Brukerens passord er endret"
       });
+    },
+    onError: (error) => {
+      toast({ title: "Feil", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await supabase.functions.invoke("delete-user", {
+        body: { userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
+      setIsDeleteDialogOpen(false);
+      setSelectedUser(null);
+      toast({ title: "Bruker slettet", description: "Brukeren er permanent slettet fra systemet" });
     },
     onError: (error) => {
       toast({ title: "Feil", description: error.message, variant: "destructive" });
@@ -530,6 +551,16 @@ export default function AdminUsers() {
                               <Users className="w-4 h-4 mr-2" />
                               {profile.is_active ? "Deaktiver" : "Aktiver"}
                             </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => {
+                                setSelectedUser(profile);
+                                setIsDeleteDialogOpen(true);
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Slett bruker
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>
@@ -659,6 +690,17 @@ export default function AdminUsers() {
                     }
                   >
                     {profile.is_active ? "Deaktiver" : "Aktiver"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive border-destructive/50 hover:bg-destructive/10"
+                    onClick={() => {
+                      setSelectedUser(profile);
+                      setIsDeleteDialogOpen(true);
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
@@ -919,6 +961,46 @@ export default function AdminUsers() {
                     disabled={newPassword.length < 6 || resetPasswordMutation.isPending}
                   >
                     {resetPasswordMutation.isPending ? "Oppdaterer..." : "Endre passord"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete confirmation dialog */}
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Slett bruker</DialogTitle>
+            </DialogHeader>
+            {selectedUser && (
+              <div className="space-y-4 mt-4">
+                <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  <p className="text-sm text-destructive font-medium">
+                    Advarsel: Denne handlingen kan ikke angres!
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    All data knyttet til brukeren vil bli slettet permanent, inkludert profil, roller og tilganger.
+                  </p>
+                </div>
+                <p className="text-sm">
+                  Er du sikker på at du vil slette brukeren{" "}
+                  <span className="font-medium">
+                    {selectedUser.first_name} {selectedUser.last_name}
+                  </span>{" "}
+                  ({selectedUser.email})?
+                </p>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                    Avbryt
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => deleteUserMutation.mutate(selectedUser.user_id)}
+                    disabled={deleteUserMutation.isPending}
+                  >
+                    {deleteUserMutation.isPending ? "Sletter..." : "Slett bruker"}
                   </Button>
                 </div>
               </div>
