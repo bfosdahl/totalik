@@ -8,7 +8,7 @@ import { Building2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 
-const IkMatSetup = () => {
+const IkMatOppsett = () => {
   const { profile, company } = useAuth();
   const navigate = useNavigate();
   const { hasModule, modules, isLoading } = useCompanyModules();
@@ -100,4 +100,4 @@ const IkMatSetup = () => {
   );
 };
 
-export default IkMatSetup;
+export default IkMatOppsett;

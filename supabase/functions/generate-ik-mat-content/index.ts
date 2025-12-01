@@ -184,6 +184,50 @@ serve(async (req) => {
       console.error("Failed to parse AI response as JSON:", parseError);
       throw new Error("AI returnerte ugyldig format. Prøv igjen.");
     }
+    
+    // Generer sjekklister, renholdsplan, allergen-tabell og faste avtaler
+    generatedContent.checklists = [
+      {
+        id: "mottakskontroll",
+        name: "Mottakskontroll",
+        description: "Kontroll av råvarer ved mottak",
+        checkpoints: [
+          "Sjekk temperatur på kjølevarer (under 4°C)",
+          "Kontroller emballasje for skader",
+          "Verifiser holdbarhetsdato",
+          "Undersøk lukt og utseende",
+          "Dokumenter mottakskontroll"
+        ]
+      },
+      {
+        id: "temperatur",
+        name: "Temperaturkontroll",
+        description: "Daglig kontroll av kjøl og frys",
+        checkpoints: setupAnswers.coolers.map((c: any) => 
+          `Sjekk ${c.name} (${c.location}) - maks 4°C`
+        ).concat(setupAnswers.freezers.map((f: any) => 
+          `Sjekk ${f.name} (${f.location}) - maks -18°C`
+        ))
+      }
+    ];
+
+    generatedContent.cleaningPlan = [
+      { area: "Kjøkkenbenker", frequency: "Hver dag", method: "Desinfeksjon med godkjent middel", responsible: "Kjøkkenpersonale" },
+      { area: "Gulv", frequency: "Hver dag", method: "Mopping med varmt vann og såpe", responsible: "Renholdspersonale" },
+      { area: "Kjøleskap/frysere", frequency: "Ukentlig", method: "Tømme, vaske og desinfisere", responsible: "IK-MAT ansvarlig" },
+      { area: "Ovner og komfyr", frequency: "Daglig/ukentlig", method: "Avfetting og rengjøring", responsible: "Kjøkkenpersonale" }
+    ];
+
+    generatedContent.allergens = setupAnswers.allergens.map((a: string) => ({
+      name: a,
+      present: true,
+      controlMeasures: `Separate redskaper, merking, opplæring av personale`
+    }));
+
+    generatedContent.contracts = [
+      { supplier: "Skadedyrkontroll AS", type: "Skadedyrkontroll", frequency: "Kvartalsvis", contact: "Kontakt leverandør", nextReview: "Etter 3 måneder" },
+      { supplier: "Vaskeriservice", type: "Tekstilvask", frequency: "Ukentlig", contact: "Kontakt leverandør", nextReview: "Årlig" }
+    ];
 
     return new Response(JSON.stringify({ 
       success: true,
