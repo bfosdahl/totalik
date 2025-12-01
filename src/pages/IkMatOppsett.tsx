@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { IkMatSetupStep } from "@/components/setup/IkMatSetupStep";
+import { IkMatChatSetup } from "@/components/setup/IkMatChatSetup";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Building2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -88,7 +88,7 @@ const IkMatOppsett = () => {
             </div>
           </div>
         ) : (
-          <IkMatSetupStep
+          <IkMatChatSetup
             companyId={company.id}
             onComplete={() => {
               setSetupCompleted(true);
