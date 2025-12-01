@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Users, GraduationCap, FileText, AlertCircle, ChevronRight, CreditCard } from "lucide-react";
+import { Search, Users, GraduationCap, FileText, AlertCircle, ChevronRight, CreditCard, IdCard } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEmployees } from "@/hooks/useEmployees";
 import { EmployeeDetailDialog } from "@/components/employees/EmployeeDetailDialog";
@@ -14,6 +15,7 @@ import { format, differenceInDays, isPast } from "date-fns";
 import { nb } from "date-fns/locale";
 
 export default function Employees() {
+  const navigate = useNavigate();
   const { isCompanyAdmin, isSystemAdmin } = useAuth();
   const { employees, courses, isLoading } = useEmployees();
   const [searchQuery, setSearchQuery] = useState("");
@@ -60,11 +62,21 @@ export default function Employees() {
     <AppLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Ansatte</h1>
-          <p className="text-muted-foreground mt-1">
-            Administrer ansattinformasjon, dokumenter og kurs
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Ansatte</h1>
+            <p className="text-muted-foreground mt-1">
+              Administrer ansattinformasjon, dokumenter og kurs
+            </p>
+          </div>
+          <Button 
+            onClick={() => navigate("/my-courses")}
+            className="gap-2"
+            variant="outline"
+          >
+            <IdCard className="h-4 w-4" />
+            Mitt kursbevis
+          </Button>
         </div>
 
         {/* Stats Cards */}
