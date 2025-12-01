@@ -42,6 +42,7 @@ import HmsChat from "./pages/HmsChat";
 import MyCourseCard from "./pages/MyCourseCard";
 import TimeRegistration from "./pages/TimeRegistration";
 import InstallApp from "./pages/InstallApp";
+import IkMatHandbok from "./pages/IkMatHandbok";
 import IkMatOppsett from "./pages/IkMatOppsett";
 import IkMatHaccp from "./pages/IkMatHaccp";
 import IkMatRisikovurdering from "./pages/IkMatRisikovurdering";
@@ -78,6 +79,7 @@ const App = () => (
             <Route path="/hms-chat" element={<ProtectedRoute><HmsChat /></ProtectedRoute>} />
             <Route path="/my-courses" element={<ProtectedRoute><MyCourseCard /></ProtectedRoute>} />
             <Route path="/time-registration" element={<ProtectedRoute><TimeRegistration /></ProtectedRoute>} />
+          <Route path="/ik-mat/handbok" element={<ProtectedRoute><IkMatHandbok /></ProtectedRoute>} />
           <Route path="/ik-mat/oppsett" element={<ProtectedRoute><IkMatOppsett /></ProtectedRoute>} />
           <Route path="/ik-mat/haccp" element={<ProtectedRoute><IkMatHaccp /></ProtectedRoute>} />
           <Route path="/ik-mat/risikovurdering" element={<ProtectedRoute><IkMatRisikovurdering /></ProtectedRoute>} />
