@@ -21,6 +21,7 @@ import {
   Lock,
   MessageCircle,
   ListChecks,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ const navItems = [
   { icon: AlertTriangle, label: "Risikovurdering", path: "/setup?step=2" },
   { icon: ListChecks, label: "Handlingsplan", path: "/setup?step=3" },
   { icon: Users, label: "Ansatte", path: "/employees" },
+  { icon: Clock, label: "Timeregistrering", path: "/time-registration" },
   { icon: AlertTriangle, label: "Avvik", path: "/deviations" },
   { icon: FileCheck, label: "HMS aktiviteter", path: "/audits" },
   { icon: BookOpen, label: "Handbok", path: "/handbook" },

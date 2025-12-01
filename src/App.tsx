@@ -39,6 +39,7 @@ import KsChecklists from "./pages/ks/KsChecklists";
 import KsDocumentCenter from "./pages/ks/KsDocumentCenter";
 import HmsChat from "./pages/HmsChat";
 import MyCourseCard from "./pages/MyCourseCard";
+import TimeRegistration from "./pages/TimeRegistration";
 import InstallApp from "./pages/InstallApp";
 import NotFound from "./pages/NotFound";
 
@@ -65,8 +66,9 @@ const App = () => (
             <Route path="/deviations" element={<ProtectedRoute><Deviations /></ProtectedRoute>} />
             <Route path="/audits" element={<ProtectedRoute><Audits /></ProtectedRoute>} />
             <Route path="/handbook" element={<ProtectedRoute><Handbook /></ProtectedRoute>} />
-            <Route path="/hms-chat" element={<ProtectedRoute><HmsChat /></ProtectedRoute>} />
+<Route path="/hms-chat" element={<ProtectedRoute><HmsChat /></ProtectedRoute>} />
             <Route path="/my-courses" element={<ProtectedRoute><MyCourseCard /></ProtectedRoute>} />
+            <Route path="/time-registration" element={<ProtectedRoute><TimeRegistration /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             
             {/* KS Bygg routes */}
