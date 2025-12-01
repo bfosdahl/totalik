@@ -5,12 +5,14 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle2, ClipboardList, PlayCircle, History, Trash2, Check, X, Minus, Download, FileText } from "lucide-react";
+import { CheckCircle2, ClipboardList, PlayCircle, History, Trash2, Check, X, Minus, Download, FileText, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIkMatChecklistResponses } from "@/hooks/useIkMatChecklistResponses";
+import { useCustomChecklists } from "@/hooks/useCustomChecklists";
 import { FillChecklistDialog } from "@/components/ikmat/FillChecklistDialog";
+import { CreateChecklistDialog } from "@/components/ikmat/CreateChecklistDialog";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { generateChecklistPdf } from "@/utils/ikMatChecklistPdf";
@@ -30,8 +32,10 @@ const IkMatSjekklister = () => {
   const [checklists, setChecklists] = useState<Checklist[]>([]);
   const [selectedChecklist, setSelectedChecklist] = useState<Checklist | null>(null);
   const [fillDialogOpen, setFillDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editingResponse, setEditingResponse] = useState<any>(null);
   const { responses, isLoading: responsesLoading, createResponse, updateResponse, deleteResponse } = useIkMatChecklistResponses();
+  const { checklists: customChecklists, isLoading: customChecklistsLoading, createChecklist, deleteChecklist } = useCustomChecklists();
 
   useEffect(() => {
     if (!isLoading && !hasModule('IK_MAT')) {
@@ -49,6 +53,17 @@ const IkMatSjekklister = () => {
       }
     }
   }, [hasModule, isLoading, navigate, modules]);
+
+  // Kombiner generated og custom checklists
+  const allChecklists = [
+    ...checklists,
+    ...(customChecklists || []).map(c => ({
+      id: c.id,
+      name: c.checklist_name,
+      description: c.description || '',
+      checkpoints: c.checkpoints
+    }))
+  ];
 
   const handleStartChecklist = async (checklist: Checklist) => {
     const response = await createResponse(checklist.id, checklist.name, checklist.checkpoints);
@@ -72,6 +87,20 @@ const IkMatSjekklister = () => {
   ) => {
     if (!editingResponse) return false;
     return await updateResponse(editingResponse.id, checkpointResponses, status, notes);
+  };
+
+  const handleCreateChecklist = async (data: {
+    checklist_name: string;
+    description?: string;
+    checkpoints: string[];
+  }) => {
+    await createChecklist.mutateAsync(data);
+  };
+
+  const handleDeleteCustomChecklist = async (id: string) => {
+    if (confirm('Er du sikker på at du vil slette denne sjekklisten?')) {
+      await deleteChecklist.mutateAsync(id);
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -152,20 +181,45 @@ const IkMatSjekklister = () => {
             </TabsList>
 
             <TabsContent value="templates" className="space-y-4">
+              <div className="flex justify-end mb-4">
+                <Button onClick={() => setCreateDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Opprett sjekkliste
+                </Button>
+              </div>
+              
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {checklists.map((checklist) => {
+                {allChecklists.map((checklist) => {
                   const checklistResponses = getResponsesForChecklist(checklist.id);
+                  const isCustom = customChecklists?.some(c => c.id === checklist.id);
+                  
                   return (
                     <Card key={checklist.id}>
                       <CardHeader>
                         <div className="flex items-start justify-between">
-                          <div>
-                            <CardTitle className="text-lg">{checklist.name}</CardTitle>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <CardTitle className="text-lg">{checklist.name}</CardTitle>
+                              {isCustom && (
+                                <Badge variant="secondary" className="text-xs">Tilpasset</Badge>
+                              )}
+                            </div>
                             <CardDescription className="mt-2 text-sm">{checklist.description}</CardDescription>
                           </div>
-                          <Badge variant="outline" className="ml-2">
-                            {checklist.checkpoints?.length || 0} punkter
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="ml-2">
+                              {checklist.checkpoints?.length || 0} punkter
+                            </Badge>
+                            {isCustom && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteCustomChecklist(checklist.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -311,6 +365,12 @@ const IkMatSjekklister = () => {
             onSave={handleSaveChecklist}
           />
         )}
+
+        <CreateChecklistDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          onSave={handleCreateChecklist}
+        />
       </div>
     </AppLayout>
   );

@@ -5,13 +5,15 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Sparkles, ClipboardCheck, Download, FileText, Trash2 } from "lucide-react";
+import { Sparkles, ClipboardCheck, Download, FileText, Trash2, Plus, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useIkMatCleaningPlan } from "@/hooks/useIkMatCleaningPlan";
+import { useCustomCleaningTasks } from "@/hooks/useCustomCleaningTasks";
 import { FillCleaningPlanDialog } from "@/components/ikmat/FillCleaningPlanDialog";
+import { EditCleaningTaskDialog } from "@/components/ikmat/EditCleaningTaskDialog";
 import { generateCleaningPlanPdf } from "@/utils/ikMatCleaningPlanPdf";
 import { format } from 'date-fns';
 import { nb } from 'date-fns/locale';
@@ -30,8 +32,11 @@ const IkMatRenholdsplan = () => {
   const { hasModule, modules, isLoading } = useCompanyModules();
   const [cleaningPlan, setCleaningPlan] = useState<CleaningTask[]>([]);
   const { responses, isLoading: isLoadingResponses, createResponse, updateResponse, deleteResponse } = useIkMatCleaningPlan();
+  const { tasks: customTasks, isLoading: customTasksLoading, createTask, updateTask, deleteTask } = useCustomCleaningTasks();
   const [fillDialogOpen, setFillDialogOpen] = useState(false);
+  const [editTaskDialogOpen, setEditTaskDialogOpen] = useState(false);
   const [editingResponse, setEditingResponse] = useState<any>(null);
+  const [editingTask, setEditingTask] = useState<any>(null);
 
   useEffect(() => {
     if (!isLoading && !hasModule('IK_MAT')) {
@@ -49,6 +54,9 @@ const IkMatRenholdsplan = () => {
       }
     }
   }, [hasModule, isLoading, navigate, modules]);
+
+  // Kombiner generated og custom tasks
+  const allTasks = [...cleaningPlan, ...(customTasks || [])];
 
   const handleStartCleaning = () => {
     setEditingResponse(null);
@@ -72,6 +80,35 @@ const IkMatRenholdsplan = () => {
       });
     } else {
       await createResponse.mutateAsync(data);
+    }
+  };
+
+  const handleAddTask = () => {
+    setEditingTask(null);
+    setEditTaskDialogOpen(true);
+  };
+
+  const handleEditTask = (task: any) => {
+    setEditingTask(task);
+    setEditTaskDialogOpen(true);
+  };
+
+  const handleSaveTask = async (taskData: {
+    area: string;
+    frequency: string;
+    method: string;
+    responsible: string;
+  }) => {
+    if (editingTask) {
+      await updateTask.mutateAsync({ id: editingTask.id, ...taskData });
+    } else {
+      await createTask.mutateAsync(taskData);
+    }
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    if (confirm('Er du sikker på at du vil slette denne oppgaven?')) {
+      await deleteTask.mutateAsync(id);
     }
   };
 
@@ -147,10 +184,16 @@ const IkMatRenholdsplan = () => {
                         Oversikt over alle renholdsoppgaver og ansvar
                       </CardDescription>
                     </div>
-                    <Button onClick={handleStartCleaning}>
-                      <ClipboardCheck className="h-4 w-4 mr-2" />
-                      Utfør renhold
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button variant="outline" onClick={handleAddTask}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Legg til oppgave
+                      </Button>
+                      <Button onClick={handleStartCleaning}>
+                        <ClipboardCheck className="h-4 w-4 mr-2" />
+                        Utfør renhold
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -161,19 +204,45 @@ const IkMatRenholdsplan = () => {
                         <TableHead>Frekvens</TableHead>
                         <TableHead>Metode</TableHead>
                         <TableHead>Ansvarlig</TableHead>
+                        <TableHead className="w-[100px]"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {cleaningPlan.map((task, idx) => (
-                        <TableRow key={idx}>
-                          <TableCell className="font-medium">{task.area}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{task.frequency}</Badge>
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{task.method}</TableCell>
-                          <TableCell>{task.responsible}</TableCell>
-                        </TableRow>
-                      ))}
+                      {allTasks.map((task, idx) => {
+                        const isCustom = 'id' in task;
+                        return (
+                          <TableRow key={isCustom ? (task as any).id : idx}>
+                            <TableCell className="font-medium">{task.area}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{task.frequency}</Badge>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground max-w-md truncate">
+                              {task.method}
+                            </TableCell>
+                            <TableCell>{task.responsible}</TableCell>
+                            <TableCell>
+                              {isCustom && (
+                                <div className="flex gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleEditTask(task)}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteTask((task as any).id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -261,9 +330,16 @@ const IkMatRenholdsplan = () => {
         <FillCleaningPlanDialog
           open={fillDialogOpen}
           onOpenChange={setFillDialogOpen}
-          cleaningTasks={cleaningPlan}
+          cleaningTasks={allTasks}
           existingResponse={editingResponse}
           onSave={handleSaveCleaningPlan}
+        />
+
+        <EditCleaningTaskDialog
+          open={editTaskDialogOpen}
+          onOpenChange={setEditTaskDialogOpen}
+          task={editingTask}
+          onSave={handleSaveTask}
         />
       </div>
     </AppLayout>

@@ -1092,6 +1092,91 @@ export type Database = {
           },
         ]
       }
+      ik_mat_custom_checklists: {
+        Row: {
+          checklist_name: string
+          checklist_type: string
+          checkpoints: Json
+          company_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          checklist_name: string
+          checklist_type?: string
+          checkpoints?: Json
+          company_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          checklist_name?: string
+          checklist_type?: string
+          checkpoints?: Json
+          company_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_custom_checklists_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_mat_custom_cleaning_tasks: {
+        Row: {
+          area: string
+          company_id: string
+          created_at: string | null
+          frequency: string
+          id: string
+          method: string
+          responsible: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          area: string
+          company_id: string
+          created_at?: string | null
+          frequency: string
+          id?: string
+          method: string
+          responsible: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          area?: string
+          company_id?: string
+          created_at?: string | null
+          frequency?: string
+          id?: string
+          method?: string
+          responsible?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_custom_cleaning_tasks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_mat_traceability_records: {
         Row: {
           batch_number: string | null
