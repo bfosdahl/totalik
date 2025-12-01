@@ -127,7 +127,7 @@ export default function KsVernerunder() {
   const searchParams = new URLSearchParams(window.location.search);
   const projectFromUrl = searchParams.get("project");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(projectFromUrl);
-  const { safetyRounds, isLoading, createSafetyRound, updateSafetyRound, deleteSafetyRound } = useKsSafetyRounds(null);
+  const { safetyRounds, isLoading, createSafetyRound, updateSafetyRound, deleteSafetyRound, refetch } = useKsSafetyRounds(null);
   const [showDialog, setShowDialog] = useState(false);
   const [showChecklistDialog, setShowChecklistDialog] = useState(false);
   const [editingRound, setEditingRound] = useState<KsSafetyRound | null>(null);
@@ -1039,6 +1039,7 @@ export default function KsVernerunder() {
           open={showChecklistDialog}
           onOpenChange={setShowChecklistDialog}
           onComplete={() => {
+            refetch();
             setShowChecklistDialog(false);
             setActiveRound(null);
           }}
