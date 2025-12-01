@@ -9,6 +9,8 @@ import { Loader2, FileText, Download, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { generateIkMatHandbokPdf } from "@/utils/ikMatHandbokPdf";
+import { toast } from "sonner";
 
 const IkMatHandbok = () => {
   const { company } = useAuth();
@@ -57,6 +59,34 @@ const IkMatHandbok = () => {
     fetchHandbokData();
   }, [company?.id]);
 
+  const handleExportPdf = async () => {
+    if (!handbokData || !company) {
+      toast.error("Ingen data å eksportere");
+      return;
+    }
+
+    try {
+      await generateIkMatHandbokPdf({
+        companyName: company.name,
+        businessType: handbokData.setupAnswers.businessType,
+        numberOfEmployees: handbokData.setupAnswers.numberOfEmployees,
+        hasCleanZone: handbokData.setupAnswers.hasCleanZone,
+        goals: handbokData.goals,
+        haccp: handbokData.haccp,
+        risks: handbokData.risks,
+        routines: handbokData.routines,
+        checklists: handbokData.checklists,
+        cleaningPlan: handbokData.cleaningPlan,
+        allergens: handbokData.allergens,
+        contracts: handbokData.contracts,
+      });
+      toast.success("IK-MAT håndbok lastet ned som PDF");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Kunne ikke generere PDF");
+    }
+  };
+
   if (isLoading) {
     return (
       <AppLayout>
@@ -100,7 +130,7 @@ const IkMatHandbok = () => {
               Komplett dokumentasjon for visning til Mattilsynet
             </p>
           </div>
-          <Button>
+          <Button onClick={handleExportPdf}>
             <Download className="mr-2 h-4 w-4" />
             Eksporter PDF
           </Button>
