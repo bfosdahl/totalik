@@ -176,11 +176,29 @@ export default function InstallApp() {
                 <CardTitle className="text-lg">Installer på Android</CardTitle>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Klikk på knappen under for å installere appen på telefonen din. Appen vil være tilgjengelig fra startskjermen, og du kan bruke den som en vanlig app.
+              </p>
               <Button onClick={handleInstallClick} className="w-full gap-2" size="lg">
                 <Download className="w-5 h-5" />
                 Installer appen
               </Button>
+              <div className="pt-2 space-y-3 border-t">
+                <p className="text-sm font-medium">Etter installasjon:</p>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                  <p className="text-sm text-muted-foreground">Finn appen på startskjermen din</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                  <p className="text-sm text-muted-foreground">Åpne den som en vanlig app</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                  <p className="text-sm text-muted-foreground">Bruk den offline når du trenger det</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         ) : (
