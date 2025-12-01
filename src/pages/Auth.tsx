@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const loginSchema = z.object({
@@ -30,7 +30,6 @@ export default function Auth() {
   
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
@@ -60,13 +59,11 @@ export default function Auth() {
 
         const { error } = await signIn(email, password);
         if (error) {
-          toast({
-            title: "Innlogging feilet",
-            description: error.message === "Invalid login credentials" 
+          toast.error(
+            error.message === "Invalid login credentials" 
               ? "Feil e-post eller passord" 
-              : error.message,
-            variant: "destructive",
-          });
+              : error.message
+          );
         }
       } else {
         const validation = signupSchema.safeParse({ email, password, firstName, lastName });
@@ -85,23 +82,12 @@ export default function Auth() {
         const { error } = await signUp(email, password, firstName, lastName);
         if (error) {
           if (error.message.includes("already registered")) {
-            toast({
-              title: "Registrering feilet",
-              description: "Denne e-postadressen er allerede registrert",
-              variant: "destructive",
-            });
+            toast.error("Denne e-postadressen er allerede registrert");
           } else {
-            toast({
-              title: "Registrering feilet",
-              description: error.message,
-              variant: "destructive",
-            });
+            toast.error(error.message);
           }
         } else {
-          toast({
-            title: "Konto opprettet!",
-            description: "Du er nå logget inn.",
-          });
+          toast.success("Konto opprettet! Du er nå logget inn.");
         }
       }
     } finally {
