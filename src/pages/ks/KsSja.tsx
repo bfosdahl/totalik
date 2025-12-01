@@ -56,6 +56,11 @@ export default function KsSja() {
   const { projects } = useKsProjects();
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [selectedSja, setSelectedSja] = useState<KsSja | null>(null);
+  
+  // Read project from URL params
+  const searchParams = new URLSearchParams(window.location.search);
+  const projectFromUrl = searchParams.get("project");
+  const [selectedProjectFilter, setSelectedProjectFilter] = useState<string>(projectFromUrl || "all");
   const [formData, setFormData] = useState({
     project_id: "",
     sja_nr: "",
@@ -269,10 +274,29 @@ export default function KsSja() {
 
         <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
           <CardContent className="pt-4">
-            <p className="text-sm text-blue-700 dark:text-blue-300">
-              Sikker Jobb Analyse (SJA) skal gjennomføres før oppstart av kritiske eller risikofylte arbeidsoppgaver.
-              SJA identifiserer farer og tiltak for å utføre arbeidet sikkert.
-            </p>
+            <div className="space-y-4">
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                Sikker Jobb Analyse (SJA) skal gjennomføres før oppstart av kritiske eller risikofylte arbeidsoppgaver.
+                SJA identifiserer farer og tiltak for å utføre arbeidet sikkert.
+              </p>
+              
+              <div className="space-y-2">
+                <Label className="text-blue-700 dark:text-blue-300">Filtrer etter prosjekt</Label>
+                <Select value={selectedProjectFilter} onValueChange={setSelectedProjectFilter}>
+                  <SelectTrigger className="bg-white dark:bg-background">
+                    <SelectValue placeholder="Alle prosjekter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle prosjekter</SelectItem>
+                    {projects.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.project_number} - {project.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -280,7 +304,7 @@ export default function KsSja() {
           <div className="text-center py-12">
             <p className="text-muted-foreground">Laster...</p>
           </div>
-        ) : sjaList.length === 0 ? (
+        ) : sjaList.filter(sja => selectedProjectFilter === "all" || sja.project_id === selectedProjectFilter).length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <FileText className="h-12 w-12 text-muted-foreground mb-4" />
@@ -296,7 +320,7 @@ export default function KsSja() {
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
-            {sjaList.map((sja) => (
+            {sjaList.filter(sja => selectedProjectFilter === "all" || sja.project_id === selectedProjectFilter).map((sja) => (
               <Card key={sja.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">

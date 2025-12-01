@@ -18,7 +18,12 @@ export default function KsChecklists() {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedProject, setSelectedProject] = useState<string>("all");
+  
+  // Read project from URL params
+  const searchParams = new URLSearchParams(window.location.search);
+  const projectFromUrl = searchParams.get("project");
+  
+  const [selectedProject, setSelectedProject] = useState<string>(projectFromUrl || "all");
   const [selectedPhase, setSelectedPhase] = useState<string>("all");
 
   // Fetch all checklists with related data

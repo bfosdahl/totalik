@@ -371,7 +371,7 @@ export default function KsProjectDetail() {
               <Button
                 variant="outline"
                 className="h-auto flex flex-col items-center gap-2 p-4"
-                onClick={() => navigate('/ks/checklists')}
+                onClick={() => navigate(`/ks/checklists?project=${id}`)}
               >
                 <div className="p-2 bg-teal-100 dark:bg-teal-900/20 rounded-lg">
                   <ListTodo className="h-6 w-6 text-teal-600" />
@@ -399,7 +399,7 @@ export default function KsProjectDetail() {
               <Button
                 variant="outline"
                 className="h-auto flex flex-col items-center gap-2 p-4"
-                onClick={() => navigate('/ks/sja')}
+                onClick={() => navigate(`/ks/sja?project=${id}`)}
               >
                 <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
                   <FileText className="h-6 w-6 text-purple-600" />
@@ -413,7 +413,7 @@ export default function KsProjectDetail() {
               <Button
                 variant="outline"
                 className="h-auto flex flex-col items-center gap-2 p-4"
-                onClick={() => navigate('/ks/avvik')}
+                onClick={() => navigate(`/ks/avvik?project=${id}`)}
               >
                 <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
                   <AlertTriangle className="h-6 w-6 text-orange-600" />
@@ -427,7 +427,7 @@ export default function KsProjectDetail() {
               <Button
                 variant="outline"
                 className="h-auto flex flex-col items-center gap-2 p-4"
-                onClick={() => navigate('/ks/vernerunder')}
+                onClick={() => navigate(`/ks/vernerunder?project=${id}`)}
               >
                 <div className="p-2 bg-cyan-100 dark:bg-cyan-900/20 rounded-lg">
                   <Shield className="h-6 w-6 text-cyan-600" />
@@ -441,7 +441,7 @@ export default function KsProjectDetail() {
               <Button
                 variant="outline"
                 className="h-auto flex flex-col items-center gap-2 p-4"
-                onClick={() => navigate('/ks/farlige-fohold')}
+                onClick={() => navigate(`/ks/farlige-fohold?project=${id}`)}
               >
                 <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
                   <AlertCircle className="h-6 w-6 text-red-600" />
