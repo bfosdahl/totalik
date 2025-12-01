@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, AlertTriangle, Edit2, Trash2 } from "lucide-react";
+import { Plus, AlertTriangle, Edit2, Trash2, ArrowLeft } from "lucide-react";
 import { useKsProjects } from "@/hooks/useKsProjects";
 import { useKsHazardousConditions, type KsHazardousCondition } from "@/hooks/useKsHazardousConditions";
 import { format } from "date-fns";
@@ -40,6 +41,7 @@ const severityConfig: Record<string, { label: string; variant: "default" | "seco
 };
 
 export default function KsFarligeFohold() {
+  const navigate = useNavigate();
   const { projects } = useKsProjects();
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const { conditions, isLoading, createCondition, updateCondition, deleteCondition } = useKsHazardousConditions(null);
@@ -136,11 +138,16 @@ export default function KsFarligeFohold() {
     <AppLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Farlige forhold</h1>
-            <p className="text-muted-foreground">
-              Registrer og følg opp farlige forhold på prosjektene
-            </p>
+          <div className="flex items-center gap-4 flex-1">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Farlige forhold</h1>
+              <p className="text-muted-foreground">
+                Registrer og følg opp farlige forhold på prosjektene
+              </p>
+            </div>
           </div>
           <Button
             onClick={() => {

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, AlertCircle, Download, FileSpreadsheet } from "lucide-react";
+import { Plus, Pencil, Trash2, AlertCircle, Download, FileSpreadsheet, ArrowLeft } from "lucide-react";
 import { useKsProjects } from "@/hooks/useKsProjects";
 import { useKsAvvik, type KsAvvik, type NewKsAvvikInput } from "@/hooks/useKsAvvik";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -37,6 +38,7 @@ const categoryConfig = {
 };
 
 export default function KsAvvik() {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { company } = useAuth();
   const { projects } = useKsProjects();
@@ -138,9 +140,14 @@ export default function KsAvvik() {
     <AppLayout>
       <div className="container mx-auto py-6 space-y-6">
         <div className="flex justify-between items-center flex-wrap gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Avvik / RUH</h1>
-            <p className="text-muted-foreground">Registrer avvik og rapporter uønskede hendelser</p>
+          <div className="flex items-center gap-4 flex-1">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">Avvik / RUH</h1>
+              <p className="text-muted-foreground">Registrer avvik og rapporter uønskede hendelser</p>
+            </div>
           </div>
           <div className="flex gap-2">
             {avvikList.length > 0 && (

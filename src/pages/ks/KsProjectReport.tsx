@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { FileDown, CheckSquare, FileText, Shield, Users, AlertTriangle, Building2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { FileDown, CheckSquare, FileText, Shield, Users, AlertTriangle, Building2, ArrowLeft } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
 export default function KsProjectReport() {
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [includeOptions, setIncludeOptions] = useState({
@@ -198,11 +200,16 @@ export default function KsProjectReport() {
     <AppLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Prosjektperm / PDF-rapport</h1>
-          <p className="text-muted-foreground mt-2">
-            Generer komplett dokumentasjon for prosjektet med alle registrerte data
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-foreground">Prosjektperm / PDF-rapport</h1>
+            <p className="text-muted-foreground mt-2">
+              Generer komplett dokumentasjon for prosjektet med alle registrerte data
+            </p>
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">

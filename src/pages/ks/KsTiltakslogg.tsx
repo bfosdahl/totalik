@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -9,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Clock, FileText, Users, AlertTriangle, CheckCircle2, XCircle, Edit, Trash2, Shield } from "lucide-react";
+import { Clock, FileText, Users, AlertTriangle, CheckCircle2, XCircle, Edit, Trash2, Shield, ArrowLeft } from "lucide-react";
 import { useKsProjects } from "@/hooks/useKsProjects";
 import { useKsActivityLog } from "@/hooks/useKsActivityLog";
 import { format } from "date-fns";
@@ -60,6 +62,7 @@ const activityColors: Record<string, string> = {
 };
 
 export default function KsTiltakslogg() {
+  const navigate = useNavigate();
   const { projects } = useKsProjects();
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const { activities, isLoading } = useKsActivityLog(selectedProjectId);
@@ -72,11 +75,16 @@ export default function KsTiltakslogg() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Tiltakslogg</h1>
-          <p className="text-muted-foreground">
-            Oversikt over alle aktiviteter og hendelser i prosjektene
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-foreground">Tiltakslogg</h1>
+            <p className="text-muted-foreground">
+              Oversikt over alle aktiviteter og hendelser i prosjektene
+            </p>
+          </div>
         </div>
 
         <Card>

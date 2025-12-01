@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Shield, Edit2, Trash2, CheckCircle2, Clock, Users, Calendar, CheckCircle } from "lucide-react";
+import { Plus, Shield, Edit2, Trash2, CheckCircle2, XCircle, AlertTriangle, FileText, ShieldCheck, ExternalLink, ListTodo, Clock, Users, Calendar, CheckCircle, ArrowLeft } from "lucide-react";
 import { useKsProjects } from "@/hooks/useKsProjects";
 import { useKsSafetyRounds, type KsSafetyRound } from "@/hooks/useKsSafetyRounds";
 import { format } from "date-fns";
@@ -116,6 +117,7 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
 };
 
 export default function KsVernerunder() {
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -431,11 +433,16 @@ export default function KsVernerunder() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Vernerunder</h1>
-          <p className="text-muted-foreground">
-            Planlegg og dokumenter vernerunder på prosjektene
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Vernerunder</h1>
+            <p className="text-muted-foreground">
+              Planlegg og dokumenter vernerunder på prosjektene
+            </p>
+          </div>
         </div>
 
         <Tabs defaultValue="oversikt" className="w-full">

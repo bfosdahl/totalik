@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Plus, FileText, Edit2, Trash2, Download } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, FileText, Edit2, Trash2, Download, ArrowLeft } from "lucide-react";
 import { exportKsSjaToPDF, exportSingleKsSjaToPDF } from "@/utils/ksSjaExport";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ interface KsSja {
 }
 
 export default function KsSja() {
+  const navigate = useNavigate();
   const { company } = useAuth();
   const queryClient = useQueryClient();
   const { projects } = useKsProjects();
@@ -236,11 +238,16 @@ export default function KsSja() {
     <AppLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Sikker Jobb Analyse (SJA)</h1>
-            <p className="text-muted-foreground">
-              Analyser risikoer før oppstart av farlige arbeidsoppgaver
-            </p>
+          <div className="flex items-center gap-4 flex-1">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Sikker Jobb Analyse (SJA)</h1>
+              <p className="text-muted-foreground">
+                Analyser risikoer før oppstart av farlige arbeidsoppgaver
+              </p>
+            </div>
           </div>
           <div className="flex gap-2">
             {sjaList.length > 0 && (
