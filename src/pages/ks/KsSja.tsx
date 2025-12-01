@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import UserSelect from "@/components/audits/UserSelect";
 import {
   Dialog,
   DialogContent,
@@ -456,11 +457,10 @@ export default function KsSja() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="utfort_navn">Navn</Label>
-                    <Input
-                      id="utfort_navn"
+                    <UserSelect
                       value={formData.utfort_navn}
-                      onChange={(e) => setFormData(prev => ({ ...prev, utfort_navn: e.target.value }))}
-                      placeholder="Navn på utfører"
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, utfort_navn: value }))}
+                      placeholder="Velg ansatt eller skriv navn"
                     />
                   </div>
                 </div>
@@ -522,11 +522,10 @@ export default function KsSja() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="tiltak_navn">Navn</Label>
-                    <Input
-                      id="tiltak_navn"
+                    <UserSelect
                       value={formData.tiltak_navn}
-                      onChange={(e) => setFormData(prev => ({ ...prev, tiltak_navn: e.target.value }))}
-                      placeholder="Navn på ansvarlig"
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, tiltak_navn: value }))}
+                      placeholder="Velg ansatt eller skriv navn"
                     />
                   </div>
                 </div>
