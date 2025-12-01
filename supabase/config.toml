@@ -38,3 +38,6 @@ verify_jwt = true
 
 [functions.ik-mat-chat]
 verify_jwt = true
+
+[functions.ik-hms-chat]
+verify_jwt = true

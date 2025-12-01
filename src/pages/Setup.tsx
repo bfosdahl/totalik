@@ -12,10 +12,14 @@ import {
   Check,
   Loader2,
   ClipboardList,
-  Home
+  Home,
+  Sparkles,
+  Edit,
+  CheckCircle2
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   Breadcrumb,
@@ -139,6 +143,7 @@ const Setup = () => {
   
   const [currentStep, setCurrentStep] = useState(0);
   const [hasInitializedStep, setHasInitializedStep] = useState(false);
+  const [showSetupChoice, setShowSetupChoice] = useState(true);
   const navigate = useNavigate();
 
   // Get navigation origin from URL params
@@ -327,6 +332,107 @@ const Setup = () => {
       <AppLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // Show setup choice if no setup has been started
+  if (showSetupChoice && !progress.current_step && progress.completed_steps.length === 0) {
+    return (
+      <AppLayout>
+        <div className="max-w-4xl mx-auto space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col gap-1"
+          >
+            <h1 className="text-2xl font-bold tracking-tight">Oppsett av internkontroll</h1>
+            <p className="text-muted-foreground">
+              Velg hvordan du vil sette opp ditt HMS-system
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="grid md:grid-cols-2 gap-6"
+          >
+            {/* AI Setup Card */}
+            <Card 
+              className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50 group"
+              onClick={() => navigate('/setup/ai')}
+            >
+              <div className="p-6 space-y-4">
+                <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-primary mx-auto group-hover:scale-110 transition-transform">
+                  <Sparkles className="w-8 h-8 text-primary-foreground" />
+                </div>
+                <div className="text-center space-y-2">
+                  <h3 className="text-xl font-semibold">AI-assistert oppsett</h3>
+                  <p className="text-muted-foreground text-sm">
+                    La vår AI-veileder hjelpe deg gjennom oppsettet. Besvarer spørsmål og får 
+                    skreddersydd HMS-system på 5-10 minutter.
+                  </p>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
+                    <span>Rask og enkel veiledning</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
+                    <span>Skreddersydd til din bransje</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
+                    <span>Forslag basert på beste praksis</span>
+                  </div>
+                </div>
+                <Button className="w-full group-hover:bg-primary/90">
+                  Start AI-oppsett
+                  <Sparkles className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </Card>
+
+            {/* Manual Setup Card */}
+            <Card 
+              className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50 group"
+              onClick={() => setShowSetupChoice(false)}
+            >
+              <div className="p-6 space-y-4">
+                <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-muted mx-auto group-hover:scale-110 transition-transform">
+                  <Edit className="w-8 h-8 text-foreground" />
+                </div>
+                <div className="text-center space-y-2">
+                  <h3 className="text-xl font-semibold">Manuelt oppsett</h3>
+                  <p className="text-muted-foreground text-sm">
+                    Gå gjennom en strukturert 6-stegs veiviser hvor du selv fyller inn 
+                    all informasjon og får full kontroll.
+                  </p>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
+                    <span>Full kontroll over innhold</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
+                    <span>Steg-for-steg struktur</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
+                    <span>Maler og eksempler inkludert</span>
+                  </div>
+                </div>
+                <Button variant="outline" className="w-full group-hover:bg-muted">
+                  Start manuelt oppsett
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </Card>
+          </motion.div>
         </div>
       </AppLayout>
     );
