@@ -337,8 +337,9 @@ const Setup = () => {
     );
   }
 
-  // Show setup choice if no setup has been started
-  if (showSetupChoice && !progress.current_step && progress.completed_steps.length === 0) {
+  // Show setup choice if no setup has been started and no data exists
+  const hasExistingData = goals.length > 0 || organization !== null || riskAssessment !== null || actionPlan !== null || routines !== null;
+  if (showSetupChoice && !progress.current_step && progress.completed_steps.length === 0 && !hasExistingData) {
     return (
       <AppLayout>
         <div className="max-w-4xl mx-auto space-y-6">
