@@ -33,6 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { KsSafetyRoundChecklist } from "@/components/ks/KsSafetyRoundChecklist";
+import UserSelect from "@/components/audits/UserSelect";
 
 interface VernerundeCheckpoint {
   id?: string;
@@ -833,21 +834,19 @@ export default function KsVernerunder() {
 
               <div className="space-y-2">
                 <Label htmlFor="participants">Deltakere</Label>
-                <Input
-                  id="participants"
+                <UserSelect
                   value={formData.participants}
-                  onChange={(e) => setFormData({ ...formData, participants: e.target.value })}
-                  placeholder="Hvem deltok?"
+                  onValueChange={(value) => setFormData({ ...formData, participants: value })}
+                  placeholder="Velg deltaker"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="responsible">Ansvarlig</Label>
-                <Input
-                  id="responsible"
+                <UserSelect
                   value={formData.responsible}
-                  onChange={(e) => setFormData({ ...formData, responsible: e.target.value })}
-                  placeholder="Hvem er ansvarlig?"
+                  onValueChange={(value) => setFormData({ ...formData, responsible: value })}
+                  placeholder="Velg ansvarlig"
                 />
               </div>
 

@@ -433,25 +433,28 @@ export function KsSafetyRoundChecklist({ round, open, onOpenChange, onComplete }
             <Plus className="h-4 w-4 mr-2" />
             Legg til sjekkpunkt
           </Button>
+
+          <div className="flex justify-end gap-2 pt-4 border-t mt-6">
+            <Button
+              variant="outline"
+              onClick={() => {
+                onOpenChange(false);
+                setCheckpointResults([]);
+                setCustomCheckpoints([]);
+                setNewCheckpointText("");
+                setIsAddingCheckpoint(false);
+              }}
+              disabled={isSubmitting}
+            >
+              Avbryt
+            </Button>
+            <Button onClick={handleComplete} disabled={isSubmitting || allCheckpoints.length === 0}>
+              {isSubmitting ? "Lagrer..." : "Fullfør og lagre vernerunde"}
+            </Button>
+          </div>
         </div>
 
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => {
-              onOpenChange(false);
-              setCheckpointResults([]);
-              setCustomCheckpoints([]);
-              setNewCheckpointText("");
-              setIsAddingCheckpoint(false);
-            }}
-            disabled={isSubmitting}
-          >
-            Avbryt
-          </Button>
-          <Button onClick={handleComplete} disabled={isSubmitting || allCheckpoints.length === 0}>
-            {isSubmitting ? "Lagrer..." : "Fullfør vernerunde"}
-          </Button>
+        <DialogFooter className="hidden">
         </DialogFooter>
       </DialogContent>
     </Dialog>
