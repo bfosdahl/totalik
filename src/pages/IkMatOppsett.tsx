@@ -68,13 +68,34 @@ const IkMatOppsett = () => {
         </div>
 
         {setupCompleted ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <Alert className="border-success bg-success/10">
               <CheckCircle2 className="h-4 w-4 text-success" />
               <AlertDescription className="text-success">
                 IK/MAT oppsett er fullført! Ditt skreddersydde matsikkerhetssystem er klar til bruk.
               </AlertDescription>
             </Alert>
+
+            <div className="bg-muted/50 rounded-lg p-6 space-y-4">
+              <h3 className="font-semibold text-lg">Viktig informasjon</h3>
+              <div className="space-y-3 text-sm">
+                <div>
+                  <p className="font-medium mb-1">✅ Dine data er trygge</p>
+                  <p className="text-muted-foreground">
+                    Hvis du kjører oppsettet på nytt, beholdes alle gjennomførte sjekklister, 
+                    renholdsplaner, sporingsposter og tilpassede maler. Kun AI-genererte maler oppdateres.
+                  </p>
+                </div>
+                <div>
+                  <p className="font-medium mb-1">⏱️ Estimert tidsbruk</p>
+                  <p className="text-muted-foreground">
+                    Et komplett AI-oppsett tar normalt 5-10 minutter, avhengig av hvor detaljert 
+                    du svarer på spørsmålene.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="flex gap-4">
               <Button onClick={() => navigate('/ik-mat/handbok')}>
                 Se generert innhold
