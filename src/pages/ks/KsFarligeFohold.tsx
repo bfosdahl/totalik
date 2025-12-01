@@ -43,7 +43,11 @@ const severityConfig: Record<string, { label: string; variant: "default" | "seco
 export default function KsFarligeFohold() {
   const navigate = useNavigate();
   const { projects } = useKsProjects();
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  
+  // Read project from URL params
+  const searchParams = new URLSearchParams(window.location.search);
+  const projectFromUrl = searchParams.get("project");
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(projectFromUrl);
   const { conditions, isLoading, createCondition, updateCondition, deleteCondition } = useKsHazardousConditions(null);
   const [showDialog, setShowDialog] = useState(false);
   const [editingCondition, setEditingCondition] = useState<KsHazardousCondition | null>(null);

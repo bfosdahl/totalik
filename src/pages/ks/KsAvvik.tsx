@@ -44,6 +44,11 @@ export default function KsAvvik() {
   const { projects } = useKsProjects();
   const { avvikList, isLoading, createAvvik, updateAvvik, deleteAvvik } = useKsAvvik();
   
+  // Read project from URL params
+  const searchParams = new URLSearchParams(window.location.search);
+  const projectFromUrl = searchParams.get("project");
+  const [selectedProjectFilter, setSelectedProjectFilter] = useState<string>(projectFromUrl || "all");
+  
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAvvik, setEditingAvvik] = useState<KsAvvik | null>(null);
   const [reportType, setReportType] = useState<'avvik' | 'ruh'>('avvik');
@@ -537,9 +542,31 @@ export default function KsAvvik() {
           </div>
         </div>
 
+        {/* Project Filter */}
+        <Card>
+          <CardContent className="pt-4">
+            <div className="space-y-2">
+              <Label>Filtrer etter prosjekt</Label>
+              <Select value={selectedProjectFilter} onValueChange={setSelectedProjectFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Alle prosjekter" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle prosjekter</SelectItem>
+                  {projects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.project_number} - {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
         {isLoading ? (
           <div className="text-center py-8">Laster rapporter...</div>
-        ) : avvikList.length === 0 ? (
+        ) : avvikList.filter(avvik => selectedProjectFilter === "all" || avvik.project_id === selectedProjectFilter).length === 0 ? (
           <Card>
             <CardContent className="text-center py-8">
               <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
@@ -549,7 +576,7 @@ export default function KsAvvik() {
           </Card>
         ) : (
           <div className="grid gap-4">
-            {avvikList.map((avvik) => (
+            {avvikList.filter(avvik => selectedProjectFilter === "all" || avvik.project_id === selectedProjectFilter).map((avvik) => (
               <Card key={avvik.id}>
                 <CardHeader className="pb-2">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">

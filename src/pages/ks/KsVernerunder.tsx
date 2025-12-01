@@ -122,7 +122,11 @@ export default function KsVernerunder() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { projects } = useKsProjects();
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  
+  // Read project from URL params
+  const searchParams = new URLSearchParams(window.location.search);
+  const projectFromUrl = searchParams.get("project");
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(projectFromUrl);
   const { safetyRounds, isLoading, createSafetyRound, updateSafetyRound, deleteSafetyRound } = useKsSafetyRounds(null);
   const [showDialog, setShowDialog] = useState(false);
   const [showChecklistDialog, setShowChecklistDialog] = useState(false);
