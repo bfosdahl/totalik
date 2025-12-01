@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -6,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { useCompanyUsers, type CompanyUser } from "@/hooks/useCompanyUsers";
 import { Loader2 } from "lucide-react";
 
@@ -25,6 +26,19 @@ const UserSelect: React.FC<UserSelectProps> = ({
   className,
 }) => {
   const { users, isLoading, getUserDisplayName } = useCompanyUsers();
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customValue, setCustomValue] = useState("");
+
+  // Check if current value is a custom value (not in users list)
+  useEffect(() => {
+    if (value && users.length > 0) {
+      const isExistingUser = users.some(user => getUserDisplayName(user) === value);
+      if (!isExistingUser) {
+        setShowCustomInput(true);
+        setCustomValue(value);
+      }
+    }
+  }, [value, users, getUserDisplayName]);
 
   if (isLoading) {
     return (
@@ -35,8 +49,48 @@ const UserSelect: React.FC<UserSelectProps> = ({
     );
   }
 
+  if (showCustomInput) {
+    return (
+      <div className="space-y-2">
+        <Input
+          value={customValue}
+          onChange={(e) => {
+            setCustomValue(e.target.value);
+            onValueChange(e.target.value);
+          }}
+          placeholder="Skriv inn navn..."
+          disabled={disabled}
+          className={className}
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setShowCustomInput(false);
+            setCustomValue("");
+            onValueChange("");
+          }}
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
+          ← Tilbake til ansatte
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
+    <Select 
+      value={value} 
+      onValueChange={(val) => {
+        if (val === "__custom__") {
+          setShowCustomInput(true);
+          setCustomValue("");
+          onValueChange("");
+        } else {
+          onValueChange(val);
+        }
+      }} 
+      disabled={disabled}
+    >
       <SelectTrigger className={className}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
@@ -46,6 +100,9 @@ const UserSelect: React.FC<UserSelectProps> = ({
             {getUserDisplayName(user)}
           </SelectItem>
         ))}
+        <SelectItem value="__custom__" className="text-primary font-medium">
+          + Annen person (fritekst)
+        </SelectItem>
       </SelectContent>
     </Select>
   );
