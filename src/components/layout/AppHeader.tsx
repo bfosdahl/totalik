@@ -1,4 +1,4 @@
-import { Bell, User, LogOut, ChevronDown, Menu } from "lucide-react";
+import { Bell, User, LogOut, ChevronDown, Menu, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -77,6 +77,10 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
             <DropdownMenuItem onClick={() => navigate("/settings")}>
               <User className="w-4 h-4 mr-2" />
               Min profil
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/install")}>
+              <Download className="w-4 h-4 mr-2" />
+              Last ned app
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
