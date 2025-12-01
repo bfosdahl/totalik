@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, FileText, Trash2, Edit, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, FileText, Trash2, Edit, ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react';
 import { useKsRoutines } from '@/hooks/useKsRoutines';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -34,6 +35,7 @@ const CATEGORIES = [
 ];
 
 export default function KsRoutines() {
+  const navigate = useNavigate();
   const { routines, isLoading, createRoutine, updateRoutine, deleteRoutine } = useKsRoutines();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRoutine, setEditingRoutine] = useState<string | null>(null);
@@ -101,11 +103,16 @@ export default function KsRoutines() {
     <AppLayout>
       <div className="p-6 max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">KS Rutiner</h1>
-            <p className="text-muted-foreground mt-2">
-              Kvalitetssikringsrutiner i henhold til SAK10 § 10-1
-            </p>
+          <div className="flex items-center gap-4 flex-1">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">KS Rutiner</h1>
+              <p className="text-muted-foreground mt-2">
+                Kvalitetssikringsrutiner i henhold til SAK10 § 10-1
+              </p>
+            </div>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>

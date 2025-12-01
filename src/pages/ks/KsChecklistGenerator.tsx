@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Edit2, Trash2, List } from "lucide-react";
+import { Plus, Edit2, Trash2, List, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +32,7 @@ interface Template {
 }
 
 export default function KsChecklistGenerator() {
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -275,11 +277,16 @@ export default function KsChecklistGenerator() {
     <AppLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Sjekkliste Generator</h1>
-            <p className="text-muted-foreground mt-1">
-              Lag egne sjekkliste maler som kan gjenbrukes på prosjekter
-            </p>
+          <div className="flex items-center gap-4 flex-1">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">Sjekkliste Generator</h1>
+              <p className="text-muted-foreground mt-1">
+                Lag egne sjekkliste maler som kan gjenbrukes på prosjekter
+              </p>
+            </div>
           </div>
           <Button onClick={handleCreateTemplate}>
             <Plus className="mr-2 h-4 w-4" />

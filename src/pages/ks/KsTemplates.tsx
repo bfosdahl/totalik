@@ -1,11 +1,14 @@
-import { FileText, Info } from "lucide-react";
+import { FileText, Info, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useKsTemplates } from "@/hooks/useKsProjects";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function KsTemplates() {
+  const navigate = useNavigate();
   const { templates, isLoading } = useKsTemplates();
 
   // Group templates by phase
@@ -23,11 +26,16 @@ export default function KsTemplates() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">KS-maler</h1>
-          <p className="text-muted-foreground">
-            Forhåndsdefinerte sjekklister for kvalitetssikring
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-foreground">KS-maler</h1>
+            <p className="text-muted-foreground">
+              Forhåndsdefinerte sjekklister for kvalitetssikring
+            </p>
+          </div>
         </div>
 
         <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
