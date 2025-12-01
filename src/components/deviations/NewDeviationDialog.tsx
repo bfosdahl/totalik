@@ -125,7 +125,7 @@ export function NewDeviationDialog({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Kategori *</Label>
               <Select value={category} onValueChange={(v) => setCategory(v as typeof category)}>
@@ -156,7 +156,7 @@ export function NewDeviationDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="assignee">Ansvarlig</Label>
               <Select value={assigneeId} onValueChange={setAssigneeId}>

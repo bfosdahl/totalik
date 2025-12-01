@@ -353,7 +353,7 @@ const Handbook = () => {
               <p className="text-primary-foreground/80 mb-4">
                 Sist oppdatert: {format(lastUpdated, "d. MMMM yyyy", { locale: nb })}
               </p>
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                 <div>
                   <p className="text-3xl font-bold">{completeSections}/{handbookSections.length}</p>
                   <p className="text-sm text-primary-foreground/70">Seksjoner fullført</p>

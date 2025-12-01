@@ -426,7 +426,7 @@ const Setup = () => {
                 {index < steps.length - 1 && (
                   <div
                     className={cn(
-                      "w-8 lg:w-16 h-0.5 mx-2",
+                      "w-4 sm:w-8 lg:w-16 h-0.5 mx-1 sm:mx-2",
                       isStepCompleted(step.id) ? "bg-success" : "bg-muted"
                     )}
                   />
