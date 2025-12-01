@@ -97,11 +97,30 @@ const Deviations = () => {
     description: string; 
     category: "HMS" | "MAT" | "BYGG"; 
     priority: "low" | "medium" | "high" | "critical"; 
-    assignee: string; 
-    dueDate: string; 
+    assignee: string;
+    assigneeId?: string; 
+    dueDate: string;
+    incidentLocation?: string;
+    incidentDate?: string;
+    discoveredBy?: string;
+    happenedBefore?: "yes" | "no" | "unknown";
+    consequenceFor?: string;
+    estimatedLoss?: string;
+    shortTermImprovement?: string;
+    longTermImprovement?: string;
+    responsibleForClosing?: string;
   }) => {
-    // Find assignee user by name
-    const assigneeUser = users.find(u => getUserDisplayName(u) === input.assignee);
+    // Find assignee user by name if not provided by ID
+    const assigneeUser = input.assigneeId 
+      ? users.find(u => u.id === input.assigneeId)
+      : users.find(u => getUserDisplayName(u) === input.assignee);
+    
+    // Build additional info from extended fields
+    const additionalInfo = [
+      input.happenedBefore && input.happenedBefore !== "unknown" ? `Skjedd tidligere: ${input.happenedBefore === "yes" ? "Ja" : "Nei"}` : null,
+      input.consequenceFor ? `Konsekvens for: ${input.consequenceFor}` : null,
+      input.estimatedLoss ? `Estimert tap: ${input.estimatedLoss} kr` : null,
+    ].filter(Boolean).join("\n");
     
     const newDeviation: NewDeviationInput = {
       title: input.title,
@@ -111,6 +130,15 @@ const Deviations = () => {
       assignee_id: assigneeUser?.id || null,
       assignee_name: input.assignee,
       due_date: input.dueDate,
+      // Extended fields
+      incident_location: input.incidentLocation,
+      incident_time: input.incidentDate,
+      reporter_contact: input.discoveredBy,
+      additional_info: additionalInfo || undefined,
+      consequences: input.consequenceFor,
+      immediate_actions: input.shortTermImprovement,
+      preventive_measures: input.longTermImprovement,
+      responsible_receiver: input.responsibleForClosing,
     };
 
     await createDeviation(newDeviation);
