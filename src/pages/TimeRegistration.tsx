@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Plus, Download, Clock, CheckCircle, AlertCircle, Calendar } from "lucide-react";
+import { Plus, Download, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,12 +17,13 @@ import { useTimeEntries } from "@/hooks/useTimeEntries";
 import { useAuth } from "@/contexts/AuthContext";
 import { NewTimeEntryDialog } from "@/components/timeregistration/NewTimeEntryDialog";
 import { TimeEntryList } from "@/components/timeregistration/TimeEntryList";
+import { WeeklyTimeView } from "@/components/timeregistration/WeeklyTimeView";
 import { exportTimeEntriesToExcel } from "@/utils/timeEntryExport";
 
 type DateFilter = "this-week" | "last-week" | "this-month" | "last-month" | "all";
 
 export default function TimeRegistration() {
-  const { isCompanyAdmin, company } = useAuth();
+  const { user, isCompanyAdmin, company } = useAuth();
   const {
     entries,
     isLoading,
@@ -34,6 +35,7 @@ export default function TimeRegistration() {
   
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilter>("this-week");
+  const [viewMode, setViewMode] = useState<"list" | "week">("week");
 
   const getDateRange = (filter: DateFilter) => {
     const now = new Date();
@@ -112,28 +114,51 @@ export default function TimeRegistration() {
           </div>
         </div>
 
-        {/* Filter */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Periode:</span>
+        {/* View mode toggle and filter */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
+            <Button
+              variant={viewMode === "week" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("week")}
+            >
+              <CalendarDays className="h-4 w-4 mr-1" />
+              Uke
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("list")}
+            >
+              <List className="h-4 w-4 mr-1" />
+              Liste
+            </Button>
           </div>
-          <Select value={dateFilter} onValueChange={(v) => setDateFilter(v as DateFilter)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="this-week">Denne uken</SelectItem>
-              <SelectItem value="last-week">Forrige uke</SelectItem>
-              <SelectItem value="this-month">Denne måneden</SelectItem>
-              <SelectItem value="last-month">Forrige måned</SelectItem>
-              <SelectItem value="all">Alle</SelectItem>
-            </SelectContent>
-          </Select>
-          {start && end && (
-            <span className="text-sm text-muted-foreground">
-              {format(start, "d. MMM", { locale: nb })} - {format(end, "d. MMM yyyy", { locale: nb })}
-            </span>
+
+          {viewMode === "list" && (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Periode:</span>
+              </div>
+              <Select value={dateFilter} onValueChange={(v) => setDateFilter(v as DateFilter)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="this-week">Denne uken</SelectItem>
+                  <SelectItem value="last-week">Forrige uke</SelectItem>
+                  <SelectItem value="this-month">Denne måneden</SelectItem>
+                  <SelectItem value="last-month">Forrige måned</SelectItem>
+                  <SelectItem value="all">Alle</SelectItem>
+                </SelectContent>
+              </Select>
+              {start && end && (
+                <span className="text-sm text-muted-foreground">
+                  {format(start, "d. MMM", { locale: nb })} - {format(end, "d. MMM yyyy", { locale: nb })}
+                </span>
+              )}
+            </div>
           )}
         </div>
 
@@ -177,8 +202,22 @@ export default function TimeRegistration() {
           </Card>
         </div>
 
-        {/* Tabs for different views */}
-        {isCompanyAdmin ? (
+        {/* Content based on view mode */}
+        {viewMode === "week" ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Ukevisning</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <WeeklyTimeView
+                entries={entries}
+                onCreateEntry={createEntry}
+                onDeleteEntry={deleteEntry}
+                userId={user?.id || ""}
+              />
+            </CardContent>
+          </Card>
+        ) : isCompanyAdmin ? (
           <Tabs defaultValue="all" className="space-y-4">
             <TabsList>
               <TabsTrigger value="all">Alle ansatte</TabsTrigger>
