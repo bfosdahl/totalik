@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   CreditCard,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ const adminNavItems = [
   { icon: Building2, label: "Bedrifter", path: "/admin/companies" },
   { icon: Users, label: "Brukere", path: "/admin/users" },
   { icon: CreditCard, label: "HMS-kort", path: "/admin/hms-requests" },
+  { icon: Award, label: "SG Register", path: "/admin/sg-register" },
 ];
 
 interface SidebarContentProps {

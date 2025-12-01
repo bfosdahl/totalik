@@ -175,6 +175,10 @@ export type Database = {
           org_number: string | null
           phone: string | null
           postal_code: string | null
+          sg_approval_areas: string[] | null
+          sg_approved: boolean | null
+          sg_expiry_date: string | null
+          sg_org_number: string | null
           status: Database["public"]["Enums"]["company_status"]
           updated_at: string
         }
@@ -190,6 +194,10 @@ export type Database = {
           org_number?: string | null
           phone?: string | null
           postal_code?: string | null
+          sg_approval_areas?: string[] | null
+          sg_approved?: boolean | null
+          sg_expiry_date?: string | null
+          sg_org_number?: string | null
           status?: Database["public"]["Enums"]["company_status"]
           updated_at?: string
         }
@@ -205,6 +213,10 @@ export type Database = {
           org_number?: string | null
           phone?: string | null
           postal_code?: string | null
+          sg_approval_areas?: string[] | null
+          sg_approved?: boolean | null
+          sg_expiry_date?: string | null
+          sg_org_number?: string | null
           status?: Database["public"]["Enums"]["company_status"]
           updated_at?: string
         }

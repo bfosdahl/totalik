@@ -18,6 +18,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminCompanies from "./pages/admin/AdminCompanies";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminHmsRequests from "./pages/admin/AdminHmsRequests";
+import AdminSgRegister from "./pages/admin/AdminSgRegister";
 import SetupSystemAdmin from "./pages/admin/SetupSystemAdmin";
 import KsProjectsOverview from "./pages/ks/KsProjectsOverview";
 import KsProjectDetail from "./pages/ks/KsProjectDetail";
@@ -94,6 +95,7 @@ const App = () => (
             <Route path="/admin/companies" element={<ProtectedRoute requireSystemAdmin><AdminCompanies /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute requireSystemAdmin><AdminUsers /></ProtectedRoute>} />
             <Route path="/admin/hms-requests" element={<ProtectedRoute requireSystemAdmin><AdminHmsRequests /></ProtectedRoute>} />
+            <Route path="/admin/sg-register" element={<ProtectedRoute requireSystemAdmin><AdminSgRegister /></ProtectedRoute>} />
             
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
