@@ -29,7 +29,7 @@ const IkMatFasteAvtaler = () => {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const { suppliers, isLoading: suppliersLoading, createSupplier, updateSupplier, deleteSupplier } = useIkMatSuppliers();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingSupplier, setEditingSupplier] = useState<any>(null);
+  const [editingSupplier, setEditingSupplier] = useState<typeof suppliers[0] | null>(null);
 
   useEffect(() => {
     if (!isLoading && !hasModule('IK_MAT')) {
@@ -61,7 +61,7 @@ const IkMatFasteAvtaler = () => {
     );
   }
 
-  const handleSaveSupplier = async (supplierData: any) => {
+  const handleSaveSupplier = async (supplierData: Omit<typeof suppliers[0], "id" | "company_id" | "created_at" | "updated_at">) => {
     if (editingSupplier) {
       await updateSupplier.mutateAsync({ id: editingSupplier.id, ...supplierData });
     } else {
@@ -70,7 +70,7 @@ const IkMatFasteAvtaler = () => {
     setEditingSupplier(null);
   };
 
-  const handleEditSupplier = (supplier: any) => {
+  const handleEditSupplier = (supplier: typeof suppliers[0]) => {
     setEditingSupplier(supplier);
     setDialogOpen(true);
   };

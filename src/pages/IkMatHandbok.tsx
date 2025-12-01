@@ -12,11 +12,64 @@ import { Separator } from "@/components/ui/separator";
 import { generateIkMatHandbokPdf } from "@/utils/ikMatHandbokPdf";
 import { toast } from "sonner";
 
+interface HandbokData {
+  goals: string[];
+  haccp: Array<{
+    step: string;
+    hazard: string;
+    criticalLimit: string;
+    monitoring: string;
+    correctiveAction: string;
+    verification: string;
+  }>;
+  risks: Array<{
+    hazard: string;
+    consequence: string;
+    probability: string;
+    riskLevel: string;
+    measures: string;
+  }>;
+  routines: Array<{
+    name: string;
+    description: string;
+    frequency: string;
+    responsible: string;
+  }>;
+  checklists: Array<{
+    name: string;
+    description: string;
+    checkpoints: string[];
+  }>;
+  cleaningPlan: Array<{
+    area: string;
+    frequency: string;
+    method: string;
+    responsible: string;
+  }>;
+  allergens: Array<{
+    name: string;
+    present: boolean;
+    controlMeasures: string;
+  }>;
+  contracts: Array<{
+    supplier: string;
+    type: string;
+    frequency: string;
+    contact?: string;
+    nextReview?: string;
+  }>;
+  setupAnswers: {
+    businessType?: string;
+    numberOfEmployees?: string;
+    hasCleanZone?: boolean;
+  };
+}
+
 const IkMatHandbok = () => {
   const { company } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
-  const [handbokData, setHandbokData] = useState<any>(null);
+  const [handbokData, setHandbokData] = useState<HandbokData | null>(null);
 
   useEffect(() => {
     const fetchHandbokData = async () => {
@@ -35,7 +88,10 @@ const IkMatHandbok = () => {
 
         if (moduleError) throw moduleError;
 
-        const settings = moduleData?.settings as any;
+        const settings = moduleData?.settings as { 
+          generatedContent?: Partial<Omit<HandbokData, "setupAnswers">>;
+          setupAnswers?: HandbokData["setupAnswers"];
+        };
         const generatedContent = settings?.generatedContent || {};
 
         setHandbokData({
@@ -47,7 +103,7 @@ const IkMatHandbok = () => {
           cleaningPlan: generatedContent.cleaningPlan || [],
           allergens: generatedContent.allergens || [],
           contracts: generatedContent.contracts || [],
-          setupAnswers: settings?.setupAnswers || {},
+          setupAnswers: settings?.setupAnswers || {} as HandbokData["setupAnswers"],
         });
       } catch (error) {
         console.error('Error fetching håndbok data:', error);
@@ -174,7 +230,7 @@ const IkMatHandbok = () => {
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
-              {handbokData.goals.map((goal: any, index: number) => (
+              {handbokData.goals.map((goal, index) => (
                 <li key={index} className="flex gap-2">
                   <span className="font-semibold text-primary">{index + 1}.</span>
                   <span>{goal}</span>
@@ -195,7 +251,7 @@ const IkMatHandbok = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {handbokData.haccp.map((item: any, index: number) => (
+              {handbokData.haccp.map((item, index) => (
                 <div key={index} className="border rounded-lg p-4">
                   <div className="flex items-start justify-between mb-3">
                     <h4 className="font-semibold text-lg">{item.step}</h4>
@@ -240,7 +296,7 @@ const IkMatHandbok = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {handbokData.risks.map((risk: any, index: number) => (
+              {handbokData.risks.map((risk, index) => (
                 <div key={index} className="border rounded-lg p-4">
                   <div className="flex items-start justify-between mb-2">
                     <h4 className="font-semibold">{risk.hazard}</h4>
@@ -285,7 +341,7 @@ const IkMatHandbok = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {handbokData.routines.map((routine: any, index: number) => (
+              {handbokData.routines.map((routine, index) => (
                 <div key={index}>
                   {index > 0 && <Separator className="my-4" />}
                   <h4 className="font-semibold text-lg mb-3">{routine.name}</h4>
@@ -320,13 +376,13 @@ const IkMatHandbok = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {handbokData.checklists.map((checklist: any, index: number) => (
+              {handbokData.checklists.map((checklist, index) => (
                 <div key={index}>
                   {index > 0 && <Separator className="my-4" />}
                   <h4 className="font-semibold text-lg mb-2">{checklist.name}</h4>
                   <p className="text-sm text-muted-foreground mb-3">{checklist.description}</p>
                   <ul className="space-y-2">
-                    {checklist.checkpoints?.map((point: string, idx: number) => (
+                    {checklist.checkpoints?.map((point, idx) => (
                       <li key={idx} className="flex gap-2 items-start">
                         <span className="text-primary">•</span>
                         <span>{point}</span>
@@ -360,7 +416,7 @@ const IkMatHandbok = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {handbokData.cleaningPlan.map((task: any, index: number) => (
+                  {handbokData.cleaningPlan.map((task, index) => (
                     <tr key={index} className="border-b">
                       <td className="p-2">{task.area}</td>
                       <td className="p-2">{task.frequency}</td>
@@ -385,7 +441,7 @@ const IkMatHandbok = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {handbokData.allergens.map((allergen: any, index: number) => (
+              {handbokData.allergens.map((allergen, index) => (
                 <div key={index} className="flex items-start gap-3 border rounded-lg p-3">
                   <AlertCircle className="h-5 w-5 text-orange-500 mt-0.5" />
                   <div className="flex-1">
@@ -419,7 +475,7 @@ const IkMatHandbok = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {handbokData.contracts.map((contract: any, index: number) => (
+                  {handbokData.contracts.map((contract, index) => (
                     <tr key={index} className="border-b">
                       <td className="p-2">{contract.supplier}</td>
                       <td className="p-2">{contract.type}</td>
