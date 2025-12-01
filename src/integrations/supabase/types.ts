@@ -1177,6 +1177,62 @@ export type Database = {
           },
         ]
       }
+      ik_mat_suppliers: {
+        Row: {
+          company_id: string
+          contact_person: string | null
+          contract_document_path: string | null
+          contract_end_date: string | null
+          contract_start_date: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          notes: string | null
+          phone: string | null
+          service_type: string
+          supplier_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          contact_person?: string | null
+          contract_document_path?: string | null
+          contract_end_date?: string | null
+          contract_start_date?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          service_type: string
+          supplier_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          contact_person?: string | null
+          contract_document_path?: string | null
+          contract_end_date?: string | null
+          contract_start_date?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          service_type?: string
+          supplier_name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_suppliers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_mat_traceability_records: {
         Row: {
           batch_number: string | null
