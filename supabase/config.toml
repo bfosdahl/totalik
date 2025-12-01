@@ -32,3 +32,6 @@ verify_jwt = true
 
 [functions.hms-chat]
 verify_jwt = true
+
+[functions.generate-ik-mat-content]
+verify_jwt = true

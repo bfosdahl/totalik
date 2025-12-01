@@ -229,6 +229,37 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             );
           })}
 
+          {/* IK/MAT Setup link - visible but locked if module not active */}
+          {hasModule("IK_MAT") ? (
+            <NavLink
+              to="/ik-mat-setup"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
+                collapsed && "justify-center",
+                location.pathname === "/ik-mat-setup"
+                  ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              )}
+            >
+              <ShieldCheck className={cn(
+                "w-5 h-5 flex-shrink-0 transition-transform",
+                location.pathname !== "/ik-mat-setup" && "group-hover:scale-110"
+              )} />
+              <AnimatePresence mode="wait">
+                {!collapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    className="font-medium text-sm"
+                  >
+                    IK/MAT Oppsett
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </NavLink>
+          ) : null}
+
           {/* KS Bygg collapsible section - visible but locked if module not active */}
           <div className={cn(!hasKsBygg && "opacity-60")}>
             <button
