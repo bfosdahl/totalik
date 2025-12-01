@@ -41,6 +41,7 @@ import { nb } from "date-fns/locale";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import UserSelect from "@/components/audits/UserSelect";
 
 export interface NewDeviation {
   title: string;
@@ -237,11 +238,10 @@ export function NewDeviationDialog({
       {/* Discovered by */}
       <div className="space-y-2">
         <Label htmlFor="discoveredBy" className="text-sm font-medium">Oppdaget av</Label>
-        <Input
-          id="discoveredBy"
-          placeholder="Navn på person som oppdaget avviket"
+        <UserSelect
           value={discoveredBy}
-          onChange={(e) => setDiscoveredBy(e.target.value)}
+          onValueChange={setDiscoveredBy}
+          placeholder="Velg ansatt eller skriv navn"
           className="h-11"
         />
       </div>
@@ -390,18 +390,15 @@ export function NewDeviationDialog({
 
         <div className="space-y-2">
           <Label htmlFor="responsibleForClosing" className="text-sm font-medium">Ansvar for lukking</Label>
-          <Select value={responsibleForClosingId} onValueChange={setResponsibleForClosingId}>
-            <SelectTrigger className="h-11">
-              <SelectValue placeholder={usersLoading ? "Laster..." : "Velg ansvarlig"} />
-            </SelectTrigger>
-            <SelectContent>
-              {users.map((user) => (
-                <SelectItem key={user.id} value={user.id}>
-                  {getUserDisplayName(user)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <UserSelect
+            value={users.find(u => u.id === responsibleForClosingId) ? getUserDisplayName(users.find(u => u.id === responsibleForClosingId)!) : ""}
+            onValueChange={(displayName) => {
+              const user = users.find(u => getUserDisplayName(u) === displayName);
+              setResponsibleForClosingId(user?.id || "");
+            }}
+            placeholder="Velg ansvarlig eller skriv navn"
+            className="h-11"
+          />
         </div>
       </div>
 

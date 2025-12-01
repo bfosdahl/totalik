@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import UserSelect from "@/components/audits/UserSelect";
 import {
   Dialog,
   DialogContent,
@@ -170,11 +171,10 @@ export function KsHmsSjaStep({ sjaList, onCreate }: KsHmsSjaStepProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="participants">Deltakere</Label>
-              <Input
-                id="participants"
+              <UserSelect
                 value={formData.participants}
-                onChange={(e) => setFormData(prev => ({ ...prev, participants: e.target.value }))}
-                placeholder="Navn på deltakere i SJA"
+                onValueChange={(value) => setFormData(prev => ({ ...prev, participants: value }))}
+                placeholder="Velg ansatt eller skriv navn"
               />
             </div>
           </div>
