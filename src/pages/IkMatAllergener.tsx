@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -54,11 +55,16 @@ const IkMatAllergener = () => {
   return (
     <AppLayout>
       <div className="container max-w-6xl mx-auto py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Allergener</h1>
-          <p className="text-muted-foreground">
-            Oversikt over allergener og kontrolltiltak
-          </p>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Allergener</h1>
+            <p className="text-muted-foreground">
+              Oversikt over allergener og kontrolltiltak
+            </p>
+          </div>
+          <Button onClick={() => console.log("Bestill meny clicked")}>
+            Bestill meny
+          </Button>
         </div>
 
         {allergens.length === 0 ? (
