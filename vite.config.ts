@@ -19,7 +19,9 @@ export default defineConfig(({ mode }) => ({
       manifest: false, // We use our own manifest.json
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
-        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10MB limit
+        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024, // 15MB limit
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
