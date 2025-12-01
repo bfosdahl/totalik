@@ -22,6 +22,7 @@ import {
   MessageCircle,
   ListChecks,
   Clock,
+  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ const navItems = [
   { icon: FileCheck, label: "HMS aktiviteter", path: "/audits" },
   { icon: BookOpen, label: "Handbok", path: "/handbook" },
   { icon: MessageCircle, label: "HMS Assistent", path: "/hms-chat" },
+  { icon: Download, label: "Last ned app", path: "/install" },
   { icon: Settings, label: "Innstillinger", path: "/settings" },
 ];
 
