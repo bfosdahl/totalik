@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -63,6 +63,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [ksByggExpanded, setKsByggExpanded] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { profile, company, isSystemAdmin } = useAuth();
   const { hasModule } = useCompanyModules();
   
@@ -185,10 +186,19 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                 (item.path !== "/" && item.path !== "/setup" && location.pathname.startsWith(item.path));
             }
             
+            // Force navigation for query parameter changes on same base path
+            const handleClick = (e: React.MouseEvent) => {
+              if (hasQueryParam) {
+                e.preventDefault();
+                navigate(item.path);
+              }
+            };
+            
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
+                onClick={handleClick}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
                   collapsed && "justify-center",
