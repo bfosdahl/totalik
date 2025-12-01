@@ -2,9 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Palette, ArrowLeft, Moon, Sun, Monitor, Upload, Loader2, Trash2, Check, Star, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -314,56 +312,49 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
           Velg utseende for applikasjonen
         </p>
 
-        <RadioGroup
-          value={theme}
-          onValueChange={setTheme}
-          className="grid grid-cols-3 gap-4"
-        >
-          <Label
-            htmlFor="theme-light"
+        <div className="grid grid-cols-3 gap-4">
+          <button
+            onClick={() => setTheme("light")}
             className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
               theme === "light"
                 ? "border-primary bg-primary/5"
                 : "border-border hover:border-primary/50"
             }`}
           >
-            <RadioGroupItem value="light" id="theme-light" className="sr-only" />
             <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
               <Sun className="w-6 h-6 text-amber-600" />
             </div>
             <span className="font-medium">Lyst</span>
-          </Label>
+          </button>
 
-          <Label
-            htmlFor="theme-dark"
+          <button
+            onClick={() => setTheme("dark")}
             className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
               theme === "dark"
                 ? "border-primary bg-primary/5"
                 : "border-border hover:border-primary/50"
             }`}
           >
-            <RadioGroupItem value="dark" id="theme-dark" className="sr-only" />
             <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center">
               <Moon className="w-6 h-6 text-slate-300" />
             </div>
             <span className="font-medium">Mørkt</span>
-          </Label>
+          </button>
 
-          <Label
-            htmlFor="theme-system"
+          <button
+            onClick={() => setTheme("system")}
             className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
               theme === "system"
                 ? "border-primary bg-primary/5"
                 : "border-border hover:border-primary/50"
             }`}
           >
-            <RadioGroupItem value="system" id="theme-system" className="sr-only" />
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-100 to-slate-800 flex items-center justify-center">
               <Monitor className="w-6 h-6 text-primary" />
             </div>
             <span className="font-medium">System</span>
-          </Label>
-        </RadioGroup>
+          </button>
+        </div>
       </motion.div>
 
       {/* Accent Color Section */}
