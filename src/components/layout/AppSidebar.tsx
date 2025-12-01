@@ -20,6 +20,7 @@ import {
   ChevronUp,
   Lock,
   MessageCircle,
+  ListChecks,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,8 @@ import { useCompanyModules } from "@/hooks/useCompanyModules";
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: ClipboardList, label: "Oppsett", path: "/setup" },
+  { icon: AlertTriangle, label: "Risikovurdering", path: "/setup?step=2" },
+  { icon: ListChecks, label: "Handlingsplan", path: "/setup?step=3" },
   { icon: Users, label: "Ansatte", path: "/employees" },
   { icon: AlertTriangle, label: "Avvik", path: "/deviations" },
   { icon: FileCheck, label: "HMS aktiviteter", path: "/audits" },
@@ -167,8 +170,20 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto min-h-0">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path || 
-              (item.path !== "/" && location.pathname.startsWith(item.path));
+            // Handle query parameter matching for setup steps
+            const hasQueryParam = item.path.includes("?");
+            let isActive = false;
+            
+            if (hasQueryParam) {
+              const [basePath, queryString] = item.path.split("?");
+              const itemParams = new URLSearchParams(queryString);
+              const currentParams = new URLSearchParams(location.search);
+              isActive = location.pathname === basePath && 
+                itemParams.get("step") === currentParams.get("step");
+            } else {
+              isActive = location.pathname === item.path || 
+                (item.path !== "/" && item.path !== "/setup" && location.pathname.startsWith(item.path));
+            }
             
             return (
               <NavLink
