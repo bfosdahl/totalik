@@ -13,6 +13,7 @@ import {
   UserPlus,
   Mail,
   Boxes,
+  Award,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -94,7 +95,7 @@ export default function AdminCompanies() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("companies")
-        .select("*")
+        .select("*, sg_approved, sg_expiry_date, sg_approval_areas")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -565,7 +566,17 @@ export default function AdminCompanies() {
                       <td className="p-4 text-muted-foreground">
                         {company.org_number || "-"}
                       </td>
-                      <td className="p-4">{getStatusBadge(company.status)}</td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {getStatusBadge(company.status)}
+                          {company.sg_approved && (
+                            <Badge variant="default" className="bg-green-600 text-xs">
+                              <Award className="w-3 h-3 mr-1" />
+                              SG
+                            </Badge>
+                          )}
+                        </div>
+                      </td>
                       <td className="p-4 text-muted-foreground text-sm">
                         {new Date(company.created_at).toLocaleDateString("nb-NO")}
                       </td>
