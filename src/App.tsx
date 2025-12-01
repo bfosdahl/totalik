@@ -50,6 +50,7 @@ import IkMatSjekklister from "./pages/IkMatSjekklister";
 import IkMatRenholdsplan from "./pages/IkMatRenholdsplan";
 import IkMatAllergener from "./pages/IkMatAllergener";
 import IkMatFasteAvtaler from "./pages/IkMatFasteAvtaler";
+import IkMatSporbarhet from "./pages/IkMatSporbarhet";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -87,6 +88,7 @@ const App = () => (
           <Route path="/ik-mat/renholdsplan" element={<ProtectedRoute><IkMatRenholdsplan /></ProtectedRoute>} />
           <Route path="/ik-mat/allergener" element={<ProtectedRoute><IkMatAllergener /></ProtectedRoute>} />
           <Route path="/ik-mat/faste-avtaler" element={<ProtectedRoute><IkMatFasteAvtaler /></ProtectedRoute>} />
+          <Route path="/ik-mat/sporbarhet" element={<ProtectedRoute><IkMatSporbarhet /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             
             {/* KS Bygg routes */}
