@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AccentColorProvider } from "@/components/AccentColorProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -47,12 +48,13 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <AccentColorProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <AuthProvider>
+        <AccentColorProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
             <Routes>
               {/* Public routes */}
               <Route path="/auth" element={<Auth />} />
@@ -106,6 +108,7 @@ const App = () => (
       </TooltipProvider>
       </AccentColorProvider>
     </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
