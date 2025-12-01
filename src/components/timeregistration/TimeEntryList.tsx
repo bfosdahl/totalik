@@ -26,6 +26,7 @@ interface TimeEntry {
   entry_date: string;
   hours: number;
   project_name: string | null;
+  project_id: string | null;
   description: string | null;
   status: "draft" | "submitted" | "approved" | "rejected";
   approved_by_name: string | null;
