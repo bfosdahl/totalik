@@ -783,6 +783,7 @@ export type Database = {
       }
       employee_courses: {
         Row: {
+          certificate_file_path: string | null
           certificate_number: string | null
           company_id: string
           completed_date: string
@@ -800,6 +801,7 @@ export type Database = {
           validity_years: number | null
         }
         Insert: {
+          certificate_file_path?: string | null
           certificate_number?: string | null
           company_id: string
           completed_date: string
@@ -817,6 +819,7 @@ export type Database = {
           validity_years?: number | null
         }
         Update: {
+          certificate_file_path?: string | null
           certificate_number?: string | null
           company_id?: string
           completed_date?: string

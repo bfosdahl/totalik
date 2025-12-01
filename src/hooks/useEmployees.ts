@@ -25,6 +25,7 @@ export interface EmployeeCourse {
   course_name: string;
   course_provider: string | null;
   certificate_number: string | null;
+  certificate_file_path: string | null;
   completed_date: string;
   expiry_date: string | null;
   validity_years: number | null;
@@ -251,6 +252,7 @@ export function useEmployeeCourses(employeeId: string | null) {
       course_name: string;
       course_provider?: string;
       certificate_number?: string;
+      certificate_file?: File;
       completed_date: string;
       expiry_date?: string;
       validity_years?: number;
@@ -258,12 +260,30 @@ export function useEmployeeCourses(employeeId: string | null) {
     }) => {
       if (!company?.id || !employeeId) throw new Error("Manglende data");
 
+      let certificate_file_path: string | undefined;
+
+      // Upload certificate file if provided
+      if (courseData.certificate_file) {
+        const file = courseData.certificate_file;
+        const filePath = `${company.id}/${employeeId}/${Date.now()}_${file.name}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from("course-certificates")
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+        certificate_file_path = filePath;
+      }
+
+      const { certificate_file, ...restData } = courseData;
+
       const { error } = await supabase
         .from("employee_courses")
         .insert({
           company_id: company.id,
           employee_id: employeeId,
-          ...courseData,
+          ...restData,
+          certificate_file_path,
         });
 
       if (error) throw error;
