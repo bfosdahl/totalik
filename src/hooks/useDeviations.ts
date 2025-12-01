@@ -28,6 +28,15 @@ export interface NewDeviationInput {
   assignee_id?: string | null;
   assignee_name: string;
   due_date: string;
+  // Extended fields
+  incident_location?: string;
+  incident_time?: string;
+  reporter_contact?: string;
+  additional_info?: string;
+  consequences?: string;
+  immediate_actions?: string;
+  preventive_measures?: string;
+  responsible_receiver?: string;
 }
 
 export function useDeviations() {
@@ -121,6 +130,15 @@ export function useDeviations() {
           reporter_id: profile.id,
           reporter_name: reporterName,
           due_date: input.due_date,
+          // Extended fields
+          incident_location: input.incident_location || null,
+          incident_time: input.incident_time || null,
+          reporter_contact: input.reporter_contact || null,
+          additional_info: input.additional_info || null,
+          consequences: input.consequences || null,
+          immediate_actions: input.immediate_actions || null,
+          preventive_measures: input.preventive_measures || null,
+          responsible_receiver: input.responsible_receiver || null,
         });
 
       if (error) throw error;
