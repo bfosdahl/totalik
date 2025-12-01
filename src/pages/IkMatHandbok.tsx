@@ -23,7 +23,7 @@ const IkMatHandbok = () => {
       try {
         setIsLoading(true);
 
-        // Fetch IK_MAT module settings with generated content
+        // Fetch IK_MAT module settings with all generated content
         const { data: moduleData, error: moduleError } = await supabase
           .from('company_modules')
           .select('settings')
@@ -34,43 +34,17 @@ const IkMatHandbok = () => {
         if (moduleError) throw moduleError;
 
         const settings = moduleData?.settings as any;
-
-        // Fetch company goals
-        const { data: goalsData, error: goalsError } = await supabase
-          .from('company_goals')
-          .select('*')
-          .eq('company_id', company.id)
-          .order('sort_order', { ascending: true });
-
-        if (goalsError) throw goalsError;
-
-        // Fetch risk assessment
-        const { data: risksData, error: risksError } = await supabase
-          .from('company_risk_assessments')
-          .select('*')
-          .eq('company_id', company.id)
-          .single();
-
-        if (risksError && risksError.code !== 'PGRST116') throw risksError;
-
-        // Fetch routines
-        const { data: routinesData, error: routinesError } = await supabase
-          .from('company_routines')
-          .select('*')
-          .eq('company_id', company.id)
-          .single();
-
-        if (routinesError && routinesError.code !== 'PGRST116') throw routinesError;
+        const generatedContent = settings?.generatedContent || {};
 
         setHandbokData({
-          goals: goalsData || [],
-          haccp: settings?.generatedContent?.haccp || [],
-          risks: risksData?.risks || [],
-          routines: routinesData?.routines || [],
-          checklists: settings?.generatedContent?.checklists || [],
-          cleaningPlan: settings?.generatedContent?.cleaningPlan || [],
-          allergens: settings?.generatedContent?.allergens || [],
-          contracts: settings?.generatedContent?.contracts || [],
+          goals: generatedContent.goals || [],
+          haccp: generatedContent.haccp || [],
+          risks: generatedContent.risks || [],
+          routines: generatedContent.routines || [],
+          checklists: generatedContent.checklists || [],
+          cleaningPlan: generatedContent.cleaningPlan || [],
+          allergens: generatedContent.allergens || [],
+          contracts: generatedContent.contracts || [],
           setupAnswers: settings?.setupAnswers || {},
         });
       } catch (error) {
@@ -171,9 +145,9 @@ const IkMatHandbok = () => {
           <CardContent>
             <ul className="space-y-3">
               {handbokData.goals.map((goal: any, index: number) => (
-                <li key={goal.id} className="flex gap-2">
+                <li key={index} className="flex gap-2">
                   <span className="font-semibold text-primary">{index + 1}.</span>
-                  <span>{goal.goal_text}</span>
+                  <span>{goal}</span>
                 </li>
               ))}
             </ul>
@@ -284,23 +258,19 @@ const IkMatHandbok = () => {
               {handbokData.routines.map((routine: any, index: number) => (
                 <div key={index}>
                   {index > 0 && <Separator className="my-4" />}
-                  <h4 className="font-semibold text-lg mb-3">{routine.routine_name}</h4>
+                  <h4 className="font-semibold text-lg mb-3">{routine.name}</h4>
                   <div className="grid gap-3">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Formål</p>
-                      <p>{routine.purpose}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Ansvar</p>
-                      <p>{routine.responsibility}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Fremgangsmåte</p>
-                      <p className="whitespace-pre-wrap">{routine.procedure}</p>
+                      <p className="text-sm font-medium text-muted-foreground">Beskrivelse</p>
+                      <p className="whitespace-pre-wrap">{routine.description}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Frekvens</p>
                       <p>{routine.frequency}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Ansvarlig</p>
+                      <p>{routine.responsible}</p>
                     </div>
                   </div>
                 </div>
