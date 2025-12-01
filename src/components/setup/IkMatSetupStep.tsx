@@ -115,32 +115,36 @@ export const IkMatSetupStep = ({ companyId, onComplete }: IkMatSetupStepProps) =
       console.log("Generated content:", generatedContent);
 
       // Save generated content to database
-      // 1. Save goals
+      // 1. Save goals (insert new goals)
       if (generatedContent.goals && generatedContent.goals.length > 0) {
+        const goalsToInsert = generatedContent.goals.map((goal: any, index: number) => ({
+          company_id: companyId,
+          goal_text: goal.goal_text,
+          is_predefined: goal.is_predefined || false,
+          sort_order: index,
+        }));
+
         const { error: goalsError } = await supabase
           .from('company_goals')
-          .insert(
-            generatedContent.goals.map((goal: any, index: number) => ({
-              company_id: companyId,
-              goal_text: goal.goal_text,
-              is_predefined: goal.is_predefined || false,
-              sort_order: index,
-            }))
-          );
+          .insert(goalsToInsert)
+          .select();
 
-        if (goalsError) {
+        if (goalsError && goalsError.code !== '23505') {
+          // Ignore duplicate errors, throw others
           console.error("Error saving goals:", goalsError);
           throw goalsError;
         }
       }
 
-      // 2. Save risk assessment
+      // 2. Save risk assessment (upsert to update if exists)
       if (generatedContent.risks && generatedContent.risks.length > 0) {
         const { error: risksError } = await supabase
           .from('company_risk_assessments')
           .upsert({
             company_id: companyId,
             risks: generatedContent.risks,
+          }, {
+            onConflict: 'company_id'
           });
 
         if (risksError) {
@@ -149,13 +153,15 @@ export const IkMatSetupStep = ({ companyId, onComplete }: IkMatSetupStepProps) =
         }
       }
 
-      // 3. Save routines
+      // 3. Save routines (upsert to update if exists)
       if (generatedContent.routines && generatedContent.routines.length > 0) {
         const { error: routinesError } = await supabase
           .from('company_routines')
           .upsert({
             company_id: companyId,
             routines: generatedContent.routines,
+          }, {
+            onConflict: 'company_id'
           });
 
         if (routinesError) {
