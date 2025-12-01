@@ -115,10 +115,10 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                   className="flex flex-col"
                 >
                   <span className="font-bold text-sidebar-foreground text-lg tracking-tight">
-                    Internkontroll
+                    Total-IK
                   </span>
                   <span className="text-xs text-sidebar-foreground/60">
-                    HMS · MAT · BYGG
+                    HMS, BYGG, MAT
                   </span>
                 </motion.div>
               )}
