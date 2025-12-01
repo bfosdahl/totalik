@@ -1,19 +1,31 @@
 import { AppLayout } from "@/components/layout/AppLayout";
-import { useKsProjects } from "@/hooks/useKsProjects";
+import { useKsProjects, NewKsProjectInput, KsProjectResponsibility } from "@/hooks/useKsProjects";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FolderKanban, CheckCircle2, AlertCircle, TrendingUp, Search, Filter } from "lucide-react";
+import { FolderKanban, CheckCircle2, AlertCircle, TrendingUp, Search, Filter, Plus, X } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function KsProjectsOverview() {
   const navigate = useNavigate();
-  const { projects, isLoading } = useKsProjects();
+  const { projects, isLoading, createProject, isSaving } = useKsProjects();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [showNewDialog, setShowNewDialog] = useState(false);
+  const [formData, setFormData] = useState<NewKsProjectInput>({
+    name: "",
+    address: "",
+    client_name: "",
+    tiltaksklasse: "",
+    start_date: new Date().toISOString().split("T")[0],
+  });
+  const [responsibilities, setResponsibilities] = useState<Omit<KsProjectResponsibility, 'id' | 'project_id' | 'created_at' | 'updated_at'>[]>([]);
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -60,6 +72,27 @@ export default function KsProjectsOverview() {
     }
   };
 
+  const handleCreateProject = async () => {
+    if (!formData.name || !formData.start_date) return;
+    
+    const result = await createProject({
+      ...formData,
+      responsibilities,
+    });
+    
+    if (result) {
+      setShowNewDialog(false);
+      setFormData({
+        name: "",
+        address: "",
+        client_name: "",
+        tiltaksklasse: "",
+        start_date: new Date().toISOString().split("T")[0],
+      });
+      setResponsibilities([]);
+    }
+  };
+
   if (isLoading) {
     return (
       <AppLayout>
@@ -74,11 +107,17 @@ export default function KsProjectsOverview() {
     <AppLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Prosjekt</h1>
-          <p className="text-muted-foreground">
-            Alle KS Bygg prosjekter med status og fremdrift
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Prosjekt</h1>
+            <p className="text-muted-foreground">
+              Alle KS Bygg prosjekter med status og fremdrift
+            </p>
+          </div>
+          <Button onClick={() => setShowNewDialog(true)} size="lg">
+            <Plus className="mr-2 h-5 w-5" />
+            Opprett prosjekt
+          </Button>
         </div>
 
         {/* Stats Cards */}
@@ -183,6 +222,85 @@ export default function KsProjectsOverview() {
           )}
         </div>
       </div>
+
+      {/* New Project Dialog */}
+      <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Nytt KS-prosjekt</DialogTitle>
+            <DialogDescription>
+              Opprett et nytt kvalitetssikringsprosjekt
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[calc(90vh-200px)] pr-4">
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Prosjektnavn *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="F.eks. Enebolig Kongsberg"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="client_name">Kunde / Byggherre</Label>
+                <Input
+                  id="client_name"
+                  value={formData.client_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, client_name: e.target.value }))}
+                  placeholder="F.eks. Ola Nordmann"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Adresse</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                  placeholder="F.eks. Storgata 1, 3600 Kongsberg"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tiltaksklasse">Tiltaksklasse</Label>
+                <Select
+                  value={formData.tiltaksklasse}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, tiltaksklasse: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg tiltaksklasse" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Tiltaksklasse 1</SelectItem>
+                    <SelectItem value="2">Tiltaksklasse 2</SelectItem>
+                    <SelectItem value="3">Tiltaksklasse 3</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="start_date">Startdato *</Label>
+                <Input
+                  id="start_date"
+                  type="date"
+                  value={formData.start_date}
+                  onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
+                />
+              </div>
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewDialog(false)}>
+              Avbryt
+            </Button>
+            <Button 
+              onClick={handleCreateProject}
+              disabled={!formData.name || !formData.start_date || isSaving}
+            >
+              {isSaving ? "Oppretter..." : "Opprett prosjekt"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
