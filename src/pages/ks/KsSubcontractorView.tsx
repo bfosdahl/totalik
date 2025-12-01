@@ -83,9 +83,9 @@ export default function KsSubcontractorView() {
             {assignments.map((assignment) => (
               <Card key={assignment.id}>
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                      <CardTitle className="flex items-center gap-2">
+                      <CardTitle className="flex items-center gap-2 text-lg">
                         <Building2 className="h-5 w-5" />
                         {assignment.project.name}
                       </CardTitle>
@@ -94,15 +94,15 @@ export default function KsSubcontractorView() {
                         {assignment.project.client_name && <span>Kunde: {assignment.project.client_name}</span>}
                       </CardDescription>
                     </div>
-                    <Badge>{assignment.work_scope}</Badge>
+                    <Badge className="w-fit">{assignment.work_scope}</Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="documents" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger value="documents">Tegninger</TabsTrigger>
-                      <TabsTrigger value="info">Informasjon</TabsTrigger>
-                      <TabsTrigger value="competence">Min kompetanse</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-3 h-auto">
+                      <TabsTrigger value="documents" className="text-xs sm:text-sm">Tegninger</TabsTrigger>
+                      <TabsTrigger value="info" className="text-xs sm:text-sm">Informasjon</TabsTrigger>
+                      <TabsTrigger value="competence" className="text-xs sm:text-sm">Min kompetanse</TabsTrigger>
                     </TabsList>
                     
                     <TabsContent value="documents" className="space-y-4 pt-4">

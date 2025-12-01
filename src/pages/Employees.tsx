@@ -80,7 +80,7 @@ export default function Employees() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
@@ -283,72 +283,126 @@ export default function Employees() {
                     Ingen kurs registrert ennå
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Ansatt</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Kurs</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Fullført</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Utløper</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {courses?.map((course) => {
-                          const employee = employees?.find(e => e.id === course.employee_id);
-                          const isExpired = course.expiry_date && isPast(new Date(course.expiry_date));
-                          const isExpiringSoon = course.expiry_date && !isExpired && 
-                            differenceInDays(new Date(course.expiry_date), new Date()) <= 30;
-                          
-                          return (
-                            <tr key={course.id} className="border-b last:border-0 hover:bg-muted/50">
-                              <td className="py-3 px-4">
-                                <div className="flex items-center gap-2">
-                                  <Avatar className="w-8 h-8">
-                                    <AvatarFallback className="text-xs">
-                                      {getInitials(employee?.first_name, employee?.last_name)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <span>{employee?.first_name} {employee?.last_name}</span>
-                                </div>
-                              </td>
-                              <td className="py-3 px-4">
-                                <div>
-                                  <p className="font-medium">{course.course_name}</p>
-                                  {course.course_provider && (
-                                    <p className="text-sm text-muted-foreground">{course.course_provider}</p>
+                  <>
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Ansatt</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Kurs</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Fullført</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Utløper</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {courses?.map((course) => {
+                            const employee = employees?.find(e => e.id === course.employee_id);
+                            const isExpired = course.expiry_date && isPast(new Date(course.expiry_date));
+                            const isExpiringSoon = course.expiry_date && !isExpired && 
+                              differenceInDays(new Date(course.expiry_date), new Date()) <= 30;
+                            
+                            return (
+                              <tr key={course.id} className="border-b last:border-0 hover:bg-muted/50">
+                                <td className="py-3 px-4">
+                                  <div className="flex items-center gap-2">
+                                    <Avatar className="w-8 h-8">
+                                      <AvatarFallback className="text-xs">
+                                        {getInitials(employee?.first_name, employee?.last_name)}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <span>{employee?.first_name} {employee?.last_name}</span>
+                                  </div>
+                                </td>
+                                <td className="py-3 px-4">
+                                  <div>
+                                    <p className="font-medium">{course.course_name}</p>
+                                    {course.course_provider && (
+                                      <p className="text-sm text-muted-foreground">{course.course_provider}</p>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="py-3 px-4 text-muted-foreground">
+                                  {format(new Date(course.completed_date), "d. MMM yyyy", { locale: nb })}
+                                </td>
+                                <td className="py-3 px-4 text-muted-foreground">
+                                  {course.expiry_date 
+                                    ? format(new Date(course.expiry_date), "d. MMM yyyy", { locale: nb })
+                                    : "Ingen utløp"
+                                  }
+                                </td>
+                                <td className="py-3 px-4">
+                                  {isExpired ? (
+                                    <Badge variant="destructive">Utgått</Badge>
+                                  ) : isExpiringSoon ? (
+                                    <Badge variant="outline" className="border-yellow-500 text-yellow-600">
+                                      Utløper snart
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="secondary" className="bg-green-500/10 text-green-600">
+                                      Gyldig
+                                    </Badge>
                                   )}
-                                </div>
-                              </td>
-                              <td className="py-3 px-4 text-muted-foreground">
-                                {format(new Date(course.completed_date), "d. MMM yyyy", { locale: nb })}
-                              </td>
-                              <td className="py-3 px-4 text-muted-foreground">
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden space-y-3">
+                      {courses?.map((course) => {
+                        const employee = employees?.find(e => e.id === course.employee_id);
+                        const isExpired = course.expiry_date && isPast(new Date(course.expiry_date));
+                        const isExpiringSoon = course.expiry_date && !isExpired && 
+                          differenceInDays(new Date(course.expiry_date), new Date()) <= 30;
+                        
+                        return (
+                          <div key={course.id} className="p-4 border rounded-lg space-y-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Avatar className="w-8 h-8">
+                                  <AvatarFallback className="text-xs">
+                                    {getInitials(employee?.first_name, employee?.last_name)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="font-medium text-sm">{employee?.first_name} {employee?.last_name}</span>
+                              </div>
+                              {isExpired ? (
+                                <Badge variant="destructive">Utgått</Badge>
+                              ) : isExpiringSoon ? (
+                                <Badge variant="outline" className="border-yellow-500 text-yellow-600">
+                                  Utløper snart
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary" className="bg-green-500/10 text-green-600">
+                                  Gyldig
+                                </Badge>
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-medium">{course.course_name}</p>
+                              {course.course_provider && (
+                                <p className="text-sm text-muted-foreground">{course.course_provider}</p>
+                              )}
+                            </div>
+                            <div className="flex justify-between text-sm text-muted-foreground">
+                              <span>Fullført: {format(new Date(course.completed_date), "d. MMM yyyy", { locale: nb })}</span>
+                              <span>
                                 {course.expiry_date 
-                                  ? format(new Date(course.expiry_date), "d. MMM yyyy", { locale: nb })
+                                  ? `Utløper: ${format(new Date(course.expiry_date), "d. MMM yyyy", { locale: nb })}`
                                   : "Ingen utløp"
                                 }
-                              </td>
-                              <td className="py-3 px-4">
-                                {isExpired ? (
-                                  <Badge variant="destructive">Utgått</Badge>
-                                ) : isExpiringSoon ? (
-                                  <Badge variant="outline" className="border-yellow-500 text-yellow-600">
-                                    Utløper snart
-                                  </Badge>
-                                ) : (
-                                  <Badge variant="secondary" className="bg-green-500/10 text-green-600">
-                                    Gyldig
-                                  </Badge>
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>

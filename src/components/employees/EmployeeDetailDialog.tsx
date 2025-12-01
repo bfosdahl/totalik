@@ -139,22 +139,26 @@ export function EmployeeDetailDialog({
           </DialogHeader>
 
           <Tabs defaultValue="info" className="mt-4">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="info" className="gap-2">
-                <User className="w-4 h-4" />
-                Informasjon
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
+              <TabsTrigger value="info" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+                <User className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Informasjon</span>
+                <span className="sm:hidden">Info</span>
               </TabsTrigger>
-              <TabsTrigger value="hmscard" className="gap-2">
-                <CreditCard className="w-4 h-4" />
-                HMS-kort
+              <TabsTrigger value="hmscard" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+                <CreditCard className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">HMS-kort</span>
+                <span className="sm:hidden">HMS</span>
               </TabsTrigger>
-              <TabsTrigger value="documents" className="gap-2">
-                <FileText className="w-4 h-4" />
-                Dokumenter
+              <TabsTrigger value="documents" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+                <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Dokumenter</span>
+                <span className="sm:hidden">Dok</span>
               </TabsTrigger>
-              <TabsTrigger value="courses" className="gap-2">
-                <GraduationCap className="w-4 h-4" />
-                Kurs
+              <TabsTrigger value="courses" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+                <GraduationCap className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Kurs</span>
+                <span className="sm:hidden">Kurs</span>
               </TabsTrigger>
             </TabsList>
 
@@ -174,7 +178,7 @@ export function EmployeeDetailDialog({
                   )}
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex items-center gap-3">
                       <Mail className="w-4 h-4 text-muted-foreground" />
                       <div>
