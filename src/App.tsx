@@ -43,6 +43,8 @@ import MyCourseCard from "./pages/MyCourseCard";
 import TimeRegistration from "./pages/TimeRegistration";
 import InstallApp from "./pages/InstallApp";
 import IkMatOppsett from "./pages/IkMatOppsett";
+import IkMatHaccp from "./pages/IkMatHaccp";
+import IkMatRisikovurdering from "./pages/IkMatRisikovurdering";
 import IkMatSjekklister from "./pages/IkMatSjekklister";
 import IkMatRenholdsplan from "./pages/IkMatRenholdsplan";
 import IkMatAllergener from "./pages/IkMatAllergener";
@@ -77,6 +79,8 @@ const App = () => (
             <Route path="/my-courses" element={<ProtectedRoute><MyCourseCard /></ProtectedRoute>} />
             <Route path="/time-registration" element={<ProtectedRoute><TimeRegistration /></ProtectedRoute>} />
           <Route path="/ik-mat/oppsett" element={<ProtectedRoute><IkMatOppsett /></ProtectedRoute>} />
+          <Route path="/ik-mat/haccp" element={<ProtectedRoute><IkMatHaccp /></ProtectedRoute>} />
+          <Route path="/ik-mat/risikovurdering" element={<ProtectedRoute><IkMatRisikovurdering /></ProtectedRoute>} />
           <Route path="/ik-mat/sjekklister" element={<ProtectedRoute><IkMatSjekklister /></ProtectedRoute>} />
           <Route path="/ik-mat/renholdsplan" element={<ProtectedRoute><IkMatRenholdsplan /></ProtectedRoute>} />
           <Route path="/ik-mat/allergener" element={<ProtectedRoute><IkMatAllergener /></ProtectedRoute>} />

@@ -290,6 +290,28 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                         Oppsett
                       </NavLink>
                       <NavLink
+                        to="/ik-mat/haccp"
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                          location.pathname === "/ik-mat/haccp"
+                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                        )}
+                      >
+                        HACCP / KKP
+                      </NavLink>
+                      <NavLink
+                        to="/ik-mat/risikovurdering"
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                          location.pathname === "/ik-mat/risikovurdering"
+                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                        )}
+                      >
+                        Risikovurdering
+                      </NavLink>
+                      <NavLink
                         to="/ik-mat/sjekklister"
                         className={cn(
                           "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",

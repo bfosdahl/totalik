@@ -11,16 +11,19 @@ Din oppgave er å generere skreddersydd IK-MAT innhold for norske matvirksomhete
 
 Du skal generere:
 1. Målsettinger - spisset mot deres virksomhetstype og omfang
-2. Risikovurdering - HACCP-basert, tilpasset deres prosesser
-3. Rutiner - detaljerte prosedyrer for deres utstyr og arbeidsflyt
-4. Temperaturkontrollskjemaer - ett per kjøler/fryser med navn og lokasjon
-5. Renholdsplan - tilpasset deres soner og utstyr
+2. HACCP-analyse med kritiske kontrollpunkter (KKP) - følg HACCP-metodikken strengt
+3. Generell risikovurdering for mat og servering - tradisjonell konsekvens/sannsynlighet-analyse
+4. Rutiner - detaljerte prosedyrer for deres utstyr og arbeidsflyt
+5. Temperaturkontrollskjemaer - ett per kjøler/fryser med navn og lokasjon
+6. Renholdsplan - tilpasset deres soner og utstyr
 
 VIKTIG:
 - Bruk norsk språk og norske matvareforskrifter
 - Vær spesifikk og praktisk, unngå generiske råd
-- Inkluder konkrete temperaturer, frekvenser og ansvar
-- Følg HACCP-metodikk for kritiske kontrollpunkter
+- Skil tydelig mellom HACCP/KKP (kritiske kontrollpunkter) og generell risikovurdering
+- HACCP fokuserer på mattrygghetsfare i produksjonskjeden
+- Generell risikovurdering dekker andre aspekter (arbeidsmiljø, økonomi, omdømme)
+- Følg HACCP-metodikk: identifiser KKP, kritiske grenser, overvåking, korrigerende tiltak
 - Generer JSON-format som er lett å lagre i database
 
 Output-format:
@@ -28,12 +31,23 @@ Output-format:
   "goals": [
     { "goal_text": "...", "is_predefined": false }
   ],
+  "haccp": [
+    {
+      "step": "prosess-steg (f.eks. Mottak, Nedkjøling, Oppvarming)",
+      "hazard": "biologisk/kjemisk/fysisk fare",
+      "criticalLimit": "konkret grenseverdi (f.eks. temp < 4°C)",
+      "monitoring": "hvordan og hvor ofte overvåke",
+      "correctiveAction": "hva gjøre hvis grense overskrides",
+      "verification": "hvordan verifisere at systemet fungerer"
+    }
+  ],
   "risks": [
     {
-      "hazard": "beskrivelse",
-      "consequence": 3,
-      "probability": 2,
-      "measures": "tiltak"
+      "hazard": "fare/risiko",
+      "consequence": 1-5,
+      "probability": 1-5,
+      "riskLevel": "Lav/Middels/Høy/Kritisk",
+      "measures": "forebyggende tiltak"
     }
   ],
   "routines": [
@@ -100,10 +114,14 @@ ${freezers && freezers.length > 0 ? freezers.map((f: any, i: number) =>
 
 KRAV:
 1. Lag 3-5 spesifikke målsettinger for denne virksomheten
-2. Generer HACCP-basert risikovurdering med kritiske kontrollpunkter
-3. Lag 8-12 detaljerte rutiner tilpasset deres oppsett
-4. Generer temperaturkontrollskjema for hver kjøler og fryser med navn, lokasjon og måltemperaturer
-5. Lag en komplett renholdsplan med konkrete oppgaver, frekvens og ansvar
+2. Generer HACCP-analyse med 4-8 kritiske kontrollpunkter (KKP) i produksjonskjeden
+   - Inkluder: prosess-steg, fare, kritisk grense, overvåking, korrigerende tiltak, verifisering
+3. Lag generell risikovurdering (ikke HACCP) for mat og servering med 6-10 risikoer
+   - Dekk: hygiene, allergen-håndtering, arbeidsmiljø, brann, økonomi, omdømme
+   - Bruk skala 1-5 for konsekvens og sannsynlighet
+4. Lag 8-12 detaljerte rutiner tilpasset deres oppsett
+5. Generer temperaturkontrollskjema for hver kjøler og fryser med navn, lokasjon og måltemperaturer
+6. Lag en komplett renholdsplan med konkrete oppgaver, frekvens og ansvar
 
 Vær svært spesifikk og praktisk. Ikke bruk generiske fraser.`;
 }
