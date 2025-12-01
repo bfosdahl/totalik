@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle2, ClipboardList, PlayCircle, History, Trash2, Check, X, Minus } from "lucide-react";
+import { CheckCircle2, ClipboardList, PlayCircle, History, Trash2, Check, X, Minus, Download, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,6 +13,8 @@ import { useIkMatChecklistResponses } from "@/hooks/useIkMatChecklistResponses";
 import { FillChecklistDialog } from "@/components/ikmat/FillChecklistDialog";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { generateChecklistPdf } from "@/utils/ikMatChecklistPdf";
+import { toast } from "sonner";
 
 interface Checklist {
   id: string;
@@ -87,6 +89,23 @@ const IkMatSjekklister = () => {
 
   const getResponsesForChecklist = (checklistId: string) => {
     return responses.filter(r => r.checklist_type === checklistId);
+  };
+
+  const handleDownloadPdf = async (response: any) => {
+    try {
+      await generateChecklistPdf({
+        checklistName: response.checklist_name,
+        completedByName: response.completed_by_name,
+        completedAt: response.completed_at,
+        status: response.status,
+        responses: response.responses,
+        notes: response.notes,
+        companyName: company?.name
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Kunne ikke generere PDF');
+    }
   };
 
   if (isLoading) {
@@ -247,15 +266,27 @@ const IkMatSjekklister = () => {
                           <div className="flex gap-2">
                             <Button 
                               variant="outline" 
-                              className="flex-1"
+                              className="flex-1 gap-2"
                               onClick={() => handleEditResponse(response, checklist)}
                             >
+                              <FileText className="h-4 w-4" />
                               Se detaljer
                             </Button>
+                            {response.status === 'completed' && (
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleDownloadPdf(response)}
+                                title="Last ned PDF"
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={() => deleteResponse(response.id)}
+                              title="Slett"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
