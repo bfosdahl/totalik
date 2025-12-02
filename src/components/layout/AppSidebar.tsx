@@ -82,6 +82,7 @@ const ksByggItems = [
   { label: "SJA", path: "/ks/sja" },
   { label: "Avvik", path: "/ks/avvik" },
   { label: "Inspeksjoner", path: "/ks/inspeksjoner" },
+  { label: "Inspeksjonsmaler", path: "/ks/inspeksjon-maler" },
   { label: "Farlige forhold", path: "/ks/farlige-fohold" },
   { label: "Tiltakslogg", path: "/ks/tiltakslogg" },
   { label: "Sjekkliste Generator", path: "/ks/checklist-generator" },

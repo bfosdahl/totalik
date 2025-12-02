@@ -430,8 +430,13 @@ export default function KsInspeksjoner() {
                   <TableBody>
                     {filteredInspections.map((inspection) => (
                       <TableRow key={inspection.id}>
-                        <TableCell className="font-medium">
-                          {inspection.tittel || "Uten tittel"}
+                       <TableCell className="font-medium">
+                          <button
+                            onClick={() => window.location.href = `/ks/inspeksjon/${inspection.id}`}
+                            className="text-primary hover:underline"
+                          >
+                            {inspection.tittel || "Uten tittel"}
+                          </button>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">

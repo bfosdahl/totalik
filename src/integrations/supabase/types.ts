@@ -1904,6 +1904,130 @@ export type Database = {
           },
         ]
       }
+      ks_inspection_results: {
+        Row: {
+          checkpoint_results: Json | null
+          completed_at: string | null
+          completed_by_name: string | null
+          completed_by_user_id: string | null
+          created_at: string | null
+          id: string
+          inspection_id: string
+          notes: string | null
+          template_id: string | null
+        }
+        Insert: {
+          checkpoint_results?: Json | null
+          completed_at?: string | null
+          completed_by_name?: string | null
+          completed_by_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          inspection_id: string
+          notes?: string | null
+          template_id?: string | null
+        }
+        Update: {
+          checkpoint_results?: Json | null
+          completed_at?: string | null
+          completed_by_name?: string | null
+          completed_by_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          inspection_id?: string
+          notes?: string | null
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_inspection_results_inspection_id_fkey"
+            columns: ["inspection_id"]
+            isOneToOne: false
+            referencedRelation: "ks_project_inspections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_inspection_results_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "ks_inspection_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_inspection_template_items: {
+        Row: {
+          checkpoint_text: string
+          created_at: string | null
+          help_text: string | null
+          id: string
+          sort_order: number | null
+          template_id: string
+        }
+        Insert: {
+          checkpoint_text: string
+          created_at?: string | null
+          help_text?: string | null
+          id?: string
+          sort_order?: number | null
+          template_id: string
+        }
+        Update: {
+          checkpoint_text?: string
+          created_at?: string | null
+          help_text?: string | null
+          id?: string
+          sort_order?: number | null
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_inspection_template_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "ks_inspection_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_inspection_templates: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          inspection_type: string
+          template_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          inspection_type: string
+          template_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          inspection_type?: string
+          template_name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_inspection_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_photos: {
         Row: {
           checklist_item_id: string
