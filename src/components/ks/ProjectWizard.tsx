@@ -39,7 +39,6 @@ export interface WizardData extends NewKsProjectInput {
   planlagte_milepeler?: string;
   motefrekvens?: string;
   ue_oppfolging_plan?: string;
-  team_members?: { employee_name: string; role: string }[];
 }
 
 const steps = [
