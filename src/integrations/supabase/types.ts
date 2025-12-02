@@ -3121,14 +3121,21 @@ export type Database = {
       }
       ks_project_subcontractors: {
         Row: {
+          approval_date: string | null
+          approval_notes: string | null
+          approval_status: string | null
+          approved_by: string | null
           company_id: string
           contact_email: string
           contact_person: string
           contact_phone: string | null
+          contract_value: number | null
           created_at: string
+          end_date: string | null
           id: string
           org_number: string | null
           project_id: string
+          start_date: string | null
           status: string
           subcontractor_name: string
           updated_at: string
@@ -3137,14 +3144,21 @@ export type Database = {
           work_scope: string
         }
         Insert: {
+          approval_date?: string | null
+          approval_notes?: string | null
+          approval_status?: string | null
+          approved_by?: string | null
           company_id: string
           contact_email: string
           contact_person: string
           contact_phone?: string | null
+          contract_value?: number | null
           created_at?: string
+          end_date?: string | null
           id?: string
           org_number?: string | null
           project_id: string
+          start_date?: string | null
           status?: string
           subcontractor_name: string
           updated_at?: string
@@ -3153,14 +3167,21 @@ export type Database = {
           work_scope: string
         }
         Update: {
+          approval_date?: string | null
+          approval_notes?: string | null
+          approval_status?: string | null
+          approved_by?: string | null
           company_id?: string
           contact_email?: string
           contact_person?: string
           contact_phone?: string | null
+          contract_value?: number | null
           created_at?: string
+          end_date?: string | null
           id?: string
           org_number?: string | null
           project_id?: string
+          start_date?: string | null
           status?: string
           subcontractor_name?: string
           updated_at?: string
@@ -3169,6 +3190,13 @@ export type Database = {
           work_scope?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "ks_project_subcontractors_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ks_project_subcontractors_company_id_fkey"
             columns: ["company_id"]
@@ -3709,6 +3737,169 @@ export type Database = {
             columns: ["uploaded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_subcontractor_evaluations: {
+        Row: {
+          andre_sertifikater: boolean | null
+          andre_sertifikater_comment: string | null
+          arbeidskapasitet: boolean | null
+          arbeidskapasitet_comment: string | null
+          company_id: string
+          created_at: string | null
+          endringer_siden_sist: boolean | null
+          endringer_siden_sist_comment: string | null
+          erfaring_kompetanse: boolean | null
+          erfaring_kompetanse_comment: string | null
+          evaluated_at: string | null
+          evaluated_by: string | null
+          evaluated_by_name: string
+          forsikringer: boolean | null
+          forsikringer_comment: string | null
+          garantier: boolean | null
+          garantier_comment: string | null
+          godkjenning_for_arbeid: boolean | null
+          godkjenning_for_arbeid_comment: string | null
+          hms_system: boolean | null
+          hms_system_comment: string | null
+          id: string
+          jobbet_for_oss_for: boolean | null
+          jobbet_for_oss_for_comment: string | null
+          kan_brukes: string | null
+          konklusjon_notes: string | null
+          kontrakt: boolean | null
+          kontrakt_comment: string | null
+          kvalitetssystem: boolean | null
+          kvalitetssystem_comment: string | null
+          lokal_godkjenning: boolean | null
+          lokal_godkjenning_comment: string | null
+          lonnsklausuler: boolean | null
+          lonnsklausuler_comment: string | null
+          okonomi: boolean | null
+          okonomi_comment: string | null
+          paseplikt: boolean | null
+          paseplikt_comment: string | null
+          referanseprosjekter: boolean | null
+          referanseprosjekter_comment: string | null
+          sentral_godkjenning: boolean | null
+          sentral_godkjenning_comment: string | null
+          subcontractor_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          andre_sertifikater?: boolean | null
+          andre_sertifikater_comment?: string | null
+          arbeidskapasitet?: boolean | null
+          arbeidskapasitet_comment?: string | null
+          company_id: string
+          created_at?: string | null
+          endringer_siden_sist?: boolean | null
+          endringer_siden_sist_comment?: string | null
+          erfaring_kompetanse?: boolean | null
+          erfaring_kompetanse_comment?: string | null
+          evaluated_at?: string | null
+          evaluated_by?: string | null
+          evaluated_by_name: string
+          forsikringer?: boolean | null
+          forsikringer_comment?: string | null
+          garantier?: boolean | null
+          garantier_comment?: string | null
+          godkjenning_for_arbeid?: boolean | null
+          godkjenning_for_arbeid_comment?: string | null
+          hms_system?: boolean | null
+          hms_system_comment?: string | null
+          id?: string
+          jobbet_for_oss_for?: boolean | null
+          jobbet_for_oss_for_comment?: string | null
+          kan_brukes?: string | null
+          konklusjon_notes?: string | null
+          kontrakt?: boolean | null
+          kontrakt_comment?: string | null
+          kvalitetssystem?: boolean | null
+          kvalitetssystem_comment?: string | null
+          lokal_godkjenning?: boolean | null
+          lokal_godkjenning_comment?: string | null
+          lonnsklausuler?: boolean | null
+          lonnsklausuler_comment?: string | null
+          okonomi?: boolean | null
+          okonomi_comment?: string | null
+          paseplikt?: boolean | null
+          paseplikt_comment?: string | null
+          referanseprosjekter?: boolean | null
+          referanseprosjekter_comment?: string | null
+          sentral_godkjenning?: boolean | null
+          sentral_godkjenning_comment?: string | null
+          subcontractor_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          andre_sertifikater?: boolean | null
+          andre_sertifikater_comment?: string | null
+          arbeidskapasitet?: boolean | null
+          arbeidskapasitet_comment?: string | null
+          company_id?: string
+          created_at?: string | null
+          endringer_siden_sist?: boolean | null
+          endringer_siden_sist_comment?: string | null
+          erfaring_kompetanse?: boolean | null
+          erfaring_kompetanse_comment?: string | null
+          evaluated_at?: string | null
+          evaluated_by?: string | null
+          evaluated_by_name?: string
+          forsikringer?: boolean | null
+          forsikringer_comment?: string | null
+          garantier?: boolean | null
+          garantier_comment?: string | null
+          godkjenning_for_arbeid?: boolean | null
+          godkjenning_for_arbeid_comment?: string | null
+          hms_system?: boolean | null
+          hms_system_comment?: string | null
+          id?: string
+          jobbet_for_oss_for?: boolean | null
+          jobbet_for_oss_for_comment?: string | null
+          kan_brukes?: string | null
+          konklusjon_notes?: string | null
+          kontrakt?: boolean | null
+          kontrakt_comment?: string | null
+          kvalitetssystem?: boolean | null
+          kvalitetssystem_comment?: string | null
+          lokal_godkjenning?: boolean | null
+          lokal_godkjenning_comment?: string | null
+          lonnsklausuler?: boolean | null
+          lonnsklausuler_comment?: string | null
+          okonomi?: boolean | null
+          okonomi_comment?: string | null
+          paseplikt?: boolean | null
+          paseplikt_comment?: string | null
+          referanseprosjekter?: boolean | null
+          referanseprosjekter_comment?: string | null
+          sentral_godkjenning?: boolean | null
+          sentral_godkjenning_comment?: string | null
+          subcontractor_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_subcontractor_evaluations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_subcontractor_evaluations_evaluated_by_fkey"
+            columns: ["evaluated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_subcontractor_evaluations_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "ks_project_subcontractors"
             referencedColumns: ["id"]
           },
         ]

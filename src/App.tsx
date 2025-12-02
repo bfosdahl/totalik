@@ -36,6 +36,7 @@ import KsChecklistGenerator from "./pages/ks/KsChecklistGenerator";
 import KsProjectReport from "./pages/ks/KsProjectReport";
 import KsSubcontractorView from "./pages/ks/KsSubcontractorView";
 import KsClientManagement from "./pages/ks/KsClientManagement";
+import KsSubcontractorManagement from "./pages/ks/KsSubcontractorManagement";
 import KsChecklists from "./pages/ks/KsChecklists";
 import KsDocumentCenter from "./pages/ks/KsDocumentCenter";
 import KsInspeksjoner from "./pages/ks/KsInspeksjoner";
@@ -136,6 +137,7 @@ const App = () => (
             <Route path="/ks/checklist-generator" element={<ProtectedRoute><KsChecklistGenerator /></ProtectedRoute>} />
             <Route path="/ks/report" element={<ProtectedRoute><KsProjectReport /></ProtectedRoute>} />
             <Route path="/ks/client/:projectId" element={<ProtectedRoute><KsClientManagement /></ProtectedRoute>} />
+            <Route path="/ks/projects/:id/ue" element={<ProtectedRoute><KsSubcontractorManagement /></ProtectedRoute>} />
             
             {/* Subcontractor view - limited access */}
             <Route path="/ks/subcontractor" element={<ProtectedRoute><KsSubcontractorView /></ProtectedRoute>} />

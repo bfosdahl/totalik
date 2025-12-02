@@ -16,6 +16,13 @@ export interface KsSubcontractor {
   work_description: string | null;
   status: 'active' | 'completed' | 'terminated';
   user_id: string | null;
+  contract_value: number | null;
+  start_date: string | null;
+  end_date: string | null;
+  approval_status: 'godkjent' | 'ikke_godkjent' | 'godkjent_med_forbehold' | 'pending';
+  approval_date: string | null;
+  approved_by: string | null;
+  approval_notes: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -28,6 +35,9 @@ export interface NewSubcontractorInput {
   contact_phone?: string;
   work_scope: string;
   work_description?: string;
+  contract_value?: number;
+  start_date?: string;
+  end_date?: string;
 }
 
 export const useKsSubcontractors = (projectId: string | null) => {
