@@ -12,6 +12,7 @@ import { WizardStepChecklists } from "./wizard/WizardStepChecklists";
 import { WizardStepPlanning } from "./wizard/WizardStepPlanning";
 import { useKsProjects, NewKsProjectInput, KsProjectResponsibility, KsProject } from "@/hooks/useKsProjects";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProjectWizardProps {
   open: boolean;
@@ -118,15 +119,95 @@ export function ProjectWizard({ open, onOpenChange, project }: ProjectWizardProp
     }
 
     // Remove team_members field if it exists (not in database schema)
-    const { team_members, ...dataToSave } = wizardData as any;
+    const { team_members, valgte_sjekklister, ...dataToSave } = wizardData as any;
 
     let result;
     if (project?.id) {
       // Update existing project
-      result = await updateProject(project.id, dataToSave);
+      result = await updateProject(project.id, { ...dataToSave, valgte_sjekklister });
     } else {
       // Create new project
-      result = await createProject(dataToSave);
+      result = await createProject({ ...dataToSave, valgte_sjekklister });
+    }
+    
+    if (result && valgte_sjekklister && valgte_sjekklister.length > 0) {
+      // Create checklists based on selected checklist IDs
+      const checklistMapping: Record<string, string> = {
+        'forhandsbefaring': 'Forhåndsbefaring',
+        'ferdigbefaring': 'Ferdigbefaring',
+        'sluttbefaring': 'Sluttbefaring',
+        'overtakelsesbefaring': 'Overtakelsesbefaring',
+        '1_ars_garanti': '1-års garantibefaring',
+        'tomrerarbeid': 'Tømrerarbeid',
+        'vatrom_membran': 'Våtrom før membran',
+        'ror_lukking': 'Rør før lukking',
+        'elektro_trekking': 'Elektro før trekking',
+        'luft_dampsperre': 'Luft-/dampsperre',
+        'brannsikring': 'Brannsikring',
+        'tekking_tak': 'Tekking / tak',
+        'betong_armering': 'Betong / armering',
+        'isolasjon': 'Isolasjon',
+        'kontroll_lukking': 'Kontroll før lukking',
+        'ue_evaluering': 'UE-evaluering',
+        'kvalitet_fagarbeid': 'Sjekkliste kvalitet fagarbeid',
+      };
+
+      try {
+        // Fetch templates that match the selected checklist names
+        const checklistNames = valgte_sjekklister
+          .map((id: string) => checklistMapping[id])
+          .filter(Boolean);
+
+        if (checklistNames.length > 0) {
+          const { data: templates } = await supabase
+            .from('ks_templates')
+            .select('id, name, phase')
+            .in('name', checklistNames);
+
+          if (templates && templates.length > 0) {
+            // Create checklists for each template
+            for (const template of templates) {
+              const { data: checklist, error: checklistError } = await supabase
+                .from('ks_checklists')
+                .insert({
+                  project_id: result.id,
+                  template_id: template.id,
+                  phase: template.phase || null,
+                })
+                .select('id')
+                .single();
+
+              if (checklistError) {
+                console.error('Error creating checklist:', checklistError);
+                continue;
+              }
+
+              // Get template items and create checklist items
+              const { data: templateItems } = await supabase
+                .from('ks_template_items')
+                .select('id')
+                .eq('template_id', template.id);
+
+              if (templateItems && templateItems.length > 0) {
+                const checklistItems = templateItems.map(item => ({
+                  checklist_id: checklist.id,
+                  template_item_id: item.id,
+                  status: 'pending',
+                }));
+
+                await supabase
+                  .from('ks_checklist_items')
+                  .insert(checklistItems);
+              }
+            }
+            
+            toast.success(`${templates.length} sjekklister opprettet`);
+          }
+        }
+      } catch (error) {
+        console.error('Error creating checklists:', error);
+        toast.error('Noen sjekklister kunne ikke opprettes');
+      }
     }
     
     if (result) {
