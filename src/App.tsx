@@ -38,6 +38,7 @@ import KsSubcontractorView from "./pages/ks/KsSubcontractorView";
 import KsClientManagement from "./pages/ks/KsClientManagement";
 import KsChecklists from "./pages/ks/KsChecklists";
 import KsDocumentCenter from "./pages/ks/KsDocumentCenter";
+import KsBefaringer from "./pages/ks/KsBefaringer";
 import HmsChat from "./pages/HmsChat";
 import MyCourseCard from "./pages/MyCourseCard";
 import TimeRegistration from "./pages/TimeRegistration";
@@ -126,6 +127,7 @@ const App = () => (
             <Route path="/ks/sja" element={<ProtectedRoute><KsSja /></ProtectedRoute>} />
             <Route path="/ks/avvik" element={<ProtectedRoute><KsAvvik /></ProtectedRoute>} />
             <Route path="/ks/vernerunder" element={<ProtectedRoute><KsVernerunder /></ProtectedRoute>} />
+            <Route path="/ks/befaringer" element={<ProtectedRoute><KsBefaringer /></ProtectedRoute>} />
             <Route path="/ks/farlige-forhold" element={<ProtectedRoute><KsFarligeFohold /></ProtectedRoute>} />
             <Route path="/ks/tiltakslogg" element={<ProtectedRoute><KsTiltakslogg /></ProtectedRoute>} />
             <Route path="/ks/checklist-generator" element={<ProtectedRoute><KsChecklistGenerator /></ProtectedRoute>} />
