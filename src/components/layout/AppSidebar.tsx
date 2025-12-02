@@ -24,6 +24,8 @@ import {
   Clock,
   CalendarDays,
   Calendar,
+  Briefcase,
+  UserCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -42,15 +44,25 @@ const ikHmsItems = [
   { icon: Shield, label: "AI Oppsett", path: "/setup/ai" },
   { icon: AlertTriangle, label: "Risikovurdering", path: "/setup?step=2" },
   { icon: ListChecks, label: "Handlingsplan", path: "/setup?step=3" },
-  { icon: Users, label: "Ansatte", path: "/employees" },
-  { icon: Clock, label: "Timeregistrering", path: "/time-registration" },
-  { icon: CalendarDays, label: "Feriplanlegger", path: "/time-off" },
-  { icon: Calendar, label: "Arbeidsplan", path: "/work-schedule" },
   { icon: AlertTriangle, label: "Avvik", path: "/deviations" },
   { icon: FileCheck, label: "HMS aktiviteter", path: "/audits" },
   { icon: BookOpen, label: "Handbok", path: "/handbook" },
   { icon: MessageCircle, label: "HMS Assistent", path: "/hms-chat" },
 ];
+
+// Personaladministrasjon items - standard for all companies
+const personaladministrasjonItems = {
+  mineAnsatte: [
+    { icon: Users, label: "Ansattoversikt", path: "/employees" },
+    { icon: CalendarDays, label: "Godkjenn ferie", path: "/time-off?view=admin" },
+    { icon: Calendar, label: "Arbeidsplan", path: "/work-schedule" },
+    { icon: Clock, label: "Godkjenn timer", path: "/time-registration?view=admin" },
+  ],
+  mittArbeidsforhold: [
+    { icon: Clock, label: "Mine timer", path: "/time-registration" },
+    { icon: CalendarDays, label: "Min ferie", path: "/time-off" },
+  ],
+};
 
 const ksByggItems = [
   { label: "Prosjekt", path: "/ks/projects" },
@@ -76,9 +88,10 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const [ksByggExpanded, setKsByggExpanded] = useState(false);
   const [ikMatExpanded, setIkMatExpanded] = useState(false);
   const [ikHmsExpanded, setIkHmsExpanded] = useState(true); // IK/HMS starts expanded by default
+  const [personalExpanded, setPersonalExpanded] = useState(true); // Personaladministrasjon starts expanded
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile, company, isSystemAdmin } = useAuth();
+  const { profile, company, isSystemAdmin, isCompanyAdmin } = useAuth();
   const { hasModule } = useCompanyModules();
   
   // Check if KS Bygg module is active for this company
@@ -295,6 +308,112 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           key={item.path}
                           to={item.path}
                           onClick={handleClick}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                            isActive
+                              ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                              : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                          )}
+                        >
+                          <item.icon className="w-4 h-4 flex-shrink-0" />
+                          <span>{item.label}</span>
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Personaladministrasjon collapsible section - standard for all companies */}
+          <div>
+            <button
+              onClick={() => setPersonalExpanded(!personalExpanded)}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
+                collapsed && "justify-center",
+                "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              )}
+            >
+              <Briefcase className={cn(
+                "w-5 h-5 flex-shrink-0 transition-transform",
+                "group-hover:scale-110"
+              )} />
+              <AnimatePresence mode="wait">
+                {!collapsed && (
+                  <>
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      className="font-medium text-sm flex-1 text-left"
+                    >
+                      Personaladministrasjon
+                    </motion.span>
+                    {personalExpanded ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </>
+                )}
+              </AnimatePresence>
+            </button>
+            
+            {/* Personaladministrasjon submenu */}
+            <AnimatePresence>
+              {personalExpanded && !collapsed && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-6 space-y-1 mt-1">
+                    {/* Mine ansatte section - only for admins */}
+                    {(isSystemAdmin || isCompanyAdmin) && (
+                      <>
+                        <div className="py-1.5 px-3">
+                          <span className="text-xs font-medium text-sidebar-foreground/50 uppercase">
+                            Mine ansatte
+                          </span>
+                        </div>
+                        {personaladministrasjonItems.mineAnsatte.map((item) => {
+                          const isActive = location.pathname === item.path.split('?')[0];
+                          
+                          return (
+                            <NavLink
+                              key={item.path}
+                              to={item.path}
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                                isActive
+                                  ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                              )}
+                            >
+                              <item.icon className="w-4 h-4 flex-shrink-0" />
+                              <span>{item.label}</span>
+                            </NavLink>
+                          );
+                        })}
+                      </>
+                    )}
+                    
+                    {/* Mitt arbeidsforhold section - for all employees */}
+                    <div className="py-1.5 px-3">
+                      <span className="text-xs font-medium text-sidebar-foreground/50 uppercase">
+                        Mitt arbeidsforhold
+                      </span>
+                    </div>
+                    {personaladministrasjonItems.mittArbeidsforhold.map((item) => {
+                      const isActive = location.pathname === item.path;
+                      
+                      return (
+                        <NavLink
+                          key={item.path}
+                          to={item.path}
                           className={cn(
                             "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
                             isActive
