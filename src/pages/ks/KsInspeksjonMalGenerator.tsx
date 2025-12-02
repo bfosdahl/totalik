@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, FileText, Edit, GripVertical } from "lucide-react";
+import { Plus, Trash2, FileText, Edit, GripVertical, Download } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -23,15 +24,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useInspectionTemplates, useInspectionTemplateItems } from "@/hooks/useInspectionTemplates";
+import { useInspectionTemplateSeeds } from "@/hooks/useInspectionTemplateSeeds";
 import { useAuth } from "@/contexts/AuthContext";
 
 const inspectionTypeLabels: Record<string, string> = {
   ferdigbefaring: "Ferdigbefaring",
-  forhåndsbefaring: "Forhåndsbefaring",
-  hms: "HMS Inspeksjon",
+  forhandsbefaring: "Forhåndsbefaring",
+  hms_inspeksjon: "HMS Inspeksjon",
   sluttbefaring: "Sluttbefaring",
   vernerunde: "Vernerunde",
-  befaring: "Kundebesøk",
+  kundebesok: "Kundebesøk",
 };
 
 interface TemplateItemForm {
@@ -43,6 +45,7 @@ interface TemplateItemForm {
 export default function KsInspeksjonMalGenerator() {
   const { profile } = useAuth();
   const { templates, createTemplate, updateTemplate, deleteTemplate } = useInspectionTemplates();
+  const { seeds, activateSeed } = useInspectionTemplateSeeds();
   const [showNewTemplateDialog, setShowNewTemplateDialog] = useState(false);
   const [showItemsDialog, setShowItemsDialog] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
@@ -150,6 +153,10 @@ export default function KsInspeksjonMalGenerator() {
     setItems([]);
   };
 
+  const handleActivateSeed = async (seedId: string) => {
+    await activateSeed.mutateAsync(seedId);
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -244,8 +251,15 @@ export default function KsInspeksjonMalGenerator() {
           </Dialog>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {templates.map((template) => (
+        <Tabs defaultValue="mine" className="w-full">
+          <TabsList>
+            <TabsTrigger value="mine">Mine maler</TabsTrigger>
+            <TabsTrigger value="standard">Standard maler</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="mine" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {templates.map((template) => (
             <Card key={template.id}>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
@@ -289,7 +303,44 @@ export default function KsInspeksjonMalGenerator() {
               </CardContent>
             </Card>
           ))}
-        </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="standard" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {seeds.map((seed) => (
+                <Card key={seed.id}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span className="truncate">{seed.template_name}</span>
+                    </CardTitle>
+                    <CardDescription>
+                      {inspectionTypeLabels[seed.inspection_type] || seed.inspection_type}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {seed.description && (
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        {seed.description}
+                      </p>
+                    )}
+                    <div className="text-sm text-muted-foreground mb-4">
+                      {seed.checkpoints.length} sjekkpunkter
+                    </div>
+                    <Button
+                      onClick={() => handleActivateSeed(seed.id)}
+                      disabled={activateSeed.isPending}
+                      className="w-full"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Aktiver mal
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
 
         <Dialog open={showItemsDialog} onOpenChange={setShowItemsDialog}>
           <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
