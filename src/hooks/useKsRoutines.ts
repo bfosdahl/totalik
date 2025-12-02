@@ -213,6 +213,23 @@ export function useKsRoutines() {
     }
   }, [profile?.company_id]);
 
+  const previewRoutineDocument = useCallback(async (filePath: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('ks-routine-documents')
+        .createSignedUrl(filePath, 3600); // 1 hour expiry
+
+      if (error) throw error;
+
+      if (data?.signedUrl) {
+        window.open(data.signedUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error previewing routine document:', error);
+      toast.error('Kunne ikke vise dokument');
+    }
+  }, []);
+
   const downloadRoutineDocument = useCallback(async (filePath: string, fileName: string) => {
     try {
       const { data, error } = await supabase.storage
@@ -245,6 +262,7 @@ export function useKsRoutines() {
     updateRoutine,
     deleteRoutine,
     uploadRoutineDocument,
+    previewRoutineDocument,
     downloadRoutineDocument,
     refetch: fetchRoutines,
   };
