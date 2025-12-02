@@ -157,6 +157,12 @@ export default function KsInspeksjonMalGenerator() {
     await activateSeed.mutateAsync(seedId);
   };
 
+  const isTemplateActivated = (seedName: string, inspectionType: string) => {
+    return templates.some(
+      (t) => t.template_name === seedName && t.inspection_type === inspectionType
+    );
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -327,14 +333,24 @@ export default function KsInspeksjonMalGenerator() {
                     <div className="text-sm text-muted-foreground mb-4">
                       {seed.checkpoints.length} sjekkpunkter
                     </div>
-                    <Button
-                      onClick={() => handleActivateSeed(seed.id)}
-                      disabled={activateSeed.isPending}
-                      className="w-full"
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Aktiver mal
-                    </Button>
+                    {isTemplateActivated(seed.template_name, seed.inspection_type) ? (
+                      <Button
+                        variant="outline"
+                        disabled
+                        className="w-full"
+                      >
+                        Aktivert
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => handleActivateSeed(seed.id)}
+                        disabled={activateSeed.isPending}
+                        className="w-full"
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Aktiver mal
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               ))}
