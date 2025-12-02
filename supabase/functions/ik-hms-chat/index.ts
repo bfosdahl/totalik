@@ -71,11 +71,14 @@ Når du er ferdig med alle spørsmålene, skal du gi SVARET som en ren JSON-stru
   "routines": [
     {
       "id": "routine-1",
+      "routine_number": "R001",
       "routine_name": "Navn på rutine",
       "category": "Kategori",
-      "description": "Beskrivelse av rutinen",
-      "responsible": "Ansvarlig",
-      "frequency": "Frekvens (daglig/ukentlig/månedlig/årlig)"
+      "purpose": "Formål med rutinen",
+      "responsibility": "Ansvarlig person/rolle",
+      "procedure": "Beskrivelse av fremgangsmåte",
+      "examples": "Eksempler på gjennomføring",
+      "remember": "Viktige ting å huske"
     }
   ]
 }
@@ -85,7 +88,7 @@ VIKTIGE FELTER:
 - organization.custom_content: Fullstendig organisasjonsstruktur med roller og ansvarsområder
 - risks: Minimum 5-8 relevante HMS-risikoer for bransjen med realistiske konsekvens- og sannsynlighetsverdier (1-5)
 - actions: Konkrete tiltak knyttet til risikoene med realistiske tidsfrister
-- routines: 8-12 standard HMS-rutiner relevant for bransjen
+- routines: 8-12 standard HMS-rutiner relevant for bransjen, hver med routine_number (f.eks. R001), routine_name, category, purpose, responsibility og procedure
 
 Ikke legg inn ting du finner på selv – bruk kun informasjon fra brukeren. Hvis noe er uklart, bruk en kort standardverdi og marker det med "BEHØVER AVKLARING" i teksten.
 
