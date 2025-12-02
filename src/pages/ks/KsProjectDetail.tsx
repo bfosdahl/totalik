@@ -171,6 +171,8 @@ export default function KsProjectDetail() {
     if (result) {
       setShowNewChecklistDialog(false);
       setSelectedTemplateId("");
+      // Navigate to checklist detail page to start filling it out
+      navigate(`/ks/checklists/${result.id}`);
     }
   };
 
