@@ -1869,6 +1869,41 @@ export type Database = {
           },
         ]
       }
+      ks_inspection_photos: {
+        Row: {
+          file_name: string
+          file_path: string
+          id: string
+          inspection_id: string
+          uploaded_at: string | null
+          uploaded_by_user_id: string | null
+        }
+        Insert: {
+          file_name: string
+          file_path: string
+          id?: string
+          inspection_id: string
+          uploaded_at?: string | null
+          uploaded_by_user_id?: string | null
+        }
+        Update: {
+          file_name?: string
+          file_path?: string
+          id?: string
+          inspection_id?: string
+          uploaded_at?: string | null
+          uploaded_by_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_inspection_photos_inspection_id_fkey"
+            columns: ["inspection_id"]
+            isOneToOne: false
+            referencedRelation: "ks_project_inspections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_photos: {
         Row: {
           checklist_item_id: string
@@ -2560,6 +2595,78 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "ks_project_goals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_project_inspections: {
+        Row: {
+          adresse: string | null
+          beskrivelse: string | null
+          city: string | null
+          company_id: string
+          created_at: string | null
+          gyldig_til: string | null
+          id: string
+          inspection_date: string
+          kunde_navn: string | null
+          opprettet_av_navn: string | null
+          opprettet_av_user_id: string | null
+          postal_code: string | null
+          pris: number | null
+          project_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          adresse?: string | null
+          beskrivelse?: string | null
+          city?: string | null
+          company_id: string
+          created_at?: string | null
+          gyldig_til?: string | null
+          id?: string
+          inspection_date: string
+          kunde_navn?: string | null
+          opprettet_av_navn?: string | null
+          opprettet_av_user_id?: string | null
+          postal_code?: string | null
+          pris?: number | null
+          project_id: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          adresse?: string | null
+          beskrivelse?: string | null
+          city?: string | null
+          company_id?: string
+          created_at?: string | null
+          gyldig_til?: string | null
+          id?: string
+          inspection_date?: string
+          kunde_navn?: string | null
+          opprettet_av_navn?: string | null
+          opprettet_av_user_id?: string | null
+          postal_code?: string | null
+          pris?: number | null
+          project_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_inspections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_inspections_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "ks_projects"
