@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft, CheckCircle2, XCircle, MinusCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, MinusCircle, Camera, X } from "lucide-react";
 import { useKsInspections } from "@/hooks/useKsInspections";
 import { useInspectionTemplates, useInspectionTemplateItems, useInspectionResults } from "@/hooks/useInspectionTemplates";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -48,10 +50,51 @@ export default function KsInspeksjonDetail() {
           help_text: item.help_text,
           status: null,
           comment: "",
+          photos: [],
         }))
       );
     }
   }, [result, templateItems]);
+
+  const handlePhotoUpload = async (index: number, file: File) => {
+    if (!id) return;
+
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${id}/${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("inspection-photos")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("inspection-photos")
+        .getPublicUrl(filePath);
+
+      const newResults = [...checkpointResults];
+      if (!newResults[index].photos) {
+        newResults[index].photos = [];
+      }
+      newResults[index].photos.push(publicUrl);
+      setCheckpointResults(newResults);
+
+      toast.success("Bilde lastet opp");
+    } catch (error: any) {
+      toast.error("Kunne ikke laste opp bilde", {
+        description: error.message,
+      });
+    }
+  };
+
+  const handleRemovePhoto = (checkpointIndex: number, photoIndex: number) => {
+    const newResults = [...checkpointResults];
+    newResults[checkpointIndex].photos.splice(photoIndex, 1);
+    setCheckpointResults(newResults);
+    toast.success("Bilde fjernet");
+  };
 
   const handleStatusChange = (index: number, status: string) => {
     const newResults = [...checkpointResults];
@@ -230,6 +273,46 @@ export default function KsInspeksjonDetail() {
                           onChange={(e) => handleCommentChange(index, e.target.value)}
                           rows={2}
                         />
+
+                        <div className="space-y-2">
+                          <Label className="flex items-center gap-2">
+                            <Camera className="h-4 w-4" />
+                            Legg til bilder
+                          </Label>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                handlePhotoUpload(index, file);
+                                e.target.value = "";
+                              }
+                            }}
+                          />
+                          {checkpoint.photos && checkpoint.photos.length > 0 && (
+                            <div className="grid grid-cols-2 gap-2 mt-2">
+                              {checkpoint.photos.map((photoUrl: string, photoIndex: number) => (
+                                <div key={photoIndex} className="relative group">
+                                  <img
+                                    src={photoUrl}
+                                    alt={`Bilde ${photoIndex + 1}`}
+                                    className="w-full h-32 object-cover rounded-lg"
+                                  />
+                                  <Button
+                                    variant="destructive"
+                                    size="icon"
+                                    className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => handleRemovePhoto(index, photoIndex)}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
