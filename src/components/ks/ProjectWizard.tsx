@@ -10,12 +10,13 @@ import { WizardStepCompetence } from "./wizard/WizardStepCompetence";
 import { WizardStepRoutines } from "./wizard/WizardStepRoutines";
 import { WizardStepChecklists } from "./wizard/WizardStepChecklists";
 import { WizardStepPlanning } from "./wizard/WizardStepPlanning";
-import { useKsProjects, NewKsProjectInput, KsProjectResponsibility } from "@/hooks/useKsProjects";
+import { useKsProjects, NewKsProjectInput, KsProjectResponsibility, KsProject } from "@/hooks/useKsProjects";
 import { toast } from "sonner";
 
 interface ProjectWizardProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  project?: KsProject | null;
 }
 
 export interface WizardData extends NewKsProjectInput {
@@ -50,18 +51,30 @@ const steps = [
   { id: 6, title: "Planlegging", description: "Planlegg kontroller og milepæler" },
 ];
 
-export function ProjectWizard({ open, onOpenChange }: ProjectWizardProps) {
+export function ProjectWizard({ open, onOpenChange, project }: ProjectWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const { createProject, isSaving } = useKsProjects();
+  const { createProject, updateProject, isSaving } = useKsProjects();
   
-  const [wizardData, setWizardData] = useState<WizardData>({
-    name: "",
-    start_date: new Date().toISOString().split("T")[0],
-    aktive_rutiner: [],
-    valgte_sjekklister: [],
-    kompetanse_krav: [],
-    team_members: [],
-    responsibilities: [],
+  const [wizardData, setWizardData] = useState<WizardData>(() => {
+    if (project) {
+      return {
+        ...project,
+        aktive_rutiner: project.aktive_rutiner || [],
+        valgte_sjekklister: project.valgte_sjekklister || [],
+        kompetanse_krav: project.kompetanse_krav || [],
+        team_members: [],
+        responsibilities: [],
+      };
+    }
+    return {
+      name: "",
+      start_date: new Date().toISOString().split("T")[0],
+      aktive_rutiner: [],
+      valgte_sjekklister: [],
+      kompetanse_krav: [],
+      team_members: [],
+      responsibilities: [],
+    };
   });
 
   const updateWizardData = (data: Partial<WizardData>) => {
@@ -105,19 +118,19 @@ export function ProjectWizard({ open, onOpenChange }: ProjectWizardProps) {
       return;
     }
 
-    const result = await createProject(wizardData);
+    let result;
+    if (project?.id) {
+      // Update existing project
+      result = await updateProject(project.id, wizardData);
+    } else {
+      // Create new project
+      result = await createProject(wizardData);
+    }
+    
     if (result) {
+      toast.success(project?.id ? "Prosjekt oppdatert" : "Prosjekt opprettet");
       onOpenChange(false);
       setCurrentStep(1);
-      setWizardData({
-        name: "",
-        start_date: new Date().toISOString().split("T")[0],
-        aktive_rutiner: [],
-        valgte_sjekklister: [],
-        kompetanse_krav: [],
-        team_members: [],
-        responsibilities: [],
-      });
     }
   };
 
@@ -129,9 +142,11 @@ export function ProjectWizard({ open, onOpenChange }: ProjectWizardProps) {
         <div className="flex flex-col h-full">
           {/* Header */}
           <DialogHeader className="px-6 pt-6 pb-4 border-b">
-            <DialogTitle>Prosjekt-wizard</DialogTitle>
+            <DialogTitle>{project?.id ? "Rediger prosjektinformasjon" : "Prosjekt-wizard"}</DialogTitle>
             <DialogDescription>
-              Sett opp et nytt prosjekt på en enkel og komplett måte
+              {project?.id 
+                ? "Oppdater prosjektinformasjon gjennom en enkel guide" 
+                : "Sett opp et nytt prosjekt på en enkel og komplett måte"}
             </DialogDescription>
             <div className="mt-4 space-y-2">
               <div className="flex items-center justify-between text-sm">

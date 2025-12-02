@@ -857,6 +857,7 @@ export default function KsProjectDetail() {
       <ProjectWizard
         open={showProjectWizard}
         onOpenChange={setShowProjectWizard}
+        project={project}
       />
     </AppLayout>
   );
