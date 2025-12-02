@@ -23,7 +23,7 @@ export default function KsInspeksjonDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const { inspections } = useKsInspections();
+  const { inspections, updateInspection } = useKsInspections();
   const { templates } = useInspectionTemplates();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const { items: templateItems } = useInspectionTemplateItems(selectedTemplateId);
@@ -84,6 +84,9 @@ export default function KsInspeksjonDetail() {
       completed_by_name: `${profile.first_name} ${profile.last_name}`,
       notes,
     });
+
+    // Oppdater inspeksjonens status til ferdig
+    await updateInspection(id, { status: "ferdig" });
 
     navigate("/ks/inspeksjoner");
   };
