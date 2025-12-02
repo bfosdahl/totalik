@@ -32,6 +32,7 @@ import { KsSafetyRounds } from "@/components/ks/KsSafetyRounds";
 import { KsHazardousConditions } from "@/components/ks/KsHazardousConditions";
 import { KsActivityLog } from "@/components/ks/KsActivityLog";
 import { CopyProjectDialog } from "@/components/ks/CopyProjectDialog";
+import { ProjectWizard } from "@/components/ks/ProjectWizard";
 import {
   Dialog,
   DialogContent,
@@ -72,6 +73,7 @@ export default function KsProjectDetail() {
   const [selectedSja, setSelectedSja] = useState<any>(null);
   const [selectedDeviation, setSelectedDeviation] = useState<any>(null);
   const [showCopyDialog, setShowCopyDialog] = useState(false);
+  const [showProjectWizard, setShowProjectWizard] = useState(false);
 
   const { checklists, isLoading: checklistsLoading, createChecklist } = useKsChecklists(id || null);
   const { templates } = useKsTemplates();
@@ -347,6 +349,29 @@ export default function KsProjectDetail() {
               </div>
             </CardContent>
           )}
+        </Card>
+
+        {/* Project Info */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-indigo-600 rounded-lg">
+                <FileEdit className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <CardTitle>Prosjektinformasjon</CardTitle>
+                <CardDescription>
+                  Fyll ut eller oppdater komplett prosjektinformasjon
+                </CardDescription>
+              </div>
+              <Button 
+                onClick={() => setShowProjectWizard(true)}
+                variant="outline"
+              >
+                Start prosjekt info
+              </Button>
+            </div>
+          </CardHeader>
         </Card>
 
         {/* Quick Actions */}
@@ -827,6 +852,11 @@ export default function KsProjectDetail() {
         onSuccess={() => {
           navigate("/ks/projects");
         }}
+      />
+
+      <ProjectWizard
+        open={showProjectWizard}
+        onOpenChange={setShowProjectWizard}
       />
     </AppLayout>
   );
