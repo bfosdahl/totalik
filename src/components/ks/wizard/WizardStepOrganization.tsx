@@ -48,27 +48,12 @@ type RoleType = 'SØK' | 'PRO' | 'UTF' | 'KTR';
 
 export function WizardStepOrganization({ data, updateData }: WizardStepOrganizationProps) {
   const { employees } = useEmployees();
-  const [newTeamMember, setNewTeamMember] = useState({ employee_name: "", role: "" });
   const [useCustomNameResp, setUseCustomNameResp] = useState(false);
-  const [useCustomNameTeam, setUseCustomNameTeam] = useState(false);
   const [newResponsibility, setNewResponsibility] = useState({
     role_type: "" as RoleType | "",
     funksjon: "",
     ansvarlig_navn: ""
   });
-
-  const handleAddTeamMember = () => {
-    if (!newTeamMember.employee_name || !newTeamMember.role) return;
-    
-    const updatedMembers = [...(data.team_members || []), newTeamMember];
-    updateData({ team_members: updatedMembers });
-    setNewTeamMember({ employee_name: "", role: "" });
-  };
-
-  const handleRemoveTeamMember = (index: number) => {
-    const updatedMembers = data.team_members?.filter((_, i) => i !== index) || [];
-    updateData({ team_members: updatedMembers });
-  };
 
   const handleAddResponsibility = () => {
     if (!newResponsibility.role_type || !newResponsibility.funksjon || !newResponsibility.ansvarlig_navn) return;
@@ -225,101 +210,6 @@ export function WizardStepOrganization({ data, updateData }: WizardStepOrganizat
         </div>
       </div>
 
-      <div className="border-t pt-6">
-        <h4 className="font-semibold mb-3">Prosjektteam</h4>
-        <p className="text-sm text-muted-foreground mb-4">
-          Legg til ansatte som skal delta i prosjektet
-        </p>
-
-        {/* Display added team members */}
-        {data.team_members && data.team_members.length > 0 && (
-          <div className="space-y-2 mb-4">
-            {data.team_members.map((member, idx) => (
-              <div key={idx} className="flex items-center justify-between gap-2 p-3 border rounded-md bg-muted/30">
-                <div className="flex-1">
-                  <span className="font-medium">{member.employee_name}</span>
-                  <span className="text-sm text-muted-foreground ml-2">- {member.role}</span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onClick={() => handleRemoveTeamMember(idx)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Add new team member */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
-          <div className="space-y-2">
-            <Label>Navn</Label>
-            {useCustomNameTeam ? (
-              <div className="flex gap-2">
-                <Input
-                  value={newTeamMember.employee_name}
-                  onChange={(e) => setNewTeamMember(prev => ({ ...prev, employee_name: e.target.value }))}
-                  placeholder="Skriv navn"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setUseCustomNameTeam(false);
-                    setNewTeamMember(prev => ({ ...prev, employee_name: "" }));
-                  }}
-                >
-                  Velg fra liste
-                </Button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <Select
-                  value={newTeamMember.employee_name}
-                  onValueChange={(value) => {
-                    if (value === "custom") {
-                      setUseCustomNameTeam(true);
-                      setNewTeamMember(prev => ({ ...prev, employee_name: "" }));
-                    } else {
-                      setNewTeamMember(prev => ({ ...prev, employee_name: value }));
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Velg ansatt" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {employees?.map((emp) => (
-                      <SelectItem key={emp.id} value={`${emp.first_name} ${emp.last_name}`}>
-                        {emp.first_name} {emp.last_name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="custom">Annet (skriv navn)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label>Rolle</Label>
-            <Input
-              value={newTeamMember.role}
-              onChange={(e) => setNewTeamMember(prev => ({ ...prev, role: e.target.value }))}
-              placeholder="F.eks. Tømrer, Prosjektleder"
-            />
-          </div>
-
-          <Button onClick={handleAddTeamMember} size="sm">
-            <Plus className="h-4 w-4 mr-1" />
-            Legg til
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }
