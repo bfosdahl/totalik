@@ -47,6 +47,16 @@ const MODULE_DEFINITIONS = [
     name: "Personalhåndbok",
     description: "Digital personalhåndbok for ansatte",
   },
+  {
+    type: "GDPR",
+    name: "GDPR",
+    description: "EUs personvernforordning - dokumentasjon og sjekklister",
+  },
+  {
+    type: "APENHETSLOVEN",
+    name: "Åpenhetsloven",
+    description: "Aktsomhetsvurderinger og redegjørelse for menneskerettigheter",
+  },
 ];
 
 interface CompanyModulesDialogProps {

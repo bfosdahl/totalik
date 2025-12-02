@@ -30,6 +30,8 @@ import {
   UserCheck,
   BarChart3,
   HeartPulse,
+  ShieldAlert,
+  Scale,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -100,6 +102,8 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const [ikMatExpanded, setIkMatExpanded] = useState(false);
   const [ikHmsExpanded, setIkHmsExpanded] = useState(true); // IK/HMS starts expanded by default
   const [personalExpanded, setPersonalExpanded] = useState(true); // Personaladministrasjon starts expanded
+  const [gdprExpanded, setGdprExpanded] = useState(false);
+  const [apenhetslovenExpanded, setApenhetslovenExpanded] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, company, isSystemAdmin, isCompanyAdmin } = useAuth();
@@ -682,6 +686,191 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               )}
             </AnimatePresence>
           </div>
+
+          {/* GDPR collapsible section */}
+          {hasModule("GDPR") && (
+            <div>
+              <button
+                onClick={() => setGdprExpanded(!gdprExpanded)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
+                  collapsed && "justify-center",
+                  location.pathname.startsWith("/gdpr")
+                    ? "text-sidebar-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                )}
+              >
+                <ShieldAlert className={cn(
+                  "w-5 h-5 flex-shrink-0 transition-transform",
+                  !location.pathname.startsWith("/gdpr") && "group-hover:scale-110"
+                )} />
+                <AnimatePresence mode="wait">
+                  {!collapsed && (
+                    <>
+                      <motion.span
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        className="font-medium text-sm flex-1 text-left"
+                      >
+                        GDPR
+                      </motion.span>
+                      {gdprExpanded ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </>
+                  )}
+                </AnimatePresence>
+              </button>
+              
+              <AnimatePresence>
+                {gdprExpanded && !collapsed && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pl-6 space-y-1 mt-1">
+                      <NavLink
+                        to="/gdpr/oversikt"
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                          location.pathname === "/gdpr/oversikt"
+                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                        )}
+                      >
+                        Oversikt
+                      </NavLink>
+                      <NavLink
+                        to="/gdpr/dokumentasjon"
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                          location.pathname === "/gdpr/dokumentasjon"
+                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                        )}
+                      >
+                        Dokumentasjon
+                      </NavLink>
+                      <NavLink
+                        to="/gdpr/sjekkliste"
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                          location.pathname === "/gdpr/sjekkliste"
+                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                        )}
+                      >
+                        Sjekkliste
+                      </NavLink>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
+          {/* Åpenhetsloven collapsible section */}
+          {hasModule("APENHETSLOVEN") && (
+            <div>
+              <button
+                onClick={() => setApenhetslovenExpanded(!apenhetslovenExpanded)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
+                  collapsed && "justify-center",
+                  location.pathname.startsWith("/apenhetsloven")
+                    ? "text-sidebar-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                )}
+              >
+                <Scale className={cn(
+                  "w-5 h-5 flex-shrink-0 transition-transform",
+                  !location.pathname.startsWith("/apenhetsloven") && "group-hover:scale-110"
+                )} />
+                <AnimatePresence mode="wait">
+                  {!collapsed && (
+                    <>
+                      <motion.span
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        className="font-medium text-sm flex-1 text-left"
+                      >
+                        Åpenhetsloven
+                      </motion.span>
+                      {apenhetslovenExpanded ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </>
+                  )}
+                </AnimatePresence>
+              </button>
+              
+              <AnimatePresence>
+                {apenhetslovenExpanded && !collapsed && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pl-6 space-y-1 mt-1">
+                      <NavLink
+                        to="/apenhetsloven/oversikt"
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                          location.pathname === "/apenhetsloven/oversikt"
+                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                        )}
+                      >
+                        Oversikt
+                      </NavLink>
+                      <NavLink
+                        to="/apenhetsloven/aktsomhetsvurdering"
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                          location.pathname === "/apenhetsloven/aktsomhetsvurdering"
+                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                        )}
+                      >
+                        Aktsomhetsvurdering
+                      </NavLink>
+                      <NavLink
+                        to="/apenhetsloven/innsyn"
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                          location.pathname === "/apenhetsloven/innsyn"
+                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                        )}
+                      >
+                        Innsyn forespørsler
+                      </NavLink>
+                      <NavLink
+                        to="/apenhetsloven/redegjoerelse"
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                          location.pathname === "/apenhetsloven/redegjoerelse"
+                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                        )}
+                      >
+                        Årlig redegjørelse
+                      </NavLink>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
           {/* Admin link for system admins */}
           {isSystemAdmin && (
