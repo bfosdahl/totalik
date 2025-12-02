@@ -80,7 +80,6 @@ const ksByggItems = [
   { label: "Prosjekt", path: "/ks/projects" },
   { label: "Sjekklister", path: "/ks/checklists" },
   { label: "Rutiner", path: "/ks/routines" },
-  { label: "Maler", path: "/ks/templates" },
   { label: "SJA", path: "/ks/sja" },
   { label: "Avvik", path: "/ks/avvik" },
   { label: "Inspeksjoner", path: "/ks/inspeksjoner" },
@@ -88,7 +87,6 @@ const ksByggItems = [
   { label: "Farlige forhold", path: "/ks/farlige-fohold" },
   { label: "Tiltakslogg", path: "/ks/tiltakslogg" },
   { label: "Underleverandører (UE)", path: "/ks/underleverandorer" },
-  { label: "Sjekkliste Generator", path: "/ks/checklist-generator" },
   { label: "Prosjektperm PDF", path: "/ks/report" },
 ];
 

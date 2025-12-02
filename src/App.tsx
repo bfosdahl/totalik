@@ -24,7 +24,7 @@ import SetupSystemAdmin from "./pages/admin/SetupSystemAdmin";
 import KsProjectsOverview from "./pages/ks/KsProjectsOverview";
 import KsProjectDetail from "./pages/ks/KsProjectDetail";
 import KsChecklistDetail from "./pages/ks/KsChecklistDetail";
-import KsTemplates from "./pages/ks/KsTemplates";
+
 import KsHmsPlanWizard from "./pages/ks/KsHmsPlanWizard";
 import KsRoutines from "./pages/ks/KsRoutines";
 import KsSja from "./pages/ks/KsSja";
@@ -32,7 +32,7 @@ import KsAvvik from "./pages/ks/KsAvvik";
 import KsVernerunder from "./pages/ks/KsVernerunder";
 import KsFarligeFohold from "./pages/ks/KsFarligeFohold";
 import KsTiltakslogg from "./pages/ks/KsTiltakslogg";
-import KsChecklistGenerator from "./pages/ks/KsChecklistGenerator";
+
 import KsProjectReport from "./pages/ks/KsProjectReport";
 import KsSubcontractorOverview from "./pages/ks/KsSubcontractorOverview";
 import KsSubcontractorView from "./pages/ks/KsSubcontractorView";
@@ -127,7 +127,6 @@ const App = () => (
             <Route path="/ks/checklists" element={<ProtectedRoute><KsChecklists /></ProtectedRoute>} />
             <Route path="/ks/checklists/:id" element={<ProtectedRoute><KsChecklistDetail /></ProtectedRoute>} />
             <Route path="/ks/routines" element={<ProtectedRoute><KsRoutines /></ProtectedRoute>} />
-            <Route path="/ks/templates" element={<ProtectedRoute><KsTemplates /></ProtectedRoute>} />
             <Route path="/ks/sja" element={<ProtectedRoute><KsSja /></ProtectedRoute>} />
             <Route path="/ks/avvik" element={<ProtectedRoute><KsAvvik /></ProtectedRoute>} />
           <Route path="/ks/inspeksjoner" element={<ProtectedRoute><KsInspeksjoner /></ProtectedRoute>} />
@@ -135,7 +134,6 @@ const App = () => (
           <Route path="/ks/inspeksjon-maler" element={<ProtectedRoute><KsInspeksjonMalGenerator /></ProtectedRoute>} />
             <Route path="/ks/farlige-forhold" element={<ProtectedRoute><KsFarligeFohold /></ProtectedRoute>} />
             <Route path="/ks/tiltakslogg" element={<ProtectedRoute><KsTiltakslogg /></ProtectedRoute>} />
-            <Route path="/ks/checklist-generator" element={<ProtectedRoute><KsChecklistGenerator /></ProtectedRoute>} />
             <Route path="/ks/report" element={<ProtectedRoute><KsProjectReport /></ProtectedRoute>} />
             <Route path="/ks/client/:projectId" element={<ProtectedRoute><KsClientManagement /></ProtectedRoute>} />
             <Route path="/ks/projects/:id/ue" element={<ProtectedRoute><KsSubcontractorManagement /></ProtectedRoute>} />
