@@ -1990,6 +1990,33 @@ export type Database = {
           },
         ]
       }
+      ks_inspection_template_seeds: {
+        Row: {
+          checkpoints: Json
+          created_at: string | null
+          description: string | null
+          id: string
+          inspection_type: string
+          template_name: string
+        }
+        Insert: {
+          checkpoints: Json
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          inspection_type: string
+          template_name: string
+        }
+        Update: {
+          checkpoints?: Json
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          inspection_type?: string
+          template_name?: string
+        }
+        Relationships: []
+      }
       ks_inspection_templates: {
         Row: {
           company_id: string
@@ -4229,6 +4256,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      copy_inspection_template_seeds: {
+        Args: { target_company_id: string }
+        Returns: undefined
+      }
       generate_project_number: { Args: never; Returns: string }
       get_user_company_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
