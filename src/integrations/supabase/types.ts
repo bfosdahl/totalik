@@ -1244,6 +1244,107 @@ export type Database = {
           },
         ]
       }
+      gdpr_checklist_responses: {
+        Row: {
+          checklist_type: string
+          company_id: string
+          completed_at: string | null
+          completed_by_id: string | null
+          completed_by_name: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          responses: Json | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          checklist_type: string
+          company_id: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          responses?: Json | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          checklist_type?: string
+          company_id?: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          responses?: Json | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gdpr_checklist_responses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gdpr_checklist_responses_completed_by_id_fkey"
+            columns: ["completed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gdpr_documentation: {
+        Row: {
+          company_id: string
+          content: string | null
+          created_at: string | null
+          documentation_type: string
+          id: string
+          last_reviewed: string | null
+          next_review_date: string | null
+          responsible_person: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          content?: string | null
+          created_at?: string | null
+          documentation_type: string
+          id?: string
+          last_reviewed?: string | null
+          next_review_date?: string | null
+          responsible_person?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          content?: string | null
+          created_at?: string | null
+          documentation_type?: string
+          id?: string
+          last_reviewed?: string | null
+          next_review_date?: string | null
+          responsible_person?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gdpr_documentation_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hms_card_requests: {
         Row: {
           company_id: string
@@ -4154,6 +4255,122 @@ export type Database = {
           {
             foreignKeyName: "time_off_requests_employee_id_fkey"
             columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transparency_act_assessments: {
+        Row: {
+          actions_taken: Json | null
+          assessment_year: number
+          company_id: string
+          created_at: string | null
+          id: string
+          public_statement: string | null
+          published_date: string | null
+          responsible_person: string | null
+          risk_areas: Json | null
+          status: string | null
+          supplier_assessments: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          actions_taken?: Json | null
+          assessment_year: number
+          company_id: string
+          created_at?: string | null
+          id?: string
+          public_statement?: string | null
+          published_date?: string | null
+          responsible_person?: string | null
+          risk_areas?: Json | null
+          status?: string | null
+          supplier_assessments?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          actions_taken?: Json | null
+          assessment_year?: number
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          public_statement?: string | null
+          published_date?: string | null
+          responsible_person?: string | null
+          risk_areas?: Json | null
+          status?: string | null
+          supplier_assessments?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transparency_act_assessments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transparency_act_requests: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          handled_by_id: string | null
+          handled_by_name: string | null
+          id: string
+          request_content: string
+          request_date: string
+          requester_email: string
+          requester_name: string
+          response_content: string | null
+          response_date: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          handled_by_id?: string | null
+          handled_by_name?: string | null
+          id?: string
+          request_content: string
+          request_date?: string
+          requester_email: string
+          requester_name: string
+          response_content?: string | null
+          response_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          handled_by_id?: string | null
+          handled_by_name?: string | null
+          id?: string
+          request_content?: string
+          request_date?: string
+          requester_email?: string
+          requester_name?: string
+          response_content?: string | null
+          response_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transparency_act_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transparency_act_requests_handled_by_id_fkey"
+            columns: ["handled_by_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
