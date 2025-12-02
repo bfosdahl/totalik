@@ -189,11 +189,24 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
         });
       }
 
-      // Save routines
+      // Save routines - transform AI format to expected format
       if (data.routines?.length > 0) {
+        const transformedRoutines = data.routines.map((routine: Record<string, unknown>, index: number) => ({
+          id: routine.id || `routine-${index + 1}`,
+          routine_number: routine.routine_number || `R${(index + 1).toString().padStart(3, '0')}`,
+          routine_name: routine.routine_name || routine.name || 'Ukjent rutine',
+          category: routine.category || 'Generelt',
+          purpose: routine.purpose || routine.description || '',
+          responsibility: routine.responsibility || routine.responsible || '',
+          procedure: routine.procedure || '',
+          examples: routine.examples || '',
+          remember: routine.remember || '',
+          is_predefined: false,
+        }));
+        
         await supabase.from("company_routines").upsert({
           company_id: companyId,
-          routines: data.routines,
+          routines: transformedRoutines,
         });
       }
 

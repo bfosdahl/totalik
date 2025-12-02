@@ -184,8 +184,22 @@ export function useSetupWizard() {
           .maybeSingle();
 
         if (routinesData && routinesData.routines) {
+          // Transform routines to ensure consistent field names
+          const rawRoutines = routinesData.routines as unknown as Record<string, unknown>[];
+          const transformedRoutines = rawRoutines.map((routine, index) => ({
+            id: (routine.id as string) || `routine-${index + 1}`,
+            routine_number: (routine.routine_number as string) || `R${(index + 1).toString().padStart(3, '0')}`,
+            routine_name: (routine.routine_name as string) || (routine.name as string) || 'Ukjent rutine',
+            category: (routine.category as string) || 'Generelt',
+            purpose: (routine.purpose as string) || (routine.description as string) || '',
+            responsibility: (routine.responsibility as string) || (routine.responsible as string) || '',
+            procedure: (routine.procedure as string) || '',
+            examples: (routine.examples as string) || '',
+            remember: (routine.remember as string) || '',
+            is_predefined: (routine.is_predefined as boolean) ?? false,
+          }));
           setRoutines({
-            routines: routinesData.routines as unknown as RoutineItem[],
+            routines: transformedRoutines,
           });
         }
 
