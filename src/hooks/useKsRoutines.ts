@@ -14,6 +14,7 @@ export interface KsRoutine {
   procedure: string | null;
   examples: string | null;
   notes: string | null;
+  file_path: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -126,6 +127,16 @@ export function useKsRoutines() {
 
   const deleteRoutine = useCallback(async (id: string) => {
     try {
+      // Find the routine to get file path
+      const routine = routines.find(r => r.id === id);
+      
+      // Delete file from storage if it exists
+      if (routine?.file_path) {
+        await supabase.storage
+          .from('ks-routine-documents')
+          .remove([routine.file_path]);
+      }
+
       const { error } = await supabase
         .from('ks_routines')
         .delete()
@@ -141,6 +152,81 @@ export function useKsRoutines() {
       toast.error('Kunne ikke slette rutine');
       return false;
     }
+  }, [routines]);
+
+  const uploadRoutineDocument = useCallback(async (
+    file: File,
+    routineNumber: string,
+    name: string,
+    category?: string
+  ) => {
+    if (!profile?.company_id) {
+      toast.error('Du må være logget inn');
+      return null;
+    }
+
+    setIsSaving(true);
+    try {
+      // Upload file to storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${file.name}`;
+      const filePath = `${profile.company_id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('ks-routine-documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Create routine record with file path
+      const { data, error } = await supabase
+        .from('ks_routines')
+        .insert({
+          company_id: profile.company_id,
+          routine_number: routineNumber,
+          name: name,
+          category: category || null,
+          file_path: filePath,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setRoutines(prev => [...prev, data]);
+      toast.success('Rutinedokument lastet opp');
+      return data;
+    } catch (error) {
+      console.error('Error uploading routine document:', error);
+      toast.error('Kunne ikke laste opp dokument');
+      return null;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [profile?.company_id]);
+
+  const downloadRoutineDocument = useCallback(async (filePath: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('ks-routine-documents')
+        .download(filePath);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success('Dokument lastet ned');
+    } catch (error) {
+      console.error('Error downloading routine document:', error);
+      toast.error('Kunne ikke laste ned dokument');
+    }
   }, []);
 
   return {
@@ -150,6 +236,8 @@ export function useKsRoutines() {
     createRoutine,
     updateRoutine,
     deleteRoutine,
+    uploadRoutineDocument,
+    downloadRoutineDocument,
     refetch: fetchRoutines,
   };
 }
