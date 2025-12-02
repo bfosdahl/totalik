@@ -167,9 +167,17 @@ export function useKsRoutines() {
 
     setIsSaving(true);
     try {
-      // Upload file to storage
+      // Sanitize filename - remove emojis and special characters
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${file.name}`;
+      const sanitizedName = file.name
+        .replace(/[^\w\s.-]/gi, '') // Remove emojis and special chars
+        .replace(/\s+/g, '_') // Replace spaces with underscore
+        .replace(/[æÆ]/g, 'ae')
+        .replace(/[øØ]/g, 'o')
+        .replace(/[åÅ]/g, 'a')
+        .substring(0, 100); // Limit length
+      
+      const fileName = `${Date.now()}-${sanitizedName}`;
       const filePath = `${profile.company_id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
