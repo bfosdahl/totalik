@@ -578,6 +578,34 @@ export default function KsProjectDetail() {
                   <p className="text-xs text-muted-foreground">Se rutinebank</p>
                 </div>
               </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center gap-2 p-4"
+                onClick={() => navigate(`/ks/inspeksjoner?project=${id}`)}
+              >
+                <div className="p-2 bg-violet-100 dark:bg-violet-900/20 rounded-lg">
+                  <ClipboardCheck className="h-6 w-6 text-violet-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold">Inspeksjoner</p>
+                  <p className="text-xs text-muted-foreground">KS-inspeksjoner</p>
+                </div>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center gap-2 p-4"
+                onClick={() => navigate(`/ks/tiltakslogg?project=${id}`)}
+              >
+                <div className="p-2 bg-emerald-100 dark:bg-emerald-900/20 rounded-lg">
+                  <FileText className="h-6 w-6 text-emerald-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold">Tiltakslogg</p>
+                  <p className="text-xs text-muted-foreground">Aktivitetslogg</p>
+                </div>
+              </Button>
             </div>
           </CardContent>
         </Card>
