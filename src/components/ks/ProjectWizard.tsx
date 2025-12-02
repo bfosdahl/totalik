@@ -117,13 +117,16 @@ export function ProjectWizard({ open, onOpenChange, project }: ProjectWizardProp
       return;
     }
 
+    // Remove team_members field if it exists (not in database schema)
+    const { team_members, ...dataToSave } = wizardData as any;
+
     let result;
     if (project?.id) {
       // Update existing project
-      result = await updateProject(project.id, wizardData);
+      result = await updateProject(project.id, dataToSave);
     } else {
       // Create new project
-      result = await createProject(wizardData);
+      result = await createProject(dataToSave);
     }
     
     if (result) {
