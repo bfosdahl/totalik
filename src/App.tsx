@@ -41,6 +41,8 @@ import KsDocumentCenter from "./pages/ks/KsDocumentCenter";
 import HmsChat from "./pages/HmsChat";
 import MyCourseCard from "./pages/MyCourseCard";
 import TimeRegistration from "./pages/TimeRegistration";
+import TimeOff from "./pages/TimeOff";
+import WorkSchedule from "./pages/WorkSchedule";
 import InstallApp from "./pages/InstallApp";
 import IkMatHandbok from "./pages/IkMatHandbok";
 import IkMatOppsett from "./pages/IkMatOppsett";
@@ -82,6 +84,8 @@ const App = () => (
             <Route path="/hms-chat" element={<ProtectedRoute><HmsChat /></ProtectedRoute>} />
             <Route path="/my-courses" element={<ProtectedRoute><MyCourseCard /></ProtectedRoute>} />
             <Route path="/time-registration" element={<ProtectedRoute><TimeRegistration /></ProtectedRoute>} />
+            <Route path="/time-off" element={<ProtectedRoute><TimeOff /></ProtectedRoute>} />
+            <Route path="/work-schedule" element={<ProtectedRoute><WorkSchedule /></ProtectedRoute>} />
           <Route path="/ik-mat/handbok" element={<ProtectedRoute><IkMatHandbok /></ProtectedRoute>} />
           <Route path="/ik-mat/oppsett" element={<ProtectedRoute><IkMatOppsett /></ProtectedRoute>} />
           <Route path="/ik-mat/haccp" element={<ProtectedRoute><IkMatHaccp /></ProtectedRoute>} />

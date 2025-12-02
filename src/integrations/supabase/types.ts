@@ -3416,6 +3416,82 @@ export type Database = {
         }
         Relationships: []
       }
+      time_off_requests: {
+        Row: {
+          approved_at: string | null
+          approved_by_id: string | null
+          approved_by_name: string | null
+          company_id: string
+          created_at: string
+          employee_id: string
+          employee_name: string
+          end_date: string
+          id: string
+          notes: string | null
+          reason: string | null
+          start_date: string
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by_id?: string | null
+          approved_by_name?: string | null
+          company_id: string
+          created_at?: string
+          employee_id: string
+          employee_name: string
+          end_date: string
+          id?: string
+          notes?: string | null
+          reason?: string | null
+          start_date: string
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by_id?: string | null
+          approved_by_name?: string | null
+          company_id?: string
+          created_at?: string
+          employee_id?: string
+          employee_name?: string
+          end_date?: string
+          id?: string
+          notes?: string | null
+          reason?: string | null
+          start_date?: string
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_off_requests_approved_by_id_fkey"
+            columns: ["approved_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_off_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_off_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -3436,6 +3512,76 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      work_schedules: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by_id: string | null
+          created_by_name: string | null
+          employee_id: string
+          employee_name: string
+          end_time: string
+          id: string
+          notes: string | null
+          schedule_date: string
+          schedule_type: string
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string | null
+          employee_id: string
+          employee_name: string
+          end_time: string
+          id?: string
+          notes?: string | null
+          schedule_date: string
+          schedule_type?: string
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string | null
+          employee_id?: string
+          employee_name?: string
+          end_time?: string
+          id?: string
+          notes?: string | null
+          schedule_date?: string
+          schedule_type?: string
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_schedules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_schedules_created_by_id_fkey"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_schedules_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
