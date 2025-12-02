@@ -26,6 +26,10 @@ import {
   Calendar,
   Briefcase,
   UserCircle,
+  FileText,
+  UserCheck,
+  BarChart3,
+  HeartPulse,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -54,6 +58,10 @@ const ikHmsItems = [
 const personaladministrasjonItems = {
   mineAnsatte: [
     { icon: Users, label: "Ansattoversikt", path: "/employees" },
+    { icon: FileText, label: "Ansettelsesavtaler", path: "/hr/contracts" },
+    { icon: HeartPulse, label: "Fravær", path: "/hr/absence" },
+    { icon: UserCheck, label: "Medarbeidersamtaler", path: "/hr/meetings" },
+    { icon: BarChart3, label: "Undersøkelser", path: "/hr/surveys" },
     { icon: CalendarDays, label: "Godkjenn ferie", path: "/time-off?view=admin" },
     { icon: Calendar, label: "Arbeidsplan", path: "/work-schedule" },
     { icon: Clock, label: "Godkjenn timer", path: "/time-registration?view=admin" },
@@ -61,6 +69,8 @@ const personaladministrasjonItems = {
   mittArbeidsforhold: [
     { icon: Clock, label: "Mine timer", path: "/time-registration" },
     { icon: CalendarDays, label: "Min ferie", path: "/time-off" },
+    { icon: HeartPulse, label: "Mitt fravær", path: "/my/absence" },
+    { icon: BarChart3, label: "Min respons", path: "/my/surveys" },
   ],
 };
 
