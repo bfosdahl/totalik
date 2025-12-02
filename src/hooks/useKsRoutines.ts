@@ -230,6 +230,40 @@ export function useKsRoutines() {
     }
   }, []);
 
+  const parseAndConvertRoutine = useCallback(async (routineId: string) => {
+    const routine = routines.find(r => r.id === routineId);
+    if (!routine?.file_path) {
+      toast.error('Ingen dokument å konvertere');
+      return null;
+    }
+
+    setIsSaving(true);
+    try {
+      // Download the file first
+      const { data: fileData, error: downloadError } = await supabase.storage
+        .from('ks-routine-documents')
+        .download(routine.file_path);
+
+      if (downloadError) throw downloadError;
+
+      // Create a temporary file URL for parsing
+      const fileUrl = URL.createObjectURL(fileData);
+      
+      // Note: Document parsing would need to be implemented here
+      // For now, we'll create a placeholder routine with basic info
+      toast.info('Dokumentparsing er under utvikling. Opprett rutine manuelt basert på dokumentet.');
+      
+      URL.revokeObjectURL(fileUrl);
+      return null;
+    } catch (error) {
+      console.error('Error parsing routine document:', error);
+      toast.error('Kunne ikke parse dokument');
+      return null;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [routines]);
+
   const downloadRoutineDocument = useCallback(async (filePath: string, fileName: string) => {
     try {
       const { data, error } = await supabase.storage
@@ -264,6 +298,7 @@ export function useKsRoutines() {
     uploadRoutineDocument,
     previewRoutineDocument,
     downloadRoutineDocument,
+    parseAndConvertRoutine,
     refetch: fetchRoutines,
   };
 }
