@@ -132,39 +132,49 @@ export function ProjectWizard({ open, onOpenChange, project }: ProjectWizardProp
     
     if (result && valgte_sjekklister && valgte_sjekklister.length > 0) {
       // Create checklists based on selected checklist IDs
+      // Map wizard IDs to partial template names (we'll use LIKE query)
       const checklistMapping: Record<string, string> = {
-        'forhandsbefaring': 'Forhåndsbefaring',
+        'forhandsbefaring': 'Før oppstart',
         'ferdigbefaring': 'Ferdigbefaring',
         'sluttbefaring': 'Sluttbefaring',
         'overtakelsesbefaring': 'Overtakelsesbefaring',
-        '1_ars_garanti': '1-års garantibefaring',
-        'tomrerarbeid': 'Tømrerarbeid',
-        'vatrom_membran': 'Våtrom før membran',
-        'ror_lukking': 'Rør før lukking',
-        'elektro_trekking': 'Elektro før trekking',
-        'luft_dampsperre': 'Luft-/dampsperre',
-        'brannsikring': 'Brannsikring',
-        'tekking_tak': 'Tekking / tak',
-        'betong_armering': 'Betong / armering',
-        'isolasjon': 'Isolasjon',
-        'kontroll_lukking': 'Kontroll før lukking',
-        'ue_evaluering': 'UE-evaluering',
-        'kvalitet_fagarbeid': 'Sjekkliste kvalitet fagarbeid',
+        '1_ars_garanti': 'garantibefaring',
+        'tomrerarbeid': 'Råbygg / Bjelkelag',
+        'vatrom_membran': 'våtrom',
+        'ror_lukking': 'rør',
+        'elektro_trekking': 'elektro',
+        'luft_dampsperre': 'vindsperre',
+        'brannsikring': 'brann',
+        'tekking_tak': 'Takstoler',
+        'betong_armering': 'betong',
+        'isolasjon': 'isolasjon',
+        'kontroll_lukking': 'lukking',
+        'ue_evaluering': 'evaluering',
+        'kvalitet_fagarbeid': 'kvalitet',
       };
 
       try {
-        // Fetch templates that match the selected checklist names
-        const checklistNames = valgte_sjekklister
-          .map((id: string) => checklistMapping[id])
-          .filter(Boolean);
+        // Fetch all system templates
+        const { data: allTemplates } = await supabase
+          .from('ks_templates')
+          .select('id, name, phase')
+          .eq('is_system_default', true);
 
-        if (checklistNames.length > 0) {
-          const { data: templates } = await supabase
-            .from('ks_templates')
-            .select('id, name, phase')
-            .in('name', checklistNames);
+        if (allTemplates && allTemplates.length > 0) {
+          // Match selected checklists to actual templates using partial name matching
+          const templates = valgte_sjekklister
+            .map((checklistId: string) => {
+              const searchTerm = checklistMapping[checklistId];
+              if (!searchTerm) return null;
+              
+              // Find template that contains the search term (case insensitive)
+              return allTemplates.find(t => 
+                t.name.toLowerCase().includes(searchTerm.toLowerCase())
+              );
+            })
+            .filter((t): t is NonNullable<typeof t> => t !== null);
 
-          if (templates && templates.length > 0) {
+          if (templates.length > 0) {
             // Create checklists for each template
             for (const template of templates) {
               const { data: checklist, error: checklistError } = await supabase
@@ -202,6 +212,8 @@ export function ProjectWizard({ open, onOpenChange, project }: ProjectWizardProp
             }
             
             toast.success(`${templates.length} sjekklister opprettet`);
+          } else {
+            toast.warning('Ingen matchende sjekklister funnet i maler');
           }
         }
       } catch (error) {
