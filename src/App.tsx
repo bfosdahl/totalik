@@ -43,6 +43,12 @@ import MyCourseCard from "./pages/MyCourseCard";
 import TimeRegistration from "./pages/TimeRegistration";
 import TimeOff from "./pages/TimeOff";
 import WorkSchedule from "./pages/WorkSchedule";
+import HrContracts from "./pages/hr/HrContracts";
+import HrAbsence from "./pages/hr/HrAbsence";
+import HrMeetings from "./pages/hr/HrMeetings";
+import HrSurveys from "./pages/hr/HrSurveys";
+import MyAbsence from "./pages/my/MyAbsence";
+import MySurveys from "./pages/my/MySurveys";
 import InstallApp from "./pages/InstallApp";
 import IkMatHandbok from "./pages/IkMatHandbok";
 import IkMatOppsett from "./pages/IkMatOppsett";
@@ -86,6 +92,17 @@ const App = () => (
             <Route path="/time-registration" element={<ProtectedRoute><TimeRegistration /></ProtectedRoute>} />
             <Route path="/time-off" element={<ProtectedRoute><TimeOff /></ProtectedRoute>} />
             <Route path="/work-schedule" element={<ProtectedRoute><WorkSchedule /></ProtectedRoute>} />
+            
+            {/* HR/Personaladministrasjon routes - for admins */}
+            <Route path="/hr/contracts" element={<ProtectedRoute><HrContracts /></ProtectedRoute>} />
+            <Route path="/hr/absence" element={<ProtectedRoute><HrAbsence /></ProtectedRoute>} />
+            <Route path="/hr/meetings" element={<ProtectedRoute><HrMeetings /></ProtectedRoute>} />
+            <Route path="/hr/surveys" element={<ProtectedRoute><HrSurveys /></ProtectedRoute>} />
+            
+            {/* My pages - for employees */}
+            <Route path="/my/absence" element={<ProtectedRoute><MyAbsence /></ProtectedRoute>} />
+            <Route path="/my/surveys" element={<ProtectedRoute><MySurveys /></ProtectedRoute>} />
+            
           <Route path="/ik-mat/handbok" element={<ProtectedRoute><IkMatHandbok /></ProtectedRoute>} />
           <Route path="/ik-mat/oppsett" element={<ProtectedRoute><IkMatOppsett /></ProtectedRoute>} />
           <Route path="/ik-mat/haccp" element={<ProtectedRoute><IkMatHaccp /></ProtectedRoute>} />

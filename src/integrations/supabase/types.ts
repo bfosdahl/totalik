@@ -781,6 +781,95 @@ export type Database = {
           },
         ]
       }
+      employee_absence: {
+        Row: {
+          absence_type: string
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          employee_id: string
+          end_date: string
+          id: string
+          medical_certificate_path: string | null
+          notes: string | null
+          reason: string | null
+          registered_at: string
+          registered_by: string | null
+          start_date: string
+          status: string
+          total_days: number
+          updated_at: string
+        }
+        Insert: {
+          absence_type: string
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          created_at?: string
+          employee_id: string
+          end_date: string
+          id?: string
+          medical_certificate_path?: string | null
+          notes?: string | null
+          reason?: string | null
+          registered_at?: string
+          registered_by?: string | null
+          start_date: string
+          status?: string
+          total_days: number
+          updated_at?: string
+        }
+        Update: {
+          absence_type?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          created_at?: string
+          employee_id?: string
+          end_date?: string
+          id?: string
+          medical_certificate_path?: string | null
+          notes?: string | null
+          reason?: string | null
+          registered_at?: string
+          registered_by?: string | null
+          start_date?: string
+          status?: string
+          total_days?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_absence_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_absence_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_absence_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_absence_registered_by_fkey"
+            columns: ["registered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_courses: {
         Row: {
           certificate_file_path: string | null
@@ -914,6 +1003,241 @@ export type Database = {
           {
             foreignKeyName: "employee_documents_uploaded_by_fkey"
             columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_meetings: {
+        Row: {
+          action_items: Json | null
+          company_id: string
+          completed_date: string | null
+          created_at: string
+          development_discussed: string | null
+          employee_id: string
+          employee_signature: string | null
+          goals_discussed: string | null
+          id: string
+          leader_signature: string | null
+          meeting_leader: string | null
+          meeting_leader_name: string | null
+          meeting_notes: string | null
+          meeting_type: string
+          other_topics: string | null
+          scheduled_date: string
+          signed_at: string | null
+          status: string
+          updated_at: string
+          wellbeing_discussed: string | null
+        }
+        Insert: {
+          action_items?: Json | null
+          company_id: string
+          completed_date?: string | null
+          created_at?: string
+          development_discussed?: string | null
+          employee_id: string
+          employee_signature?: string | null
+          goals_discussed?: string | null
+          id?: string
+          leader_signature?: string | null
+          meeting_leader?: string | null
+          meeting_leader_name?: string | null
+          meeting_notes?: string | null
+          meeting_type?: string
+          other_topics?: string | null
+          scheduled_date: string
+          signed_at?: string | null
+          status?: string
+          updated_at?: string
+          wellbeing_discussed?: string | null
+        }
+        Update: {
+          action_items?: Json | null
+          company_id?: string
+          completed_date?: string | null
+          created_at?: string
+          development_discussed?: string | null
+          employee_id?: string
+          employee_signature?: string | null
+          goals_discussed?: string | null
+          id?: string
+          leader_signature?: string | null
+          meeting_leader?: string | null
+          meeting_leader_name?: string | null
+          meeting_notes?: string | null
+          meeting_type?: string
+          other_topics?: string | null
+          scheduled_date?: string
+          signed_at?: string | null
+          status?: string
+          updated_at?: string
+          wellbeing_discussed?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_meetings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_meetings_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_meetings_meeting_leader_fkey"
+            columns: ["meeting_leader"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_surveys: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          end_date: string
+          id: string
+          is_anonymous: boolean | null
+          questions: Json
+          start_date: string
+          status: string
+          survey_description: string | null
+          survey_title: string
+          survey_type: string
+          target_employee_ids: string[] | null
+          target_group: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          end_date: string
+          id?: string
+          is_anonymous?: boolean | null
+          questions?: Json
+          start_date: string
+          status?: string
+          survey_description?: string | null
+          survey_title: string
+          survey_type?: string
+          target_employee_ids?: string[] | null
+          target_group?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          end_date?: string
+          id?: string
+          is_anonymous?: boolean | null
+          questions?: Json
+          start_date?: string
+          status?: string
+          survey_description?: string | null
+          survey_title?: string
+          survey_type?: string
+          target_employee_ids?: string[] | null
+          target_group?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_surveys_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_surveys_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employment_contracts: {
+        Row: {
+          company_id: string
+          contract_file_path: string | null
+          contract_type: string
+          created_at: string
+          employee_id: string
+          employment_percentage: number
+          end_date: string | null
+          id: string
+          notes: string | null
+          position: string
+          probation_period_months: number | null
+          signed_by_employee: boolean | null
+          signed_by_employer: boolean | null
+          signed_date: string | null
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          contract_file_path?: string | null
+          contract_type: string
+          created_at?: string
+          employee_id: string
+          employment_percentage?: number
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          position: string
+          probation_period_months?: number | null
+          signed_by_employee?: boolean | null
+          signed_by_employer?: boolean | null
+          signed_date?: string | null
+          start_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          contract_file_path?: string | null
+          contract_type?: string
+          created_at?: string
+          employee_id?: string
+          employment_percentage?: number
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          position?: string
+          probation_period_months?: number | null
+          signed_by_employee?: boolean | null
+          signed_by_employer?: boolean | null
+          signed_date?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employment_contracts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employment_contracts_employee_id_fkey"
+            columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -3358,6 +3682,58 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: true
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      survey_responses: {
+        Row: {
+          company_id: string
+          created_at: string
+          employee_id: string | null
+          id: string
+          responses: Json
+          submitted_at: string
+          survey_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          employee_id?: string | null
+          id?: string
+          responses?: Json
+          submitted_at?: string
+          survey_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          employee_id?: string | null
+          id?: string
+          responses?: Json
+          submitted_at?: string
+          survey_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_responses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_responses_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_responses_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "employee_surveys"
             referencedColumns: ["id"]
           },
         ]
