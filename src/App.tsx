@@ -34,6 +34,7 @@ import KsFarligeFohold from "./pages/ks/KsFarligeFohold";
 import KsTiltakslogg from "./pages/ks/KsTiltakslogg";
 import KsChecklistGenerator from "./pages/ks/KsChecklistGenerator";
 import KsProjectReport from "./pages/ks/KsProjectReport";
+import KsSubcontractorOverview from "./pages/ks/KsSubcontractorOverview";
 import KsSubcontractorView from "./pages/ks/KsSubcontractorView";
 import KsClientManagement from "./pages/ks/KsClientManagement";
 import KsSubcontractorManagement from "./pages/ks/KsSubcontractorManagement";
@@ -139,7 +140,10 @@ const App = () => (
             <Route path="/ks/client/:projectId" element={<ProtectedRoute><KsClientManagement /></ProtectedRoute>} />
             <Route path="/ks/projects/:id/ue" element={<ProtectedRoute><KsSubcontractorManagement /></ProtectedRoute>} />
             
-            {/* Subcontractor view - limited access */}
+            {/* Subcontractor overview for company */}
+            <Route path="/ks/underleverandorer" element={<ProtectedRoute><KsSubcontractorOverview /></ProtectedRoute>} />
+            
+            {/* Subcontractor view - limited access portal for UE themselves */}
             <Route path="/ks/subcontractor" element={<ProtectedRoute><KsSubcontractorView /></ProtectedRoute>} />
             
             {/* Admin routes - require system_admin role */}
