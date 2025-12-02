@@ -92,18 +92,18 @@ export default function WorkSchedule() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Arbeidsplanlegger</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold">Arbeidsplanlegger</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Planlegg arbeidstider og registrer faktiske timer
           </p>
         </div>
         {isAdmin && (
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
                 Ny arbeidsplan
               </Button>
@@ -205,19 +205,26 @@ export default function WorkSchedule() {
         )}
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
         <Button
           variant="outline"
+          size="sm"
           onClick={() => setSelectedWeek(addDays(selectedWeek, -7))}
+          className="w-full sm:w-auto"
         >
           Forrige uke
         </Button>
-        <div className="flex-1 text-center font-medium">
-          Uke {format(selectedWeek, "w, yyyy", { locale: nb })} ({format(selectedWeek, "d. MMM", { locale: nb })} - {format(addDays(selectedWeek, 6), "d. MMM", { locale: nb })})
+        <div className="flex-1 text-center font-medium text-sm sm:text-base py-2 sm:py-0">
+          <div className="sm:hidden">Uke {format(selectedWeek, "w, yyyy", { locale: nb })}</div>
+          <div className="hidden sm:block">
+            Uke {format(selectedWeek, "w, yyyy", { locale: nb })} ({format(selectedWeek, "d. MMM", { locale: nb })} - {format(addDays(selectedWeek, 6), "d. MMM", { locale: nb })})
+          </div>
         </div>
         <Button
           variant="outline"
+          size="sm"
           onClick={() => setSelectedWeek(addDays(selectedWeek, 7))}
+          className="w-full sm:w-auto"
         >
           Neste uke
         </Button>
@@ -245,30 +252,29 @@ export default function WorkSchedule() {
                   {plannedSchedules.map((schedule) => (
                     <div
                       key={schedule.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
+                      className="p-3 sm:p-4 border rounded-lg space-y-2"
                     >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <User className="w-4 h-4 text-muted-foreground" />
-                          <span className="font-medium">{schedule.employee_name}</span>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {format(new Date(schedule.schedule_date), "EEEE d. MMM", { locale: nb })}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {schedule.start_time.substring(0, 5)} - {schedule.end_time.substring(0, 5)}
-                          </div>
-                          <Badge variant="outline">
-                            {calculateHours(schedule.start_time, schedule.end_time)} timer
-                          </Badge>
-                        </div>
-                        {schedule.notes && (
-                          <p className="text-sm text-muted-foreground mt-1">{schedule.notes}</p>
-                        )}
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <span className="font-medium text-sm sm:text-base">{schedule.employee_name}</span>
                       </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          <span className="sm:hidden">{format(new Date(schedule.schedule_date), "EEE d. MMM", { locale: nb })}</span>
+                          <span className="hidden sm:inline">{format(new Date(schedule.schedule_date), "EEEE d. MMM", { locale: nb })}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {schedule.start_time.substring(0, 5)} - {schedule.end_time.substring(0, 5)}
+                        </div>
+                        <Badge variant="outline" className="text-xs w-fit">
+                          {calculateHours(schedule.start_time, schedule.end_time)} timer
+                        </Badge>
+                      </div>
+                      {schedule.notes && (
+                        <p className="text-xs sm:text-sm text-muted-foreground">{schedule.notes}</p>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -293,30 +299,29 @@ export default function WorkSchedule() {
                   {actualSchedules.map((schedule) => (
                     <div
                       key={schedule.id}
-                      className="flex items-center justify-between p-4 border rounded-lg bg-muted/30"
+                      className="p-3 sm:p-4 border rounded-lg bg-muted/30 space-y-2"
                     >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <User className="w-4 h-4 text-muted-foreground" />
-                          <span className="font-medium">{schedule.employee_name}</span>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {format(new Date(schedule.schedule_date), "EEEE d. MMM", { locale: nb })}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {schedule.start_time.substring(0, 5)} - {schedule.end_time.substring(0, 5)}
-                          </div>
-                          <Badge variant="outline">
-                            {calculateHours(schedule.start_time, schedule.end_time)} timer
-                          </Badge>
-                        </div>
-                        {schedule.notes && (
-                          <p className="text-sm text-muted-foreground mt-1">{schedule.notes}</p>
-                        )}
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <span className="font-medium text-sm sm:text-base">{schedule.employee_name}</span>
                       </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          <span className="sm:hidden">{format(new Date(schedule.schedule_date), "EEE d. MMM", { locale: nb })}</span>
+                          <span className="hidden sm:inline">{format(new Date(schedule.schedule_date), "EEEE d. MMM", { locale: nb })}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {schedule.start_time.substring(0, 5)} - {schedule.end_time.substring(0, 5)}
+                        </div>
+                        <Badge variant="outline" className="text-xs w-fit">
+                          {calculateHours(schedule.start_time, schedule.end_time)} timer
+                        </Badge>
+                      </div>
+                      {schedule.notes && (
+                        <p className="text-xs sm:text-sm text-muted-foreground">{schedule.notes}</p>
+                      )}
                     </div>
                   ))}
                 </div>

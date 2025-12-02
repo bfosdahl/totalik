@@ -71,17 +71,17 @@ export default function TimeOff() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Feriplanlegger</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold">Ferieplanlegger</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Søk om ferie og se oversikt over ferieforespørsler
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
               Søk om ferie
             </Button>
@@ -166,41 +166,44 @@ export default function TimeOff() {
               {pendingRequests.map((request) => (
                 <div
                   key={request.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg"
                 >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium">{request.employee_name}</span>
-                      <Badge variant="outline">{getTypeName(request.type)}</Badge>
+                      <span className="font-medium text-sm sm:text-base">{request.employee_name}</span>
+                      <Badge variant="outline" className="text-xs">{getTypeName(request.type)}</Badge>
+                      <span className="sm:hidden">{getStatusBadge(request.status)}</span>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {format(new Date(request.start_date), "d. MMM yyyy", { locale: nb })} -{" "}
                       {format(new Date(request.end_date), "d. MMM yyyy", { locale: nb })}
                     </p>
                     {request.reason && (
-                      <p className="text-sm text-muted-foreground mt-1">{request.reason}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{request.reason}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    {getStatusBadge(request.status)}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <span className="hidden sm:block">{getStatusBadge(request.status)}</span>
                     {isAdmin && request.status === "pending" && (
                       <>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => approveRequest(request.id)}
+                          className="w-full sm:w-auto"
                         >
-                          <Check className="w-4 h-4 mr-1" />
-                          Godkjenn
+                          <Check className="w-4 h-4 sm:mr-1" />
+                          <span className="sm:inline">Godkjenn</span>
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => rejectRequest(request.id)}
+                          className="w-full sm:w-auto"
                         >
-                          <X className="w-4 h-4 mr-1" />
-                          Avslå
+                          <X className="w-4 h-4 sm:mr-1" />
+                          <span className="sm:inline">Avslå</span>
                         </Button>
                       </>
                     )}
@@ -229,25 +232,26 @@ export default function TimeOff() {
               {processedRequests.map((request) => (
                 <div
                   key={request.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg"
                 >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium">{request.employee_name}</span>
-                      <Badge variant="outline">{getTypeName(request.type)}</Badge>
+                      <span className="font-medium text-sm sm:text-base">{request.employee_name}</span>
+                      <Badge variant="outline" className="text-xs">{getTypeName(request.type)}</Badge>
+                      <span className="sm:hidden">{getStatusBadge(request.status)}</span>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {format(new Date(request.start_date), "d. MMM yyyy", { locale: nb })} -{" "}
                       {format(new Date(request.end_date), "d. MMM yyyy", { locale: nb })}
                     </p>
                     {request.approved_by_name && (
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-muted-foreground">
                         {request.status === "approved" ? "Godkjent" : "Avslått"} av {request.approved_by_name}
                       </p>
                     )}
                   </div>
-                  <div>{getStatusBadge(request.status)}</div>
+                  <div className="hidden sm:block">{getStatusBadge(request.status)}</div>
                 </div>
               ))}
             </div>
