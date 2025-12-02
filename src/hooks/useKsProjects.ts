@@ -36,6 +36,24 @@ export interface KsProject {
   ansvarlig_utforende_funksjon: string | null;
   ansvarlig_kontrollerende: string | null;
   ansvarlig_kontrollerende_funksjon: string | null;
+  tiltakstype: string | null;
+  hva_skal_bygges: string | null;
+  tiltaksomrade: string | null;
+  prosjekt_funksjon: string | null;
+  byggherre_org_nr: string | null;
+  byggherre_kontakt: string | null;
+  ansvarlig_soker_info: string | null;
+  kompetanse_krav: string[] | null;
+  spesialkompetanse: string | null;
+  ue_kompetanse_krav: string | null;
+  aktive_rutiner: string[] | null;
+  valgte_sjekklister: string[] | null;
+  kontroll_for_lukking_dato: string | null;
+  ferdigbefaring_dato: string | null;
+  sluttbefaring_dato: string | null;
+  planlagte_milepeler: string | null;
+  motefrekvens: string | null;
+  ue_oppfolging_plan: string | null;
   responsibilities?: KsProjectResponsibility[];
 }
 
@@ -93,6 +111,24 @@ export interface NewKsProjectInput {
   ansvarlig_utforende_funksjon?: string;
   ansvarlig_kontrollerende?: string;
   ansvarlig_kontrollerende_funksjon?: string;
+  tiltakstype?: string;
+  hva_skal_bygges?: string;
+  tiltaksomrade?: string;
+  prosjekt_funksjon?: string;
+  byggherre_org_nr?: string;
+  byggherre_kontakt?: string;
+  ansvarlig_soker_info?: string;
+  kompetanse_krav?: string[];
+  spesialkompetanse?: string;
+  ue_kompetanse_krav?: string;
+  aktive_rutiner?: string[];
+  valgte_sjekklister?: string[];
+  kontroll_for_lukking_dato?: string;
+  ferdigbefaring_dato?: string;
+  sluttbefaring_dato?: string;
+  planlagte_milepeler?: string;
+  motefrekvens?: string;
+  ue_oppfolging_plan?: string;
   responsibilities?: Omit<KsProjectResponsibility, 'id' | 'project_id' | 'created_at' | 'updated_at'>[];
 }
 
@@ -147,13 +183,8 @@ export function useKsProjects() {
         .insert({
           company_id: profile.company_id,
           created_by_user_id: user.id,
-          name: projectData.name,
-          address: projectData.address || null,
-          client_name: projectData.client_name || null,
-          tiltaksklasse: projectData.tiltaksklasse || null,
+          ...projectData,
           ansvarsrolle: projectData.ansvarsrolle || 'UTF – Tømrerarbeid og montering av trekonstruksjoner',
-          start_date: projectData.start_date,
-          end_date: projectData.end_date || null,
           status: 'planlagt',
         })
         .select()
