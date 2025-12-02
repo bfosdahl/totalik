@@ -16,8 +16,8 @@ serve(async (req) => {
     
     console.log("Sending time off approval notification:", { requestId, employeeName, status, startDate, endDate });
 
-    const supabaseUrl = Deno.env.get('VITE_SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('VITE_SUPABASE_ANON_KEY')!;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Get the employee's email
