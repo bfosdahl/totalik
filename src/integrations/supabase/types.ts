@@ -2992,6 +2992,38 @@ export type Database = {
           },
         ]
       }
+      ks_project_required_competencies: {
+        Row: {
+          competency_name: string
+          created_at: string | null
+          id: string
+          is_required: boolean | null
+          project_id: string
+        }
+        Insert: {
+          competency_name: string
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          project_id: string
+        }
+        Update: {
+          competency_name?: string
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_required_competencies_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_project_responsibilities: {
         Row: {
           ansvarlig_navn: string
@@ -3220,78 +3252,177 @@ export type Database = {
           },
         ]
       }
+      ks_project_team_members: {
+        Row: {
+          created_at: string | null
+          employee_id: string | null
+          employee_name: string
+          id: string
+          project_id: string
+          role: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          employee_id?: string | null
+          employee_name: string
+          id?: string
+          project_id: string
+          role: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          employee_id?: string | null
+          employee_name?: string
+          id?: string
+          project_id?: string
+          role?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_team_members_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_team_members_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_projects: {
         Row: {
           address: string | null
+          aktive_rutiner: string[] | null
           ansvarlig_kontrollerende: string | null
           ansvarlig_kontrollerende_funksjon: string | null
           ansvarlig_prosjekterende: string | null
           ansvarlig_prosjekterende_funksjon: string | null
           ansvarlig_soker: string | null
           ansvarlig_soker_funksjon: string | null
+          ansvarlig_soker_info: string | null
           ansvarlig_utforende: string | null
           ansvarlig_utforende_funksjon: string | null
           ansvarsrolle: string | null
+          byggherre_kontakt: string | null
+          byggherre_org_nr: string | null
           client_name: string | null
           company_id: string
           created_at: string | null
           created_by_user_id: string | null
           end_date: string | null
+          ferdigbefaring_dato: string | null
+          hva_skal_bygges: string | null
           id: string
+          kompetanse_krav: string[] | null
+          kontroll_for_lukking_dato: string | null
+          motefrekvens: string | null
           name: string
+          planlagte_milepeler: string | null
           project_number: string | null
+          prosjekt_funksjon: string | null
+          sluttbefaring_dato: string | null
+          spesialkompetanse: string | null
           start_date: string
           status: string | null
           tiltaksklasse: string | null
+          tiltaksomrade: string | null
+          tiltakstype: string | null
+          ue_kompetanse_krav: string | null
+          ue_oppfolging_plan: string | null
           updated_at: string | null
+          valgte_sjekklister: string[] | null
         }
         Insert: {
           address?: string | null
+          aktive_rutiner?: string[] | null
           ansvarlig_kontrollerende?: string | null
           ansvarlig_kontrollerende_funksjon?: string | null
           ansvarlig_prosjekterende?: string | null
           ansvarlig_prosjekterende_funksjon?: string | null
           ansvarlig_soker?: string | null
           ansvarlig_soker_funksjon?: string | null
+          ansvarlig_soker_info?: string | null
           ansvarlig_utforende?: string | null
           ansvarlig_utforende_funksjon?: string | null
           ansvarsrolle?: string | null
+          byggherre_kontakt?: string | null
+          byggherre_org_nr?: string | null
           client_name?: string | null
           company_id: string
           created_at?: string | null
           created_by_user_id?: string | null
           end_date?: string | null
+          ferdigbefaring_dato?: string | null
+          hva_skal_bygges?: string | null
           id?: string
+          kompetanse_krav?: string[] | null
+          kontroll_for_lukking_dato?: string | null
+          motefrekvens?: string | null
           name: string
+          planlagte_milepeler?: string | null
           project_number?: string | null
+          prosjekt_funksjon?: string | null
+          sluttbefaring_dato?: string | null
+          spesialkompetanse?: string | null
           start_date: string
           status?: string | null
           tiltaksklasse?: string | null
+          tiltaksomrade?: string | null
+          tiltakstype?: string | null
+          ue_kompetanse_krav?: string | null
+          ue_oppfolging_plan?: string | null
           updated_at?: string | null
+          valgte_sjekklister?: string[] | null
         }
         Update: {
           address?: string | null
+          aktive_rutiner?: string[] | null
           ansvarlig_kontrollerende?: string | null
           ansvarlig_kontrollerende_funksjon?: string | null
           ansvarlig_prosjekterende?: string | null
           ansvarlig_prosjekterende_funksjon?: string | null
           ansvarlig_soker?: string | null
           ansvarlig_soker_funksjon?: string | null
+          ansvarlig_soker_info?: string | null
           ansvarlig_utforende?: string | null
           ansvarlig_utforende_funksjon?: string | null
           ansvarsrolle?: string | null
+          byggherre_kontakt?: string | null
+          byggherre_org_nr?: string | null
           client_name?: string | null
           company_id?: string
           created_at?: string | null
           created_by_user_id?: string | null
           end_date?: string | null
+          ferdigbefaring_dato?: string | null
+          hva_skal_bygges?: string | null
           id?: string
+          kompetanse_krav?: string[] | null
+          kontroll_for_lukking_dato?: string | null
+          motefrekvens?: string | null
           name?: string
+          planlagte_milepeler?: string | null
           project_number?: string | null
+          prosjekt_funksjon?: string | null
+          sluttbefaring_dato?: string | null
+          spesialkompetanse?: string | null
           start_date?: string
           status?: string | null
           tiltaksklasse?: string | null
+          tiltaksomrade?: string | null
+          tiltakstype?: string | null
+          ue_kompetanse_krav?: string | null
+          ue_oppfolging_plan?: string | null
           updated_at?: string | null
+          valgte_sjekklister?: string[] | null
         }
         Relationships: [
           {

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Building2, MapPin, Users, Calendar, MoreVertical, Eye, Pencil, Trash2, X } from "lucide-react";
+import { Plus, Building2, MapPin, Users, Calendar, MoreVertical, Eye, Pencil, Trash2 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ProjectWizard } from "@/components/ks/ProjectWizard";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -108,47 +109,8 @@ type RoleType = 'SØK' | 'PRO' | 'UTF' | 'KTR';
 
 export default function KsProjects() {
   const navigate = useNavigate();
-  const { projects, isLoading, createProject, deleteProject, isSaving } = useKsProjects();
-  const [showNewDialog, setShowNewDialog] = useState(false);
-  const [formData, setFormData] = useState<NewKsProjectInput>({
-    name: "",
-    address: "",
-    client_name: "",
-    tiltaksklasse: "",
-    start_date: new Date().toISOString().split("T")[0],
-  });
-
-  const [responsibilities, setResponsibilities] = useState<Omit<KsProjectResponsibility, 'id' | 'project_id' | 'created_at' | 'updated_at'>[]>([]);
-
-  const handleAddResponsibility = (roleType: RoleType, funksjon: string, navn: string) => {
-    if (!funksjon || !navn) return;
-    setResponsibilities(prev => [...prev, { role_type: roleType, funksjon, ansvarlig_navn: navn }]);
-  };
-
-  const handleRemoveResponsibility = (index: number) => {
-    setResponsibilities(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleCreateProject = async () => {
-    if (!formData.name || !formData.start_date) return;
-    
-    const result = await createProject({
-      ...formData,
-      responsibilities,
-    });
-    
-    if (result) {
-      setShowNewDialog(false);
-      setFormData({
-        name: "",
-        address: "",
-        client_name: "",
-        tiltaksklasse: "",
-        start_date: new Date().toISOString().split("T")[0],
-      });
-      setResponsibilities([]);
-    }
-  };
+  const { projects, isLoading, deleteProject } = useKsProjects();
+  const [showWizard, setShowWizard] = useState(false);
 
   const handleDeleteProject = async (id: string) => {
     if (confirm("Er du sikker på at du vil slette dette prosjektet?")) {
@@ -166,7 +128,7 @@ export default function KsProjects() {
               Kvalitetssikring for bygg- og anleggsprosjekter
             </p>
           </div>
-          <Button onClick={() => setShowNewDialog(true)}>
+          <Button onClick={() => setShowWizard(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Nytt prosjekt
           </Button>
@@ -194,7 +156,7 @@ export default function KsProjects() {
               <p className="text-muted-foreground text-center mb-4">
                 Opprett ditt første KS-prosjekt for å komme i gang med kvalitetssikring.
               </p>
-              <Button onClick={() => setShowNewDialog(true)}>
+              <Button onClick={() => setShowWizard(true)}>
                 <Plus className="mr-2 h-4 w-4" />
                 Opprett prosjekt
               </Button>
@@ -292,144 +254,7 @@ export default function KsProjects() {
         )}
       </div>
 
-      <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>Nytt KS-prosjekt</DialogTitle>
-            <DialogDescription>
-              Opprett et nytt kvalitetssikringsprosjekt
-            </DialogDescription>
-          </DialogHeader>
-          <ScrollArea className="max-h-[calc(90vh-200px)] pr-4">
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Prosjektnavn *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="F.eks. Enebolig Kongsberg"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="client_name">Kunde / Byggherre</Label>
-                <Input
-                  id="client_name"
-                  value={formData.client_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, client_name: e.target.value }))}
-                  placeholder="F.eks. Ola Nordmann"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Adresse</Label>
-                <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                  placeholder="F.eks. Storgata 1, 3600 Kongsberg"
-                />
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <Label>Ansvarlige i byggesak</Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Legg til ansvarlige personer for ulike funksjoner i prosjektet
-                  </p>
-                </div>
-
-                {/* Display added responsibilities */}
-                {responsibilities.length > 0 && (
-                  <div className="space-y-2">
-                    {responsibilities.map((resp, idx) => (
-                      <div key={idx} className="flex items-center justify-between gap-2 p-2 border rounded-md">
-                        <div className="flex-1">
-                          <Badge variant="outline" className="mr-2">{resp.role_type}</Badge>
-                          <span className="text-sm">{resp.funksjon}</span>
-                          <span className="text-xs text-muted-foreground ml-2">- {resp.ansvarlig_navn}</span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => handleRemoveResponsibility(idx)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Add new responsibility */}
-                <ResponsibilityForm
-                  roleType="SØK"
-                  label="Ansvarlig søker"
-                  funksjoner={sokerFunksjoner}
-                  onAdd={handleAddResponsibility}
-                />
-                <ResponsibilityForm
-                  roleType="PRO"
-                  label="Ansvarlig prosjekterende"
-                  funksjoner={projektorendeFunksjoner}
-                  onAdd={handleAddResponsibility}
-                />
-                <ResponsibilityForm
-                  roleType="UTF"
-                  label="Ansvarlig utførende"
-                  funksjoner={utforendeFunksjoner}
-                  onAdd={handleAddResponsibility}
-                />
-                <ResponsibilityForm
-                  roleType="KTR"
-                  label="Ansvarlig kontrollerende"
-                  funksjoner={kontrollendeFunksjoner}
-                  onAdd={handleAddResponsibility}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="tiltaksklasse">Tiltaksklasse</Label>
-                <Select
-                  value={formData.tiltaksklasse}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, tiltaksklasse: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Velg tiltaksklasse" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tiltaksklasseOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="start_date">Startdato *</Label>
-                <Input
-                  id="start_date"
-                  type="date"
-                  value={formData.start_date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
-                />
-              </div>
-            </div>
-          </ScrollArea>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewDialog(false)}>
-              Avbryt
-            </Button>
-            <Button 
-              onClick={handleCreateProject} 
-              disabled={!formData.name || !formData.start_date || isSaving}
-            >
-              {isSaving ? "Oppretter..." : "Opprett prosjekt"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ProjectWizard open={showWizard} onOpenChange={setShowWizard} />
     </AppLayout>
   );
 }
