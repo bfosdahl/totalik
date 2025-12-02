@@ -211,7 +211,14 @@ export function ProjectWizard({ open, onOpenChange, project }: ProjectWizardProp
               }
             }
             
-            toast.success(`${templates.length} sjekklister opprettet`);
+            const createdNames = templates.map(t => t.name).join(', ');
+            toast.success(`${templates.length} sjekklister opprettet: ${createdNames}`);
+            
+            // Check for missing templates
+            const notFound = valgte_sjekklister.length - templates.length;
+            if (notFound > 0) {
+              toast.warning(`${notFound} sjekkliste(r) kunne ikke opprettes (mal mangler i systemet)`);
+            }
           } else {
             toast.warning('Ingen matchende sjekklister funnet i maler');
           }

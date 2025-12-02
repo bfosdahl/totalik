@@ -54,6 +54,7 @@ import { useKsHmsPlan } from "@/hooks/useKsHmsPlan";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
+import { getRutineLabel, getSjekklisteLabel } from "@/lib/ksLabels";
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   planlagt: { label: "Planlagt", variant: "secondary" },
@@ -1049,7 +1050,7 @@ export default function KsProjectDetail() {
                       <p className="font-medium text-muted-foreground mb-2">Aktive rutiner</p>
                       <div className="flex flex-wrap gap-2">
                         {project.aktive_rutiner.map((rutine: string, idx: number) => (
-                          <Badge key={idx} variant="secondary">{rutine}</Badge>
+                          <Badge key={idx} variant="secondary">{getRutineLabel(rutine)}</Badge>
                         ))}
                       </div>
                     </div>
@@ -1059,7 +1060,7 @@ export default function KsProjectDetail() {
                       <p className="font-medium text-muted-foreground mb-2">Valgte sjekklister</p>
                       <div className="flex flex-wrap gap-2">
                         {project.valgte_sjekklister.map((sjekkliste: string, idx: number) => (
-                          <Badge key={idx} variant="secondary">{sjekkliste}</Badge>
+                          <Badge key={idx} variant="secondary">{getSjekklisteLabel(sjekkliste)}</Badge>
                         ))}
                       </div>
                     </div>
