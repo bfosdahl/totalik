@@ -74,27 +74,29 @@ export function useTimeOffRequests() {
     }
 
     try {
-      const { error } = await supabase.from("time_off_requests").insert({
+      const { data, error } = await supabase.from("time_off_requests").insert({
         company_id: profile.company_id,
         employee_id: profile.id,
         employee_name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email || "Ukjent",
         ...requestData,
-      });
+      }).select().single();
 
       if (error) throw error;
 
       toast.success("Ferieforespørsel sendt");
       
-      // Send notification
-      await supabase.functions.invoke("notify-time-off-request", {
-        body: {
-          requestId: profile.id,
-          employeeName: `${profile.first_name || ""} ${profile.last_name || ""}`.trim(),
-          startDate: requestData.start_date,
-          endDate: requestData.end_date,
-          type: requestData.type,
-        },
-      });
+      // Send notification with actual request ID
+      if (data) {
+        await supabase.functions.invoke("notify-time-off-request", {
+          body: {
+            requestId: data.id,
+            employeeName: `${profile.first_name || ""} ${profile.last_name || ""}`.trim(),
+            startDate: requestData.start_date,
+            endDate: requestData.end_date,
+            type: requestData.type,
+          },
+        });
+      }
 
       await fetchRequests();
       return true;

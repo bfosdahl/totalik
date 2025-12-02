@@ -21,13 +21,21 @@ export default function WorkSchedule() {
   const { users } = useCompanyUsers();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
-  const [formData, setFormData] = useState({
-    employee_id: "",
+  const [formData, setFormData] = useState<{
+    employee_id: string | undefined;
+    employee_name: string;
+    schedule_date: string;
+    start_time: string;
+    end_time: string;
+    schedule_type: "planned" | "actual";
+    notes: string;
+  }>({
+    employee_id: undefined,
     employee_name: "",
     schedule_date: "",
     start_time: "",
     end_time: "",
-    schedule_type: "planned" as "planned" | "actual",
+    schedule_type: "planned",
     notes: "",
   });
 
@@ -39,7 +47,7 @@ export default function WorkSchedule() {
     if (success) {
       setIsDialogOpen(false);
       setFormData({
-        employee_id: "",
+        employee_id: undefined,
         employee_name: "",
         schedule_date: "",
         start_time: "",
