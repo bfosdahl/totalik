@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, FileText, Trash2, Edit, ChevronDown, ChevronUp, ArrowLeft, Upload, Download } from 'lucide-react';
+import { Plus, FileText, Trash2, Edit, ChevronDown, ChevronUp, ArrowLeft, Upload, Download, Eye } from 'lucide-react';
 import { useKsRoutines } from '@/hooks/useKsRoutines';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -36,7 +36,7 @@ const CATEGORIES = [
 
 export default function KsRoutines() {
   const navigate = useNavigate();
-  const { routines, isLoading, createRoutine, updateRoutine, deleteRoutine, uploadRoutineDocument, downloadRoutineDocument } = useKsRoutines();
+  const { routines, isLoading, createRoutine, updateRoutine, deleteRoutine, uploadRoutineDocument, previewRoutineDocument, downloadRoutineDocument } = useKsRoutines();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [editingRoutine, setEditingRoutine] = useState<string | null>(null);
@@ -428,14 +428,24 @@ export default function KsRoutines() {
                     </div>
                     <div className="flex items-center gap-2">
                       {routine.file_path && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDownload(routine)}
-                          title="Last ned dokument"
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => previewRoutineDocument(routine.file_path!)}
+                            title="Vis dokument"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDownload(routine)}
+                            title="Last ned dokument"
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        </>
                       )}
                       <Button
                         variant="ghost"
