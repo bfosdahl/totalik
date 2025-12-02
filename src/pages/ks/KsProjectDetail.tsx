@@ -74,6 +74,7 @@ export default function KsProjectDetail() {
   const [selectedDeviation, setSelectedDeviation] = useState<any>(null);
   const [showCopyDialog, setShowCopyDialog] = useState(false);
   const [showProjectWizard, setShowProjectWizard] = useState(false);
+  const [showProjectInfoDialog, setShowProjectInfoDialog] = useState(false);
 
   const { checklists, isLoading: checklistsLoading, createChecklist } = useKsChecklists(id || null);
   const { templates } = useKsTemplates();
@@ -381,6 +382,20 @@ export default function KsProjectDetail() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center gap-2 p-4"
+                onClick={() => setShowProjectInfoDialog(true)}
+              >
+                <div className="p-2 bg-indigo-100 dark:bg-indigo-900/20 rounded-lg">
+                  <FileEdit className="h-6 w-6 text-indigo-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold">Prosjektinformasjon</p>
+                  <p className="text-xs text-muted-foreground">Se detaljer</p>
+                </div>
+              </Button>
+
               <Button
                 variant="outline"
                 className="h-auto flex flex-col items-center gap-2 p-4"
@@ -859,6 +874,208 @@ export default function KsProjectDetail() {
         onOpenChange={setShowProjectWizard}
         project={project}
       />
+
+      {/* Project Info Dialog */}
+      <Dialog open={showProjectInfoDialog} onOpenChange={setShowProjectInfoDialog}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Prosjektinformasjon</DialogTitle>
+            <DialogDescription>
+              Detaljert informasjon om prosjektet
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6">
+            {/* Basic Info */}
+            <div>
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Grunnleggende informasjon
+              </h3>
+              <div className="grid gap-4 md:grid-cols-2 text-sm">
+                <div>
+                  <p className="font-medium text-muted-foreground">Prosjektnavn</p>
+                  <p>{project.name}</p>
+                </div>
+                <div>
+                  <p className="font-medium text-muted-foreground">Status</p>
+                  <Badge variant={statusConfig[project.status]?.variant || "secondary"}>
+                    {statusConfig[project.status]?.label || project.status}
+                  </Badge>
+                </div>
+                {project.project_number && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Prosjektnummer</p>
+                    <p>{project.project_number}</p>
+                  </div>
+                )}
+                {project.client_name && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Kunde</p>
+                    <p>{project.client_name}</p>
+                  </div>
+                )}
+                {project.address && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Adresse</p>
+                    <p>{project.address}</p>
+                  </div>
+                )}
+                {project.tiltaksklasse && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Tiltaksklasse</p>
+                    <p>Klasse {project.tiltaksklasse}</p>
+                  </div>
+                )}
+                {project.start_date && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Startdato</p>
+                    <p>{new Date(project.start_date).toLocaleDateString("nb-NO")}</p>
+                  </div>
+                )}
+                {project.end_date && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Sluttdato</p>
+                    <p>{new Date(project.end_date).toLocaleDateString("nb-NO")}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Additional Project Info */}
+            {(project.tiltakstype || project.hva_skal_bygges || project.prosjekt_funksjon) && (
+              <div>
+                <h3 className="font-semibold mb-3">Tillegsinformasjon</h3>
+                <div className="grid gap-4 md:grid-cols-2 text-sm">
+                  {project.tiltakstype && (
+                    <div>
+                      <p className="font-medium text-muted-foreground">Tiltakstype</p>
+                      <p>{project.tiltakstype}</p>
+                    </div>
+                  )}
+                  {project.hva_skal_bygges && (
+                    <div>
+                      <p className="font-medium text-muted-foreground">Hva skal bygges</p>
+                      <p>{project.hva_skal_bygges}</p>
+                    </div>
+                  )}
+                  {project.prosjekt_funksjon && (
+                    <div>
+                      <p className="font-medium text-muted-foreground">Prosjektfunksjon</p>
+                      <p>{project.prosjekt_funksjon}</p>
+                    </div>
+                  )}
+                  {project.tiltaksomrade && (
+                    <div>
+                      <p className="font-medium text-muted-foreground">Tiltaksområde</p>
+                      <p>{project.tiltaksomrade}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Byggherre Info */}
+            {(project.byggherre_org_nr || project.byggherre_kontakt) && (
+              <div>
+                <h3 className="font-semibold mb-3">Byggherre</h3>
+                <div className="grid gap-4 md:grid-cols-2 text-sm">
+                  {project.byggherre_org_nr && (
+                    <div>
+                      <p className="font-medium text-muted-foreground">Org.nummer</p>
+                      <p>{project.byggherre_org_nr}</p>
+                    </div>
+                  )}
+                  {project.byggherre_kontakt && (
+                    <div>
+                      <p className="font-medium text-muted-foreground">Kontakt</p>
+                      <p>{project.byggherre_kontakt}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Competence & Planning */}
+            {(project.kompetanse_krav || project.kontroll_for_lukking_dato || project.motefrekvens) && (
+              <div>
+                <h3 className="font-semibold mb-3">Kompetanse og planlegging</h3>
+                <div className="grid gap-4 text-sm">
+                  {project.kompetanse_krav && Array.isArray(project.kompetanse_krav) && project.kompetanse_krav.length > 0 && (
+                    <div>
+                      <p className="font-medium text-muted-foreground">Kompetansekrav</p>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {project.kompetanse_krav.map((krav: string, idx: number) => (
+                          <Badge key={idx} variant="outline">{krav}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {project.kontroll_for_lukking_dato && (
+                    <div>
+                      <p className="font-medium text-muted-foreground">Kontroll før lukking</p>
+                      <p>{new Date(project.kontroll_for_lukking_dato).toLocaleDateString("nb-NO")}</p>
+                    </div>
+                  )}
+                  {project.ferdigbefaring_dato && (
+                    <div>
+                      <p className="font-medium text-muted-foreground">Ferdigbefaring</p>
+                      <p>{new Date(project.ferdigbefaring_dato).toLocaleDateString("nb-NO")}</p>
+                    </div>
+                  )}
+                  {project.sluttbefaring_dato && (
+                    <div>
+                      <p className="font-medium text-muted-foreground">Sluttbefaring</p>
+                      <p>{new Date(project.sluttbefaring_dato).toLocaleDateString("nb-NO")}</p>
+                    </div>
+                  )}
+                  {project.motefrekvens && (
+                    <div>
+                      <p className="font-medium text-muted-foreground">Møtefrekvens</p>
+                      <p>{project.motefrekvens}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Active Routines & Checklists */}
+            {((project.aktive_rutiner && Array.isArray(project.aktive_rutiner) && project.aktive_rutiner.length > 0) || 
+              (project.valgte_sjekklister && Array.isArray(project.valgte_sjekklister) && project.valgte_sjekklister.length > 0)) && (
+              <div>
+                <h3 className="font-semibold mb-3">Valgte rutiner og sjekklister</h3>
+                <div className="grid gap-4 text-sm">
+                  {project.aktive_rutiner && Array.isArray(project.aktive_rutiner) && project.aktive_rutiner.length > 0 && (
+                    <div>
+                      <p className="font-medium text-muted-foreground mb-2">Aktive rutiner</p>
+                      <div className="flex flex-wrap gap-2">
+                        {project.aktive_rutiner.map((rutine: string, idx: number) => (
+                          <Badge key={idx} variant="secondary">{rutine}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {project.valgte_sjekklister && Array.isArray(project.valgte_sjekklister) && project.valgte_sjekklister.length > 0 && (
+                    <div>
+                      <p className="font-medium text-muted-foreground mb-2">Valgte sjekklister</p>
+                      <div className="flex flex-wrap gap-2">
+                        {project.valgte_sjekklister.map((sjekkliste: string, idx: number) => (
+                          <Badge key={idx} variant="secondary">{sjekkliste}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowProjectWizard(true)}>
+              Rediger informasjon
+            </Button>
+            <Button onClick={() => setShowProjectInfoDialog(false)}>Lukk</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
