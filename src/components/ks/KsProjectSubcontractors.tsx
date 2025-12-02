@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Plus, FileText, Award, ClipboardCheck, Loader2, Building2, Mail, Phone, Briefcase, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { Users, Plus, FileText, Award, ClipboardCheck, Loader2, Building2, Mail, Phone, Briefcase, CheckCircle2, XCircle, AlertCircle, DollarSign, Calendar } from "lucide-react";
+import { SubcontractorEvaluation } from "./SubcontractorEvaluation";
 import { useKsSubcontractors, useSubcontractorContracts, useSubcontractorCompetence, NewSubcontractorInput } from "@/hooks/useKsSubcontractors";
 import { useSubcontractorInspections } from "@/hooks/useSubcontractorInspections";
 import { format } from "date-fns";
@@ -40,6 +41,9 @@ export const KsProjectSubcontractors = ({ projectId }: KsProjectSubcontractorsPr
     contact_phone: "",
     work_scope: "",
     work_description: "",
+    contract_value: undefined,
+    start_date: "",
+    end_date: "",
   });
 
   const handleSubmit = () => {
@@ -58,6 +62,9 @@ export const KsProjectSubcontractors = ({ projectId }: KsProjectSubcontractorsPr
           contact_phone: "",
           work_scope: "",
           work_description: "",
+          contract_value: undefined,
+          start_date: "",
+          end_date: "",
         });
       },
     });
@@ -172,6 +179,37 @@ export const KsProjectSubcontractors = ({ projectId }: KsProjectSubcontractorsPr
                   rows={3}
                 />
               </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="contract_value">Kontraktsverdi (NOK)</Label>
+                  <Input
+                    id="contract_value"
+                    type="number"
+                    value={formData.contract_value || ""}
+                    onChange={(e) => setFormData({ ...formData, contract_value: e.target.value ? parseFloat(e.target.value) : undefined })}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="start_date">Startdato</Label>
+                  <Input
+                    id="start_date"
+                    type="date"
+                    value={formData.start_date}
+                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="end_date">Sluttdato</Label>
+                  <Input
+                    id="end_date"
+                    type="date"
+                    value={formData.end_date}
+                    onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                  />
+                </div>
+              </div>
             </div>
 
             <DialogFooter>
@@ -226,15 +264,27 @@ export const KsProjectSubcontractors = ({ projectId }: KsProjectSubcontractorsPr
                       </CardDescription>
                     </div>
                   </div>
-                  <Badge variant={subcontractor.status === 'active' ? 'default' : 'secondary'}>
-                    {subcontractor.status === 'active' ? 'Aktiv' : subcontractor.status === 'completed' ? 'Fullført' : 'Avsluttet'}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={subcontractor.status === 'active' ? 'default' : 'secondary'}>
+                      {subcontractor.status === 'active' ? 'Aktiv' : subcontractor.status === 'completed' ? 'Fullført' : 'Avsluttet'}
+                    </Badge>
+                    {subcontractor.approval_status === 'godkjent' && (
+                      <Badge className="bg-green-600">✔ Godkjent</Badge>
+                    )}
+                    {subcontractor.approval_status === 'ikke_godkjent' && (
+                      <Badge variant="destructive">✖ Ikke godkjent</Badge>
+                    )}
+                    {subcontractor.approval_status === 'godkjent_med_forbehold' && (
+                      <Badge className="bg-yellow-600">⚠ Godkjent m/forbehold</Badge>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="info" className="w-full">
-                  <TabsList className="grid w-full grid-cols-4">
+                  <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="info">Informasjon</TabsTrigger>
+                    <TabsTrigger value="evaluation">Gransking</TabsTrigger>
                     <TabsTrigger value="contracts">Kontrakter</TabsTrigger>
                     <TabsTrigger value="competence">Kompetanse</TabsTrigger>
                     <TabsTrigger value="inspections">Kontroller</TabsTrigger>
@@ -262,6 +312,33 @@ export const KsProjectSubcontractors = ({ projectId }: KsProjectSubcontractorsPr
                           </p>
                         </div>
                       )}
+                      {subcontractor.contract_value && (
+                        <div>
+                          <p className="text-muted-foreground mb-1">Kontraktsverdi</p>
+                          <p className="font-medium flex items-center gap-1">
+                            <DollarSign className="h-3 w-3" />
+                            {subcontractor.contract_value.toLocaleString('nb-NO')} NOK
+                          </p>
+                        </div>
+                      )}
+                      {subcontractor.start_date && (
+                        <div>
+                          <p className="text-muted-foreground mb-1">Startdato</p>
+                          <p className="font-medium flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {format(new Date(subcontractor.start_date), "d. MMM yyyy", { locale: nb })}
+                          </p>
+                        </div>
+                      )}
+                      {subcontractor.end_date && (
+                        <div>
+                          <p className="text-muted-foreground mb-1">Sluttdato</p>
+                          <p className="font-medium flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {format(new Date(subcontractor.end_date), "d. MMM yyyy", { locale: nb })}
+                          </p>
+                        </div>
+                      )}
                     </div>
                     {subcontractor.work_description && (
                       <div>
@@ -269,6 +346,10 @@ export const KsProjectSubcontractors = ({ projectId }: KsProjectSubcontractorsPr
                         <p className="text-sm">{subcontractor.work_description}</p>
                       </div>
                     )}
+                  </TabsContent>
+                  
+                  <TabsContent value="evaluation" className="pt-4">
+                    <SubcontractorEvaluation subcontractorId={subcontractor.id} />
                   </TabsContent>
                   
                   <TabsContent value="contracts" className="pt-4">
