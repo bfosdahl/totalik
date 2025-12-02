@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, FileText, Trash2, Edit, ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react';
+import { Plus, FileText, Trash2, Edit, ChevronDown, ChevronUp, ArrowLeft, Upload, Download } from 'lucide-react';
 import { useKsRoutines } from '@/hooks/useKsRoutines';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -36,10 +36,18 @@ const CATEGORIES = [
 
 export default function KsRoutines() {
   const navigate = useNavigate();
-  const { routines, isLoading, createRoutine, updateRoutine, deleteRoutine } = useKsRoutines();
+  const { routines, isLoading, createRoutine, updateRoutine, deleteRoutine, uploadRoutineDocument, downloadRoutineDocument } = useKsRoutines();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [editingRoutine, setEditingRoutine] = useState<string | null>(null);
   const [expandedRoutine, setExpandedRoutine] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadFormData, setUploadFormData] = useState({
+    routine_number: '',
+    name: '',
+    category: '',
+  });
   const [formData, setFormData] = useState({
     routine_number: '',
     name: '',
@@ -99,6 +107,45 @@ export default function KsRoutines() {
     return cat?.label || category;
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const fileExt = file.name.split('.').pop()?.toLowerCase();
+      if (fileExt === 'pdf' || fileExt === 'doc' || fileExt === 'docx') {
+        setSelectedFile(file);
+      } else {
+        alert('Vennligst velg en PDF, DOC eller DOCX fil');
+      }
+    }
+  };
+
+  const handleUploadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFile) return;
+
+    await uploadRoutineDocument(
+      selectedFile,
+      uploadFormData.routine_number,
+      uploadFormData.name,
+      uploadFormData.category
+    );
+
+    setUploadDialogOpen(false);
+    setSelectedFile(null);
+    setUploadFormData({
+      routine_number: '',
+      name: '',
+      category: '',
+    });
+  };
+
+  const handleDownload = (routine: any) => {
+    if (routine.file_path) {
+      const fileName = routine.name + '.' + routine.file_path.split('.').pop();
+      downloadRoutineDocument(routine.file_path, fileName);
+    }
+  };
+
   return (
     <AppLayout>
       <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -114,25 +161,115 @@ export default function KsRoutines() {
               </p>
             </div>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto" onClick={() => {
-                setEditingRoutine(null);
-                setFormData({
-                  routine_number: '',
-                  name: '',
-                  category: '',
-                  purpose: '',
-                  responsibility: '',
-                  procedure: '',
-                  examples: '',
-                  notes: '',
-                });
-              }}>
-                <Plus className="mr-2 h-4 w-4" />
-                Ny rutine
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full sm:w-auto" onClick={() => {
+                  setUploadFormData({
+                    routine_number: '',
+                    name: '',
+                    category: '',
+                  });
+                  setSelectedFile(null);
+                }}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Last opp dokument
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Last opp rutinedokument</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleUploadSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="upload_routine_number">Rutine nr.</Label>
+                    <Input
+                      id="upload_routine_number"
+                      value={uploadFormData.routine_number}
+                      onChange={(e) => setUploadFormData({ ...uploadFormData, routine_number: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="upload_name">Rutine navn</Label>
+                    <Input
+                      id="upload_name"
+                      value={uploadFormData.name}
+                      onChange={(e) => setUploadFormData({ ...uploadFormData, name: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="upload_category">Kategori (SAK10 § 10-1)</Label>
+                    <Select
+                      value={uploadFormData.category}
+                      onValueChange={(value) => setUploadFormData({ ...uploadFormData, category: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Velg kategori (valgfritt)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CATEGORIES.map(cat => (
+                          <SelectItem key={cat.value} value={cat.value}>
+                            {cat.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label>Dokument (PDF, DOC, DOCX)</Label>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {selectedFile ? selectedFile.name : 'Velg fil'}
+                    </Button>
+                  </div>
+
+                  <div className="flex justify-end gap-2">
+                    <Button type="button" variant="outline" onClick={() => setUploadDialogOpen(false)}>
+                      Avbryt
+                    </Button>
+                    <Button type="submit" disabled={!selectedFile}>
+                      Last opp
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full sm:w-auto" onClick={() => {
+                  setEditingRoutine(null);
+                  setFormData({
+                    routine_number: '',
+                    name: '',
+                    category: '',
+                    purpose: '',
+                    responsibility: '',
+                    procedure: '',
+                    examples: '',
+                    notes: '',
+                  });
+                }}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Ny rutine
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
@@ -241,6 +378,7 @@ export default function KsRoutines() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {isLoading ? (
@@ -274,6 +412,12 @@ export default function KsRoutines() {
                             {getCategoryLabel(routine.category)}
                           </Badge>
                         )}
+                        {routine.file_path && (
+                          <Badge variant="default" className="bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+                            <FileText className="h-3 w-3 mr-1" />
+                            Dokument
+                          </Badge>
+                        )}
                       </div>
                       <CardTitle className="text-xl">{routine.name}</CardTitle>
                       {routine.purpose && (
@@ -283,6 +427,16 @@ export default function KsRoutines() {
                       )}
                     </div>
                     <div className="flex items-center gap-2">
+                      {routine.file_path && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDownload(routine)}
+                          title="Last ned dokument"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
@@ -296,13 +450,15 @@ export default function KsRoutines() {
                           <ChevronDown className="h-4 w-4" />
                         )}
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(routine)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
+                      {!routine.file_path && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(routine)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      )}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="ghost" size="icon">
