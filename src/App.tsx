@@ -39,6 +39,8 @@ import KsClientManagement from "./pages/ks/KsClientManagement";
 import KsChecklists from "./pages/ks/KsChecklists";
 import KsDocumentCenter from "./pages/ks/KsDocumentCenter";
 import KsInspeksjoner from "./pages/ks/KsInspeksjoner";
+import KsInspeksjonDetail from "./pages/ks/KsInspeksjonDetail";
+import KsInspeksjonMalGenerator from "./pages/ks/KsInspeksjonMalGenerator";
 import HmsChat from "./pages/HmsChat";
 import MyCourseCard from "./pages/MyCourseCard";
 import TimeRegistration from "./pages/TimeRegistration";
@@ -126,7 +128,9 @@ const App = () => (
             <Route path="/ks/templates" element={<ProtectedRoute><KsTemplates /></ProtectedRoute>} />
             <Route path="/ks/sja" element={<ProtectedRoute><KsSja /></ProtectedRoute>} />
             <Route path="/ks/avvik" element={<ProtectedRoute><KsAvvik /></ProtectedRoute>} />
-            <Route path="/ks/inspeksjoner" element={<ProtectedRoute><KsInspeksjoner /></ProtectedRoute>} />
+          <Route path="/ks/inspeksjoner" element={<ProtectedRoute><KsInspeksjoner /></ProtectedRoute>} />
+          <Route path="/ks/inspeksjon/:id" element={<ProtectedRoute><KsInspeksjonDetail /></ProtectedRoute>} />
+          <Route path="/ks/inspeksjon-maler" element={<ProtectedRoute><KsInspeksjonMalGenerator /></ProtectedRoute>} />
             <Route path="/ks/farlige-forhold" element={<ProtectedRoute><KsFarligeFohold /></ProtectedRoute>} />
             <Route path="/ks/tiltakslogg" element={<ProtectedRoute><KsTiltakslogg /></ProtectedRoute>} />
             <Route path="/ks/checklist-generator" element={<ProtectedRoute><KsChecklistGenerator /></ProtectedRoute>} />
