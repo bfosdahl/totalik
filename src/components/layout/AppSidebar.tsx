@@ -65,6 +65,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [ksByggExpanded, setKsByggExpanded] = useState(false);
   const [ikMatExpanded, setIkMatExpanded] = useState(false);
+  const [ikHmsExpanded, setIkHmsExpanded] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, company, isSystemAdmin } = useAuth();
@@ -229,6 +230,72 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               </NavLink>
             );
           })}
+
+          {/* IK/HMS collapsible section */}
+          {hasModule("IK_HMS") && (
+            <div>
+              <button
+                onClick={() => setIkHmsExpanded(!ikHmsExpanded)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
+                  collapsed && "justify-center",
+                  location.pathname.startsWith("/setup/ai")
+                    ? "text-sidebar-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                )}
+              >
+                <Shield className={cn(
+                  "w-5 h-5 flex-shrink-0 transition-transform",
+                  !location.pathname.startsWith("/setup/ai") && "group-hover:scale-110"
+                )} />
+                <AnimatePresence mode="wait">
+                  {!collapsed && (
+                    <>
+                      <motion.span
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        className="font-medium text-sm flex-1 text-left"
+                      >
+                        IK/HMS
+                      </motion.span>
+                      {ikHmsExpanded ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </>
+                  )}
+                </AnimatePresence>
+              </button>
+              
+              {/* IK/HMS submenu */}
+              <AnimatePresence>
+                {ikHmsExpanded && !collapsed && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pl-6 space-y-1 mt-1">
+                      <NavLink
+                        to="/setup/ai"
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                          location.pathname === "/setup/ai"
+                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                        )}
+                      >
+                        AI Oppsett
+                      </NavLink>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
           {/* IK/MAT collapsible section - similar to KS Bygg */}
           {hasModule("IK_MAT") && (
