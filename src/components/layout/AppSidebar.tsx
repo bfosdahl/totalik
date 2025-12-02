@@ -30,9 +30,16 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 
-const navItems = [
+// Standard navigation items - always visible
+const standardNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+  { icon: Settings, label: "Innstillinger", path: "/settings" },
+];
+
+// IK/HMS module items - shown in collapsible section
+const ikHmsItems = [
   { icon: ClipboardList, label: "Oppsett", path: "/setup" },
+  { icon: Shield, label: "AI Oppsett", path: "/setup/ai" },
   { icon: AlertTriangle, label: "Risikovurdering", path: "/setup?step=2" },
   { icon: ListChecks, label: "Handlingsplan", path: "/setup?step=3" },
   { icon: Users, label: "Ansatte", path: "/employees" },
@@ -43,7 +50,6 @@ const navItems = [
   { icon: FileCheck, label: "HMS aktiviteter", path: "/audits" },
   { icon: BookOpen, label: "Handbok", path: "/handbook" },
   { icon: MessageCircle, label: "HMS Assistent", path: "/hms-chat" },
-  { icon: Settings, label: "Innstillinger", path: "/settings" },
 ];
 
 const ksByggItems = [
@@ -69,6 +75,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [ksByggExpanded, setKsByggExpanded] = useState(false);
   const [ikMatExpanded, setIkMatExpanded] = useState(false);
+  const [ikHmsExpanded, setIkHmsExpanded] = useState(true); // IK/HMS starts expanded by default
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, company, isSystemAdmin } = useAuth();
@@ -177,35 +184,15 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto min-h-0">
-          {navItems.map((item) => {
-            // Handle query parameter matching for setup steps
-            const hasQueryParam = item.path.includes("?");
-            let isActive = false;
-            
-            if (hasQueryParam) {
-              const [basePath, queryString] = item.path.split("?");
-              const itemParams = new URLSearchParams(queryString);
-              const currentParams = new URLSearchParams(location.search);
-              isActive = location.pathname === basePath && 
-                itemParams.get("step") === currentParams.get("step");
-            } else {
-              isActive = location.pathname === item.path || 
-                (item.path !== "/" && item.path !== "/setup" && location.pathname.startsWith(item.path));
-            }
-            
-            // Force navigation for query parameter changes on same base path
-            const handleClick = (e: React.MouseEvent) => {
-              if (hasQueryParam) {
-                e.preventDefault();
-                navigate(item.path);
-              }
-            };
+          {/* Standard navigation items - always visible */}
+          {standardNavItems.map((item) => {
+            const isActive = location.pathname === item.path || 
+              (item.path !== "/" && location.pathname.startsWith(item.path));
             
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
-                onClick={handleClick}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
                   collapsed && "justify-center",
@@ -233,6 +220,98 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               </NavLink>
             );
           })}
+
+          {/* IK/HMS collapsible section - always present as standard module */}
+          <div>
+            <button
+              onClick={() => setIkHmsExpanded(!ikHmsExpanded)}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
+                collapsed && "justify-center",
+                "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              )}
+            >
+              <Shield className={cn(
+                "w-5 h-5 flex-shrink-0 transition-transform",
+                "group-hover:scale-110"
+              )} />
+              <AnimatePresence mode="wait">
+                {!collapsed && (
+                  <>
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      className="font-medium text-sm flex-1 text-left"
+                    >
+                      IK/HMS
+                    </motion.span>
+                    {ikHmsExpanded ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </>
+                )}
+              </AnimatePresence>
+            </button>
+            
+            {/* IK/HMS submenu */}
+            <AnimatePresence>
+              {ikHmsExpanded && !collapsed && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-6 space-y-1 mt-1">
+                    {ikHmsItems.map((item) => {
+                      // Handle query parameter matching for setup steps
+                      const hasQueryParam = item.path.includes("?");
+                      let isActive = false;
+                      
+                      if (hasQueryParam) {
+                        const [basePath, queryString] = item.path.split("?");
+                        const itemParams = new URLSearchParams(queryString);
+                        const currentParams = new URLSearchParams(location.search);
+                        isActive = location.pathname === basePath && 
+                          itemParams.get("step") === currentParams.get("step");
+                      } else {
+                        isActive = location.pathname === item.path || 
+                          (item.path !== "/" && item.path !== "/setup" && location.pathname.startsWith(item.path));
+                      }
+                      
+                      // Force navigation for query parameter changes on same base path
+                      const handleClick = (e: React.MouseEvent) => {
+                        if (hasQueryParam) {
+                          e.preventDefault();
+                          navigate(item.path);
+                        }
+                      };
+                      
+                      return (
+                        <NavLink
+                          key={item.path}
+                          to={item.path}
+                          onClick={handleClick}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                            isActive
+                              ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                              : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                          )}
+                        >
+                          <item.icon className="w-4 h-4 flex-shrink-0" />
+                          <span>{item.label}</span>
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* IK/MAT collapsible section - similar to KS Bygg */}
           {hasModule("IK_MAT") && (
