@@ -2612,13 +2612,22 @@ export type Database = {
           gyldig_til: string | null
           id: string
           inspection_date: string
+          inspection_type: string
           kunde_navn: string | null
+          område: string | null
           opprettet_av_navn: string | null
           opprettet_av_user_id: string | null
+          planlagt_start: string | null
           postal_code: string | null
           pris: number | null
           project_id: string
+          results: Json | null
+          sluttdato: string | null
+          startdato: string | null
           status: string
+          template_id: string | null
+          tidspunkt: string | null
+          tittel: string | null
           updated_at: string | null
         }
         Insert: {
@@ -2630,13 +2639,22 @@ export type Database = {
           gyldig_til?: string | null
           id?: string
           inspection_date: string
+          inspection_type?: string
           kunde_navn?: string | null
+          område?: string | null
           opprettet_av_navn?: string | null
           opprettet_av_user_id?: string | null
+          planlagt_start?: string | null
           postal_code?: string | null
           pris?: number | null
           project_id: string
+          results?: Json | null
+          sluttdato?: string | null
+          startdato?: string | null
           status?: string
+          template_id?: string | null
+          tidspunkt?: string | null
+          tittel?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -2648,13 +2666,22 @@ export type Database = {
           gyldig_til?: string | null
           id?: string
           inspection_date?: string
+          inspection_type?: string
           kunde_navn?: string | null
+          område?: string | null
           opprettet_av_navn?: string | null
           opprettet_av_user_id?: string | null
+          planlagt_start?: string | null
           postal_code?: string | null
           pris?: number | null
           project_id?: string
+          results?: Json | null
+          sluttdato?: string | null
+          startdato?: string | null
           status?: string
+          template_id?: string | null
+          tidspunkt?: string | null
+          tittel?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -2670,6 +2697,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_inspections_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "ks_vernerunde_templates"
             referencedColumns: ["id"]
           },
         ]

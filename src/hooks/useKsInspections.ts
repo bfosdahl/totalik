@@ -3,20 +3,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
+export type InspectionType = 'ferdigbefaring' | 'forhåndsbefaring' | 'hms' | 'sluttbefaring' | 'vernerunde' | 'befaring';
+export type InspectionStatus = 'planlagt' | 'ikke_startet' | 'pågår' | 'ferdig' | 'aktiv' | 'tilbud_opprettet' | 'faktura_opprettet' | 'fakturert' | 'utløpt';
+
 export interface KsInspection {
   id: string;
   project_id: string;
   company_id: string;
   created_at: string;
   inspection_date: string;
+  inspection_type: InspectionType;
+  tittel: string | null;
+  område: string | null;
+  tidspunkt: string | null;
+  planlagt_start: string | null;
+  startdato: string | null;
+  sluttdato: string | null;
   beskrivelse: string | null;
   adresse: string | null;
   postal_code: string | null;
   city: string | null;
   kunde_navn: string | null;
   gyldig_til: string | null;
-  status: 'aktiv' | 'tilbud_opprettet' | 'faktura_opprettet' | 'fakturert' | 'utløpt';
+  status: InspectionStatus;
   pris: number | null;
+  template_id: string | null;
+  results: any;
   opprettet_av_user_id: string | null;
   opprettet_av_navn: string | null;
   updated_at: string;
@@ -50,7 +62,7 @@ export function useKsInspections(projectId?: string) {
       setInspections((data as KsInspection[]) || []);
     } catch (error) {
       console.error("Error fetching inspections:", error);
-      toast.error("Kunne ikke laste befaringer");
+      toast.error("Kunne ikke laste inspeksjoner");
     } finally {
       setIsLoading(false);
     }
@@ -80,12 +92,12 @@ export function useKsInspections(projectId?: string) {
 
       if (error) throw error;
       
-      toast.success("Befaring opprettet");
+      toast.success("Inspeksjon opprettet");
       await fetchInspections();
       return data;
     } catch (error) {
       console.error("Error creating inspection:", error);
-      toast.error("Kunne ikke opprette befaring");
+      toast.error("Kunne ikke opprette inspeksjon");
     }
   };
 
@@ -98,11 +110,11 @@ export function useKsInspections(projectId?: string) {
 
       if (error) throw error;
       
-      toast.success("Befaring oppdatert");
+      toast.success("Inspeksjon oppdatert");
       await fetchInspections();
     } catch (error) {
       console.error("Error updating inspection:", error);
-      toast.error("Kunne ikke oppdatere befaring");
+      toast.error("Kunne ikke oppdatere inspeksjon");
     }
   };
 
@@ -115,11 +127,11 @@ export function useKsInspections(projectId?: string) {
 
       if (error) throw error;
       
-      toast.success("Befaring slettet");
+      toast.success("Inspeksjon slettet");
       await fetchInspections();
     } catch (error) {
       console.error("Error deleting inspection:", error);
-      toast.error("Kunne ikke slette befaring");
+      toast.error("Kunne ikke slette inspeksjon");
     }
   };
 
