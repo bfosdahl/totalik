@@ -87,6 +87,7 @@ const ksByggItems = [
   { label: "Inspeksjonsmaler", path: "/ks/inspeksjon-maler" },
   { label: "Farlige forhold", path: "/ks/farlige-fohold" },
   { label: "Tiltakslogg", path: "/ks/tiltakslogg" },
+  { label: "Underleverandører (UE)", path: "/ks/underleverandorer" },
   { label: "Sjekkliste Generator", path: "/ks/checklist-generator" },
   { label: "Prosjektperm PDF", path: "/ks/report" },
 ];
