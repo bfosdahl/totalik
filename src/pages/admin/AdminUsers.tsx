@@ -392,18 +392,21 @@ export default function AdminUsers() {
               Administrer brukere og roller
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={exportUsersToCSV}>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={exportUsersToCSV} className="flex-1 sm:flex-none min-w-[120px]">
               <Download className="w-4 h-4 mr-2" />
-              Eksporter
+              <span className="hidden sm:inline">Eksporter</span>
+              <span className="sm:hidden">Eksport</span>
             </Button>
-            <Button variant="outline" onClick={() => setIsBulkImportDialogOpen(true)}>
+            <Button variant="outline" onClick={() => setIsBulkImportDialogOpen(true)} className="flex-1 sm:flex-none min-w-[120px]">
               <Upload className="w-4 h-4 mr-2" />
-              Importer
+              <span className="hidden sm:inline">Importer</span>
+              <span className="sm:hidden">Import</span>
             </Button>
-            <Button onClick={() => setIsCreateUserDialogOpen(true)}>
+            <Button onClick={() => setIsCreateUserDialogOpen(true)} className="flex-1 sm:flex-none min-w-[120px]">
               <Plus className="w-4 h-4 mr-2" />
-              Ny bruker
+              <span className="hidden sm:inline">Ny bruker</span>
+              <span className="sm:hidden">Ny</span>
             </Button>
           </div>
         </motion.div>

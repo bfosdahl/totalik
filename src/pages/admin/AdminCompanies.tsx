@@ -354,7 +354,7 @@ export default function AdminCompanies() {
             }
           }}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
                 Ny bedrift
               </Button>
@@ -516,12 +516,12 @@ export default function AdminCompanies() {
           />
         </motion.div>
 
-        {/* Companies list */}
+        {/* Companies list - Desktop */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-card rounded-xl border border-border shadow-card overflow-hidden"
+          className="hidden md:block bg-card rounded-xl border border-border shadow-card overflow-hidden"
         >
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -635,6 +635,136 @@ export default function AdminCompanies() {
               </tbody>
             </table>
           </div>
+        </motion.div>
+
+        {/* Companies list - Mobile */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="md:hidden space-y-3"
+        >
+          {isLoading ? (
+            <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
+              Laster...
+            </div>
+          ) : filteredCompanies?.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
+              Ingen bedrifter funnet
+            </div>
+          ) : (
+            filteredCompanies?.map((company) => (
+              <div
+                key={company.id}
+                className="bg-card rounded-xl border border-border p-4 space-y-3"
+              >
+                {/* Company info */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="p-2 rounded-lg bg-primary/10 shrink-0">
+                      <Building2 className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate">{company.name}</p>
+                      {company.email && (
+                        <p className="text-xs text-muted-foreground truncate">{company.email}</p>
+                      )}
+                      {company.org_number && (
+                        <p className="text-xs text-muted-foreground">Org: {company.org_number}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1 items-end shrink-0">
+                    {getStatusBadge(company.status)}
+                    {company.sg_approved && (
+                      <Badge variant="default" className="bg-green-600 text-xs">
+                        <Award className="w-3 h-3 mr-1" />
+                        SG
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Created date */}
+                <div className="text-xs text-muted-foreground">
+                  Opprettet: {new Date(company.created_at).toLocaleDateString("nb-NO")}
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-col gap-2 pt-2 border-t border-border">
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditDialog(company)}
+                      className="w-full"
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Rediger
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setModulesCompany(company);
+                        setModulesDialogOpen(true);
+                      }}
+                      className="w-full"
+                    >
+                      <Boxes className="w-4 h-4 mr-2" />
+                      Moduler
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleInviteAdmin(company)}
+                      className="w-full"
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Inviter
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      className="w-full"
+                    >
+                      <Link to={`/admin/users?company=${company.id}`}>
+                        <Users className="w-4 h-4 mr-2" />
+                        Brukere
+                      </Link>
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleStatusMutation.mutate({ id: company.id, status: company.status })}
+                      className="w-full"
+                    >
+                      <Power className="w-4 h-4 mr-2" />
+                      {company.status === "active" ? "Deaktiver" : "Aktiver"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-destructive border-destructive/50 hover:bg-destructive/10"
+                      onClick={() => {
+                        if (confirm("Er du sikker på at du vil slette denne bedriften?")) {
+                          deleteMutation.mutate(company.id);
+                        }
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Slett
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </motion.div>
 
         {/* Invite Admin Dialog */}
