@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { WizardData } from "../ProjectWizard";
 import { KsProjectResponsibility } from "@/hooks/useKsProjects";
+import { useEmployees } from "@/hooks/useEmployees";
 
 interface WizardStepOrganizationProps {
   data: WizardData;
@@ -46,7 +47,10 @@ const kontrollendeFunksjoner = [
 type RoleType = 'SØK' | 'PRO' | 'UTF' | 'KTR';
 
 export function WizardStepOrganization({ data, updateData }: WizardStepOrganizationProps) {
+  const { employees } = useEmployees();
   const [newTeamMember, setNewTeamMember] = useState({ employee_name: "", role: "" });
+  const [useCustomNameResp, setUseCustomNameResp] = useState(false);
+  const [useCustomNameTeam, setUseCustomNameTeam] = useState(false);
   const [newResponsibility, setNewResponsibility] = useState({
     role_type: "" as RoleType | "",
     funksjon: "",
@@ -166,11 +170,52 @@ export function WizardStepOrganization({ data, updateData }: WizardStepOrganizat
 
           <div className="space-y-2">
             <Label>Ansvarlig navn</Label>
-            <Input
-              value={newResponsibility.ansvarlig_navn}
-              onChange={(e) => setNewResponsibility(prev => ({ ...prev, ansvarlig_navn: e.target.value }))}
-              placeholder="Navn"
-            />
+            {useCustomNameResp ? (
+              <div className="flex gap-2">
+                <Input
+                  value={newResponsibility.ansvarlig_navn}
+                  onChange={(e) => setNewResponsibility(prev => ({ ...prev, ansvarlig_navn: e.target.value }))}
+                  placeholder="Skriv navn"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setUseCustomNameResp(false);
+                    setNewResponsibility(prev => ({ ...prev, ansvarlig_navn: "" }));
+                  }}
+                >
+                  Velg fra liste
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Select
+                  value={newResponsibility.ansvarlig_navn}
+                  onValueChange={(value) => {
+                    if (value === "custom") {
+                      setUseCustomNameResp(true);
+                      setNewResponsibility(prev => ({ ...prev, ansvarlig_navn: "" }));
+                    } else {
+                      setNewResponsibility(prev => ({ ...prev, ansvarlig_navn: value }));
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg ansatt" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {employees?.map((emp) => (
+                      <SelectItem key={emp.id} value={`${emp.first_name} ${emp.last_name}`}>
+                        {emp.first_name} {emp.last_name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Annet (skriv navn)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <Button onClick={handleAddResponsibility} size="sm">
@@ -212,11 +257,52 @@ export function WizardStepOrganization({ data, updateData }: WizardStepOrganizat
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
           <div className="space-y-2">
             <Label>Navn</Label>
-            <Input
-              value={newTeamMember.employee_name}
-              onChange={(e) => setNewTeamMember(prev => ({ ...prev, employee_name: e.target.value }))}
-              placeholder="Navn på ansatt"
-            />
+            {useCustomNameTeam ? (
+              <div className="flex gap-2">
+                <Input
+                  value={newTeamMember.employee_name}
+                  onChange={(e) => setNewTeamMember(prev => ({ ...prev, employee_name: e.target.value }))}
+                  placeholder="Skriv navn"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setUseCustomNameTeam(false);
+                    setNewTeamMember(prev => ({ ...prev, employee_name: "" }));
+                  }}
+                >
+                  Velg fra liste
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Select
+                  value={newTeamMember.employee_name}
+                  onValueChange={(value) => {
+                    if (value === "custom") {
+                      setUseCustomNameTeam(true);
+                      setNewTeamMember(prev => ({ ...prev, employee_name: "" }));
+                    } else {
+                      setNewTeamMember(prev => ({ ...prev, employee_name: value }));
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg ansatt" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {employees?.map((emp) => (
+                      <SelectItem key={emp.id} value={`${emp.first_name} ${emp.last_name}`}>
+                        {emp.first_name} {emp.last_name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Annet (skriv navn)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
