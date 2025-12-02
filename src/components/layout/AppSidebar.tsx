@@ -99,16 +99,30 @@ interface AppSidebarProps {
 
 export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const [ksByggExpanded, setKsByggExpanded] = useState(false);
-  const [ikMatExpanded, setIkMatExpanded] = useState(false);
-  const [ikHmsExpanded, setIkHmsExpanded] = useState(true); // IK/HMS starts expanded by default
-  const [personalExpanded, setPersonalExpanded] = useState(true); // Personaladministrasjon starts expanded
-  const [gdprExpanded, setGdprExpanded] = useState(false);
-  const [apenhetslovenExpanded, setApenhetslovenExpanded] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, company, isSystemAdmin, isCompanyAdmin } = useAuth();
   const { hasModule } = useCompanyModules();
+  
+  // Determine which section should be expanded based on current route
+  const isOnKsRoute = location.pathname.startsWith('/ks');
+  const isOnIkMatRoute = location.pathname.startsWith('/ik-mat');
+  const isOnIkHmsRoute = ['/setup', '/deviations', '/audits', '/handbook', '/hms-chat'].some(
+    path => location.pathname === path || location.pathname.startsWith(path)
+  );
+  const isOnPersonalRoute = ['/employees', '/hr/', '/time-registration', '/time-off', '/work-schedule', '/my/'].some(
+    path => location.pathname === path || location.pathname.startsWith(path)
+  );
+  const isOnGdprRoute = location.pathname.startsWith('/gdpr');
+  const isOnApenhetslovenRoute = location.pathname.startsWith('/apenhetsloven');
+  
+  // Initialize expanded states based on route (only expand the relevant section)
+  const [ksByggExpanded, setKsByggExpanded] = useState(isOnKsRoute);
+  const [ikMatExpanded, setIkMatExpanded] = useState(isOnIkMatRoute);
+  const [ikHmsExpanded, setIkHmsExpanded] = useState(!isOnKsRoute && !isOnIkMatRoute && !isOnGdprRoute && !isOnApenhetslovenRoute);
+  const [personalExpanded, setPersonalExpanded] = useState(isOnPersonalRoute);
+  const [gdprExpanded, setGdprExpanded] = useState(isOnGdprRoute);
+  const [apenhetslovenExpanded, setApenhetslovenExpanded] = useState(isOnApenhetslovenRoute);
   
   // Check if KS Bygg module is active for this company
   const hasKsBygg = hasModule("IK_BYGG");
@@ -116,6 +130,52 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   // Get company name from context
   const companyName = company?.name || "Ingen bedrift";
   const orgNumber = company?.org_number || null;
+
+  // Update expanded states when route changes
+  useEffect(() => {
+    if (isOnKsRoute) {
+      setKsByggExpanded(true);
+      setIkHmsExpanded(false);
+      setPersonalExpanded(false);
+      setIkMatExpanded(false);
+      setGdprExpanded(false);
+      setApenhetslovenExpanded(false);
+    } else if (isOnIkMatRoute) {
+      setIkMatExpanded(true);
+      setKsByggExpanded(false);
+      setIkHmsExpanded(false);
+      setPersonalExpanded(false);
+      setGdprExpanded(false);
+      setApenhetslovenExpanded(false);
+    } else if (isOnGdprRoute) {
+      setGdprExpanded(true);
+      setKsByggExpanded(false);
+      setIkHmsExpanded(false);
+      setPersonalExpanded(false);
+      setIkMatExpanded(false);
+      setApenhetslovenExpanded(false);
+    } else if (isOnApenhetslovenRoute) {
+      setApenhetslovenExpanded(true);
+      setKsByggExpanded(false);
+      setIkHmsExpanded(false);
+      setPersonalExpanded(false);
+      setIkMatExpanded(false);
+      setGdprExpanded(false);
+    } else if (isOnPersonalRoute) {
+      setPersonalExpanded(true);
+      setKsByggExpanded(false);
+      setIkMatExpanded(false);
+      setGdprExpanded(false);
+      setApenhetslovenExpanded(false);
+    } else if (isOnIkHmsRoute) {
+      setIkHmsExpanded(true);
+      setKsByggExpanded(false);
+      setIkMatExpanded(false);
+      setPersonalExpanded(false);
+      setGdprExpanded(false);
+      setApenhetslovenExpanded(false);
+    }
+  }, [location.pathname, isOnKsRoute, isOnIkMatRoute, isOnIkHmsRoute, isOnPersonalRoute, isOnGdprRoute, isOnApenhetslovenRoute]);
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
