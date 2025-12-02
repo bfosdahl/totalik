@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -92,6 +92,24 @@ const ksByggItems = [
   { label: "Prosjektperm PDF", path: "/ks/report" },
 ];
 
+// Route detection helper
+type SectionKey = 'ks' | 'ikMat' | 'ikHms' | 'personal' | 'gdpr' | 'apenhetsloven' | 'none';
+
+const detectActiveSection = (pathname: string): SectionKey => {
+  if (pathname.startsWith('/ks')) return 'ks';
+  if (pathname.startsWith('/ik-mat')) return 'ikMat';
+  if (pathname.startsWith('/gdpr')) return 'gdpr';
+  if (pathname.startsWith('/apenhetsloven')) return 'apenhetsloven';
+  
+  const personalPaths = ['/employees', '/hr/', '/time-registration', '/time-off', '/work-schedule', '/my/'];
+  if (personalPaths.some(p => pathname === p || pathname.startsWith(p))) return 'personal';
+  
+  const hmsPaths = ['/setup', '/deviations', '/audits', '/handbook', '/hms-chat'];
+  if (hmsPaths.some(p => pathname === p || pathname.startsWith(p))) return 'ikHms';
+  
+  return 'none';
+};
+
 interface AppSidebarProps {
   isOpen: boolean;
   onClose: () => void;
@@ -104,25 +122,32 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const { profile, company, isSystemAdmin, isCompanyAdmin } = useAuth();
   const { hasModule } = useCompanyModules();
   
-  // Determine which section should be expanded based on current route
-  const isOnKsRoute = location.pathname.startsWith('/ks');
-  const isOnIkMatRoute = location.pathname.startsWith('/ik-mat');
-  const isOnIkHmsRoute = ['/setup', '/deviations', '/audits', '/handbook', '/hms-chat'].some(
-    path => location.pathname === path || location.pathname.startsWith(path)
-  );
-  const isOnPersonalRoute = ['/employees', '/hr/', '/time-registration', '/time-off', '/work-schedule', '/my/'].some(
-    path => location.pathname === path || location.pathname.startsWith(path)
-  );
-  const isOnGdprRoute = location.pathname.startsWith('/gdpr');
-  const isOnApenhetslovenRoute = location.pathname.startsWith('/apenhetsloven');
+  // Memoized active section detection
+  const activeSection = useMemo(() => detectActiveSection(location.pathname), [location.pathname]);
   
-  // Initialize expanded states based on route (only expand the relevant section)
-  const [ksByggExpanded, setKsByggExpanded] = useState(isOnKsRoute);
-  const [ikMatExpanded, setIkMatExpanded] = useState(isOnIkMatRoute);
-  const [ikHmsExpanded, setIkHmsExpanded] = useState(!isOnKsRoute && !isOnIkMatRoute && !isOnGdprRoute && !isOnApenhetslovenRoute);
-  const [personalExpanded, setPersonalExpanded] = useState(isOnPersonalRoute);
-  const [gdprExpanded, setGdprExpanded] = useState(isOnGdprRoute);
-  const [apenhetslovenExpanded, setApenhetslovenExpanded] = useState(isOnApenhetslovenRoute);
+  // Expanded states - controlled by active section
+  const [expandedSections, setExpandedSections] = useState<Set<SectionKey>>(() => {
+    const initial = new Set<SectionKey>();
+    if (activeSection !== 'none') initial.add(activeSection);
+    else initial.add('ikHms'); // Default to IK/HMS if on dashboard
+    return initial;
+  });
+  
+  // Update expanded section when route changes
+  useEffect(() => {
+    if (activeSection !== 'none') {
+      setExpandedSections(new Set([activeSection]));
+    }
+  }, [activeSection]);
+  
+  // Toggle section helper
+  const toggleSection = useCallback((section: SectionKey) => {
+    setExpandedSections(prev => {
+      const next = new Set<SectionKey>();
+      if (!prev.has(section)) next.add(section);
+      return next;
+    });
+  }, []);
   
   // Check if KS Bygg module is active for this company
   const hasKsBygg = hasModule("IK_BYGG");
@@ -130,52 +155,6 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   // Get company name from context
   const companyName = company?.name || "Ingen bedrift";
   const orgNumber = company?.org_number || null;
-
-  // Update expanded states when route changes
-  useEffect(() => {
-    if (isOnKsRoute) {
-      setKsByggExpanded(true);
-      setIkHmsExpanded(false);
-      setPersonalExpanded(false);
-      setIkMatExpanded(false);
-      setGdprExpanded(false);
-      setApenhetslovenExpanded(false);
-    } else if (isOnIkMatRoute) {
-      setIkMatExpanded(true);
-      setKsByggExpanded(false);
-      setIkHmsExpanded(false);
-      setPersonalExpanded(false);
-      setGdprExpanded(false);
-      setApenhetslovenExpanded(false);
-    } else if (isOnGdprRoute) {
-      setGdprExpanded(true);
-      setKsByggExpanded(false);
-      setIkHmsExpanded(false);
-      setPersonalExpanded(false);
-      setIkMatExpanded(false);
-      setApenhetslovenExpanded(false);
-    } else if (isOnApenhetslovenRoute) {
-      setApenhetslovenExpanded(true);
-      setKsByggExpanded(false);
-      setIkHmsExpanded(false);
-      setPersonalExpanded(false);
-      setIkMatExpanded(false);
-      setGdprExpanded(false);
-    } else if (isOnPersonalRoute) {
-      setPersonalExpanded(true);
-      setKsByggExpanded(false);
-      setIkMatExpanded(false);
-      setGdprExpanded(false);
-      setApenhetslovenExpanded(false);
-    } else if (isOnIkHmsRoute) {
-      setIkHmsExpanded(true);
-      setKsByggExpanded(false);
-      setIkMatExpanded(false);
-      setPersonalExpanded(false);
-      setGdprExpanded(false);
-      setApenhetslovenExpanded(false);
-    }
-  }, [location.pathname, isOnKsRoute, isOnIkMatRoute, isOnIkHmsRoute, isOnPersonalRoute, isOnGdprRoute, isOnApenhetslovenRoute]);
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -313,7 +292,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           {/* IK/HMS collapsible section - always present as standard module */}
           <div>
             <button
-              onClick={() => setIkHmsExpanded(!ikHmsExpanded)}
+              onClick={() => toggleSection('ikHms')}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
                 collapsed && "justify-center",
@@ -335,7 +314,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                     >
                       IK/HMS
                     </motion.span>
-                    {ikHmsExpanded ? (
+                    {expandedSections.has('ikHms') ? (
                       <ChevronUp className="w-4 h-4" />
                     ) : (
                       <ChevronDown className="w-4 h-4" />
@@ -347,7 +326,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             
             {/* IK/HMS submenu */}
             <AnimatePresence>
-              {ikHmsExpanded && !collapsed && (
+              {expandedSections.has('ikHms') && !collapsed && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
@@ -405,7 +384,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           {/* Personaladministrasjon collapsible section - standard for all companies */}
           <div>
             <button
-              onClick={() => setPersonalExpanded(!personalExpanded)}
+              onClick={() => toggleSection('personal')}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
                 collapsed && "justify-center",
@@ -427,7 +406,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                     >
                       Personaladministrasjon
                     </motion.span>
-                    {personalExpanded ? (
+                    {expandedSections.has('personal') ? (
                       <ChevronUp className="w-4 h-4" />
                     ) : (
                       <ChevronDown className="w-4 h-4" />
@@ -439,7 +418,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             
             {/* Personaladministrasjon submenu */}
             <AnimatePresence>
-              {personalExpanded && !collapsed && (
+              {expandedSections.has('personal') && !collapsed && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
@@ -512,7 +491,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           {hasModule("IK_MAT") && (
             <div>
               <button
-                onClick={() => setIkMatExpanded(!ikMatExpanded)}
+                onClick={() => toggleSection('ikMat')}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
                   collapsed && "justify-center",
@@ -536,7 +515,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                       >
                         IK/MAT
                       </motion.span>
-                      {ikMatExpanded ? (
+                      {expandedSections.has('ikMat') ? (
                         <ChevronUp className="w-4 h-4" />
                       ) : (
                         <ChevronDown className="w-4 h-4" />
@@ -548,7 +527,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               
               {/* IK/MAT submenu */}
               <AnimatePresence>
-                {ikMatExpanded && !collapsed && (
+                {expandedSections.has('ikMat') && !collapsed && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
@@ -665,7 +644,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           {/* KS Bygg collapsible section - visible but locked if module not active */}
           <div className={cn(!hasKsBygg && "opacity-60")}>
             <button
-              onClick={() => hasKsBygg && setKsByggExpanded(!ksByggExpanded)}
+              onClick={() => hasKsBygg && toggleSection('ks')}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
                 collapsed && "justify-center",
@@ -694,7 +673,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                     </motion.span>
                     {!hasKsBygg ? (
                       <Lock className="w-4 h-4 text-muted-foreground" />
-                    ) : ksByggExpanded ? (
+                    ) : expandedSections.has('ks') ? (
                       <ChevronUp className="w-4 h-4" />
                     ) : (
                       <ChevronDown className="w-4 h-4" />
@@ -715,7 +694,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             
             {/* KS Bygg submenu - only when active */}
             <AnimatePresence>
-              {hasKsBygg && ksByggExpanded && !collapsed && (
+              {hasKsBygg && expandedSections.has('ks') && !collapsed && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
@@ -752,7 +731,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           {hasModule("GDPR") && (
             <div>
               <button
-                onClick={() => setGdprExpanded(!gdprExpanded)}
+                onClick={() => toggleSection('gdpr')}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
                   collapsed && "justify-center",
@@ -776,7 +755,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                       >
                         GDPR
                       </motion.span>
-                      {gdprExpanded ? (
+                      {expandedSections.has('gdpr') ? (
                         <ChevronUp className="w-4 h-4" />
                       ) : (
                         <ChevronDown className="w-4 h-4" />
@@ -787,7 +766,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               </button>
               
               <AnimatePresence>
-                {gdprExpanded && !collapsed && (
+                {expandedSections.has('gdpr') && !collapsed && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
@@ -839,7 +818,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           {hasModule("APENHETSLOVEN") && (
             <div>
               <button
-                onClick={() => setApenhetslovenExpanded(!apenhetslovenExpanded)}
+                onClick={() => toggleSection('apenhetsloven')}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
                   collapsed && "justify-center",
@@ -863,7 +842,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                       >
                         Åpenhetsloven
                       </motion.span>
-                      {apenhetslovenExpanded ? (
+                      {expandedSections.has('apenhetsloven') ? (
                         <ChevronUp className="w-4 h-4" />
                       ) : (
                         <ChevronDown className="w-4 h-4" />
@@ -874,7 +853,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               </button>
               
               <AnimatePresence>
-                {apenhetslovenExpanded && !collapsed && (
+                {expandedSections.has('apenhetsloven') && !collapsed && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}

@@ -402,36 +402,39 @@ export default function KsRoutines() {
           <div className="space-y-4">
             {routines.map((routine) => (
               <Card key={routine.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="outline">{routine.routine_number}</Badge>
+                <CardHeader className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <Badge variant="outline" className="text-xs">{routine.routine_number}</Badge>
                         {routine.category && (
-                          <Badge variant="secondary">
+                          <Badge variant="secondary" className="text-xs truncate max-w-[200px]">
                             {getCategoryLabel(routine.category)}
                           </Badge>
                         )}
                         {routine.file_path && (
-                          <Badge variant="default" className="bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+                          <Badge variant="default" className="bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 text-xs">
                             <FileText className="h-3 w-3 mr-1" />
                             Dokument
                           </Badge>
                         )}
                       </div>
-                      <CardTitle className="text-xl">{routine.name}</CardTitle>
+                      <CardTitle className="text-lg sm:text-xl break-words">{routine.name}</CardTitle>
                       {routine.purpose && (
-                        <CardDescription className="mt-2">
+                        <CardDescription className="mt-2 text-sm line-clamp-2">
                           {routine.purpose}
                         </CardDescription>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    
+                    {/* Action buttons - responsive grid */}
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 sm:flex-nowrap">
                       {routine.file_path && (
                         <>
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="h-8 w-8 sm:h-9 sm:w-9"
                             onClick={() => previewRoutineDocument(routine.file_path!)}
                             title="Vis dokument"
                           >
@@ -440,6 +443,7 @@ export default function KsRoutines() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="h-8 w-8 sm:h-9 sm:w-9"
                             onClick={() => handleDownload(routine)}
                             title="Last ned dokument"
                           >
@@ -448,6 +452,7 @@ export default function KsRoutines() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="h-8 w-8 sm:h-9 sm:w-9"
                             onClick={() => parseAndConvertRoutine(routine.id)}
                             title="Konverter til redigerbar rutine"
                           >
@@ -458,6 +463,7 @@ export default function KsRoutines() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-8 w-8 sm:h-9 sm:w-9"
                         onClick={() => setExpandedRoutine(
                           expandedRoutine === routine.id ? null : routine.id
                         )}
@@ -472,6 +478,7 @@ export default function KsRoutines() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="h-8 w-8 sm:h-9 sm:w-9"
                           onClick={() => handleEdit(routine)}
                         >
                           <Edit className="h-4 w-4" />
@@ -479,20 +486,20 @@ export default function KsRoutines() {
                       )}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent className="max-w-[95vw] sm:max-w-lg">
                           <AlertDialogHeader>
                             <AlertDialogTitle>Slett rutine?</AlertDialogTitle>
                             <AlertDialogDescription>
                               Er du sikker på at du vil slette denne rutinen? Dette kan ikke angres.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDelete(routine.id)}>
+                          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                            <AlertDialogCancel className="w-full sm:w-auto">Avbryt</AlertDialogCancel>
+                            <AlertDialogAction className="w-full sm:w-auto" onClick={() => handleDelete(routine.id)}>
                               Slett
                             </AlertDialogAction>
                           </AlertDialogFooter>
