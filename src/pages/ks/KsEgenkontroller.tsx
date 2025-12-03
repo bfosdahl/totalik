@@ -204,7 +204,8 @@ export default function KsEgenkontroller() {
             id,
             status,
             comment,
-            ks_template_items(description)
+            template_item_id,
+            ks_template_items(text)
           `)
           .eq("checklist_id", selectedEgenkontroll.id);
 
@@ -212,7 +213,7 @@ export default function KsEgenkontroller() {
 
         const mapped: ChecklistItem[] = (data || []).map((item: any) => ({
           id: item.id,
-          text: item.ks_template_items?.description || "Ukjent punkt",
+          text: item.ks_template_items?.text || "Ukjent punkt",
           type: "yes_no",
           value: item.status === "OK" ? true : item.status === "AVVIK" ? false : undefined,
           comment: item.comment,
@@ -392,7 +393,7 @@ export default function KsEgenkontroller() {
             <CardHeader className="pb-3 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <CardTitle>Egenkontroller</CardTitle>
-                <Button size="sm" onClick={() => navigate("/ks/sjekklister?tab=maler")}>
+                <Button size="sm" onClick={() => navigate("/ks/checklists?tab=maler")}>
                   <Plus className="mr-2 h-4 w-4" />
                   Ny
                 </Button>
