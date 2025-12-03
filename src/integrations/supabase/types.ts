@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_checklist_templates: {
+        Row: {
+          category: string
+          checkpoints: Json
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          template_name: string
+          trade: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          checkpoints?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          template_name: string
+          trade?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          checkpoints?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          template_name?: string
+          trade?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_documents: {
         Row: {
           created_at: string
@@ -50,6 +86,42 @@ export type Database = {
           id?: string
           updated_at?: string
           uploaded_by_name?: string
+        }
+        Relationships: []
+      }
+      admin_routine_templates: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          description: string | null
+          file_path: string | null
+          id: string
+          is_active: boolean
+          routine_name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          content?: string
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          is_active?: boolean
+          routine_name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          is_active?: boolean
+          routine_name?: string
+          updated_at?: string
         }
         Relationships: []
       }
