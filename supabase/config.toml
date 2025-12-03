@@ -41,3 +41,6 @@ verify_jwt = true
 
 [functions.ik-hms-chat]
 verify_jwt = true
+
+[functions.check-ks2-deadlines]
+verify_jwt = false
