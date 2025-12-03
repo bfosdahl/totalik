@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_documents: {
+        Row: {
+          created_at: string
+          description: string | null
+          document_name: string
+          document_type: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          updated_at: string
+          uploaded_by_name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          document_name: string
+          document_type?: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          updated_at?: string
+          uploaded_by_name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          document_name?: string
+          document_type?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          updated_at?: string
+          uploaded_by_name?: string
+        }
+        Relationships: []
+      }
       audit_form_responses: {
         Row: {
           audit_id: string | null
