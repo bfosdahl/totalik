@@ -14,6 +14,7 @@ import {
   CreditCard,
   Award,
   FolderOpen,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ const adminNavItems = [
   { icon: CreditCard, label: "HMS-kort", path: "/admin/hms-requests" },
   { icon: Award, label: "SG Register", path: "/admin/sg-register" },
   { icon: FolderOpen, label: "Dokumentsenter", path: "/admin/documents" },
+  { icon: BookOpen, label: "KS Malbank", path: "/admin/ks-panel" },
 ];
 
 interface SidebarContentProps {
