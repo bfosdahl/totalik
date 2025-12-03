@@ -89,9 +89,10 @@ const ksByggItems = [
 ];
 
 // Route detection helper
-type SectionKey = 'ks' | 'ikMat' | 'ikHms' | 'personal' | 'gdpr' | 'apenhetsloven' | 'none';
+type SectionKey = 'ks' | 'ks2' | 'ikMat' | 'ikHms' | 'personal' | 'gdpr' | 'apenhetsloven' | 'none';
 
 const detectActiveSection = (pathname: string): SectionKey => {
+  if (pathname.startsWith('/ks2')) return 'ks2';
   if (pathname.startsWith('/ks')) return 'ks';
   if (pathname.startsWith('/ik-mat')) return 'ikMat';
   if (pathname.startsWith('/gdpr')) return 'gdpr';
@@ -717,6 +718,71 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                         </NavLink>
                       );
                     })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* KS Modul 2 collapsible section - always visible */}
+          <div>
+            <button
+              onClick={() => toggleSection('ks2')}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
+                collapsed && "justify-center",
+                location.pathname.startsWith("/ks2")
+                  ? "text-sidebar-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              )}
+            >
+              <HardHat className={cn(
+                "w-5 h-5 flex-shrink-0 transition-transform",
+                !location.pathname.startsWith("/ks2") && "group-hover:scale-110",
+                "text-primary"
+              )} />
+              <AnimatePresence mode="wait">
+                {!collapsed && (
+                  <>
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      className="font-medium text-sm flex-1 text-left"
+                    >
+                      KS Modul #2
+                    </motion.span>
+                    {expandedSections.has('ks2') ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </>
+                )}
+              </AnimatePresence>
+            </button>
+            
+            {/* KS Modul 2 submenu */}
+            <AnimatePresence>
+              {expandedSections.has('ks2') && !collapsed && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-6 space-y-1 mt-1">
+                    <NavLink
+                      to="/ks2"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ks2"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Mine prosjekter
+                    </NavLink>
                   </div>
                 </motion.div>
               )}

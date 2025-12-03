@@ -2267,6 +2267,121 @@ export type Database = {
           },
         ]
       }
+      ks_module2_projects: {
+        Row: {
+          address: string | null
+          client_contact_person: string | null
+          client_email: string | null
+          client_name: string | null
+          client_org_number: string | null
+          client_phone: string | null
+          company_id: string
+          contract_sum: number | null
+          contractor_type: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          gnr_bnr: string | null
+          id: string
+          is_favorite: boolean | null
+          last_activity_date: string | null
+          last_activity_description: string | null
+          planned_end_date: string | null
+          planned_start_date: string | null
+          progress_percent: number | null
+          project_leader_id: string | null
+          project_leader_name: string | null
+          project_name: string
+          project_number: string
+          sha_coordinator_kp: string | null
+          sha_coordinator_ku: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          client_contact_person?: string | null
+          client_email?: string | null
+          client_name?: string | null
+          client_org_number?: string | null
+          client_phone?: string | null
+          company_id: string
+          contract_sum?: number | null
+          contractor_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          gnr_bnr?: string | null
+          id?: string
+          is_favorite?: boolean | null
+          last_activity_date?: string | null
+          last_activity_description?: string | null
+          planned_end_date?: string | null
+          planned_start_date?: string | null
+          progress_percent?: number | null
+          project_leader_id?: string | null
+          project_leader_name?: string | null
+          project_name: string
+          project_number: string
+          sha_coordinator_kp?: string | null
+          sha_coordinator_ku?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          client_contact_person?: string | null
+          client_email?: string | null
+          client_name?: string | null
+          client_org_number?: string | null
+          client_phone?: string | null
+          company_id?: string
+          contract_sum?: number | null
+          contractor_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          gnr_bnr?: string | null
+          id?: string
+          is_favorite?: boolean | null
+          last_activity_date?: string | null
+          last_activity_description?: string | null
+          planned_end_date?: string | null
+          planned_start_date?: string | null
+          progress_percent?: number | null
+          project_leader_id?: string | null
+          project_leader_name?: string | null
+          project_name?: string
+          project_number?: string
+          sha_coordinator_kp?: string | null
+          sha_coordinator_ku?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_projects_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_projects_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_projects_project_leader_id_fkey"
+            columns: ["project_leader_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_photos: {
         Row: {
           checklist_item_id: string
@@ -4919,6 +5034,7 @@ export type Database = {
         Args: { target_company_id: string }
         Returns: undefined
       }
+      generate_ks_module2_project_number: { Args: never; Returns: string }
       generate_project_number: { Args: never; Returns: string }
       get_user_company_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
