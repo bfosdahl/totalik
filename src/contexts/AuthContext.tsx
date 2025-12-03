@@ -48,6 +48,7 @@ interface AuthContextType {
   isCompanyAdmin: boolean;
   isGuestUser: boolean;
   guestProjects: GuestAccessInfo[];
+  guestCheckComplete: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -65,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isGuestUser, setIsGuestUser] = useState(false);
   const [guestProjects, setGuestProjects] = useState<GuestAccessInfo[]>([]);
+  const [guestCheckComplete, setGuestCheckComplete] = useState(false);
 
   const isSystemAdmin = roles.includes("system_admin");
   const isCompanyAdmin = roles.includes("company_admin");
@@ -131,8 +133,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsGuestUser(false);
         setGuestProjects([]);
       }
+      setGuestCheckComplete(true);
     } catch (error) {
       console.error("Error fetching guest access:", error);
+      setGuestCheckComplete(true);
     }
   };
 
@@ -196,6 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setRoles([]);
           setIsGuestUser(false);
           setGuestProjects([]);
+          setGuestCheckComplete(false);
         }
       }
     );
@@ -284,6 +289,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isCompanyAdmin,
         isGuestUser,
         guestProjects,
+        guestCheckComplete,
         signIn,
         signUp,
         signOut,
