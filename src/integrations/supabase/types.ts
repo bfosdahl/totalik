@@ -2737,6 +2737,8 @@ export type Database = {
           include_in_report: boolean | null
           is_latest_version: boolean
           project_id: string
+          source_id: string | null
+          source_type: string | null
           supersedes_document_id: string | null
           updated_at: string
           uploaded_by: string | null
@@ -2758,6 +2760,8 @@ export type Database = {
           include_in_report?: boolean | null
           is_latest_version?: boolean
           project_id: string
+          source_id?: string | null
+          source_type?: string | null
           supersedes_document_id?: string | null
           updated_at?: string
           uploaded_by?: string | null
@@ -2779,6 +2783,8 @@ export type Database = {
           include_in_report?: boolean | null
           is_latest_version?: boolean
           project_id?: string
+          source_id?: string | null
+          source_type?: string | null
           supersedes_document_id?: string | null
           updated_at?: string
           uploaded_by?: string | null

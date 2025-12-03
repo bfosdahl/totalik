@@ -36,6 +36,9 @@ const CATEGORY_CONFIG = {
   samsvar: { label: "Samsvarserklæringer", icon: FileSignature, color: "bg-emerald-500" },
   kompetanse: { label: "Kompetanse/Kurs", icon: GraduationCap, color: "bg-indigo-500" },
   maler: { label: "Maler for nedlastning", icon: FileStack, color: "bg-pink-500" },
+  egenkontroller: { label: "Egenkontroller (Auto)", icon: FileCheck, color: "bg-teal-500" },
+  sja_dokumenter: { label: "SJA-dokumenter (Auto)", icon: Shield, color: "bg-lime-500" },
+  vernerunder: { label: "Vernerunder (Auto)", icon: Shield, color: "bg-violet-500" },
 };
 
 interface KsProjectDocumentsProps {

@@ -9,7 +9,7 @@ export interface KsProjectDocument {
   company_id: string;
   document_name: string;
   document_number: string | null;
-  category: 'tegninger' | 'beskrivelser' | 'sha_plan' | 'bilder' | 'endringsmeldinger' | 'fdv' | 'samsvar' | 'kompetanse' | 'maler';
+  category: 'tegninger' | 'beskrivelser' | 'sha_plan' | 'bilder' | 'endringsmeldinger' | 'fdv' | 'samsvar' | 'kompetanse' | 'maler' | 'egenkontroller' | 'sja_dokumenter' | 'vernerunder';
   version: number;
   is_latest_version: boolean;
   supersedes_document_id: string | null;
@@ -23,6 +23,8 @@ export interface KsProjectDocument {
   created_at: string;
   updated_at: string;
   include_in_report: boolean;
+  source_type?: string | null;
+  source_id?: string | null;
 }
 
 export interface NewKsProjectDocumentInput {
@@ -204,6 +206,58 @@ export const useKsProjectDocuments = (projectId: string) => {
     },
   });
 
+  // Auto-save generated document (for checklists, SJA, etc.)
+  const saveGeneratedDocument = async (input: {
+    documentName: string;
+    category: KsProjectDocument['category'];
+    pdfBlob: Blob;
+    sourceType: 'checklist' | 'sja' | 'vernerunde';
+    sourceId: string;
+    description?: string;
+  }) => {
+    if (!profile?.company_id) throw new Error("Ingen bedrift funnet");
+
+    // Upload PDF to storage
+    const fileName = `${projectId}/${input.category}/${input.sourceType}_${input.sourceId}_${Date.now()}.pdf`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from('project-documents')
+      .upload(fileName, input.pdfBlob, {
+        contentType: 'application/pdf'
+      });
+
+    if (uploadError) throw uploadError;
+
+    // Create document record
+    const { data, error } = await supabase
+      .from('ks_project_documents')
+      .insert({
+        project_id: projectId,
+        company_id: profile.company_id,
+        document_name: input.documentName,
+        category: input.category,
+        version: 1,
+        is_latest_version: true,
+        file_path: fileName,
+        file_name: `${input.documentName.replace(/[^a-zA-Z0-9æøåÆØÅ ]/g, '_')}.pdf`,
+        file_size: input.pdfBlob.size,
+        file_type: 'application/pdf',
+        description: input.description || null,
+        uploaded_by: profile.id,
+        uploaded_by_name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email || 'System',
+        include_in_report: true, // Auto-include generated docs
+        source_type: input.sourceType,
+        source_id: input.sourceId,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    
+    queryClient.invalidateQueries({ queryKey: ['ks-project-documents', projectId] });
+    return data;
+  };
+
   return {
     documents: documents || [],
     isLoading,
@@ -213,5 +267,6 @@ export const useKsProjectDocuments = (projectId: string) => {
     isDeleting: deleteMutation.isPending,
     downloadDocument,
     toggleIncludeInReport: toggleIncludeInReport.mutate,
+    saveGeneratedDocument,
   };
 };

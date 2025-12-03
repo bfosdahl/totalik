@@ -6,6 +6,7 @@ import {
   X,
   ImageIcon,
   Printer,
+  Loader2,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -16,23 +17,30 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useKsChecklistItems, KsChecklist, KsTemplate } from "@/hooks/useKsProjects";
+import { useKsProjectDocuments } from "@/hooks/useKsProjectDocuments";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { generateChecklistPdf } from "@/utils/ksChecklistPdf";
+import { generateChecklistPdf, generateChecklistPdfBlob } from "@/utils/ksChecklistPdf";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function KsChecklistDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [checklist, setChecklist] = useState<(KsChecklist & { template: KsTemplate }) | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCompleting, setIsCompleting] = useState(false);
   const [comments, setComments] = useState<Record<string, string>>({});
   const [photos, setPhotos] = useState<Record<string, any[]>>({});
   const [uploadingPhotos, setUploadingPhotos] = useState<Record<string, boolean>>({});
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  
+  // Get document save function
+  const { saveGeneratedDocument } = useKsProjectDocuments(projectId || "");
 
   const { items, isLoading: itemsLoading, updateItem } = useKsChecklistItems(id || null);
 
@@ -238,9 +246,41 @@ export default function KsChecklistDetail() {
   };
 
   const handleCompleteChecklist = async () => {
-    if (!checklist || !id) return;
+    if (!checklist || !id || !projectId) return;
 
+    setIsCompleting(true);
+    
     try {
+      // Fetch project details for PDF
+      const { data: projectData } = await supabase
+        .from('ks_projects')
+        .select('name, project_number, address')
+        .eq('id', projectId)
+        .single();
+
+      // Generate PDF blob
+      const pdfData = await generateChecklistPdfBlob({
+        id: checklist.id,
+        created_at: checklist.created_at,
+        filled_at: new Date().toISOString(),
+        phase: checklist.phase,
+        template: checklist.template,
+        project: projectData || undefined,
+        items: items,
+        photos: photos,
+      });
+
+      // Save PDF to document center
+      await saveGeneratedDocument({
+        documentName: `Egenkontroll - ${checklist.template?.name || 'Sjekkliste'}`,
+        category: 'egenkontroller',
+        pdfBlob: pdfData.blob,
+        sourceType: 'checklist',
+        sourceId: id,
+        description: `Fullført egenkontroll: ${checklist.template?.name}${checklist.phase ? ` (${checklist.phase})` : ''}`,
+      });
+
+      // Update checklist as completed
       const { error } = await supabase
         .from('ks_checklists')
         .update({ 
@@ -256,10 +296,12 @@ export default function KsChecklistDetail() {
         filled_at: new Date().toISOString()
       });
 
-      toast.success('Sjekkliste fullført!');
+      toast.success('Sjekkliste fullført og lagret i dokumentsenteret!');
     } catch (error) {
       console.error('Error completing checklist:', error);
       toast.error('Kunne ikke fullføre sjekkliste');
+    } finally {
+      setIsCompleting(false);
     }
   };
 
@@ -566,9 +608,16 @@ export default function KsChecklistDetail() {
                 <Button 
                   onClick={handleCompleteChecklist}
                   size="lg"
-                  disabled={progressPercentage < 100}
+                  disabled={progressPercentage < 100 || isCompleting}
                 >
-                  Fullfør sjekkliste
+                  {isCompleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Lagrer...
+                    </>
+                  ) : (
+                    'Fullfør sjekkliste'
+                  )}
                 </Button>
               </div>
               {progressPercentage < 100 && (
