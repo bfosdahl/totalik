@@ -2267,6 +2267,246 @@ export type Database = {
           },
         ]
       }
+      ks_module2_documents: {
+        Row: {
+          company_id: string
+          created_at: string
+          document_name: string
+          document_type: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          folder_path: string
+          id: string
+          include_in_report: boolean | null
+          project_id: string
+          source_id: string | null
+          source_type: string | null
+          updated_at: string
+          uploaded_by: string | null
+          uploaded_by_name: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          document_name: string
+          document_type?: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          folder_path?: string
+          id?: string
+          include_in_report?: boolean | null
+          project_id: string
+          source_id?: string | null
+          source_type?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          document_name?: string
+          document_type?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          folder_path?: string
+          id?: string
+          include_in_report?: boolean | null
+          project_id?: string
+          source_id?: string | null
+          source_type?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_module2_inspection_templates: {
+        Row: {
+          category: string | null
+          checkpoints: Json
+          company_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_system_template: boolean | null
+          template_name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          checkpoints?: Json
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system_template?: boolean | null
+          template_name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          checkpoints?: Json
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system_template?: boolean | null
+          template_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_inspection_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_module2_inspections: {
+        Row: {
+          approver_signature: string | null
+          approver_signature_date: string | null
+          checkpoint_responses: Json
+          company_id: string
+          completed_at: string | null
+          completed_checkpoints: number | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          inspector_signature: string | null
+          inspector_signature_date: string | null
+          pdf_file_path: string | null
+          project_id: string
+          responsible_company: string | null
+          responsible_id: string | null
+          responsible_name: string | null
+          status: string
+          template_id: string | null
+          title: string
+          total_checkpoints: number | null
+          updated_at: string
+        }
+        Insert: {
+          approver_signature?: string | null
+          approver_signature_date?: string | null
+          checkpoint_responses?: Json
+          company_id: string
+          completed_at?: string | null
+          completed_checkpoints?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          inspector_signature?: string | null
+          inspector_signature_date?: string | null
+          pdf_file_path?: string | null
+          project_id: string
+          responsible_company?: string | null
+          responsible_id?: string | null
+          responsible_name?: string | null
+          status?: string
+          template_id?: string | null
+          title: string
+          total_checkpoints?: number | null
+          updated_at?: string
+        }
+        Update: {
+          approver_signature?: string | null
+          approver_signature_date?: string | null
+          checkpoint_responses?: Json
+          company_id?: string
+          completed_at?: string | null
+          completed_checkpoints?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          inspector_signature?: string | null
+          inspector_signature_date?: string | null
+          pdf_file_path?: string | null
+          project_id?: string
+          responsible_company?: string | null
+          responsible_id?: string | null
+          responsible_name?: string | null
+          status?: string
+          template_id?: string | null
+          title?: string
+          total_checkpoints?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_inspections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_inspections_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_inspections_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_inspections_responsible_id_fkey"
+            columns: ["responsible_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_inspections_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_inspection_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_projects: {
         Row: {
           address: string | null

@@ -1,15 +1,17 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useLocation, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import { AppLayout } from "@/components/layout/AppLayout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { KsModule2Project } from "@/hooks/useKsModule2Projects";
+import { Ks2ProjectSidebar } from "@/components/ks2/Ks2ProjectSidebar";
+import { Ks2ProjectDashboard } from "@/components/ks2/Ks2ProjectDashboard";
+import Ks2Egenkontroller from "./Ks2Egenkontroller";
+import Ks2Dokumentasjon from "./Ks2Dokumentasjon";
+import Ks2Prosjektinfo from "./Ks2Prosjektinfo";
 
 export default function Ks2ProjectDetail() {
   const { projectId } = useParams();
-  const navigate = useNavigate();
+  const location = useLocation();
   const [project, setProject] = useState<KsModule2Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -38,65 +40,63 @@ export default function Ks2ProjectDetail() {
 
   if (isLoading) {
     return (
-      <AppLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </AppLayout>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
 
   if (!project) {
     return (
-      <AppLayout>
-        <div className="text-center py-16">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Prosjekt ikke funnet</h2>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-muted-foreground">
             Prosjektet du leter etter finnes ikke eller du har ikke tilgang.
           </p>
-          <Button onClick={() => navigate("/ks2")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Tilbake til prosjekter
-          </Button>
         </div>
-      </AppLayout>
+      </div>
     );
   }
 
-  return (
-    <AppLayout>
-      <div className="space-y-6">
-        {/* Back button */}
-        <Button variant="ghost" size="sm" onClick={() => navigate("/ks2")}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Tilbake til prosjekter
-        </Button>
+  // Determine current view based on path
+  const basePath = `/ks2/project/${projectId}`;
+  const currentPath = location.pathname.replace(basePath, "") || "";
 
-        {/* Welcome card */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">{project.project_number}</p>
-                <CardTitle className="text-2xl">Velkommen til {project.project_name}</CardTitle>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Dette er prosjekt-detaljsiden. Flere funksjoner kommer i Fase 2.
-            </p>
-            {project.description && (
-              <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-medium mb-2">Beskrivelse</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {project.description}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+  const renderContent = () => {
+    switch (currentPath) {
+      case "/egenkontroller":
+        return <Ks2Egenkontroller />;
+      case "/dokumentasjon":
+        return <Ks2Dokumentasjon />;
+      case "/prosjektinfo":
+        return <Ks2Prosjektinfo />;
+      default:
+        return <Ks2ProjectDashboard />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Project Sidebar */}
+      <Ks2ProjectSidebar
+        projectName={project.project_name}
+        projectNumber={project.project_number}
+      />
+
+      {/* Main Content */}
+      <div className="lg:pl-[260px] transition-all duration-300">
+        {/* Top Banner */}
+        <div className="border-b bg-card px-6 py-4">
+          <p className="text-xs text-muted-foreground font-medium">{project.project_number}</p>
+          <h1 className="text-xl font-semibold">{project.project_name}</h1>
+        </div>
+
+        {/* Page Content */}
+        <main className="p-4 md:p-6">
+          {renderContent()}
+        </main>
       </div>
-    </AppLayout>
+    </div>
   );
 }
