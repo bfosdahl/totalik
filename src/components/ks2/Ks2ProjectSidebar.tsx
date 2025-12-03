@@ -28,7 +28,7 @@ const menuItems = [
   { id: "dokumentasjon", label: "Dokumentasjon & FDV", icon: FolderOpen, path: "/dokumentasjon" },
   { id: "prosjektinfo", label: "Prosjektinfo", icon: Info, path: "/prosjektinfo" },
   { id: "avvik", label: "Avvik fra KS", icon: AlertTriangle, path: "/avvik" },
-  { id: "malbibliotek", label: "Malbibliotek", icon: Library, path: "/maler", disabled: true, badge: "Kommer" },
+  { id: "malbibliotek", label: "Malbibliotek", icon: Library, path: "/maler" },
 ];
 
 export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSidebarProps) {
@@ -72,28 +72,18 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
             <button
               key={item.id}
               onClick={() => {
-                if (!item.disabled) {
-                  navigate(`${basePath}${item.path}`);
-                  onNavigate?.();
-                }
+                navigate(`${basePath}${item.path}`);
+                onNavigate?.();
               }}
-              disabled={item.disabled}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                 isActive
                   ? "bg-primary text-primary-foreground"
-                  : item.disabled
-                  ? "text-sidebar-foreground/40 cursor-not-allowed"
                   : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
               )}
             >
               <Icon className="h-5 w-5 flex-shrink-0" />
               <span className="flex-1 text-left">{item.label}</span>
-              {item.badge && (
-                <span className="text-[10px] px-1.5 py-0.5 bg-sidebar-accent rounded text-sidebar-foreground/60">
-                  {item.badge}
-                </span>
-              )}
             </button>
           );
         })}
