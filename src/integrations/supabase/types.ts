@@ -2318,6 +2318,57 @@ export type Database = {
           },
         ]
       }
+      ks_module2_access_log: {
+        Row: {
+          access_id: string
+          action: string
+          created_at: string
+          email: string
+          id: string
+          ip_address: string | null
+          project_id: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_id: string
+          action: string
+          created_at?: string
+          email: string
+          id?: string
+          ip_address?: string | null
+          project_id: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_id?: string
+          action?: string
+          created_at?: string
+          email?: string
+          id?: string
+          ip_address?: string | null
+          project_id?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_access_log_access_id_fkey"
+            columns: ["access_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_project_access"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_access_log_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_avvik: {
         Row: {
           avvik_number: string
@@ -2905,6 +2956,87 @@ export type Database = {
             columns: ["template_id"]
             isOneToOne: false
             referencedRelation: "ks_module2_inspection_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_module2_project_access: {
+        Row: {
+          access_level: Database["public"]["Enums"]["ks_module2_access_level"]
+          company_name: string | null
+          created_at: string
+          email: string
+          expires_at: string | null
+          id: string
+          invited_at: string
+          invited_by: string | null
+          invited_by_name: string | null
+          last_login: string | null
+          login_count: number | null
+          name: string
+          project_id: string
+          role_in_project: string
+          status: string
+          subcontractor_id: string | null
+          temp_password: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          access_level?: Database["public"]["Enums"]["ks_module2_access_level"]
+          company_name?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string | null
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          invited_by_name?: string | null
+          last_login?: string | null
+          login_count?: number | null
+          name: string
+          project_id: string
+          role_in_project?: string
+          status?: string
+          subcontractor_id?: string | null
+          temp_password?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          access_level?: Database["public"]["Enums"]["ks_module2_access_level"]
+          company_name?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string | null
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          invited_by_name?: string | null
+          last_login?: string | null
+          login_count?: number | null
+          name?: string
+          project_id?: string
+          role_in_project?: string
+          status?: string
+          subcontractor_id?: string | null
+          temp_password?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_project_access_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_project_access_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_subcontractors"
             referencedColumns: ["id"]
           },
         ]
@@ -6310,6 +6442,7 @@ export type Database = {
     Enums: {
       app_role: "system_admin" | "company_admin" | "user" | "subcontractor"
       company_status: "active" | "inactive" | "suspended"
+      ks_module2_access_level: "none" | "guest" | "full_ue"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -6439,6 +6572,7 @@ export const Constants = {
     Enums: {
       app_role: ["system_admin", "company_admin", "user", "subcontractor"],
       company_status: ["active", "inactive", "suspended"],
+      ks_module2_access_level: ["none", "guest", "full_ue"],
     },
   },
 } as const
