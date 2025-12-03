@@ -291,6 +291,19 @@ export default function KsDokumentsenter() {
     setCopyDialogOpen(true);
   };
 
+  // Sanitize filename for storage
+  const sanitizeFileName = (name: string): string => {
+    return name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/æ/gi, 'ae')
+      .replace(/ø/gi, 'o')
+      .replace(/å/gi, 'a')
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '');
+  };
+
   const handleCopyToProject = async () => {
     if (!selectedTemplate || !copyToProject || !profile?.company_id) {
       toast.error("Velg prosjekt");
@@ -306,8 +319,9 @@ export default function KsDokumentsenter() {
 
       if (downloadError) throw downloadError;
 
-      // Upload to project documents
-      const newFilePath = `${profile.company_id}/${copyToProject}/${Date.now()}_${selectedTemplate.document_name}`;
+      // Sanitize the filename and upload to project documents
+      const sanitizedName = sanitizeFileName(selectedTemplate.document_name);
+      const newFilePath = `${profile.company_id}/${copyToProject}/${Date.now()}_${sanitizedName}`;
       
       const { error: uploadError } = await supabase.storage
         .from("ks-project-documents")
