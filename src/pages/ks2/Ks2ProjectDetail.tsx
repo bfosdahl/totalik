@@ -6,6 +6,7 @@ import { KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { Ks2ProjectSidebar } from "@/components/ks2/Ks2ProjectSidebar";
 import { Ks2ProjectDashboard } from "@/components/ks2/Ks2ProjectDashboard";
 import Ks2Egenkontroller from "./Ks2Egenkontroller";
+import Ks2Sjekklister from "./Ks2Sjekklister";
 import Ks2Dokumentasjon from "./Ks2Dokumentasjon";
 import Ks2Prosjektinfo from "./Ks2Prosjektinfo";
 
@@ -67,6 +68,8 @@ export default function Ks2ProjectDetail() {
     switch (currentPath) {
       case "/egenkontroller":
         return <Ks2Egenkontroller />;
+      case "/sjekklister":
+        return <Ks2Sjekklister />;
       case "/dokumentasjon":
         return <Ks2Dokumentasjon />;
       case "/prosjektinfo":

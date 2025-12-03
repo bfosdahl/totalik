@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   ClipboardCheck,
+  ClipboardList,
   FolderOpen,
   Info,
   AlertTriangle,
@@ -23,6 +24,7 @@ interface Ks2ProjectSidebarProps {
 const menuItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "" },
   { id: "egenkontroller", label: "Egenkontroller", icon: ClipboardCheck, path: "/egenkontroller" },
+  { id: "sjekklister", label: "Sjekklister", icon: ClipboardList, path: "/sjekklister" },
   { id: "dokumentasjon", label: "Dokumentasjon & FDV", icon: FolderOpen, path: "/dokumentasjon" },
   { id: "prosjektinfo", label: "Prosjektinfo", icon: Info, path: "/prosjektinfo" },
   { id: "avvik", label: "Avvik fra KS", icon: AlertTriangle, path: "/avvik", disabled: true, badge: "Fase 3" },
