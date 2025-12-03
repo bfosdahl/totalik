@@ -151,7 +151,7 @@ export default function KsEgenkontroller() {
             created_at,
             phase,
             project_id,
-            ks_templates(name, category),
+            ks_templates(name),
             ks_checklist_items(id, status)
           `)
           .order("created_at", { ascending: false });
@@ -173,7 +173,7 @@ export default function KsEgenkontroller() {
             progress: total > 0 ? Math.round((completed / total) * 100) : 0,
             totalPoints: total,
             completedPoints: completed,
-            category: c.ks_templates?.category || "all",
+            category: "all",
             projectId: c.project_id,
           };
         });
@@ -392,7 +392,7 @@ export default function KsEgenkontroller() {
             <CardHeader className="pb-3 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <CardTitle>Egenkontroller</CardTitle>
-                <Button size="sm" onClick={() => navigate("/ks/malbibliotek")}>
+                <Button size="sm" onClick={() => navigate("/ks/sjekklister?tab=maler")}>
                   <Plus className="mr-2 h-4 w-4" />
                   Ny
                 </Button>
