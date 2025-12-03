@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +21,16 @@ import {
   FileStack,
   ClipboardCheck,
   Printer,
-  Eye
+  Eye,
+  Layers,
+  CheckCircle2,
+  Camera,
+  Building2,
+  HardHat,
+  Droplets,
+  Paintbrush,
+  FileCheck,
+  Copy
 } from "lucide-react";
 import { useKsProjectDocuments } from "@/hooks/useKsProjectDocuments";
 import { useQuery } from "@tanstack/react-query";
@@ -41,18 +50,76 @@ const CATEGORY_CONFIG = {
   fdv: { label: "FDV-dokumentasjon", icon: Package, color: "bg-cyan-500" },
   samsvar: { label: "Samsvarserklæringer", icon: FileSignature, color: "bg-emerald-500" },
   kompetanse: { label: "Kompetanse/Kurs", icon: GraduationCap, color: "bg-indigo-500" },
-  maler: { label: "Maler for nedlastning", icon: FileStack, color: "bg-pink-500" },
   egenkontroller: { label: "Egenkontroller (Auto)", icon: ClipboardCheck, color: "bg-teal-500" },
   sja_dokumenter: { label: "SJA-dokumenter (Auto)", icon: Shield, color: "bg-lime-500" },
   vernerunder: { label: "Vernerunder (Auto)", icon: Shield, color: "bg-violet-500" },
 };
 
+// Template categories
+const templateCategories = [
+  { id: "betong", label: "Betong", icon: Building2 },
+  { id: "tommer", label: "Tømrer", icon: HardHat },
+  { id: "vatrom", label: "Våtrom", icon: Droplets },
+  { id: "maler", label: "Maler", icon: Paintbrush },
+  { id: "sluttkontroll", label: "Sluttkontroll", icon: CheckCircle2 },
+  { id: "fdv", label: "FDV", icon: FileCheck },
+  { id: "annet", label: "Annet", icon: FileText },
+];
+
+// Example templates for download
+const exampleTemplates = [
+  {
+    id: "1",
+    name: "Betongstøp gulv på grunn",
+    category: "betong",
+    description: "Kontroll av betongstøp for gulv på grunn etter NS-standard",
+    itemCount: 12,
+    hasRequiredPhotos: true,
+  },
+  {
+    id: "2",
+    name: "Montering våtromsplater",
+    category: "vatrom",
+    description: "Sjekkliste for montering av våtromsplater iht. produsentens anvisning",
+    itemCount: 15,
+    hasRequiredPhotos: true,
+  },
+  {
+    id: "3",
+    name: "Sluttkontroll bad (NS 3600)",
+    category: "vatrom",
+    description: "Komplett sluttkontroll av våtrom etter NS 3600",
+    itemCount: 24,
+    hasRequiredPhotos: true,
+  },
+  {
+    id: "4",
+    name: "FDV-kontroll før overtakelse",
+    category: "fdv",
+    description: "Kontroll av FDV-dokumentasjon før overtakelse",
+    itemCount: 18,
+    hasRequiredPhotos: false,
+  },
+  {
+    id: "5",
+    name: "Tømrerarbeid - Yttervegg",
+    category: "tommer",
+    description: "Kontroll av tømrerarbeid for yttervegg",
+    itemCount: 16,
+    hasRequiredPhotos: true,
+  },
+];
+
 export default function KsDocumentCenter() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [previewDoc, setPreviewDoc] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
+  
+  // Get default tab from URL param
+  const defaultTab = searchParams.get("tab") || "uploaded";
 
   const { documents, downloadDocument } = useKsProjectDocuments(projectId || "");
 
@@ -233,8 +300,8 @@ export default function KsDocumentCenter() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="uploaded" className="space-y-4">
-          <TabsList>
+        <Tabs defaultValue={defaultTab} className="space-y-4">
+          <TabsList className="flex-wrap h-auto gap-1">
             <TabsTrigger value="uploaded">
               Opplastede dokumenter ({filteredDocuments.length})
             </TabsTrigger>
@@ -243,6 +310,9 @@ export default function KsDocumentCenter() {
             </TabsTrigger>
             <TabsTrigger value="sja">
               SJA ({filteredSjas.length})
+            </TabsTrigger>
+            <TabsTrigger value="maler">
+              Maler ({exampleTemplates.length})
             </TabsTrigger>
           </TabsList>
 
@@ -456,6 +526,82 @@ export default function KsDocumentCenter() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Maler (Templates) */}
+          <TabsContent value="maler" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Layers className="h-5 w-5" />
+                  Tilgjengelige maler
+                </CardTitle>
+                <CardDescription>
+                  Velg en mal for å starte en ny egenkontroll
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {exampleTemplates.map(template => {
+                    const category = templateCategories.find(c => c.id === template.category);
+                    const CategoryIcon = category?.icon || FileText;
+                    
+                    return (
+                      <Card key={template.id} className="hover:shadow-md transition-shadow">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                              <CategoryIcon className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <CardTitle className="text-base">{template.name}</CardTitle>
+                              <Badge variant="secondary" className="mt-1">
+                                {category?.label || template.category}
+                              </Badge>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          {template.description && (
+                            <p className="text-sm text-muted-foreground">
+                              {template.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <CheckCircle2 className="h-4 w-4" />
+                              {template.itemCount} punkter
+                            </span>
+                            {template.hasRequiredPhotos && (
+                              <span className="flex items-center gap-1">
+                                <Camera className="h-4 w-4" />
+                                Obl. bilder
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => navigate(`/ks/egenkontroller?template=${template.id}`)}
+                            >
+                              Bruk mal
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              title="Dupliser"
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

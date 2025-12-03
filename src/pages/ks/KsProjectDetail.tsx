@@ -428,13 +428,13 @@ export default function KsProjectDetail() {
               <Button
                 variant="outline"
                 className="h-auto flex flex-col items-center gap-2 p-4"
-                onClick={() => navigate('/ks/templates')}
+                onClick={() => navigate(`/ks/projects/${id}/documents?tab=maler`)}
               >
                 <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
                   <Layers className="h-6 w-6 text-green-600" />
                 </div>
                 <div className="text-center">
-                  <p className="font-semibold">Se maler</p>
+                  <p className="font-semibold">Maler</p>
                   <p className="text-xs text-muted-foreground">Tilgjengelige sjekklister</p>
                 </div>
               </Button>
