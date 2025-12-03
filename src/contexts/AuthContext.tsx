@@ -29,6 +29,14 @@ interface CompanyInfo {
   accent_color: string | null;
 }
 
+interface GuestAccessInfo {
+  project_id: string;
+  project_name: string;
+  project_number: string;
+  access_level: 'guest' | 'full_ue';
+  role_in_project: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -38,6 +46,8 @@ interface AuthContextType {
   isLoading: boolean;
   isSystemAdmin: boolean;
   isCompanyAdmin: boolean;
+  isGuestUser: boolean;
+  guestProjects: GuestAccessInfo[];
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -53,9 +63,78 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [company, setCompany] = useState<CompanyInfo | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGuestUser, setIsGuestUser] = useState(false);
+  const [guestProjects, setGuestProjects] = useState<GuestAccessInfo[]>([]);
 
   const isSystemAdmin = roles.includes("system_admin");
   const isCompanyAdmin = roles.includes("company_admin");
+
+  const fetchGuestAccess = async (userId: string) => {
+    try {
+      const { data: accessData } = await supabase
+        .from("ks_module2_project_access")
+        .select("project_id, access_level, role_in_project, status")
+        .eq("user_id", userId)
+        .in("status", ["invited", "active"])
+        .neq("access_level", "none");
+
+      if (accessData && accessData.length > 0) {
+        const projectIds = accessData.map(a => a.project_id);
+        const { data: projects } = await supabase
+          .from("ks_module2_projects")
+          .select("id, project_name, project_number")
+          .in("id", projectIds);
+
+        const guestProjectsInfo: GuestAccessInfo[] = accessData.map(access => {
+          const project = projects?.find(p => p.id === access.project_id);
+          return {
+            project_id: access.project_id,
+            project_name: project?.project_name || "Ukjent prosjekt",
+            project_number: project?.project_number || "",
+            access_level: access.access_level as 'guest' | 'full_ue',
+            role_in_project: access.role_in_project,
+          };
+        });
+
+        setIsGuestUser(true);
+        setGuestProjects(guestProjectsInfo);
+        
+        // Update access status to active and log login
+        for (const access of accessData) {
+          if (access.status === 'invited') {
+            await supabase
+              .from("ks_module2_project_access")
+              .update({ status: 'active', last_login: new Date().toISOString() })
+              .eq("project_id", access.project_id)
+              .eq("user_id", userId);
+          } else {
+            await supabase
+              .from("ks_module2_project_access")
+              .update({ 
+                last_login: new Date().toISOString(),
+                login_count: supabase.rpc ? undefined : 1 // Will be incremented
+              })
+              .eq("project_id", access.project_id)
+              .eq("user_id", userId);
+          }
+          
+          // Log access
+          await supabase.from("ks_module2_access_log").insert({
+            access_id: access.project_id, // Use project_id as reference
+            project_id: access.project_id,
+            user_id: userId,
+            email: user?.email || '',
+            action: 'login',
+          });
+        }
+      } else {
+        setIsGuestUser(false);
+        setGuestProjects([]);
+      }
+    } catch (error) {
+      console.error("Error fetching guest access:", error);
+    }
+  };
 
   const fetchUserData = async (userId: string) => {
     try {
@@ -89,8 +168,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .select("role")
         .eq("user_id", userId);
 
-      if (rolesData) {
+      if (rolesData && rolesData.length > 0) {
         setRoles(rolesData.map((r) => r.role as AppRole));
+      } else {
+        // If no roles, check if this is a guest user
+        await fetchGuestAccess(userId);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -112,6 +194,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           setProfile(null);
           setRoles([]);
+          setIsGuestUser(false);
+          setGuestProjects([]);
         }
       }
     );
@@ -165,6 +249,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
     setCompany(null);
     setRoles([]);
+    setIsGuestUser(false);
+    setGuestProjects([]);
   };
 
   const refreshCompany = async () => {
@@ -196,6 +282,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isSystemAdmin,
         isCompanyAdmin,
+        isGuestUser,
+        guestProjects,
         signIn,
         signUp,
         signOut,
