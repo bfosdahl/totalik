@@ -16,27 +16,29 @@ import {
   Menu,
   X,
   Building2,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Ks2ProjectSidebarProps {
   projectName: string;
   projectNumber: string;
 }
 
-const menuItems = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "" },
-  { id: "egenkontroller", label: "Egenkontroller", icon: ClipboardCheck, path: "/egenkontroller" },
-  { id: "sjekklister", label: "Sjekklister", icon: ClipboardList, path: "/sjekklister" },
-  { id: "rutiner", label: "Rutinebank", icon: BookOpen, path: "/rutiner" },
-  { id: "dokumentasjon", label: "Dokumentasjon & FDV", icon: FolderOpen, path: "/dokumentasjon" },
-  { id: "prosjektinfo", label: "Prosjektinfo", icon: Info, path: "/prosjektinfo" },
-  { id: "underleverandorer", label: "Underleverandører", icon: Building2, path: "/underleverandorer" },
-  { id: "avvik", label: "Avvik fra KS", icon: AlertTriangle, path: "/avvik" },
-  { id: "uk", label: "Uavhengig kontroll", icon: Shield, path: "/uk" },
-  { id: "malbibliotek", label: "Malbibliotek", icon: Library, path: "/maler" },
-  { id: "rapport", label: "Prosjektrapport", icon: FileText, path: "/rapport" },
+const allMenuItems = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "", guestAllowed: true },
+  { id: "egenkontroller", label: "Egenkontroller", icon: ClipboardCheck, path: "/egenkontroller", guestAllowed: true },
+  { id: "sjekklister", label: "Sjekklister", icon: ClipboardList, path: "/sjekklister", guestAllowed: true },
+  { id: "rutiner", label: "Rutinebank", icon: BookOpen, path: "/rutiner", guestAllowed: false },
+  { id: "dokumentasjon", label: "Dokumentasjon & FDV", icon: FolderOpen, path: "/dokumentasjon", guestAllowed: true },
+  { id: "prosjektinfo", label: "Prosjektinfo", icon: Info, path: "/prosjektinfo", guestAllowed: false },
+  { id: "underleverandorer", label: "Underleverandører", icon: Building2, path: "/underleverandorer", guestAllowed: false },
+  { id: "avvik", label: "Avvik fra KS", icon: AlertTriangle, path: "/avvik", guestAllowed: true },
+  { id: "uk", label: "Uavhengig kontroll", icon: Shield, path: "/uk", guestAllowed: true },
+  { id: "malbibliotek", label: "Malbibliotek", icon: Library, path: "/maler", guestAllowed: true },
+  { id: "rapport", label: "Prosjektrapport", icon: FileText, path: "/rapport", guestAllowed: true },
 ];
 
 export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSidebarProps) {
@@ -44,26 +46,48 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isGuestUser, guestProjects, signOut, profile } = useAuth();
 
   const basePath = `/ks2/project/${projectId}`;
   const currentPath = location.pathname.replace(basePath, "") || "";
+
+  // Filter menu items based on guest access
+  const menuItems = isGuestUser 
+    ? allMenuItems.filter(item => item.guestAllowed)
+    : allMenuItems;
+
+  // Get guest role info
+  const currentGuestProject = guestProjects.find(p => p.project_id === projectId);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/auth");
+  };
 
   const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-sidebar-border">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-sidebar-foreground/70 hover:text-sidebar-foreground mb-3 -ml-2"
-          onClick={() => {
-            navigate("/ks2");
-            onNavigate?.();
-          }}
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Alle prosjekter
-        </Button>
+        {!isGuestUser && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-sidebar-foreground/70 hover:text-sidebar-foreground mb-3 -ml-2"
+            onClick={() => {
+              navigate("/ks2");
+              onNavigate?.();
+            }}
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Alle prosjekter
+          </Button>
+        )}
+        {isGuestUser && currentGuestProject && (
+          <div className="mb-3 p-2 rounded-lg bg-primary/10 border border-primary/20">
+            <p className="text-xs text-primary font-medium">Gjestetilgang</p>
+            <p className="text-xs text-sidebar-foreground/70">{currentGuestProject.role_in_project}</p>
+          </div>
+        )}
         <div>
           <p className="text-xs text-sidebar-foreground/60 font-medium">{projectNumber}</p>
           <h2 className="font-semibold text-lg text-sidebar-foreground truncate">{projectName}</h2>
@@ -98,7 +122,24 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-sidebar-border">
+      <div className="p-4 border-t border-sidebar-border space-y-3">
+        {isGuestUser && (
+          <div className="text-xs text-sidebar-foreground/70 mb-2">
+            <p className="font-medium">{profile?.first_name} {profile?.last_name}</p>
+            <p>{profile?.email}</p>
+          </div>
+        )}
+        {isGuestUser && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full text-sidebar-foreground border-sidebar-border hover:bg-sidebar-accent"
+            onClick={handleLogout}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logg ut
+          </Button>
+        )}
         <p className="text-xs text-sidebar-foreground/50">KS Modul #2</p>
       </div>
     </div>
