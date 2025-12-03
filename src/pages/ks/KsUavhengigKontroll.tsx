@@ -226,10 +226,15 @@ export default function KsUavhengigKontroll() {
 
     setIsUploading(true);
     try {
-      // Create safe filename
+      // Create safe filename - remove ALL special characters for Supabase storage
       const timestamp = Date.now();
       const safeFileName = selectedFile.name
-        .replace(/[^\w\s.-æøåÆØÅ]/g, '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+        .replace(/[æÆ]/g, 'ae')
+        .replace(/[øØ]/g, 'o')
+        .replace(/[åÅ]/g, 'a')
+        .replace(/[^\w\s.-]/g, '')
         .replace(/\s+/g, '_');
       const filePath = `${profile.company_id}/uavhengig-kontroll/${uploadingKontrollId}/${timestamp}_${safeFileName}`;
 
