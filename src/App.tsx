@@ -50,6 +50,8 @@ import KsUavhengigKontroll from "./pages/ks/KsUavhengigKontroll";
 import KsRapporterFdv from "./pages/ks/KsRapporterFdv";
 import KsMalbibliotek from "./pages/ks/KsMalbibliotek";
 import KsDokumentsenter from "./pages/ks/KsDokumentsenter";
+import Ks2Dashboard from "./pages/ks2/Ks2Dashboard";
+import Ks2ProjectDetail from "./pages/ks2/Ks2ProjectDetail";
 import HmsChat from "./pages/HmsChat";
 import MyCourseCard from "./pages/MyCourseCard";
 import TimeRegistration from "./pages/TimeRegistration";
@@ -158,6 +160,10 @@ const App = () => (
             
             {/* Subcontractor view - limited access portal for UE themselves */}
             <Route path="/ks/subcontractor" element={<ProtectedRoute><KsSubcontractorView /></ProtectedRoute>} />
+            
+            {/* KS Modul 2 routes */}
+            <Route path="/ks2" element={<ProtectedRoute><Ks2Dashboard /></ProtectedRoute>} />
+            <Route path="/ks2/project/:projectId" element={<ProtectedRoute><Ks2ProjectDetail /></ProtectedRoute>} />
             
             {/* Admin routes - require system_admin role */}
             <Route path="/admin" element={<ProtectedRoute requireSystemAdmin><AdminDashboard /></ProtectedRoute>} />
