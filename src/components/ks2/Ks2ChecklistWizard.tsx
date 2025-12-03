@@ -20,6 +20,7 @@ import {
   FileText,
   Image,
   Trash2,
+  Download,
 } from "lucide-react";
 import {
   useKsModule2Checklists,
@@ -34,6 +35,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SignaturePad } from "./SignaturePad";
+import { downloadChecklistTemplatePdf } from "@/utils/ksChecklistTemplatePdf";
 
 interface Ks2ChecklistWizardProps {
   projectId: string;
@@ -636,13 +638,45 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
               </CardContent>
             </Card>
 
+            {isPaper && selectedTemplate && (
+              <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Download className="h-8 w-8 text-primary" />
+                    <div className="flex-1">
+                      <h4 className="font-medium">Last ned papirmal</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Last ned PDF-malen, skriv ut og fyll ut på byggeplassen
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        downloadChecklistTemplatePdf({
+                          title,
+                          templateName: selectedTemplate.name,
+                          responsibleName: responsibleUserName || undefined,
+                          deadlineDate: deadlineDate || undefined,
+                          items: selectedTemplate.items,
+                        });
+                        toast.success("PDF lastet ned");
+                      }}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Last ned PDF
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <div className="flex gap-2 pt-4">
               <Button variant="outline" onClick={() => setStep(isPaper ? "details" : "signature")}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Tilbake
               </Button>
               <Button className="flex-1" onClick={handleCreate} disabled={isSaving}>
-                {isSaving ? "Oppretter..." : isPaper ? "Opprett (papirversjon)" : "Fullfør og lagre"}
+                {isSaving ? "Oppretter..." : isPaper ? "Opprett og venter på opplasting" : "Fullfør og lagre"}
               </Button>
             </div>
           </div>

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useKsModule2Checklists, KsModule2Checklist } from "@/hooks/useKsModule2Checklists";
 import { Ks2ChecklistWizard } from "@/components/ks2/Ks2ChecklistWizard";
+import { PaperChecklistUpload } from "@/components/ks2/PaperChecklistUpload";
 import { format, parseISO, isPast, isThisWeek } from "date-fns";
 import { nb } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -25,10 +26,11 @@ type FilterType = "all" | "mine" | "incomplete" | "this_week" | "paper";
 export default function Ks2Egenkontroller() {
   const { projectId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { checklists, stats, isLoading } = useKsModule2Checklists(projectId || "");
+  const { checklists, stats, isLoading, refetch } = useKsModule2Checklists(projectId || "");
   const [filter, setFilter] = useState<FilterType>("all");
   const [search, setSearch] = useState("");
   const [showWizard, setShowWizard] = useState(false);
+  const [uploadChecklist, setUploadChecklist] = useState<KsModule2Checklist | null>(null);
 
   // Open wizard if ?new=true
   useEffect(() => {
@@ -201,7 +203,7 @@ export default function Ks2Egenkontroller() {
                   </div>
                   <div className="flex items-center gap-2">
                     {checklist.is_paper_version && !checklist.paper_uploaded && (
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => setUploadChecklist(checklist)}>
                         <Upload className="h-4 w-4 mr-2" />
                         Last opp
                       </Button>
@@ -221,7 +223,22 @@ export default function Ks2Egenkontroller() {
       {showWizard && (
         <Ks2ChecklistWizard
           projectId={projectId || ""}
-          onClose={() => setShowWizard(false)}
+          onClose={() => {
+            setShowWizard(false);
+            refetch();
+          }}
+        />
+      )}
+
+      {/* Paper Upload Dialog */}
+      {uploadChecklist && (
+        <PaperChecklistUpload
+          checklist={uploadChecklist}
+          projectId={projectId || ""}
+          onClose={() => {
+            setUploadChecklist(null);
+            refetch();
+          }}
         />
       )}
     </div>
