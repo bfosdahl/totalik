@@ -4,6 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Search, 
   FileText, 
@@ -16,9 +18,12 @@ import {
   BookOpen,
   Lock,
   AlertCircle,
+  CheckCircle2,
+  X,
 } from "lucide-react";
-import { useAdminTemplatesForCustomers } from "@/hooks/useAdminTemplatesForCustomers";
+import { useAdminTemplatesForCustomers, AdminChecklistTemplate, AdminRoutineTemplate, AdminDocument } from "@/hooks/useAdminTemplatesForCustomers";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const CHECKLIST_CATEGORIES: Record<string, string> = {
   tomrerarbeid: "Tømrerarbeid",
@@ -66,11 +71,15 @@ const getFileIcon = (fileType: string | null) => {
 };
 
 export default function Ks2Malbibliotek() {
-  const { checklistTemplates, routineTemplates, documents, isLoading, getDocumentUrl } = useAdminTemplatesForCustomers();
+  const { checklistTemplates, routineTemplates, documents, isLoading } = useAdminTemplatesForCustomers();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedChecklistCategory, setSelectedChecklistCategory] = useState<string>("all");
   const [selectedDocumentCategory, setSelectedDocumentCategory] = useState<string>("all");
   const [selectedRoutineCategory, setSelectedRoutineCategory] = useState<string>("all");
+
+  // Dialog states
+  const [selectedChecklist, setSelectedChecklist] = useState<AdminChecklistTemplate | null>(null);
+  const [selectedRoutine, setSelectedRoutine] = useState<AdminRoutineTemplate | null>(null);
 
   // Filter checklist templates
   const filteredChecklists = checklistTemplates.filter(t => {
@@ -96,14 +105,16 @@ export default function Ks2Malbibliotek() {
     return matchesSearch && matchesCategory;
   });
 
-  const handleDownloadDocument = async (filePath: string, fileName: string) => {
+  const handleDownloadDocument = async (doc: AdminDocument) => {
     try {
-      const url = await getDocumentUrl(filePath);
-      if (url) {
-        window.open(url, "_blank");
-      } else {
-        toast.error("Kunne ikke laste ned dokumentet");
-      }
+      const { data, error } = await supabase.storage
+        .from("admin-documents")
+        .createSignedUrl(doc.file_path, 3600);
+
+      if (error) throw error;
+
+      window.open(data.signedUrl, "_blank");
+      toast.success("Dokumentet åpnes i ny fane");
     } catch (error) {
       console.error("Download error:", error);
       toast.error("Kunne ikke laste ned dokumentet");
@@ -286,7 +297,12 @@ export default function Ks2Malbibliotek() {
                           </span>
                         )}
                       </div>
-                      <Button variant="outline" size="sm" className="gap-1">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="gap-1"
+                        onClick={() => setSelectedChecklist(template)}
+                      >
                         <Eye className="h-3 w-3" />
                         Forhåndsvis
                       </Button>
@@ -381,7 +397,12 @@ export default function Ks2Malbibliotek() {
                           </span>
                         )}
                       </div>
-                      <Button variant="outline" size="sm" className="gap-1">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="gap-1"
+                        onClick={() => setSelectedRoutine(routine)}
+                      >
                         <Eye className="h-3 w-3" />
                         Les rutine
                       </Button>
@@ -469,7 +490,7 @@ export default function Ks2Malbibliotek() {
                         variant="outline" 
                         size="sm" 
                         className="gap-1"
-                        onClick={() => handleDownloadDocument(doc.file_path, doc.document_name)}
+                        onClick={() => handleDownloadDocument(doc)}
                       >
                         <Download className="h-3 w-3" />
                         Last ned
@@ -482,6 +503,132 @@ export default function Ks2Malbibliotek() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Checklist Preview Dialog */}
+      <Dialog open={!!selectedChecklist} onOpenChange={() => setSelectedChecklist(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardList className="h-5 w-5 text-primary" />
+              {selectedChecklist?.template_name}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedChecklist?.description || "Forhåndsvisning av sjekkliste-mal"}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Badge variant="secondary">
+              {CHECKLIST_CATEGORIES[selectedChecklist?.category || ""] || selectedChecklist?.category}
+            </Badge>
+            {selectedChecklist?.version && (
+              <Badge variant="outline">v{selectedChecklist.version}</Badge>
+            )}
+            {selectedChecklist?.is_mandatory && (
+              <Badge variant="destructive" className="gap-1">
+                <AlertCircle className="h-3 w-3" />
+                Obligatorisk
+              </Badge>
+            )}
+            {selectedChecklist?.is_locked && (
+              <Badge variant="outline" className="gap-1">
+                <Lock className="h-3 w-3" />
+                Låst
+              </Badge>
+            )}
+          </div>
+
+          <ScrollArea className="max-h-[50vh] pr-4">
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm text-muted-foreground mb-3">
+                Sjekkpunkter ({selectedChecklist?.checkpoints?.length || 0})
+              </h4>
+              {selectedChecklist?.checkpoints?.map((checkpoint: any, index: number) => (
+                <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{checkpoint.text || checkpoint.title || checkpoint}</p>
+                    {checkpoint.description && (
+                      <p className="text-xs text-muted-foreground mt-1">{checkpoint.description}</p>
+                    )}
+                  </div>
+                  <CheckCircle2 className="h-5 w-5 text-muted-foreground/30" />
+                </div>
+              ))}
+              {(!selectedChecklist?.checkpoints || selectedChecklist.checkpoints.length === 0) && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Ingen sjekkpunkter definert
+                </p>
+              )}
+            </div>
+          </ScrollArea>
+
+          <div className="flex justify-end gap-2 pt-4 border-t">
+            <Button variant="outline" onClick={() => setSelectedChecklist(null)}>
+              Lukk
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Routine Preview Dialog */}
+      <Dialog open={!!selectedRoutine} onOpenChange={() => setSelectedRoutine(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-purple-500" />
+              {selectedRoutine?.routine_name}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedRoutine?.description || "Forhåndsvisning av rutine"}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Badge variant="secondary">
+              {ROUTINE_CATEGORIES[selectedRoutine?.category || ""] || selectedRoutine?.category}
+            </Badge>
+            {selectedRoutine?.version && (
+              <Badge variant="outline">v{selectedRoutine.version}</Badge>
+            )}
+            {selectedRoutine?.is_mandatory && (
+              <Badge variant="destructive" className="gap-1">
+                <AlertCircle className="h-3 w-3" />
+                Obligatorisk
+              </Badge>
+            )}
+            {selectedRoutine?.is_locked && (
+              <Badge variant="outline" className="gap-1">
+                <Lock className="h-3 w-3" />
+                Låst
+              </Badge>
+            )}
+          </div>
+
+          <ScrollArea className="max-h-[50vh] pr-4">
+            <div className="prose prose-sm max-w-none">
+              {selectedRoutine?.content ? (
+                <div 
+                  className="text-sm whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ __html: selectedRoutine.content }}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Ingen innhold definert for denne rutinen
+                </p>
+              )}
+            </div>
+          </ScrollArea>
+
+          <div className="flex justify-end gap-2 pt-4 border-t">
+            <Button variant="outline" onClick={() => setSelectedRoutine(null)}>
+              Lukk
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
