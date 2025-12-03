@@ -31,6 +31,76 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { email, name, company_name, temp_password, project_id, access_level }: InviteRequest = await req.json();
 
+    console.log("Creating/checking user for:", email);
+
+    // Check if user already exists
+    const { data: existingUsers } = await supabase.auth.admin.listUsers();
+    const existingUser = existingUsers?.users?.find(u => u.email === email);
+
+    let userId: string;
+
+    if (existingUser) {
+      console.log("User already exists:", existingUser.id);
+      userId = existingUser.id;
+      
+      // Update the user's password to the new temp password
+      const { error: updateError } = await supabase.auth.admin.updateUserById(
+        existingUser.id,
+        { password: temp_password }
+      );
+      
+      if (updateError) {
+        console.error("Error updating user password:", updateError);
+      }
+    } else {
+      // Create new user with temp password
+      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+        email: email,
+        password: temp_password,
+        email_confirm: true,
+        user_metadata: {
+          first_name: name.split(' ')[0] || name,
+          last_name: name.split(' ').slice(1).join(' ') || '',
+          is_guest_user: true,
+          company_name: company_name,
+        }
+      });
+
+      if (createError) {
+        console.error("Error creating user:", createError);
+        throw new Error(`Could not create user: ${createError.message}`);
+      }
+
+      userId = newUser.user.id;
+      console.log("Created new user:", userId);
+
+      // Create a minimal profile for the guest user
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .insert({
+          user_id: userId,
+          first_name: name.split(' ')[0] || name,
+          last_name: name.split(' ').slice(1).join(' ') || '',
+          email: email,
+          is_active: true,
+        });
+
+      if (profileError) {
+        console.error("Error creating profile:", profileError);
+      }
+    }
+
+    // Update the access record with the user_id
+    const { error: accessUpdateError } = await supabase
+      .from("ks_module2_project_access")
+      .update({ user_id: userId })
+      .eq("email", email)
+      .eq("project_id", project_id);
+
+    if (accessUpdateError) {
+      console.error("Error updating access record:", accessUpdateError);
+    }
+
     // Get project details
     const { data: project } = await supabase
       .from("ks_module2_projects")
