@@ -7,18 +7,21 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Camera, Upload, X, Plus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Camera, Upload, X, Plus, AlertTriangle, Check } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import type { KsSafetyRound } from "@/hooks/useKsSafetyRounds";
+import { useKsHazardousConditions } from "@/hooks/useKsHazardousConditions";
 
 interface CheckpointResult {
   checkpoint_id: string;
   status: "ok" | "not_ok" | "not_applicable";
   comment: string;
   photos: File[];
+  registeredAsHazard?: boolean;
 }
 
 interface Checkpoint {
@@ -27,6 +30,15 @@ interface Checkpoint {
   category: string | null;
   order_index: number;
   isCustom?: boolean;
+}
+
+interface HazardFormData {
+  checkpointId: string;
+  location: string;
+  severity: string;
+  measures: string;
+  responsible: string;
+  deadline: string;
 }
 
 interface KsSafetyRoundChecklistProps {
@@ -43,6 +55,17 @@ export function KsSafetyRoundChecklist({ round, open, onOpenChange, onComplete }
   const [newCheckpointText, setNewCheckpointText] = useState("");
   const [isAddingCheckpoint, setIsAddingCheckpoint] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hazardFormOpen, setHazardFormOpen] = useState<string | null>(null);
+  const [hazardFormData, setHazardFormData] = useState<HazardFormData>({
+    checkpointId: "",
+    location: "",
+    severity: "medium",
+    measures: "",
+    responsible: "",
+    deadline: "",
+  });
+
+  const { createCondition } = useKsHazardousConditions(round?.project_id || null);
 
   const { data: checkpoints } = useQuery({
     queryKey: ["vernerunde-checkpoints", round?.template_id],
@@ -108,6 +131,49 @@ export function KsSafetyRoundChecklist({ round, open, onOpenChange, onComplete }
     setCheckpointResults((prev) =>
       prev.map((r) => (r.checkpoint_id === checkpointId ? { ...r, [field]: value } : r))
     );
+  };
+
+  const openHazardForm = (checkpointId: string, checkpointText: string, comment: string) => {
+    setHazardFormData({
+      checkpointId,
+      location: "",
+      severity: "medium",
+      measures: comment || "",
+      responsible: round?.responsible || "",
+      deadline: "",
+    });
+    setHazardFormOpen(checkpointId);
+  };
+
+  const registerAsHazard = async (checkpointId: string, checkpointText: string) => {
+    if (!round?.project_id) {
+      toast.error("Prosjekt mangler");
+      return;
+    }
+
+    const result = await createCondition({
+      project_id: round.project_id,
+      discovered_date: round.round_date,
+      location: hazardFormData.location || "Fra vernerunde",
+      description: `${checkpointText}${hazardFormData.measures ? `\n\nTiltak: ${hazardFormData.measures}` : ""}`,
+      severity: hazardFormData.severity,
+      measures_taken: hazardFormData.measures || null,
+      responsible: hazardFormData.responsible || null,
+      deadline: hazardFormData.deadline || null,
+      status: "open",
+      closed_date: null,
+      photo_paths: null,
+    });
+
+    if (result) {
+      setCheckpointResults((prev) =>
+        prev.map((r) =>
+          r.checkpoint_id === checkpointId ? { ...r, registeredAsHazard: true } : r
+        )
+      );
+      setHazardFormOpen(null);
+      toast.success("Farlig forhold registrert fra vernerunde");
+    }
   };
 
   const handlePhotoSelect = (checkpointId: string, files: FileList | null) => {
@@ -384,6 +450,107 @@ export function KsSafetyRoundChecklist({ round, open, onOpenChange, onComplete }
                         </div>
                       )}
                     </div>
+
+                    {/* Hazard registration for "not_ok" items */}
+                    {result?.status === "not_ok" && (
+                      <div className="mt-3 pt-3 border-t border-destructive/20 bg-destructive/5 -mx-4 -mb-4 p-4 rounded-b-lg">
+                        {result.registeredAsHazard ? (
+                          <div className="flex items-center gap-2 text-sm text-green-600">
+                            <Check className="h-4 w-4" />
+                            <span>Registrert som farlig forhold</span>
+                          </div>
+                        ) : hazardFormOpen === checkpoint.id ? (
+                          <div className="space-y-3">
+                            <p className="text-sm font-medium text-destructive flex items-center gap-2">
+                              <AlertTriangle className="h-4 w-4" />
+                              Registrer som farlig forhold
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <Label className="text-xs">Sted/Lokasjon</Label>
+                                <Input
+                                  value={hazardFormData.location}
+                                  onChange={(e) => setHazardFormData(prev => ({ ...prev, location: e.target.value }))}
+                                  placeholder="Hvor ble det funnet?"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs">Alvorlighetsgrad</Label>
+                                <Select
+                                  value={hazardFormData.severity}
+                                  onValueChange={(value) => setHazardFormData(prev => ({ ...prev, severity: value }))}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="low">Lav</SelectItem>
+                                    <SelectItem value="medium">Middels</SelectItem>
+                                    <SelectItem value="high">Høy</SelectItem>
+                                    <SelectItem value="critical">Kritisk</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <Label className="text-xs">Ansvarlig</Label>
+                                <Input
+                                  value={hazardFormData.responsible}
+                                  onChange={(e) => setHazardFormData(prev => ({ ...prev, responsible: e.target.value }))}
+                                  placeholder="Hvem følger opp?"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs">Frist</Label>
+                                <Input
+                                  type="date"
+                                  value={hazardFormData.deadline}
+                                  onChange={(e) => setHazardFormData(prev => ({ ...prev, deadline: e.target.value }))}
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label className="text-xs">Tiltak</Label>
+                              <Textarea
+                                value={hazardFormData.measures}
+                                onChange={(e) => setHazardFormData(prev => ({ ...prev, measures: e.target.value }))}
+                                placeholder="Beskriv tiltak som må gjøres..."
+                                rows={2}
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => registerAsHazard(checkpoint.id, checkpoint.text)}
+                              >
+                                <AlertTriangle className="h-4 w-4 mr-2" />
+                                Registrer farlig forhold
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setHazardFormOpen(null)}
+                              >
+                                Avbryt
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="border-destructive/50 text-destructive hover:bg-destructive/10"
+                            onClick={() => openHazardForm(checkpoint.id, checkpoint.text, result.comment)}
+                          >
+                            <AlertTriangle className="h-4 w-4 mr-2" />
+                            Registrer som farlig forhold
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </Card>
               );
