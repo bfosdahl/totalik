@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import {
   X,
   Image,
   Eye,
+  FileDown,
 } from "lucide-react";
 import { useKsModule2Avvik, KsModule2Avvik } from "@/hooks/useKsModule2Avvik";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +30,8 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { downloadKsModule2AvvikPdf, downloadKsModule2AvvikListPdf } from "@/utils/ksModule2AvvikPdf";
+import { KsModule2Project } from "@/hooks/useKsModule2Projects";
 
 const CATEGORIES = [
   { value: "kvalitet", label: "Kvalitetsavvik" },
@@ -54,7 +57,7 @@ const STATUSES = [
 
 export default function Ks2Avvik() {
   const { projectId } = useParams();
-  const { profile } = useAuth();
+  const { profile, company } = useAuth();
   const { avvikList, isLoading, createAvvik, updateAvvik, deleteAvvik, closeAvvik, isCreating, isUpdating } = useKsModule2Avvik(projectId || null);
   
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
@@ -65,6 +68,56 @@ export default function Ks2Avvik() {
   const [pendingPhotos, setPendingPhotos] = useState<string[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [project, setProject] = useState<KsModule2Project | null>(null);
+
+  useEffect(() => {
+    if (projectId) {
+      supabase
+        .from("ks_module2_projects")
+        .select("*")
+        .eq("id", projectId)
+        .single()
+        .then(({ data }) => {
+          if (data) setProject(data as KsModule2Project);
+        });
+    }
+  }, [projectId]);
+
+  const handleDownloadAvvikPdf = (avvik: KsModule2Avvik) => {
+    if (!project || !company) return;
+    downloadKsModule2AvvikPdf({
+      avvik,
+      project,
+      company: {
+        name: company.name,
+        address: company.address,
+        postal_code: company.postal_code,
+        city: company.city,
+        org_number: company.org_number,
+        phone: company.phone,
+        email: company.email,
+      },
+    });
+    toast.success("PDF lastet ned");
+  };
+
+  const handleDownloadAllAvvikPdf = () => {
+    if (!project || !company || avvikList.length === 0) return;
+    downloadKsModule2AvvikListPdf(
+      avvikList,
+      project,
+      {
+        name: company.name,
+        address: company.address,
+        postal_code: company.postal_code,
+        city: company.city,
+        org_number: company.org_number,
+        phone: company.phone,
+        email: company.email,
+      }
+    );
+    toast.success("PDF lastet ned");
+  };
   
   const [newAvvik, setNewAvvik] = useState({
     title: "",
@@ -202,19 +255,26 @@ export default function Ks2Avvik() {
             Registrer og følg opp avvik i prosjektet
           </p>
         </div>
-        <Dialog open={isNewDialogOpen} onOpenChange={(open) => {
-          setIsNewDialogOpen(open);
-          if (!open) {
-            setPendingPhotos([]);
-            setNewAvvik({ title: "", description: "", category: "kvalitet", severity: "medium", location: "", deadline: "", responsible_name: "", corrective_action: "", root_cause: "" });
-          }
-        }}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Nytt avvik
+        <div className="flex gap-2">
+          {avvikList.length > 0 && (
+            <Button variant="outline" onClick={handleDownloadAllAvvikPdf}>
+              <FileDown className="h-4 w-4 mr-2" />
+              Eksporter alle
             </Button>
-          </DialogTrigger>
+          )}
+          <Dialog open={isNewDialogOpen} onOpenChange={(open) => {
+            setIsNewDialogOpen(open);
+            if (!open) {
+              setPendingPhotos([]);
+              setNewAvvik({ title: "", description: "", category: "kvalitet", severity: "medium", location: "", deadline: "", responsible_name: "", corrective_action: "", root_cause: "" });
+            }
+          }}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                Nytt avvik
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Registrer nytt avvik</DialogTitle>
@@ -383,7 +443,8 @@ export default function Ks2Avvik() {
               </div>
             </div>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* Stats */}
@@ -558,6 +619,14 @@ export default function Ks2Avvik() {
                       </div>
                     </div>
                     <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleDownloadAvvikPdf(avvik)}
+                        title="Last ned PDF"
+                      >
+                        <FileDown className="h-4 w-4" />
+                      </Button>
                       {avvik.status !== "closed" && (
                         <Button
                           variant="outline"
