@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Upload, Download, Trash2, Plus, FileImage, FileCheck, Shield, AlertTriangle, Package, FileSignature, Loader2, GraduationCap, FileStack, FolderPlus } from "lucide-react";
+import { FileText, Upload, Download, Trash2, Plus, FileImage, FileCheck, Shield, AlertTriangle, Package, FileSignature, Loader2, GraduationCap, FileStack, FolderPlus, Eye, Copy, Library } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useKsProjectDocuments, NewKsProjectDocumentInput, KsProjectDocument } from "@/hooks/useKsProjectDocuments";
 import { format } from "date-fns";
@@ -25,6 +25,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { DocumentSourceSelector } from "./DocumentSourceSelector";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const CATEGORY_CONFIG = {
   tegninger: { label: "Tegninger", icon: FileText, color: "bg-blue-500" },
@@ -55,6 +59,106 @@ export const KsProjectDocuments = ({ projectId }: KsProjectDocumentsProps) => {
   const [documentNumber, setDocumentNumber] = useState("");
   const [description, setDescription] = useState("");
   const [supersedes, setSupersedes] = useState<string>("");
+  const [activeTab, setActiveTab] = useState("documents");
+  const [templateSearch, setTemplateSearch] = useState("");
+
+  // Fetch admin documents (templates)
+  const { data: adminDocuments = [], isLoading: isLoadingAdmin } = useQuery({
+    queryKey: ['admin-documents-for-project'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('admin_documents')
+        .select('*')
+        .order('document_type', { ascending: true })
+        .order('document_name', { ascending: true });
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  // Filter admin documents by search
+  const filteredAdminDocuments = adminDocuments.filter(doc =>
+    doc.document_name.toLowerCase().includes(templateSearch.toLowerCase()) ||
+    doc.document_type.toLowerCase().includes(templateSearch.toLowerCase())
+  );
+
+  // Preview admin document
+  const previewAdminDocument = async (filePath: string) => {
+    const { data } = await supabase.storage
+      .from('admin-documents')
+      .createSignedUrl(filePath, 3600);
+    
+    if (data?.signedUrl) {
+      window.open(data.signedUrl, '_blank');
+    }
+  };
+
+  // Download admin document
+  const downloadAdminDocument = async (filePath: string, fileName: string) => {
+    const { data, error } = await supabase.storage
+      .from('admin-documents')
+      .download(filePath);
+    
+    if (error) {
+      toast.error('Kunne ikke laste ned dokument');
+      return;
+    }
+    
+    const url = URL.createObjectURL(data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Copy admin document to project
+  const copyAdminDocumentToProject = async (adminDoc: typeof adminDocuments[0]) => {
+    try {
+      // Download the file from admin-documents bucket
+      const { data: fileData, error: downloadError } = await supabase.storage
+        .from('admin-documents')
+        .download(adminDoc.file_path);
+      
+      if (downloadError) throw downloadError;
+      
+      // Create a File object from the blob
+      const file = new File([fileData], adminDoc.document_name + (adminDoc.file_type ? `.${adminDoc.file_type.split('/').pop()}` : ''), {
+        type: adminDoc.file_type || 'application/octet-stream'
+      });
+      
+      // Map admin document type to project category
+      const categoryMap: Record<string, string> = {
+        'byggesak': 'tegninger',
+        'rutine': 'beskrivelser',
+        'mal': 'maler',
+        'sjekkliste': 'tegninger',
+        'annet': 'beskrivelser'
+      };
+      
+      const category = categoryMap[adminDoc.document_type] || 'maler';
+      
+      // Upload to project documents
+      const input: NewKsProjectDocumentInput = {
+        document_name: adminDoc.document_name,
+        category: category as NewKsProjectDocumentInput['category'],
+        description: adminDoc.description || `Kopiert fra malbibliotek`,
+        file: file,
+      };
+      
+      uploadDocument(input, {
+        onSuccess: () => {
+          toast.success(`"${adminDoc.document_name}" ble kopiert til prosjektet`);
+        },
+        onError: () => {
+          toast.error('Kunne ikke kopiere dokument til prosjektet');
+        }
+      });
+    } catch (error) {
+      toast.error('Kunne ikke kopiere dokument til prosjektet');
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -268,134 +372,251 @@ export const KsProjectDocuments = ({ projectId }: KsProjectDocumentsProps) => {
         </Card>
       )}
 
-      {Object.keys(documentsByCategory).length === 0 ? (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Ingen dokumenter lastet opp ennå</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-6">
-          {Object.entries(CATEGORY_CONFIG).map(([category, config]) => {
-            const categoryDocs = documentsByCategory[category];
-            if (!categoryDocs || categoryDocs.length === 0) return null;
+      {/* Tabs for Documents and Templates */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="documents" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Prosjektdokumenter ({documents.length})
+          </TabsTrigger>
+          <TabsTrigger value="templates" className="flex items-center gap-2">
+            <Library className="h-4 w-4" />
+            Malbibliotek ({adminDocuments.length})
+          </TabsTrigger>
+        </TabsList>
 
-            const Icon = config.icon;
+        {/* Project Documents Tab */}
+        <TabsContent value="documents" className="mt-4">
+          {Object.keys(documentsByCategory).length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Ingen dokumenter lastet opp ennå</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              {Object.entries(CATEGORY_CONFIG).map(([category, config]) => {
+                const categoryDocs = documentsByCategory[category];
+                if (!categoryDocs || categoryDocs.length === 0) return null;
 
-            return (
-              <Card key={category}>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <div className={`p-2 rounded-lg ${config.color} text-white`}>
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    {config.label}
-                  </CardTitle>
-                  <CardDescription>
-                    {categoryDocs.length} dokument{categoryDocs.length !== 1 ? 'er' : ''}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Dokumentnavn</TableHead>
-                        <TableHead>Nr/Ref</TableHead>
-                        <TableHead>Versjon</TableHead>
-                        <TableHead>Opplastet</TableHead>
-                        <TableHead>Opplastet av</TableHead>
-                        <TableHead className="text-center">Inkluder i rapport</TableHead>
-                        <TableHead className="text-right">Handlinger</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {categoryDocs.map((doc) => (
-                        <TableRow key={doc.id}>
-                          <TableCell className="font-medium">
-                            <div>
-                              {doc.document_name}
-                              {doc.description && (
-                                <p className="text-sm text-muted-foreground mt-1">{doc.description}</p>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {doc.document_number && (
-                              <Badge variant="outline">{doc.document_number}</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Badge variant={doc.is_latest_version ? "default" : "secondary"}>
-                                v{doc.version}
-                              </Badge>
-                              {doc.is_latest_version && (
-                                <Badge variant="outline" className="text-xs">
-                                  Gjeldende
-                                </Badge>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {format(new Date(doc.created_at), "d. MMM yyyy", { locale: nb })}
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {doc.uploaded_by_name}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Checkbox
-                              checked={doc.include_in_report}
-                              onCheckedChange={(checked) => 
-                                toggleIncludeInReport({ 
-                                  documentId: doc.id, 
-                                  include: checked === true 
-                                })
-                              }
-                            />
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => downloadDocument(doc)}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="ghost" size="sm">
-                                    <Trash2 className="h-4 w-4 text-destructive" />
+                const Icon = config.icon;
+
+                return (
+                  <Card key={category}>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <div className={`p-2 rounded-lg ${config.color} text-white`}>
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        {config.label}
+                      </CardTitle>
+                      <CardDescription>
+                        {categoryDocs.length} dokument{categoryDocs.length !== 1 ? 'er' : ''}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Dokumentnavn</TableHead>
+                            <TableHead>Nr/Ref</TableHead>
+                            <TableHead>Versjon</TableHead>
+                            <TableHead>Opplastet</TableHead>
+                            <TableHead>Opplastet av</TableHead>
+                            <TableHead className="text-center">Inkluder i rapport</TableHead>
+                            <TableHead className="text-right">Handlinger</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {categoryDocs.map((doc) => (
+                            <TableRow key={doc.id}>
+                              <TableCell className="font-medium">
+                                <div>
+                                  {doc.document_name}
+                                  {doc.description && (
+                                    <p className="text-sm text-muted-foreground mt-1">{doc.description}</p>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {doc.document_number && (
+                                  <Badge variant="outline">{doc.document_number}</Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant={doc.is_latest_version ? "default" : "secondary"}>
+                                    v{doc.version}
+                                  </Badge>
+                                  {doc.is_latest_version && (
+                                    <Badge variant="outline" className="text-xs">
+                                      Gjeldende
+                                    </Badge>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-sm text-muted-foreground">
+                                {format(new Date(doc.created_at), "d. MMM yyyy", { locale: nb })}
+                              </TableCell>
+                              <TableCell className="text-sm text-muted-foreground">
+                                {doc.uploaded_by_name}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <Checkbox
+                                  checked={doc.include_in_report}
+                                  onCheckedChange={(checked) => 
+                                    toggleIncludeInReport({ 
+                                      documentId: doc.id, 
+                                      include: checked === true 
+                                    })
+                                  }
+                                />
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => downloadDocument(doc)}
+                                  >
+                                    <Download className="h-4 w-4" />
                                   </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Slett dokument?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Er du sikker på at du vil slette "{doc.document_name}"? Denne handlingen kan ikke angres.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => deleteDocument(doc.id)}>
-                                      Slett
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="sm">
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Slett dokument?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Er du sikker på at du vil slette "{doc.document_name}"? Denne handlingen kan ikke angres.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => deleteDocument(doc.id)}>
+                                          Slett
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Templates Tab (Admin Documents) */}
+        <TabsContent value="templates" className="mt-4 space-y-4">
+          <div className="flex items-center gap-4">
+            <Input
+              placeholder="Søk i maler..."
+              value={templateSearch}
+              onChange={(e) => setTemplateSearch(e.target.value)}
+              className="max-w-sm"
+            />
+          </div>
+
+          {isLoadingAdmin ? (
+            <Card>
+              <CardContent className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </CardContent>
+            </Card>
+          ) : filteredAdminDocuments.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                <Library className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Ingen dokumentmaler tilgjengelig</p>
+                <p className="text-sm mt-2">Kontakt administrator for å legge til maler</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Library className="h-5 w-5" />
+                  Dokumentmaler ({filteredAdminDocuments.length})
+                </CardTitle>
+                <CardDescription>
+                  Last ned maler for utfylling, eller kopier direkte til prosjektet
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {filteredAdminDocuments.map((doc) => (
+                    <div 
+                      key={doc.id} 
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <FileText className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{doc.document_name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="secondary" className="text-xs">
+                              {doc.document_type}
+                            </Badge>
+                            {doc.file_size && (
+                              <span className="text-xs text-muted-foreground">
+                                {(doc.file_size / 1024).toFixed(1)} KB
+                              </span>
+                            )}
+                          </div>
+                          {doc.description && (
+                            <p className="text-sm text-muted-foreground mt-1">{doc.description}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => previewAdminDocument(doc.file_path)}
+                          title="Forhåndsvis"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => downloadAdminDocument(doc.file_path, doc.document_name)}
+                          title="Last ned"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyAdminDocumentToProject(doc)}
+                          disabled={isUploading}
+                          title="Kopier til prosjekt"
+                        >
+                          <Copy className="h-4 w-4 mr-1" />
+                          Bruk
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
