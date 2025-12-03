@@ -164,7 +164,7 @@ const App = () => (
             
             {/* KS Modul 2 routes */}
             <Route path="/ks2" element={<ProtectedRoute><Ks2Dashboard /></ProtectedRoute>} />
-            <Route path="/ks2/project/:projectId" element={<ProtectedRoute><Ks2ProjectDetail /></ProtectedRoute>} />
+            <Route path="/ks2/project/:projectId/*" element={<ProtectedRoute><Ks2ProjectDetail /></ProtectedRoute>} />
             <Route path="/ks2/admin" element={<ProtectedRoute><Ks2Admin /></ProtectedRoute>} />
             
             {/* Admin routes - require system_admin role */}
