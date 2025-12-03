@@ -2830,6 +2830,108 @@ export type Database = {
           },
         ]
       }
+      ks_module2_routine_checklist_links: {
+        Row: {
+          created_at: string | null
+          id: string
+          routine_id: string
+          template_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          routine_id: string
+          template_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          routine_id?: string
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_routine_checklist_links_routine_id_fkey"
+            columns: ["routine_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_routines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_routine_checklist_links_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_module2_routines: {
+        Row: {
+          category: string | null
+          company_id: string
+          content: string | null
+          created_at: string | null
+          description: string | null
+          document_name: string | null
+          document_path: string | null
+          id: string
+          is_document: boolean | null
+          name: string
+          project_id: string
+          responsible_role: string | null
+          routine_number: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          company_id: string
+          content?: string | null
+          created_at?: string | null
+          description?: string | null
+          document_name?: string | null
+          document_path?: string | null
+          id?: string
+          is_document?: boolean | null
+          name: string
+          project_id: string
+          responsible_role?: string | null
+          routine_number: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          company_id?: string
+          content?: string | null
+          created_at?: string | null
+          description?: string | null
+          document_name?: string | null
+          document_path?: string | null
+          id?: string
+          is_document?: boolean | null
+          name?: string
+          project_id?: string
+          responsible_role?: string | null
+          routine_number?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_routines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_routines_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_settings: {
         Row: {
           accent_color: string | null
@@ -5612,6 +5714,7 @@ export type Database = {
       }
       generate_ks_module2_avvik_number: { Args: never; Returns: string }
       generate_ks_module2_project_number: { Args: never; Returns: string }
+      generate_ks_module2_routine_number: { Args: never; Returns: string }
       generate_ks_module2_uk_number: { Args: never; Returns: string }
       generate_project_number: { Args: never; Returns: string }
       get_user_company_id: { Args: { _user_id: string }; Returns: string }
