@@ -54,13 +54,14 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
   const [responsibleUserName, setResponsibleUserName] = useState("");
   const [deadlineDate, setDeadlineDate] = useState("");
   const [isPaper, setIsPaper] = useState(false);
+  const [executeNow, setExecuteNow] = useState(true); // true = utfør nå, false = planlegg til senere
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [uploadingPhotoIndex, setUploadingPhotoIndex] = useState<string | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [inspectorSignature, setInspectorSignature] = useState<string>("");
   const [inspectorName, setInspectorName] = useState("");
 
-  const steps: WizardStep[] = isPaper 
+  const steps: WizardStep[] = isPaper || !executeNow
     ? ["template", "details", "summary"] 
     : ["template", "details", "items", "signature", "summary"];
   const currentStepIndex = steps.indexOf(step);
@@ -158,7 +159,7 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
     return Math.round((answeredItems.length / items.length) * 100);
   };
 
-  const handleCreate = async () => {
+  const handleCreate = async (isPlanned: boolean = false) => {
     if (!selectedTemplate) return;
 
     const result = await createChecklist({
@@ -167,10 +168,10 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
       responsible_user_id: responsibleUserId || undefined,
       responsible_user_name: responsibleUserName || undefined,
       deadline_date: deadlineDate || undefined,
-      checklist_items: items,
+      checklist_items: isPlanned ? items.map(item => ({ ...item, value: null })) : items,
       is_paper_version: isPaper,
-      inspector_signature: inspectorSignature || undefined,
-      inspector_name: inspectorName || undefined,
+      inspector_signature: isPlanned ? undefined : (inspectorSignature || undefined),
+      inspector_name: isPlanned ? undefined : (inspectorName || undefined),
     });
 
     if (result) {
@@ -305,6 +306,57 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
               />
             </div>
 
+            {/* Execute now or later choice */}
+            {!isPaper && (
+              <div className="pt-2">
+                <Label className="mb-3 block">Når skal kontrollen utføres?</Label>
+                <RadioGroup
+                  value={executeNow ? "now" : "later"}
+                  onValueChange={(v) => setExecuteNow(v === "now")}
+                  className="space-y-3"
+                >
+                  <Card 
+                    className={cn(
+                      "cursor-pointer transition-colors",
+                      executeNow && "border-primary bg-primary/5"
+                    )}
+                    onClick={() => setExecuteNow(true)}
+                  >
+                    <CardContent className="p-4 flex items-center gap-3">
+                      <RadioGroupItem value="now" id="execute-now" />
+                      <div className="flex-1">
+                        <Label htmlFor="execute-now" className="font-medium cursor-pointer">
+                          Utfør nå
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Fyll ut kontrollpunktene med en gang
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card 
+                    className={cn(
+                      "cursor-pointer transition-colors",
+                      !executeNow && "border-primary bg-primary/5"
+                    )}
+                    onClick={() => setExecuteNow(false)}
+                  >
+                    <CardContent className="p-4 flex items-center gap-3">
+                      <RadioGroupItem value="later" id="execute-later" />
+                      <div className="flex-1">
+                        <Label htmlFor="execute-later" className="font-medium cursor-pointer">
+                          Planlegg til senere
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Opprett kontrollen og fyll ut når det passer
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </RadioGroup>
+              </div>
+            )}
+
             {isPaper && (
               <Card className="bg-orange-500/10 border-orange-500/20">
                 <CardContent className="p-4">
@@ -321,14 +373,25 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Tilbake
               </Button>
-              <Button
-                className="flex-1"
-                onClick={() => setStep(isPaper ? "summary" : "items")}
-                disabled={!title}
-              >
-                {isPaper ? "Gå til oppsummering" : "Fyll ut punkter"}
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
+              {!executeNow && !isPaper ? (
+                <Button
+                  className="flex-1"
+                  onClick={() => handleCreate(true)}
+                  disabled={!title || isSaving}
+                >
+                  {isSaving ? "Lagrer..." : "Opprett og planlegg"}
+                  <Check className="h-4 w-4 ml-2" />
+                </Button>
+              ) : (
+                <Button
+                  className="flex-1"
+                  onClick={() => setStep(isPaper ? "summary" : "items")}
+                  disabled={!title}
+                >
+                  {isPaper ? "Gå til oppsummering" : "Fyll ut punkter"}
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              )}
             </div>
           </div>
         )}
@@ -675,7 +738,7 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Tilbake
               </Button>
-              <Button className="flex-1" onClick={handleCreate} disabled={isSaving}>
+              <Button className="flex-1" onClick={() => handleCreate(false)} disabled={isSaving}>
                 {isSaving ? "Oppretter..." : isPaper ? "Opprett og venter på opplasting" : "Fullfør og lagre"}
               </Button>
             </div>
