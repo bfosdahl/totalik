@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -18,15 +17,18 @@ import {
   Calendar,
   User,
   MapPin,
-  FileText,
   Trash2,
-  Edit,
+  Camera,
+  X,
+  Image,
   Eye,
 } from "lucide-react";
 import { useKsModule2Avvik, KsModule2Avvik } from "@/hooks/useKsModule2Avvik";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const CATEGORIES = [
   { value: "kvalitet", label: "Kvalitetsavvik" },
@@ -53,12 +55,16 @@ const STATUSES = [
 export default function Ks2Avvik() {
   const { projectId } = useParams();
   const { profile } = useAuth();
-  const { avvikList, isLoading, createAvvik, updateAvvik, deleteAvvik, closeAvvik, isCreating } = useKsModule2Avvik(projectId || null);
+  const { avvikList, isLoading, createAvvik, updateAvvik, deleteAvvik, closeAvvik, isCreating, isUpdating } = useKsModule2Avvik(projectId || null);
   
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [selectedAvvik, setSelectedAvvik] = useState<KsModule2Avvik | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [pendingPhotos, setPendingPhotos] = useState<string[]>([]);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [newAvvik, setNewAvvik] = useState({
     title: "",
@@ -68,7 +74,51 @@ export default function Ks2Avvik() {
     location: "",
     deadline: "",
     responsible_name: "",
+    corrective_action: "",
+    root_cause: "",
   });
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    setUploadingPhotos(true);
+    const uploadedPaths: string[] = [];
+    
+    try {
+      for (const file of Array.from(files)) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${projectId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('ks-module2-avvik-photos')
+          .upload(fileName, file);
+          
+        if (uploadError) throw uploadError;
+        
+        const { data: urlData } = supabase.storage
+          .from('ks-module2-avvik-photos')
+          .getPublicUrl(fileName);
+          
+        uploadedPaths.push(urlData.publicUrl);
+      }
+      
+      setPendingPhotos(prev => [...prev, ...uploadedPaths]);
+      toast.success(`${files.length} bilde(r) lastet opp`);
+    } catch (error) {
+      console.error('Error uploading photos:', error);
+      toast.error('Kunne ikke laste opp bilder');
+    } finally {
+      setUploadingPhotos(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const removePendingPhoto = (index: number) => {
+    setPendingPhotos(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleCreateAvvik = () => {
     if (!newAvvik.title || !projectId) return;
@@ -88,13 +138,14 @@ export default function Ks2Avvik() {
       reported_by_name: profile?.first_name && profile?.last_name 
         ? `${profile.first_name} ${profile.last_name}` 
         : profile?.email || "Ukjent",
-      root_cause: null,
-      corrective_action: null,
+      root_cause: newAvvik.root_cause || null,
+      corrective_action: newAvvik.corrective_action || null,
       preventive_action: null,
-      photo_paths: null,
+      photo_paths: pendingPhotos.length > 0 ? pendingPhotos : null,
     }, {
       onSuccess: () => {
-        setNewAvvik({ title: "", description: "", category: "kvalitet", severity: "medium", location: "", deadline: "", responsible_name: "" });
+        setNewAvvik({ title: "", description: "", category: "kvalitet", severity: "medium", location: "", deadline: "", responsible_name: "", corrective_action: "", root_cause: "" });
+        setPendingPhotos([]);
         setIsNewDialogOpen(false);
       }
     });
@@ -151,14 +202,20 @@ export default function Ks2Avvik() {
             Registrer og følg opp avvik i prosjektet
           </p>
         </div>
-        <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
+        <Dialog open={isNewDialogOpen} onOpenChange={(open) => {
+          setIsNewDialogOpen(open);
+          if (!open) {
+            setPendingPhotos([]);
+            setNewAvvik({ title: "", description: "", category: "kvalitet", severity: "medium", location: "", deadline: "", responsible_name: "", corrective_action: "", root_cause: "" });
+          }
+        }}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
               Nytt avvik
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Registrer nytt avvik</DialogTitle>
             </DialogHeader>
@@ -245,6 +302,77 @@ export default function Ks2Avvik() {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label>Årsak</Label>
+                <Textarea
+                  value={newAvvik.root_cause}
+                  onChange={(e) => setNewAvvik(prev => ({ ...prev, root_cause: e.target.value }))}
+                  placeholder="Hva er årsaken til avviket?"
+                  rows={2}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Korrigerende tiltak</Label>
+                <Textarea
+                  value={newAvvik.corrective_action}
+                  onChange={(e) => setNewAvvik(prev => ({ ...prev, corrective_action: e.target.value }))}
+                  placeholder="Hvilke tiltak skal gjennomføres?"
+                  rows={2}
+                />
+              </div>
+
+              {/* Photo Upload Section */}
+              <div className="space-y-2">
+                <Label>Bilder</Label>
+                <div className="border-2 border-dashed rounded-lg p-4">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                    id="photo-upload"
+                  />
+                  <div className="flex flex-col items-center gap-2">
+                    <Camera className="h-8 w-8 text-muted-foreground" />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingPhotos}
+                    >
+                      {uploadingPhotos ? "Laster opp..." : "Last opp bilder"}
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      Du kan laste opp flere bilder samtidig
+                    </p>
+                  </div>
+                  
+                  {pendingPhotos.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2 mt-4">
+                      {pendingPhotos.map((url, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={url}
+                            alt={`Bilde ${index + 1}`}
+                            className="w-full h-24 object-cover rounded-md"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removePendingPhoto(index)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setIsNewDialogOpen(false)}>
                   Avbryt
@@ -325,6 +453,18 @@ export default function Ks2Avvik() {
         </Select>
       </div>
 
+      {/* Image Preview Dialog */}
+      <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Bildeoversikt</DialogTitle>
+          </DialogHeader>
+          {previewImage && (
+            <img src={previewImage} alt="Preview" className="w-full h-auto rounded-lg" />
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Avvik List */}
       {filteredAvvik.length === 0 ? (
         <Card>
@@ -339,24 +479,59 @@ export default function Ks2Avvik() {
           {filteredAvvik.map((avvik) => {
             const statusInfo = getStatusInfo(avvik.status);
             const StatusIcon = statusInfo.icon;
+            const hasPhotos = avvik.photo_paths && avvik.photo_paths.length > 0;
 
             return (
               <Card key={avvik.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="pt-6">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                     <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-wrap">
                         <StatusIcon className={`h-5 w-5 ${statusInfo.color}`} />
                         <Badge variant="outline">{avvik.avvik_number}</Badge>
                         {getSeverityBadge(avvik.severity)}
                         <Badge variant="secondary">
                           {CATEGORIES.find(c => c.value === avvik.category)?.label || avvik.category}
                         </Badge>
+                        {hasPhotos && (
+                          <Badge variant="outline" className="gap-1">
+                            <Image className="h-3 w-3" />
+                            {avvik.photo_paths!.length}
+                          </Badge>
+                        )}
                       </div>
                       <h3 className="font-semibold text-lg">{avvik.title}</h3>
                       {avvik.description && (
                         <p className="text-sm text-muted-foreground line-clamp-2">{avvik.description}</p>
                       )}
+                      
+                      {/* Show photos if available */}
+                      {hasPhotos && (
+                        <div className="flex gap-2 mt-2 flex-wrap">
+                          {avvik.photo_paths!.slice(0, 4).map((url, index) => (
+                            <button
+                              key={index}
+                              onClick={() => setPreviewImage(url)}
+                              className="relative group"
+                            >
+                              <img
+                                src={url}
+                                alt={`Bilde ${index + 1}`}
+                                className="w-16 h-16 object-cover rounded-md border hover:border-primary transition-colors"
+                              />
+                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
+                                <Eye className="h-4 w-4 text-white" />
+                              </div>
+                            </button>
+                          ))}
+                          {avvik.photo_paths!.length > 4 && (
+                            <div className="w-16 h-16 rounded-md bg-muted flex items-center justify-center text-sm text-muted-foreground">
+                              +{avvik.photo_paths!.length - 4}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
                       <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                         {avvik.location && (
                           <div className="flex items-center gap-1">
