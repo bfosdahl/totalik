@@ -12,7 +12,8 @@ import {
   ListChecks,
   Zap,
   Building2,
-  Settings
+  Settings,
+  Scale
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import AnnualHmsRevisionForm from "@/components/audits/AnnualHmsRevisionForm";
 import ElKontrollForm from "@/components/audits/ElKontrollForm";
 import FysiskeArbeidsforholdForm from "@/components/audits/FysiskeArbeidsforholdForm";
 import DagligDriftForm from "@/components/audits/DagligDriftForm";
+import LoverOgForskrifterCalculator from "@/components/audits/LoverOgForskrifterCalculator";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -135,6 +137,13 @@ const Audits = () => {
                 <Settings className="w-4 h-4" />
                 <span>Daglig drift</span>
               </TabsTrigger>
+              <TabsTrigger 
+                value="lover" 
+                className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
+              >
+                <Scale className="w-4 h-4" />
+                <span>Lover og forskrifter</span>
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -147,7 +156,7 @@ const Audits = () => {
               className="bg-card rounded-xl border border-border p-5 shadow-card"
             >
               <h2 className="text-lg font-semibold mb-4">Gå direkte til aktivitetsskjema</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                 <Button
                   variant="outline"
                   className="h-auto py-4 flex flex-col gap-2 items-center justify-center"
@@ -179,6 +188,14 @@ const Audits = () => {
                 >
                   <Settings className="w-6 h-6 text-accent" />
                   <span className="text-xs text-center">Daglig drift</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 flex flex-col gap-2 items-center justify-center"
+                  onClick={() => setActiveTab("lover")}
+                >
+                  <Scale className="w-6 h-6 text-success" />
+                  <span className="text-xs text-center">Lover og forskrifter</span>
                 </Button>
               </div>
             </motion.div>
@@ -333,6 +350,11 @@ const Audits = () => {
           {/* Daglig drift Tab */}
           <TabsContent value="drift">
             <DagligDriftForm />
+          </TabsContent>
+
+          {/* Lover og forskrifter Tab */}
+          <TabsContent value="lover">
+            <LoverOgForskrifterCalculator />
           </TabsContent>
         </Tabs>
       </div>
