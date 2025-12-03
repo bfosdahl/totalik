@@ -2363,6 +2363,58 @@ export type Database = {
           },
         ]
       }
+      ks_module2_checklist_reminders: {
+        Row: {
+          checklist_id: string
+          company_id: string
+          id: string
+          project_id: string
+          recipient_email: string
+          reminder_type: string
+          sent_at: string
+        }
+        Insert: {
+          checklist_id: string
+          company_id: string
+          id?: string
+          project_id: string
+          recipient_email: string
+          reminder_type: string
+          sent_at?: string
+        }
+        Update: {
+          checklist_id?: string
+          company_id?: string
+          id?: string
+          project_id?: string
+          recipient_email?: string
+          reminder_type?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_checklist_reminders_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_checklists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_checklist_reminders_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_checklist_reminders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_checklist_templates: {
         Row: {
           category: string

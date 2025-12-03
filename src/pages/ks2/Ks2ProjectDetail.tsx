@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { Ks2ProjectSidebar } from "@/components/ks2/Ks2ProjectSidebar";
-import { Ks2ProjectDashboard } from "@/components/ks2/Ks2ProjectDashboard";
+import { Ks2EnhancedDashboard } from "@/components/ks2/Ks2EnhancedDashboard";
 import Ks2Egenkontroller from "./Ks2Egenkontroller";
 import Ks2Sjekklister from "./Ks2Sjekklister";
 import Ks2Rutiner from "./Ks2Rutiner";
@@ -100,7 +100,7 @@ export default function Ks2ProjectDetail() {
       case "/rapport":
         return <Ks2Prosjektrapport />;
       default:
-        return <Ks2ProjectDashboard />;
+        return <Ks2EnhancedDashboard />;
     }
   };
 
