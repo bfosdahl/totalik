@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
@@ -8,8 +9,11 @@ import {
   AlertTriangle,
   Library,
   ArrowLeft,
+  Menu,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 interface Ks2ProjectSidebarProps {
   projectName: string;
@@ -29,19 +33,23 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
   const { projectId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const basePath = `/ks2/project/${projectId}`;
   const currentPath = location.pathname.replace(basePath, "") || "";
 
-  return (
-    <div className="fixed left-0 top-0 h-full w-[260px] bg-sidebar text-sidebar-foreground border-r border-sidebar-border z-40 flex flex-col">
+  const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => (
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-sidebar-border">
         <Button
           variant="ghost"
           size="sm"
           className="text-sidebar-foreground/70 hover:text-sidebar-foreground mb-3 -ml-2"
-          onClick={() => navigate("/ks2")}
+          onClick={() => {
+            navigate("/ks2");
+            onNavigate?.();
+          }}
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
           Alle prosjekter
@@ -61,7 +69,12 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
           return (
             <button
               key={item.id}
-              onClick={() => !item.disabled && navigate(`${basePath}${item.path}`)}
+              onClick={() => {
+                if (!item.disabled) {
+                  navigate(`${basePath}${item.path}`);
+                  onNavigate?.();
+                }
+              }}
               disabled={item.disabled}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
@@ -89,5 +102,28 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
         <p className="text-xs text-sidebar-foreground/50">KS Modul #2</p>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Menu Button */}
+      <div className="lg:hidden fixed top-4 left-4 z-50">
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetTrigger asChild>
+            <Button size="icon" variant="outline" className="bg-background">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-[280px] bg-sidebar text-sidebar-foreground">
+            <SidebarContent onNavigate={() => setMobileOpen(false)} />
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block fixed left-0 top-0 h-full w-[260px] bg-sidebar text-sidebar-foreground border-r border-sidebar-border z-40">
+        <SidebarContent />
+      </div>
+    </>
   );
 }
