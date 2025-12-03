@@ -63,9 +63,9 @@ const IkHmsOppsett = () => {
     <AppLayout>
       <div className="container max-w-4xl mx-auto py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">IK/HMS Oppsett</h1>
+          <h1 className="text-3xl font-bold mb-2">Oppsett-hjelperen</h1>
           <p className="text-muted-foreground">
-            Sett opp ditt skreddersydde HMS-system med AI
+            Få hjelp til å sette opp HMS-systemet for bedriften din
           </p>
         </div>
 

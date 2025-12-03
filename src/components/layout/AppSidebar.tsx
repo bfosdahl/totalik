@@ -47,7 +47,7 @@ const standardNavItems = [
 // IK/HMS module items - shown in collapsible section
 const ikHmsItems = [
   { icon: ClipboardList, label: "Oppsett", path: "/setup" },
-  { icon: Shield, label: "AI Oppsett", path: "/setup/ai" },
+  { icon: Shield, label: "Oppsett-hjelperen", path: "/setup/ai" },
   { icon: AlertTriangle, label: "Risikovurdering", path: "/setup?step=2" },
   { icon: ListChecks, label: "Handlingsplan", path: "/setup?step=3" },
   { icon: AlertTriangle, label: "Avvik", path: "/deviations" },
