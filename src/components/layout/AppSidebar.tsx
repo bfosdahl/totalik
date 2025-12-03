@@ -77,17 +77,14 @@ const personaladministrasjonItems = {
 };
 
 const ksByggItems = [
-  { label: "Prosjekt", path: "/ks/projects" },
-  { label: "Sjekklister", path: "/ks/checklists" },
-  { label: "Rutiner", path: "/ks/routines" },
+  { label: "KS Dashboard", path: "/ks/dashboard" },
+  { label: "Prosjekter", path: "/ks/projects" },
+  { label: "Egenkontroller", path: "/ks/egenkontroller" },
+  { label: "Uavhengig kontroll", path: "/ks/uavhengig-kontroll" },
+  { label: "KS-rapporter & FDV", path: "/ks/rapporter" },
+  { label: "Malbibliotek", path: "/ks/malbibliotek" },
   { label: "SJA", path: "/ks/sja" },
   { label: "Avvik", path: "/ks/avvik" },
-  { label: "Inspeksjoner", path: "/ks/inspeksjoner" },
-  { label: "Inspeksjonsmaler", path: "/ks/inspeksjon-maler" },
-  { label: "Farlige forhold", path: "/ks/farlige-fohold" },
-  { label: "Tiltakslogg", path: "/ks/tiltakslogg" },
-  { label: "Underleverandører (UE)", path: "/ks/underleverandorer" },
-  { label: "Prosjektperm PDF", path: "/ks/report" },
 ];
 
 // Route detection helper

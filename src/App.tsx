@@ -43,6 +43,11 @@ import KsDocumentCenter from "./pages/ks/KsDocumentCenter";
 import KsInspeksjoner from "./pages/ks/KsInspeksjoner";
 import KsInspeksjonDetail from "./pages/ks/KsInspeksjonDetail";
 import KsInspeksjonMalGenerator from "./pages/ks/KsInspeksjonMalGenerator";
+import KsDashboard from "./pages/ks/KsDashboard";
+import KsEgenkontroller from "./pages/ks/KsEgenkontroller";
+import KsUavhengigKontroll from "./pages/ks/KsUavhengigKontroll";
+import KsRapporterFdv from "./pages/ks/KsRapporterFdv";
+import KsMalbibliotek from "./pages/ks/KsMalbibliotek";
 import HmsChat from "./pages/HmsChat";
 import MyCourseCard from "./pages/MyCourseCard";
 import TimeRegistration from "./pages/TimeRegistration";
@@ -120,6 +125,12 @@ const App = () => (
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             
             {/* KS Bygg routes */}
+            <Route path="/ks" element={<ProtectedRoute><KsDashboard /></ProtectedRoute>} />
+            <Route path="/ks/dashboard" element={<ProtectedRoute><KsDashboard /></ProtectedRoute>} />
+            <Route path="/ks/egenkontroller" element={<ProtectedRoute><KsEgenkontroller /></ProtectedRoute>} />
+            <Route path="/ks/uavhengig-kontroll" element={<ProtectedRoute><KsUavhengigKontroll /></ProtectedRoute>} />
+            <Route path="/ks/rapporter" element={<ProtectedRoute><KsRapporterFdv /></ProtectedRoute>} />
+            <Route path="/ks/malbibliotek" element={<ProtectedRoute><KsMalbibliotek /></ProtectedRoute>} />
             <Route path="/ks/projects" element={<ProtectedRoute><KsProjectsOverview /></ProtectedRoute>} />
             <Route path="/ks/projects/:id" element={<ProtectedRoute><KsProjectDetail /></ProtectedRoute>} />
             <Route path="/ks/projects/:projectId/hms-plan" element={<ProtectedRoute><KsHmsPlanWizard /></ProtectedRoute>} />
