@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,8 @@ import {
   Pen,
   ClipboardCheck,
   FileText,
+  Image,
+  Trash2,
 } from "lucide-react";
 import {
   useKsModule2Checklists,
@@ -29,6 +31,8 @@ import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Ks2ChecklistWizardProps {
   projectId: string;
@@ -48,6 +52,8 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
   const [deadlineDate, setDeadlineDate] = useState("");
   const [isPaper, setIsPaper] = useState(false);
   const [items, setItems] = useState<ChecklistItem[]>([]);
+  const [uploadingPhotoIndex, setUploadingPhotoIndex] = useState<string | null>(null);
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const steps: WizardStep[] = ["template", "details", "items", "summary"];
   const currentStepIndex = steps.indexOf(step);
@@ -83,6 +89,60 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
   const updateItemComment = (itemId: string, comment: string) => {
     setItems((prev) =>
       prev.map((item) => (item.id === itemId ? { ...item, comment } : item))
+    );
+  };
+
+  const handlePhotoUpload = async (itemId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    setUploadingPhotoIndex(itemId);
+    const uploadedUrls: string[] = [];
+    
+    try {
+      for (const file of Array.from(files)) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${projectId}/${itemId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('ks-module2-checklist-photos')
+          .upload(fileName, file);
+          
+        if (uploadError) throw uploadError;
+        
+        const { data: urlData } = supabase.storage
+          .from('ks-module2-checklist-photos')
+          .getPublicUrl(fileName);
+          
+        uploadedUrls.push(urlData.publicUrl);
+      }
+      
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === itemId
+            ? { ...item, photos: [...(item.photos || []), ...uploadedUrls] }
+            : item
+        )
+      );
+      
+      toast.success(`${files.length} bilde(r) lastet opp`);
+    } catch (error) {
+      console.error('Error uploading photos:', error);
+      toast.error('Kunne ikke laste opp bilder');
+    } finally {
+      setUploadingPhotoIndex(null);
+      const ref = fileInputRefs.current[itemId];
+      if (ref) ref.value = '';
+    }
+  };
+
+  const removePhoto = (itemId: string, photoIndex: number) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === itemId
+          ? { ...item, photos: item.photos?.filter((_, i) => i !== photoIndex) }
+          : item
+      )
     );
   };
 
@@ -333,13 +393,51 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
                         )}
 
                         {item.type === "photo" && (
-                          <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm">
-                              <Camera className="h-4 w-4 mr-2" />
-                              Ta bilde
-                            </Button>
-                            {item.required && !item.photos?.length && (
-                              <span className="text-xs text-red-500">Obligatorisk bilde</span>
+                          <div className="space-y-2">
+                            <input
+                              ref={(el) => { fileInputRefs.current[item.id] = el; }}
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={(e) => handlePhotoUpload(item.id, e)}
+                              className="hidden"
+                              id={`photo-upload-${item.id}`}
+                            />
+                            <div className="flex items-center gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => fileInputRefs.current[item.id]?.click()}
+                                disabled={uploadingPhotoIndex === item.id}
+                              >
+                                <Camera className="h-4 w-4 mr-2" />
+                                {uploadingPhotoIndex === item.id ? "Laster opp..." : "Ta bilde"}
+                              </Button>
+                              {item.required && !item.photos?.length && (
+                                <span className="text-xs text-red-500">Obligatorisk bilde</span>
+                              )}
+                            </div>
+                            
+                            {item.photos && item.photos.length > 0 && (
+                              <div className="flex gap-2 flex-wrap mt-2">
+                                {item.photos.map((url, photoIndex) => (
+                                  <div key={photoIndex} className="relative group">
+                                    <img
+                                      src={url}
+                                      alt={`Bilde ${photoIndex + 1}`}
+                                      className="w-16 h-16 object-cover rounded-md border"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => removePhoto(item.id, photoIndex)}
+                                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
                             )}
                           </div>
                         )}
@@ -350,6 +448,60 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
                             <p className="text-sm text-muted-foreground">
                               Klikk for å signere
                             </p>
+                          </div>
+                        )}
+
+                        {/* Photo attachment option for all types */}
+                        {item.type !== "photo" && (
+                          <div className="pt-2 border-t mt-2">
+                            <input
+                              ref={(el) => { fileInputRefs.current[`${item.id}-extra`] = el; }}
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={(e) => handlePhotoUpload(item.id, e)}
+                              className="hidden"
+                              id={`photo-upload-extra-${item.id}`}
+                            />
+                            <div className="flex items-center gap-2">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => fileInputRefs.current[`${item.id}-extra`]?.click()}
+                                disabled={uploadingPhotoIndex === item.id}
+                                className="text-muted-foreground"
+                              >
+                                <Image className="h-4 w-4 mr-1" />
+                                Legg til bilde
+                              </Button>
+                              {item.photos && item.photos.length > 0 && (
+                                <Badge variant="outline" className="text-xs">
+                                  {item.photos.length} bilde(r)
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            {item.photos && item.photos.length > 0 && (
+                              <div className="flex gap-2 flex-wrap mt-2">
+                                {item.photos.map((url, photoIndex) => (
+                                  <div key={photoIndex} className="relative group">
+                                    <img
+                                      src={url}
+                                      alt={`Bilde ${photoIndex + 1}`}
+                                      className="w-12 h-12 object-cover rounded-md border"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => removePhoto(item.id, photoIndex)}
+                                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         )}
 
@@ -411,10 +563,18 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
                   </Badge>
                 </div>
                 {!isPaper && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Utfylt</span>
-                    <span className="font-medium">{calculateProgress()}%</span>
-                  </div>
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Utfylt</span>
+                      <span className="font-medium">{calculateProgress()}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Bilder</span>
+                      <span className="font-medium">
+                        {items.reduce((sum, item) => sum + (item.photos?.length || 0), 0)} stk
+                      </span>
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
