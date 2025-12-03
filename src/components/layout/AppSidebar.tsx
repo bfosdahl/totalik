@@ -297,7 +297,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               )}
             >
               <Shield className={cn(
-                "w-5 h-5 flex-shrink-0 transition-transform",
+                "w-5 h-5 flex-shrink-0 transition-transform text-green-500",
                 "group-hover:scale-110"
               )} />
               <AnimatePresence mode="wait">
@@ -307,8 +307,9 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -10 }}
-                      className="font-medium text-sm flex-1 text-left"
+                      className="font-medium text-sm flex-1 text-left flex items-center gap-2"
                     >
+                      <span className="w-2 h-2 rounded-full bg-green-500" />
                       IK/HMS
                     </motion.span>
                     {expandedSections.has('ikHms') ? (
@@ -497,30 +498,31 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                 )}
               >
-                <ShieldCheck className={cn(
-                  "w-5 h-5 flex-shrink-0 transition-transform",
-                  !location.pathname.startsWith("/ik-mat") && "group-hover:scale-110"
-                )} />
-                <AnimatePresence mode="wait">
-                  {!collapsed && (
-                    <>
-                      <motion.span
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        className="font-medium text-sm flex-1 text-left"
-                      >
-                        IK/MAT
-                      </motion.span>
-                      {expandedSections.has('ikMat') ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </>
-                  )}
-                </AnimatePresence>
-              </button>
+              <ShieldCheck className={cn(
+                "w-5 h-5 flex-shrink-0 transition-transform text-red-500",
+                !location.pathname.startsWith("/ik-mat") && "group-hover:scale-110"
+              )} />
+              <AnimatePresence mode="wait">
+                {!collapsed && (
+                  <>
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      className="font-medium text-sm flex-1 text-left flex items-center gap-2"
+                    >
+                      <span className="w-2 h-2 rounded-full bg-red-500" />
+                      IK/MAT
+                    </motion.span>
+                    {expandedSections.has('ikMat') ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </>
+                )}
+              </AnimatePresence>
+            </button>
               
               {/* IK/MAT submenu */}
               <AnimatePresence>
@@ -654,7 +656,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               title={!hasKsBygg ? "Denne modulen er ikke aktivert for din bedrift" : undefined}
             >
               <HardHat className={cn(
-                "w-5 h-5 flex-shrink-0 transition-transform",
+                "w-5 h-5 flex-shrink-0 transition-transform text-purple-500",
                 hasKsBygg && !location.pathname.startsWith("/ks") && "group-hover:scale-110"
               )} />
               <AnimatePresence mode="wait">
@@ -664,8 +666,9 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -10 }}
-                      className="font-medium text-sm flex-1 text-left"
+                      className="font-medium text-sm flex-1 text-left flex items-center gap-2"
                     >
+                      <span className="w-2 h-2 rounded-full bg-purple-500" />
                       KS Bygg
                     </motion.span>
                     {!hasKsBygg ? (
@@ -737,9 +740,8 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               )}
             >
               <HardHat className={cn(
-                "w-5 h-5 flex-shrink-0 transition-transform",
-                !location.pathname.startsWith("/ks2") && "group-hover:scale-110",
-                "text-primary"
+                "w-5 h-5 flex-shrink-0 transition-transform text-purple-500",
+                !location.pathname.startsWith("/ks2") && "group-hover:scale-110"
               )} />
               <AnimatePresence mode="wait">
                 {!collapsed && (
@@ -748,8 +750,9 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -10 }}
-                      className="font-medium text-sm flex-1 text-left"
+                      className="font-medium text-sm flex-1 text-left flex items-center gap-2"
                     >
+                      <span className="w-2 h-2 rounded-full bg-purple-500" />
                       KS Modul #2
                     </motion.span>
                     {expandedSections.has('ks2') ? (
