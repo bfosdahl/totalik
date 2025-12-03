@@ -10,6 +10,7 @@ import Ks2Sjekklister from "./Ks2Sjekklister";
 import Ks2Dokumentasjon from "./Ks2Dokumentasjon";
 import Ks2Prosjektinfo from "./Ks2Prosjektinfo";
 import Ks2Avvik from "./Ks2Avvik";
+import Ks2UavhengigKontroll from "./Ks2UavhengigKontroll";
 import Ks2Malbibliotek from "./Ks2Malbibliotek";
 
 export default function Ks2ProjectDetail() {
@@ -78,6 +79,8 @@ export default function Ks2ProjectDetail() {
         return <Ks2Prosjektinfo />;
       case "/avvik":
         return <Ks2Avvik />;
+      case "/uk":
+        return <Ks2UavhengigKontroll />;
       case "/maler":
         return <Ks2Malbibliotek />;
       default:
