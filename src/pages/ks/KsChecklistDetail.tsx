@@ -263,7 +263,7 @@ export default function KsChecklistDetail() {
     }
   };
 
-  const completedCount = items.filter(i => i.status !== 'pending').length;
+  const completedCount = items.filter(i => i.status && i.status !== 'pending').length;
   const totalCount = items.length;
   const progressPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
