@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,11 +19,16 @@ import {
   XCircle,
   Trash2,
   Shield,
+  FileDown,
 } from "lucide-react";
 import { useKsModule2Uk, KsModule2Uk } from "@/hooks/useKsModule2Uk";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { downloadKsModule2UkPdf } from "@/utils/ksModule2UkPdf";
+import { KsModule2Project } from "@/hooks/useKsModule2Projects";
 
 const CONTROL_AREAS = [
   { value: "konstruksjon", label: "Konstruksjonssikkerhet" },
@@ -45,12 +50,13 @@ const STATUSES = [
 
 export default function Ks2UavhengigKontroll() {
   const { projectId } = useParams();
-  const { profile } = useAuth();
+  const { profile, company } = useAuth();
   const { ukList, isLoading, createUk, updateUk, deleteUk, approveUk, isCreating } = useKsModule2Uk(projectId || null);
   
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [project, setProject] = useState<KsModule2Project | null>(null);
   
   const [newUk, setNewUk] = useState({
     control_area: "konstruksjon",
@@ -59,6 +65,37 @@ export default function Ks2UavhengigKontroll() {
     controller_company: "",
     deadline: "",
   });
+
+  useEffect(() => {
+    if (projectId) {
+      supabase
+        .from("ks_module2_projects")
+        .select("*")
+        .eq("id", projectId)
+        .single()
+        .then(({ data }) => {
+          if (data) setProject(data as KsModule2Project);
+        });
+    }
+  }, [projectId]);
+
+  const handleDownloadUkPdf = (uk: KsModule2Uk) => {
+    if (!project || !company) return;
+    downloadKsModule2UkPdf({
+      uk: uk as any,
+      project,
+      company: {
+        name: company.name,
+        address: company.address,
+        postal_code: company.postal_code,
+        city: company.city,
+        org_number: company.org_number,
+        phone: company.phone,
+        email: company.email,
+      },
+    });
+    toast.success("PDF lastet ned");
+  };
 
   const handleCreateUk = () => {
     if (!newUk.control_area || !projectId) return;
@@ -332,6 +369,14 @@ export default function Ks2UavhengigKontroll() {
                     )}
                   </div>
                   <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleDownloadUkPdf(uk)}
+                      title="Last ned PDF"
+                    >
+                      <FileDown className="h-4 w-4" />
+                    </Button>
                     {uk.status === "pending" && (
                       <Button
                         variant="outline"
