@@ -233,7 +233,7 @@ export function useKsModule2Checklists(projectId: string) {
           created_by: user?.id || null,
         }])
         .select()
-        .single();
+        .single()) as any;
 
       if (error) throw error;
 
@@ -281,7 +281,7 @@ export function useKsModule2Checklists(projectId: string) {
           progress_percent: 100,
           completed_at: new Date().toISOString(),
         })
-        .eq("id", id);
+        .eq("id", id)) as any;
 
       if (error) throw error;
 
