@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   ArrowLeft, 
   FileText, 
@@ -30,7 +33,9 @@ import {
   Droplets,
   Paintbrush,
   FileCheck,
-  Copy
+  Copy,
+  Upload,
+  Plus
 } from "lucide-react";
 import { useKsProjectDocuments } from "@/hooks/useKsProjectDocuments";
 import { useQuery } from "@tanstack/react-query";
@@ -117,11 +122,59 @@ export default function KsDocumentCenter() {
   const [searchQuery, setSearchQuery] = useState("");
   const [previewDoc, setPreviewDoc] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [uploadData, setUploadData] = useState({
+    document_name: "",
+    document_number: "",
+    category: "tegninger" as any,
+    description: "",
+  });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Get default tab from URL param
   const defaultTab = searchParams.get("tab") || "uploaded";
 
-  const { documents, downloadDocument } = useKsProjectDocuments(projectId || "");
+  const { documents, downloadDocument, uploadDocument, isUploading } = useKsProjectDocuments(projectId || "");
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      if (!uploadData.document_name) {
+        setUploadData(prev => ({ ...prev, document_name: file.name.replace(/\.[^/.]+$/, "") }));
+      }
+    }
+  };
+
+  const handleUpload = () => {
+    if (!selectedFile || !uploadData.document_name || !uploadData.category) {
+      toast.error("Fyll ut påkrevde felter");
+      return;
+    }
+    
+    uploadDocument({
+      document_name: uploadData.document_name,
+      document_number: uploadData.document_number || undefined,
+      category: uploadData.category,
+      description: uploadData.description || undefined,
+      file: selectedFile,
+    }, {
+      onSuccess: () => {
+        setShowUploadDialog(false);
+        setUploadData({ document_name: "", document_number: "", category: "tegninger", description: "" });
+        setSelectedFile(null);
+      }
+    });
+  };
+
+  const resetUploadForm = () => {
+    setUploadData({ document_name: "", document_number: "", category: "tegninger", description: "" });
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   // Generate signed URL for preview
   const handlePreviewDocument = async (doc: any) => {
@@ -280,6 +333,10 @@ export default function KsDocumentCenter() {
               {project?.name || "Prosjekt"}
             </p>
           </div>
+          <Button onClick={() => { resetUploadForm(); setShowUploadDialog(true); }}>
+            <Plus className="h-4 w-4 mr-2" />
+            Last opp dokument
+          </Button>
           <Button variant="outline" onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
             Skriv ut
@@ -641,6 +698,106 @@ export default function KsDocumentCenter() {
               Last ned
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Upload Dialog */}
+      <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Last opp dokument</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="file">Fil *</Label>
+              <div 
+                className="mt-1 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileChange}
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
+                />
+                {selectedFile ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <FileText className="h-8 w-8 text-primary" />
+                    <span className="font-medium">{selectedFile.name}</span>
+                  </div>
+                ) : (
+                  <div>
+                    <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      Klikk for å velge fil
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="document_name">Dokumentnavn *</Label>
+              <Input
+                id="document_name"
+                value={uploadData.document_name}
+                onChange={(e) => setUploadData(prev => ({ ...prev, document_name: e.target.value }))}
+                placeholder="F.eks. Plantegning 1. etasje"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="category">Kategori *</Label>
+              <Select
+                value={uploadData.category}
+                onValueChange={(value) => setUploadData(prev => ({ ...prev, category: value as any }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Velg kategori" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CATEGORY_CONFIG).map(([key, config]) => (
+                    <SelectItem key={key} value={key}>
+                      {config.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="document_number">Dokumentnummer (valgfritt)</Label>
+              <Input
+                id="document_number"
+                value={uploadData.document_number}
+                onChange={(e) => setUploadData(prev => ({ ...prev, document_number: e.target.value }))}
+                placeholder="F.eks. DOK-001"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="description">Beskrivelse (valgfritt)</Label>
+              <Textarea
+                id="description"
+                value={uploadData.description}
+                onChange={(e) => setUploadData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Kort beskrivelse av dokumentet..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowUploadDialog(false)}>
+              Avbryt
+            </Button>
+            <Button 
+              onClick={handleUpload} 
+              disabled={isUploading || !selectedFile || !uploadData.document_name}
+            >
+              {isUploading ? "Laster opp..." : "Last opp"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </AppLayout>
