@@ -83,6 +83,7 @@ const ksByggItems = [
   { label: "Uavhengig kontroll", path: "/ks/uavhengig-kontroll" },
   { label: "KS-rapporter & FDV", path: "/ks/rapporter" },
   { label: "Malbibliotek", path: "/ks/malbibliotek" },
+  { label: "Dokumentsenter", path: "/ks/dokumentsenter" },
   { label: "SJA", path: "/ks/sja" },
   { label: "Avvik", path: "/ks/avvik" },
 ];

@@ -48,6 +48,7 @@ import KsEgenkontroller from "./pages/ks/KsEgenkontroller";
 import KsUavhengigKontroll from "./pages/ks/KsUavhengigKontroll";
 import KsRapporterFdv from "./pages/ks/KsRapporterFdv";
 import KsMalbibliotek from "./pages/ks/KsMalbibliotek";
+import KsDokumentsenter from "./pages/ks/KsDokumentsenter";
 import HmsChat from "./pages/HmsChat";
 import MyCourseCard from "./pages/MyCourseCard";
 import TimeRegistration from "./pages/TimeRegistration";
@@ -131,6 +132,7 @@ const App = () => (
             <Route path="/ks/uavhengig-kontroll" element={<ProtectedRoute><KsUavhengigKontroll /></ProtectedRoute>} />
             <Route path="/ks/rapporter" element={<ProtectedRoute><KsRapporterFdv /></ProtectedRoute>} />
             <Route path="/ks/malbibliotek" element={<ProtectedRoute><KsMalbibliotek /></ProtectedRoute>} />
+            <Route path="/ks/dokumentsenter" element={<ProtectedRoute><KsDokumentsenter /></ProtectedRoute>} />
             <Route path="/ks/projects" element={<ProtectedRoute><KsProjectsOverview /></ProtectedRoute>} />
             <Route path="/ks/projects/:id" element={<ProtectedRoute><KsProjectDetail /></ProtectedRoute>} />
             <Route path="/ks/projects/:projectId/hms-plan" element={<ProtectedRoute><KsHmsPlanWizard /></ProtectedRoute>} />
