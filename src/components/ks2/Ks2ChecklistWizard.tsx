@@ -33,13 +33,14 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SignaturePad } from "./SignaturePad";
 
 interface Ks2ChecklistWizardProps {
   projectId: string;
   onClose: () => void;
 }
 
-type WizardStep = "template" | "details" | "items" | "summary";
+type WizardStep = "template" | "details" | "items" | "signature" | "summary";
 
 export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardProps) {
   const { createChecklist, isSaving } = useKsModule2Checklists(projectId);
@@ -54,8 +55,12 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [uploadingPhotoIndex, setUploadingPhotoIndex] = useState<string | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const [inspectorSignature, setInspectorSignature] = useState<string>("");
+  const [inspectorName, setInspectorName] = useState("");
 
-  const steps: WizardStep[] = ["template", "details", "items", "summary"];
+  const steps: WizardStep[] = isPaper 
+    ? ["template", "details", "summary"] 
+    : ["template", "details", "items", "signature", "summary"];
   const currentStepIndex = steps.indexOf(step);
 
   const handleSelectTemplate = (template: ChecklistTemplate) => {
@@ -162,6 +167,8 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
       deadline_date: deadlineDate || undefined,
       checklist_items: items,
       is_paper_version: isPaper,
+      inspector_signature: inspectorSignature || undefined,
+      inspector_name: inspectorName || undefined,
     });
 
     if (result) {
@@ -195,6 +202,7 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
               {step === "template" && "Velg mal"}
               {step === "details" && "Detaljer"}
               {step === "items" && "Fyll ut punkter"}
+              {step === "signature" && "Signatur"}
               {step === "summary" && "Oppsummering"}
             </span>
           </div>
@@ -523,7 +531,47 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Tilbake
               </Button>
-              <Button className="flex-1" onClick={() => setStep("summary")}>
+              <Button className="flex-1" onClick={() => setStep("signature")}>
+                Gå til signering
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step: Signature */}
+        {step === "signature" && (
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              Signer for å bekrefte at kontrollen er utført korrekt.
+            </p>
+
+            <div className="space-y-2">
+              <Label>Ditt navn</Label>
+              <Input
+                value={inspectorName}
+                onChange={(e) => setInspectorName(e.target.value)}
+                placeholder="Skriv inn ditt fulle navn..."
+              />
+            </div>
+
+            <SignaturePad
+              label="Din signatur"
+              onSave={setInspectorSignature}
+              onClear={() => setInspectorSignature("")}
+              existingSignature={inspectorSignature}
+            />
+
+            <div className="flex gap-2 pt-4">
+              <Button variant="outline" onClick={() => setStep("items")}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Tilbake
+              </Button>
+              <Button 
+                className="flex-1" 
+                onClick={() => setStep("summary")}
+                disabled={!inspectorSignature || !inspectorName}
+              >
                 Gå til oppsummering
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
@@ -574,13 +622,22 @@ export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardPro
                         {items.reduce((sum, item) => sum + (item.photos?.length || 0), 0)} stk
                       </span>
                     </div>
+                    {inspectorName && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Signert av</span>
+                        <span className="font-medium flex items-center gap-1">
+                          <Check className="h-3 w-3 text-green-500" />
+                          {inspectorName}
+                        </span>
+                      </div>
+                    )}
                   </>
                 )}
               </CardContent>
             </Card>
 
             <div className="flex gap-2 pt-4">
-              <Button variant="outline" onClick={() => setStep(isPaper ? "details" : "items")}>
+              <Button variant="outline" onClick={() => setStep(isPaper ? "details" : "signature")}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Tilbake
               </Button>

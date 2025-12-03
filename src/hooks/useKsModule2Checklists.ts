@@ -212,8 +212,31 @@ export function useKsModule2Checklists(projectId: string) {
     deadline_date?: string;
     checklist_items: ChecklistItem[];
     is_paper_version?: boolean;
+    inspector_signature?: string;
+    inspector_name?: string;
   }) => {
     if (!profile?.company_id || !projectId) return null;
+
+    // Determine status based on whether items are filled and signature provided
+    const hasSignature = !!input.inspector_signature;
+    const hasFilledItems = input.checklist_items.some(item => item.value !== null && item.value !== undefined);
+    const allItemsFilled = input.checklist_items.every(item => !item.required || (item.value !== null && item.value !== undefined));
+    
+    let status = "planned";
+    if (input.is_paper_version) {
+      status = "planned";
+    } else if (hasSignature && allItemsFilled) {
+      status = "completed";
+    } else if (hasFilledItems) {
+      status = "in_progress";
+    }
+
+    const signatures = hasSignature && input.inspector_name ? [{
+      type: "inspector",
+      name: input.inspector_name,
+      signature: input.inspector_signature,
+      date: new Date().toISOString(),
+    }] : [];
 
     try {
       setIsSaving(true);
@@ -229,7 +252,10 @@ export function useKsModule2Checklists(projectId: string) {
           deadline_date: input.deadline_date || null,
           checklist_items: input.checklist_items,
           is_paper_version: input.is_paper_version || false,
-          status: input.is_paper_version ? "planned" : "planned",
+          status,
+          signatures,
+          completed_at: status === "completed" ? new Date().toISOString() : null,
+          progress_percent: status === "completed" ? 100 : (hasFilledItems ? Math.round((input.checklist_items.filter(i => i.value !== null).length / input.checklist_items.length) * 100) : 0),
           created_by: user?.id || null,
         }])
         .select()
