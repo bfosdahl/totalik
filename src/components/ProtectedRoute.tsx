@@ -13,7 +13,17 @@ export function ProtectedRoute({
   requireSystemAdmin = false,
   requireCompanyAdmin = false 
 }: ProtectedRouteProps) {
-  const { user, isLoading, isSystemAdmin, isCompanyAdmin, isGuestUser, guestProjects } = useAuth();
+  const { 
+    user, 
+    isLoading, 
+    isSystemAdmin, 
+    isCompanyAdmin, 
+    isGuestUser, 
+    guestProjects, 
+    roles, 
+    profile,
+    guestCheckComplete 
+  } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -38,11 +48,20 @@ export function ProtectedRoute({
       currentPath.startsWith(`/ks2/project/${projectId}`)
     );
     
-    // If not on allowed route, redirect to first project
+    // If not on allowed route, redirect to first project dashboard
     if (!isAllowedRoute) {
       const firstProject = guestProjects[0];
       return <Navigate to={`/ks2/project/${firstProject.project_id}`} replace />;
     }
+  }
+
+  // If user has no roles and no company, wait for guest check to complete
+  if (roles.length === 0 && !profile?.company_id && !guestCheckComplete) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   if (requireSystemAdmin && !isSystemAdmin) {
