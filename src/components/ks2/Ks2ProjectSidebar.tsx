@@ -15,6 +15,7 @@ import {
   ArrowLeft,
   Menu,
   X,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -31,6 +32,7 @@ const menuItems = [
   { id: "rutiner", label: "Rutinebank", icon: BookOpen, path: "/rutiner" },
   { id: "dokumentasjon", label: "Dokumentasjon & FDV", icon: FolderOpen, path: "/dokumentasjon" },
   { id: "prosjektinfo", label: "Prosjektinfo", icon: Info, path: "/prosjektinfo" },
+  { id: "underleverandorer", label: "Underleverandører", icon: Building2, path: "/underleverandorer" },
   { id: "avvik", label: "Avvik fra KS", icon: AlertTriangle, path: "/avvik" },
   { id: "uk", label: "Uavhengig kontroll", icon: Shield, path: "/uk" },
   { id: "malbibliotek", label: "Malbibliotek", icon: Library, path: "/maler" },

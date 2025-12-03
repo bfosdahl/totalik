@@ -3067,6 +3067,322 @@ export type Database = {
           },
         ]
       }
+      ks_module2_subcontractor_documents: {
+        Row: {
+          company_id: string
+          created_at: string
+          document_name: string
+          document_type: string
+          expiry_date: string | null
+          file_path: string
+          id: string
+          subcontractor_id: string
+          uploaded_by: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          document_name: string
+          document_type: string
+          expiry_date?: string | null
+          file_path: string
+          id?: string
+          subcontractor_id: string
+          uploaded_by: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          document_name?: string
+          document_type?: string
+          expiry_date?: string | null
+          file_path?: string
+          id?: string
+          subcontractor_id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_subcontractor_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_subcontractor_documents_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_subcontractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_module2_subcontractor_evaluations: {
+        Row: {
+          certifications_comment: string | null
+          company_id: string
+          competence_comment: string | null
+          conclusion_notes: string | null
+          contract_comment: string | null
+          created_at: string
+          environmental_plan_comment: string | null
+          evaluated_at: string
+          evaluated_by: string
+          has_competence_documentation: boolean | null
+          has_environmental_plan: boolean | null
+          has_liability_insurance: boolean | null
+          has_quality_system: boolean | null
+          has_references: boolean | null
+          has_required_certifications: boolean | null
+          has_signed_contract: boolean | null
+          has_tax_certificate: boolean | null
+          has_valid_hms_card: boolean | null
+          has_valid_org_number: boolean | null
+          hms_card_comment: string | null
+          id: string
+          liability_insurance_comment: string | null
+          org_number_comment: string | null
+          overall_conclusion: string | null
+          quality_system_comment: string | null
+          references_comment: string | null
+          subcontractor_id: string
+          tax_certificate_comment: string | null
+          updated_at: string
+        }
+        Insert: {
+          certifications_comment?: string | null
+          company_id: string
+          competence_comment?: string | null
+          conclusion_notes?: string | null
+          contract_comment?: string | null
+          created_at?: string
+          environmental_plan_comment?: string | null
+          evaluated_at?: string
+          evaluated_by: string
+          has_competence_documentation?: boolean | null
+          has_environmental_plan?: boolean | null
+          has_liability_insurance?: boolean | null
+          has_quality_system?: boolean | null
+          has_references?: boolean | null
+          has_required_certifications?: boolean | null
+          has_signed_contract?: boolean | null
+          has_tax_certificate?: boolean | null
+          has_valid_hms_card?: boolean | null
+          has_valid_org_number?: boolean | null
+          hms_card_comment?: string | null
+          id?: string
+          liability_insurance_comment?: string | null
+          org_number_comment?: string | null
+          overall_conclusion?: string | null
+          quality_system_comment?: string | null
+          references_comment?: string | null
+          subcontractor_id: string
+          tax_certificate_comment?: string | null
+          updated_at?: string
+        }
+        Update: {
+          certifications_comment?: string | null
+          company_id?: string
+          competence_comment?: string | null
+          conclusion_notes?: string | null
+          contract_comment?: string | null
+          created_at?: string
+          environmental_plan_comment?: string | null
+          evaluated_at?: string
+          evaluated_by?: string
+          has_competence_documentation?: boolean | null
+          has_environmental_plan?: boolean | null
+          has_liability_insurance?: boolean | null
+          has_quality_system?: boolean | null
+          has_references?: boolean | null
+          has_required_certifications?: boolean | null
+          has_signed_contract?: boolean | null
+          has_tax_certificate?: boolean | null
+          has_valid_hms_card?: boolean | null
+          has_valid_org_number?: boolean | null
+          hms_card_comment?: string | null
+          id?: string
+          liability_insurance_comment?: string | null
+          org_number_comment?: string | null
+          overall_conclusion?: string | null
+          quality_system_comment?: string | null
+          references_comment?: string | null
+          subcontractor_id?: string
+          tax_certificate_comment?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_subcontractor_evaluations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_subcontractor_evaluations_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_subcontractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_module2_subcontractor_inspections: {
+        Row: {
+          company_id: string
+          corrective_actions: string | null
+          created_at: string
+          findings: string | null
+          id: string
+          inspection_date: string
+          inspector_name: string
+          photo_paths: string[] | null
+          project_id: string
+          status: string
+          subcontractor_id: string
+          updated_at: string
+          work_area: string
+        }
+        Insert: {
+          company_id: string
+          corrective_actions?: string | null
+          created_at?: string
+          findings?: string | null
+          id?: string
+          inspection_date: string
+          inspector_name: string
+          photo_paths?: string[] | null
+          project_id: string
+          status?: string
+          subcontractor_id: string
+          updated_at?: string
+          work_area: string
+        }
+        Update: {
+          company_id?: string
+          corrective_actions?: string | null
+          created_at?: string
+          findings?: string | null
+          id?: string
+          inspection_date?: string
+          inspector_name?: string
+          photo_paths?: string[] | null
+          project_id?: string
+          status?: string
+          subcontractor_id?: string
+          updated_at?: string
+          work_area?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_subcontractor_inspections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_subcontractor_inspections_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_subcontractor_inspections_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_subcontractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_module2_subcontractors: {
+        Row: {
+          approval_notes: string | null
+          approval_status: string
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          contact_email: string | null
+          contact_person: string | null
+          contact_phone: string | null
+          contract_value: number | null
+          created_at: string
+          end_date: string | null
+          firm_name: string
+          id: string
+          is_active: boolean
+          org_number: string | null
+          project_id: string
+          start_date: string | null
+          trade: string | null
+          updated_at: string
+          work_scope: string
+        }
+        Insert: {
+          approval_notes?: string | null
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          contact_email?: string | null
+          contact_person?: string | null
+          contact_phone?: string | null
+          contract_value?: number | null
+          created_at?: string
+          end_date?: string | null
+          firm_name: string
+          id?: string
+          is_active?: boolean
+          org_number?: string | null
+          project_id: string
+          start_date?: string | null
+          trade?: string | null
+          updated_at?: string
+          work_scope: string
+        }
+        Update: {
+          approval_notes?: string | null
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          contact_email?: string | null
+          contact_person?: string | null
+          contact_phone?: string | null
+          contract_value?: number | null
+          created_at?: string
+          end_date?: string | null
+          firm_name?: string
+          id?: string
+          is_active?: boolean
+          org_number?: string | null
+          project_id?: string
+          start_date?: string | null
+          trade?: string | null
+          updated_at?: string
+          work_scope?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_subcontractors_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_subcontractors_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_uk: {
         Row: {
           approved_at: string | null
