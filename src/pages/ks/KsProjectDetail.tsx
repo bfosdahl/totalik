@@ -484,7 +484,7 @@ export default function KsProjectDetail() {
               <Button
                 variant="outline"
                 className="h-auto flex flex-col items-center gap-2 p-4"
-                onClick={() => navigate(`/ks/farlige-fohold?project=${id}`)}
+                onClick={() => navigate(`/ks/farlige-forhold?project=${id}`)}
               >
                 <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
                   <AlertCircle className="h-6 w-6 text-red-600" />
