@@ -16,42 +16,64 @@ export type Database = {
     Tables: {
       admin_checklist_templates: {
         Row: {
+          attached_pdf_path: string | null
           category: string
           checkpoints: Json
+          content_html: string | null
           created_at: string
           description: string | null
           id: string
           is_active: boolean
+          is_locked: boolean | null
+          is_mandatory: boolean | null
           template_name: string
           trade: string | null
           updated_at: string
+          valid_from: string | null
+          valid_to: string | null
+          version: string | null
         }
         Insert: {
+          attached_pdf_path?: string | null
           category?: string
           checkpoints?: Json
+          content_html?: string | null
           created_at?: string
           description?: string | null
           id?: string
           is_active?: boolean
+          is_locked?: boolean | null
+          is_mandatory?: boolean | null
           template_name: string
           trade?: string | null
           updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          version?: string | null
         }
         Update: {
+          attached_pdf_path?: string | null
           category?: string
           checkpoints?: Json
+          content_html?: string | null
           created_at?: string
           description?: string | null
           id?: string
           is_active?: boolean
+          is_locked?: boolean | null
+          is_mandatory?: boolean | null
           template_name?: string
           trade?: string | null
           updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          version?: string | null
         }
         Relationships: []
       }
       admin_documents: {
         Row: {
+          category: string | null
           created_at: string
           description: string | null
           document_name: string
@@ -60,10 +82,15 @@ export type Database = {
           file_size: number | null
           file_type: string | null
           id: string
+          is_mandatory: boolean | null
           updated_at: string
           uploaded_by_name: string
+          valid_from: string | null
+          valid_to: string | null
+          version: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string
           description?: string | null
           document_name: string
@@ -72,10 +99,15 @@ export type Database = {
           file_size?: number | null
           file_type?: string | null
           id?: string
+          is_mandatory?: boolean | null
           updated_at?: string
           uploaded_by_name: string
+          valid_from?: string | null
+          valid_to?: string | null
+          version?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string
           description?: string | null
           document_name?: string
@@ -84,8 +116,12 @@ export type Database = {
           file_size?: number | null
           file_type?: string | null
           id?: string
+          is_mandatory?: boolean | null
           updated_at?: string
           uploaded_by_name?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          version?: string | null
         }
         Relationships: []
       }
@@ -98,8 +134,13 @@ export type Database = {
           file_path: string | null
           id: string
           is_active: boolean
+          is_locked: boolean | null
+          is_mandatory: boolean | null
           routine_name: string
           updated_at: string
+          valid_from: string | null
+          valid_to: string | null
+          version: string | null
         }
         Insert: {
           category?: string
@@ -109,8 +150,13 @@ export type Database = {
           file_path?: string | null
           id?: string
           is_active?: boolean
+          is_locked?: boolean | null
+          is_mandatory?: boolean | null
           routine_name: string
           updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          version?: string | null
         }
         Update: {
           category?: string
@@ -120,8 +166,13 @@ export type Database = {
           file_path?: string | null
           id?: string
           is_active?: boolean
+          is_locked?: boolean | null
+          is_mandatory?: boolean | null
           routine_name?: string
           updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          version?: string | null
         }
         Relationships: []
       }
@@ -3434,6 +3485,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ks_module2_template_acknowledgments: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          acknowledged_by_name: string
+          company_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          project_id: string | null
+          template_id: string
+          template_type: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          acknowledged_by_name: string
+          company_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          project_id?: string | null
+          template_id: string
+          template_type: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          acknowledged_by_name?: string
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          project_id?: string | null
+          template_id?: string
+          template_type?: string
+        }
+        Relationships: []
+      }
+      ks_module2_template_notifications: {
+        Row: {
+          created_at: string | null
+          due_date: string | null
+          id: string
+          notification_message: string
+          template_id: string
+          template_type: string
+          version: string
+        }
+        Insert: {
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          notification_message: string
+          template_id: string
+          template_type: string
+          version: string
+        }
+        Update: {
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          notification_message?: string
+          template_id?: string
+          template_type?: string
+          version?: string
+        }
+        Relationships: []
       }
       ks_module2_uk: {
         Row: {
