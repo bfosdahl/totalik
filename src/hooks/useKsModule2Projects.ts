@@ -56,14 +56,44 @@ export interface NewKsModule2ProjectInput {
 }
 
 export function useKsModule2Projects() {
-  const { profile, user } = useAuth();
+  const { profile, user, isGuestUser, guestProjects } = useAuth();
   const { toast } = useToast();
   const [projects, setProjects] = useState<KsModule2Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   const fetchProjects = useCallback(async () => {
-    if (!profile?.company_id) return;
+    // For guest users, fetch only their accessible projects
+    if (isGuestUser && guestProjects.length > 0) {
+      try {
+        setIsLoading(true);
+        const projectIds = guestProjects.map(p => p.project_id);
+        const { data, error } = await supabase
+          .from("ks_module2_projects")
+          .select("*")
+          .in("id", projectIds)
+          .order("updated_at", { ascending: false });
+
+        if (error) throw error;
+        setProjects((data as KsModule2Project[]) || []);
+      } catch (error) {
+        console.error("Error fetching guest projects:", error);
+        toast({
+          title: "Feil",
+          description: "Kunne ikke hente prosjekter",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // For regular company users
+    if (!profile?.company_id) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -86,7 +116,7 @@ export function useKsModule2Projects() {
     } finally {
       setIsLoading(false);
     }
-  }, [profile?.company_id, toast]);
+  }, [profile?.company_id, isGuestUser, guestProjects, toast]);
 
   useEffect(() => {
     fetchProjects();
