@@ -543,20 +543,30 @@ export default function Ks2Malbibliotek() {
               <h4 className="font-medium text-sm text-muted-foreground mb-3">
                 Sjekkpunkter ({selectedChecklist?.checkpoints?.length || 0})
               </h4>
-              {selectedChecklist?.checkpoints?.map((checkpoint: any, index: number) => (
-                <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                    {index + 1}
+              {selectedChecklist?.checkpoints?.map((checkpoint: any, index: number) => {
+                // Handle different checkpoint structures
+                const checkpointText = typeof checkpoint === 'string' 
+                  ? checkpoint 
+                  : checkpoint.checkpoint_text || checkpoint.text || checkpoint.title || '';
+                const helpText = typeof checkpoint === 'object' 
+                  ? (checkpoint.help_text || checkpoint.description || '') 
+                  : '';
+
+                return (
+                  <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{checkpointText}</p>
+                      {helpText && (
+                        <p className="text-xs text-muted-foreground mt-1">{helpText}</p>
+                      )}
+                    </div>
+                    <CheckCircle2 className="h-5 w-5 text-muted-foreground/30" />
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{checkpoint.text || checkpoint.title || checkpoint}</p>
-                    {checkpoint.description && (
-                      <p className="text-xs text-muted-foreground mt-1">{checkpoint.description}</p>
-                    )}
-                  </div>
-                  <CheckCircle2 className="h-5 w-5 text-muted-foreground/30" />
-                </div>
-              ))}
+                );
+              })}
               {(!selectedChecklist?.checkpoints || selectedChecklist.checkpoints.length === 0) && (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   Ingen sjekkpunkter definert
