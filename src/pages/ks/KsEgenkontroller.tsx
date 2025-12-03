@@ -15,6 +15,7 @@ import {
   X,
   Upload,
   Save,
+  FolderOpen,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +41,7 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
 
 // Categories for filtering
 const categories = [
@@ -105,11 +107,35 @@ export default function KsEgenkontroller() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedProject, setSelectedProject] = useState<string>("all");
   const [selectedEgenkontroll, setSelectedEgenkontroll] = useState<Egenkontroll | null>(null);
   const [egenkontroller, setEgenkontroller] = useState<Egenkontroll[]>([]);
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showNewDialog, setShowNewDialog] = useState(false);
+
+  // Check URL params for project filter
+  useEffect(() => {
+    const projectParam = searchParams.get('project');
+    if (projectParam) {
+      setSelectedProject(projectParam);
+    }
+  }, [searchParams]);
+
+  // Fetch projects for filter
+  const { data: projects = [] } = useQuery({
+    queryKey: ['ks-projects-list', profile?.company_id],
+    queryFn: async () => {
+      if (!profile?.company_id) return [];
+      const { data, error } = await supabase
+        .from('ks_projects')
+        .select('id, name, project_number')
+        .order('name');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.company_id,
+  });
 
   // Fetch egenkontroller
   useEffect(() => {
@@ -204,6 +230,11 @@ export default function KsEgenkontroller() {
   // Filter egenkontroller
   const filteredEgenkontroller = useMemo(() => {
     return egenkontroller.filter((e) => {
+      // Project filter
+      if (selectedProject !== "all" && e.projectId !== selectedProject) {
+        return false;
+      }
+
       // Search filter
       if (searchQuery && !e.title.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
@@ -224,7 +255,7 @@ export default function KsEgenkontroller() {
 
       return true;
     });
-  }, [egenkontroller, searchQuery, selectedCategory, selectedFilter]);
+  }, [egenkontroller, searchQuery, selectedCategory, selectedFilter, selectedProject]);
 
   const handleItemChange = async (itemId: string, value: boolean | string | number, field: "value" | "comment") => {
     // Update local state
@@ -294,18 +325,44 @@ export default function KsEgenkontroller() {
               <CardTitle className="text-sm">Filter</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Filter options */}
+              {/* Project filter */}
               <div className="space-y-2">
-                {filterOptions.map((option) => (
-                  <Button
-                    key={option.id}
-                    variant={selectedFilter === option.id ? "secondary" : "ghost"}
-                    className="w-full justify-start text-sm"
-                    onClick={() => setSelectedFilter(option.id)}
-                  >
-                    {option.label}
-                  </Button>
-                ))}
+                <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                  <FolderOpen className="h-3 w-3" />
+                  Prosjekt
+                </p>
+                <Select value={selectedProject} onValueChange={setSelectedProject}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Velg prosjekt" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle prosjekter</SelectItem>
+                    {projects.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.project_number ? `${p.project_number} - ` : ''}{p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="border-t pt-4">
+                <p className="text-xs font-medium text-muted-foreground mb-2">
+                  Visning
+                </p>
+                {/* Filter options */}
+                <div className="space-y-2">
+                  {filterOptions.map((option) => (
+                    <Button
+                      key={option.id}
+                      variant={selectedFilter === option.id ? "secondary" : "ghost"}
+                      className="w-full justify-start text-sm"
+                      onClick={() => setSelectedFilter(option.id)}
+                    >
+                      {option.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
 
               <div className="border-t pt-4">
