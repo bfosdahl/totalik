@@ -52,6 +52,7 @@ import KsMalbibliotek from "./pages/ks/KsMalbibliotek";
 import KsDokumentsenter from "./pages/ks/KsDokumentsenter";
 import Ks2Dashboard from "./pages/ks2/Ks2Dashboard";
 import Ks2ProjectDetail from "./pages/ks2/Ks2ProjectDetail";
+import Ks2Admin from "./pages/ks2/Ks2Admin";
 import HmsChat from "./pages/HmsChat";
 import MyCourseCard from "./pages/MyCourseCard";
 import TimeRegistration from "./pages/TimeRegistration";
@@ -164,6 +165,7 @@ const App = () => (
             {/* KS Modul 2 routes */}
             <Route path="/ks2" element={<ProtectedRoute><Ks2Dashboard /></ProtectedRoute>} />
             <Route path="/ks2/project/:projectId" element={<ProtectedRoute><Ks2ProjectDetail /></ProtectedRoute>} />
+            <Route path="/ks2/admin" element={<ProtectedRoute><Ks2Admin /></ProtectedRoute>} />
             
             {/* Admin routes - require system_admin role */}
             <Route path="/admin" element={<ProtectedRoute requireSystemAdmin><AdminDashboard /></ProtectedRoute>} />
