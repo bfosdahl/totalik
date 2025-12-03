@@ -92,6 +92,10 @@ export default function KsUavhengigKontroll() {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [selectedKontroll, setSelectedKontroll] = useState<UavhengigKontroll | null>(null);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [uploadingKontrollId, setUploadingKontrollId] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -201,9 +205,65 @@ export default function KsUavhengigKontroll() {
     }
   };
 
-  const handleUploadReport = async (kontrollId: string) => {
-    // This would handle file upload in production
-    toast.info("Filopplasting kommer snart");
+  const handleUploadReport = (kontrollId: string) => {
+    setUploadingKontrollId(kontrollId);
+    setSelectedFile(null);
+    setShowUploadDialog(true);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleUploadSubmit = async () => {
+    if (!selectedFile || !uploadingKontrollId || !profile?.company_id) {
+      toast.error("Velg en fil først");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Create safe filename
+      const timestamp = Date.now();
+      const safeFileName = selectedFile.name
+        .replace(/[^\w\s.-æøåÆØÅ]/g, '')
+        .replace(/\s+/g, '_');
+      const filePath = `${profile.company_id}/uavhengig-kontroll/${uploadingKontrollId}/${timestamp}_${safeFileName}`;
+
+      // Upload to Supabase storage
+      const { error: uploadError } = await supabase.storage
+        .from('ks-project-documents')
+        .upload(filePath, selectedFile);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('ks-project-documents')
+        .getPublicUrl(filePath);
+
+      // Update kontroll with report URL
+      setKontroller((prev) =>
+        prev.map((k) =>
+          k.id === uploadingKontrollId
+            ? { ...k, reportUrl: urlData.publicUrl }
+            : k
+        )
+      );
+
+      setShowUploadDialog(false);
+      setSelectedFile(null);
+      setUploadingKontrollId(null);
+      toast.success("Rapport lastet opp");
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Kunne ikke laste opp fil");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleStatusChange = async (kontrollId: string, newStatus: keyof typeof statusConfig) => {
@@ -470,6 +530,41 @@ export default function KsUavhengigKontroll() {
                 Avbryt
               </Button>
               <Button onClick={handleCreateKontroll}>Opprett kontroll</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Upload Report Dialog */}
+        <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Last opp kontrollrapport</DialogTitle>
+              <DialogDescription>
+                Last opp rapporten fra den uavhengige kontrollen (PDF, Word, eller bilde)
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Velg fil</Label>
+                <Input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                  onChange={handleFileSelect}
+                />
+                {selectedFile && (
+                  <p className="text-sm text-muted-foreground">
+                    Valgt: {selectedFile.name}
+                  </p>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowUploadDialog(false)}>
+                Avbryt
+              </Button>
+              <Button onClick={handleUploadSubmit} disabled={!selectedFile || isUploading}>
+                {isUploading ? "Laster opp..." : "Last opp"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
