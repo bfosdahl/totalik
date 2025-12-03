@@ -2410,6 +2410,97 @@ export type Database = {
           },
         ]
       }
+      ks_module2_checklists: {
+        Row: {
+          checklist_items: Json
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          deadline_date: string | null
+          id: string
+          is_paper_version: boolean
+          paper_file_path: string | null
+          paper_uploaded: boolean
+          pdf_file_path: string | null
+          progress_percent: number
+          project_id: string
+          responsible_user_id: string | null
+          responsible_user_name: string | null
+          signatures: Json
+          status: string
+          template_name: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          checklist_items?: Json
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          deadline_date?: string | null
+          id?: string
+          is_paper_version?: boolean
+          paper_file_path?: string | null
+          paper_uploaded?: boolean
+          pdf_file_path?: string | null
+          progress_percent?: number
+          project_id: string
+          responsible_user_id?: string | null
+          responsible_user_name?: string | null
+          signatures?: Json
+          status?: string
+          template_name: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          checklist_items?: Json
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          deadline_date?: string | null
+          id?: string
+          is_paper_version?: boolean
+          paper_file_path?: string | null
+          paper_uploaded?: boolean
+          pdf_file_path?: string | null
+          progress_percent?: number
+          project_id?: string
+          responsible_user_id?: string | null
+          responsible_user_name?: string | null
+          signatures?: Json
+          status?: string
+          template_name?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_checklists_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_checklists_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_checklists_responsible_user_id_fkey"
+            columns: ["responsible_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_document_templates: {
         Row: {
           category: string
