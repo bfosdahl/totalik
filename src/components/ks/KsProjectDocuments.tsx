@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Upload, Download, Trash2, Plus, FileImage, FileCheck, Shield, AlertTriangle, Package, FileSignature, Loader2, GraduationCap, FileStack } from "lucide-react";
+import { FileText, Upload, Download, Trash2, Plus, FileImage, FileCheck, Shield, AlertTriangle, Package, FileSignature, Loader2, GraduationCap, FileStack, FolderPlus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useKsProjectDocuments, NewKsProjectDocumentInput, KsProjectDocument } from "@/hooks/useKsProjectDocuments";
 import { format } from "date-fns";
@@ -24,6 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { DocumentSourceSelector } from "./DocumentSourceSelector";
 
 const CATEGORY_CONFIG = {
   tegninger: { label: "Tegninger", icon: FileText, color: "bg-blue-500" },
@@ -44,6 +45,7 @@ interface KsProjectDocumentsProps {
 export const KsProjectDocuments = ({ projectId }: KsProjectDocumentsProps) => {
   const { documents, isLoading, uploadDocument, isUploading, deleteDocument, downloadDocument, toggleIncludeInReport } = useKsProjectDocuments(projectId);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showAddOptions, setShowAddOptions] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("tegninger");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [documentName, setDocumentName] = useState("");
@@ -105,20 +107,25 @@ export const KsProjectDocuments = ({ projectId }: KsProjectDocumentsProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 className="text-lg font-semibold">Dokumentstyring</h3>
           <p className="text-sm text-muted-foreground">
             Administrer prosjektdokumenter med versjonskontroll
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Last opp dokument
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowAddOptions(!showAddOptions)}>
+            <FolderPlus className="h-4 w-4 mr-2" />
+            {showAddOptions ? "Skjul valg" : "Legg til dokumentasjon"}
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Rask opplasting
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Last opp nytt dokument</DialogTitle>
@@ -234,7 +241,29 @@ export const KsProjectDocuments = ({ projectId }: KsProjectDocumentsProps) => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
+
+      {/* Document Source Selector */}
+      {showAddOptions && (
+        <Card className="border-dashed border-2 bg-muted/30">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <FolderPlus className="h-5 w-5" />
+              Velg dokumentasjonstype
+            </CardTitle>
+            <CardDescription>
+              Last opp egne dokumenter eller bruk systemets sjekklister
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DocumentSourceSelector 
+              projectId={projectId} 
+              onComplete={() => setShowAddOptions(false)}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {Object.keys(documentsByCategory).length === 0 ? (
         <Card>
