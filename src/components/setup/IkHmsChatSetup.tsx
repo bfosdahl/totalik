@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Bot, User, CheckCircle2, Sparkles } from "lucide-react";
+import { Loader2, Send, Bot, User, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,11 +18,57 @@ interface IkHmsChatSetupProps {
   onComplete: () => void;
 }
 
+// Helper to strip JSON from display content
+function getDisplayContent(content: string): string {
+  // Remove JSON blocks marked with our special markers
+  let cleaned = content.replace(/\|\|\|JSON_START\|\|\|[\s\S]*?\|\|\|JSON_END\|\|\|/g, '');
+  
+  // Also remove any raw JSON that might slip through
+  cleaned = cleaned.replace(/```json[\s\S]*?```/g, '');
+  
+  // Remove standalone JSON objects that look like our data structure
+  if (cleaned.includes('"goals"') && cleaned.includes('"organization"') && cleaned.includes('"risks"')) {
+    const jsonStart = cleaned.indexOf('{');
+    const jsonEnd = cleaned.lastIndexOf('}');
+    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+      cleaned = cleaned.slice(0, jsonStart) + cleaned.slice(jsonEnd + 1);
+    }
+  }
+  
+  return cleaned.trim();
+}
+
+// Helper to extract JSON from content
+function extractJsonFromContent(content: string): string | null {
+  // First try our marked format
+  const markedMatch = content.match(/\|\|\|JSON_START\|\|\|([\s\S]*?)\|\|\|JSON_END\|\|\|/);
+  if (markedMatch) {
+    return markedMatch[1].trim();
+  }
+  
+  // Try markdown code blocks
+  const codeMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+  if (codeMatch) {
+    return codeMatch[1].trim();
+  }
+  
+  // Try finding raw JSON
+  if (content.includes('"goals"') && content.includes('"organization"')) {
+    const startIndex = content.indexOf('{');
+    const endIndex = content.lastIndexOf('}');
+    if (startIndex !== -1 && endIndex !== -1) {
+      return content.slice(startIndex, endIndex + 1);
+    }
+  }
+  
+  return null;
+}
+
 export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hei! Jeg skal hjelpe deg med å sette opp ditt HMS-system. La oss starte med litt grunnleggende informasjon.\n\nHvilken type virksomhet driver du? (f.eks. tømrerfirma, verksted, kontor, butikk, produksjon)",
+      content: "Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg skal hjelpe deg å sette opp HMS-systemet for bedriften din. Det tar bare noen minutter!\n\nLa oss starte med det grunnleggende. Hva heter bedriften din?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -106,11 +152,13 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
               assistantMessage += content;
+              // Show only the display content (without JSON)
+              const displayContent = getDisplayContent(assistantMessage);
               setMessages((prev) => {
                 const newMessages = [...prev];
                 newMessages[newMessages.length - 1] = {
                   role: "assistant",
-                  content: assistantMessage,
+                  content: displayContent,
                 };
                 return newMessages;
               });
@@ -122,9 +170,10 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
         }
       }
 
-      // Check if assistant message contains JSON structure (setup complete)
-      if (assistantMessage.includes('"goals"') && assistantMessage.includes('"organization"')) {
-        await saveSetupData(assistantMessage);
+      // Check if the message contains JSON (setup complete)
+      const jsonContent = extractJsonFromContent(assistantMessage);
+      if (jsonContent) {
+        await saveSetupData(jsonContent);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -137,24 +186,13 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   const saveSetupData = async (jsonContent: string) => {
     setIsSaving(true);
     try {
-      // Extract JSON from potential markdown code blocks
-      let jsonStr = jsonContent;
-      const jsonMatch = jsonContent.match(/```json\s*([\s\S]*?)\s*```/);
-      if (jsonMatch) {
-        jsonStr = jsonMatch[1];
-      } else {
-        // Try to find JSON object directly
-        const startIndex = jsonContent.indexOf("{");
-        const endIndex = jsonContent.lastIndexOf("}");
-        if (startIndex !== -1 && endIndex !== -1) {
-          jsonStr = jsonContent.slice(startIndex, endIndex + 1);
-        }
-      }
-
-      const data = JSON.parse(jsonStr);
+      const data = JSON.parse(jsonContent);
 
       // Save goals
       if (data.goals?.length > 0) {
+        // Delete existing goals first
+        await supabase.from("company_goals").delete().eq("company_id", companyId);
+        
         for (const goal of data.goals) {
           await supabase.from("company_goals").insert({
             company_id: companyId,
@@ -189,7 +227,7 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
         });
       }
 
-      // Save routines - transform AI format to expected format
+      // Save routines
       if (data.routines?.length > 0) {
         const transformedRoutines = data.routines.map((routine: Record<string, unknown>, index: number) => ({
           id: routine.id || `routine-${index + 1}`,
@@ -279,7 +317,7 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
                 )}
               </div>
             ))}
-            {isLoading && (
+            {isLoading && messages[messages.length - 1]?.content === "" && (
               <div className="flex gap-3 justify-start">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                   <Bot className="w-4 h-4 text-primary" />
@@ -290,9 +328,9 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
               </div>
             )}
             {isSaving && (
-              <div className="flex items-center justify-center gap-2 p-4 bg-success/10 rounded-lg">
-                <Sparkles className="w-4 h-4 text-success animate-pulse" />
-                <p className="text-sm text-success font-medium">Lagrer HMS-systemet ditt...</p>
+              <div className="flex items-center justify-center gap-2 p-4 bg-success/10 rounded-lg border border-success/20">
+                <Sparkles className="w-5 h-5 text-success animate-pulse" />
+                <p className="text-sm text-success font-medium">Setter opp HMS-systemet ditt...</p>
               </div>
             )}
           </div>
@@ -323,10 +361,11 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
 
       {messages.length <= 2 && (
         <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
-          <p className="font-medium mb-2">💡 Tips:</p>
+          <p className="font-medium mb-2">💡 Slik fungerer det:</p>
           <ul className="space-y-1 list-disc list-inside">
-            <li>Svar så detaljert som mulig for best resultat</li>
-            <li>Si fra hvis du er usikker - jeg gir deg forslag!</li>
+            <li>Jeg stiller deg noen enkle spørsmål om bedriften</li>
+            <li>Basert på svarene lager jeg et tilpasset HMS-oppsett</li>
+            <li>Du kan alltid gjøre endringer etterpå</li>
             <li>Oppsettet tar ca. 5-10 minutter</li>
           </ul>
         </div>
