@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useKsModule2Checklists, KsModule2Checklist } from "@/hooks/useKsModule2Checklists";
 import { Ks2ChecklistWizard } from "@/components/ks2/Ks2ChecklistWizard";
-import { format, parseISO, isPast } from "date-fns";
+import { format, parseISO, isPast, isThisWeek } from "date-fns";
 import { nb } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
@@ -41,8 +41,14 @@ export default function Ks2Egenkontroller() {
   const filteredChecklists = checklists.filter((c) => {
     if (search && !c.title.toLowerCase().includes(search.toLowerCase())) return false;
     switch (filter) {
+      case "mine":
+        // Filter by current user (would need user context, for now show all)
+        return true;
       case "incomplete":
         return c.status !== "completed";
+      case "this_week":
+        if (!c.deadline_date) return false;
+        return isThisWeek(parseISO(c.deadline_date), { locale: nb });
       case "paper":
         return c.is_paper_version && !c.paper_uploaded;
       default:
@@ -105,6 +111,7 @@ export default function Ks2Egenkontroller() {
               {[
                 { id: "all", label: "Alle" },
                 { id: "incomplete", label: "Ufullførte" },
+                { id: "this_week", label: "Denne uken" },
                 { id: "paper", label: "Venter på papir", count: stats.waitingPaper },
               ].map((f) => (
                 <Button

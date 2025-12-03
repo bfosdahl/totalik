@@ -87,7 +87,7 @@ export default function Ks2ProjectDetail() {
       {/* Main Content */}
       <div className="lg:pl-[260px] transition-all duration-300">
         {/* Top Banner */}
-        <div className="border-b bg-card px-6 py-4">
+        <div className="border-b bg-card px-6 py-4 pl-16 lg:pl-6">
           <p className="text-xs text-muted-foreground font-medium">{project.project_number}</p>
           <h1 className="text-xl font-semibold">{project.project_name}</h1>
         </div>
