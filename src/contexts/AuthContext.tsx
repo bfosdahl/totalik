@@ -73,12 +73,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchGuestAccess = async (userId: string) => {
     try {
-      const { data: accessData } = await supabase
+      console.log("Fetching guest access for user:", userId);
+      const { data: accessData, error: accessError } = await supabase
         .from("ks_module2_project_access")
         .select("project_id, access_level, role_in_project, status")
         .eq("user_id", userId)
         .in("status", ["invited", "active"])
         .neq("access_level", "none");
+
+      console.log("Guest access data:", accessData, "Error:", accessError);
 
       if (accessData && accessData.length > 0) {
         const projectIds = accessData.map(a => a.project_id);
