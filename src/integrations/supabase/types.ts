@@ -2874,6 +2874,90 @@ export type Database = {
           },
         ]
       }
+      ks_module2_uk: {
+        Row: {
+          approved_at: string | null
+          approved_by_name: string | null
+          comments: string | null
+          company_id: string
+          control_area: string
+          control_date: string | null
+          controller_company: string | null
+          controller_name: string | null
+          created_at: string
+          created_by_name: string
+          created_by_user_id: string | null
+          deadline: string | null
+          description: string | null
+          document_paths: string[] | null
+          id: string
+          project_id: string
+          result: string | null
+          status: string
+          uk_number: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by_name?: string | null
+          comments?: string | null
+          company_id: string
+          control_area: string
+          control_date?: string | null
+          controller_company?: string | null
+          controller_name?: string | null
+          created_at?: string
+          created_by_name: string
+          created_by_user_id?: string | null
+          deadline?: string | null
+          description?: string | null
+          document_paths?: string[] | null
+          id?: string
+          project_id: string
+          result?: string | null
+          status?: string
+          uk_number: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by_name?: string | null
+          comments?: string | null
+          company_id?: string
+          control_area?: string
+          control_date?: string | null
+          controller_company?: string | null
+          controller_name?: string | null
+          created_at?: string
+          created_by_name?: string
+          created_by_user_id?: string | null
+          deadline?: string | null
+          description?: string | null
+          document_paths?: string[] | null
+          id?: string
+          project_id?: string
+          result?: string | null
+          status?: string
+          uk_number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_uk_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_uk_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_photos: {
         Row: {
           checklist_item_id: string
@@ -5528,6 +5612,7 @@ export type Database = {
       }
       generate_ks_module2_avvik_number: { Args: never; Returns: string }
       generate_ks_module2_project_number: { Args: never; Returns: string }
+      generate_ks_module2_uk_number: { Args: never; Returns: string }
       generate_project_number: { Args: never; Returns: string }
       get_user_company_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
