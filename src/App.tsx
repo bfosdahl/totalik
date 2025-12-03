@@ -145,6 +145,7 @@ const App = () => (
           <Route path="/ks/inspeksjon-maler" element={<ProtectedRoute><KsInspeksjonMalGenerator /></ProtectedRoute>} />
             <Route path="/ks/farlige-forhold" element={<ProtectedRoute><KsFarligeFohold /></ProtectedRoute>} />
             <Route path="/ks/tiltakslogg" element={<ProtectedRoute><KsTiltakslogg /></ProtectedRoute>} />
+            <Route path="/ks/vernerunder" element={<ProtectedRoute><KsVernerunder /></ProtectedRoute>} />
             <Route path="/ks/report" element={<ProtectedRoute><KsProjectReport /></ProtectedRoute>} />
             <Route path="/ks/client/:projectId" element={<ProtectedRoute><KsClientManagement /></ProtectedRoute>} />
             <Route path="/ks/projects/:id/ue" element={<ProtectedRoute><KsSubcontractorManagement /></ProtectedRoute>} />
