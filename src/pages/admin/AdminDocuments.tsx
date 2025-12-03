@@ -35,6 +35,7 @@ const DOCUMENT_TYPES = {
   template: { label: "Mal/Template", icon: FileText, color: "bg-blue-500" },
   guide: { label: "Veiledning", icon: FileText, color: "bg-green-500" },
   regulation: { label: "Forskrift/Lov", icon: FileText, color: "bg-yellow-500" },
+  byggesak: { label: "Byggesak", icon: FileText, color: "bg-orange-500" },
   image: { label: "Bilde", icon: Image, color: "bg-purple-500" },
   other: { label: "Annet", icon: File, color: "bg-gray-500" },
 };
