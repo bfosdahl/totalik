@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   Library,
   Shield,
+  FileText,
   ArrowLeft,
   Menu,
   X,
@@ -31,6 +32,7 @@ const menuItems = [
   { id: "avvik", label: "Avvik fra KS", icon: AlertTriangle, path: "/avvik" },
   { id: "uk", label: "Uavhengig kontroll", icon: Shield, path: "/uk" },
   { id: "malbibliotek", label: "Malbibliotek", icon: Library, path: "/maler" },
+  { id: "rapport", label: "Prosjektrapport", icon: FileText, path: "/rapport" },
 ];
 
 export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSidebarProps) {

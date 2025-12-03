@@ -12,6 +12,7 @@ import Ks2Prosjektinfo from "./Ks2Prosjektinfo";
 import Ks2Avvik from "./Ks2Avvik";
 import Ks2UavhengigKontroll from "./Ks2UavhengigKontroll";
 import Ks2Malbibliotek from "./Ks2Malbibliotek";
+import Ks2Prosjektrapport from "./Ks2Prosjektrapport";
 
 export default function Ks2ProjectDetail() {
   const { projectId } = useParams();
@@ -83,6 +84,8 @@ export default function Ks2ProjectDetail() {
         return <Ks2UavhengigKontroll />;
       case "/maler":
         return <Ks2Malbibliotek />;
+      case "/rapport":
+        return <Ks2Prosjektrapport />;
       default:
         return <Ks2ProjectDashboard />;
     }
