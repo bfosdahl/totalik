@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,11 +17,17 @@ import {
   Trash2, 
   Upload,
   CheckSquare,
-  ArrowLeft
+  ArrowLeft,
+  Download,
+  Eye,
+  File,
+  FileSpreadsheet,
+  Image
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useKsModule2Templates } from "@/hooks/useKsModule2Templates";
 import { useKsModule2Settings } from "@/hooks/useKsModule2Settings";
+import { useKsModule2DocumentTemplates } from "@/hooks/useKsModule2DocumentTemplates";
 import { toast } from "sonner";
 
 const CATEGORIES = [
@@ -42,12 +48,24 @@ const CATEGORIES = [
   { value: "general", label: "Generelt" },
 ];
 
+const DOCUMENT_CATEGORIES = [
+  { value: "sjekkliste", label: "Sjekkliste-mal" },
+  { value: "skjema", label: "Skjema" },
+  { value: "rutine", label: "Rutine" },
+  { value: "byggesak", label: "Byggesak" },
+  { value: "kontrakt", label: "Kontrakt" },
+  { value: "annet", label: "Annet" },
+];
+
 export default function Ks2Admin() {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { templates, isLoading: templatesLoading, createTemplate, updateTemplate, deleteTemplate } = useKsModule2Templates();
   const { settings, isLoading: settingsLoading, updateSettings } = useKsModule2Settings();
+  const { documents, isLoading: documentsLoading, uploadDocument, deleteDocument, getDownloadUrl, isUploading } = useKsModule2DocumentTemplates();
   
   const [isNewTemplateOpen, setIsNewTemplateOpen] = useState(false);
+  const [isUploadDocOpen, setIsUploadDocOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<any>(null);
   const [newTemplate, setNewTemplate] = useState({
     template_name: "",
@@ -59,6 +77,12 @@ export default function Ks2Admin() {
     text: "",
     type: "yesno",
     required: true
+  });
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadData, setUploadData] = useState({
+    title: "",
+    category: "sjekkliste",
+    description: ""
   });
 
   const handleCreateTemplate = async () => {
@@ -110,6 +134,55 @@ export default function Ks2Admin() {
 
   const handleSaveSettings = async (field: string, value: any) => {
     await updateSettings({ [field]: value });
+  };
+
+  const handleUploadDocument = async () => {
+    if (!uploadFile || !uploadData.title) {
+      toast.error("Velg fil og fyll inn tittel");
+      return;
+    }
+    
+    uploadDocument({
+      file: uploadFile,
+      title: uploadData.title,
+      category: uploadData.category,
+      description: uploadData.description,
+      isSystemTemplate: true
+    }, {
+      onSuccess: () => {
+        setUploadFile(null);
+        setUploadData({ title: "", category: "sjekkliste", description: "" });
+        setIsUploadDocOpen(false);
+      }
+    });
+  };
+
+  const handleDownloadDocument = async (filePath: string, fileName: string) => {
+    const url = await getDownloadUrl(filePath);
+    if (url) {
+      window.open(url, "_blank");
+    }
+  };
+
+  const handleDeleteDocument = async (doc: any) => {
+    if (confirm("Er du sikker på at du vil slette dette dokumentet?")) {
+      deleteDocument(doc);
+    }
+  };
+
+  const getFileIcon = (fileType: string | null) => {
+    if (fileType?.includes("pdf")) return <FileText className="h-8 w-8 text-red-500" />;
+    if (fileType?.includes("word") || fileType?.includes("document")) return <File className="h-8 w-8 text-blue-500" />;
+    if (fileType?.includes("image")) return <Image className="h-8 w-8 text-green-500" />;
+    if (fileType?.includes("spreadsheet") || fileType?.includes("excel")) return <FileSpreadsheet className="h-8 w-8 text-green-600" />;
+    return <FileText className="h-8 w-8 text-muted-foreground" />;
+  };
+
+  const formatFileSize = (bytes: number | null) => {
+    if (!bytes) return "Ukjent størrelse";
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   return (
@@ -320,26 +393,174 @@ export default function Ks2Admin() {
 
           {/* Dokumentbank Tab */}
           <TabsContent value="documents" className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <h2 className="text-xl font-semibold">Nedlastbare maler / Dokumentbank</h2>
+                <h2 className="text-xl font-semibold">Dokumentbank</h2>
                 <p className="text-sm text-muted-foreground">
-                  Last opp PDF/Word-filer som kan brukes som papirversjoner
+                  {documents.length} dokumenter tilgjengelig for nedlasting
                 </p>
               </div>
-              <Button className="gap-2">
-                <Upload className="h-4 w-4" />
-                Last opp dokument
-              </Button>
+              <Dialog open={isUploadDocOpen} onOpenChange={setIsUploadDocOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2">
+                    <Upload className="h-4 w-4" />
+                    Last opp dokument
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Last opp nytt dokument</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label>Fil *</Label>
+                      <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                        {uploadFile ? (
+                          <div className="space-y-2">
+                            <FileText className="h-10 w-10 mx-auto text-primary" />
+                            <p className="font-medium">{uploadFile.name}</p>
+                            <p className="text-sm text-muted-foreground">{formatFileSize(uploadFile.size)}</p>
+                            <Button variant="outline" size="sm" onClick={() => setUploadFile(null)}>
+                              Fjern
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <Upload className="h-10 w-10 mx-auto text-muted-foreground" />
+                            <p className="text-muted-foreground">Klikk for å velge fil</p>
+                            <p className="text-xs text-muted-foreground">PDF, Word, bilder (maks 50MB)</p>
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              className="hidden"
+                              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+                              onChange={(e) => {
+                                if (e.target.files?.[0]) {
+                                  setUploadFile(e.target.files[0]);
+                                }
+                              }}
+                            />
+                            <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                              Velg fil
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Tittel *</Label>
+                      <Input
+                        value={uploadData.title}
+                        onChange={(e) => setUploadData(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder="F.eks. Betongstøp sjekkliste"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Kategori</Label>
+                      <Select
+                        value={uploadData.category}
+                        onValueChange={(v) => setUploadData(prev => ({ ...prev, category: v }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DOCUMENT_CATEGORIES.map(cat => (
+                            <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Beskrivelse</Label>
+                      <Textarea
+                        value={uploadData.description}
+                        onChange={(e) => setUploadData(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Kort beskrivelse..."
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-4">
+                      <Button variant="outline" onClick={() => setIsUploadDocOpen(false)}>
+                        Avbryt
+                      </Button>
+                      <Button onClick={handleUploadDocument} disabled={isUploading}>
+                        {isUploading ? "Laster opp..." : "Last opp"}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
 
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Ingen dokumenter lastet opp ennå</p>
-                <p className="text-sm">Last opp PDF/Word-filer for papirbaserte sjekklister</p>
-              </CardContent>
-            </Card>
+            {documentsLoading ? (
+              <div className="text-center py-8 text-muted-foreground">Laster dokumenter...</div>
+            ) : documents.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Ingen dokumenter lastet opp ennå</p>
+                  <p className="text-sm">Last opp PDF/Word-filer som kan brukes som papirmaler</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {documents.map(doc => (
+                  <Card key={doc.id} className="relative">
+                    <Badge className="absolute top-2 right-2" variant="outline">
+                      {DOCUMENT_CATEGORIES.find(c => c.value === doc.category)?.label || doc.category}
+                    </Badge>
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start gap-3">
+                        {getFileIcon(doc.file_type)}
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-base truncate">{doc.title}</CardTitle>
+                          <CardDescription className="text-xs">
+                            {doc.file_name} • {formatFileSize(doc.file_size)}
+                          </CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {doc.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                          {doc.description}
+                        </p>
+                      )}
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1 flex-1"
+                          onClick={() => handleDownloadDocument(doc.file_path, doc.file_name)}
+                        >
+                          <Eye className="h-3 w-3" /> Vis
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1 flex-1"
+                          onClick={() => handleDownloadDocument(doc.file_path, doc.file_name)}
+                        >
+                          <Download className="h-3 w-3" /> Last ned
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="text-destructive"
+                          onClick={() => handleDeleteDocument(doc)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* Innstillinger Tab */}
