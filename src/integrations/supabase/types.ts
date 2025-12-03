@@ -6429,6 +6429,10 @@ export type Database = {
       generate_ks_module2_uk_number: { Args: never; Returns: string }
       generate_project_number: { Args: never; Returns: string }
       get_user_company_id: { Args: { _user_id: string }; Returns: string }
+      has_guest_project_access: {
+        Args: { project_uuid: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
