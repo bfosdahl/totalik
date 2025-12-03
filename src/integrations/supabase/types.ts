@@ -2267,6 +2267,102 @@ export type Database = {
           },
         ]
       }
+      ks_module2_avvik: {
+        Row: {
+          avvik_number: string
+          category: string
+          closed_at: string | null
+          closed_by_name: string | null
+          company_id: string
+          corrective_action: string | null
+          created_at: string
+          deadline: string | null
+          description: string | null
+          discovered_date: string
+          id: string
+          location: string | null
+          photo_paths: string[] | null
+          preventive_action: string | null
+          project_id: string
+          reported_by_name: string
+          reported_by_user_id: string | null
+          responsible_name: string | null
+          responsible_user_id: string | null
+          root_cause: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          avvik_number: string
+          category?: string
+          closed_at?: string | null
+          closed_by_name?: string | null
+          company_id: string
+          corrective_action?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          discovered_date?: string
+          id?: string
+          location?: string | null
+          photo_paths?: string[] | null
+          preventive_action?: string | null
+          project_id: string
+          reported_by_name: string
+          reported_by_user_id?: string | null
+          responsible_name?: string | null
+          responsible_user_id?: string | null
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          avvik_number?: string
+          category?: string
+          closed_at?: string | null
+          closed_by_name?: string | null
+          company_id?: string
+          corrective_action?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          discovered_date?: string
+          id?: string
+          location?: string | null
+          photo_paths?: string[] | null
+          preventive_action?: string | null
+          project_id?: string
+          reported_by_name?: string
+          reported_by_user_id?: string | null
+          responsible_name?: string | null
+          responsible_user_id?: string | null
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_avvik_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_avvik_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_checklist_templates: {
         Row: {
           category: string
@@ -5430,6 +5526,7 @@ export type Database = {
         Args: { target_company_id: string }
         Returns: undefined
       }
+      generate_ks_module2_avvik_number: { Args: never; Returns: string }
       generate_ks_module2_project_number: { Args: never; Returns: string }
       generate_project_number: { Args: never; Returns: string }
       get_user_company_id: { Args: { _user_id: string }; Returns: string }

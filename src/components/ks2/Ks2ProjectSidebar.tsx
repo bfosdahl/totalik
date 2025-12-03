@@ -27,8 +27,8 @@ const menuItems = [
   { id: "sjekklister", label: "Sjekklister", icon: ClipboardList, path: "/sjekklister" },
   { id: "dokumentasjon", label: "Dokumentasjon & FDV", icon: FolderOpen, path: "/dokumentasjon" },
   { id: "prosjektinfo", label: "Prosjektinfo", icon: Info, path: "/prosjektinfo" },
-  { id: "avvik", label: "Avvik fra KS", icon: AlertTriangle, path: "/avvik", disabled: true, badge: "Fase 3" },
-  { id: "malbibliotek", label: "Malbibliotek", icon: Library, path: "/maler", disabled: true, badge: "Fase 3" },
+  { id: "avvik", label: "Avvik fra KS", icon: AlertTriangle, path: "/avvik" },
+  { id: "malbibliotek", label: "Malbibliotek", icon: Library, path: "/maler", disabled: true, badge: "Kommer" },
 ];
 
 export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSidebarProps) {
