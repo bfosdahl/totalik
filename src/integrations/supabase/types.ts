@@ -2267,6 +2267,118 @@ export type Database = {
           },
         ]
       }
+      ks_module2_checklist_templates: {
+        Row: {
+          category: string
+          checkpoints: Json
+          company_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_system_template: boolean | null
+          template_name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          checkpoints?: Json
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system_template?: boolean | null
+          template_name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          checkpoints?: Json
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system_template?: boolean | null
+          template_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_checklist_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_module2_document_templates: {
+        Row: {
+          category: string
+          company_id: string | null
+          created_at: string
+          description: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          is_active: boolean | null
+          is_system_template: boolean | null
+          title: string
+          updated_at: string
+          valid_from: string | null
+          valid_to: string | null
+          version: string | null
+        }
+        Insert: {
+          category?: string
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system_template?: boolean | null
+          title: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          version?: string | null
+        }
+        Update: {
+          category?: string
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system_template?: boolean | null
+          title?: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_document_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_documents: {
         Row: {
           company_id: string
@@ -2618,6 +2730,50 @@ export type Database = {
             columns: ["project_leader_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_module2_settings: {
+        Row: {
+          accent_color: string | null
+          company_id: string
+          created_at: string
+          default_deadline_days: number | null
+          email_notifications_enabled: boolean | null
+          id: string
+          logo_url: string | null
+          updated_at: string
+          weekly_report_enabled: boolean | null
+        }
+        Insert: {
+          accent_color?: string | null
+          company_id: string
+          created_at?: string
+          default_deadline_days?: number | null
+          email_notifications_enabled?: boolean | null
+          id?: string
+          logo_url?: string | null
+          updated_at?: string
+          weekly_report_enabled?: boolean | null
+        }
+        Update: {
+          accent_color?: string | null
+          company_id?: string
+          created_at?: string
+          default_deadline_days?: number | null
+          email_notifications_enabled?: boolean | null
+          id?: string
+          logo_url?: string | null
+          updated_at?: string
+          weekly_report_enabled?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]

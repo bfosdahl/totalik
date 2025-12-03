@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, FolderKanban, Loader2 } from "lucide-react";
+import { Plus, Search, FolderKanban, Loader2, Settings } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ type FilterType = "all" | "mine" | "active" | "completed" | "with_deviations";
 
 export default function Ks2Dashboard() {
   const navigate = useNavigate();
+  const { isCompanyAdmin, isSystemAdmin } = useAuth();
   const { projects, isLoading, isSaving, createProject, toggleFavorite } = useKsModule2Projects();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
@@ -93,10 +95,18 @@ export default function Ks2Dashboard() {
               Kvalitetssikring for bygg og anlegg
             </p>
           </div>
-          <Button onClick={() => setIsNewProjectOpen(true)} className="shrink-0">
-            <Plus className="h-4 w-4 mr-2" />
-            Nytt prosjekt
-          </Button>
+          <div className="flex gap-2">
+            {(isCompanyAdmin || isSystemAdmin) && (
+              <Button variant="outline" onClick={() => navigate("/ks2/admin")} className="shrink-0">
+                <Settings className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Admin</span>
+              </Button>
+            )}
+            <Button onClick={() => setIsNewProjectOpen(true)} className="shrink-0">
+              <Plus className="h-4 w-4 mr-2" />
+              Nytt prosjekt
+            </Button>
+          </div>
         </div>
 
         {/* Search and filters */}
