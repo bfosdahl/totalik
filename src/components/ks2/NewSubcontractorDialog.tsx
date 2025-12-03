@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Building2 } from "lucide-react";
+import { Building2, Key, Mail, Calendar, Copy, Check, UserPlus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -19,6 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useKsModule2Subcontractors, NewSubcontractorInput } from "@/hooks/useKsModule2Subcontractors";
+import { useKsModule2ProjectAccess } from "@/hooks/useKsModule2ProjectAccess";
+import { toast } from "sonner";
 
 const TRADES = [
   "Tømrer",
@@ -35,6 +38,20 @@ const TRADES = [
   "Annet",
 ];
 
+const ROLES_IN_PROJECT = [
+  "UE Tømrer",
+  "UE Rørlegger",
+  "UE Elektriker",
+  "Ansvarlig kontrollerende",
+  "Takstmann",
+  "Arkitekt",
+  "RIB (Rådgivende ingeniør bygg)",
+  "RIE (Rådgivende ingeniør elektro)",
+  "RIV (Rådgivende ingeniør VVS)",
+  "Prosjekterende",
+  "Annet",
+];
+
 interface NewSubcontractorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -47,25 +64,136 @@ export function NewSubcontractorDialog({
   projectId 
 }: NewSubcontractorDialogProps) {
   const { createSubcontractor, isCreating } = useKsModule2Subcontractors(projectId);
+  const { inviteAccess, isInviting } = useKsModule2ProjectAccess(projectId);
   const [trade, setTrade] = useState<string>("");
+  const [grantAccess, setGrantAccess] = useState(false);
+  const [accessLevel, setAccessLevel] = useState<'guest' | 'full_ue'>('guest');
+  const [roleInProject, setRoleInProject] = useState<string>("");
+  const [expiryDate, setExpiryDate] = useState<string>("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
+  const [copiedPassword, setCopiedPassword] = useState(false);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<NewSubcontractorInput>();
+  const { register, handleSubmit, reset, formState: { errors }, watch, getValues } = useForm<NewSubcontractorInput>();
 
-  const onSubmit = (data: NewSubcontractorInput) => {
+  const contactEmail = watch("contact_email");
+  const contactPerson = watch("contact_person");
+
+  const resetForm = () => {
+    reset();
+    setTrade("");
+    setGrantAccess(false);
+    setAccessLevel('guest');
+    setRoleInProject("");
+    setExpiryDate("");
+    setShowSuccess(false);
+    setGeneratedPassword(null);
+    setCopiedPassword(false);
+  };
+
+  const onSubmit = async (data: NewSubcontractorInput) => {
+    // First create the subcontractor
     createSubcontractor(
       { ...data, trade: trade || undefined },
       {
-        onSuccess: () => {
-          reset();
-          setTrade("");
-          onOpenChange(false);
+        onSuccess: async (newSubcontractor) => {
+          // If access is granted, create the access record
+          if (grantAccess && data.contact_email && data.contact_person) {
+            const result = await inviteAccess.mutateAsync({
+              project_id: projectId,
+              subcontractor_id: newSubcontractor.id,
+              email: data.contact_email,
+              name: data.contact_person,
+              company_name: data.firm_name,
+              role_in_project: roleInProject || trade || 'UE',
+              access_level: accessLevel,
+              expires_at: expiryDate || undefined,
+            });
+            
+            if (result.temp_password) {
+              setGeneratedPassword(result.temp_password);
+              setShowSuccess(true);
+            } else {
+              resetForm();
+              onOpenChange(false);
+            }
+          } else {
+            resetForm();
+            onOpenChange(false);
+          }
         },
       }
     );
   };
 
+  const copyPassword = () => {
+    if (generatedPassword) {
+      navigator.clipboard.writeText(generatedPassword);
+      setCopiedPassword(true);
+      toast.success("Passord kopiert!");
+      setTimeout(() => setCopiedPassword(false), 2000);
+    }
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onOpenChange(false);
+  };
+
+  if (showSuccess && generatedPassword) {
+    return (
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-green-600">
+              <Check className="h-5 w-5" />
+              Invitasjon sendt!
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-4 space-y-3">
+              <p className="text-sm">
+                <strong>{getValues("contact_person")}</strong> fra <strong>{getValues("firm_name")}</strong> har fått tilgang til prosjektet.
+              </p>
+              
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">E-post</Label>
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-mono">{getValues("contact_email")}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Midlertidig passord</Label>
+                <div className="flex items-center gap-2">
+                  <Key className="h-4 w-4 text-muted-foreground" />
+                  <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded text-sm font-mono flex-1">
+                    {generatedPassword}
+                  </code>
+                  <Button size="sm" variant="outline" onClick={copyPassword}>
+                    {copiedPassword ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              En e-post med innloggingsdetaljer er sendt til underleverandøren. De kan logge inn med e-post og det midlertidige passordet.
+            </p>
+          </div>
+
+          <div className="flex justify-end">
+            <Button onClick={handleClose}>Lukk</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -156,12 +284,17 @@ export function NewSubcontractorDialog({
             <h4 className="font-medium text-sm">Kontaktperson</h4>
             
             <div className="space-y-2">
-              <Label htmlFor="contact_person">Navn</Label>
+              <Label htmlFor="contact_person">Navn {grantAccess && "*"}</Label>
               <Input
                 id="contact_person"
-                {...register("contact_person")}
+                {...register("contact_person", { 
+                  required: grantAccess ? "Kontaktperson er påkrevd for tilgang" : false 
+                })}
                 placeholder="Ola Nordmann"
               />
+              {errors.contact_person && (
+                <p className="text-sm text-destructive">{errors.contact_person.message}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -174,27 +307,118 @@ export function NewSubcontractorDialog({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contact_email">E-post</Label>
+                <Label htmlFor="contact_email">E-post {grantAccess && "*"}</Label>
                 <Input
                   id="contact_email"
                   type="email"
-                  {...register("contact_email")}
+                  {...register("contact_email", { 
+                    required: grantAccess ? "E-post er påkrevd for tilgang" : false 
+                  })}
                   placeholder="kontakt@firma.no"
                 />
+                {errors.contact_email && (
+                  <p className="text-sm text-destructive">{errors.contact_email.message}</p>
+                )}
               </div>
             </div>
+          </div>
+
+          {/* Access Toggle Section */}
+          <div className="border-t pt-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Gi brukertilgang til prosjektet
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Underleverandøren får innlogging til dette prosjektet
+                </p>
+              </div>
+              <Switch
+                checked={grantAccess}
+                onCheckedChange={setGrantAccess}
+              />
+            </div>
+
+            {grantAccess && (
+              <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
+                <div className="space-y-2">
+                  <Label>Rolle i prosjektet</Label>
+                  <Select value={roleInProject} onValueChange={setRoleInProject}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Velg rolle" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ROLES_IN_PROJECT.map((role) => (
+                        <SelectItem key={role} value={role}>{role}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Tilgangsnivå</Label>
+                  <Select value={accessLevel} onValueChange={(v: 'guest' | 'full_ue') => setAccessLevel(v)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="guest">
+                        <div className="flex flex-col">
+                          <span>Gjest</span>
+                          <span className="text-xs text-muted-foreground">
+                            Lese + fylle ut sjekklister + registrere avvik
+                          </span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="full_ue">
+                        <div className="flex flex-col">
+                          <span>Full UE</span>
+                          <span className="text-xs text-muted-foreground">
+                            Alt innenfor prosjektet (unntatt admin)
+                          </span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Utløpsdato (valgfri)
+                  </Label>
+                  <Input
+                    type="date"
+                    value={expiryDate}
+                    onChange={(e) => setExpiryDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    La stå tom for ingen utløpsdato
+                  </p>
+                </div>
+
+                {!contactEmail && (
+                  <p className="text-sm text-amber-600 dark:text-amber-400">
+                    ⚠️ Fyll inn e-post for å gi tilgang
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
             <Button 
               type="button" 
               variant="outline" 
-              onClick={() => onOpenChange(false)}
+              onClick={handleClose}
             >
               Avbryt
             </Button>
-            <Button type="submit" disabled={isCreating}>
-              {isCreating ? "Lagrer..." : "Registrer"}
+            <Button type="submit" disabled={isCreating || isInviting}>
+              {isCreating || isInviting ? "Lagrer..." : grantAccess ? "Registrer og inviter" : "Registrer"}
             </Button>
           </div>
         </form>
