@@ -14,6 +14,8 @@ import Ks2Avvik from "./Ks2Avvik";
 import Ks2UavhengigKontroll from "./Ks2UavhengigKontroll";
 import Ks2Malbibliotek from "./Ks2Malbibliotek";
 import Ks2Prosjektrapport from "./Ks2Prosjektrapport";
+import Ks2Underleverandorer from "./Ks2Underleverandorer";
+import Ks2UnderleverandorDetail from "./Ks2UnderleverandorDetail";
 
 export default function Ks2ProjectDetail() {
   const { projectId } = useParams();
@@ -70,6 +72,12 @@ export default function Ks2ProjectDetail() {
   const currentPath = location.pathname.replace(basePath, "") || "";
 
   const renderContent = () => {
+    // Handle underleverandør detail route
+    if (currentPath.startsWith("/underleverandorer/")) {
+      const subId = currentPath.replace("/underleverandorer/", "");
+      return <Ks2UnderleverandorDetail subcontractorId={subId} />;
+    }
+
     switch (currentPath) {
       case "/egenkontroller":
         return <Ks2Egenkontroller />;
@@ -81,6 +89,8 @@ export default function Ks2ProjectDetail() {
         return <Ks2Dokumentasjon />;
       case "/prosjektinfo":
         return <Ks2Prosjektinfo />;
+      case "/underleverandorer":
+        return <Ks2Underleverandorer />;
       case "/avvik":
         return <Ks2Avvik />;
       case "/uk":
