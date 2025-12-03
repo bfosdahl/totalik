@@ -187,6 +187,19 @@ export default function AdminDocuments() {
     setUploadType("template");
   };
 
+  // Sanitize filename for Supabase storage
+  const sanitizeFileName = (fileName: string): string => {
+    return fileName
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+      .replace(/æ/gi, 'ae')
+      .replace(/ø/gi, 'o')
+      .replace(/å/gi, 'a')
+      .replace(/[^a-zA-Z0-9._-]/g, '_') // Replace special chars with underscore
+      .replace(/_+/g, '_') // Replace multiple underscores with single
+      .replace(/^_|_$/g, ''); // Remove leading/trailing underscores
+  };
+
   const handleUpload = async () => {
     if (!selectedFile || !documentName) {
       toast.error("Velg fil og gi dokumentet et navn");
@@ -195,7 +208,8 @@ export default function AdminDocuments() {
 
     setIsUploading(true);
     try {
-      const filePath = `admin/${Date.now()}_${selectedFile.name}`;
+      const sanitizedName = sanitizeFileName(selectedFile.name);
+      const filePath = `admin/${Date.now()}_${sanitizedName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("admin-documents")
