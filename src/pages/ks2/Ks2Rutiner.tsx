@@ -5,14 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { BookOpen, Plus, Search, Library, Check, ExternalLink } from "lucide-react";
+import { BookOpen, Plus, Search, Library, Check, ExternalLink, Eye } from "lucide-react";
 import { useKsModule2ProjectTemplates } from "@/hooks/useKsModule2ProjectTemplates";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function Ks2Rutiner() {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [viewingRoutine, setViewingRoutine] = useState<any>(null);
 
   const { routineTemplates, isLoading, markAsImplemented, unmarkAsImplemented } = useKsModule2ProjectTemplates(projectId);
 
@@ -104,7 +111,7 @@ export default function Ks2Rutiner() {
                   <CardContent className="p-4">
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <h4 className="font-medium">{pt.routine_template?.routine_name}</h4>
                           <Badge variant="outline">{pt.routine_template?.category}</Badge>
                           {pt.is_implemented && (
@@ -118,7 +125,15 @@ export default function Ks2Rutiner() {
                           {pt.routine_template?.description || "Ingen beskrivelse"}
                         </p>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setViewingRoutine(pt)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Les rutine
+                        </Button>
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             id={`impl-${pt.id}`}
@@ -135,7 +150,7 @@ export default function Ks2Rutiner() {
                         {pt.routine_template?.file_path && (
                           <Button variant="outline" size="sm">
                             <ExternalLink className="h-4 w-4 mr-1" />
-                            Åpne
+                            Åpne fil
                           </Button>
                         )}
                       </div>
@@ -147,6 +162,68 @@ export default function Ks2Rutiner() {
           </CardContent>
         </Card>
       )}
+
+      {/* View Routine Dialog */}
+      <Dialog open={!!viewingRoutine} onOpenChange={() => setViewingRoutine(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              {viewingRoutine?.routine_template?.routine_name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="outline">{viewingRoutine?.routine_template?.category}</Badge>
+              {viewingRoutine?.is_implemented && (
+                <Badge className="bg-green-500/10 text-green-500">
+                  <Check className="h-3 w-3 mr-1" />
+                  Implementert
+                </Badge>
+              )}
+            </div>
+            
+            {viewingRoutine?.routine_template?.description && (
+              <div>
+                <h4 className="font-medium mb-1">Beskrivelse</h4>
+                <p className="text-sm text-muted-foreground">
+                  {viewingRoutine.routine_template.description}
+                </p>
+              </div>
+            )}
+            
+            {viewingRoutine?.routine_template?.content && (
+              <div>
+                <h4 className="font-medium mb-2">Innhold</h4>
+                <div className="bg-muted/50 rounded-lg p-4 text-sm whitespace-pre-wrap">
+                  {viewingRoutine.routine_template.content}
+                </div>
+              </div>
+            )}
+
+            {!viewingRoutine?.routine_template?.content && !viewingRoutine?.routine_template?.description && (
+              <p className="text-muted-foreground text-sm">
+                Ingen innhold tilgjengelig for denne rutinen.
+              </p>
+            )}
+
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setViewingRoutine(null)}>
+                Lukk
+              </Button>
+              {!viewingRoutine?.is_implemented && (
+                <Button onClick={() => {
+                  handleMarkImplemented(viewingRoutine.id, false);
+                  setViewingRoutine(null);
+                }}>
+                  <Check className="h-4 w-4 mr-2" />
+                  Marker som implementert
+                </Button>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
