@@ -24,9 +24,13 @@ export function useCompanyModules(companyId?: string) {
   useEffect(() => {
     const fetchModules = async () => {
       if (!targetCompanyId) {
+        setModules([]);
         setIsLoading(false);
         return;
       }
+
+      // CRITICAL: Set loading to true when we start fetching
+      setIsLoading(true);
 
       try {
         const { data, error } = await supabase
@@ -38,6 +42,7 @@ export function useCompanyModules(companyId?: string) {
         setModules(data || []);
       } catch (error) {
         console.error("Error fetching company modules:", error);
+        setModules([]);
       } finally {
         setIsLoading(false);
       }
