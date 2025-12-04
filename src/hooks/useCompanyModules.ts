@@ -22,20 +22,15 @@ export function useCompanyModules(companyId?: string) {
   // Only use profile.company_id if we're not given a specific companyId
   const targetCompanyId = companyId || profile?.company_id;
 
-  // CRITICAL: Determine if we should still be in loading state
-  // We're loading if:
-  // 1. Auth is still loading, OR
-  // 2. Auth is done but we don't have a companyId param AND profile doesn't have company_id yet
-  const shouldWaitForAuth = authLoading || (!companyId && !profile?.company_id);
-
   useEffect(() => {
-    // If we should wait for auth, keep loading state true and don't fetch
-    if (shouldWaitForAuth) {
+    // CRITICAL: While auth is still loading, keep this hook loading
+    // This prevents premature "no modules" state before we know the user's company
+    if (authLoading) {
       setIsLoading(true);
       return;
     }
 
-    // At this point, auth is done. If still no targetCompanyId, user has no company
+    // Auth is done. If no targetCompanyId, user has no company - stop loading
     if (!targetCompanyId) {
       setModules([]);
       setIsLoading(false);
@@ -62,7 +57,7 @@ export function useCompanyModules(companyId?: string) {
     };
 
     fetchModules();
-  }, [targetCompanyId, shouldWaitForAuth]);
+  }, [targetCompanyId, authLoading]);
 
   const hasModule = (moduleType: ModuleType): boolean => {
     const module = modules.find(m => m.module_type === moduleType);

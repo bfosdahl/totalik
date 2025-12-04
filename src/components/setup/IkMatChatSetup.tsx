@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Bot, User, CheckCircle2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Loader2, Send, Bot, User, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
@@ -17,8 +17,53 @@ interface IkMatChatSetupProps {
   onComplete: () => void;
 }
 
+// Helper to strip JSON from display content
+function getDisplayContent(content: string): string {
+  // Remove JSON blocks marked with our special markers
+  let cleaned = content.replace(/\|\|\|JSON_START\|\|\|[\s\S]*?\|\|\|JSON_END\|\|\|/g, '');
+  
+  // Also remove any raw JSON that might slip through
+  cleaned = cleaned.replace(/```json[\s\S]*?```/g, '');
+  
+  // Remove standalone JSON objects that look like our data structure
+  if (cleaned.includes('"goals"') && cleaned.includes('"haccp"') && cleaned.includes('"routines"')) {
+    const jsonStart = cleaned.indexOf('{');
+    const jsonEnd = cleaned.lastIndexOf('}');
+    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+      cleaned = cleaned.slice(0, jsonStart) + cleaned.slice(jsonEnd + 1);
+    }
+  }
+  
+  return cleaned.trim();
+}
+
+// Helper to extract JSON from content
+function extractJsonFromContent(content: string): string | null {
+  // First try our marked format
+  const markedMatch = content.match(/\|\|\|JSON_START\|\|\|([\s\S]*?)\|\|\|JSON_END\|\|\|/);
+  if (markedMatch) {
+    return markedMatch[1].trim();
+  }
+  
+  // Try markdown code blocks
+  const codeMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+  if (codeMatch) {
+    return codeMatch[1].trim();
+  }
+  
+  // Try finding raw JSON with IK-MAT specific keys
+  if (content.includes('"goals"') && content.includes('"haccp"')) {
+    const startIndex = content.indexOf('{');
+    const endIndex = content.lastIndexOf('}');
+    if (startIndex !== -1 && endIndex !== -1) {
+      return content.slice(startIndex, endIndex + 1);
+    }
+  }
+  
+  return null;
+}
+
 export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) => {
-  const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([
     { 
       role: 'assistant', 
@@ -36,18 +81,15 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const saveGeneratedContent = async (content: any) => {
+  const saveGeneratedContent = async (jsonContent: string) => {
     setIsSaving(true);
     try {
-      console.log("Saving generated content:", content);
+      const content = JSON.parse(jsonContent);
+      console.log("Saving IK-MAT generated content:", content);
 
       // NOTE: IK-MAT stores ALL its data in company_modules.settings.generatedContent
       // It does NOT use company_goals, company_risk_assessments, or company_routines
       // Those tables are reserved for IK-HMS to avoid data conflicts between modules
-
-      // NOTE: IK-MAT routines are stored in company_modules.settings.generatedContent
-      // NOT in company_routines (which is reserved for IK-HMS)
-      // The routines are already included in the content object below
 
       // Save all content in company_modules settings
       const { error: moduleError } = await supabase
@@ -66,57 +108,21 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
         throw moduleError;
       }
 
-      toast({
-        title: "Suksess!",
-        description: "IK-MAT innhold er generert og lagret. Du kan nå begynne å bruke systemet.",
-      });
-
+      toast.success("IK-MAT oppsett fullført!");
       onComplete();
     } catch (error) {
       console.error("Error saving generated content:", error);
-      toast({
-        title: "Feil",
-        description: "Kunne ikke lagre innholdet. Prøv igjen.",
-        variant: "destructive",
-      });
+      toast.error("Kunne ikke lagre innholdet. Prøv igjen.");
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const parseJsonFromResponse = (text: string): any | null => {
-    try {
-      // Try to parse as direct JSON
-      return JSON.parse(text);
-    } catch {
-      // Try to extract JSON from markdown code blocks
-      const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/) || text.match(/```\n([\s\S]*?)\n```/);
-      if (jsonMatch) {
-        try {
-          return JSON.parse(jsonMatch[1]);
-        } catch {
-          return null;
-        }
-      }
-      // Try to find JSON object in text
-      const objectMatch = text.match(/\{[\s\S]*\}/);
-      if (objectMatch) {
-        try {
-          return JSON.parse(objectMatch[0]);
-        } catch {
-          return null;
-        }
-      }
-      return null;
     }
   };
 
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
 
-    const userMessage: Message = { role: 'user', content: inputValue };
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+    const userMessage: Message = { role: 'user', content: inputValue.trim() };
+    setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsLoading(true);
 
@@ -127,31 +133,36 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: [...messages, userMessage] }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to get response");
+      if (response.status === 429) {
+        toast.error("For mange forespørsler. Vennligst vent litt og prøv igjen.");
+        return;
       }
 
-      if (!response.body) {
-        throw new Error("No response body");
+      if (response.status === 402) {
+        toast.error("Kreditter oppbrukt. Kontakt administrator.");
+        return;
+      }
+
+      if (!response.ok || !response.body) {
+        throw new Error("Failed to start stream");
       }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let assistantMessage = "";
       let textBuffer = "";
+      let assistantMessage = "";
+      let streamDone = false;
 
-      const updateAssistantMessage = (chunk: string) => {
-        assistantMessage += chunk;
-        setMessages([...newMessages, { role: 'assistant', content: assistantMessage }]);
-      };
+      // Add placeholder for assistant message
+      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
-      while (true) {
+      while (!streamDone) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         textBuffer += decoder.decode(value, { stream: true });
 
         let newlineIndex: number;
@@ -164,13 +175,26 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
           if (!line.startsWith("data: ")) continue;
 
           const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") break;
+          if (jsonStr === "[DONE]") {
+            streamDone = true;
+            break;
+          }
 
           try {
             const parsed = JSON.parse(jsonStr);
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
-              updateAssistantMessage(content);
+              assistantMessage += content;
+              // Show only the display content (without JSON)
+              const displayContent = getDisplayContent(assistantMessage);
+              setMessages((prev) => {
+                const newMessages = [...prev];
+                newMessages[newMessages.length - 1] = {
+                  role: "assistant",
+                  content: displayContent,
+                };
+                return newMessages;
+              });
             }
           } catch {
             textBuffer = line + "\n" + textBuffer;
@@ -179,43 +203,26 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
         }
       }
 
-      // Final flush
-      if (textBuffer.trim()) {
-        for (let raw of textBuffer.split("\n")) {
-          if (!raw || raw.startsWith(":") || !raw.startsWith("data: ")) continue;
-          const jsonStr = raw.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) {
-              updateAssistantMessage(content);
-            }
-          } catch { /* ignore */ }
+      // Check if the message contains JSON (setup complete)
+      const jsonContent = extractJsonFromContent(assistantMessage);
+      if (jsonContent) {
+        console.log("JSON found in IK-MAT response, saving setup data...");
+        await saveGeneratedContent(jsonContent);
+      } else {
+        // Log for debugging if we expected JSON but didn't find it
+        if (assistantMessage.includes("Supert") && assistantMessage.includes("IK-MAT")) {
+          console.warn("Expected JSON in final IK-MAT message but none found. Full message:", assistantMessage);
         }
       }
-
-      // Check if response contains JSON structure
-      const generatedContent = parseJsonFromResponse(assistantMessage);
-      if (generatedContent && generatedContent.goals && generatedContent.haccp) {
-        console.log("Detected complete JSON structure, saving...");
-        await saveGeneratedContent(generatedContent);
-      }
-
     } catch (error) {
-      console.error("Error sending message:", error);
-      toast({
-        title: "Feil",
-        description: "Kunne ikke sende melding. Prøv igjen.",
-        variant: "destructive",
-      });
-      setMessages(messages); // Revert on error
+      console.error("Error:", error);
+      toast.error("Noe gikk galt. Vennligst prøv igjen.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
@@ -264,7 +271,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
                 )}
               </div>
             ))}
-            {isLoading && (
+            {isLoading && messages[messages.length - 1]?.content === "" && (
               <div className="flex gap-2 sm:gap-3 justify-start">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Bot className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
@@ -275,11 +282,9 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
               </div>
             )}
             {isSaving && (
-              <div className="flex gap-2 sm:gap-3 justify-center">
-                <div className="bg-success/10 text-success rounded-lg px-3 py-2 sm:px-4 sm:py-3 flex items-center gap-2 text-xs sm:text-sm">
-                  <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" />
-                  <span>Lagrer IK-MAT innhold...</span>
-                </div>
+              <div className="flex items-center justify-center gap-2 p-3 sm:p-4 bg-success/10 rounded-lg border border-success/20">
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-success animate-pulse" />
+                <p className="text-xs sm:text-sm text-success font-medium">Setter opp IK-MAT systemet ditt...</p>
               </div>
             )}
             {/* Auto-scroll anchor */}
@@ -291,7 +296,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
             <Input
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyDown}
               placeholder="Skriv ditt svar her..."
               disabled={isLoading || isSaving}
               className="flex-1 text-base sm:text-sm"
