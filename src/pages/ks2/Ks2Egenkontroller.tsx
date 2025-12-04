@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,14 +7,15 @@ import { Input } from "@/components/ui/input";
 import {
   Plus,
   Search,
-  Filter,
   ClipboardCheck,
   Clock,
   FileDown,
   Upload,
   AlertCircle,
+  Library,
 } from "lucide-react";
 import { useKsModule2Checklists, KsModule2Checklist } from "@/hooks/useKsModule2Checklists";
+import { useKsModule2ProjectTemplates } from "@/hooks/useKsModule2ProjectTemplates";
 import { Ks2ChecklistWizard } from "@/components/ks2/Ks2ChecklistWizard";
 import { PaperChecklistUpload } from "@/components/ks2/PaperChecklistUpload";
 import { format, parseISO, isPast, isThisWeek } from "date-fns";
@@ -25,8 +26,10 @@ type FilterType = "all" | "mine" | "incomplete" | "this_week" | "paper";
 
 export default function Ks2Egenkontroller() {
   const { projectId } = useParams();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { checklists, stats, isLoading, refetch } = useKsModule2Checklists(projectId || "");
+  const { checklistTemplates, isLoading: isLoadingTemplates } = useKsModule2ProjectTemplates(projectId);
   const [filter, setFilter] = useState<FilterType>("all");
   const [search, setSearch] = useState("");
   const [showWizard, setShowWizard] = useState(false);
@@ -44,7 +47,6 @@ export default function Ks2Egenkontroller() {
     if (search && !c.title.toLowerCase().includes(search.toLowerCase())) return false;
     switch (filter) {
       case "mine":
-        // Filter by current user (would need user context, for now show all)
         return true;
       case "incomplete":
         return c.status !== "completed";
@@ -74,6 +76,8 @@ export default function Ks2Egenkontroller() {
     return <Badge variant="outline">Planlagt</Badge>;
   };
 
+  const hasProjectTemplates = checklistTemplates.length > 0;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -95,6 +99,62 @@ export default function Ks2Egenkontroller() {
           </Button>
         </div>
       </div>
+
+      {/* Info banner if no templates added */}
+      {!isLoadingTemplates && !hasProjectTemplates && (
+        <Card className="border-amber-500/50 bg-amber-500/5">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-medium text-amber-700 dark:text-amber-300">
+                  Ingen sjekkliste-maler lagt til i prosjektet
+                </p>
+                <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
+                  Gå til Malbibliotek for å legge til sjekkliste-maler som skal brukes i dette prosjektet.
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-3 border-amber-500/50"
+                  onClick={() => navigate(`/ks2/project/${projectId}/malbibliotek`)}
+                >
+                  <Library className="h-4 w-4 mr-2" />
+                  Gå til Malbibliotek
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Project templates summary */}
+      {hasProjectTemplates && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Library className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium">{checklistTemplates.length} sjekkliste-maler tilgjengelig</p>
+                  <p className="text-sm text-muted-foreground">
+                    Fra Malbibliotek for dette prosjektet
+                  </p>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate(`/ks2/project/${projectId}/malbibliotek`)}
+              >
+                Legg til flere
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Filters */}
       <Card>
@@ -144,12 +204,22 @@ export default function Ks2Egenkontroller() {
             <ClipboardCheck className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
             <h3 className="text-lg font-medium mb-2">Ingen egenkontroller ennå</h3>
             <p className="text-muted-foreground mb-6">
-              Opprett din første egenkontroll for å komme i gang
+              {hasProjectTemplates 
+                ? "Opprett din første egenkontroll for å komme i gang"
+                : "Legg til sjekkliste-maler i Malbibliotek først"
+              }
             </p>
-            <Button onClick={() => setShowWizard(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Ny egenkontroll
-            </Button>
+            {hasProjectTemplates ? (
+              <Button onClick={() => setShowWizard(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Ny egenkontroll
+              </Button>
+            ) : (
+              <Button onClick={() => navigate(`/ks2/project/${projectId}/malbibliotek`)}>
+                <Library className="h-4 w-4 mr-2" />
+                Gå til Malbibliotek
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
