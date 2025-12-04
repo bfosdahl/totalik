@@ -64,7 +64,7 @@ export function CopyProjectDialog({
       // 1. Create the new project (with or without basic info)
       const projectInsertData = {
         company_id: profile.company_id,
-        created_by: user.id,
+        created_by: profile.id,
         project_name: projectName.trim(),
         project_number: "", // Will be auto-generated
         status: "planned" as const,
