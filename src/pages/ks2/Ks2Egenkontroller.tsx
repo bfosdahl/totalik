@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ClipboardCheck, Plus, Search, FileText, Calendar, User, ArrowRight, Library } from "lucide-react";
-import { useKsModule2ProjectTemplates } from "@/hooks/useKsModule2ProjectTemplates";
+import { useKsModule2ProjectTemplates, ProjectTemplate } from "@/hooks/useKsModule2ProjectTemplates";
 import { useKsModule2Checklists } from "@/hooks/useKsModule2Checklists";
-import { Ks2ChecklistWizard } from "@/components/ks2/Ks2ChecklistWizard";
+import { Ks2ChecklistWizard, PreSelectedTemplate } from "@/components/ks2/Ks2ChecklistWizard";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -16,9 +16,10 @@ export default function Ks2Egenkontroller() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [showWizard, setShowWizard] = useState(false);
+  const [selectedTemplateForWizard, setSelectedTemplateForWizard] = useState<PreSelectedTemplate | null>(null);
 
   const { checklistTemplates, isLoading: templatesLoading } = useKsModule2ProjectTemplates(projectId);
-  const { checklists, isLoading: checklistsLoading } = useKsModule2Checklists(projectId || "");
+  const { checklists, isLoading: checklistsLoading, refetch: refetchChecklists } = useKsModule2Checklists(projectId || "");
 
   // Filter completed checklists
   const filteredChecklists = checklists.filter(c => 
@@ -38,6 +39,23 @@ export default function Ks2Egenkontroller() {
     }
   };
 
+  const handleStartChecklist = (template: ProjectTemplate) => {
+    setSelectedTemplateForWizard({
+      id: template.admin_checklist_template_id || "",
+      template_name: template.checklist_template?.template_name || "",
+      category: template.checklist_template?.category || "",
+      description: template.checklist_template?.description,
+      checkpoints: template.checklist_template?.checkpoints || [],
+    });
+    setShowWizard(true);
+  };
+
+  const handleWizardClose = () => {
+    setShowWizard(false);
+    setSelectedTemplateForWizard(null);
+    refetchChecklists();
+  };
+
   if (templatesLoading || checklistsLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -54,7 +72,10 @@ export default function Ks2Egenkontroller() {
           <h2 className="text-2xl font-bold">Egenkontroller</h2>
           <p className="text-muted-foreground">Utfør og administrer egenkontroller for prosjektet</p>
         </div>
-        <Button onClick={() => setShowWizard(true)}>
+        <Button onClick={() => {
+          setSelectedTemplateForWizard(null);
+          setShowWizard(true);
+        }}>
           <Plus className="h-4 w-4 mr-2" />
           Ny egenkontroll
         </Button>
@@ -101,6 +122,14 @@ export default function Ks2Egenkontroller() {
                     <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                       {pt.checklist_template?.description || "Ingen beskrivelse"}
                     </p>
+                    <Button 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => handleStartChecklist(pt)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Start egenkontroll
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
@@ -186,7 +215,8 @@ export default function Ks2Egenkontroller() {
       {showWizard && projectId && (
         <Ks2ChecklistWizard
           projectId={projectId}
-          onClose={() => setShowWizard(false)}
+          onClose={handleWizardClose}
+          preSelectedTemplate={selectedTemplateForWizard}
         />
       )}
     </div>

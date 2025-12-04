@@ -28,6 +28,7 @@ export default function Ks2Sjekklister() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showWizard, setShowWizard] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<any>(null);
+  const [selectedTemplateForWizard, setSelectedTemplateForWizard] = useState<any>(null);
   
   const { checklistTemplates, isLoading: loadingTemplates } = useKsModule2ProjectTemplates(projectId || "");
   const { checklists, isLoading: loadingChecklists, refetch: refetchChecklists } = useKsModule2Checklists(projectId || "");
@@ -54,7 +55,19 @@ export default function Ks2Sjekklister() {
 
   const handleWizardClose = () => {
     setShowWizard(false);
+    setSelectedTemplateForWizard(null);
     refetchChecklists();
+  };
+
+  const handleStartChecklist = (template: any) => {
+    setSelectedTemplateForWizard({
+      id: template.admin_checklist_template_id,
+      template_name: template.checklist_template?.template_name,
+      category: template.checklist_template?.category,
+      description: template.checklist_template?.description,
+      checkpoints: template.checklist_template?.checkpoints || [],
+    });
+    setShowWizard(true);
   };
 
   if (loadingTemplates || loadingChecklists) {
@@ -212,7 +225,7 @@ export default function Ks2Sjekklister() {
                         <Button 
                           size="sm" 
                           className="flex-1"
-                          onClick={() => setShowWizard(true)}
+                          onClick={() => handleStartChecklist(template)}
                         >
                           <Plus className="h-4 w-4 mr-1" />
                           Start
@@ -336,6 +349,7 @@ export default function Ks2Sjekklister() {
         <Ks2ChecklistWizard
           projectId={projectId || ""}
           onClose={handleWizardClose}
+          preSelectedTemplate={selectedTemplateForWizard}
         />
       )}
     </div>
