@@ -16,6 +16,13 @@ import Ks2Malbibliotek from "./Ks2Malbibliotek";
 import Ks2Prosjektrapport from "./Ks2Prosjektrapport";
 import Ks2Underleverandorer from "./Ks2Underleverandorer";
 import Ks2UnderleverandorDetail from "./Ks2UnderleverandorDetail";
+// HMS Module imports
+import Ks2HmsDashboard from "./Ks2HmsDashboard";
+import Ks2ShaPlan from "./Ks2ShaPlan";
+import Ks2Sja from "./Ks2Sja";
+import Ks2Vernerunder from "./Ks2Vernerunder";
+import Ks2HmsAvvik from "./Ks2HmsAvvik";
+import Ks2Stoffkartotek from "./Ks2Stoffkartotek";
 
 export default function Ks2ProjectDetail() {
   const { projectId } = useParams();
@@ -99,6 +106,19 @@ export default function Ks2ProjectDetail() {
         return <Ks2Malbibliotek />;
       case "/rapport":
         return <Ks2Prosjektrapport />;
+      // HMS Module routes
+      case "/hms":
+        return <Ks2HmsDashboard />;
+      case "/hms/sha-plan":
+        return <Ks2ShaPlan />;
+      case "/hms/sja":
+        return <Ks2Sja />;
+      case "/hms/vernerunder":
+        return <Ks2Vernerunder />;
+      case "/hms/avvik":
+        return <Ks2HmsAvvik />;
+      case "/hms/stoffkartotek":
+        return <Ks2Stoffkartotek />;
       default:
         return <Ks2EnhancedDashboard />;
     }

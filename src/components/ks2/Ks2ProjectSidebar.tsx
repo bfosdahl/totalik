@@ -17,17 +17,23 @@ import {
   X,
   Building2,
   LogOut,
+  ChevronDown,
+  ChevronRight,
+  HardHat,
+  FileCheck,
+  FlaskConical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface Ks2ProjectSidebarProps {
   projectName: string;
   projectNumber: string;
 }
 
-const allMenuItems = [
+const mainMenuItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "", guestAllowed: true },
   { id: "egenkontroller", label: "Egenkontroller", icon: ClipboardCheck, path: "/egenkontroller", guestAllowed: true },
   { id: "sjekklister", label: "Sjekklister", icon: ClipboardList, path: "/sjekklister", guestAllowed: true },
@@ -38,6 +44,18 @@ const allMenuItems = [
   { id: "avvik", label: "Avvik fra KS", icon: AlertTriangle, path: "/avvik", guestAllowed: true },
   { id: "uk", label: "Uavhengig kontroll", icon: Shield, path: "/uk", guestAllowed: true },
   { id: "malbibliotek", label: "Malbibliotek", icon: Library, path: "/maler", guestAllowed: true },
+];
+
+const hmsMenuItems = [
+  { id: "hms-dashboard", label: "HMS-dashboard", icon: LayoutDashboard, path: "/hms", guestAllowed: true },
+  { id: "sha-plan", label: "SHA-plan", icon: FileCheck, path: "/hms/sha-plan", guestAllowed: true },
+  { id: "sja", label: "SJA", icon: ClipboardCheck, path: "/hms/sja", guestAllowed: true },
+  { id: "vernerunder", label: "Vernerunder & RUH", icon: HardHat, path: "/hms/vernerunder", guestAllowed: true },
+  { id: "hms-avvik", label: "HMS-avvik", icon: AlertTriangle, path: "/hms/avvik", guestAllowed: true },
+  { id: "stoffkartotek", label: "Stoffkartotek", icon: FlaskConical, path: "/hms/stoffkartotek", guestAllowed: true },
+];
+
+const bottomMenuItems = [
   { id: "rapport", label: "Prosjektrapport", icon: FileText, path: "/rapport", guestAllowed: true },
 ];
 
@@ -51,10 +69,17 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
   const basePath = `/ks2/project/${projectId}`;
   const currentPath = location.pathname.replace(basePath, "") || "";
 
+  // Check if we're in HMS section
+  const isInHmsSection = currentPath.startsWith("/hms");
+  const [hmsOpen, setHmsOpen] = useState(isInHmsSection);
+
   // Filter menu items based on guest access
-  const menuItems = isGuestUser 
-    ? allMenuItems.filter(item => item.guestAllowed)
-    : allMenuItems;
+  const filterByGuest = <T extends { guestAllowed: boolean }>(items: T[]) => 
+    isGuestUser ? items.filter(item => item.guestAllowed) : items;
+
+  const filteredMainItems = filterByGuest(mainMenuItems);
+  const filteredHmsItems = filterByGuest(hmsMenuItems);
+  const filteredBottomItems = filterByGuest(bottomMenuItems);
 
   // Get guest role info
   const currentGuestProject = guestProjects.find(p => p.project_id === projectId);
@@ -95,8 +120,81 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1">
-        {menuItems.map((item) => {
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        {/* Main Menu Items */}
+        {filteredMainItems.map((item) => {
+          const isActive = currentPath === item.path;
+          const Icon = item.icon;
+
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                navigate(`${basePath}${item.path}`);
+                onNavigate?.();
+              }}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              )}
+            >
+              <Icon className="h-5 w-5 flex-shrink-0" />
+              <span className="flex-1 text-left">{item.label}</span>
+            </button>
+          );
+        })}
+
+        {/* HMS/SHA Collapsible Section */}
+        <Collapsible open={hmsOpen} onOpenChange={setHmsOpen}>
+          <CollapsibleTrigger asChild>
+            <button
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                isInHmsSection
+                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              )}
+            >
+              <Shield className="h-5 w-5 flex-shrink-0 text-emerald-500" />
+              <span className="flex-1 text-left">HMS / SHA</span>
+              {hmsOpen ? (
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              )}
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pl-4 space-y-1 mt-1">
+            {filteredHmsItems.map((item) => {
+              const isActive = currentPath === item.path;
+              const Icon = item.icon;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    navigate(`${basePath}${item.path}`);
+                    onNavigate?.();
+                  }}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-emerald-500 text-white"
+                      : "text-sidebar-foreground/70 hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400"
+                  )}
+                >
+                  <Icon className={cn("h-4 w-4 flex-shrink-0", isActive ? "" : "text-emerald-500")} />
+                  <span className="flex-1 text-left">{item.label}</span>
+                </button>
+              );
+            })}
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Bottom Menu Items */}
+        {filteredBottomItems.map((item) => {
           const isActive = currentPath === item.path;
           const Icon = item.icon;
 
