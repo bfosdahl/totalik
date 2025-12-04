@@ -2519,6 +2519,8 @@ export type Database = {
       }
       ks_module2_checklist_templates: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           category: string
           checkpoints: Json
           company_id: string | null
@@ -2527,10 +2529,13 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_system_template: boolean | null
+          project_id: string | null
           template_name: string
           updated_at: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           category?: string
           checkpoints?: Json
           company_id?: string | null
@@ -2539,10 +2544,13 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_system_template?: boolean | null
+          project_id?: string | null
           template_name: string
           updated_at?: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           category?: string
           checkpoints?: Json
           company_id?: string | null
@@ -2551,6 +2559,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_system_template?: boolean | null
+          project_id?: string | null
           template_name?: string
           updated_at?: string
         }
@@ -2560,6 +2569,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_checklist_templates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
             referencedColumns: ["id"]
           },
         ]
