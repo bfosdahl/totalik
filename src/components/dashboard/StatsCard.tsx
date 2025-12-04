@@ -1,4 +1,3 @@
-import { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,6 +13,7 @@ interface StatsCardProps {
   };
   variant?: "default" | "success" | "warning" | "destructive" | "info";
   delay?: number;
+  onClick?: () => void;
 }
 
 const variantStyles = {
@@ -47,6 +47,7 @@ export function StatsCard({
   trend,
   variant = "default",
   delay = 0,
+  onClick,
 }: StatsCardProps) {
   const styles = variantStyles[variant];
 
@@ -55,7 +56,11 @@ export function StatsCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
-      className="bg-card rounded-xl border border-border p-4 md:p-6 shadow-card hover:shadow-card-hover transition-shadow duration-300"
+      onClick={onClick}
+      className={cn(
+        "bg-card rounded-xl border border-border p-4 md:p-6 shadow-card hover:shadow-card-hover transition-all duration-300",
+        onClick && "cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+      )}
     >
       <div className="flex items-start justify-between">
         <div className="space-y-0.5 md:space-y-1 min-w-0 flex-1">
