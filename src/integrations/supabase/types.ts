@@ -3287,6 +3287,8 @@ export type Database = {
       }
       ks_module2_routines: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           category: string | null
           company_id: string
           content: string | null
@@ -3303,6 +3305,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           category?: string | null
           company_id: string
           content?: string | null
@@ -3319,6 +3323,8 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           category?: string | null
           company_id?: string
           content?: string | null

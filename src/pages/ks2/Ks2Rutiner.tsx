@@ -49,6 +49,8 @@ export default function Ks2Rutiner() {
   const [viewingCustomRoutine, setViewingCustomRoutine] = useState<KsModule2Routine | null>(null);
   const [approverMode, setApproverMode] = useState<'select' | 'freetext'>('select');
   const [freetextApprover, setFreetextApprover] = useState("");
+  const [customApproverMode, setCustomApproverMode] = useState<'select' | 'freetext'>('select');
+  const [customFreetextApprover, setCustomFreetextApprover] = useState("");
   
   // Edit custom routine state
   const [editingCustomRoutine, setEditingCustomRoutine] = useState<KsModule2Routine | null>(null);
@@ -74,6 +76,10 @@ export default function Ks2Rutiner() {
     deleteRoutine,
     isLoading: isLoadingCustom,
     isSaving: isSavingCustom,
+    linkRoutineToTemplate,
+    unlinkRoutineFromTemplate,
+    getLinkedTemplates,
+    refetch: refetchCustomRoutines,
   } = useKsModule2Routines(projectId);
   
   const { users, getUserDisplayName } = useCompanyUsers();
@@ -156,6 +162,46 @@ export default function Ks2Rutiner() {
     if (confirm("Er du sikker på at du vil slette denne rutinen?")) {
       await deleteRoutine(routine.id);
     }
+  };
+
+  const handleSetCustomApprover = async (approverName: string) => {
+    if (!viewingCustomRoutine) return;
+    await updateRoutine(viewingCustomRoutine.id, {
+      approved_by: approverName || null,
+      approved_at: approverName ? new Date().toISOString() : null,
+    });
+    setViewingCustomRoutine({
+      ...viewingCustomRoutine,
+      approved_by: approverName || null,
+      approved_at: approverName ? new Date().toISOString() : null,
+    });
+    refetchCustomRoutines();
+  };
+
+  const handleLinkCustomChecklist = async (checklistId: string) => {
+    if (!viewingCustomRoutine) return;
+    await linkRoutineToTemplate(viewingCustomRoutine.id, checklistId);
+  };
+
+  const handleUnlinkCustomChecklist = async (checklistId: string) => {
+    if (!viewingCustomRoutine) return;
+    await unlinkRoutineFromTemplate(viewingCustomRoutine.id, checklistId);
+  };
+
+  const getCustomLinkedChecklists = () => {
+    if (!viewingCustomRoutine) return [];
+    const linkedIds = getLinkedTemplates(viewingCustomRoutine.id);
+    return checklistTemplates.filter(ct => 
+      linkedIds.includes(ct.admin_checklist_template_id!)
+    );
+  };
+
+  const getCustomAvailableChecklists = () => {
+    if (!viewingCustomRoutine) return checklistTemplates;
+    const linkedIds = getLinkedTemplates(viewingCustomRoutine.id);
+    return checklistTemplates.filter(ct => 
+      !linkedIds.includes(ct.admin_checklist_template_id!)
+    );
   };
 
   // Get linked checklists for the viewing routine
@@ -318,55 +364,79 @@ export default function Ks2Rutiner() {
               ))}
 
               {/* Custom Routines */}
-              {filteredCustomRoutines.map((routine) => (
-                <Card key={routine.id} className="hover:bg-muted/50 transition-colors border-green-500/30">
-                  <CardContent className="p-4">
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <h4 className="font-medium">{routine.name}</h4>
-                          <Badge variant="outline">
-                            {ROUTINE_CATEGORIES[routine.category || 'general'] || routine.category}
-                          </Badge>
-                          <Badge variant="outline" className="gap-1 text-green-600 border-green-500/50">
-                            <PenLine className="h-3 w-3" />
-                            Egendefinert
-                          </Badge>
+              {filteredCustomRoutines.map((routine) => {
+                const linkedIds = getLinkedTemplates(routine.id);
+                return (
+                  <Card key={routine.id} className="hover:bg-muted/50 transition-colors border-green-500/30">
+                    <CardContent className="p-4">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <h4 className="font-medium">{routine.name}</h4>
+                            <Badge variant="outline">
+                              {ROUTINE_CATEGORIES[routine.category || 'general'] || routine.category}
+                            </Badge>
+                            <Badge variant="outline" className="gap-1 text-green-600 border-green-500/50">
+                              <PenLine className="h-3 w-3" />
+                              Egendefinert
+                            </Badge>
+                            {routine.approved_by && (
+                              <Badge variant="secondary">
+                                <UserCheck className="h-3 w-3 mr-1" />
+                                Godkjent
+                              </Badge>
+                            )}
+                            {linkedIds.length > 0 && (
+                              <Badge variant="secondary">
+                                <Link2 className="h-3 w-3 mr-1" />
+                                {linkedIds.length} sjekkliste{linkedIds.length > 1 ? 'r' : ''}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {routine.description || "Ingen beskrivelse"}
+                          </p>
+                          {routine.approved_by && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Godkjent av: {routine.approved_by}
+                            </p>
+                          )}
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {routine.description || "Ingen beskrivelse"}
-                        </p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setViewingCustomRoutine(routine);
+                              setCustomFreetextApprover(routine.approved_by || "");
+                              setCustomApproverMode(routine.approved_by && !users.some(u => getUserDisplayName(u) === routine.approved_by) ? 'freetext' : 'select');
+                            }}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Les
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditCustomRoutine(routine)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Rediger
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleDeleteCustomRoutine(routine)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setViewingCustomRoutine(routine)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Les
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditCustomRoutine(routine)}
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Rediger
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => handleDeleteCustomRoutine(routine)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
@@ -611,62 +681,240 @@ export default function Ks2Rutiner() {
 
       {/* View Custom Routine Dialog */}
       <Dialog open={!!viewingCustomRoutine} onOpenChange={() => setViewingCustomRoutine(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <PenLine className="h-5 w-5 text-green-500" />
               {viewingCustomRoutine?.name}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="outline">
-                {ROUTINE_CATEGORIES[viewingCustomRoutine?.category || 'general'] || viewingCustomRoutine?.category}
-              </Badge>
-              <Badge variant="outline" className="gap-1 text-green-600 border-green-500/50">
-                <PenLine className="h-3 w-3" />
-                Egendefinert
-              </Badge>
-            </div>
+          
+          <Tabs defaultValue="content" className="flex-1 overflow-hidden flex flex-col">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="content">Innhold</TabsTrigger>
+              <TabsTrigger value="approval">Godkjenning</TabsTrigger>
+              <TabsTrigger value="checklists">
+                Sjekklister ({viewingCustomRoutine ? getLinkedTemplates(viewingCustomRoutine.id).length : 0})
+              </TabsTrigger>
+            </TabsList>
             
-            {viewingCustomRoutine?.description && (
-              <div>
-                <h4 className="font-medium mb-1">Beskrivelse</h4>
-                <p className="text-sm text-muted-foreground">
-                  {viewingCustomRoutine.description}
-                </p>
-              </div>
-            )}
-            
-            {viewingCustomRoutine?.content && (
-              <div>
-                <h4 className="font-medium mb-2">Innhold</h4>
-                <div className="bg-muted/50 rounded-lg p-4 text-sm whitespace-pre-wrap">
-                  {viewingCustomRoutine.content}
+            <ScrollArea className="flex-1 mt-4">
+              <TabsContent value="content" className="mt-0 space-y-4">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="outline">
+                    {ROUTINE_CATEGORIES[viewingCustomRoutine?.category || 'general'] || viewingCustomRoutine?.category}
+                  </Badge>
+                  <Badge variant="outline" className="gap-1 text-green-600 border-green-500/50">
+                    <PenLine className="h-3 w-3" />
+                    Egendefinert
+                  </Badge>
+                  {viewingCustomRoutine?.approved_by && (
+                    <Badge variant="secondary">
+                      <UserCheck className="h-3 w-3 mr-1" />
+                      Godkjent av {viewingCustomRoutine.approved_by}
+                    </Badge>
+                  )}
                 </div>
-              </div>
-            )}
+                
+                {viewingCustomRoutine?.description && (
+                  <div>
+                    <h4 className="font-medium mb-1">Beskrivelse</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {viewingCustomRoutine.description}
+                    </p>
+                  </div>
+                )}
+                
+                {viewingCustomRoutine?.content && (
+                  <div>
+                    <h4 className="font-medium mb-2">Innhold</h4>
+                    <div className="bg-muted/50 rounded-lg p-4 text-sm whitespace-pre-wrap">
+                      {viewingCustomRoutine.content}
+                    </div>
+                  </div>
+                )}
 
-            {!viewingCustomRoutine?.content && !viewingCustomRoutine?.description && (
-              <p className="text-muted-foreground text-sm">
-                Ingen innhold tilgjengelig for denne rutinen.
-              </p>
-            )}
+                {!viewingCustomRoutine?.content && !viewingCustomRoutine?.description && (
+                  <p className="text-muted-foreground text-sm">
+                    Ingen innhold tilgjengelig for denne rutinen.
+                  </p>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="approval" className="mt-0 space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">Godkjent av</h4>
+                  {viewingCustomRoutine?.approved_by ? (
+                    <div className="flex items-center gap-2 mb-4">
+                      <Badge variant="secondary" className="gap-1">
+                        <UserCheck className="h-3 w-3" />
+                        {viewingCustomRoutine.approved_by}
+                      </Badge>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleSetCustomApprover("")}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Ingen godkjenner satt ennå.
+                    </p>
+                  )}
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant={customApproverMode === 'select' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setCustomApproverMode('select')}
+                      >
+                        Velg fra ansatte
+                      </Button>
+                      <Button
+                        variant={customApproverMode === 'freetext' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setCustomApproverMode('freetext')}
+                      >
+                        Skriv inn manuelt
+                      </Button>
+                    </div>
+                    
+                    {customApproverMode === 'select' ? (
+                      <Select
+                        value={viewingCustomRoutine?.approved_by || "__none__"}
+                        onValueChange={(value) => handleSetCustomApprover(value === "__none__" ? "" : value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Velg godkjenner..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">Ingen valgt</SelectItem>
+                          {users.map((user) => (
+                            <SelectItem key={user.id} value={getUserDisplayName(user)}>
+                              {getUserDisplayName(user)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Skriv inn navn..."
+                          value={customFreetextApprover}
+                          onChange={(e) => setCustomFreetextApprover(e.target.value)}
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            if (customFreetextApprover.trim()) {
+                              handleSetCustomApprover(customFreetextApprover.trim());
+                            }
+                          }}
+                          disabled={!customFreetextApprover.trim()}
+                        >
+                          Sett
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="checklists" className="mt-0 space-y-4">
+                <h4 className="font-medium">Koblede sjekklister</h4>
+                
+                {getCustomLinkedChecklists().length > 0 ? (
+                  <div className="space-y-2">
+                    {getCustomLinkedChecklists().map((checklist) => (
+                      <div 
+                        key={checklist.id} 
+                        className="flex items-center justify-between p-2 bg-muted/50 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2">
+                          <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">
+                            {checklist.checklist_template?.template_name}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            {checklist.checklist_template?.category}
+                          </Badge>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleUnlinkCustomChecklist(checklist.admin_checklist_template_id!)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Ingen sjekklister er koblet til denne rutinen ennå.
+                  </p>
+                )}
 
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setViewingCustomRoutine(null)}>
-                Lukk
-              </Button>
-              <Button onClick={() => {
-                if (viewingCustomRoutine) {
-                  openEditCustomRoutine(viewingCustomRoutine);
-                  setViewingCustomRoutine(null);
-                }
-              }}>
-                <Edit className="h-4 w-4 mr-2" />
-                Rediger
-              </Button>
-            </div>
+                {getCustomAvailableChecklists().length > 0 && (
+                  <div>
+                    <h5 className="text-sm font-medium mb-2">Legg til sjekkliste</h5>
+                    <Select
+                      onValueChange={(value) => handleLinkCustomChecklist(value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Velg sjekkliste å koble..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getCustomAvailableChecklists().map((checklist) => (
+                          <SelectItem 
+                            key={checklist.id} 
+                            value={checklist.admin_checklist_template_id!}
+                          >
+                            {checklist.checklist_template?.template_name} ({checklist.checklist_template?.category})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {checklistTemplates.length === 0 && (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Ingen sjekklister er lagt til i prosjektet.
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setViewingCustomRoutine(null);
+                        navigate(`/ks2/project/${projectId}/maler`);
+                      }}
+                    >
+                      Gå til Malbibliotek
+                    </Button>
+                  </div>
+                )}
+              </TabsContent>
+            </ScrollArea>
+          </Tabs>
+
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+            <Button variant="outline" onClick={() => setViewingCustomRoutine(null)}>
+              Lukk
+            </Button>
+            <Button onClick={() => {
+              if (viewingCustomRoutine) {
+                openEditCustomRoutine(viewingCustomRoutine);
+                setViewingCustomRoutine(null);
+              }
+            }}>
+              <Edit className="h-4 w-4 mr-2" />
+              Rediger
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -16,6 +16,8 @@ export interface KsModule2Routine {
   category: string;
   responsible_role: string | null;
   is_document: boolean;
+  approved_by: string | null;
+  approved_at: string | null;
   created_at: string;
   updated_at: string;
 }
