@@ -904,19 +904,26 @@ export default function Ks2Malbibliotek() {
                 <div className="p-3 bg-muted/50 font-medium">
                   Sjekkpunkter ({selectedChecklist?.checkpoints?.length || 0})
                 </div>
-                {(selectedChecklist?.checkpoints as any[] || []).map((checkpoint: any, index: number) => (
-                  <div key={index} className="p-3 flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium flex-shrink-0">
-                      {index + 1}
+                {(selectedChecklist?.checkpoints as any[] || []).map((checkpoint: any, index: number) => {
+                  const text = typeof checkpoint === 'string' 
+                    ? checkpoint 
+                    : checkpoint.text || checkpoint.checkpoint || checkpoint.checkpoint_text || '';
+                  const helpText = checkpoint?.help || checkpoint?.help_text || '';
+                  
+                  return (
+                    <div key={index} className="p-3 flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium flex-shrink-0">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="text-sm">{text}</p>
+                        {helpText && (
+                          <p className="text-xs text-muted-foreground mt-1">{helpText}</p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm">{checkpoint.text || checkpoint.checkpoint || checkpoint}</p>
-                      {checkpoint.help && (
-                        <p className="text-xs text-muted-foreground mt-1">{checkpoint.help}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </ScrollArea>
