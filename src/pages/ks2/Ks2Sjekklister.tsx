@@ -334,7 +334,7 @@ export default function Ks2Sjekklister() {
                   previewTemplate.checklist_template.checkpoints.map((cp: any, idx: number) => (
                     <div key={idx} className="flex items-start gap-2 p-2 bg-muted/50 rounded">
                       <span className="text-muted-foreground text-sm">{idx + 1}.</span>
-                      <span className="text-sm">{cp.text || cp.label || cp}</span>
+                      <span className="text-sm">{cp.checkpoint_text || cp.text || cp.label || (typeof cp === 'string' ? cp : 'Kontrollpunkt')}</span>
                     </div>
                   ))
                 }

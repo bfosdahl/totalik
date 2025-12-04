@@ -90,7 +90,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate }: 
       
       const convertedItems: ChecklistItem[] = checkpoints.map((cp: any, idx: number) => ({
         id: cp.id || `${idx + 1}`,
-        text: cp.text || cp.label || String(cp),
+        text: cp.checkpoint_text || cp.text || cp.label || (typeof cp === 'string' ? cp : 'Kontrollpunkt'),
         type: cp.type || "yes_no",
         required: cp.required !== false,
         value: null,
