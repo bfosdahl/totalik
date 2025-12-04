@@ -15,6 +15,7 @@ const IkMatOppsett = () => {
   const { hasModule, modules, isLoading } = useCompanyModules();
   const [setupCompleted, setSetupCompleted] = useState(false);
   const [showRestartDialog, setShowRestartDialog] = useState(false);
+  const [isRestarting, setIsRestarting] = useState(false);
 
   useEffect(() => {
     // Check if IK/MAT module is active
@@ -22,14 +23,14 @@ const IkMatOppsett = () => {
       navigate('/');
     }
 
-    // Check if setup is already completed
-    if (!isLoading && modules.length > 0) {
+    // Check if setup is already completed (only if not restarting)
+    if (!isLoading && modules.length > 0 && !isRestarting) {
       const ikMatModule = modules.find(m => m.module_type === 'IK_MAT');
       if (ikMatModule?.settings && (ikMatModule.settings as any).setupCompletedAt) {
         setSetupCompleted(true);
       }
     }
-  }, [hasModule, isLoading, navigate, modules]);
+  }, [hasModule, isLoading, navigate, modules, isRestarting]);
 
   if (isLoading) {
     return (
@@ -115,6 +116,7 @@ const IkMatOppsett = () => {
             companyId={company.id}
             onComplete={() => {
               setSetupCompleted(true);
+              setIsRestarting(false);
             }}
           />
         )}
@@ -140,6 +142,7 @@ const IkMatOppsett = () => {
               <AlertDialogCancel>Avbryt</AlertDialogCancel>
               <AlertDialogAction onClick={() => {
                 setShowRestartDialog(false);
+                setIsRestarting(true);
                 setSetupCompleted(false);
               }}>
                 Start nytt oppsett
