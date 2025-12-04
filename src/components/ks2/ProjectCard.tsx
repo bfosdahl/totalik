@@ -1,4 +1,4 @@
-import { Star, AlertTriangle, Calendar, MapPin, Building2, TrendingUp } from "lucide-react";
+import { Star, AlertTriangle, Calendar, MapPin, Building2, TrendingUp, Copy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ interface ProjectCardProps {
   project: KsModule2Project;
   onClick: () => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
+  onCopy?: (project: KsModule2Project) => void;
   openDeviationsCount?: number;
 }
 
@@ -22,7 +23,7 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   completed: { label: "Avsluttet", className: "bg-secondary text-secondary-foreground" },
 };
 
-export function ProjectCard({ project, onClick, onToggleFavorite, openDeviationsCount = 0 }: ProjectCardProps) {
+export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, openDeviationsCount = 0 }: ProjectCardProps) {
   const status = statusConfig[project.status] || statusConfig.planned;
 
   return (
@@ -30,23 +31,39 @@ export function ProjectCard({ project, onClick, onToggleFavorite, openDeviations
       className="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/30 relative overflow-hidden"
       onClick={onClick}
     >
-      {/* Favorite button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-3 right-3 z-10 h-8 w-8 opacity-60 hover:opacity-100"
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleFavorite(project.id, project.is_favorite);
-        }}
-      >
-        <Star
-          className={cn(
-            "h-4 w-4 transition-colors",
-            project.is_favorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
-          )}
-        />
-      </Button>
+      {/* Action buttons */}
+      <div className="absolute top-3 right-3 z-10 flex gap-1">
+        {onCopy && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 opacity-0 group-hover:opacity-60 hover:opacity-100 transition-opacity"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCopy(project);
+            }}
+            title="Kopier prosjekt"
+          >
+            <Copy className="h-4 w-4 text-muted-foreground" />
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 opacity-60 hover:opacity-100"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite(project.id, project.is_favorite);
+          }}
+        >
+          <Star
+            className={cn(
+              "h-4 w-4 transition-colors",
+              project.is_favorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
+            )}
+          />
+        </Button>
+      </div>
 
       <CardContent className="p-5">
         {/* Header */}

@@ -6,19 +6,21 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { useKsModule2Projects, NewKsModule2ProjectInput } from "@/hooks/useKsModule2Projects";
+import { useKsModule2Projects, NewKsModule2ProjectInput, KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { NewProjectDialog } from "@/components/ks2/NewProjectDialog";
 import { ProjectCard } from "@/components/ks2/ProjectCard";
+import { CopyProjectDialog } from "@/components/ks2/CopyProjectDialog";
 
 type FilterType = "all" | "mine" | "active" | "completed" | "with_deviations";
 
 export default function Ks2Dashboard() {
   const navigate = useNavigate();
   const { isCompanyAdmin, isSystemAdmin } = useAuth();
-  const { projects, isLoading, isSaving, createProject, toggleFavorite } = useKsModule2Projects();
+  const { projects, isLoading, isSaving, createProject, toggleFavorite, refetch } = useKsModule2Projects();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [isNewProjectOpen, setIsNewProjectOpen] = useState(false);
+  const [copyProject, setCopyProject] = useState<KsModule2Project | null>(null);
 
   const filterButtons: { key: FilterType; label: string }[] = [
     { key: "all", label: "Alle" },
@@ -143,6 +145,7 @@ export default function Ks2Dashboard() {
                 project={project}
                 onClick={() => handleProjectClick(project.id)}
                 onToggleFavorite={toggleFavorite}
+                onCopy={(p) => setCopyProject(p)}
                 openDeviationsCount={0} // TODO: Implement deviation counting
               />
             ))}
@@ -181,6 +184,19 @@ export default function Ks2Dashboard() {
         onSubmit={handleCreateProject}
         isSaving={isSaving}
       />
+
+      {/* Copy project dialog */}
+      {copyProject && (
+        <CopyProjectDialog
+          open={!!copyProject}
+          onOpenChange={(open) => !open && setCopyProject(null)}
+          sourceProject={copyProject}
+          onSuccess={() => {
+            setCopyProject(null);
+            refetch();
+          }}
+        />
+      )}
     </AppLayout>
   );
 }
