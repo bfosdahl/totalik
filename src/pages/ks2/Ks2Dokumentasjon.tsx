@@ -154,6 +154,7 @@ export default function Ks2Dokumentasjon() {
         const { error: dbError } = await supabase
           .from("ks_module2_documents")
           .insert({
+            company_id: profile.company_id,
             project_id: projectId,
             document_name: file.name,
             file_path: fileName,
