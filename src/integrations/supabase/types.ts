@@ -3046,12 +3046,15 @@ export type Database = {
           admin_checklist_template_id: string | null
           admin_document_id: string | null
           admin_routine_template_id: string | null
+          approved_at: string | null
+          approved_by: string | null
           created_at: string
           id: string
           implemented_at: string | null
           implemented_by_id: string | null
           implemented_by_name: string | null
           is_implemented: boolean | null
+          linked_checklist_ids: Json | null
           notes: string | null
           project_id: string
           template_type: string
@@ -3061,12 +3064,15 @@ export type Database = {
           admin_checklist_template_id?: string | null
           admin_document_id?: string | null
           admin_routine_template_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           id?: string
           implemented_at?: string | null
           implemented_by_id?: string | null
           implemented_by_name?: string | null
           is_implemented?: boolean | null
+          linked_checklist_ids?: Json | null
           notes?: string | null
           project_id: string
           template_type: string
@@ -3076,12 +3082,15 @@ export type Database = {
           admin_checklist_template_id?: string | null
           admin_document_id?: string | null
           admin_routine_template_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           id?: string
           implemented_at?: string | null
           implemented_by_id?: string | null
           implemented_by_name?: string | null
           is_implemented?: boolean | null
+          linked_checklist_ids?: Json | null
           notes?: string | null
           project_id?: string
           template_type?: string
