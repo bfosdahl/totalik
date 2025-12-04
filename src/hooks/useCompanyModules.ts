@@ -15,7 +15,7 @@ export interface CompanyModule {
 }
 
 export function useCompanyModules(companyId?: string) {
-  const { profile } = useAuth();
+  const { profile, isLoading: authLoading } = useAuth();
   const [modules, setModules] = useState<CompanyModule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -23,13 +23,19 @@ export function useCompanyModules(companyId?: string) {
 
   useEffect(() => {
     const fetchModules = async () => {
+      // CRITICAL: If auth is still loading, keep this hook loading too
+      // This prevents premature "no modules" state before we know the company
+      if (authLoading) {
+        setIsLoading(true);
+        return;
+      }
+
       if (!targetCompanyId) {
         setModules([]);
         setIsLoading(false);
         return;
       }
 
-      // CRITICAL: Set loading to true when we start fetching
       setIsLoading(true);
 
       try {
@@ -49,7 +55,7 @@ export function useCompanyModules(companyId?: string) {
     };
 
     fetchModules();
-  }, [targetCompanyId]);
+  }, [targetCompanyId, authLoading]);
 
   const hasModule = (moduleType: ModuleType): boolean => {
     const module = modules.find(m => m.module_type === moduleType);
