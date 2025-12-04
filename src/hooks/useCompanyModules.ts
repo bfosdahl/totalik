@@ -19,25 +19,32 @@ export function useCompanyModules(companyId?: string) {
   const [modules, setModules] = useState<CompanyModule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Only use profile.company_id if we're not given a specific companyId
   const targetCompanyId = companyId || profile?.company_id;
 
+  // CRITICAL: Determine if we should still be in loading state
+  // We're loading if:
+  // 1. Auth is still loading, OR
+  // 2. Auth is done but we don't have a companyId param AND profile doesn't have company_id yet
+  const shouldWaitForAuth = authLoading || (!companyId && !profile?.company_id);
+
   useEffect(() => {
-    const fetchModules = async () => {
-      // CRITICAL: If auth is still loading, keep this hook loading too
-      // This prevents premature "no modules" state before we know the company
-      if (authLoading) {
-        setIsLoading(true);
-        return;
-      }
-
-      if (!targetCompanyId) {
-        setModules([]);
-        setIsLoading(false);
-        return;
-      }
-
+    // If we should wait for auth, keep loading state true and don't fetch
+    if (shouldWaitForAuth) {
       setIsLoading(true);
+      return;
+    }
 
+    // At this point, auth is done. If still no targetCompanyId, user has no company
+    if (!targetCompanyId) {
+      setModules([]);
+      setIsLoading(false);
+      return;
+    }
+
+    // Fetch modules for the company
+    const fetchModules = async () => {
+      setIsLoading(true);
       try {
         const { data, error } = await supabase
           .from("company_modules")
@@ -55,7 +62,7 @@ export function useCompanyModules(companyId?: string) {
     };
 
     fetchModules();
-  }, [targetCompanyId, authLoading]);
+  }, [targetCompanyId, shouldWaitForAuth]);
 
   const hasModule = (moduleType: ModuleType): boolean => {
     const module = modules.find(m => m.module_type === moduleType);
