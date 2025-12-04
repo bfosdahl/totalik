@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useKsModule2Routines, KsModule2Routine } from '@/hooks/useKsModule2Routines';
 import { useKsModule2Templates } from '@/hooks/useKsModule2Templates';
-import { Plus, FileText, Upload, Eye, Download, Trash2, Link2, Unlink, BookOpen, Loader2 } from 'lucide-react';
+import { useKsModule2ProjectTemplates } from '@/hooks/useKsModule2ProjectTemplates';
+import { Plus, FileText, Upload, Eye, Download, Trash2, Link2, BookOpen, Loader2, Library, CheckCircle2, AlertCircle } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { nb } from 'date-fns/locale';
 
 const CATEGORIES = [
   { value: 'general', label: 'Generell' },
@@ -26,6 +29,7 @@ const CATEGORIES = [
 
 export default function Ks2Rutiner() {
   const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
   const { 
     routines, 
     isLoading, 
@@ -39,12 +43,17 @@ export default function Ks2Rutiner() {
     getLinkedTemplates,
   } = useKsModule2Routines(projectId);
   const { templates } = useKsModule2Templates();
+  const { 
+    routineTemplates: projectRoutines, 
+    markAsImplemented, 
+    unmarkAsImplemented,
+    isLoading: isLoadingProject 
+  } = useKsModule2ProjectTemplates(projectId);
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const [deleteRoutineId, setDeleteRoutineId] = useState<string | null>(null);
   const [selectedRoutine, setSelectedRoutine] = useState<KsModule2Routine | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('structured');
   
   const [formData, setFormData] = useState({
@@ -137,7 +146,9 @@ export default function Ks2Rutiner() {
     return CATEGORIES.find(c => c.value === value)?.label || value;
   };
 
-  if (isLoading) {
+  const hasProjectRoutines = projectRoutines.length > 0;
+
+  if (isLoading || isLoadingProject) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -158,104 +169,205 @@ export default function Ks2Rutiner() {
         </Button>
       </div>
 
-      {routines.length === 0 ? (
+      {/* Project routines from Malbibliotek */}
+      {hasProjectRoutines && (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Ingen rutiner ennå</h3>
-            <p className="text-muted-foreground text-center mb-4">
-              Opprett kvalitetssikringsrutiner og knytt dem til sjekklister
-            </p>
-            <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Library className="h-5 w-5 text-purple-500" />
+              Rutiner fra Malbibliotek ({projectRoutines.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {projectRoutines.map((pt) => (
+              <div 
+                key={pt.id} 
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors"
+              >
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="p-2 rounded-lg bg-purple-500/10">
+                    <BookOpen className="h-5 w-5 text-purple-500" />
+                  </div>
+                  <div>
+                    <p className="font-medium">{pt.routine_template?.routine_name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {pt.routine_template?.category}
+                      {pt.routine_template?.version && ` • v${pt.routine_template.version}`}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  {pt.is_implemented ? (
+                    <Badge className="bg-green-500/10 text-green-600 gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Implementert
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      Ikke implementert
+                    </Badge>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={pt.is_implemented}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          markAsImplemented(pt.id);
+                        } else {
+                          unmarkAsImplemented(pt.id);
+                        }
+                      }}
+                    />
+                    <label className="text-sm text-muted-foreground cursor-pointer">
+                      Lest og implementert
+                    </label>
+                  </div>
+                </div>
+              </div>
+            ))}
+            <Button 
+              variant="outline" 
+              className="w-full mt-2"
+              onClick={() => navigate(`/ks2/project/${projectId}/malbibliotek`)}
+            >
               <Plus className="h-4 w-4 mr-2" />
-              Opprett første rutine
+              Legg til flere rutiner fra Malbibliotek
             </Button>
           </CardContent>
         </Card>
-      ) : (
-        <div className="grid gap-4">
-          {routines.map((routine) => {
-            const linkedTemplates = getLinkedTemplates(routine.id);
-            const linkedTemplateNames = linkedTemplates
-              .map(id => templates.find(t => t.id === id)?.template_name)
-              .filter(Boolean);
+      )}
 
-            return (
-              <Card key={routine.id}>
-                <CardHeader className="pb-2">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="text-xs">
-                          {routine.routine_number}
-                        </Badge>
-                        <Badge variant="secondary" className="text-xs">
-                          {getCategoryLabel(routine.category)}
-                        </Badge>
-                        {routine.is_document && (
-                          <Badge className="text-xs bg-blue-100 text-blue-800">
-                            <FileText className="h-3 w-3 mr-1" />
-                            Dokument
+      {/* Info banner if no project routines */}
+      {!hasProjectRoutines && (
+        <Card className="border-purple-500/50 bg-purple-500/5">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <Library className="h-5 w-5 text-purple-500 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-medium text-purple-700 dark:text-purple-300">
+                  Ingen rutiner fra Malbibliotek lagt til
+                </p>
+                <p className="text-sm text-purple-600 dark:text-purple-400 mt-1">
+                  Gå til Malbibliotek for å legge til standard rutiner fra systemleverandøren.
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-3 border-purple-500/50"
+                  onClick={() => navigate(`/ks2/project/${projectId}/malbibliotek`)}
+                >
+                  <Library className="h-4 w-4 mr-2" />
+                  Gå til Malbibliotek
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Custom project routines */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Egne rutiner ({routines.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {routines.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">Ingen egne rutiner ennå</h3>
+              <p className="text-muted-foreground text-center mb-4">
+                Opprett egne kvalitetssikringsrutiner eller legg til fra Malbibliotek
+              </p>
+              <Button onClick={() => setIsCreateDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Opprett rutine
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {routines.map((routine) => {
+                const linkedTemplates = getLinkedTemplates(routine.id);
+                const linkedTemplateNames = linkedTemplates
+                  .map(id => templates.find(t => t.id === id)?.template_name)
+                  .filter(Boolean);
+
+                return (
+                  <div key={routine.id} className="border rounded-lg p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className="text-xs">
+                            {routine.routine_number}
                           </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            {getCategoryLabel(routine.category)}
+                          </Badge>
+                          {routine.is_document && (
+                            <Badge className="text-xs bg-blue-100 text-blue-800">
+                              <FileText className="h-3 w-3 mr-1" />
+                              Dokument
+                            </Badge>
+                          )}
+                        </div>
+                        <h3 className="font-medium mt-2">{routine.name}</h3>
+                        {routine.description && (
+                          <p className="text-sm text-muted-foreground mt-1">{routine.description}</p>
+                        )}
+                        {routine.responsible_role && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Ansvarlig: {routine.responsible_role}
+                          </p>
                         )}
                       </div>
-                      <CardTitle className="text-lg mt-2">{routine.name}</CardTitle>
-                      {routine.description && (
-                        <p className="text-sm text-muted-foreground mt-1">{routine.description}</p>
-                      )}
-                      {routine.responsible_role && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Ansvarlig: {routine.responsible_role}
-                        </p>
-                      )}
+                      <div className="flex gap-2">
+                        {routine.is_document && (
+                          <>
+                            <Button variant="outline" size="sm" onClick={() => handleViewDocument(routine)}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleDownloadDocument(routine)}>
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                        <Button variant="outline" size="sm" onClick={() => handleOpenLinkDialog(routine)}>
+                          <Link2 className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => setDeleteRoutineId(routine.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      {routine.is_document && (
-                        <>
-                          <Button variant="outline" size="sm" onClick={() => handleViewDocument(routine)}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={() => handleDownloadDocument(routine)}>
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        </>
-                      )}
-                      <Button variant="outline" size="sm" onClick={() => handleOpenLinkDialog(routine)}>
-                        <Link2 className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => setDeleteRoutineId(routine.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    
+                    {!routine.is_document && routine.content && (
+                      <div className="bg-muted/50 rounded-md p-3 mt-3">
+                        <p className="text-sm whitespace-pre-wrap line-clamp-3">{routine.content}</p>
+                      </div>
+                    )}
+                    
+                    {linkedTemplateNames.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <span className="text-xs text-muted-foreground">Koblet til:</span>
+                        {linkedTemplateNames.map((name, i) => (
+                          <Badge key={i} variant="outline" className="text-xs">
+                            {name}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </CardHeader>
-                <CardContent>
-                  {!routine.is_document && routine.content && (
-                    <div className="bg-muted/50 rounded-md p-3 mb-3">
-                      <p className="text-sm whitespace-pre-wrap">{routine.content}</p>
-                    </div>
-                  )}
-                  {linkedTemplateNames.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      <span className="text-xs text-muted-foreground">Koblet til:</span>
-                      {linkedTemplateNames.map((name, i) => (
-                        <Badge key={i} variant="outline" className="text-xs">
-                          {name}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Create Routine Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -437,11 +549,6 @@ export default function Ks2Rutiner() {
                           className="flex-1 text-sm cursor-pointer"
                         >
                           {template.template_name}
-                          {template.category && (
-                            <Badge variant="outline" className="ml-2 text-xs">
-                              {template.category}
-                            </Badge>
-                          )}
                         </label>
                       </div>
                     );
@@ -452,8 +559,8 @@ export default function Ks2Rutiner() {
           )}
 
           <DialogFooter>
-            <Button onClick={() => setIsLinkDialogOpen(false)}>
-              Ferdig
+            <Button variant="outline" onClick={() => setIsLinkDialogOpen(false)}>
+              Lukk
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -465,19 +572,19 @@ export default function Ks2Rutiner() {
           <AlertDialogHeader>
             <AlertDialogTitle>Slett rutine?</AlertDialogTitle>
             <AlertDialogDescription>
-              Er du sikker på at du vil slette denne rutinen? Handlingen kan ikke angres.
+              Er du sikker på at du vil slette denne rutinen? Denne handlingen kan ikke angres.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Avbryt</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
                 if (deleteRoutineId) {
                   deleteRoutine(deleteRoutineId);
                   setDeleteRoutineId(null);
                 }
               }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Slett
             </AlertDialogAction>

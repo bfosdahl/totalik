@@ -1,11 +1,13 @@
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Search, 
   FileText, 
@@ -20,10 +22,17 @@ import {
   AlertCircle,
   CheckCircle2,
   X,
+  Plus,
+  Trash2,
+  Check,
 } from "lucide-react";
 import { useAdminTemplatesForCustomers, AdminChecklistTemplate, AdminRoutineTemplate, AdminDocument } from "@/hooks/useAdminTemplatesForCustomers";
+import { useKsModule2ProjectTemplates } from "@/hooks/useKsModule2ProjectTemplates";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
+import { format, parseISO } from "date-fns";
+import { nb } from "date-fns/locale";
 
 const CHECKLIST_CATEGORIES: Record<string, string> = {
   tomrerarbeid: "Tømrerarbeid",
@@ -52,11 +61,11 @@ const DOCUMENT_CATEGORIES: Record<string, string> = {
 };
 
 const ROUTINE_CATEGORIES: Record<string, string> = {
-  kvalitetssikring: "Kvalitetssikring",
+  kvalitetssikring: "Kvalitetssikring - Generelt",
   avvikshåndtering: "Avvikshåndtering",
   dokumentstyring: "Dokumentstyring",
   underentreprenor: "Underentreprenørkontroll",
-  hms: "HMS",
+  hms: "HMS på byggeplass",
   opplæring: "Opplæring",
   kontroll: "Kontroll",
   general: "Generelt",
@@ -71,11 +80,31 @@ const getFileIcon = (fileType: string | null) => {
 };
 
 export default function Ks2Malbibliotek() {
+  const { projectId } = useParams();
   const { checklistTemplates, routineTemplates, documents, isLoading } = useAdminTemplatesForCustomers();
+  const { 
+    checklistTemplates: projectChecklists,
+    routineTemplates: projectRoutines,
+    documentTemplates: projectDocuments,
+    addedChecklistIds,
+    addedRoutineIds,
+    addedDocumentIds,
+    addChecklistTemplate,
+    addRoutineTemplate,
+    addDocument,
+    removeTemplate,
+    markAsImplemented,
+    unmarkAsImplemented,
+    isLoading: isLoadingProject,
+    isSaving,
+  } = useKsModule2ProjectTemplates(projectId);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedChecklistCategory, setSelectedChecklistCategory] = useState<string>("all");
   const [selectedDocumentCategory, setSelectedDocumentCategory] = useState<string>("all");
   const [selectedRoutineCategory, setSelectedRoutineCategory] = useState<string>("all");
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [addDialogType, setAddDialogType] = useState<'checklist' | 'routine' | 'document'>('checklist');
 
   // Dialog states
   const [selectedChecklist, setSelectedChecklist] = useState<AdminChecklistTemplate | null>(null);
@@ -126,7 +155,12 @@ export default function Ks2Malbibliotek() {
   const routineCategoriesInUse = [...new Set(routineTemplates.map(r => r.category))];
   const documentCategoriesInUse = [...new Set(documents.map(d => d.category).filter(Boolean))];
 
-  if (isLoading) {
+  const openAddDialog = (type: 'checklist' | 'routine' | 'document') => {
+    setAddDialogType(type);
+    setShowAddDialog(true);
+  };
+
+  if (isLoading || isLoadingProject) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-muted-foreground">Laster malbibliotek...</div>
@@ -137,11 +171,17 @@ export default function Ks2Malbibliotek() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">Malbibliotek</h1>
-        <p className="text-muted-foreground">
-          Bla gjennom og bruk sjekkliste-maler, rutiner og dokumenter fra systemleverandøren
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Malbibliotek</h1>
+          <p className="text-muted-foreground">
+            Bla gjennom og bruk sjekkliste-maler, rutiner og dokumenter fra systemleverandøren
+          </p>
+        </div>
+        <Button onClick={() => openAddDialog('checklist')} className="shrink-0">
+          <Plus className="h-4 w-4 mr-2" />
+          Legg til i dette prosjektet
+        </Button>
       </div>
 
       {/* Search */}
@@ -164,7 +204,7 @@ export default function Ks2Malbibliotek() {
                 <ClipboardList className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{checklistTemplates.length}</p>
+                <p className="text-2xl font-bold">{projectChecklists.length}</p>
                 <p className="text-sm text-muted-foreground">Sjekkliste-maler</p>
               </div>
             </div>
@@ -177,7 +217,7 @@ export default function Ks2Malbibliotek() {
                 <BookOpen className="h-5 w-5 text-purple-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{routineTemplates.length}</p>
+                <p className="text-2xl font-bold">{projectRoutines.length}</p>
                 <p className="text-sm text-muted-foreground">Rutine-maler</p>
               </div>
             </div>
@@ -190,7 +230,7 @@ export default function Ks2Malbibliotek() {
                 <FolderOpen className="h-5 w-5 text-amber-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{documents.length}</p>
+                <p className="text-2xl font-bold">{projectDocuments.length}</p>
                 <p className="text-sm text-muted-foreground">Dokumenter</p>
               </div>
             </div>
@@ -249,67 +289,105 @@ export default function Ks2Malbibliotek() {
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredChecklists.map((template) => (
-                <Card key={template.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-primary/10">
-                          <ClipboardList className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base truncate">{template.template_name}</CardTitle>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            <Badge variant="secondary">
-                              {CHECKLIST_CATEGORIES[template.category] || template.category}
-                            </Badge>
-                            {template.is_mandatory && (
-                              <Badge variant="destructive" className="gap-1">
-                                <AlertCircle className="h-3 w-3" />
-                                Obligatorisk
+              {filteredChecklists.map((template) => {
+                const isAdded = addedChecklistIds.includes(template.id);
+                const projectTemplate = projectChecklists.find(
+                  pt => pt.admin_checklist_template_id === template.id
+                );
+
+                return (
+                  <Card key={template.id} className={cn(
+                    "hover:shadow-md transition-shadow relative",
+                    isAdded && "ring-2 ring-primary/50"
+                  )}>
+                    {isAdded && (
+                      <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-1">
+                        <Check className="h-3 w-3" />
+                      </div>
+                    )}
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10">
+                            <ClipboardList className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <CardTitle className="text-base truncate">{template.template_name}</CardTitle>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              <Badge variant="secondary">
+                                {CHECKLIST_CATEGORIES[template.category] || template.category}
                               </Badge>
-                            )}
-                            {template.is_locked && (
-                              <Badge variant="outline" className="gap-1">
-                                <Lock className="h-3 w-3" />
-                                Låst
-                              </Badge>
-                            )}
+                              {template.is_mandatory && (
+                                <Badge variant="destructive" className="gap-1">
+                                  <AlertCircle className="h-3 w-3" />
+                                  Obligatorisk
+                                </Badge>
+                              )}
+                              {template.is_locked && (
+                                <Badge variant="outline" className="gap-1">
+                                  <Lock className="h-3 w-3" />
+                                  Låst
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {template.description && (
-                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                        {template.description}
-                      </p>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-xs text-muted-foreground">
-                          {template.checkpoints?.length || 0} sjekkpunkter
-                        </span>
-                        {template.version && (
+                    </CardHeader>
+                    <CardContent>
+                      {template.description && (
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                          {template.description}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-1">
                           <span className="text-xs text-muted-foreground">
-                            v{template.version}
+                            {template.checkpoints?.length || 0} sjekkpunkter
                           </span>
-                        )}
+                          {template.version && (
+                            <span className="text-xs text-muted-foreground">
+                              v{template.version}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="gap-1"
+                            onClick={() => setSelectedChecklist(template)}
+                          >
+                            <Eye className="h-3 w-3" />
+                            Vis
+                          </Button>
+                          {isAdded ? (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="gap-1 text-destructive hover:text-destructive"
+                              onClick={() => projectTemplate && removeTemplate(projectTemplate.id)}
+                              disabled={isSaving}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          ) : (
+                            <Button 
+                              size="sm" 
+                              className="gap-1"
+                              onClick={() => addChecklistTemplate(template.id)}
+                              disabled={isSaving}
+                            >
+                              <Plus className="h-3 w-3" />
+                              Legg til
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="gap-1"
-                        onClick={() => setSelectedChecklist(template)}
-                      >
-                        <Eye className="h-3 w-3" />
-                        Forhåndsvis
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>
@@ -346,70 +424,139 @@ export default function Ks2Malbibliotek() {
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredRoutines.map((routine) => (
-                <Card key={routine.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-purple-500/10">
-                          <BookOpen className="h-5 w-5 text-purple-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base truncate">{routine.routine_name}</CardTitle>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            <Badge variant="secondary">
-                              {ROUTINE_CATEGORIES[routine.category] || routine.category}
-                            </Badge>
-                            {routine.is_mandatory && (
-                              <Badge variant="destructive" className="gap-1">
-                                <AlertCircle className="h-3 w-3" />
-                                Obligatorisk
+              {filteredRoutines.map((routine) => {
+                const isAdded = addedRoutineIds.includes(routine.id);
+                const projectTemplate = projectRoutines.find(
+                  pt => pt.admin_routine_template_id === routine.id
+                );
+
+                return (
+                  <Card key={routine.id} className={cn(
+                    "hover:shadow-md transition-shadow relative",
+                    isAdded && "ring-2 ring-purple-500/50"
+                  )}>
+                    {isAdded && (
+                      <div className="absolute -top-2 -right-2 bg-purple-500 text-white rounded-full p-1">
+                        <Check className="h-3 w-3" />
+                      </div>
+                    )}
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-purple-500/10">
+                            <BookOpen className="h-5 w-5 text-purple-500" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <CardTitle className="text-base truncate">{routine.routine_name}</CardTitle>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              <Badge variant="secondary">
+                                {ROUTINE_CATEGORIES[routine.category] || routine.category}
                               </Badge>
-                            )}
-                            {routine.is_locked && (
-                              <Badge variant="outline" className="gap-1">
-                                <Lock className="h-3 w-3" />
-                                Låst
-                              </Badge>
-                            )}
+                              {routine.is_mandatory && (
+                                <Badge variant="destructive" className="gap-1">
+                                  <AlertCircle className="h-3 w-3" />
+                                  Obligatorisk
+                                </Badge>
+                              )}
+                              {routine.is_locked && (
+                                <Badge variant="outline" className="gap-1">
+                                  <Lock className="h-3 w-3" />
+                                  Låst
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {routine.description && (
-                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                        {routine.description}
-                      </p>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col gap-1">
-                        {routine.file_path && (
-                          <Badge variant="outline" className="gap-1 text-xs">
-                            <FileText className="h-3 w-3" />
-                            Dokument
-                          </Badge>
-                        )}
-                        {routine.version && (
-                          <span className="text-xs text-muted-foreground">
-                            v{routine.version}
-                          </span>
-                        )}
+                    </CardHeader>
+                    <CardContent>
+                      {routine.description && (
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                          {routine.description}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-1">
+                          {routine.file_path && (
+                            <Badge variant="outline" className="gap-1 text-xs">
+                              <FileText className="h-3 w-3" />
+                              Dokument
+                            </Badge>
+                          )}
+                          {routine.version && (
+                            <span className="text-xs text-muted-foreground">
+                              v{routine.version}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="gap-1"
+                            onClick={() => setSelectedRoutine(routine)}
+                          >
+                            <Eye className="h-3 w-3" />
+                            Les rutine
+                          </Button>
+                          {isAdded ? (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="gap-1 text-destructive hover:text-destructive"
+                              onClick={() => projectTemplate && removeTemplate(projectTemplate.id)}
+                              disabled={isSaving}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          ) : (
+                            <Button 
+                              size="sm" 
+                              className="gap-1"
+                              onClick={() => addRoutineTemplate(routine.id)}
+                              disabled={isSaving}
+                            >
+                              <Plus className="h-3 w-3" />
+                              Legg til
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="gap-1"
-                        onClick={() => setSelectedRoutine(routine)}
-                      >
-                        <Eye className="h-3 w-3" />
-                        Les rutine
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      
+                      {/* Show implementation status if added */}
+                      {isAdded && projectTemplate && (
+                        <div className="mt-3 pt-3 border-t">
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id={`impl-${routine.id}`}
+                              checked={projectTemplate.is_implemented}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  markAsImplemented(projectTemplate.id);
+                                } else {
+                                  unmarkAsImplemented(projectTemplate.id);
+                                }
+                              }}
+                            />
+                            <label 
+                              htmlFor={`impl-${routine.id}`}
+                              className="text-sm text-muted-foreground cursor-pointer"
+                            >
+                              Rutinen er lest og implementert
+                            </label>
+                          </div>
+                          {projectTemplate.is_implemented && projectTemplate.implemented_at && (
+                            <p className="text-xs text-muted-foreground mt-1 ml-6">
+                              {format(parseISO(projectTemplate.implemented_at), "d. MMM yyyy", { locale: nb })}
+                              {projectTemplate.implemented_by_name && ` av ${projectTemplate.implemented_by_name}`}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>
@@ -432,7 +579,7 @@ export default function Ks2Malbibliotek() {
                 size="sm"
                 onClick={() => setSelectedDocumentCategory(cat)}
               >
-                {DOCUMENT_CATEGORIES[cat] || cat}
+                {DOCUMENT_CATEGORIES[cat || 'other'] || cat}
               </Button>
             ))}
           </div>
@@ -446,59 +593,92 @@ export default function Ks2Malbibliotek() {
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredDocuments.map((doc) => (
-                <Card key={doc.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start gap-3">
-                      {getFileIcon(doc.file_type)}
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base truncate">{doc.document_name}</CardTitle>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {doc.category && (
-                            <Badge variant="secondary">
-                              {DOCUMENT_CATEGORIES[doc.category] || doc.category}
-                            </Badge>
-                          )}
-                          {doc.is_mandatory && (
-                            <Badge variant="destructive" className="gap-1">
-                              <AlertCircle className="h-3 w-3" />
-                              Obligatorisk
-                            </Badge>
-                          )}
+              {filteredDocuments.map((doc) => {
+                const isAdded = addedDocumentIds.includes(doc.id);
+                const projectTemplate = projectDocuments.find(
+                  pt => pt.admin_document_id === doc.id
+                );
+
+                return (
+                  <Card key={doc.id} className={cn(
+                    "hover:shadow-md transition-shadow relative",
+                    isAdded && "ring-2 ring-amber-500/50"
+                  )}>
+                    {isAdded && (
+                      <div className="absolute -top-2 -right-2 bg-amber-500 text-white rounded-full p-1">
+                        <Check className="h-3 w-3" />
+                      </div>
+                    )}
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start gap-3">
+                        {getFileIcon(doc.file_type)}
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-base truncate">{doc.document_name}</CardTitle>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {doc.category && (
+                              <Badge variant="secondary">
+                                {DOCUMENT_CATEGORIES[doc.category] || doc.category}
+                              </Badge>
+                            )}
+                            {doc.is_mandatory && (
+                              <Badge variant="destructive" className="gap-1">
+                                <AlertCircle className="h-3 w-3" />
+                                Obligatorisk
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {doc.description && (
-                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                        {doc.description}
-                      </p>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-xs text-muted-foreground">
-                          {doc.file_size ? `${(doc.file_size / 1024).toFixed(0)} KB` : ""}
-                        </span>
+                    </CardHeader>
+                    <CardContent>
+                      {doc.description && (
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                          {doc.description}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between">
                         {doc.version && (
                           <span className="text-xs text-muted-foreground">
                             v{doc.version}
                           </span>
                         )}
+                        <div className="flex gap-2 ml-auto">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="gap-1"
+                            onClick={() => handleDownloadDocument(doc)}
+                          >
+                            <Download className="h-3 w-3" />
+                            Last ned
+                          </Button>
+                          {isAdded ? (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="gap-1 text-destructive hover:text-destructive"
+                              onClick={() => projectTemplate && removeTemplate(projectTemplate.id)}
+                              disabled={isSaving}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          ) : (
+                            <Button 
+                              size="sm" 
+                              className="gap-1"
+                              onClick={() => addDocument(doc.id)}
+                              disabled={isSaving}
+                            >
+                              <Plus className="h-3 w-3" />
+                              Legg til
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="gap-1"
-                        onClick={() => handleDownloadDocument(doc)}
-                      >
-                        <Download className="h-3 w-3" />
-                        Last ned
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>
@@ -513,73 +693,66 @@ export default function Ks2Malbibliotek() {
               {selectedChecklist?.template_name}
             </DialogTitle>
             <DialogDescription>
-              {selectedChecklist?.description || "Forhåndsvisning av sjekkliste-mal"}
+              {selectedChecklist?.description}
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="flex flex-wrap gap-2 mb-4">
-            <Badge variant="secondary">
-              {CHECKLIST_CATEGORIES[selectedChecklist?.category || ""] || selectedChecklist?.category}
-            </Badge>
-            {selectedChecklist?.version && (
-              <Badge variant="outline">v{selectedChecklist.version}</Badge>
-            )}
-            {selectedChecklist?.is_mandatory && (
-              <Badge variant="destructive" className="gap-1">
-                <AlertCircle className="h-3 w-3" />
-                Obligatorisk
-              </Badge>
-            )}
-            {selectedChecklist?.is_locked && (
-              <Badge variant="outline" className="gap-1">
-                <Lock className="h-3 w-3" />
-                Låst
-              </Badge>
-            )}
-          </div>
-
-          <ScrollArea className="max-h-[50vh] pr-4">
-            <div className="space-y-2">
-              <h4 className="font-medium text-sm text-muted-foreground mb-3">
-                Sjekkpunkter ({selectedChecklist?.checkpoints?.length || 0})
-              </h4>
-              {selectedChecklist?.checkpoints?.map((checkpoint: any, index: number) => {
-                // Handle different checkpoint structures
-                const checkpointText = typeof checkpoint === 'string' 
-                  ? checkpoint 
-                  : checkpoint.checkpoint_text || checkpoint.text || checkpoint.title || '';
-                const helpText = typeof checkpoint === 'object' 
-                  ? (checkpoint.help_text || checkpoint.description || '') 
-                  : '';
-
-                return (
-                  <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-medium">
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 pr-4">
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary">
+                  {CHECKLIST_CATEGORIES[selectedChecklist?.category || ''] || selectedChecklist?.category}
+                </Badge>
+                {selectedChecklist?.is_mandatory && (
+                  <Badge variant="destructive" className="gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    Obligatorisk
+                  </Badge>
+                )}
+                {selectedChecklist?.is_locked && (
+                  <Badge variant="outline" className="gap-1">
+                    <Lock className="h-3 w-3" />
+                    Låst
+                  </Badge>
+                )}
+                {selectedChecklist?.version && (
+                  <Badge variant="outline">v{selectedChecklist.version}</Badge>
+                )}
+              </div>
+              
+              <div className="border rounded-lg divide-y">
+                <div className="p-3 bg-muted/50 font-medium">
+                  Sjekkpunkter ({selectedChecklist?.checkpoints?.length || 0})
+                </div>
+                {(selectedChecklist?.checkpoints as any[] || []).map((checkpoint: any, index: number) => (
+                  <div key={index} className="p-3 flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium flex-shrink-0">
                       {index + 1}
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{checkpointText}</p>
-                      {helpText && (
-                        <p className="text-xs text-muted-foreground mt-1">{helpText}</p>
+                    <div>
+                      <p className="text-sm">{checkpoint.text || checkpoint.checkpoint || checkpoint}</p>
+                      {checkpoint.help && (
+                        <p className="text-xs text-muted-foreground mt-1">{checkpoint.help}</p>
                       )}
                     </div>
-                    <CheckCircle2 className="h-5 w-5 text-muted-foreground/30" />
                   </div>
-                );
-              })}
-              {(!selectedChecklist?.checkpoints || selectedChecklist.checkpoints.length === 0) && (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Ingen sjekkpunkter definert
-                </p>
-              )}
+                ))}
+              </div>
             </div>
           </ScrollArea>
-
-          <div className="flex justify-end gap-2 pt-4 border-t">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setSelectedChecklist(null)}>
               Lukk
             </Button>
-          </div>
+            {selectedChecklist && !addedChecklistIds.includes(selectedChecklist.id) && (
+              <Button onClick={() => {
+                addChecklistTemplate(selectedChecklist.id);
+                setSelectedChecklist(null);
+              }}>
+                <Plus className="h-4 w-4 mr-2" />
+                Legg til i prosjektet
+              </Button>
+            )}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -592,51 +765,53 @@ export default function Ks2Malbibliotek() {
               {selectedRoutine?.routine_name}
             </DialogTitle>
             <DialogDescription>
-              {selectedRoutine?.description || "Forhåndsvisning av rutine"}
+              {selectedRoutine?.description}
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="flex flex-wrap gap-2 mb-4">
-            <Badge variant="secondary">
-              {ROUTINE_CATEGORIES[selectedRoutine?.category || ""] || selectedRoutine?.category}
-            </Badge>
-            {selectedRoutine?.version && (
-              <Badge variant="outline">v{selectedRoutine.version}</Badge>
-            )}
-            {selectedRoutine?.is_mandatory && (
-              <Badge variant="destructive" className="gap-1">
-                <AlertCircle className="h-3 w-3" />
-                Obligatorisk
-              </Badge>
-            )}
-            {selectedRoutine?.is_locked && (
-              <Badge variant="outline" className="gap-1">
-                <Lock className="h-3 w-3" />
-                Låst
-              </Badge>
-            )}
-          </div>
-
-          <ScrollArea className="max-h-[50vh] pr-4">
-            <div className="prose prose-sm max-w-none">
-              {selectedRoutine?.content ? (
-                <div 
-                  className="text-sm whitespace-pre-wrap"
-                  dangerouslySetInnerHTML={{ __html: selectedRoutine.content }}
-                />
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Ingen innhold definert for denne rutinen
-                </p>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 pr-4">
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary">
+                  {ROUTINE_CATEGORIES[selectedRoutine?.category || ''] || selectedRoutine?.category}
+                </Badge>
+                {selectedRoutine?.is_mandatory && (
+                  <Badge variant="destructive" className="gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    Obligatorisk
+                  </Badge>
+                )}
+                {selectedRoutine?.is_locked && (
+                  <Badge variant="outline" className="gap-1">
+                    <Lock className="h-3 w-3" />
+                    Låst
+                  </Badge>
+                )}
+                {selectedRoutine?.version && (
+                  <Badge variant="outline">v{selectedRoutine.version}</Badge>
+                )}
+              </div>
+              
+              {selectedRoutine?.content && (
+                <div className="border rounded-lg p-4 bg-muted/30">
+                  <p className="text-sm whitespace-pre-wrap">{selectedRoutine.content}</p>
+                </div>
               )}
             </div>
           </ScrollArea>
-
-          <div className="flex justify-end gap-2 pt-4 border-t">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setSelectedRoutine(null)}>
               Lukk
             </Button>
-          </div>
+            {selectedRoutine && !addedRoutineIds.includes(selectedRoutine.id) && (
+              <Button onClick={() => {
+                addRoutineTemplate(selectedRoutine.id);
+                setSelectedRoutine(null);
+              }}>
+                <Plus className="h-4 w-4 mr-2" />
+                Legg til i prosjektet
+              </Button>
+            )}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

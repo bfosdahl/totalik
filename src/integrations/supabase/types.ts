@@ -3041,6 +3041,90 @@ export type Database = {
           },
         ]
       }
+      ks_module2_project_templates: {
+        Row: {
+          admin_checklist_template_id: string | null
+          admin_document_id: string | null
+          admin_routine_template_id: string | null
+          created_at: string
+          id: string
+          implemented_at: string | null
+          implemented_by_id: string | null
+          implemented_by_name: string | null
+          is_implemented: boolean | null
+          notes: string | null
+          project_id: string
+          template_type: string
+          updated_at: string
+        }
+        Insert: {
+          admin_checklist_template_id?: string | null
+          admin_document_id?: string | null
+          admin_routine_template_id?: string | null
+          created_at?: string
+          id?: string
+          implemented_at?: string | null
+          implemented_by_id?: string | null
+          implemented_by_name?: string | null
+          is_implemented?: boolean | null
+          notes?: string | null
+          project_id: string
+          template_type: string
+          updated_at?: string
+        }
+        Update: {
+          admin_checklist_template_id?: string | null
+          admin_document_id?: string | null
+          admin_routine_template_id?: string | null
+          created_at?: string
+          id?: string
+          implemented_at?: string | null
+          implemented_by_id?: string | null
+          implemented_by_name?: string | null
+          is_implemented?: boolean | null
+          notes?: string | null
+          project_id?: string
+          template_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_project_templates_admin_checklist_template_id_fkey"
+            columns: ["admin_checklist_template_id"]
+            isOneToOne: false
+            referencedRelation: "admin_checklist_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_project_templates_admin_document_id_fkey"
+            columns: ["admin_document_id"]
+            isOneToOne: false
+            referencedRelation: "admin_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_project_templates_admin_routine_template_id_fkey"
+            columns: ["admin_routine_template_id"]
+            isOneToOne: false
+            referencedRelation: "admin_routine_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_project_templates_implemented_by_id_fkey"
+            columns: ["implemented_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_project_templates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_projects: {
         Row: {
           address: string | null
