@@ -28,13 +28,12 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ik-mat-chat`;
 
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const saveGeneratedContent = async (content: any) => {
@@ -277,7 +276,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col p-0">
-        <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+        <ScrollArea className="flex-1 p-4">
           <div className="space-y-4">
             {messages.map((message, index) => (
               <div
@@ -325,6 +324,8 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
                 </div>
               </div>
             )}
+            {/* Auto-scroll anchor */}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
         <div className="p-4 border-t">

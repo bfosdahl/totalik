@@ -74,13 +74,12 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSend = async () => {
@@ -289,7 +288,7 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   return (
     <div className="space-y-4">
       <Card className="border-primary/20">
-        <ScrollArea ref={scrollRef} className="h-[500px] p-6">
+        <ScrollArea className="h-[500px] p-6">
           <div className="space-y-4">
             {messages.map((msg, idx) => (
               <div
@@ -333,6 +332,8 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
                 <p className="text-sm text-success font-medium">Setter opp HMS-systemet ditt...</p>
               </div>
             )}
+            {/* Auto-scroll anchor */}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
       </Card>
