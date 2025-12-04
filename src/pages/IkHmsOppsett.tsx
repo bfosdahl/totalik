@@ -10,27 +10,36 @@ import { Button } from "@/components/ui/button";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 
 const IkHmsOppsett = () => {
-  const { profile, company } = useAuth();
+  const { profile, company, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { hasModule, modules, isLoading } = useCompanyModules();
+  const { hasModule, modules, isLoading: modulesLoading } = useCompanyModules();
   const [setupCompleted, setSetupCompleted] = useState(false);
   const [showRestartDialog, setShowRestartDialog] = useState(false);
   const [isRestarting, setIsRestarting] = useState(false);
 
+  // Combined loading state - wait for both auth and modules to load
+  const isLoading = authLoading || modulesLoading;
+
   useEffect(() => {
-    // Check if IK/HMS module is active
-    if (!isLoading && !hasModule('IK_HMS')) {
+    // Wait until everything is loaded AND we have a company before checking module access
+    if (isLoading || !company?.id) {
+      return;
+    }
+
+    // Now check if IK/HMS module is active
+    if (!hasModule('IK_HMS')) {
       navigate('/');
+      return;
     }
 
     // Check if setup is already completed (only if not restarting)
-    if (!isLoading && modules.length > 0 && !isRestarting) {
+    if (modules.length > 0 && !isRestarting) {
       const ikHmsModule = modules.find(m => m.module_type === 'IK_HMS');
       if (ikHmsModule?.settings && (ikHmsModule.settings as any).setupCompletedAt) {
         setSetupCompleted(true);
       }
     }
-  }, [hasModule, isLoading, navigate, modules, isRestarting]);
+  }, [hasModule, isLoading, navigate, modules, isRestarting, company?.id]);
 
   if (isLoading) {
     return (

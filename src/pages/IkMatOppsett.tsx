@@ -10,27 +10,36 @@ import { Button } from "@/components/ui/button";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 
 const IkMatOppsett = () => {
-  const { profile, company } = useAuth();
+  const { profile, company, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { hasModule, modules, isLoading } = useCompanyModules();
+  const { hasModule, modules, isLoading: modulesLoading } = useCompanyModules();
   const [setupCompleted, setSetupCompleted] = useState(false);
   const [showRestartDialog, setShowRestartDialog] = useState(false);
   const [isRestarting, setIsRestarting] = useState(false);
 
+  // Combined loading state - wait for both auth and modules to load
+  const isLoading = authLoading || modulesLoading;
+
   useEffect(() => {
-    // Check if IK/MAT module is active
-    if (!isLoading && !hasModule('IK_MAT')) {
+    // Wait until everything is loaded AND we have a company before checking module access
+    if (isLoading || !company?.id) {
+      return;
+    }
+
+    // Now check if IK/MAT module is active
+    if (!hasModule('IK_MAT')) {
       navigate('/');
+      return;
     }
 
     // Check if setup is already completed (only if not restarting)
-    if (!isLoading && modules.length > 0 && !isRestarting) {
+    if (modules.length > 0 && !isRestarting) {
       const ikMatModule = modules.find(m => m.module_type === 'IK_MAT');
       if (ikMatModule?.settings && (ikMatModule.settings as any).setupCompletedAt) {
         setSetupCompleted(true);
       }
     }
-  }, [hasModule, isLoading, navigate, modules, isRestarting]);
+  }, [hasModule, isLoading, navigate, modules, isRestarting, company?.id]);
 
   if (isLoading) {
     return (
