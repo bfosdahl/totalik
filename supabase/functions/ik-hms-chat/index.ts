@@ -46,14 +46,20 @@ STEG 5 - TILTAK/HANDLINGSPLAN:
 - Spør hvem som skal ha ansvar og når det skal være gjort
 
 STEG 6 - RUTINER:
-- Foreslå 8-10 standard HMS-rutiner for deres bransje
-- Eksempler: Vernerunder, Avvikshåndtering, Opplæring, Førstehjelp, Brannvern, etc.
+- VIKTIG: Du SKAL generere MINST 8-10 komplette HMS-rutiner basert på bransjen
+- Foreslå rutiner som: Vernerunder, Avvikshåndtering, Opplæring av ansatte, Førstehjelp, Brannvern, Ergonomi, Risikovurdering, Arbeidsutstyr, Personlig verneutstyr, Støy og vibrasjoner, Kjemikalier, Varmt arbeid, etc.
+- Tilpass rutinene til bransjen brukeren jobber i
 - La dem bekrefte eller fjerne det som ikke er relevant
 
 NÅR BRUKEREN ER FERDIG MED ALLE STEG:
 1. Oppsummer kort hva som ble registrert
 2. Si: "Supert! Vi setter nå opp HMS-systemet basert på informasjonen du har gitt. Du kan se forslaget i Håndboken om kort tid. Ønsker du å gjøre endringer senere, er det bare å starte Oppsett-hjelperen på nytt!"
 3. ETTER denne meldingen, generer JSON-strukturen på en EGEN linje merket med |||JSON_START||| før og |||JSON_END||| etter
+
+KRITISK FOR JSON-GENERERING:
+- Du MÅ generere ALLE rutinene som ble diskutert/godkjent i samtalen
+- Hver rutine skal være fullstendig med alle feltene fylt ut
+- IKKE generer kun én rutine - generer ALLE som brukeren godkjente (typisk 8-10 stykk)
 
 JSON-STRUKTUR (brukeren ser IKKE dette):
 |||JSON_START|||
@@ -94,17 +100,82 @@ JSON-STRUKTUR (brukeren ser IKKE dette):
     {
       "id": "routine-1",
       "routine_number": "R001",
-      "routine_name": "Rutine",
-      "category": "Kategori",
-      "purpose": "Formål",
-      "responsibility": "Ansvarlig",
-      "procedure": "Fremgangsmåte"
+      "routine_name": "Vernerunder",
+      "category": "HMS-arbeid",
+      "purpose": "Sikre systematisk gjennomgang av arbeidsmiljøet",
+      "responsibility": "HMS-ansvarlig",
+      "procedure": "1. Planlegg vernerunde minst hver måned\\n2. Bruk sjekkliste for gjennomgang\\n3. Dokumenter funn og avvik\\n4. Følg opp tiltak"
+    },
+    {
+      "id": "routine-2",
+      "routine_number": "R002",
+      "routine_name": "Avvikshåndtering",
+      "category": "HMS-arbeid",
+      "purpose": "Sikre at avvik blir registrert og fulgt opp",
+      "responsibility": "Alle ansatte",
+      "procedure": "1. Meld avvik umiddelbart\\n2. Dokumenter hendelsen\\n3. Vurder årsak\\n4. Iverksett tiltak\\n5. Følg opp"
+    },
+    {
+      "id": "routine-3",
+      "routine_number": "R003",
+      "routine_name": "Opplæring av ansatte",
+      "category": "Kompetanse",
+      "purpose": "Sikre at alle ansatte har nødvendig kompetanse",
+      "responsibility": "Daglig leder",
+      "procedure": "1. Kartlegg opplæringsbehov\\n2. Gjennomfør opplæring\\n3. Dokumenter gjennomført opplæring\\n4. Evaluer effekt"
+    },
+    {
+      "id": "routine-4",
+      "routine_number": "R004",
+      "routine_name": "Førstehjelp",
+      "category": "Beredskap",
+      "purpose": "Sikre rask og korrekt førstehjelp ved ulykker",
+      "responsibility": "HMS-ansvarlig",
+      "procedure": "1. Sikre tilgjengelig førstehjelpsutstyr\\n2. Opplæring av ansatte\\n3. Sjekk utstyr jevnlig\\n4. Oppdater nødnumre"
+    },
+    {
+      "id": "routine-5",
+      "routine_number": "R005",
+      "routine_name": "Brannvern",
+      "category": "Beredskap",
+      "purpose": "Forebygge brann og sikre evakuering",
+      "responsibility": "Brannvernleder",
+      "procedure": "1. Gjennomfør brannøvelser årlig\\n2. Kontroller slokkeutstyr\\n3. Hold rømningsveier frie\\n4. Oppdater branninstruks"
+    },
+    {
+      "id": "routine-6",
+      "routine_number": "R006",
+      "routine_name": "Ergonomi",
+      "category": "Arbeidsmiljø",
+      "purpose": "Forebygge belastningsskader",
+      "responsibility": "HMS-ansvarlig",
+      "procedure": "1. Vurder arbeidsstasjoner\\n2. Tilpass utstyr til den enkelte\\n3. Varier arbeidsoppgaver\\n4. Gi opplæring i riktig arbeidsteknikk"
+    },
+    {
+      "id": "routine-7",
+      "routine_number": "R007",
+      "routine_name": "Risikovurdering",
+      "category": "HMS-arbeid",
+      "purpose": "Identifisere og vurdere risiko i arbeidet",
+      "responsibility": "HMS-ansvarlig",
+      "procedure": "1. Kartlegg farer\\n2. Vurder sannsynlighet og konsekvens\\n3. Prioriter tiltak\\n4. Iverksett og følg opp"
+    },
+    {
+      "id": "routine-8",
+      "routine_number": "R008",
+      "routine_name": "Arbeidsutstyr",
+      "category": "Sikkerhet",
+      "purpose": "Sikre trygg bruk av arbeidsutstyr",
+      "responsibility": "HMS-ansvarlig",
+      "procedure": "1. Kontroller utstyr før bruk\\n2. Vedlikehold etter plan\\n3. Rapporter feil umiddelbart\\n4. Gi opplæring i bruk"
     }
   ]
 }
 |||JSON_END|||
 
-HUSK: Vær vennlig, hjelpsom og gjør det enkelt for brukeren!`;
+HUSK: 
+- Vær vennlig, hjelpsom og gjør det enkelt for brukeren!
+- Generer ALLE rutinene som ble diskutert - ikke bare én!`;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {

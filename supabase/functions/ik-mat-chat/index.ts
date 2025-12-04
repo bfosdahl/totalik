@@ -33,8 +33,13 @@ NÅR BRUKEREN ER USIKKER:
 - Eksempel: "Jeg ser du driver kafé. De fleste kafeer har: 1) Kjøleskap for melk og mat (2-4°C), 2) Fryser for is og bakevarer (-18°C), 3) Varmeskap for ferdigmat. Passer dette for deg, eller har du noe annet?"
 - Bruk bransjekunnskap til å gi realistiske standardforslag som brukeren kan bekrefte eller tilpasse.
 
+KRITISK FOR RUTINER:
+- Du MÅ generere MINST 8-10 komplette IK-MAT rutiner tilpasset virksomheten
+- Typiske rutiner inkluderer: Mottakskontroll, Temperaturkontroll, Personlig hygiene, Renhold og desinfeksjon, Allergenhåndtering, Avvikshåndtering, Sporbarhet, Opplæring, HACCP-kontroll, Skadedyrkontroll
+- Hver rutine skal ha komplett informasjon med id, routine_number, routine_name, category, purpose, responsibility og procedure
+
 UTDATA / FORMAT:
-Når du er ferdig med alle spørsmålene, skal du gi SVARET som en ren JSON-struktur (uten forklarende tekst) med følgende topp-nivå nøkler:
+Når du er ferdig med alle spørsmålene, skal du gi en kort oppsummering til brukeren og deretter generere SVARET som en ren JSON-struktur (uten forklarende tekst) med følgende topp-nivå nøkler:
 
 {
   "virksomhet": { 
@@ -78,10 +83,76 @@ Når du er ferdig med alle spørsmålene, skal du gi SVARET som en ren JSON-stru
   ],
   "routines": [
     {
-      "name": "Rutinenavn",
-      "description": "Beskrivelse",
-      "frequency": "Frekvens",
-      "responsible": "Ansvarlig"
+      "id": "routine-1",
+      "routine_number": "R001",
+      "routine_name": "Mottakskontroll",
+      "category": "Varemottak",
+      "purpose": "Sikre at mottatte varer holder riktig kvalitet og temperatur",
+      "responsibility": "Kjøkkensjef",
+      "procedure": "1. Kontroller temperatur ved mottak\\n2. Sjekk holdbarhetsdato\\n3. Inspiser emballasje\\n4. Dokumenter avvik"
+    },
+    {
+      "id": "routine-2",
+      "routine_number": "R002",
+      "routine_name": "Temperaturkontroll",
+      "category": "Mattrygghet",
+      "purpose": "Sikre at matvarer oppbevares ved riktig temperatur",
+      "responsibility": "Daglig leder",
+      "procedure": "1. Kontroller kjøleskap daglig\\n2. Loggfør temperaturer\\n3. Varsle ved avvik\\n4. Iverksett korrigerende tiltak"
+    },
+    {
+      "id": "routine-3",
+      "routine_number": "R003",
+      "routine_name": "Personlig hygiene",
+      "category": "Hygiene",
+      "purpose": "Forebygge smitte via personell",
+      "responsibility": "Alle ansatte",
+      "procedure": "1. Vask hender før arbeid\\n2. Bruk rent arbeidstøy\\n3. Meld fra ved sykdom\\n4. Dekk sår og rifter"
+    },
+    {
+      "id": "routine-4",
+      "routine_number": "R004",
+      "routine_name": "Renhold og desinfeksjon",
+      "category": "Hygiene",
+      "purpose": "Opprettholde hygienisk arbeidsmiljø",
+      "responsibility": "Renholdsansvarlig",
+      "procedure": "1. Følg renholdsplan\\n2. Bruk godkjente produkter\\n3. Dokumenter utført renhold\\n4. Kontroller resultater"
+    },
+    {
+      "id": "routine-5",
+      "routine_number": "R005",
+      "routine_name": "Allergenhåndtering",
+      "category": "Mattrygghet",
+      "purpose": "Forhindre kryssforurensning og sikre korrekt merking",
+      "responsibility": "Kjøkkensjef",
+      "procedure": "1. Merk allergener tydelig\\n2. Skill allergener fra andre varer\\n3. Rengjør utstyr mellom bruk\\n4. Informer gjester"
+    },
+    {
+      "id": "routine-6",
+      "routine_number": "R006",
+      "routine_name": "Avvikshåndtering",
+      "category": "Kvalitetssikring",
+      "purpose": "Sikre at avvik registreres og korrigeres",
+      "responsibility": "Daglig leder",
+      "procedure": "1. Registrer avvik umiddelbart\\n2. Vurder alvorlighetsgrad\\n3. Iverksett korrigerende tiltak\\n4. Følg opp effekt"
+    },
+    {
+      "id": "routine-7",
+      "routine_number": "R007",
+      "routine_name": "Sporbarhet",
+      "category": "Dokumentasjon",
+      "purpose": "Kunne spore produkter gjennom verdikjeden",
+      "responsibility": "Daglig leder",
+      "procedure": "1. Registrer batch-/lotnummer\\n2. Dokumenter leverandør\\n3. Oppbevar dokumentasjon\\n4. Gjennomfør jevnlige tester"
+    },
+    {
+      "id": "routine-8",
+      "routine_number": "R008",
+      "routine_name": "Opplæring",
+      "category": "Kompetanse",
+      "purpose": "Sikre at alle har nødvendig kompetanse",
+      "responsibility": "Daglig leder",
+      "procedure": "1. Kartlegg opplæringsbehov\\n2. Gjennomfør opplæring\\n3. Dokumenter gjennomført opplæring\\n4. Evaluer kompetanse"
     }
   ],
   "temperatureControl": [
