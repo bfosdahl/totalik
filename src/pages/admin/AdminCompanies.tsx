@@ -359,13 +359,14 @@ export default function AdminCompanies() {
                 Ny bedrift
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
               <DialogHeader>
                 <DialogTitle>
                   {editingCompany ? "Rediger bedrift" : "Opprett ny bedrift"}
                 </DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+              <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+                <div className="flex-1 overflow-y-auto space-y-4 pr-2">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2 space-y-2">
                     <Label htmlFor="name">Bedriftsnavn *</Label>
@@ -486,8 +487,9 @@ export default function AdminCompanies() {
                     )}
                   </div>
                 )}
+                </div>
                 
-                <div className="flex justify-end gap-3 pt-4">
+                <div className="flex justify-end gap-3 pt-4 border-t border-border mt-4">
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                     Avbryt
                   </Button>
