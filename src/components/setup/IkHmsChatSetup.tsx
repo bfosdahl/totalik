@@ -292,50 +292,50 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <Card className="border-primary/20">
-        <ScrollArea className="h-[500px] p-6">
-          <div className="space-y-4">
+        <ScrollArea className="h-[calc(100vh-320px)] min-h-[300px] max-h-[500px] sm:max-h-[600px] p-4 sm:p-6">
+          <div className="space-y-3 sm:space-y-4">
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex gap-2 sm:gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {msg.role === "assistant" && (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Bot className="w-4 h-4 text-primary" />
+                  <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] rounded-lg p-4 ${
+                  className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-3 sm:p-4 ${
                     msg.role === "user"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted"
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{msg.content}</p>
                 </div>
                 {msg.role === "user" && (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                    <User className="w-4 h-4 text-primary-foreground" />
+                  <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center">
+                    <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary-foreground" />
                   </div>
                 )}
               </div>
             ))}
             {isLoading && messages[messages.length - 1]?.content === "" && (
-              <div className="flex gap-3 justify-start">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-primary" />
+              <div className="flex gap-2 sm:gap-3 justify-start">
+                <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                 </div>
-                <div className="bg-muted rounded-lg p-4">
+                <div className="bg-muted rounded-lg p-3 sm:p-4">
                   <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                 </div>
               </div>
             )}
             {isSaving && (
-              <div className="flex items-center justify-center gap-2 p-4 bg-success/10 rounded-lg border border-success/20">
-                <Sparkles className="w-5 h-5 text-success animate-pulse" />
-                <p className="text-sm text-success font-medium">Setter opp HMS-systemet ditt...</p>
+              <div className="flex items-center justify-center gap-2 p-3 sm:p-4 bg-success/10 rounded-lg border border-success/20">
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-success animate-pulse" />
+                <p className="text-xs sm:text-sm text-success font-medium">Setter opp HMS-systemet ditt...</p>
               </div>
             )}
             {/* Auto-scroll anchor */}
@@ -356,8 +356,14 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
           }}
           placeholder="Skriv ditt svar her..."
           disabled={isLoading || isSaving}
+          className="text-base sm:text-sm"
         />
-        <Button onClick={handleSend} disabled={isLoading || isSaving || !input.trim()}>
+        <Button 
+          onClick={handleSend} 
+          disabled={isLoading || isSaving || !input.trim()}
+          size="default"
+          className="px-3 sm:px-4"
+        >
           {isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
@@ -367,7 +373,7 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
       </div>
 
       {messages.length <= 2 && (
-        <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
+        <div className="bg-muted/50 rounded-lg p-3 sm:p-4 text-xs sm:text-sm text-muted-foreground">
           <p className="font-medium mb-2">💡 Slik fungerer det:</p>
           <ul className="space-y-1 list-disc list-inside">
             <li>Jeg stiller deg noen enkle spørsmål om bedriften</li>

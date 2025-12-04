@@ -62,26 +62,26 @@ const IkHmsOppsett = () => {
 
   return (
     <AppLayout>
-      <div className="container max-w-4xl mx-auto py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Oppsett-hjelperen</h1>
-          <p className="text-muted-foreground">
+      <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
+        <div className="mb-4 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Oppsett-hjelperen</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Få hjelp til å sette opp HMS-systemet for bedriften din
           </p>
         </div>
 
         {setupCompleted ? (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <Alert className="border-success bg-success/10">
               <CheckCircle2 className="h-4 w-4 text-success" />
-              <AlertDescription className="text-success">
+              <AlertDescription className="text-success text-sm sm:text-base">
                 IK/HMS oppsett er fullført! Ditt skreddersydde HMS-system er klar til bruk.
               </AlertDescription>
             </Alert>
 
-            <div className="bg-muted/50 rounded-lg p-6 space-y-4">
-              <h3 className="font-semibold text-lg">Viktig informasjon</h3>
-              <div className="space-y-3 text-sm">
+            <div className="bg-muted/50 rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4">
+              <h3 className="font-semibold text-base sm:text-lg">Viktig informasjon</h3>
+              <div className="space-y-3 text-xs sm:text-sm">
                 <div>
                   <p className="font-medium mb-1">✅ Dine data er trygge</p>
                   <p className="text-muted-foreground">
@@ -99,13 +99,14 @@ const IkHmsOppsett = () => {
               </div>
             </div>
 
-            <div className="flex gap-4">
-              <Button onClick={() => navigate('/handbook')}>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <Button onClick={() => navigate('/handbook')} className="w-full sm:w-auto">
                 Se generert innhold
               </Button>
               <Button 
                 variant="outline" 
                 onClick={() => setShowRestartDialog(true)}
+                className="w-full sm:w-auto"
               >
                 Kjør oppsett på nytt
               </Button>
