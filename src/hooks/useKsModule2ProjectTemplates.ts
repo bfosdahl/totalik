@@ -14,6 +14,9 @@ export interface ProjectTemplate {
   implemented_at: string | null;
   implemented_by_id: string | null;
   implemented_by_name: string | null;
+  approved_by: string | null;
+  approved_at: string | null;
+  linked_checklist_ids: string[];
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -266,6 +269,90 @@ export function useKsModule2ProjectTemplates(projectId: string | undefined) {
     }
   };
 
+  const updateApprovedBy = async (templateId: string, approvedBy: string | null) => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('ks_module2_project_templates')
+        .update({
+          approved_by: approvedBy,
+          approved_at: approvedBy ? new Date().toISOString() : null,
+        })
+        .eq('id', templateId);
+
+      if (error) throw error;
+      
+      toast.success(approvedBy ? 'Godkjenner oppdatert' : 'Godkjenner fjernet');
+      await fetchTemplates();
+      return true;
+    } catch (error) {
+      console.error('Error updating approved by:', error);
+      toast.error('Kunne ikke oppdatere godkjenner');
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const linkChecklistToRoutine = async (routineTemplateId: string, checklistTemplateId: string) => {
+    setIsSaving(true);
+    try {
+      const template = templates.find(t => t.id === routineTemplateId);
+      const currentLinked = template?.linked_checklist_ids || [];
+      
+      if (currentLinked.includes(checklistTemplateId)) {
+        toast.info('Sjekklisten er allerede koblet til rutinen');
+        return false;
+      }
+
+      const { error } = await supabase
+        .from('ks_module2_project_templates')
+        .update({
+          linked_checklist_ids: [...currentLinked, checklistTemplateId],
+        })
+        .eq('id', routineTemplateId);
+
+      if (error) throw error;
+      
+      toast.success('Sjekkliste koblet til rutinen');
+      await fetchTemplates();
+      return true;
+    } catch (error) {
+      console.error('Error linking checklist:', error);
+      toast.error('Kunne ikke koble sjekkliste');
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const unlinkChecklistFromRoutine = async (routineTemplateId: string, checklistTemplateId: string) => {
+    setIsSaving(true);
+    try {
+      const template = templates.find(t => t.id === routineTemplateId);
+      const currentLinked = template?.linked_checklist_ids || [];
+      
+      const { error } = await supabase
+        .from('ks_module2_project_templates')
+        .update({
+          linked_checklist_ids: currentLinked.filter(id => id !== checklistTemplateId),
+        })
+        .eq('id', routineTemplateId);
+
+      if (error) throw error;
+      
+      toast.success('Sjekkliste fjernet fra rutinen');
+      await fetchTemplates();
+      return true;
+    } catch (error) {
+      console.error('Error unlinking checklist:', error);
+      toast.error('Kunne ikke fjerne kobling');
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Helper getters
   const checklistTemplates = templates.filter(t => t.template_type === 'checklist');
   const routineTemplates = templates.filter(t => t.template_type === 'routine');
@@ -292,6 +379,9 @@ export function useKsModule2ProjectTemplates(projectId: string | undefined) {
     removeTemplate,
     markAsImplemented,
     unmarkAsImplemented,
+    updateApprovedBy,
+    linkChecklistToRoutine,
+    unlinkChecklistFromRoutine,
     refetch: fetchTemplates,
   };
 }
