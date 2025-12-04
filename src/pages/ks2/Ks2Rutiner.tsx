@@ -4,9 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { BookOpen, Plus, Search, Library, Check, ExternalLink, Eye, UserCheck, Link2, X, ClipboardList } from "lucide-react";
+import { BookOpen, Plus, Search, Library, Check, ExternalLink, Eye, UserCheck, Link2, X, ClipboardList, PenLine, Edit, Trash2 } from "lucide-react";
 import { useKsModule2ProjectTemplates } from "@/hooks/useKsModule2ProjectTemplates";
+import { useKsModule2Routines, KsModule2Routine } from "@/hooks/useKsModule2Routines";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { toast } from "sonner";
 import {
@@ -14,6 +17,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -25,13 +30,32 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+const ROUTINE_CATEGORIES: Record<string, string> = {
+  kvalitetssikring: "Kvalitetssikring - Generelt",
+  avvikshåndtering: "Avvikshåndtering",
+  dokumentstyring: "Dokumentstyring",
+  underentreprenor: "Underentreprenørkontroll",
+  hms: "HMS på byggeplass",
+  opplæring: "Opplæring",
+  kontroll: "Kontroll",
+  general: "Generelt",
+};
+
 export default function Ks2Rutiner() {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [viewingRoutine, setViewingRoutine] = useState<any>(null);
+  const [viewingCustomRoutine, setViewingCustomRoutine] = useState<KsModule2Routine | null>(null);
   const [approverMode, setApproverMode] = useState<'select' | 'freetext'>('select');
   const [freetextApprover, setFreetextApprover] = useState("");
+  
+  // Edit custom routine state
+  const [editingCustomRoutine, setEditingCustomRoutine] = useState<KsModule2Routine | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [editCategory, setEditCategory] = useState("general");
 
   const { 
     routineTemplates, 
@@ -43,13 +67,27 @@ export default function Ks2Rutiner() {
     linkChecklistToRoutine,
     unlinkChecklistFromRoutine,
   } = useKsModule2ProjectTemplates(projectId);
+
+  const {
+    routines: customRoutines,
+    updateRoutine,
+    deleteRoutine,
+    isLoading: isLoadingCustom,
+    isSaving: isSavingCustom,
+  } = useKsModule2Routines(projectId);
   
   const { users, getUserDisplayName } = useCompanyUsers();
 
-  // Filter by search
+  // Filter admin routines by search
   const filteredRoutines = routineTemplates.filter(pt =>
     pt.routine_template?.routine_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     pt.routine_template?.category?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Filter custom routines by search
+  const filteredCustomRoutines = customRoutines.filter(r =>
+    r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    r.category?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleMarkImplemented = async (templateId: string, currentValue: boolean) => {
@@ -67,7 +105,6 @@ export default function Ks2Rutiner() {
   const handleSetApprover = async (approverName: string) => {
     if (!viewingRoutine) return;
     await updateApprovedBy(viewingRoutine.id, approverName || null);
-    // Update local state
     setViewingRoutine({
       ...viewingRoutine,
       approved_by: approverName || null,
@@ -78,7 +115,6 @@ export default function Ks2Rutiner() {
   const handleLinkChecklist = async (checklistId: string) => {
     if (!viewingRoutine) return;
     await linkChecklistToRoutine(viewingRoutine.id, checklistId);
-    // Update local state
     const currentLinked = viewingRoutine.linked_checklist_ids || [];
     setViewingRoutine({
       ...viewingRoutine,
@@ -89,12 +125,37 @@ export default function Ks2Rutiner() {
   const handleUnlinkChecklist = async (checklistId: string) => {
     if (!viewingRoutine) return;
     await unlinkChecklistFromRoutine(viewingRoutine.id, checklistId);
-    // Update local state
     const currentLinked = viewingRoutine.linked_checklist_ids || [];
     setViewingRoutine({
       ...viewingRoutine,
       linked_checklist_ids: currentLinked.filter((id: string) => id !== checklistId),
     });
+  };
+
+  const openEditCustomRoutine = (routine: KsModule2Routine) => {
+    setEditingCustomRoutine(routine);
+    setEditName(routine.name);
+    setEditDescription(routine.description || "");
+    setEditContent(routine.content || "");
+    setEditCategory(routine.category || "general");
+  };
+
+  const handleSaveCustomRoutine = async () => {
+    if (!editingCustomRoutine || !editName.trim()) return;
+    
+    await updateRoutine(editingCustomRoutine.id, {
+      name: editName,
+      description: editDescription || null,
+      content: editContent || null,
+      category: editCategory,
+    });
+    setEditingCustomRoutine(null);
+  };
+
+  const handleDeleteCustomRoutine = async (routine: KsModule2Routine) => {
+    if (confirm("Er du sikker på at du vil slette denne rutinen?")) {
+      await deleteRoutine(routine.id);
+    }
   };
 
   // Get linked checklists for the viewing routine
@@ -114,13 +175,15 @@ export default function Ks2Rutiner() {
     );
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingCustom) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
+
+  const totalRoutines = routineTemplates.length + customRoutines.length;
 
   return (
     <div className="space-y-6">
@@ -133,7 +196,7 @@ export default function Ks2Rutiner() {
       </div>
 
       {/* Info about Malbibliotek if no routines */}
-      {routineTemplates.length === 0 && (
+      {totalRoutines === 0 && (
         <Card className="border-dashed">
           <CardContent className="py-8 text-center">
             <Library className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -149,13 +212,13 @@ export default function Ks2Rutiner() {
         </Card>
       )}
 
-      {routineTemplates.length > 0 && (
+      {totalRoutines > 0 && (
         <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <CardTitle className="flex items-center gap-2">
                 <BookOpen className="h-5 w-5" />
-                Prosjektets rutiner ({filteredRoutines.length})
+                Prosjektets rutiner ({totalRoutines})
               </CardTitle>
               <div className="flex gap-2">
                 <div className="relative w-full sm:w-64">
@@ -179,6 +242,7 @@ export default function Ks2Rutiner() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
+              {/* Admin/System Routines */}
               {filteredRoutines.map((pt) => (
                 <Card key={pt.id} className="hover:bg-muted/50 transition-colors">
                   <CardContent className="p-4">
@@ -252,12 +316,63 @@ export default function Ks2Rutiner() {
                   </CardContent>
                 </Card>
               ))}
+
+              {/* Custom Routines */}
+              {filteredCustomRoutines.map((routine) => (
+                <Card key={routine.id} className="hover:bg-muted/50 transition-colors border-green-500/30">
+                  <CardContent className="p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <h4 className="font-medium">{routine.name}</h4>
+                          <Badge variant="outline">
+                            {ROUTINE_CATEGORIES[routine.category || 'general'] || routine.category}
+                          </Badge>
+                          <Badge variant="outline" className="gap-1 text-green-600 border-green-500/50">
+                            <PenLine className="h-3 w-3" />
+                            Egendefinert
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {routine.description || "Ingen beskrivelse"}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setViewingCustomRoutine(routine)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Les
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditCustomRoutine(routine)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Rediger
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleDeleteCustomRoutine(routine)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* View Routine Dialog */}
+      {/* View Admin Routine Dialog */}
       <Dialog open={!!viewingRoutine} onOpenChange={() => setViewingRoutine(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
@@ -402,7 +517,6 @@ export default function Ks2Rutiner() {
                 <div>
                   <h4 className="font-medium mb-3">Koblede sjekklister</h4>
                   
-                  {/* Linked checklists */}
                   {getLinkedChecklists().length > 0 ? (
                     <div className="space-y-2 mb-4">
                       {getLinkedChecklists().map((checklist) => (
@@ -433,7 +547,6 @@ export default function Ks2Rutiner() {
                     </p>
                   )}
 
-                  {/* Available checklists to link */}
                   {getAvailableChecklists().length > 0 && (
                     <div>
                       <h5 className="text-sm font-medium mb-2">Legg til sjekkliste</h5>
@@ -493,6 +606,140 @@ export default function Ks2Rutiner() {
               </Button>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Custom Routine Dialog */}
+      <Dialog open={!!viewingCustomRoutine} onOpenChange={() => setViewingCustomRoutine(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <PenLine className="h-5 w-5 text-green-500" />
+              {viewingCustomRoutine?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="outline">
+                {ROUTINE_CATEGORIES[viewingCustomRoutine?.category || 'general'] || viewingCustomRoutine?.category}
+              </Badge>
+              <Badge variant="outline" className="gap-1 text-green-600 border-green-500/50">
+                <PenLine className="h-3 w-3" />
+                Egendefinert
+              </Badge>
+            </div>
+            
+            {viewingCustomRoutine?.description && (
+              <div>
+                <h4 className="font-medium mb-1">Beskrivelse</h4>
+                <p className="text-sm text-muted-foreground">
+                  {viewingCustomRoutine.description}
+                </p>
+              </div>
+            )}
+            
+            {viewingCustomRoutine?.content && (
+              <div>
+                <h4 className="font-medium mb-2">Innhold</h4>
+                <div className="bg-muted/50 rounded-lg p-4 text-sm whitespace-pre-wrap">
+                  {viewingCustomRoutine.content}
+                </div>
+              </div>
+            )}
+
+            {!viewingCustomRoutine?.content && !viewingCustomRoutine?.description && (
+              <p className="text-muted-foreground text-sm">
+                Ingen innhold tilgjengelig for denne rutinen.
+              </p>
+            )}
+
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setViewingCustomRoutine(null)}>
+                Lukk
+              </Button>
+              <Button onClick={() => {
+                if (viewingCustomRoutine) {
+                  openEditCustomRoutine(viewingCustomRoutine);
+                  setViewingCustomRoutine(null);
+                }
+              }}>
+                <Edit className="h-4 w-4 mr-2" />
+                Rediger
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Custom Routine Dialog */}
+      <Dialog open={!!editingCustomRoutine} onOpenChange={() => setEditingCustomRoutine(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5" />
+              Rediger rutine
+            </DialogTitle>
+            <DialogDescription>
+              Rediger innholdet i rutinen nedenfor
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Navn på rutine *</Label>
+              <Input
+                id="edit-name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="F.eks. Rutine for kvalitetskontroll"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-category">Kategori</Label>
+              <Select value={editCategory} onValueChange={setEditCategory}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(ROUTINE_CATEGORIES).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Beskrivelse</Label>
+              <Input
+                id="edit-description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Kort beskrivelse av rutinen"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-content">Innhold</Label>
+              <Textarea
+                id="edit-content"
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                placeholder="Skriv rutinens fullstendige innhold her..."
+                rows={10}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingCustomRoutine(null)}>
+              Avbryt
+            </Button>
+            <Button 
+              onClick={handleSaveCustomRoutine}
+              disabled={isSavingCustom || !editName.trim()}
+            >
+              {isSavingCustom ? "Lagrer..." : "Lagre endringer"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
