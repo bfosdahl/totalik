@@ -390,7 +390,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               )}
             >
               <Briefcase className={cn(
-                "w-5 h-5 flex-shrink-0 transition-transform",
+                "w-5 h-5 flex-shrink-0 transition-transform text-amber-500",
                 "group-hover:scale-110"
               )} />
               <AnimatePresence mode="wait">
@@ -400,8 +400,9 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -10 }}
-                      className="font-medium text-sm flex-1 text-left"
+                      className="font-medium text-sm flex-1 text-left flex items-center gap-2"
                     >
+                      <span className="w-2 h-2 rounded-full bg-amber-500" />
                       Personaladministrasjon
                     </motion.span>
                     {expandedSections.has('personal') ? (
