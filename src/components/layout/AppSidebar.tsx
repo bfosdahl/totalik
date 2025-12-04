@@ -185,8 +185,14 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
         {/* Logo */}
         <div className="flex items-center justify-between gap-3 px-5 h-16 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-primary">
-              <Shield className="w-5 h-5 text-primary-foreground" />
+            {/* Custom Total-IK Logo */}
+            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary to-primary/80 shadow-lg shadow-primary/25">
+              {/* Shield base */}
+              <ShieldCheck className="w-5 h-5 text-primary-foreground" />
+              {/* Decorative accent */}
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-sidebar flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-white" />
+              </div>
             </div>
             <AnimatePresence mode="wait">
               {!collapsed && (
@@ -200,9 +206,13 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                   <span className="font-bold text-sidebar-foreground text-lg tracking-tight">
                     Total-IK
                   </span>
-                  <span className="text-xs text-sidebar-foreground/60">
-                    HMS, BYGG, MAT
-                  </span>
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <span className="text-green-500 font-medium">HMS</span>
+                    <span className="text-sidebar-foreground/40">•</span>
+                    <span className="text-purple-500 font-medium">BYGG</span>
+                    <span className="text-sidebar-foreground/40">•</span>
+                    <span className="text-red-500 font-medium">MAT</span>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
