@@ -33,6 +33,7 @@ import {
 import { useAdminTemplatesForCustomers, AdminChecklistTemplate, AdminRoutineTemplate, AdminDocument } from "@/hooks/useAdminTemplatesForCustomers";
 import { useKsModule2ProjectTemplates } from "@/hooks/useKsModule2ProjectTemplates";
 import { useKsModule2Routines, KsModule2Routine } from "@/hooks/useKsModule2Routines";
+import { useKsModule2ChecklistTemplates, KsModule2ChecklistTemplate, ChecklistCheckpoint } from "@/hooks/useKsModule2ChecklistTemplates";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -120,6 +121,16 @@ export default function Ks2Malbibliotek() {
     isSaving: isSavingCustomRoutine,
   } = useKsModule2Routines(projectId);
 
+  const {
+    templates: customChecklistTemplates,
+    customCategories: existingCustomCategories,
+    createTemplate: createChecklistTemplate,
+    updateTemplate: updateChecklistTemplate,
+    deleteTemplate: deleteChecklistTemplate,
+    isLoading: isLoadingCustomChecklists,
+    isSaving: isSavingCustomChecklist,
+  } = useKsModule2ChecklistTemplates(projectId);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedChecklistCategory, setSelectedChecklistCategory] = useState<string>("all");
   const [selectedDocumentCategory, setSelectedDocumentCategory] = useState<string>("all");
@@ -138,6 +149,16 @@ export default function Ks2Malbibliotek() {
   const [customRoutineDescription, setCustomRoutineDescription] = useState("");
   const [customRoutineContent, setCustomRoutineContent] = useState("");
   const [customRoutineCategory, setCustomRoutineCategory] = useState("general");
+
+  // Custom checklist template dialog
+  const [showCustomChecklistDialog, setShowCustomChecklistDialog] = useState(false);
+  const [editingCustomChecklist, setEditingCustomChecklist] = useState<KsModule2ChecklistTemplate | null>(null);
+  const [customChecklistName, setCustomChecklistName] = useState("");
+  const [customChecklistDescription, setCustomChecklistDescription] = useState("");
+  const [customChecklistCategory, setCustomChecklistCategory] = useState("general");
+  const [customChecklistUseNewCategory, setCustomChecklistUseNewCategory] = useState(false);
+  const [customChecklistNewCategory, setCustomChecklistNewCategory] = useState("");
+  const [customChecklistCheckpoints, setCustomChecklistCheckpoints] = useState<ChecklistCheckpoint[]>([]);
 
   // Filter checklist templates
   const filteredChecklists = checklistTemplates.filter(t => {
@@ -235,17 +256,109 @@ export default function Ks2Malbibliotek() {
     }
   };
 
+  // Custom checklist template handlers
+  const openCreateCustomChecklist = () => {
+    setEditingCustomChecklist(null);
+    setCustomChecklistName("");
+    setCustomChecklistDescription("");
+    setCustomChecklistCategory("general");
+    setCustomChecklistUseNewCategory(false);
+    setCustomChecklistNewCategory("");
+    setCustomChecklistCheckpoints([{ checkpoint_text: "", help_text: "" }]);
+    setShowCustomChecklistDialog(true);
+  };
+
+  const openEditCustomChecklist = (checklist: KsModule2ChecklistTemplate) => {
+    setEditingCustomChecklist(checklist);
+    setCustomChecklistName(checklist.template_name);
+    setCustomChecklistDescription(checklist.description || "");
+    setCustomChecklistCategory(checklist.category || "general");
+    setCustomChecklistUseNewCategory(false);
+    setCustomChecklistNewCategory("");
+    setCustomChecklistCheckpoints(
+      checklist.checkpoints.length > 0 
+        ? checklist.checkpoints 
+        : [{ checkpoint_text: "", help_text: "" }]
+    );
+    setShowCustomChecklistDialog(true);
+  };
+
+  const handleSaveCustomChecklist = async () => {
+    if (!customChecklistName.trim()) {
+      toast.error("Vennligst fyll inn navn på sjekklisten");
+      return;
+    }
+
+    const validCheckpoints = customChecklistCheckpoints.filter(cp => cp.checkpoint_text.trim());
+    if (validCheckpoints.length === 0) {
+      toast.error("Legg til minst ett sjekkpunkt");
+      return;
+    }
+
+    const finalCategory = customChecklistUseNewCategory && customChecklistNewCategory.trim()
+      ? customChecklistNewCategory.trim()
+      : customChecklistCategory;
+
+    if (editingCustomChecklist) {
+      await updateChecklistTemplate(editingCustomChecklist.id, {
+        template_name: customChecklistName,
+        description: customChecklistDescription || null,
+        category: finalCategory,
+        checkpoints: validCheckpoints,
+      });
+    } else {
+      await createChecklistTemplate({
+        project_id: projectId!,
+        template_name: customChecklistName,
+        description: customChecklistDescription || undefined,
+        category: finalCategory,
+        checkpoints: validCheckpoints,
+      });
+    }
+    setShowCustomChecklistDialog(false);
+  };
+
+  const handleDeleteCustomChecklist = async (checklist: KsModule2ChecklistTemplate) => {
+    if (confirm("Er du sikker på at du vil slette denne sjekkliste-malen?")) {
+      await deleteChecklistTemplate(checklist.id);
+    }
+  };
+
+  const addCheckpoint = () => {
+    setCustomChecklistCheckpoints([...customChecklistCheckpoints, { checkpoint_text: "", help_text: "" }]);
+  };
+
+  const updateCheckpoint = (index: number, field: keyof ChecklistCheckpoint, value: string) => {
+    const updated = [...customChecklistCheckpoints];
+    updated[index] = { ...updated[index], [field]: value };
+    setCustomChecklistCheckpoints(updated);
+  };
+
+  const removeCheckpoint = (index: number) => {
+    if (customChecklistCheckpoints.length > 1) {
+      setCustomChecklistCheckpoints(customChecklistCheckpoints.filter((_, i) => i !== index));
+    }
+  };
+
   // Get unique categories that exist in the data
   const checklistCategoriesInUse = [...new Set(checklistTemplates.map(t => t.category))];
   const routineCategoriesInUse = [...new Set(routineTemplates.map(r => r.category))];
   const documentCategoriesInUse = [...new Set(documents.map(d => d.category).filter(Boolean))];
+
+  // All available categories for custom checklists (predefined + custom)
+  const allChecklistCategories = { ...CHECKLIST_CATEGORIES };
+  existingCustomCategories.forEach(cat => {
+    if (!allChecklistCategories[cat]) {
+      allChecklistCategories[cat] = cat;
+    }
+  });
 
   const openAddDialog = (type: 'checklist' | 'routine' | 'document') => {
     setAddDialogType(type);
     setShowAddDialog(true);
   };
 
-  if (isLoading || isLoadingProject || isLoadingCustomRoutines) {
+  if (isLoading || isLoadingProject || isLoadingCustomRoutines || isLoadingCustomChecklists) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-muted-foreground">Laster malbibliotek...</div>
@@ -324,6 +437,19 @@ export default function Ks2Malbibliotek() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-cyan-500/10">
+                <ClipboardList className="h-5 w-5 text-cyan-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{customChecklistTemplates.length}</p>
+                <p className="text-sm text-muted-foreground">Egne sjekklister</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-amber-500/10">
                 <FolderOpen className="h-5 w-5 text-amber-500" />
               </div>
@@ -337,10 +463,15 @@ export default function Ks2Malbibliotek() {
       </div>
 
       <Tabs defaultValue="checklists" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="checklists" className="gap-2">
             <ClipboardList className="h-4 w-4" />
             <span className="hidden sm:inline">Sjekklister</span>
+          </TabsTrigger>
+          <TabsTrigger value="custom-checklists" className="gap-2">
+            <PenLine className="h-4 w-4" />
+            <span className="hidden sm:inline">Egne sjekklister</span>
+            <span className="sm:hidden">Egne</span>
           </TabsTrigger>
           <TabsTrigger value="routines" className="gap-2">
             <BookOpen className="h-4 w-4" />
@@ -489,6 +620,89 @@ export default function Ks2Malbibliotek() {
                   </Card>
                 );
               })}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Custom Checklists Tab */}
+        <TabsContent value="custom-checklists" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Opprett og administrer egne sjekkliste-maler for dette prosjektet
+            </p>
+            <Button onClick={openCreateCustomChecklist}>
+              <Plus className="h-4 w-4 mr-2" />
+              Ny sjekkliste-mal
+            </Button>
+          </div>
+
+          {customChecklistTemplates.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <ClipboardList className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="mb-2">Ingen egne sjekkliste-maler opprettet</p>
+                <p className="text-sm">Opprett din første sjekkliste-mal ved å klikke på knappen ovenfor</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {customChecklistTemplates.map((template) => (
+                <Card key={template.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-cyan-500/10">
+                          <ClipboardList className="h-5 w-5 text-cyan-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-base truncate">{template.template_name}</CardTitle>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            <Badge variant="secondary">
+                              {allChecklistCategories[template.category] || template.category}
+                            </Badge>
+                            <Badge variant="outline" className="gap-1 text-cyan-600">
+                              <PenLine className="h-3 w-3" />
+                              Egendefinert
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {template.description && (
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                        {template.description}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground mb-3">
+                      {template.checkpoints.length} sjekkpunkt
+                    </p>
+                    <div className="flex items-center justify-end gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="gap-1"
+                        onClick={() => openEditCustomChecklist(template)}
+                      >
+                        <Edit className="h-3 w-3" />
+                        Rediger
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="gap-1 text-destructive hover:text-destructive"
+                        onClick={() => handleDeleteCustomChecklist(template)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Opprettet: {format(parseISO(template.created_at), "d. MMM yyyy", { locale: nb })}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </TabsContent>
@@ -1073,6 +1287,123 @@ export default function Ks2Malbibliotek() {
               disabled={isSavingCustomRoutine || !customRoutineName.trim()}
             >
               {isSavingCustomRoutine ? "Lagrer..." : (editingCustomRoutine ? "Lagre endringer" : "Opprett rutine")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Checklist Create/Edit Dialog */}
+      <Dialog open={showCustomChecklistDialog} onOpenChange={setShowCustomChecklistDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardList className="h-5 w-5 text-cyan-500" />
+              {editingCustomChecklist ? "Rediger sjekkliste-mal" : "Opprett ny sjekkliste-mal"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingCustomChecklist 
+                ? "Rediger innholdet i sjekkliste-malen nedenfor"
+                : "Fyll inn informasjon for å opprette en ny sjekkliste-mal"
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="checklist-name">Navn på sjekkliste *</Label>
+              <Input
+                id="checklist-name"
+                value={customChecklistName}
+                onChange={(e) => setCustomChecklistName(e.target.value)}
+                placeholder="F.eks. Kontroll av våtrom"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Kategori</Label>
+              <div className="flex items-center gap-2 mb-2">
+                <Checkbox
+                  id="use-new-category"
+                  checked={customChecklistUseNewCategory}
+                  onCheckedChange={(checked) => setCustomChecklistUseNewCategory(!!checked)}
+                />
+                <label htmlFor="use-new-category" className="text-sm cursor-pointer">
+                  Opprett egen kategori
+                </label>
+              </div>
+              {customChecklistUseNewCategory ? (
+                <Input
+                  value={customChecklistNewCategory}
+                  onChange={(e) => setCustomChecklistNewCategory(e.target.value)}
+                  placeholder="Skriv inn ny kategori (f.eks. Vernerunde, Opplæring)"
+                />
+              ) : (
+                <Select value={customChecklistCategory} onValueChange={setCustomChecklistCategory}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(allChecklistCategories).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="checklist-description">Beskrivelse</Label>
+              <Input
+                id="checklist-description"
+                value={customChecklistDescription}
+                onChange={(e) => setCustomChecklistDescription(e.target.value)}
+                placeholder="Kort beskrivelse av sjekklisten"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Sjekkpunkter *</Label>
+              <div className="space-y-3">
+                {customChecklistCheckpoints.map((cp, index) => (
+                  <div key={index} className="flex gap-2 items-start">
+                    <div className="flex-1 space-y-1">
+                      <Input
+                        value={cp.checkpoint_text}
+                        onChange={(e) => updateCheckpoint(index, 'checkpoint_text', e.target.value)}
+                        placeholder={`Sjekkpunkt ${index + 1}`}
+                      />
+                      <Input
+                        value={cp.help_text || ""}
+                        onChange={(e) => updateCheckpoint(index, 'help_text', e.target.value)}
+                        placeholder="Hjelpetekst (valgfritt)"
+                        className="text-sm"
+                      />
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeCheckpoint(index)}
+                      disabled={customChecklistCheckpoints.length === 1}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <Button variant="outline" size="sm" onClick={addCheckpoint} className="mt-2">
+                <Plus className="h-4 w-4 mr-2" />
+                Legg til sjekkpunkt
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCustomChecklistDialog(false)}>
+              Avbryt
+            </Button>
+            <Button 
+              onClick={handleSaveCustomChecklist}
+              disabled={isSavingCustomChecklist || !customChecklistName.trim()}
+            >
+              {isSavingCustomChecklist ? "Lagrer..." : (editingCustomChecklist ? "Lagre endringer" : "Opprett sjekkliste-mal")}
             </Button>
           </DialogFooter>
         </DialogContent>
