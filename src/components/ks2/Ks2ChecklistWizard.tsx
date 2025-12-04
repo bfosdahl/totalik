@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,36 +37,85 @@ import { toast } from "sonner";
 import { SignaturePad } from "./SignaturePad";
 import { downloadChecklistTemplatePdf } from "@/utils/ksChecklistTemplatePdf";
 
+// Pre-selected template from Malbibliotek (admin templates)
+export interface PreSelectedTemplate {
+  id: string;
+  template_name: string;
+  category: string;
+  description?: string | null;
+  checkpoints: any[];
+}
+
 interface Ks2ChecklistWizardProps {
   projectId: string;
   onClose: () => void;
+  preSelectedTemplate?: PreSelectedTemplate | null;
 }
 
 type WizardStep = "template" | "details" | "items" | "signature" | "summary";
 
-export function Ks2ChecklistWizard({ projectId, onClose }: Ks2ChecklistWizardProps) {
+export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate }: Ks2ChecklistWizardProps) {
   const { createChecklist, isSaving } = useKsModule2Checklists(projectId);
   const { users } = useCompanyUsers();
-  const [step, setStep] = useState<WizardStep>("template");
+  
+  // Determine initial step based on whether template is pre-selected
+  const initialStep: WizardStep = preSelectedTemplate ? "details" : "template";
+  const [step, setStep] = useState<WizardStep>(initialStep);
   const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
   const [title, setTitle] = useState("");
   const [responsibleUserId, setResponsibleUserId] = useState("");
   const [responsibleUserName, setResponsibleUserName] = useState("");
   const [deadlineDate, setDeadlineDate] = useState("");
   const [isPaper, setIsPaper] = useState(false);
-  const [executeNow, setExecuteNow] = useState(true); // true = utfør nå, false = planlegg til senere
+  const [executeNow, setExecuteNow] = useState(true);
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [uploadingPhotoIndex, setUploadingPhotoIndex] = useState<string | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [inspectorSignature, setInspectorSignature] = useState<string>("");
   const [inspectorName, setInspectorName] = useState("");
+  
+  // Track if we're using admin template (pre-selected) or built-in template
+  const [isAdminTemplate, setIsAdminTemplate] = useState(!!preSelectedTemplate);
+
+  // Initialize with pre-selected template if provided
+  useEffect(() => {
+    if (preSelectedTemplate) {
+      setIsAdminTemplate(true);
+      setTitle(`${preSelectedTemplate.template_name} – ${format(new Date(), "dd.MM.yyyy")}`);
+      
+      // Convert admin template checkpoints to ChecklistItems
+      const checkpoints = Array.isArray(preSelectedTemplate.checkpoints) 
+        ? preSelectedTemplate.checkpoints 
+        : [];
+      
+      const convertedItems: ChecklistItem[] = checkpoints.map((cp: any, idx: number) => ({
+        id: cp.id || `${idx + 1}`,
+        text: cp.text || cp.label || String(cp),
+        type: cp.type || "yes_no",
+        required: cp.required !== false,
+        value: null,
+        comment: "",
+        photos: [],
+      }));
+      
+      setItems(convertedItems);
+      
+      // Create a "virtual" template for compatibility
+      setSelectedTemplate({
+        name: preSelectedTemplate.template_name,
+        category: preSelectedTemplate.category,
+        items: convertedItems.map(({ value, comment, photos, ...rest }) => rest),
+      });
+    }
+  }, [preSelectedTemplate]);
 
   const steps: WizardStep[] = isPaper || !executeNow
-    ? ["template", "details", "summary"] 
-    : ["template", "details", "items", "signature", "summary"];
+    ? (preSelectedTemplate ? ["details", "summary"] : ["template", "details", "summary"])
+    : (preSelectedTemplate ? ["details", "items", "signature", "summary"] : ["template", "details", "items", "signature", "summary"]);
   const currentStepIndex = steps.indexOf(step);
 
   const handleSelectTemplate = (template: ChecklistTemplate) => {
+    setIsAdminTemplate(false);
     setSelectedTemplate(template);
     setTitle(`${template.name} – ${format(new Date(), "dd.MM.yyyy")}`);
     setItems(
