@@ -231,10 +231,13 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
 
         {/* Company selector */}
         <div className="px-3 py-4 border-b border-sidebar-border">
-          <button className={cn(
-            "flex items-center gap-3 w-full p-3 rounded-lg bg-sidebar-accent/50 hover:bg-sidebar-accent transition-colors",
-            collapsed && "justify-center"
-          )}>
+          <button 
+            onClick={() => navigate("/settings?tab=company")}
+            className={cn(
+              "flex items-center gap-3 w-full p-3 rounded-lg bg-sidebar-accent/50 hover:bg-sidebar-accent transition-colors",
+              collapsed && "justify-center"
+            )}
+          >
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/20">
               <Building2 className="w-4 h-4 text-sidebar-primary" />
             </div>

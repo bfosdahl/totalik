@@ -58,6 +58,7 @@ const Index = () => {
             icon={Shield}
             variant="success"
             delay={0}
+            onClick={() => navigate("/setup")}
           />
           <StatsCard
             title="Åpne avvik"
@@ -66,6 +67,7 @@ const Index = () => {
             icon={AlertTriangle}
             variant="warning"
             delay={0.1}
+            onClick={() => navigate("/deviations")}
           />
           <StatsCard
             title="Fullførte tiltak"
@@ -74,6 +76,7 @@ const Index = () => {
             icon={CheckCircle2}
             variant="success"
             delay={0.2}
+            onClick={() => navigate("/setup?step=3")}
           />
           <StatsCard
             title="Forfallende"
@@ -82,6 +85,7 @@ const Index = () => {
             icon={Clock}
             variant="destructive"
             delay={0.3}
+            onClick={() => navigate("/deviations")}
           />
         </div>
 
