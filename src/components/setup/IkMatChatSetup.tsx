@@ -265,33 +265,33 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
   };
 
   return (
-    <Card className="h-[700px] flex flex-col">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Bot className="h-5 w-5" />
+    <Card className="h-[calc(100vh-200px)] min-h-[400px] max-h-[700px] flex flex-col">
+      <CardHeader className="px-4 sm:px-6 py-3 sm:py-4">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <Bot className="h-4 w-4 sm:h-5 sm:w-5" />
           IK-MAT Assistent
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-xs sm:text-sm">
           La AI-assistenten hjelpe deg med å sette opp et komplett matsikkerhetssystem tilpasset din virksomhet.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col p-0">
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-4">
+      <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+        <ScrollArea className="flex-1 p-3 sm:p-4">
+          <div className="space-y-3 sm:space-y-4">
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex gap-3 ${
+                className={`flex gap-2 sm:gap-3 ${
                   message.role === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
                 {message.role === 'assistant' && (
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Bot className="h-4 w-4 text-primary" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Bot className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] rounded-lg px-4 py-2 whitespace-pre-wrap ${
+                  className={`max-w-[85%] sm:max-w-[80%] rounded-lg px-3 py-2 sm:px-4 whitespace-pre-wrap text-xs sm:text-sm break-words ${
                     message.role === 'user'
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted'
@@ -300,26 +300,26 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
                   {message.content}
                 </div>
                 {message.role === 'user' && (
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                    <User className="h-4 w-4 text-primary-foreground" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                    <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary-foreground" />
                   </div>
                 )}
               </div>
             ))}
             {isLoading && (
-              <div className="flex gap-3 justify-start">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Bot className="h-4 w-4 text-primary" />
+              <div className="flex gap-2 sm:gap-3 justify-start">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Bot className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                 </div>
-                <div className="bg-muted rounded-lg px-4 py-2">
+                <div className="bg-muted rounded-lg px-3 py-2 sm:px-4">
                   <Loader2 className="h-4 w-4 animate-spin" />
                 </div>
               </div>
             )}
             {isSaving && (
-              <div className="flex gap-3 justify-center">
-                <div className="bg-success/10 text-success rounded-lg px-4 py-3 flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5" />
+              <div className="flex gap-2 sm:gap-3 justify-center">
+                <div className="bg-success/10 text-success rounded-lg px-3 py-2 sm:px-4 sm:py-3 flex items-center gap-2 text-xs sm:text-sm">
+                  <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>Lagrer IK-MAT innhold...</span>
                 </div>
               </div>
@@ -328,7 +328,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
-        <div className="p-4 border-t">
+        <div className="p-3 sm:p-4 border-t">
           <div className="flex gap-2">
             <Input
               value={inputValue}
@@ -336,12 +336,13 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
               onKeyPress={handleKeyPress}
               placeholder="Skriv ditt svar her..."
               disabled={isLoading || isSaving}
-              className="flex-1"
+              className="flex-1 text-base sm:text-sm"
             />
             <Button
               onClick={sendMessage}
               disabled={!inputValue.trim() || isLoading || isSaving}
               size="icon"
+              className="h-10 w-10"
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
