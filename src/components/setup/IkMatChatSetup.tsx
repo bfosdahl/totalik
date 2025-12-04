@@ -138,11 +138,13 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
 
       if (response.status === 429) {
         toast.error("For mange forespørsler. Vennligst vent litt og prøv igjen.");
+        setIsLoading(false);
         return;
       }
 
       if (response.status === 402) {
         toast.error("Kreditter oppbrukt. Kontakt administrator.");
+        setIsLoading(false);
         return;
       }
 
