@@ -342,14 +342,14 @@ export default function Ks2Rutiner() {
 
                     {approverMode === 'select' ? (
                       <Select
-                        value={viewingRoutine?.approved_by || ""}
-                        onValueChange={(value) => handleSetApprover(value)}
+                        value={viewingRoutine?.approved_by || "__none__"}
+                        onValueChange={(value) => handleSetApprover(value === "__none__" ? "" : value)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Velg godkjenner..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Ingen valgt</SelectItem>
+                          <SelectItem value="__none__">Ingen valgt</SelectItem>
                           {users.map((user) => (
                             <SelectItem key={user.id} value={getUserDisplayName(user)}>
                               {getUserDisplayName(user)}
