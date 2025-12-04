@@ -66,6 +66,14 @@ export default function AdminKsPanel() {
   const [editingChecklist, setEditingChecklist] = useState<AdminChecklistTemplate | null>(null);
   const [editingRoutine, setEditingRoutine] = useState<AdminRoutineTemplate | null>(null);
 
+  // Custom category state
+  const [checklistCustomCategoryMode, setChecklistCustomCategoryMode] = useState(false);
+  const [checklistCustomCategory, setChecklistCustomCategory] = useState("");
+  const [routineCustomCategoryMode, setRoutineCustomCategoryMode] = useState(false);
+  const [routineCustomCategory, setRoutineCustomCategory] = useState("");
+  const [documentCustomCategoryMode, setDocumentCustomCategoryMode] = useState(false);
+  const [documentCustomCategory, setDocumentCustomCategory] = useState("");
+
   // Checklist form state
   const [checklistForm, setChecklistForm] = useState({
     template_name: "",
@@ -110,6 +118,8 @@ export default function AdminKsPanel() {
       checkpoints: [{ checkpoint_text: "", help_text: "" }],
     });
     setEditingChecklist(null);
+    setChecklistCustomCategoryMode(false);
+    setChecklistCustomCategory("");
   };
 
   const resetRoutineForm = () => {
@@ -123,6 +133,22 @@ export default function AdminKsPanel() {
       is_locked: false,
     });
     setEditingRoutine(null);
+    setRoutineCustomCategoryMode(false);
+    setRoutineCustomCategory("");
+  };
+
+  const resetDocumentForm = () => {
+    setDocumentForm({
+      document_name: "",
+      document_type: "Skjema",
+      description: "",
+      category: "",
+      is_mandatory: false,
+      version: "2025.1",
+    });
+    setSelectedFile(null);
+    setDocumentCustomCategoryMode(false);
+    setDocumentCustomCategory("");
   };
 
   const handleCreateChecklist = async () => {
@@ -209,15 +235,7 @@ export default function AdminKsPanel() {
       version: documentForm.version,
     });
 
-    setDocumentForm({
-      document_name: "",
-      document_type: "Skjema",
-      description: "",
-      category: "",
-      is_mandatory: false,
-      version: "2025.1",
-    });
-    setSelectedFile(null);
+    resetDocumentForm();
     setShowUploadDialog(false);
   };
 
@@ -429,19 +447,54 @@ export default function AdminKsPanel() {
 
                       <div className="space-y-2">
                         <Label>Kategori *</Label>
-                        <Select
-                          value={checklistForm.category}
-                          onValueChange={(value) => setChecklistForm({ ...checklistForm, category: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Velg kategori" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {CHECKLIST_CATEGORIES.map((cat) => (
-                              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        {checklistCustomCategoryMode ? (
+                          <div className="flex gap-2">
+                            <Input
+                              value={checklistCustomCategory}
+                              onChange={(e) => {
+                                setChecklistCustomCategory(e.target.value);
+                                setChecklistForm({ ...checklistForm, category: e.target.value });
+                              }}
+                              placeholder="Skriv inn ny kategori..."
+                              autoFocus
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setChecklistCustomCategoryMode(false);
+                                setChecklistCustomCategory("");
+                                setChecklistForm({ ...checklistForm, category: "" });
+                              }}
+                            >
+                              Avbryt
+                            </Button>
+                          </div>
+                        ) : (
+                          <Select
+                            value={checklistForm.category}
+                            onValueChange={(value) => {
+                              if (value === "__custom__") {
+                                setChecklistCustomCategoryMode(true);
+                              } else {
+                                setChecklistForm({ ...checklistForm, category: value });
+                              }
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Velg kategori" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CHECKLIST_CATEGORIES.map((cat) => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                              ))}
+                              <SelectItem value="__custom__" className="text-primary font-medium">
+                                + Opprett ny kategori...
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       </div>
 
                       <div className="space-y-2">
@@ -638,19 +691,54 @@ export default function AdminKsPanel() {
 
                       <div className="space-y-2">
                         <Label>Kategori *</Label>
-                        <Select
-                          value={routineForm.category}
-                          onValueChange={(value) => setRoutineForm({ ...routineForm, category: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Velg kategori" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ROUTINE_CATEGORIES.map((cat) => (
-                              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        {routineCustomCategoryMode ? (
+                          <div className="flex gap-2">
+                            <Input
+                              value={routineCustomCategory}
+                              onChange={(e) => {
+                                setRoutineCustomCategory(e.target.value);
+                                setRoutineForm({ ...routineForm, category: e.target.value });
+                              }}
+                              placeholder="Skriv inn ny kategori..."
+                              autoFocus
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setRoutineCustomCategoryMode(false);
+                                setRoutineCustomCategory("");
+                                setRoutineForm({ ...routineForm, category: "" });
+                              }}
+                            >
+                              Avbryt
+                            </Button>
+                          </div>
+                        ) : (
+                          <Select
+                            value={routineForm.category}
+                            onValueChange={(value) => {
+                              if (value === "__custom__") {
+                                setRoutineCustomCategoryMode(true);
+                              } else {
+                                setRoutineForm({ ...routineForm, category: value });
+                              }
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Velg kategori" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ROUTINE_CATEGORIES.map((cat) => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                              ))}
+                              <SelectItem value="__custom__" className="text-primary font-medium">
+                                + Opprett ny kategori...
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       </div>
 
                       <div className="space-y-2">
@@ -773,7 +861,10 @@ export default function AdminKsPanel() {
               <p className="text-sm text-muted-foreground">
                 {documents.length} dokumenter totalt
               </p>
-              <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+              <Dialog open={showUploadDialog} onOpenChange={(open) => {
+                setShowUploadDialog(open);
+                if (!open) resetDocumentForm();
+              }}>
                 <DialogTrigger asChild>
                   <Button className="gap-2">
                     <Upload className="h-4 w-4" />
@@ -817,19 +908,54 @@ export default function AdminKsPanel() {
                       </div>
                       <div className="space-y-2">
                         <Label>Kategori</Label>
-                        <Select
-                          value={documentForm.category}
-                          onValueChange={(value) => setDocumentForm({ ...documentForm, category: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Velg kategori" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {DOCUMENT_CATEGORIES.map((cat) => (
-                              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        {documentCustomCategoryMode ? (
+                          <div className="flex gap-2">
+                            <Input
+                              value={documentCustomCategory}
+                              onChange={(e) => {
+                                setDocumentCustomCategory(e.target.value);
+                                setDocumentForm({ ...documentForm, category: e.target.value });
+                              }}
+                              placeholder="Skriv inn ny kategori..."
+                              autoFocus
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setDocumentCustomCategoryMode(false);
+                                setDocumentCustomCategory("");
+                                setDocumentForm({ ...documentForm, category: "" });
+                              }}
+                            >
+                              Avbryt
+                            </Button>
+                          </div>
+                        ) : (
+                          <Select
+                            value={documentForm.category}
+                            onValueChange={(value) => {
+                              if (value === "__custom__") {
+                                setDocumentCustomCategoryMode(true);
+                              } else {
+                                setDocumentForm({ ...documentForm, category: value });
+                              }
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Velg kategori" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {DOCUMENT_CATEGORIES.map((cat) => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                              ))}
+                              <SelectItem value="__custom__" className="text-primary font-medium">
+                                + Opprett ny kategori...
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       </div>
                     </div>
 
