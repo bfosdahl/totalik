@@ -172,7 +172,13 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
       // Check if the message contains JSON (setup complete)
       const jsonContent = extractJsonFromContent(assistantMessage);
       if (jsonContent) {
+        console.log("JSON found in response, saving setup data...");
         await saveSetupData(jsonContent);
+      } else {
+        // Log for debugging if we expected JSON but didn't find it
+        if (assistantMessage.includes("Supert") && assistantMessage.includes("HMS-system")) {
+          console.warn("Expected JSON in final message but none found. Full message:", assistantMessage);
+        }
       }
     } catch (error) {
       console.error("Error:", error);

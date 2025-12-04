@@ -234,6 +234,7 @@ function HelpSection() {
 export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessmentStepProps>(
   function RiskAssessmentStep({ existingData, onSave, isSaving }, ref) {
     const [risks, setRisks] = useState<RiskItem[]>([]);
+    const [hasInitialized, setHasInitialized] = useState(false);
     const [newRisk, setNewRisk] = useState<Partial<RiskItem>>({
       description: "",
       consequence: 0,
@@ -242,13 +243,15 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
       planned_measures: "",
     });
 
+    // Only load from existingData once on initial mount
     useEffect(() => {
-      if (existingData?.risks) {
+      if (existingData?.risks && !hasInitialized) {
         setRisks(existingData.risks);
+        setHasInitialized(true);
       }
-    }, [existingData]);
+    }, [existingData, hasInitialized]);
 
-    const addRisk = () => {
+    const addRisk = async () => {
       if (!newRisk.description || !newRisk.consequence || !newRisk.probability) return;
 
       const risk: RiskItem = {
@@ -260,7 +263,8 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
         planned_measures: newRisk.planned_measures || "",
       };
 
-      setRisks((prev) => [...prev, risk]);
+      const updatedRisks = [...risks, risk];
+      setRisks(updatedRisks);
       setNewRisk({
         description: "",
         consequence: 0,
@@ -268,10 +272,16 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
         existing_measures: "",
         planned_measures: "",
       });
+      
+      // Auto-save after adding
+      await onSave({ risks: updatedRisks });
     };
 
-    const removeRisk = (id: string) => {
-      setRisks((prev) => prev.filter((r) => r.id !== id));
+    const removeRisk = async (id: string) => {
+      const updatedRisks = risks.filter((r) => r.id !== id);
+      setRisks(updatedRisks);
+      // Auto-save after removing to persist deletion
+      await onSave({ risks: updatedRisks });
     };
 
     const handleSave = async () => {
