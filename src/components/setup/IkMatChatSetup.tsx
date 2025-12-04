@@ -41,55 +41,13 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
     try {
       console.log("Saving generated content:", content);
 
-      // Save goals if present
-      if (content.goals && content.goals.length > 0) {
-        const goalsToInsert = content.goals.map((goal: string, index: number) => ({
-          company_id: companyId,
-          goal_text: goal,
-          is_predefined: false,
-          sort_order: index,
-        }));
+      // NOTE: IK-MAT stores ALL its data in company_modules.settings.generatedContent
+      // It does NOT use company_goals, company_risk_assessments, or company_routines
+      // Those tables are reserved for IK-HMS to avoid data conflicts between modules
 
-        const { error: goalsError } = await supabase
-          .from('company_goals')
-          .insert(goalsToInsert);
-
-        if (goalsError && goalsError.code !== '23505') {
-          console.error("Error saving goals:", goalsError);
-        }
-      }
-
-      // Save risk assessment if present
-      if (content.risks && content.risks.length > 0) {
-        const { error: risksError } = await supabase
-          .from('company_risk_assessments')
-          .upsert({
-            company_id: companyId,
-            risks: content.risks,
-          }, {
-            onConflict: 'company_id'
-          });
-
-        if (risksError) {
-          console.error("Error saving risks:", risksError);
-        }
-      }
-
-      // Save routines if present
-      if (content.routines && content.routines.length > 0) {
-        const { error: routinesError } = await supabase
-          .from('company_routines')
-          .upsert({
-            company_id: companyId,
-            routines: content.routines,
-          }, {
-            onConflict: 'company_id'
-          });
-
-        if (routinesError) {
-          console.error("Error saving routines:", routinesError);
-        }
-      }
+      // NOTE: IK-MAT routines are stored in company_modules.settings.generatedContent
+      // NOT in company_routines (which is reserved for IK-HMS)
+      // The routines are already included in the content object below
 
       // Save all content in company_modules settings
       const { error: moduleError } = await supabase
