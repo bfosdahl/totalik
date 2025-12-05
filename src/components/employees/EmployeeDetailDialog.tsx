@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   User, 
   Phone, 
@@ -28,8 +29,11 @@ import {
   AlertCircle,
   Upload,
   CreditCard,
-  Pen
+  Pen,
+  Key,
+  Loader2
 } from "lucide-react";
+import { toast } from "sonner";
 import { Employee, useUpdateEmployee, useEmployeeDocuments, useEmployeeCourses } from "@/hooks/useEmployees";
 import { useAuth } from "@/contexts/AuthContext";
 import { AddCourseDialog } from "./AddCourseDialog";
@@ -63,8 +67,46 @@ export function EmployeeDetailDialog({
   });
   const [isAddCourseOpen, setIsAddCourseOpen] = useState(false);
   const [isUploadDocOpen, setIsUploadDocOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [sendPasswordEmail, setSendPasswordEmail] = useState(true);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   const updateEmployee = useUpdateEmployee();
+
+  const handleResetPassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      toast.error("Passordet må være minst 6 tegn");
+      return;
+    }
+
+    setIsResettingPassword(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("reset-user-password", {
+        body: {
+          userId: employee.id,
+          newPassword,
+          sendEmail: sendPasswordEmail,
+        },
+      });
+
+      if (error) {
+        const errorMessage = error.context?.error || error.message || "Kunne ikke endre passord";
+        toast.error(errorMessage);
+        return;
+      }
+
+      toast.success(data.emailSent 
+        ? "Passord oppdatert og sendt på e-post" 
+        : "Passord oppdatert"
+      );
+      setNewPassword("");
+    } catch (err) {
+      console.error("Password reset error:", err);
+      toast.error("En feil oppstod ved endring av passord");
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
   const { documents, isLoading: docsLoading, deleteDocument } = useEmployeeDocuments(employee.id);
   const { courses, isLoading: coursesLoading, deleteCourse } = useEmployeeCourses(employee.id);
 
@@ -285,6 +327,55 @@ export function EmployeeDetailDialog({
                   )}
                 </CardContent>
               </Card>
+
+              {canManage && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Key className="w-5 h-5" />
+                      Endre passord
+                    </CardTitle>
+                    <CardDescription>Sett nytt passord for denne ansatte</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="newPassword">Nytt passord</Label>
+                        <Input
+                          id="newPassword"
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Minst 6 tegn"
+                        />
+                      </div>
+                      <div className="flex items-end">
+                        <Button 
+                          onClick={handleResetPassword} 
+                          disabled={isResettingPassword || !newPassword}
+                        >
+                          {isResettingPassword ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Key className="w-4 h-4 mr-2" />
+                          )}
+                          Endre passord
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="sendEmail" 
+                        checked={sendPasswordEmail}
+                        onCheckedChange={(checked) => setSendPasswordEmail(checked as boolean)}
+                      />
+                      <Label htmlFor="sendEmail" className="text-sm font-normal cursor-pointer">
+                        Send nytt passord på e-post til ansatt
+                      </Label>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             {/* HMS Card Tab */}
