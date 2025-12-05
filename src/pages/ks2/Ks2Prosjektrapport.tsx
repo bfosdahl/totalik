@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import {
   FileText,
   Download,
@@ -15,14 +16,31 @@ import {
   FolderOpen,
   Info,
   Loader2,
+  HardHat,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useKsModule2Checklists } from "@/hooks/useKsModule2Checklists";
 import { useKsModule2Avvik } from "@/hooks/useKsModule2Avvik";
 import { useKsModule2Uk } from "@/hooks/useKsModule2Uk";
+import { useKsModule2Sja } from "@/hooks/useKsModule2Sja";
+import { useKsModule2Vernerunder } from "@/hooks/useKsModule2Vernerunder";
 import { supabase } from "@/integrations/supabase/client";
-import { generateProjectReportPdf } from "@/utils/ksModule2ProjectReport";
+import { generateProjectReportPdf, ReportSections } from "@/utils/ksModule2ProjectReport";
 import { toast } from "sonner";
+
+interface ProjectData {
+  id: string;
+  project_name: string;
+  project_number: string;
+  address?: string;
+  client_name?: string;
+  gnr_bnr?: string;
+  municipality?: string;
+  start_date?: string;
+  end_date?: string;
+  status: string;
+}
 
 export default function Ks2Prosjektrapport() {
   const { projectId } = useParams();
@@ -30,31 +48,47 @@ export default function Ks2Prosjektrapport() {
   const { checklists } = useKsModule2Checklists(projectId || null);
   const { avvikList } = useKsModule2Avvik(projectId || null);
   const { ukList } = useKsModule2Uk(projectId || null);
+  const { sjaList } = useKsModule2Sja(projectId);
+  const { vernerunder } = useKsModule2Vernerunder(projectId);
 
   const [isGenerating, setIsGenerating] = useState(false);
-  const [sections, setSections] = useState({
+  const [project, setProject] = useState<ProjectData | null>(null);
+  const [isLoadingProject, setIsLoadingProject] = useState(true);
+  
+  const [sections, setSections] = useState<ReportSections>({
     includeProjectInfo: true,
     includeChecklists: true,
+    includeChecklistDetails: false,
     includeAvvik: true,
     includeUk: true,
+    includeSja: true,
+    includeVernerunder: true,
     includeDocuments: true,
   });
 
-  const [project, setProject] = useState<any>(null);
-
   // Fetch project info
-  useState(() => {
+  useEffect(() => {
     const fetchProject = async () => {
       if (!projectId) return;
-      const { data } = await supabase
-        .from("ks_module2_projects")
-        .select("*")
-        .eq("id", projectId)
-        .single();
-      setProject(data);
+      setIsLoadingProject(true);
+      try {
+        const { data, error } = await supabase
+          .from("ks_module2_projects")
+          .select("*")
+          .eq("id", projectId)
+          .single();
+        
+        if (error) throw error;
+        setProject(data);
+      } catch (error) {
+        console.error("Error fetching project:", error);
+        toast.error("Kunne ikke hente prosjektdata");
+      } finally {
+        setIsLoadingProject(false);
+      }
     };
     fetchProject();
-  });
+  }, [projectId]);
 
   const handleGenerateReport = async () => {
     if (!project || !projectId) {
@@ -65,7 +99,7 @@ export default function Ks2Prosjektrapport() {
     setIsGenerating(true);
 
     try {
-      // Fetch documents
+      // Fetch documents marked for inclusion
       const { data: documents } = await supabase
         .from("ks_module2_project_documents" as any)
         .select("*")
@@ -82,6 +116,8 @@ export default function Ks2Prosjektrapport() {
           project_number: project.project_number,
           address: project.address,
           client_name: project.client_name,
+          gnr_bnr: project.gnr_bnr,
+          municipality: project.municipality,
           start_date: project.start_date,
           end_date: project.end_date,
           status: project.status,
@@ -93,6 +129,13 @@ export default function Ks2Prosjektrapport() {
           status: c.status,
           completed_at: c.completed_at,
           completed_by_name: c.responsible_user_name,
+          checkpoints: c.status === "completed" && c.checklist_items?.length 
+            ? c.checklist_items.map((item) => ({
+                label: item.text || "Sjekkpunkt",
+                response: item.value === true ? "OK" : item.value === false ? "Nei" : item.value?.toString() || "-",
+                comment: item.comment,
+              }))
+            : undefined,
         })),
         avvik: avvikList.map(a => ({
           avvik_number: a.avvik_number,
@@ -102,6 +145,8 @@ export default function Ks2Prosjektrapport() {
           status: a.status,
           discovered_date: a.discovered_date,
           responsible_name: a.responsible_name,
+          description: a.description,
+          corrective_action: a.corrective_action,
         })),
         ukControls: ukList.map(u => ({
           uk_number: u.uk_number,
@@ -109,6 +154,30 @@ export default function Ks2Prosjektrapport() {
           status: u.status,
           controller_company: u.controller_company,
           result: u.result,
+        })),
+        sjaList: sjaList.map(s => ({
+          sja_number: s.sja_number,
+          title: s.title,
+          work_description: s.work_description,
+          location: s.location,
+          planned_date: s.planned_date,
+          responsible_name: s.responsible_name,
+          status: s.status,
+          overall_risk_level: s.overall_risk_level,
+          identified_risks: s.identified_risks,
+          risk_reducing_measures: s.risk_reducing_measures,
+          completed_at: s.completed_at,
+          completed_by_name: s.completed_by_name,
+        })),
+        vernerunder: vernerunder.map(v => ({
+          vernerunde_number: v.vernerunde_number,
+          title: v.title,
+          scheduled_date: v.scheduled_date,
+          completed_date: v.completed_date,
+          responsible_name: v.responsible_name,
+          status: v.status,
+          findings_count: v.findings?.length || 0,
+          completed_by_name: v.completed_by_name,
         })),
         documents: (documents || []).map((d: any) => ({
           document_name: d.document_name,
@@ -131,13 +200,23 @@ export default function Ks2Prosjektrapport() {
   const completedChecklists = checklists.filter(c => c.status === "completed").length;
   const closedAvvik = avvikList.filter(a => a.status === "closed").length;
   const approvedUk = ukList.filter(u => u.status === "approved").length;
+  const completedSja = sjaList.filter(s => s.status === "completed").length;
+  const completedVernerunder = vernerunder.filter(v => v.status === "completed").length;
+
+  if (isLoadingProject) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">Prosjektrapport / FDV-pakke</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-xl sm:text-2xl font-bold">Prosjektrapport / FDV-pakke</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
           Generer samlet prosjektdokumentasjon som PDF
         </p>
       </div>
@@ -152,111 +231,115 @@ export default function Ks2Prosjektrapport() {
                 Velg hvilke seksjoner som skal inkluderes i rapporten
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               {/* Project Info */}
-              <div className="flex items-center justify-between p-4 rounded-lg border">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-blue-100">
-                    <Info className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <Label className="font-medium">Prosjektinformasjon</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Grunnleggende prosjektdata og status
-                    </p>
-                  </div>
-                </div>
-                <Checkbox
-                  checked={sections.includeProjectInfo}
-                  onCheckedChange={(checked) => 
-                    setSections(s => ({ ...s, includeProjectInfo: !!checked }))
-                  }
-                />
-              </div>
+              <SectionToggle
+                icon={Info}
+                iconBgColor="bg-blue-100"
+                iconColor="text-blue-600"
+                label="Prosjektinformasjon"
+                description="Grunnleggende prosjektdata og status"
+                checked={sections.includeProjectInfo}
+                onCheckedChange={(checked) => 
+                  setSections(s => ({ ...s, includeProjectInfo: !!checked }))
+                }
+              />
 
               {/* Checklists */}
-              <div className="flex items-center justify-between p-4 rounded-lg border">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-green-100">
-                    <ClipboardList className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div>
-                    <Label className="font-medium">Sjekklister og egenkontroller</Label>
-                    <p className="text-sm text-muted-foreground">
-                      {completedChecklists} av {checklists.length} fullført
-                    </p>
-                  </div>
-                </div>
-                <Checkbox
+              <div className="space-y-2">
+                <SectionToggle
+                  icon={ClipboardList}
+                  iconBgColor="bg-green-100"
+                  iconColor="text-green-600"
+                  label="Sjekklister og egenkontroller"
+                  description={`${completedChecklists} av ${checklists.length} fullført`}
                   checked={sections.includeChecklists}
                   onCheckedChange={(checked) => 
                     setSections(s => ({ ...s, includeChecklists: !!checked }))
                   }
                 />
+                {sections.includeChecklists && (
+                  <div className="ml-14 p-3 rounded-lg bg-muted/50 flex items-center justify-between">
+                    <div>
+                      <Label className="text-sm">Inkluder detaljerte sjekkpunkter</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Viser alle sjekkpunkter med svar for fullførte sjekklister
+                      </p>
+                    </div>
+                    <Switch
+                      checked={sections.includeChecklistDetails}
+                      onCheckedChange={(checked) => 
+                        setSections(s => ({ ...s, includeChecklistDetails: checked }))
+                      }
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Avvik */}
-              <div className="flex items-center justify-between p-4 rounded-lg border">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-red-100">
-                    <AlertTriangle className="h-5 w-5 text-red-600" />
-                  </div>
-                  <div>
-                    <Label className="font-medium">Avvik</Label>
-                    <p className="text-sm text-muted-foreground">
-                      {closedAvvik} av {avvikList.length} lukket
-                    </p>
-                  </div>
-                </div>
-                <Checkbox
-                  checked={sections.includeAvvik}
-                  onCheckedChange={(checked) => 
-                    setSections(s => ({ ...s, includeAvvik: !!checked }))
-                  }
-                />
-              </div>
+              <SectionToggle
+                icon={AlertTriangle}
+                iconBgColor="bg-red-100"
+                iconColor="text-red-600"
+                label="Avvik"
+                description={`${closedAvvik} av ${avvikList.length} lukket`}
+                checked={sections.includeAvvik}
+                onCheckedChange={(checked) => 
+                  setSections(s => ({ ...s, includeAvvik: !!checked }))
+                }
+              />
 
               {/* UK */}
-              <div className="flex items-center justify-between p-4 rounded-lg border">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-purple-100">
-                    <Shield className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <Label className="font-medium">Uavhengig kontroll</Label>
-                    <p className="text-sm text-muted-foreground">
-                      {approvedUk} av {ukList.length} godkjent
-                    </p>
-                  </div>
-                </div>
-                <Checkbox
-                  checked={sections.includeUk}
-                  onCheckedChange={(checked) => 
-                    setSections(s => ({ ...s, includeUk: !!checked }))
-                  }
-                />
-              </div>
+              <SectionToggle
+                icon={Shield}
+                iconBgColor="bg-purple-100"
+                iconColor="text-purple-600"
+                label="Uavhengig kontroll"
+                description={`${approvedUk} av ${ukList.length} godkjent`}
+                checked={sections.includeUk}
+                onCheckedChange={(checked) => 
+                  setSections(s => ({ ...s, includeUk: !!checked }))
+                }
+              />
+
+              {/* SJA */}
+              <SectionToggle
+                icon={HardHat}
+                iconBgColor="bg-amber-100"
+                iconColor="text-amber-600"
+                label="Sikker Jobb Analyse (SJA)"
+                description={`${completedSja} av ${sjaList.length} fullført`}
+                checked={sections.includeSja}
+                onCheckedChange={(checked) => 
+                  setSections(s => ({ ...s, includeSja: !!checked }))
+                }
+              />
+
+              {/* Vernerunder */}
+              <SectionToggle
+                icon={ShieldCheck}
+                iconBgColor="bg-violet-100"
+                iconColor="text-violet-600"
+                label="Vernerunder"
+                description={`${completedVernerunder} av ${vernerunder.length} fullført`}
+                checked={sections.includeVernerunder}
+                onCheckedChange={(checked) => 
+                  setSections(s => ({ ...s, includeVernerunder: !!checked }))
+                }
+              />
 
               {/* Documents */}
-              <div className="flex items-center justify-between p-4 rounded-lg border">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-gray-100">
-                    <FolderOpen className="h-5 w-5 text-gray-600" />
-                  </div>
-                  <div>
-                    <Label className="font-medium">Dokumentoversikt</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Oversikt over prosjektdokumenter
-                    </p>
-                  </div>
-                </div>
-                <Checkbox
-                  checked={sections.includeDocuments}
-                  onCheckedChange={(checked) => 
-                    setSections(s => ({ ...s, includeDocuments: !!checked }))
-                  }
-                />
-              </div>
+              <SectionToggle
+                icon={FolderOpen}
+                iconBgColor="bg-gray-100"
+                iconColor="text-gray-600"
+                label="Dokumentoversikt"
+                description="Oversikt over prosjektdokumenter"
+                checked={sections.includeDocuments}
+                onCheckedChange={(checked) => 
+                  setSections(s => ({ ...s, includeDocuments: !!checked }))
+                }
+              />
             </CardContent>
           </Card>
         </div>
@@ -269,18 +352,11 @@ export default function Ks2Prosjektrapport() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Sjekklister</span>
-                  <Badge variant="secondary">{checklists.length}</Badge>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Avvik</span>
-                  <Badge variant="secondary">{avvikList.length}</Badge>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">UK-kontroller</span>
-                  <Badge variant="secondary">{ukList.length}</Badge>
-                </div>
+                <SummaryRow label="Sjekklister" count={checklists.length} />
+                <SummaryRow label="Avvik" count={avvikList.length} />
+                <SummaryRow label="UK-kontroller" count={ukList.length} />
+                <SummaryRow label="SJA" count={sjaList.length} />
+                <SummaryRow label="Vernerunder" count={vernerunder.length} />
               </div>
 
               <Separator />
@@ -293,7 +369,7 @@ export default function Ks2Prosjektrapport() {
                 className="w-full gap-2" 
                 size="lg"
                 onClick={handleGenerateReport}
-                disabled={isGenerating}
+                disabled={isGenerating || !project}
               >
                 {isGenerating ? (
                   <>
@@ -325,6 +401,54 @@ export default function Ks2Prosjektrapport() {
           </Card>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Helper components
+function SectionToggle({
+  icon: Icon,
+  iconBgColor,
+  iconColor,
+  label,
+  description,
+  checked,
+  onCheckedChange,
+}: {
+  icon: React.ElementType;
+  iconBgColor: string;
+  iconColor: string;
+  label: string;
+  description: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between p-3 sm:p-4 rounded-lg border">
+      <div className="flex items-center gap-3">
+        <div className={`p-2 rounded-lg ${iconBgColor}`}>
+          <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${iconColor}`} />
+        </div>
+        <div>
+          <Label className="font-medium text-sm sm:text-base">{label}</Label>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            {description}
+          </p>
+        </div>
+      </div>
+      <Checkbox
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+      />
+    </div>
+  );
+}
+
+function SummaryRow({ label, count }: { label: string; count: number }) {
+  return (
+    <div className="flex justify-between text-sm">
+      <span className="text-muted-foreground">{label}</span>
+      <Badge variant="secondary">{count}</Badge>
     </div>
   );
 }
