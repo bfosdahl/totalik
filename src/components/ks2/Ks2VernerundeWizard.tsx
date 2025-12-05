@@ -232,8 +232,22 @@ export default function Ks2VernerundeWizard({
         )}
       </div>
 
+      {findings.length === 0 && (
+        <Card className="p-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="h-5 w-5 text-green-600" />
+            <div>
+              <p className="font-medium text-green-800 dark:text-green-200">Ingen funn registrert</p>
+              <p className="text-sm text-green-600 dark:text-green-400">
+                Vernerunden kan fullføres uten funn. Klikk "Neste" for å gå til signatur.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <Card className="p-4">
-        <h4 className="font-medium mb-3">Legg til nytt funn</h4>
+        <h4 className="font-medium mb-3">Legg til nytt funn (valgfritt)</h4>
         <div className="space-y-3">
           <div>
             <Label>Beskrivelse *</Label>
@@ -280,41 +294,38 @@ export default function Ks2VernerundeWizard({
         </div>
       </Card>
 
-      <ScrollArea className="h-[250px]">
-        <div className="space-y-2">
-          {findings.map((finding) => (
-            <Card key={finding.id} className="p-3">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <p className="font-medium">{finding.description}</p>
-                  <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
-                    {finding.responsible && <span>Ansvarlig: {finding.responsible}</span>}
-                    {finding.deadline && <span>Frist: {finding.deadline}</span>}
+      {findings.length > 0 && (
+        <ScrollArea className="h-[200px]">
+          <div className="space-y-2">
+            {findings.map((finding) => (
+              <Card key={finding.id} className="p-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <p className="font-medium">{finding.description}</p>
+                    <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
+                      {finding.responsible && <span>Ansvarlig: {finding.responsible}</span>}
+                      {finding.deadline && <span>Frist: {finding.deadline}</span>}
+                    </div>
+                    {finding.escalate_to_avvik && (
+                      <Badge variant="destructive" className="mt-2">
+                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        Eskaleres til HMS-avvik
+                      </Badge>
+                    )}
                   </div>
-                  {finding.escalate_to_avvik && (
-                    <Badge variant="destructive" className="mt-2">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      Eskaleres til HMS-avvik
-                    </Badge>
-                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleRemoveFinding(finding.id)}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleRemoveFinding(finding.id)}
-                >
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
-              </div>
-            </Card>
-          ))}
-          {findings.length === 0 && (
-            <p className="text-center text-muted-foreground py-8">
-              Ingen funn registrert
-            </p>
-          )}
-        </div>
-      </ScrollArea>
+              </Card>
+            ))}
+          </div>
+        </ScrollArea>
+      )}
     </div>
   );
 
