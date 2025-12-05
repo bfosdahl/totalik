@@ -112,7 +112,7 @@ export default function Employees() {
     
     setIsCreating(true);
     try {
-      const { error } = await supabase.functions.invoke('create-user-direct', {
+      const { data, error } = await supabase.functions.invoke('create-user-direct', {
         body: {
           email: createForm.email,
           password: createForm.password,
@@ -123,7 +123,8 @@ export default function Employees() {
         }
       });
 
-      if (error) throw error;
+      if (error) throw new Error(error.message || "Kunne ikke opprette bruker");
+      if (data?.error) throw new Error(data.error);
 
       toast.success("Bruker opprettet: " + createForm.email);
       setCreateDirectDialogOpen(false);
