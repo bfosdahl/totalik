@@ -4,7 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   AlertTriangle, 
   Plus, 
@@ -12,67 +16,45 @@ import {
   Calendar,
   User,
   MapPin,
-  FileText
+  FileText,
+  Loader2
 } from "lucide-react";
+import { useKsModule2Avvik } from "@/hooks/useKsModule2Avvik";
+import { useAuth } from "@/contexts/AuthContext";
+import { format } from "date-fns";
 
-interface HmsAvvik {
-  id: string;
-  number: string;
-  title: string;
-  description: string;
-  location: string;
-  category: string;
-  severity: "low" | "medium" | "high" | "critical";
-  status: "open" | "in_progress" | "closed";
-  reportedBy: string;
-  reportedDate: string;
-  assignedTo?: string;
-}
+const HMS_CATEGORIES = [
+  "Personlig verneutstyr",
+  "Fallsikring",
+  "Orden og ryddighet",
+  "Brannvern",
+  "Elektrisk sikkerhet",
+  "Kjemikalier og farlige stoffer",
+  "Maskin og utstyr",
+  "Ergonomi",
+  "Støy og vibrasjoner",
+  "Annet HMS"
+];
 
 export default function Ks2HmsAvvik() {
   const { projectId } = useParams();
-  const [searchQuery, setSearchQuery] = useState("");
+  const { profile } = useAuth();
+  const { avvikList, isLoading, createAvvik, isCreating } = useKsModule2Avvik(projectId || null);
   
-  const [avvik] = useState<HmsAvvik[]>([
-    {
-      id: "1",
-      number: "HMS-001",
-      title: "Manglende verneutstyr",
-      description: "Observert personell uten hjelm i arbeidsområde",
-      location: "Byggeplass A",
-      category: "Personlig verneutstyr",
-      severity: "high",
-      status: "open",
-      reportedBy: "Kari Hansen",
-      reportedDate: "2024-12-01",
-      assignedTo: "Ola Nordmann",
-    },
-    {
-      id: "2",
-      number: "HMS-002",
-      title: "Rydding av arbeidsområde",
-      description: "Materialer og verktøy ligger i gangveier",
-      location: "2. etasje",
-      category: "Orden og ryddighet",
-      severity: "medium",
-      status: "closed",
-      reportedBy: "Per Olsen",
-      reportedDate: "2024-11-25",
-    },
-    {
-      id: "3",
-      number: "HMS-003",
-      title: "Manglende sikring ved kant",
-      description: "Rekkverk manglet ved åpning i dekke",
-      location: "3. etasje",
-      category: "Fallsikring",
-      severity: "critical",
-      status: "in_progress",
-      reportedBy: "Ola Nordmann",
-      reportedDate: "2024-11-28",
-      assignedTo: "Per Olsen",
-    },
-  ]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newAvvik, setNewAvvik] = useState({
+    title: "",
+    description: "",
+    location: "",
+    category: "",
+    severity: "medium",
+    deadline: "",
+    responsible_name: ""
+  });
+
+  // Filter only HMS-related avvik (categories in HMS_CATEGORIES)
+  const hmsAvvik = avvikList.filter(a => HMS_CATEGORIES.includes(a.category));
 
   const getSeverityBadge = (severity: string) => {
     switch (severity) {
@@ -102,15 +84,51 @@ export default function Ks2HmsAvvik() {
     }
   };
 
-  const filteredAvvik = avvik.filter(
+  const filteredAvvik = hmsAvvik.filter(
     (a) =>
       a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      a.avvik_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
       a.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const openAvvik = avvik.filter(a => a.status === "open" || a.status === "in_progress");
-  const closedAvvik = avvik.filter(a => a.status === "closed");
+  const openAvvik = hmsAvvik.filter(a => a.status === "open" || a.status === "in_progress");
+  const closedAvvik = hmsAvvik.filter(a => a.status === "closed");
+
+  const handleCreateAvvik = () => {
+    if (!newAvvik.title || !newAvvik.category || !projectId) return;
+
+    const fullName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : "Ukjent";
+
+    createAvvik({
+      project_id: projectId,
+      title: newAvvik.title,
+      description: newAvvik.description || null,
+      location: newAvvik.location || null,
+      category: newAvvik.category,
+      severity: newAvvik.severity,
+      status: "open",
+      discovered_date: new Date().toISOString().split('T')[0],
+      deadline: newAvvik.deadline || null,
+      responsible_name: newAvvik.responsible_name || null,
+      responsible_user_id: null,
+      reported_by_name: fullName,
+      root_cause: null,
+      corrective_action: null,
+      preventive_action: null,
+      photo_paths: null,
+    });
+
+    setNewAvvik({
+      title: "",
+      description: "",
+      location: "",
+      category: "",
+      severity: "medium",
+      deadline: "",
+      responsible_name: ""
+    });
+    setIsDialogOpen(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -125,7 +143,10 @@ export default function Ks2HmsAvvik() {
             <p className="text-muted-foreground">Registrer og følg opp HMS-avvik</p>
           </div>
         </div>
-        <Button className="bg-emerald-500 hover:bg-emerald-600">
+        <Button 
+          className="bg-emerald-500 hover:bg-emerald-600"
+          onClick={() => setIsDialogOpen(true)}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Registrer avvik
         </Button>
@@ -136,14 +157,14 @@ export default function Ks2HmsAvvik() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Totalt</CardDescription>
-            <CardTitle className="text-2xl">{avvik.length}</CardTitle>
+            <CardTitle className="text-2xl">{hmsAvvik.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Åpne</CardDescription>
             <CardTitle className="text-2xl text-red-500">
-              {avvik.filter(a => a.status === "open").length}
+              {hmsAvvik.filter(a => a.status === "open").length}
             </CardTitle>
           </CardHeader>
         </Card>
@@ -151,7 +172,7 @@ export default function Ks2HmsAvvik() {
           <CardHeader className="pb-2">
             <CardDescription>Under behandling</CardDescription>
             <CardTitle className="text-2xl text-amber-500">
-              {avvik.filter(a => a.status === "in_progress").length}
+              {hmsAvvik.filter(a => a.status === "in_progress").length}
             </CardTitle>
           </CardHeader>
         </Card>
@@ -181,44 +202,54 @@ export default function Ks2HmsAvvik() {
         <TabsList>
           <TabsTrigger value="open">Åpne ({openAvvik.length})</TabsTrigger>
           <TabsTrigger value="closed">Lukket ({closedAvvik.length})</TabsTrigger>
-          <TabsTrigger value="all">Alle ({avvik.length})</TabsTrigger>
+          <TabsTrigger value="all">Alle ({hmsAvvik.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="open" className="space-y-4">
-          {openAvvik.length > 0 ? (
+          {isLoading ? (
+            <Card>
+              <CardContent className="py-8 flex justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </CardContent>
+            </Card>
+          ) : openAvvik.length > 0 ? (
             openAvvik.map((a) => (
               <Card key={a.id} className="hover:border-emerald-500/50 transition-colors cursor-pointer">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-mono text-muted-foreground">{a.number}</span>
+                        <span className="text-sm font-mono text-muted-foreground">{a.avvik_number}</span>
                         {getSeverityBadge(a.severity)}
                       </div>
                       <CardTitle className="text-lg">{a.title}</CardTitle>
-                      <CardDescription className="flex items-center gap-2 mt-1">
-                        <MapPin className="h-4 w-4" />
-                        {a.location}
-                      </CardDescription>
+                      {a.location && (
+                        <CardDescription className="flex items-center gap-2 mt-1">
+                          <MapPin className="h-4 w-4" />
+                          {a.location}
+                        </CardDescription>
+                      )}
                     </div>
                     {getStatusBadge(a.status)}
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-3">{a.description}</p>
+                  {a.description && (
+                    <p className="text-sm text-muted-foreground mb-3">{a.description}</p>
+                  )}
                   <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      <span>{a.reportedDate}</span>
+                      <span>{format(new Date(a.discovered_date), "dd.MM.yyyy")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4" />
-                      <span>Rapportert av: {a.reportedBy}</span>
+                      <span>Rapportert av: {a.reported_by_name}</span>
                     </div>
-                    {a.assignedTo && (
+                    {a.responsible_name && (
                       <div className="flex items-center gap-2">
                         <FileText className="h-4 w-4" />
-                        <span>Tildelt: {a.assignedTo}</span>
+                        <span>Tildelt: {a.responsible_name}</span>
                       </div>
                     )}
                   </div>
@@ -245,7 +276,7 @@ export default function Ks2HmsAvvik() {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-mono text-muted-foreground">{a.number}</span>
+                        <span className="text-sm font-mono text-muted-foreground">{a.avvik_number}</span>
                         {getSeverityBadge(a.severity)}
                       </div>
                       <CardTitle className="text-lg">{a.title}</CardTitle>
@@ -270,29 +301,138 @@ export default function Ks2HmsAvvik() {
         </TabsContent>
 
         <TabsContent value="all" className="space-y-4">
-          {filteredAvvik.map((a) => (
-            <Card key={a.id} className="hover:border-emerald-500/50 transition-colors cursor-pointer">
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-mono text-muted-foreground">{a.number}</span>
-                      {getSeverityBadge(a.severity)}
+          {filteredAvvik.length > 0 ? (
+            filteredAvvik.map((a) => (
+              <Card key={a.id} className="hover:border-emerald-500/50 transition-colors cursor-pointer">
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-mono text-muted-foreground">{a.avvik_number}</span>
+                        {getSeverityBadge(a.severity)}
+                      </div>
+                      <CardTitle className="text-lg">{a.title}</CardTitle>
                     </div>
-                    <CardTitle className="text-lg">{a.title}</CardTitle>
+                    {getStatusBadge(a.status)}
                   </div>
-                  {getStatusBadge(a.status)}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline" size="sm">
-                  Vis detaljer
-                </Button>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" size="sm">
+                    Vis detaljer
+                  </Button>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                Ingen HMS-avvik funnet
               </CardContent>
             </Card>
-          ))}
+          )}
         </TabsContent>
       </Tabs>
+
+      {/* Create Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Registrer HMS-avvik</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>Tittel *</Label>
+              <Input
+                placeholder="Kort beskrivelse av avviket"
+                value={newAvvik.title}
+                onChange={(e) => setNewAvvik(prev => ({ ...prev, title: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>Kategori *</Label>
+              <Select 
+                value={newAvvik.category} 
+                onValueChange={(val) => setNewAvvik(prev => ({ ...prev, category: val }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Velg kategori" />
+                </SelectTrigger>
+                <SelectContent>
+                  {HMS_CATEGORIES.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Beskrivelse</Label>
+              <Textarea
+                placeholder="Detaljert beskrivelse..."
+                value={newAvvik.description}
+                onChange={(e) => setNewAvvik(prev => ({ ...prev, description: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Lokasjon</Label>
+                <Input
+                  placeholder="Hvor ble avviket oppdaget?"
+                  value={newAvvik.location}
+                  onChange={(e) => setNewAvvik(prev => ({ ...prev, location: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Alvorlighetsgrad</Label>
+                <Select 
+                  value={newAvvik.severity} 
+                  onValueChange={(val) => setNewAvvik(prev => ({ ...prev, severity: val }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Lav</SelectItem>
+                    <SelectItem value="medium">Middels</SelectItem>
+                    <SelectItem value="high">Høy</SelectItem>
+                    <SelectItem value="critical">Kritisk</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Ansvarlig</Label>
+                <Input
+                  placeholder="Hvem skal følge opp?"
+                  value={newAvvik.responsible_name}
+                  onChange={(e) => setNewAvvik(prev => ({ ...prev, responsible_name: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Frist</Label>
+                <Input
+                  type="date"
+                  value={newAvvik.deadline}
+                  onChange={(e) => setNewAvvik(prev => ({ ...prev, deadline: e.target.value }))}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Avbryt
+            </Button>
+            <Button 
+              onClick={handleCreateAvvik}
+              disabled={!newAvvik.title || !newAvvik.category || isCreating}
+              className="bg-emerald-500 hover:bg-emerald-600"
+            >
+              {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Registrer avvik
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
