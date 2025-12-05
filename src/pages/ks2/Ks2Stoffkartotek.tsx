@@ -4,6 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { 
   FlaskConical, 
   Plus, 
@@ -11,50 +15,38 @@ import {
   QrCode,
   FileText,
   AlertTriangle,
-  ExternalLink
+  ExternalLink,
+  Loader2,
+  Trash2
 } from "lucide-react";
+import { useKsModule2Stoffkartotek } from "@/hooks/useKsModule2Stoffkartotek";
+import { format } from "date-fns";
 
-interface ChemicalProduct {
-  id: string;
-  name: string;
-  manufacturer: string;
-  dangerClass: string[];
-  location: string;
-  sdsUrl?: string;
-  qrCode?: string;
-  lastUpdated: string;
-}
+const DANGER_CLASSES = [
+  "Brannfarlig",
+  "Etsende",
+  "Helseskadelig",
+  "Sensibiliserende",
+  "Miljøfarlig",
+  "Giftig",
+  "Oksiderende",
+  "Gass under trykk",
+  "Eksplosjonsfarlig"
+];
 
 export default function Ks2Stoffkartotek() {
   const { projectId } = useParams();
-  const [searchQuery, setSearchQuery] = useState("");
+  const { stoffkartotekList, isLoading, createStoffkartotek, deleteStoffkartotek, isCreating } = useKsModule2Stoffkartotek(projectId || null);
   
-  const [products] = useState<ChemicalProduct[]>([
-    {
-      id: "1",
-      name: "Epoxy grunnmaling",
-      manufacturer: "Jotun",
-      dangerClass: ["Brannfarlig", "Helseskadelig"],
-      location: "Lager A",
-      lastUpdated: "2024-11-15",
-    },
-    {
-      id: "2",
-      name: "Betongherder",
-      manufacturer: "Mapei",
-      dangerClass: ["Etsende"],
-      location: "Byggeplass",
-      lastUpdated: "2024-10-20",
-    },
-    {
-      id: "3",
-      name: "Polyuretanskum",
-      manufacturer: "Sika",
-      dangerClass: ["Brannfarlig", "Helseskadelig", "Sensibiliserende"],
-      location: "Lager B",
-      lastUpdated: "2024-11-01",
-    },
-  ]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    product_name: "",
+    manufacturer: "",
+    danger_classes: [] as string[],
+    location: "",
+    notes: ""
+  });
 
   const getDangerBadge = (danger: string) => {
     switch (danger) {
@@ -66,16 +58,53 @@ export default function Ks2Stoffkartotek() {
         return <Badge className="bg-orange-500" key={danger}>{danger}</Badge>;
       case "Sensibiliserende":
         return <Badge className="bg-purple-500" key={danger}>{danger}</Badge>;
+      case "Miljøfarlig":
+        return <Badge className="bg-green-600" key={danger}>{danger}</Badge>;
+      case "Giftig":
+        return <Badge className="bg-red-700" key={danger}>{danger}</Badge>;
       default:
         return <Badge variant="secondary" key={danger}>{danger}</Badge>;
     }
   };
 
-  const filteredProducts = products.filter(
+  const filteredProducts = stoffkartotekList.filter(
     (p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.manufacturer.toLowerCase().includes(searchQuery.toLowerCase())
+      p.product_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.manufacturer && p.manufacturer.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  const handleToggleDanger = (danger: string) => {
+    setNewProduct(prev => ({
+      ...prev,
+      danger_classes: prev.danger_classes.includes(danger)
+        ? prev.danger_classes.filter(d => d !== danger)
+        : [...prev.danger_classes, danger]
+    }));
+  };
+
+  const handleCreate = () => {
+    if (!newProduct.product_name || !projectId) return;
+
+    createStoffkartotek({
+      project_id: projectId,
+      product_name: newProduct.product_name,
+      manufacturer: newProduct.manufacturer || null,
+      danger_classes: newProduct.danger_classes,
+      location: newProduct.location || null,
+      notes: newProduct.notes || null,
+      sds_file_path: null,
+      last_updated: new Date().toISOString().split('T')[0]
+    });
+
+    setNewProduct({
+      product_name: "",
+      manufacturer: "",
+      danger_classes: [],
+      location: "",
+      notes: ""
+    });
+    setIsDialogOpen(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -90,7 +119,10 @@ export default function Ks2Stoffkartotek() {
             <p className="text-muted-foreground">Oversikt over kjemikalier og stoffer i prosjektet</p>
           </div>
         </div>
-        <Button className="bg-emerald-500 hover:bg-emerald-600">
+        <Button 
+          className="bg-emerald-500 hover:bg-emerald-600"
+          onClick={() => setIsDialogOpen(true)}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Legg til stoff
         </Button>
@@ -125,33 +157,55 @@ export default function Ks2Stoffkartotek() {
       </div>
 
       {/* Products Grid */}
-      {filteredProducts.length > 0 ? (
+      {isLoading ? (
+        <Card>
+          <CardContent className="py-12 flex justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </CardContent>
+        </Card>
+      ) : filteredProducts.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredProducts.map((product) => (
             <Card key={product.id} className="hover:border-emerald-500/50 transition-colors">
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-lg">{product.name}</CardTitle>
-                    <CardDescription>{product.manufacturer}</CardDescription>
+                    <CardTitle className="text-lg">{product.product_name}</CardTitle>
+                    {product.manufacturer && (
+                      <CardDescription>{product.manufacturer}</CardDescription>
+                    )}
                   </div>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-emerald-500">
-                    <QrCode className="h-5 w-5" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-emerald-500">
+                      <QrCode className="h-5 w-5" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => deleteStoffkartotek(product.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex flex-wrap gap-1">
-                    {product.dangerClass.map((danger) => getDangerBadge(danger))}
-                  </div>
+                  {product.danger_classes && product.danger_classes.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {product.danger_classes.map((danger) => getDangerBadge(danger))}
+                    </div>
+                  )}
                   
-                  <div className="text-sm text-muted-foreground">
-                    <span className="font-medium">Plassering:</span> {product.location}
-                  </div>
+                  {product.location && (
+                    <div className="text-sm text-muted-foreground">
+                      <span className="font-medium">Plassering:</span> {product.location}
+                    </div>
+                  )}
                   
                   <div className="text-xs text-muted-foreground">
-                    Oppdatert: {product.lastUpdated}
+                    Oppdatert: {format(new Date(product.last_updated), "dd.MM.yyyy")}
                   </div>
 
                   <div className="flex gap-2 pt-2">
@@ -181,13 +235,89 @@ export default function Ks2Stoffkartotek() {
                 ? "Ingen stoffer matcher søket ditt" 
                 : "Legg til stoffer og kjemikalier som brukes i prosjektet"}
             </p>
-            <Button className="bg-emerald-500 hover:bg-emerald-600">
+            <Button 
+              className="bg-emerald-500 hover:bg-emerald-600"
+              onClick={() => setIsDialogOpen(true)}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Legg til stoff
             </Button>
           </CardContent>
         </Card>
       )}
+
+      {/* Create Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Legg til stoff</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>Produktnavn *</Label>
+              <Input
+                placeholder="Navn på kjemikalie/stoff"
+                value={newProduct.product_name}
+                onChange={(e) => setNewProduct(prev => ({ ...prev, product_name: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>Produsent/Leverandør</Label>
+              <Input
+                placeholder="F.eks. Jotun, Mapei, Sika..."
+                value={newProduct.manufacturer}
+                onChange={(e) => setNewProduct(prev => ({ ...prev, manufacturer: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>Fareklasser</Label>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {DANGER_CLASSES.map(danger => (
+                  <div key={danger} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={danger}
+                      checked={newProduct.danger_classes.includes(danger)}
+                      onCheckedChange={() => handleToggleDanger(danger)}
+                    />
+                    <Label htmlFor={danger} className="cursor-pointer text-sm">
+                      {danger}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label>Plassering</Label>
+              <Input
+                placeholder="Hvor oppbevares stoffet?"
+                value={newProduct.location}
+                onChange={(e) => setNewProduct(prev => ({ ...prev, location: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>Notater</Label>
+              <Textarea
+                placeholder="Tilleggsinformasjon..."
+                value={newProduct.notes}
+                onChange={(e) => setNewProduct(prev => ({ ...prev, notes: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Avbryt
+            </Button>
+            <Button 
+              onClick={handleCreate}
+              disabled={!newProduct.product_name || isCreating}
+              className="bg-emerald-500 hover:bg-emerald-600"
+            >
+              {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Legg til stoff
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
