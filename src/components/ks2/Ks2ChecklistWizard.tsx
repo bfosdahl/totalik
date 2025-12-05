@@ -27,6 +27,7 @@ import {
   CHECKLIST_TEMPLATES,
   ChecklistItem,
   ChecklistTemplate,
+  KsModule2Checklist,
 } from "@/hooks/useKsModule2Checklists";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -50,17 +51,23 @@ interface Ks2ChecklistWizardProps {
   projectId: string;
   onClose: () => void;
   preSelectedTemplate?: PreSelectedTemplate | null;
+  existingChecklist?: KsModule2Checklist | null;
 }
 
 type WizardStep = "template" | "details" | "items" | "signature" | "summary";
 
-export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate }: Ks2ChecklistWizardProps) {
-  const { createChecklist, isSaving } = useKsModule2Checklists(projectId);
+export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, existingChecklist }: Ks2ChecklistWizardProps) {
+  const { createChecklist, updateChecklist, completeChecklist, isSaving } = useKsModule2Checklists(projectId);
   const { users } = useCompanyUsers();
   
-  // Determine initial step based on whether template is pre-selected
-  const initialStep: WizardStep = preSelectedTemplate ? "details" : "template";
-  const [step, setStep] = useState<WizardStep>(initialStep);
+  // Determine initial step based on whether template is pre-selected or continuing existing
+  const getInitialStep = (): WizardStep => {
+    if (existingChecklist) return "items";
+    if (preSelectedTemplate) return "details";
+    return "template";
+  };
+  
+  const [step, setStep] = useState<WizardStep>(getInitialStep());
   const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
   const [title, setTitle] = useState("");
   const [responsibleUserId, setResponsibleUserId] = useState("");
@@ -73,13 +80,36 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate }: 
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [inspectorSignature, setInspectorSignature] = useState<string>("");
   const [inspectorName, setInspectorName] = useState("");
+  const [isEditing, setIsEditing] = useState(!!existingChecklist);
+  const [editingChecklistId, setEditingChecklistId] = useState<string | null>(existingChecklist?.id || null);
   
   // Track if we're using admin template (pre-selected) or built-in template
   const [isAdminTemplate, setIsAdminTemplate] = useState(!!preSelectedTemplate);
 
+  // Initialize with existing checklist if continuing
+  useEffect(() => {
+    if (existingChecklist) {
+      setIsEditing(true);
+      setEditingChecklistId(existingChecklist.id);
+      setTitle(existingChecklist.title);
+      setResponsibleUserId(existingChecklist.responsible_user_id || "");
+      setResponsibleUserName(existingChecklist.responsible_user_name || "");
+      setDeadlineDate(existingChecklist.deadline_date || "");
+      setIsPaper(existingChecklist.is_paper_version);
+      setItems(existingChecklist.checklist_items || []);
+      
+      // Create a "virtual" template for compatibility
+      setSelectedTemplate({
+        name: existingChecklist.template_name,
+        category: "",
+        items: (existingChecklist.checklist_items || []).map(({ value, comment, photos, ...rest }) => rest),
+      });
+    }
+  }, [existingChecklist]);
+
   // Initialize with pre-selected template if provided
   useEffect(() => {
-    if (preSelectedTemplate) {
+    if (preSelectedTemplate && !existingChecklist) {
       setIsAdminTemplate(true);
       setTitle(`${preSelectedTemplate.template_name} – ${format(new Date(), "dd.MM.yyyy")}`);
       
@@ -107,11 +137,19 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate }: 
         items: convertedItems.map(({ value, comment, photos, ...rest }) => rest),
       });
     }
-  }, [preSelectedTemplate]);
+  }, [preSelectedTemplate, existingChecklist]);
 
-  const steps: WizardStep[] = isPaper || !executeNow
-    ? (preSelectedTemplate ? ["details", "summary"] : ["template", "details", "summary"])
-    : (preSelectedTemplate ? ["details", "items", "signature", "summary"] : ["template", "details", "items", "signature", "summary"]);
+  const getSteps = (): WizardStep[] => {
+    if (isEditing) {
+      return ["items", "signature", "summary"];
+    }
+    if (isPaper || !executeNow) {
+      return preSelectedTemplate ? ["details", "summary"] : ["template", "details", "summary"];
+    }
+    return preSelectedTemplate ? ["details", "items", "signature", "summary"] : ["template", "details", "items", "signature", "summary"];
+  };
+  
+  const steps: WizardStep[] = getSteps();
   const currentStepIndex = steps.indexOf(step);
 
   const handleSelectTemplate = (template: ChecklistTemplate) => {
@@ -211,6 +249,41 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate }: 
   const handleCreate = async (isPlanned: boolean = false) => {
     if (!selectedTemplate) return;
 
+    // If editing existing checklist, update it
+    if (isEditing && editingChecklistId) {
+      const hasSignature = !!inspectorSignature;
+      const allItemsFilled = items.every(item => !item.required || (item.value !== null && item.value !== undefined));
+      
+      if (hasSignature && allItemsFilled) {
+        // Complete the checklist
+        const signatures = [{
+          type: "inspector",
+          name: inspectorName,
+          signature: inspectorSignature,
+          date: new Date().toISOString(),
+        }];
+        const result = await completeChecklist(editingChecklistId, items, signatures);
+        if (result) {
+          onClose();
+        }
+      } else {
+        // Just update progress
+        const answeredCount = items.filter(i => i.value !== null && i.value !== undefined).length;
+        const progress = items.length > 0 ? Math.round((answeredCount / items.length) * 100) : 0;
+        
+        const result = await updateChecklist(editingChecklistId, {
+          checklist_items: items,
+          status: answeredCount > 0 ? "in_progress" : "planned",
+          progress_percent: progress,
+        });
+        if (result) {
+          onClose();
+        }
+      }
+      return;
+    }
+
+    // Create new checklist
     const result = await createChecklist({
       title,
       template_name: selectedTemplate.name,
@@ -242,7 +315,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate }: 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ClipboardCheck className="h-5 w-5" />
-            Ny egenkontroll
+            {isEditing ? `Fortsett: ${title}` : "Ny egenkontroll"}
           </DialogTitle>
         </DialogHeader>
 

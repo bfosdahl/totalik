@@ -15,12 +15,15 @@ import {
   FileText,
   Library,
   ArrowRight,
-  Eye
+  Eye,
+  Play
 } from "lucide-react";
 import { useKsModule2ProjectTemplates } from "@/hooks/useKsModule2ProjectTemplates";
-import { useKsModule2Checklists } from "@/hooks/useKsModule2Checklists";
-import { Ks2ChecklistWizard } from "@/components/ks2/Ks2ChecklistWizard";
+import { useKsModule2Checklists, KsModule2Checklist } from "@/hooks/useKsModule2Checklists";
+import { Ks2ChecklistWizard, PreSelectedTemplate } from "@/components/ks2/Ks2ChecklistWizard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
 
 export default function Ks2Sjekklister() {
   const { projectId } = useParams();
@@ -28,7 +31,9 @@ export default function Ks2Sjekklister() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showWizard, setShowWizard] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<any>(null);
-  const [selectedTemplateForWizard, setSelectedTemplateForWizard] = useState<any>(null);
+  const [selectedTemplateForWizard, setSelectedTemplateForWizard] = useState<PreSelectedTemplate | null>(null);
+  const [existingChecklist, setExistingChecklist] = useState<KsModule2Checklist | null>(null);
+  const [viewingChecklist, setViewingChecklist] = useState<KsModule2Checklist | null>(null);
   
   const { checklistTemplates, isLoading: loadingTemplates } = useKsModule2ProjectTemplates(projectId || "");
   const { checklists, isLoading: loadingChecklists, refetch: refetchChecklists } = useKsModule2Checklists(projectId || "");
@@ -56,18 +61,56 @@ export default function Ks2Sjekklister() {
   const handleWizardClose = () => {
     setShowWizard(false);
     setSelectedTemplateForWizard(null);
+    setExistingChecklist(null);
     refetchChecklists();
   };
 
   const handleStartChecklist = (template: any) => {
+    setExistingChecklist(null);
     setSelectedTemplateForWizard({
-      id: template.admin_checklist_template_id,
+      id: template.admin_checklist_template_id || template.id,
       template_name: template.checklist_template?.template_name,
       category: template.checklist_template?.category,
       description: template.checklist_template?.description,
       checkpoints: template.checklist_template?.checkpoints || [],
     });
     setShowWizard(true);
+  };
+
+  const handleContinueChecklist = (checklist: KsModule2Checklist) => {
+    setExistingChecklist(checklist);
+    setSelectedTemplateForWizard(null);
+    setShowWizard(true);
+  };
+
+  const handleViewChecklist = (checklist: KsModule2Checklist) => {
+    setViewingChecklist(checklist);
+  };
+
+  const getActionButton = (checklist: KsModule2Checklist) => {
+    switch (checklist.status) {
+      case 'completed':
+        return (
+          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleViewChecklist(checklist); }}>
+            <Eye className="h-4 w-4 mr-1" />
+            Se
+          </Button>
+        );
+      case 'in_progress':
+        return (
+          <Button size="sm" onClick={(e) => { e.stopPropagation(); handleContinueChecklist(checklist); }}>
+            <Play className="h-4 w-4 mr-1" />
+            Fortsett
+          </Button>
+        );
+      default:
+        return (
+          <Button size="sm" onClick={(e) => { e.stopPropagation(); handleContinueChecklist(checklist); }}>
+            <Play className="h-4 w-4 mr-1" />
+            Start
+          </Button>
+        );
+    }
   };
 
   if (loadingTemplates || loadingChecklists) {
@@ -177,7 +220,11 @@ export default function Ks2Sjekklister() {
                   Sjekklister valgt fra Malbibliotek – klikk "Start" for å utføre en kontroll
                 </CardDescription>
               </div>
-              <Button onClick={() => setShowWizard(true)}>
+              <Button onClick={() => {
+                setExistingChecklist(null);
+                setSelectedTemplateForWizard(null);
+                setShowWizard(true);
+              }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Ny egenkontroll
               </Button>
@@ -256,14 +303,13 @@ export default function Ks2Sjekklister() {
             <div className="space-y-3">
               {filteredChecklists.map((checklist) => {
                 const items = Array.isArray(checklist.checklist_items) ? checklist.checklist_items : [];
-                const completedItems = items.filter((item: any) => item.status === 'ok' || item.status === 'not_applicable').length;
+                const completedItems = items.filter((item: any) => item.value !== null && item.value !== undefined).length;
                 const progress = items.length > 0 ? Math.round((completedItems / items.length) * 100) : checklist.progress_percent || 0;
 
                 return (
                   <div 
                     key={checklist.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-3 cursor-pointer"
-                    onClick={() => navigate(`/ks2/project/${projectId}/egenkontroller`)}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-3"
                   >
                     <div className="flex items-start gap-3">
                       {checklist.status === "completed" ? (
@@ -290,7 +336,7 @@ export default function Ks2Sjekklister() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 ml-8 sm:ml-0">
-                      {checklist.status !== "planned" && (
+                      {checklist.status !== "planned" && checklist.status !== "completed" && (
                         <div className="flex items-center gap-2">
                           <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                             <div 
@@ -302,6 +348,7 @@ export default function Ks2Sjekklister() {
                         </div>
                       )}
                       {getStatusBadge(checklist.status)}
+                      {getActionButton(checklist)}
                     </div>
                   </div>
                 );
@@ -344,12 +391,66 @@ export default function Ks2Sjekklister() {
         </DialogContent>
       </Dialog>
 
+      {/* View Checklist Dialog */}
+      <Dialog open={!!viewingChecklist} onOpenChange={() => setViewingChecklist(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{viewingChecklist?.title}</DialogTitle>
+          </DialogHeader>
+          {viewingChecklist && (
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Badge>{viewingChecklist.template_name}</Badge>
+                {getStatusBadge(viewingChecklist.status)}
+              </div>
+              
+              {viewingChecklist.responsible_user_name && (
+                <p className="text-sm text-muted-foreground">
+                  Ansvarlig: {viewingChecklist.responsible_user_name}
+                </p>
+              )}
+              
+              {viewingChecklist.completed_at && (
+                <p className="text-sm text-muted-foreground">
+                  Fullført: {format(new Date(viewingChecklist.completed_at), "d. MMMM yyyy 'kl.' HH:mm", { locale: nb })}
+                </p>
+              )}
+              
+              <div>
+                <h4 className="font-medium mb-2">Kontrollpunkter</h4>
+                <div className="space-y-2">
+                  {Array.isArray(viewingChecklist.checklist_items) && 
+                    viewingChecklist.checklist_items.map((item: any, idx: number) => (
+                      <div key={idx} className="flex items-start gap-2 p-2 bg-muted/50 rounded">
+                        <span className="text-muted-foreground text-sm">{idx + 1}.</span>
+                        <div className="flex-1">
+                          <span className="text-sm">{item.text}</span>
+                          {item.value !== null && item.value !== undefined && (
+                            <Badge variant="outline" className="ml-2">
+                              {item.value === true ? 'OK' : item.value === false ? 'Ikke OK' : item.value}
+                            </Badge>
+                          )}
+                          {item.comment && (
+                            <p className="text-xs text-muted-foreground mt-1">Kommentar: {item.comment}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Checklist Wizard */}
       {showWizard && (
         <Ks2ChecklistWizard
           projectId={projectId || ""}
           onClose={handleWizardClose}
           preSelectedTemplate={selectedTemplateForWizard}
+          existingChecklist={existingChecklist}
         />
       )}
     </div>
