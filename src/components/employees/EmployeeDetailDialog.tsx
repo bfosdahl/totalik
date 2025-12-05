@@ -27,13 +27,15 @@ import {
   Download,
   AlertCircle,
   Upload,
-  CreditCard
+  CreditCard,
+  Pen
 } from "lucide-react";
 import { Employee, useUpdateEmployee, useEmployeeDocuments, useEmployeeCourses } from "@/hooks/useEmployees";
 import { useAuth } from "@/contexts/AuthContext";
 import { AddCourseDialog } from "./AddCourseDialog";
 import { UploadDocumentDialog } from "./UploadDocumentDialog";
 import { HmsCardSection } from "./HmsCardSection";
+import { SignatureManager } from "./SignatureManager";
 import { format, differenceInDays, isPast } from "date-fns";
 import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -139,7 +141,7 @@ export function EmployeeDetailDialog({
           </DialogHeader>
 
           <Tabs defaultValue="info" className="mt-4">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 h-auto gap-1">
               <TabsTrigger value="info" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
                 <User className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">Informasjon</span>
@@ -159,6 +161,11 @@ export function EmployeeDetailDialog({
                 <GraduationCap className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">Kurs</span>
                 <span className="sm:hidden">Kurs</span>
+              </TabsTrigger>
+              <TabsTrigger value="signature" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+                <Pen className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Signatur</span>
+                <span className="sm:hidden">Sign</span>
               </TabsTrigger>
             </TabsList>
 
@@ -431,6 +438,19 @@ export function EmployeeDetailDialog({
                   })}
                 </div>
               )}
+            </TabsContent>
+
+            {/* Signature Tab */}
+            <TabsContent value="signature" className="space-y-4 mt-4">
+              <SignatureManager
+                employeeId={employee.id}
+                existingSignature={employee.signature_data}
+                canManage={canManage || employee.id === profile?.id}
+                onSignatureUpdated={() => {
+                  // Trigger refetch by closing and reopening could work,
+                  // but for now just show success message
+                }}
+              />
             </TabsContent>
           </Tabs>
         </DialogContent>

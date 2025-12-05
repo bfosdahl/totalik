@@ -6650,6 +6650,7 @@ export type Database = {
           next_of_kin_phone: string | null
           next_of_kin_relation: string | null
           phone: string | null
+          signature_data: string | null
           updated_at: string
           user_id: string
         }
@@ -6674,6 +6675,7 @@ export type Database = {
           next_of_kin_phone?: string | null
           next_of_kin_relation?: string | null
           phone?: string | null
+          signature_data?: string | null
           updated_at?: string
           user_id: string
         }
@@ -6698,6 +6700,7 @@ export type Database = {
           next_of_kin_phone?: string | null
           next_of_kin_relation?: string | null
           phone?: string | null
+          signature_data?: string | null
           updated_at?: string
           user_id?: string
         }

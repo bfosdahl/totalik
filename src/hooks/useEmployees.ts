@@ -56,6 +56,7 @@ export interface Employee {
   hms_card_expiry_date: string | null;
   hms_card_reminder_sent_30_days: boolean | null;
   hms_card_reminder_sent_7_days: boolean | null;
+  signature_data: string | null;
   created_at: string;
   updated_at: string;
 }
