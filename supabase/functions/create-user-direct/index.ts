@@ -123,6 +123,16 @@ serve(async (req) => {
 
     if (createError || !newUser.user) {
       console.error("Error creating user:", createError);
+      
+      // Handle specific error cases with appropriate status codes
+      const errorCode = (createError as any)?.code;
+      if (errorCode === "email_exists") {
+        return new Response(JSON.stringify({ error: "Bruker finnes allerede med denne e-posten" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      
       return new Response(JSON.stringify({ error: createError?.message || "Kunne ikke opprette bruker" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
