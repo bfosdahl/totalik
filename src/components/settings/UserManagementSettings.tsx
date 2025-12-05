@@ -12,7 +12,10 @@ import {
   Trash2,
   Edit2,
   Check,
-  X
+  X,
+  UserPlus,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,14 +77,25 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
   const [users, setUsers] = useState<CompanyUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [createDirectDialogOpen, setCreateDirectDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<CompanyUser | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   // Invite form state
   const [inviteForm, setInviteForm] = useState({
     email: "",
+    firstName: "",
+    lastName: "",
+    role: "user" as "company_admin" | "user",
+  });
+
+  // Direct create form state
+  const [createForm, setCreateForm] = useState({
+    email: "",
+    password: "",
     firstName: "",
     lastName: "",
     role: "user" as "company_admin" | "user",
@@ -169,6 +183,44 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
     } catch (error: any) {
       console.error("Error inviting user:", error);
       toast.error(error.message || "Kunne ikke invitere bruker");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCreateUserDirect = async () => {
+    if (!createForm.email.trim()) {
+      toast.error("E-post er påkrevd");
+      return;
+    }
+    if (!createForm.password || createForm.password.length < 6) {
+      toast.error("Passord må være minst 6 tegn");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-user-direct", {
+        body: {
+          email: createForm.email.trim(),
+          password: createForm.password,
+          firstName: createForm.firstName.trim(),
+          lastName: createForm.lastName.trim(),
+          role: createForm.role,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success("Bruker opprettet!");
+      setCreateDirectDialogOpen(false);
+      setCreateForm({ email: "", password: "", firstName: "", lastName: "", role: "user" });
+      setShowPassword(false);
+      loadUsers();
+    } catch (error: any) {
+      console.error("Error creating user:", error);
+      toast.error(error.message || "Kunne ikke opprette bruker");
     } finally {
       setIsSubmitting(false);
     }
@@ -321,10 +373,16 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
             </div>
           </div>
         </div>
-        <Button onClick={() => setInviteDialogOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Inviter bruker
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setCreateDirectDialogOpen(true)}>
+            <UserPlus className="w-4 h-4 mr-2" />
+            Legg til
+          </Button>
+          <Button onClick={() => setInviteDialogOpen(true)}>
+            <Mail className="w-4 h-4 mr-2" />
+            Send invitasjon
+          </Button>
+        </div>
       </motion.div>
 
       {/* Users List */}
@@ -343,12 +401,18 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
             <Users className="w-12 h-12 text-muted-foreground/50 mb-4" />
             <h3 className="text-lg font-semibold mb-2">Ingen brukere ennå</h3>
             <p className="text-muted-foreground mb-4">
-              Inviter brukere for å gi dem tilgang til bedriftens HMS-system.
+              Legg til eller inviter brukere for å gi dem tilgang til bedriftens HMS-system.
             </p>
-            <Button onClick={() => setInviteDialogOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Inviter første bruker
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setCreateDirectDialogOpen(true)}>
+                <UserPlus className="w-4 h-4 mr-2" />
+                Legg til
+              </Button>
+              <Button onClick={() => setInviteDialogOpen(true)}>
+                <Mail className="w-4 h-4 mr-2" />
+                Send invitasjon
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="divide-y divide-border">
@@ -498,6 +562,119 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                 <Mail className="w-4 h-4 mr-2" />
               )}
               Send invitasjon
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create User Direct Dialog */}
+      <Dialog open={createDirectDialogOpen} onOpenChange={setCreateDirectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Legg til ny bruker</DialogTitle>
+            <DialogDescription>
+              Opprett en bruker direkte med e-post og passord. Brukeren kan logge inn umiddelbart.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="create-email">E-post *</Label>
+              <Input
+                id="create-email"
+                type="email"
+                value={createForm.email}
+                onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                placeholder="bruker@eksempel.no"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-password">Passord *</Label>
+              <div className="relative">
+                <Input
+                  id="create-password"
+                  type={showPassword ? "text" : "password"}
+                  value={createForm.password}
+                  onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                  placeholder="Minst 6 tegn"
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="create-firstname">Fornavn</Label>
+                <Input
+                  id="create-firstname"
+                  value={createForm.firstName}
+                  onChange={(e) => setCreateForm({ ...createForm, firstName: e.target.value })}
+                  placeholder="Ola"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="create-lastname">Etternavn</Label>
+                <Input
+                  id="create-lastname"
+                  value={createForm.lastName}
+                  onChange={(e) => setCreateForm({ ...createForm, lastName: e.target.value })}
+                  placeholder="Nordmann"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-role">Rolle</Label>
+              <Select
+                value={createForm.role}
+                onValueChange={(value: "company_admin" | "user") => 
+                  setCreateForm({ ...createForm, role: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">
+                    <div className="flex items-center gap-2">
+                      <UserIcon className="w-4 h-4" />
+                      Bruker
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="company_admin">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      Administrator
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Administratorer kan administrere brukere og innstillinger.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateDirectDialogOpen(false)}>
+              Avbryt
+            </Button>
+            <Button onClick={handleCreateUserDirect} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <UserPlus className="w-4 h-4 mr-2" />
+              )}
+              Legg til bruker
             </Button>
           </DialogFooter>
         </DialogContent>
