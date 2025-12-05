@@ -1565,6 +1565,56 @@ export type Database = {
           },
         ]
       }
+      ik_hms_stoffkartotek: {
+        Row: {
+          company_id: string
+          created_at: string
+          danger_classes: string[] | null
+          id: string
+          last_updated: string
+          location: string | null
+          manufacturer: string | null
+          notes: string | null
+          product_name: string
+          sds_file_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          danger_classes?: string[] | null
+          id?: string
+          last_updated?: string
+          location?: string | null
+          manufacturer?: string | null
+          notes?: string | null
+          product_name: string
+          sds_file_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          danger_classes?: string[] | null
+          id?: string
+          last_updated?: string
+          location?: string | null
+          manufacturer?: string | null
+          notes?: string | null
+          product_name?: string
+          sds_file_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_hms_stoffkartotek_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_mat_checklist_responses: {
         Row: {
           checklist_name: string

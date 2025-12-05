@@ -33,6 +33,7 @@ import {
   HeartPulse,
   ShieldAlert,
   Scale,
+  FlaskConical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ const ikHmsItems = [
   { icon: Shield, label: "Oppsett-hjelperen", path: "/setup/ai" },
   { icon: AlertTriangle, label: "Risikovurdering", path: "/setup?step=2" },
   { icon: ListChecks, label: "Handlingsplan", path: "/setup?step=3" },
+  { icon: FlaskConical, label: "Stoffkartotek", path: "/stoffkartotek" },
   { icon: AlertTriangle, label: "Avvik", path: "/deviations" },
   { icon: FileCheck, label: "HMS aktiviteter", path: "/audits" },
   { icon: BookOpen, label: "Handbok", path: "/handbook" },
@@ -102,7 +104,7 @@ const detectActiveSection = (pathname: string): SectionKey => {
   const personalPaths = ['/employees', '/hr/', '/time-registration', '/time-off', '/work-schedule', '/my/'];
   if (personalPaths.some(p => pathname === p || pathname.startsWith(p))) return 'personal';
   
-  const hmsPaths = ['/setup', '/deviations', '/audits', '/handbook', '/hms-chat'];
+  const hmsPaths = ['/setup', '/deviations', '/audits', '/handbook', '/hms-chat', '/stoffkartotek'];
   if (hmsPaths.some(p => pathname === p || pathname.startsWith(p))) return 'ikHms';
   
   return 'none';
