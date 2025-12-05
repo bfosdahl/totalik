@@ -1,0 +1,195 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+
+export interface KsModule2Sja {
+  id: string;
+  project_id: string;
+  company_id: string;
+  sja_number: string;
+  title: string;
+  work_description: string | null;
+  location: string | null;
+  planned_date: string;
+  responsible_name: string;
+  responsible_id: string | null;
+  participants: string[] | null;
+  identified_risks: { description: string; consequence: string; probability: string }[];
+  risk_reducing_measures: { risk: string; measure: string; responsible: string }[];
+  overall_risk_level: string;
+  status: string;
+  completed_at: string | null;
+  completed_by_name: string | null;
+  completed_by_id: string | null;
+  signature_data: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateSjaInput {
+  project_id: string;
+  title: string;
+  work_description?: string;
+  location?: string;
+  planned_date: string;
+  responsible_name: string;
+  responsible_id?: string;
+  participants?: string[];
+  identified_risks?: { description: string; consequence: string; probability: string }[];
+  risk_reducing_measures?: { risk: string; measure: string; responsible: string }[];
+  overall_risk_level?: string;
+  notes?: string;
+}
+
+export function useKsModule2Sja(projectId: string | undefined) {
+  const { profile } = useAuth();
+  const queryClient = useQueryClient();
+
+  const { data: sjaList = [], isLoading, refetch } = useQuery({
+    queryKey: ["ks-module2-sja", projectId],
+    queryFn: async () => {
+      if (!projectId) return [];
+      
+      const { data, error } = await supabase
+        .from("ks_module2_sja")
+        .select("*")
+        .eq("project_id", projectId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      
+      return (data || []).map(item => ({
+        ...item,
+        identified_risks: Array.isArray(item.identified_risks) ? item.identified_risks : [],
+        risk_reducing_measures: Array.isArray(item.risk_reducing_measures) ? item.risk_reducing_measures : [],
+      })) as KsModule2Sja[];
+    },
+    enabled: !!projectId,
+  });
+
+  const createSja = useMutation({
+    mutationFn: async (input: CreateSjaInput) => {
+      if (!profile?.company_id) throw new Error("Ingen bedrift funnet");
+
+      // Get next SJA number
+      const { data: existing } = await supabase
+        .from("ks_module2_sja")
+        .select("sja_number")
+        .eq("project_id", input.project_id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      let nextNumber = 1;
+      if (existing && existing.length > 0) {
+        const lastNum = parseInt(existing[0].sja_number.replace("SJA-", "")) || 0;
+        nextNumber = lastNum + 1;
+      }
+
+      const { data, error } = await supabase
+        .from("ks_module2_sja")
+        .insert({
+          ...input,
+          company_id: profile.company_id,
+          sja_number: `SJA-${String(nextNumber).padStart(3, "0")}`,
+          status: "draft",
+          identified_risks: input.identified_risks || [],
+          risk_reducing_measures: input.risk_reducing_measures || [],
+          overall_risk_level: input.overall_risk_level || "medium",
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ks-module2-sja", projectId] });
+      toast.success("SJA opprettet");
+    },
+    onError: (error) => {
+      console.error("Error creating SJA:", error);
+      toast.error("Kunne ikke opprette SJA");
+    },
+  });
+
+  const updateSja = useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<KsModule2Sja> & { id: string }) => {
+      const { data, error } = await supabase
+        .from("ks_module2_sja")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ks-module2-sja", projectId] });
+      toast.success("SJA oppdatert");
+    },
+    onError: (error) => {
+      console.error("Error updating SJA:", error);
+      toast.error("Kunne ikke oppdatere SJA");
+    },
+  });
+
+  const deleteSja = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("ks_module2_sja")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ks-module2-sja", projectId] });
+      toast.success("SJA slettet");
+    },
+    onError: (error) => {
+      console.error("Error deleting SJA:", error);
+      toast.error("Kunne ikke slette SJA");
+    },
+  });
+
+  const completeSja = useMutation({
+    mutationFn: async ({ id, signature_data }: { id: string; signature_data?: string }) => {
+      const { data, error } = await supabase
+        .from("ks_module2_sja")
+        .update({
+          status: "completed",
+          completed_at: new Date().toISOString(),
+          completed_by_name: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : undefined,
+          completed_by_id: profile?.id,
+          signature_data,
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ks-module2-sja", projectId] });
+      toast.success("SJA fullført og signert");
+    },
+    onError: (error) => {
+      console.error("Error completing SJA:", error);
+      toast.error("Kunne ikke fullføre SJA");
+    },
+  });
+
+  return {
+    sjaList,
+    isLoading,
+    refetch,
+    createSja,
+    updateSja,
+    deleteSja,
+    completeSja,
+  };
+}

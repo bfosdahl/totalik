@@ -3653,6 +3653,110 @@ export type Database = {
           },
         ]
       }
+      ks_module2_sja: {
+        Row: {
+          company_id: string
+          completed_at: string | null
+          completed_by_id: string | null
+          completed_by_name: string | null
+          created_at: string
+          id: string
+          identified_risks: Json | null
+          location: string | null
+          notes: string | null
+          overall_risk_level: string | null
+          participants: string[] | null
+          planned_date: string
+          project_id: string
+          responsible_id: string | null
+          responsible_name: string
+          risk_reducing_measures: Json | null
+          signature_data: string | null
+          sja_number: string
+          status: string
+          title: string
+          updated_at: string
+          work_description: string | null
+        }
+        Insert: {
+          company_id: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name?: string | null
+          created_at?: string
+          id?: string
+          identified_risks?: Json | null
+          location?: string | null
+          notes?: string | null
+          overall_risk_level?: string | null
+          participants?: string[] | null
+          planned_date: string
+          project_id: string
+          responsible_id?: string | null
+          responsible_name: string
+          risk_reducing_measures?: Json | null
+          signature_data?: string | null
+          sja_number: string
+          status?: string
+          title: string
+          updated_at?: string
+          work_description?: string | null
+        }
+        Update: {
+          company_id?: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name?: string | null
+          created_at?: string
+          id?: string
+          identified_risks?: Json | null
+          location?: string | null
+          notes?: string | null
+          overall_risk_level?: string | null
+          participants?: string[] | null
+          planned_date?: string
+          project_id?: string
+          responsible_id?: string | null
+          responsible_name?: string
+          risk_reducing_measures?: Json | null
+          signature_data?: string | null
+          sja_number?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          work_description?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_sja_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_sja_completed_by_id_fkey"
+            columns: ["completed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_sja_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_sja_responsible_id_fkey"
+            columns: ["responsible_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_subcontractor_documents: {
         Row: {
           company_id: string
