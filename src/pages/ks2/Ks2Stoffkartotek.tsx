@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,10 +17,16 @@ import {
   AlertTriangle,
   ExternalLink,
   Loader2,
-  Trash2
+  Trash2,
+  Upload,
+  Download,
+  Eye,
+  X
 } from "lucide-react";
-import { useKsModule2Stoffkartotek } from "@/hooks/useKsModule2Stoffkartotek";
+import { useKsModule2Stoffkartotek, KsModule2Stoffkartotek } from "@/hooks/useKsModule2Stoffkartotek";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 const DANGER_CLASSES = [
   "Brannfarlig",
@@ -36,16 +42,23 @@ const DANGER_CLASSES = [
 
 export default function Ks2Stoffkartotek() {
   const { projectId } = useParams();
-  const { stoffkartotekList, isLoading, createStoffkartotek, deleteStoffkartotek, isCreating } = useKsModule2Stoffkartotek(projectId || null);
+  const { stoffkartotekList, isLoading, createStoffkartotek, updateStoffkartotek, deleteStoffkartotek, isCreating, isUpdating } = useKsModule2Stoffkartotek(projectId || null);
   
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<KsModule2Stoffkartotek | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const detailFileInputRef = useRef<HTMLInputElement>(null);
+  
   const [newProduct, setNewProduct] = useState({
     product_name: "",
     manufacturer: "",
     danger_classes: [] as string[],
     location: "",
-    notes: ""
+    notes: "",
+    sds_file: null as File | null
   });
 
   const getDangerBadge = (danger: string) => {
@@ -82,8 +95,38 @@ export default function Ks2Stoffkartotek() {
     }));
   };
 
-  const handleCreate = () => {
+  const uploadSdsFile = async (file: File, productName: string): Promise<string | null> => {
+    const sanitizedName = productName.replace(/[^a-zA-Z0-9æøåÆØÅ\s-]/g, "").replace(/\s+/g, "_");
+    const fileName = `sds_${sanitizedName}_${Date.now()}.${file.name.split('.').pop()}`;
+    const filePath = `${projectId}/stoffkartotek/${fileName}`;
+
+    const { error } = await supabase.storage
+      .from("ks-module2-files")
+      .upload(filePath, file);
+
+    if (error) {
+      console.error("Upload error:", error);
+      return null;
+    }
+
+    return filePath;
+  };
+
+  const handleCreate = async () => {
     if (!newProduct.product_name || !projectId) return;
+
+    let sdsFilePath: string | null = null;
+
+    if (newProduct.sds_file) {
+      setIsUploading(true);
+      sdsFilePath = await uploadSdsFile(newProduct.sds_file, newProduct.product_name);
+      setIsUploading(false);
+      
+      if (!sdsFilePath) {
+        toast.error("Kunne ikke laste opp SDS-fil");
+        return;
+      }
+    }
 
     createStoffkartotek({
       project_id: projectId,
@@ -92,7 +135,7 @@ export default function Ks2Stoffkartotek() {
       danger_classes: newProduct.danger_classes,
       location: newProduct.location || null,
       notes: newProduct.notes || null,
-      sds_file_path: null,
+      sds_file_path: sdsFilePath,
       last_updated: new Date().toISOString().split('T')[0]
     });
 
@@ -101,9 +144,59 @@ export default function Ks2Stoffkartotek() {
       manufacturer: "",
       danger_classes: [],
       location: "",
-      notes: ""
+      notes: "",
+      sds_file: null
     });
     setIsDialogOpen(false);
+  };
+
+  const handleViewSds = async (filePath: string) => {
+    const { data } = await supabase.storage
+      .from("ks-module2-files")
+      .createSignedUrl(filePath, 3600);
+
+    if (data?.signedUrl) {
+      window.open(data.signedUrl, "_blank");
+    } else {
+      toast.error("Kunne ikke åpne SDS-fil");
+    }
+  };
+
+  const handleDownloadSds = async (filePath: string, productName: string) => {
+    const { data } = await supabase.storage
+      .from("ks-module2-files")
+      .createSignedUrl(filePath, 3600);
+
+    if (data?.signedUrl) {
+      const a = document.createElement("a");
+      a.href = data.signedUrl;
+      a.download = `SDS_${productName}.pdf`;
+      a.click();
+    } else {
+      toast.error("Kunne ikke laste ned SDS-fil");
+    }
+  };
+
+  const handleUploadSdsForExisting = async (file: File, product: KsModule2Stoffkartotek) => {
+    setIsUploading(true);
+    const filePath = await uploadSdsFile(file, product.product_name);
+    setIsUploading(false);
+
+    if (filePath) {
+      updateStoffkartotek({
+        id: product.id,
+        sds_file_path: filePath,
+        last_updated: new Date().toISOString().split('T')[0]
+      });
+      setSelectedProduct(prev => prev ? { ...prev, sds_file_path: filePath } : null);
+    } else {
+      toast.error("Kunne ikke laste opp SDS-fil");
+    }
+  };
+
+  const openDetail = (product: KsModule2Stoffkartotek) => {
+    setSelectedProduct(product);
+    setIsDetailOpen(true);
   };
 
   return (
@@ -209,11 +302,21 @@ export default function Ks2Stoffkartotek() {
                   </div>
 
                   <div className="flex gap-2 pt-2">
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => product.sds_file_path ? handleViewSds(product.sds_file_path) : openDetail(product)}
+                    >
                       <FileText className="h-4 w-4 mr-2" />
-                      SDS
+                      {product.sds_file_path ? "Se SDS" : "Ingen SDS"}
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => openDetail(product)}
+                    >
                       <ExternalLink className="h-4 w-4 mr-2" />
                       Detaljer
                     </Button>
@@ -248,7 +351,7 @@ export default function Ks2Stoffkartotek() {
 
       {/* Create Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Legg til stoff</DialogTitle>
           </DialogHeader>
@@ -295,6 +398,47 @@ export default function Ks2Stoffkartotek() {
               />
             </div>
             <div>
+              <Label>Sikkerhetsdatablad (SDS)</Label>
+              <div className="mt-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept=".pdf,.doc,.docx"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setNewProduct(prev => ({ ...prev, sds_file: file }));
+                    }
+                  }}
+                />
+                {newProduct.sds_file ? (
+                  <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/50">
+                    <FileText className="h-4 w-4 text-emerald-500" />
+                    <span className="text-sm flex-1 truncate">{newProduct.sds_file.name}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => setNewProduct(prev => ({ ...prev, sds_file: null }))}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Last opp SDS-fil
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div>
               <Label>Notater</Label>
               <Textarea
                 placeholder="Tilleggsinformasjon..."
@@ -309,11 +453,131 @@ export default function Ks2Stoffkartotek() {
             </Button>
             <Button 
               onClick={handleCreate}
-              disabled={!newProduct.product_name || isCreating}
+              disabled={!newProduct.product_name || isCreating || isUploading}
               className="bg-emerald-500 hover:bg-emerald-600"
             >
-              {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {(isCreating || isUploading) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Legg til stoff
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Detail Dialog */}
+      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FlaskConical className="h-5 w-5 text-emerald-500" />
+              {selectedProduct?.product_name}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedProduct && (
+            <div className="space-y-4 py-4">
+              {selectedProduct.manufacturer && (
+                <div>
+                  <Label className="text-muted-foreground">Produsent/Leverandør</Label>
+                  <p className="font-medium">{selectedProduct.manufacturer}</p>
+                </div>
+              )}
+
+              {selectedProduct.danger_classes && selectedProduct.danger_classes.length > 0 && (
+                <div>
+                  <Label className="text-muted-foreground">Fareklasser</Label>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {selectedProduct.danger_classes.map((danger) => getDangerBadge(danger))}
+                  </div>
+                </div>
+              )}
+
+              {selectedProduct.location && (
+                <div>
+                  <Label className="text-muted-foreground">Plassering</Label>
+                  <p className="font-medium">{selectedProduct.location}</p>
+                </div>
+              )}
+
+              {selectedProduct.notes && (
+                <div>
+                  <Label className="text-muted-foreground">Notater</Label>
+                  <p className="text-sm">{selectedProduct.notes}</p>
+                </div>
+              )}
+
+              <div>
+                <Label className="text-muted-foreground">Sikkerhetsdatablad (SDS)</Label>
+                <div className="mt-2">
+                  <input
+                    type="file"
+                    ref={detailFileInputRef}
+                    accept=".pdf,.doc,.docx"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file && selectedProduct) {
+                        handleUploadSdsForExisting(file, selectedProduct);
+                      }
+                    }}
+                  />
+                  {selectedProduct.sds_file_path ? (
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => handleViewSds(selectedProduct.sds_file_path!)}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Se SDS
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => handleDownloadSds(selectedProduct.sds_file_path!, selectedProduct.product_name)}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Last ned
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => detailFileInputRef.current?.click()}
+                        disabled={isUploading}
+                      >
+                        {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => detailFileInputRef.current?.click()}
+                      disabled={isUploading}
+                    >
+                      {isUploading ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Upload className="h-4 w-4 mr-2" />
+                      )}
+                      Last opp SDS-fil
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-2 border-t">
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Sist oppdatert:</span>
+                  <span>{format(new Date(selectedProduct.last_updated), "dd.MM.yyyy")}</span>
+                </div>
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Opprettet:</span>
+                  <span>{format(new Date(selectedProduct.created_at), "dd.MM.yyyy")}</span>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDetailOpen(false)}>
+              Lukk
             </Button>
           </DialogFooter>
         </DialogContent>
