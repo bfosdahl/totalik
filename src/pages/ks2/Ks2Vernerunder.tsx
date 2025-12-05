@@ -33,7 +33,11 @@ export default function Ks2Vernerunder() {
     responsible_name: "",
   });
 
-  const { vernerunder, isLoading, createVernerunde, deleteVernerunde } = useKsModule2Vernerunder(projectId);
+  const { vernerunder, isLoading, createVernerunde, updateVernerunde, deleteVernerunde } = useKsModule2Vernerunder(projectId);
+
+  const handleStartVernerunde = async (id: string) => {
+    await updateVernerunde.mutateAsync({ id, status: "in_progress" });
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -146,8 +150,21 @@ export default function Ks2Vernerunder() {
 
         <div className="flex gap-2 mt-4">
           {vr.status === "planned" ? (
-            <Button variant="default" size="sm" className="bg-emerald-500 hover:bg-emerald-600">
+            <Button 
+              variant="default" 
+              size="sm" 
+              className="bg-emerald-500 hover:bg-emerald-600"
+              onClick={() => handleStartVernerunde(vr.id)}
+              disabled={updateVernerunde.isPending}
+            >
+              {updateVernerunde.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : null}
               Start vernerunde
+            </Button>
+          ) : vr.status === "in_progress" ? (
+            <Button variant="default" size="sm" className="bg-emerald-500 hover:bg-emerald-600">
+              Fortsett vernerunde
             </Button>
           ) : (
             <Button variant="outline" size="sm">
