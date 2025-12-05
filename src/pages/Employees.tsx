@@ -7,19 +7,42 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Users, GraduationCap, FileText, AlertCircle, ChevronRight, CreditCard, IdCard } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Users, GraduationCap, FileText, AlertCircle, ChevronRight, CreditCard, IdCard, UserPlus, Mail, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEmployees } from "@/hooks/useEmployees";
 import { EmployeeDetailDialog } from "@/components/employees/EmployeeDetailDialog";
 import { format, differenceInDays, isPast } from "date-fns";
 import { nb } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function Employees() {
   const navigate = useNavigate();
-  const { isCompanyAdmin, isSystemAdmin } = useAuth();
+  const queryClient = useQueryClient();
+  const { isCompanyAdmin, isSystemAdmin, company } = useAuth();
   const { employees, courses, isLoading } = useEmployees();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
+  
+  // Dialog states
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [createDirectDialogOpen, setCreateDirectDialogOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("user");
+  const [isInviting, setIsInviting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    email: "",
+    password: "",
+    firstName: "",
+    lastName: "",
+    role: "user"
+  });
+  const [isCreating, setIsCreating] = useState(false);
 
   const canManage = isCompanyAdmin || isSystemAdmin;
 
@@ -58,6 +81,61 @@ export default function Employees() {
 
   const selectedEmployee = employees?.find(e => e.id === selectedEmployeeId);
 
+  const handleInviteUser = async () => {
+    if (!inviteEmail || !company?.id) return;
+    
+    setIsInviting(true);
+    try {
+      const { error } = await supabase.functions.invoke('invite-user', {
+        body: {
+          email: inviteEmail,
+          companyId: company.id,
+          role: inviteRole
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success("Invitasjon sendt til " + inviteEmail);
+      setInviteDialogOpen(false);
+      setInviteEmail("");
+      setInviteRole("user");
+    } catch (error: any) {
+      toast.error("Kunne ikke sende invitasjon: " + error.message);
+    } finally {
+      setIsInviting(false);
+    }
+  };
+
+  const handleCreateUserDirect = async () => {
+    if (!createForm.email || !createForm.password || !company?.id) return;
+    
+    setIsCreating(true);
+    try {
+      const { error } = await supabase.functions.invoke('create-user-direct', {
+        body: {
+          email: createForm.email,
+          password: createForm.password,
+          firstName: createForm.firstName,
+          lastName: createForm.lastName,
+          companyId: company.id,
+          role: createForm.role
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success("Bruker opprettet: " + createForm.email);
+      setCreateDirectDialogOpen(false);
+      setCreateForm({ email: "", password: "", firstName: "", lastName: "", role: "user" });
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+    } catch (error: any) {
+      toast.error("Kunne ikke opprette bruker: " + error.message);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -69,14 +147,35 @@ export default function Employees() {
               Administrer ansattinformasjon, dokumenter og kurs
             </p>
           </div>
-          <Button 
-            onClick={() => navigate("/my-courses")}
-            className="gap-2"
-            variant="outline"
-          >
-            <IdCard className="h-4 w-4" />
-            Mitt kursbevis
-          </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            {canManage && (
+              <>
+                <Button 
+                  onClick={() => setCreateDirectDialogOpen(true)}
+                  className="gap-2"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Legg til
+                </Button>
+                <Button 
+                  onClick={() => setInviteDialogOpen(true)}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <Mail className="h-4 w-4" />
+                  Send invitasjon
+                </Button>
+              </>
+            )}
+            <Button 
+              onClick={() => navigate("/my-courses")}
+              className="gap-2"
+              variant="outline"
+            >
+              <IdCard className="h-4 w-4" />
+              Mitt kursbevis
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -419,6 +518,141 @@ export default function Employees() {
           canManage={canManage}
         />
       )}
+
+      {/* Invite User Dialog */}
+      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send invitasjon</DialogTitle>
+            <DialogDescription>
+              Send en e-postinvitasjon til en ny ansatt
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="invite-email">E-postadresse</Label>
+              <Input
+                id="invite-email"
+                type="email"
+                placeholder="ansatt@firma.no"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="invite-role">Rolle</Label>
+              <Select value={inviteRole} onValueChange={setInviteRole}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">Bruker</SelectItem>
+                  <SelectItem value="company_admin">Bedriftsadministrator</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
+              Avbryt
+            </Button>
+            <Button onClick={handleInviteUser} disabled={!inviteEmail || isInviting}>
+              {isInviting ? "Sender..." : "Send invitasjon"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create User Direct Dialog */}
+      <Dialog open={createDirectDialogOpen} onOpenChange={setCreateDirectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Legg til ansatt</DialogTitle>
+            <DialogDescription>
+              Opprett en ny ansatt med brukernavn og passord
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="create-email">E-postadresse</Label>
+              <Input
+                id="create-email"
+                type="email"
+                placeholder="ansatt@firma.no"
+                value={createForm.email}
+                onChange={(e) => setCreateForm(prev => ({ ...prev, email: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-password">Passord</Label>
+              <div className="relative">
+                <Input
+                  id="create-password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Velg et passord"
+                  value={createForm.password}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, password: e.target.value }))}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="create-firstname">Fornavn</Label>
+                <Input
+                  id="create-firstname"
+                  placeholder="Fornavn"
+                  value={createForm.firstName}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, firstName: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="create-lastname">Etternavn</Label>
+                <Input
+                  id="create-lastname"
+                  placeholder="Etternavn"
+                  value={createForm.lastName}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, lastName: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-role">Rolle</Label>
+              <Select 
+                value={createForm.role} 
+                onValueChange={(value) => setCreateForm(prev => ({ ...prev, role: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">Bruker</SelectItem>
+                  <SelectItem value="company_admin">Bedriftsadministrator</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateDirectDialogOpen(false)}>
+              Avbryt
+            </Button>
+            <Button 
+              onClick={handleCreateUserDirect} 
+              disabled={!createForm.email || !createForm.password || isCreating}
+            >
+              {isCreating ? "Oppretter..." : "Opprett bruker"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
