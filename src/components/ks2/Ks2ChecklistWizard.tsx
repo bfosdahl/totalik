@@ -37,6 +37,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SignaturePad } from "./SignaturePad";
 import { downloadChecklistTemplatePdf } from "@/utils/ksChecklistTemplatePdf";
+import UserSelect from "@/components/audits/UserSelect";
 
 // Pre-selected template from Malbibliotek (admin templates)
 export interface PreSelectedTemplate {
@@ -735,10 +736,10 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
 
             <div className="space-y-2">
               <Label>Ditt navn</Label>
-              <Input
+              <UserSelect
                 value={inspectorName}
-                onChange={(e) => setInspectorName(e.target.value)}
-                placeholder="Skriv inn ditt fulle navn..."
+                onValueChange={setInspectorName}
+                placeholder="Velg eller skriv inn navn..."
               />
             </div>
 
