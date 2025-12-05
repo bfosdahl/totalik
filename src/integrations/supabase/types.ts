@@ -3757,6 +3757,66 @@ export type Database = {
           },
         ]
       }
+      ks_module2_stoffkartotek: {
+        Row: {
+          company_id: string
+          created_at: string
+          danger_classes: string[] | null
+          id: string
+          last_updated: string | null
+          location: string | null
+          manufacturer: string | null
+          notes: string | null
+          product_name: string
+          project_id: string
+          sds_file_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          danger_classes?: string[] | null
+          id?: string
+          last_updated?: string | null
+          location?: string | null
+          manufacturer?: string | null
+          notes?: string | null
+          product_name: string
+          project_id: string
+          sds_file_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          danger_classes?: string[] | null
+          id?: string
+          last_updated?: string | null
+          location?: string | null
+          manufacturer?: string | null
+          notes?: string | null
+          product_name?: string
+          project_id?: string
+          sds_file_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_stoffkartotek_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_stoffkartotek_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_subcontractor_documents: {
         Row: {
           company_id: string
