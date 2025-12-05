@@ -22,6 +22,9 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Extract the token from the header
+    const token = authHeader.replace("Bearer ", "");
+
     // Create Supabase client with service role key for admin operations
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -29,18 +32,8 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Create client with user's token to verify permissions
-    const supabaseUser = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      {
-        global: { headers: { Authorization: authHeader } },
-        auth: { autoRefreshToken: false, persistSession: false },
-      }
-    );
-
-    // Get the requesting user
-    const { data: { user: requestingUser }, error: userError } = await supabaseUser.auth.getUser();
+    // Verify the user's token using admin client
+    const { data: { user: requestingUser }, error: userError } = await supabaseAdmin.auth.getUser(token);
     if (userError || !requestingUser) {
       console.error("Auth error:", userError);
       return new Response(
