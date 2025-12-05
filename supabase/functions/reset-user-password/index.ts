@@ -85,21 +85,35 @@ Deno.serve(async (req) => {
     }
 
     // Check if requesting user is a system admin
-    const { data: isSystemAdmin } = await supabaseAdmin.rpc("is_system_admin", {
-      _user_id: requestingUser.id,
-    });
+    const { data: systemAdminRole } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", requestingUser.id)
+      .eq("role", "system_admin")
+      .maybeSingle();
+    
+    const isSystemAdmin = !!systemAdminRole;
 
-    // Get requesting user's profile to check if they're a company admin
+    // Check if requesting user is a company admin
+    const { data: companyAdminRole } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", requestingUser.id)
+      .eq("role", "company_admin")
+      .maybeSingle();
+    
+    const isCompanyAdmin = !!companyAdminRole;
+
+    // Get requesting user's profile to check company
     const { data: requestingProfile } = await supabaseAdmin
       .from("profiles")
-      .select("role, company_id")
+      .select("company_id")
       .eq("user_id", requestingUser.id)
       .single();
 
     // Authorization check:
     // 1. System admins can reset any password
     // 2. Company admins can reset passwords for users in their own company
-    const isCompanyAdmin = requestingProfile?.role === "company_admin";
     const isSameCompany = requestingProfile?.company_id && 
                           profileData.company_id && 
                           requestingProfile.company_id === profileData.company_id;
