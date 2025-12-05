@@ -3417,6 +3417,242 @@ export type Database = {
           },
         ]
       }
+      ks_module2_sha_plans: {
+        Row: {
+          change_routine_text: string | null
+          client_contact_person: string | null
+          client_name: string | null
+          client_org_number: string | null
+          client_signature: string | null
+          client_signed_at: string | null
+          client_signed_by: string | null
+          company_id: string
+          contractor_type: string | null
+          created_at: string
+          created_by: string | null
+          entrepreneur_approved: boolean | null
+          entrepreneur_approved_at: string | null
+          entrepreneur_approved_by: string | null
+          external_file_name: string | null
+          external_file_path: string | null
+          id: string
+          is_current_version: boolean | null
+          kp_signature: string | null
+          kp_signed_at: string | null
+          kp_signed_by: string | null
+          ku_signature: string | null
+          ku_signed_at: string | null
+          ku_signed_by: string | null
+          organization_data: Json | null
+          plan_type: string
+          planned_end_date: string | null
+          planned_start_date: string | null
+          previous_version_id: string | null
+          project_address: string | null
+          project_id: string
+          project_name: string | null
+          risk_areas: Json | null
+          sha_coordinator_kp: string | null
+          sha_coordinator_ku: string | null
+          signed_pdf_path: string | null
+          status: string
+          template_id: string | null
+          updated_at: string
+          uploaded_at: string | null
+          uploaded_by_name: string | null
+          version_number: number | null
+        }
+        Insert: {
+          change_routine_text?: string | null
+          client_contact_person?: string | null
+          client_name?: string | null
+          client_org_number?: string | null
+          client_signature?: string | null
+          client_signed_at?: string | null
+          client_signed_by?: string | null
+          company_id: string
+          contractor_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          entrepreneur_approved?: boolean | null
+          entrepreneur_approved_at?: string | null
+          entrepreneur_approved_by?: string | null
+          external_file_name?: string | null
+          external_file_path?: string | null
+          id?: string
+          is_current_version?: boolean | null
+          kp_signature?: string | null
+          kp_signed_at?: string | null
+          kp_signed_by?: string | null
+          ku_signature?: string | null
+          ku_signed_at?: string | null
+          ku_signed_by?: string | null
+          organization_data?: Json | null
+          plan_type?: string
+          planned_end_date?: string | null
+          planned_start_date?: string | null
+          previous_version_id?: string | null
+          project_address?: string | null
+          project_id: string
+          project_name?: string | null
+          risk_areas?: Json | null
+          sha_coordinator_kp?: string | null
+          sha_coordinator_ku?: string | null
+          signed_pdf_path?: string | null
+          status?: string
+          template_id?: string | null
+          updated_at?: string
+          uploaded_at?: string | null
+          uploaded_by_name?: string | null
+          version_number?: number | null
+        }
+        Update: {
+          change_routine_text?: string | null
+          client_contact_person?: string | null
+          client_name?: string | null
+          client_org_number?: string | null
+          client_signature?: string | null
+          client_signed_at?: string | null
+          client_signed_by?: string | null
+          company_id?: string
+          contractor_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          entrepreneur_approved?: boolean | null
+          entrepreneur_approved_at?: string | null
+          entrepreneur_approved_by?: string | null
+          external_file_name?: string | null
+          external_file_path?: string | null
+          id?: string
+          is_current_version?: boolean | null
+          kp_signature?: string | null
+          kp_signed_at?: string | null
+          kp_signed_by?: string | null
+          ku_signature?: string | null
+          ku_signed_at?: string | null
+          ku_signed_by?: string | null
+          organization_data?: Json | null
+          plan_type?: string
+          planned_end_date?: string | null
+          planned_start_date?: string | null
+          previous_version_id?: string | null
+          project_address?: string | null
+          project_id?: string
+          project_name?: string | null
+          risk_areas?: Json | null
+          sha_coordinator_kp?: string | null
+          sha_coordinator_ku?: string | null
+          signed_pdf_path?: string | null
+          status?: string
+          template_id?: string | null
+          updated_at?: string
+          uploaded_at?: string | null
+          uploaded_by_name?: string | null
+          version_number?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_sha_plans_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_sha_plans_previous_version_id_fkey"
+            columns: ["previous_version_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_sha_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_sha_plans_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_module2_sha_tilpasning: {
+        Row: {
+          additional_measures: Json | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          implementation_description: string | null
+          linked_avvik_ids: string[] | null
+          linked_sja_ids: string[] | null
+          linked_vernerunde_ids: string[] | null
+          project_id: string
+          project_leader_signature: string | null
+          project_leader_signed_at: string | null
+          project_leader_signed_by: string | null
+          sha_plan_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          additional_measures?: Json | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          implementation_description?: string | null
+          linked_avvik_ids?: string[] | null
+          linked_sja_ids?: string[] | null
+          linked_vernerunde_ids?: string[] | null
+          project_id: string
+          project_leader_signature?: string | null
+          project_leader_signed_at?: string | null
+          project_leader_signed_by?: string | null
+          sha_plan_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          additional_measures?: Json | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          implementation_description?: string | null
+          linked_avvik_ids?: string[] | null
+          linked_sja_ids?: string[] | null
+          linked_vernerunde_ids?: string[] | null
+          project_id?: string
+          project_leader_signature?: string | null
+          project_leader_signed_at?: string | null
+          project_leader_signed_by?: string | null
+          sha_plan_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_sha_tilpasning_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_sha_tilpasning_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_sha_tilpasning_sha_plan_id_fkey"
+            columns: ["sha_plan_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_sha_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_subcontractor_documents: {
         Row: {
           company_id: string
