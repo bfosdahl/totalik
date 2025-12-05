@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
-import { jwtVerify } from "https://deno.land/x/jose@v5.2.0/index.ts";
+import { decode } from "https://deno.land/x/djwt@v3.0.2/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,26 +26,17 @@ Deno.serve(async (req) => {
     // Extract the token from the header
     const token = authHeader.replace("Bearer ", "");
 
-    // Verify the JWT token
-    const jwtSecret = Deno.env.get("JWT_SECRET");
-    if (!jwtSecret) {
-      console.error("JWT_SECRET not configured");
-      return new Response(
-        JSON.stringify({ error: "Server configuration error" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
+    // Decode the JWT to get user ID (token is already validated by Supabase API gateway)
     let requestingUserId: string;
     try {
-      const secret = new TextEncoder().encode(jwtSecret);
-      const { payload } = await jwtVerify(token, secret);
-      requestingUserId = payload.sub as string;
+      const [_header, payload, _signature] = decode(token);
+      const claims = payload as { sub?: string };
+      requestingUserId = claims.sub as string;
       if (!requestingUserId) {
         throw new Error("No user ID in token");
       }
-    } catch (jwtError) {
-      console.error("JWT verification error:", jwtError);
+    } catch (decodeError) {
+      console.error("JWT decode error:", decodeError);
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
