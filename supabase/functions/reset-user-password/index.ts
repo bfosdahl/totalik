@@ -49,15 +49,32 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Parse request body
-    const { userId, newPassword, sendEmail } = await req.json();
+    // Parse request body - userId here is the profile ID, not auth user ID
+    const { userId: profileId, newPassword, sendEmail } = await req.json();
 
-    if (!userId || !newPassword) {
+    if (!profileId || !newPassword) {
       return new Response(
-        JSON.stringify({ error: "User ID and new password are required" }),
+        JSON.stringify({ error: "Profil-ID og nytt passord er påkrevd" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Get the auth user_id from the profile
+    const { data: profileData, error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id, company_id")
+      .eq("id", profileId)
+      .single();
+
+    if (profileError || !profileData?.user_id) {
+      console.error("Profile lookup error:", profileError);
+      return new Response(
+        JSON.stringify({ error: "Bruker ikke funnet" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = profileData.user_id;
 
     // Validate password length
     if (newPassword.length < 6) {
@@ -76,14 +93,7 @@ Deno.serve(async (req) => {
     const { data: requestingProfile } = await supabaseAdmin
       .from("profiles")
       .select("role, company_id")
-      .eq("id", requestingUser.id)
-      .single();
-
-    // Get target user's profile to check company
-    const { data: targetProfile } = await supabaseAdmin
-      .from("profiles")
-      .select("company_id")
-      .eq("id", userId)
+      .eq("user_id", requestingUser.id)
       .single();
 
     // Authorization check:
@@ -91,8 +101,8 @@ Deno.serve(async (req) => {
     // 2. Company admins can reset passwords for users in their own company
     const isCompanyAdmin = requestingProfile?.role === "company_admin";
     const isSameCompany = requestingProfile?.company_id && 
-                          targetProfile?.company_id && 
-                          requestingProfile.company_id === targetProfile.company_id;
+                          profileData.company_id && 
+                          requestingProfile.company_id === profileData.company_id;
 
     if (!isSystemAdmin && !(isCompanyAdmin && isSameCompany)) {
       console.error("Permission denied: user is not system admin or company admin for this user");
@@ -136,11 +146,11 @@ Deno.serve(async (req) => {
         try {
           const resend = new Resend(resendApiKey);
           
-          // Get user's profile for name
+          // Get user's profile for name (use profileId which is the profile table ID)
           const { data: profile } = await supabaseAdmin
             .from("profiles")
             .select("first_name, last_name")
-            .eq("id", userId)
+            .eq("id", profileId)
             .maybeSingle();
           
           const userName = profile?.first_name 
