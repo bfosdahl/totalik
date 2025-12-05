@@ -56,7 +56,7 @@ export interface NewKsModule2ProjectInput {
 }
 
 export function useKsModule2Projects() {
-  const { profile, user, isGuestUser, guestProjects } = useAuth();
+  const { profile, isGuestUser, guestProjects } = useAuth();
   const { toast } = useToast();
   const [projects, setProjects] = useState<KsModule2Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
