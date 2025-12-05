@@ -210,7 +210,16 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        let errorMessage = "Kunne ikke opprette bruker";
+        try {
+          const errorData = await error.context?.json?.();
+          errorMessage = errorData?.error || error.message || errorMessage;
+        } catch {
+          errorMessage = error.message || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
       if (data?.error) throw new Error(data.error);
 
       toast.success("Bruker opprettet!");

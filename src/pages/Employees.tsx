@@ -123,7 +123,17 @@ export default function Employees() {
         }
       });
 
-      if (error) throw new Error(error.message || "Kunne ikke opprette bruker");
+      if (error) {
+        // Try to get error message from response context
+        let errorMessage = "Kunne ikke opprette bruker";
+        try {
+          const errorData = await error.context?.json?.();
+          errorMessage = errorData?.error || error.message || errorMessage;
+        } catch {
+          errorMessage = error.message || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
       if (data?.error) throw new Error(data.error);
 
       toast.success("Bruker opprettet: " + createForm.email);
