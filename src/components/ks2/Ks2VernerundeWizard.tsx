@@ -431,13 +431,15 @@ export default function Ks2VernerundeWizard({
           <span className={step === 3 ? "text-foreground font-medium" : ""}>Signatur</span>
         </div>
 
-        <div className="min-h-[400px]">
-          {step === 1 && renderStep1()}
-          {step === 2 && renderStep2()}
-          {step === 3 && renderStep3()}
-        </div>
+        <ScrollArea className="h-[450px] pr-2">
+          <div className="pr-2">
+            {step === 1 && renderStep1()}
+            {step === 2 && renderStep2()}
+            {step === 3 && renderStep3()}
+          </div>
+        </ScrollArea>
 
-        <div className="flex justify-between mt-4 pt-4 border-t">
+        <div className="flex justify-between pt-4 border-t">
           <Button
             variant="outline"
             onClick={() => setStep(s => s - 1)}
