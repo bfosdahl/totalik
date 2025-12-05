@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,11 +23,47 @@ export function SignatureManager({
   onSignatureUpdated,
 }: SignatureManagerProps) {
   const sigCanvas = useRef<SignatureCanvas>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mode, setMode] = useState<"view" | "draw" | "upload">("view");
   const [isSaving, setIsSaving] = useState(false);
   const [drawnSignature, setDrawnSignature] = useState<string | null>(null);
   const [uploadedSignature, setUploadedSignature] = useState<string | null>(null);
+
+  // Resize canvas to match container width
+  const resizeCanvas = useCallback(() => {
+    if (sigCanvas.current && containerRef.current) {
+      const canvas = sigCanvas.current.getCanvas();
+      const container = containerRef.current;
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      
+      canvas.width = container.offsetWidth * ratio;
+      canvas.height = 160 * ratio;
+      canvas.style.width = `${container.offsetWidth}px`;
+      canvas.style.height = "160px";
+      
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.scale(ratio, ratio);
+      }
+      
+      sigCanvas.current.clear();
+      setDrawnSignature(null);
+    }
+  }, []);
+
+  // Resize on mount and when mode changes to draw
+  useEffect(() => {
+    if (mode === "draw") {
+      // Small delay to ensure container is rendered
+      const timer = setTimeout(resizeCanvas, 50);
+      window.addEventListener("resize", resizeCanvas);
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener("resize", resizeCanvas);
+      };
+    }
+  }, [mode, resizeCanvas]);
 
   const handleClear = () => {
     sigCanvas.current?.clear();
@@ -198,16 +234,17 @@ export function SignatureManager({
               !drawnSignature && "border-dashed"
             )}>
               <CardContent className="p-0">
-                <SignatureCanvas
-                  ref={sigCanvas}
-                  canvasProps={{
-                    className: "w-full h-40 bg-background touch-none",
-                    style: { width: "100%", height: "160px" },
-                  }}
-                  onEnd={handleDrawEnd}
-                  penColor="hsl(var(--foreground))"
-                  backgroundColor="transparent"
-                />
+                <div ref={containerRef} className="w-full">
+                  <SignatureCanvas
+                    ref={sigCanvas}
+                    canvasProps={{
+                      className: "bg-background touch-none cursor-crosshair",
+                    }}
+                    onEnd={handleDrawEnd}
+                    penColor="currentColor"
+                    backgroundColor="transparent"
+                  />
+                </div>
                 {!drawnSignature && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <p className="text-muted-foreground text-sm">
