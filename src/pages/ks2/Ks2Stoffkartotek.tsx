@@ -21,12 +21,27 @@ import {
   Upload,
   Download,
   Eye,
-  X
+  X,
+  Library,
+  Check
 } from "lucide-react";
 import { useKsModule2Stoffkartotek, KsModule2Stoffkartotek } from "@/hooks/useKsModule2Stoffkartotek";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+
+interface IkHmsStoffkartotek {
+  id: string;
+  company_id: string;
+  product_name: string;
+  manufacturer: string | null;
+  danger_classes: string[];
+  location: string | null;
+  sds_file_path: string | null;
+  notes: string | null;
+}
 
 const DANGER_CLASSES = [
   "Brannfarlig",
@@ -42,6 +57,7 @@ const DANGER_CLASSES = [
 
 export default function Ks2Stoffkartotek() {
   const { projectId } = useParams();
+  const { company } = useAuth();
   const { stoffkartotekList, isLoading, createStoffkartotek, updateStoffkartotek, deleteStoffkartotek, isCreating, isUpdating } = useKsModule2Stoffkartotek(projectId || null);
   
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,8 +65,34 @@ export default function Ks2Stoffkartotek() {
   const [selectedProduct, setSelectedProduct] = useState<KsModule2Stoffkartotek | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [selectedImportIds, setSelectedImportIds] = useState<string[]>([]);
+  const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const detailFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch company's IK/HMS stoffkartotek
+  const { data: companyStoffkartotek = [], isLoading: isLoadingCompany } = useQuery({
+    queryKey: ["ik-hms-stoffkartotek", company?.id],
+    queryFn: async () => {
+      if (!company?.id) return [];
+      const { data, error } = await supabase
+        .from("ik_hms_stoffkartotek" as any)
+        .select("*")
+        .eq("company_id", company.id)
+        .order("product_name", { ascending: true });
+
+      if (error) throw error;
+      return (data as unknown) as IkHmsStoffkartotek[];
+    },
+    enabled: !!company?.id,
+  });
+
+  // Filter out items already imported (by matching product_name)
+  const existingProductNames = stoffkartotekList.map(p => p.product_name.toLowerCase());
+  const availableForImport = companyStoffkartotek.filter(
+    item => !existingProductNames.includes(item.product_name.toLowerCase())
+  );
   
   const [newProduct, setNewProduct] = useState({
     product_name: "",
@@ -199,6 +241,43 @@ export default function Ks2Stoffkartotek() {
     setIsDetailOpen(true);
   };
 
+  const toggleImportSelection = (id: string) => {
+    setSelectedImportIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleImportFromCompany = async () => {
+    if (!projectId || selectedImportIds.length === 0) return;
+    
+    setIsImporting(true);
+    
+    try {
+      const itemsToImport = companyStoffkartotek.filter(item => selectedImportIds.includes(item.id));
+      
+      for (const item of itemsToImport) {
+        createStoffkartotek({
+          project_id: projectId,
+          product_name: item.product_name,
+          manufacturer: item.manufacturer,
+          danger_classes: item.danger_classes,
+          location: item.location,
+          notes: item.notes,
+          sds_file_path: item.sds_file_path, // Reuse the same SDS file
+          last_updated: new Date().toISOString().split('T')[0]
+        });
+      }
+      
+      toast.success(`${selectedImportIds.length} stoff importert fra bedriftens stoffkartotek`);
+      setSelectedImportIds([]);
+      setIsImportDialogOpen(false);
+    } catch (error) {
+      toast.error("Kunne ikke importere stoffer");
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -212,13 +291,24 @@ export default function Ks2Stoffkartotek() {
             <p className="text-muted-foreground">Oversikt over kjemikalier og stoffer i prosjektet</p>
           </div>
         </div>
-        <Button 
-          className="bg-emerald-500 hover:bg-emerald-600"
-          onClick={() => setIsDialogOpen(true)}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Legg til stoff
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {companyStoffkartotek.length > 0 && (
+            <Button 
+              variant="outline"
+              onClick={() => setIsImportDialogOpen(true)}
+            >
+              <Library className="h-4 w-4 mr-2" />
+              Hent fra bedrift
+            </Button>
+          )}
+          <Button 
+            className="bg-emerald-500 hover:bg-emerald-600"
+            onClick={() => setIsDialogOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Legg til stoff
+          </Button>
+        </div>
       </div>
 
       {/* Info Card */}
@@ -578,6 +668,103 @@ export default function Ks2Stoffkartotek() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDetailOpen(false)}>
               Lukk
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import from Company Dialog */}
+      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Library className="h-5 w-5 text-emerald-500" />
+              Hent fra bedriftens stoffkartotek
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground mb-4">
+              Velg stoffer fra bedriftens IK/HMS stoffkartotek som du vil legge til i dette prosjektet. SDS-filer vil bli gjenbrukt automatisk.
+            </p>
+            
+            {isLoadingCompany ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : availableForImport.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <FlaskConical className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                <p className="font-medium">Ingen nye stoffer tilgjengelig</p>
+                <p className="text-sm mt-1">
+                  {companyStoffkartotek.length === 0 
+                    ? "Bedriften har ingen stoffer i IK/HMS stoffkartoteket" 
+                    : "Alle stoffer fra bedriftens stoffkartotek er allerede lagt til"}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                {availableForImport.map(item => (
+                  <div 
+                    key={item.id}
+                    className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                      selectedImportIds.includes(item.id) 
+                        ? "border-emerald-500 bg-emerald-500/10" 
+                        : "hover:border-muted-foreground/50"
+                    }`}
+                    onClick={() => toggleImportSelection(item.id)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        selectedImportIds.includes(item.id) 
+                          ? "bg-emerald-500 border-emerald-500" 
+                          : "border-muted-foreground/50"
+                      }`}>
+                        {selectedImportIds.includes(item.id) && (
+                          <Check className="h-3 w-3 text-white" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium">{item.product_name}</div>
+                        {item.manufacturer && (
+                          <div className="text-sm text-muted-foreground">{item.manufacturer}</div>
+                        )}
+                        {item.danger_classes.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {item.danger_classes.slice(0, 3).map(dc => (
+                              <Badge key={dc} variant="secondary" className="text-xs">{dc}</Badge>
+                            ))}
+                            {item.danger_classes.length > 3 && (
+                              <Badge variant="outline" className="text-xs">+{item.danger_classes.length - 3}</Badge>
+                            )}
+                          </div>
+                        )}
+                        {item.sds_file_path && (
+                          <div className="flex items-center gap-1 text-xs text-emerald-600 mt-1">
+                            <FileText className="h-3 w-3" />
+                            SDS tilgjengelig
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setIsImportDialogOpen(false);
+              setSelectedImportIds([]);
+            }}>
+              Avbryt
+            </Button>
+            <Button 
+              onClick={handleImportFromCompany}
+              disabled={selectedImportIds.length === 0 || isImporting}
+              className="bg-emerald-500 hover:bg-emerald-600"
+            >
+              {isImporting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Importer {selectedImportIds.length > 0 && `(${selectedImportIds.length})`}
             </Button>
           </DialogFooter>
         </DialogContent>
