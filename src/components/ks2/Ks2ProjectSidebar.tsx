@@ -48,6 +48,7 @@ const mainMenuItems = [
 
 const hmsMenuItems = [
   { id: "hms-dashboard", label: "HMS-dashboard", icon: LayoutDashboard, path: "/hms", guestAllowed: true },
+  { id: "hms-plan", label: "HMS-plan", icon: FileText, path: "/hms/hms-plan", guestAllowed: true },
   { id: "sha-plan", label: "SHA-plan", icon: FileCheck, path: "/hms/sha-plan", guestAllowed: true },
   { id: "sja", label: "SJA", icon: ClipboardCheck, path: "/hms/sja", guestAllowed: true },
   { id: "vernerunder", label: "Vernerunder & RUH", icon: HardHat, path: "/hms/vernerunder", guestAllowed: true },

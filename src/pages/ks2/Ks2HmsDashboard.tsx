@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { 
   Shield, 
   FileCheck, 
+  FileText,
   AlertTriangle, 
   ClipboardCheck,
   HardHat,
@@ -31,6 +32,7 @@ export default function Ks2HmsDashboard() {
   };
 
   const quickActions = [
+    { label: "HMS-plan", icon: FileText, path: "/hms/hms-plan", color: "text-emerald-500" },
     { label: "Ny SJA", icon: ClipboardCheck, path: "/hms/sja", color: "text-emerald-500" },
     { label: "SHA-plan", icon: FileCheck, path: "/hms/sha-plan", color: "text-emerald-500" },
     { label: "Vernerunde", icon: HardHat, path: "/hms/vernerunder", color: "text-emerald-500" },
