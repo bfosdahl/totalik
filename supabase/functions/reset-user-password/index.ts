@@ -50,24 +50,24 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Parse request body - userId here is the profile ID, not auth user ID
-    const { userId: profileId, newPassword, sendEmail } = await req.json();
+    // Parse request body - userId is the auth user ID
+    const { userId, newPassword, sendEmail } = await req.json();
 
-    if (!profileId || !newPassword) {
+    if (!userId || !newPassword) {
       return new Response(
-        JSON.stringify({ error: "Profil-ID og nytt passord er påkrevd" }),
+        JSON.stringify({ error: "Bruker-ID og nytt passord er påkrevd" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Get the auth user_id from the profile
+    // Get the profile data using user_id (auth user ID)
     const { data: profileData, error: profileError } = await supabaseAdmin
       .from("profiles")
-      .select("user_id, company_id")
-      .eq("id", profileId)
+      .select("id, company_id")
+      .eq("user_id", userId)
       .single();
 
-    if (profileError || !profileData?.user_id) {
+    if (profileError || !profileData) {
       console.error("Profile lookup error:", profileError);
       return new Response(
         JSON.stringify({ error: "Bruker ikke funnet" }),
@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const userId = profileData.user_id;
+    const profileId = profileData.id;
 
     // Validate password length
     if (newPassword.length < 6) {
