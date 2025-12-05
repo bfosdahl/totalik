@@ -132,6 +132,7 @@ export default function Ks2Malbibliotek() {
   } = useKsModule2ChecklistTemplates(projectId);
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("checklists");
   const [selectedChecklistCategory, setSelectedChecklistCategory] = useState<string>("all");
   const [selectedDocumentCategory, setSelectedDocumentCategory] = useState<string>("all");
   const [selectedRoutineCategory, setSelectedRoutineCategory] = useState<string>("all");
@@ -462,7 +463,7 @@ export default function Ks2Malbibliotek() {
         </Card>
       </div>
 
-      <Tabs defaultValue="checklists" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="checklists" className="gap-2">
             <ClipboardList className="h-4 w-4" />
