@@ -18,6 +18,7 @@ import Ks2Underleverandorer from "./Ks2Underleverandorer";
 import Ks2UnderleverandorDetail from "./Ks2UnderleverandorDetail";
 // HMS Module imports
 import Ks2HmsDashboard from "./Ks2HmsDashboard";
+import Ks2HmsPlan from "./Ks2HmsPlan";
 import Ks2ShaPlan from "./Ks2ShaPlan";
 import Ks2Sja from "./Ks2Sja";
 import Ks2Vernerunder from "./Ks2Vernerunder";
@@ -109,6 +110,8 @@ export default function Ks2ProjectDetail() {
       // HMS Module routes
       case "/hms":
         return <Ks2HmsDashboard />;
+      case "/hms/hms-plan":
+        return <Ks2HmsPlan />;
       case "/hms/sha-plan":
         return <Ks2ShaPlan />;
       case "/hms/sja":
