@@ -193,28 +193,45 @@ export default function Ks2Stoffkartotek() {
   };
 
   const handleViewSds = async (filePath: string) => {
-    const { data } = await supabase.storage
-      .from("ks-module2-files")
-      .createSignedUrl(filePath, 3600);
+    try {
+      const { data, error } = await supabase.storage
+        .from("ks-module2-files")
+        .download(filePath);
 
-    if (data?.signedUrl) {
-      window.open(data.signedUrl, "_blank");
-    } else {
+      if (error || !data) {
+        toast.error("Kunne ikke åpne SDS-fil");
+        return;
+      }
+
+      // Create blob URL and open in new tab
+      const url = URL.createObjectURL(data);
+      window.open(url, "_blank");
+    } catch (err) {
+      console.error("Error viewing SDS:", err);
       toast.error("Kunne ikke åpne SDS-fil");
     }
   };
 
   const handleDownloadSds = async (filePath: string, productName: string) => {
-    const { data } = await supabase.storage
-      .from("ks-module2-files")
-      .createSignedUrl(filePath, 3600);
+    try {
+      const { data, error } = await supabase.storage
+        .from("ks-module2-files")
+        .download(filePath);
 
-    if (data?.signedUrl) {
+      if (error || !data) {
+        toast.error("Kunne ikke laste ned SDS-fil");
+        return;
+      }
+
+      // Create blob URL and trigger download
+      const url = URL.createObjectURL(data);
       const a = document.createElement("a");
-      a.href = data.signedUrl;
+      a.href = url;
       a.download = `SDS_${productName}.pdf`;
       a.click();
-    } else {
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error downloading SDS:", err);
       toast.error("Kunne ikke laste ned SDS-fil");
     }
   };
