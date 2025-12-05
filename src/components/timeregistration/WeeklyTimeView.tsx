@@ -121,7 +121,9 @@ export function WeeklyTimeView({
 
     setIsSubmitting(true);
 
-    const selectedProject = activeProjects.find((p) => p.id === projectId);
+    const selectedProject = projectId && projectId !== "none" && projectId !== "custom" 
+      ? activeProjects.find((p) => p.id === projectId)
+      : null;
     const projectName = selectedProject
       ? `${selectedProject.project_number} - ${selectedProject.name}`
       : customProject || undefined;
@@ -129,7 +131,7 @@ export function WeeklyTimeView({
     const success = await onCreateEntry({
       entry_date: format(editingDay, "yyyy-MM-dd"),
       hours: hoursNum,
-      project_id: projectId || undefined,
+      project_id: selectedProject ? projectId : undefined,
       project_name: projectName,
       description: description || undefined,
     });
@@ -295,7 +297,7 @@ export function WeeklyTimeView({
                     <SelectValue placeholder="Velg prosjekt (valgfritt)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Ingen prosjekt</SelectItem>
+                    <SelectItem value="none">Ingen prosjekt</SelectItem>
                     {activeProjects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.project_number} - {project.name}
