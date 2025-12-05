@@ -123,7 +123,7 @@ export function useKsModule2Projects() {
   }, [fetchProjects]);
 
   const createProject = async (input: NewKsModule2ProjectInput) => {
-    if (!profile?.company_id || !user?.id) {
+    if (!profile?.company_id || !profile?.id) {
       toast({
         title: "Feil",
         description: "Du må være logget inn for å opprette prosjekt",
@@ -138,7 +138,7 @@ export function useKsModule2Projects() {
         .from("ks_module2_projects")
         .insert([{
           company_id: profile.company_id,
-          created_by: user.id,
+          created_by: profile.id,
           project_name: input.project_name,
           project_number: input.project_number || "",
           address: input.address || null,
