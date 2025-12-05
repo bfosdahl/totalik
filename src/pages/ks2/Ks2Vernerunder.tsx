@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   HardHat, 
   Plus, 
@@ -18,25 +19,68 @@ import {
   FileText,
   Loader2,
   Trash2,
-  Eye
+  Eye,
+  ListChecks
 } from "lucide-react";
-import { useKsModule2Vernerunder, CreateVernerundeInput } from "@/hooks/useKsModule2Vernerunder";
+import { useKsModule2Vernerunder, CreateVernerundeInput, KsModule2Vernerunde, Finding, CheckpointResponse } from "@/hooks/useKsModule2Vernerunder";
+import { useKsModule2VernerundeTemplates, VernerundeTemplate } from "@/hooks/useKsModule2VernerundeTemplates";
+import Ks2VernerundeWizard from "@/components/ks2/Ks2VernerundeWizard";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
 export default function Ks2Vernerunder() {
   const { projectId } = useParams();
   const [showNewDialog, setShowNewDialog] = useState(false);
-  const [formData, setFormData] = useState<Partial<CreateVernerundeInput>>({
+  const [showWizard, setShowWizard] = useState(false);
+  const [activeVernerunde, setActiveVernerunde] = useState<KsModule2Vernerunde | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<VernerundeTemplate | null>(null);
+  const [formData, setFormData] = useState<Partial<CreateVernerundeInput> & { template_id?: string }>({
     title: "",
     scheduled_date: format(new Date(), "yyyy-MM-dd"),
     responsible_name: "",
+    template_id: "",
   });
 
-  const { vernerunder, isLoading, createVernerunde, updateVernerunde, deleteVernerunde } = useKsModule2Vernerunder(projectId);
+  const { vernerunder, isLoading, createVernerunde, updateVernerunde, deleteVernerunde, completeVernerunde } = useKsModule2Vernerunder(projectId);
+  const { templates, isLoading: templatesLoading } = useKsModule2VernerundeTemplates(projectId);
 
-  const handleStartVernerunde = async (id: string) => {
-    await updateVernerunde.mutateAsync({ id, status: "in_progress" });
+  const handleStartVernerunde = (vr: KsModule2Vernerunde) => {
+    const template = templates.find(t => t.id === vr.template_id) || null;
+    setActiveVernerunde(vr);
+    setSelectedTemplate(template);
+    
+    // Update status to in_progress if planned
+    if (vr.status === "planned") {
+      updateVernerunde.mutate({ id: vr.id, status: "in_progress" });
+    }
+    
+    setShowWizard(true);
+  };
+
+  const handleCompleteVernerunde = async (data: {
+    checklist_responses: CheckpointResponse[];
+    findings: Finding[];
+    signature: string;
+    inspector_name: string;
+  }) => {
+    if (!activeVernerunde) return;
+
+    await completeVernerunde.mutateAsync({
+      id: activeVernerunde.id,
+      findings: data.findings,
+      signature_data: data.signature,
+    });
+
+    // Also update checklist_responses
+    await updateVernerunde.mutateAsync({
+      id: activeVernerunde.id,
+      checklist_responses: data.checklist_responses,
+      completed_by_name: data.inspector_name,
+    });
+
+    setShowWizard(false);
+    setActiveVernerunde(null);
+    setSelectedTemplate(null);
   };
 
   const getStatusBadge = (status: string) => {
@@ -66,6 +110,7 @@ export default function Ks2Vernerunder() {
   };
 
   const planned = vernerunder.filter(v => v.status === "planned");
+  const inProgress = vernerunder.filter(v => v.status === "in_progress");
   const completed = vernerunder.filter(v => v.status === "completed");
   const openFindings = vernerunder.reduce((acc, v) => 
     acc + (v.findings?.filter(f => f.status === "open")?.length || 0), 0
@@ -76,18 +121,27 @@ export default function Ks2Vernerunder() {
       return;
     }
 
-    await createVernerunde.mutateAsync({
+    const result = await createVernerunde.mutateAsync({
       project_id: projectId,
       title: formData.title,
       scheduled_date: formData.scheduled_date,
       responsible_name: formData.responsible_name,
     });
 
+    // Update with template_id if selected
+    if (formData.template_id && result) {
+      await updateVernerunde.mutateAsync({
+        id: result.id,
+        template_id: formData.template_id,
+      });
+    }
+
     setShowNewDialog(false);
     setFormData({
       title: "",
       scheduled_date: format(new Date(), "yyyy-MM-dd"),
       responsible_name: "",
+      template_id: "",
     });
   };
 
@@ -105,7 +159,13 @@ export default function Ks2Vernerunder() {
     );
   }
 
-  const renderVernerundeCard = (vr: typeof vernerunder[0]) => (
+  const getTemplateName = (templateId: string | null) => {
+    if (!templateId) return null;
+    const template = templates.find(t => t.id === templateId);
+    return template?.template_name;
+  };
+
+  const renderVernerundeCard = (vr: KsModule2Vernerunde) => (
     <Card key={vr.id} className="hover:border-emerald-500/50 transition-colors">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-4">
@@ -132,6 +192,12 @@ export default function Ks2Vernerunder() {
             <User className="h-4 w-4" />
             <span>Ansvarlig: {vr.responsible_name}</span>
           </div>
+          {vr.template_id && (
+            <div className="flex items-center gap-2">
+              <ListChecks className="h-4 w-4" />
+              <span>Mal: {getTemplateName(vr.template_id)}</span>
+            </div>
+          )}
           {vr.status === "completed" && vr.findings && (
             <>
               <div className="flex items-center gap-2">
@@ -154,7 +220,7 @@ export default function Ks2Vernerunder() {
               variant="default" 
               size="sm" 
               className="bg-emerald-500 hover:bg-emerald-600"
-              onClick={() => handleStartVernerunde(vr.id)}
+              onClick={() => handleStartVernerunde(vr)}
               disabled={updateVernerunde.isPending}
             >
               {updateVernerunde.isPending ? (
@@ -163,11 +229,16 @@ export default function Ks2Vernerunder() {
               Start vernerunde
             </Button>
           ) : vr.status === "in_progress" ? (
-            <Button variant="default" size="sm" className="bg-emerald-500 hover:bg-emerald-600">
+            <Button 
+              variant="default" 
+              size="sm" 
+              className="bg-emerald-500 hover:bg-emerald-600"
+              onClick={() => handleStartVernerunde(vr)}
+            >
               Fortsett vernerunde
             </Button>
           ) : (
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => handleStartVernerunde(vr)}>
               <Eye className="h-4 w-4 mr-2" />
               Vis detaljer
             </Button>
@@ -208,11 +279,17 @@ export default function Ks2Vernerunder() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Gjennomført</CardDescription>
             <CardTitle className="text-2xl text-emerald-500">{completed.length}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Pågår</CardDescription>
+            <CardTitle className="text-2xl text-blue-500">{inProgress.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
@@ -233,6 +310,7 @@ export default function Ks2Vernerunder() {
       <Tabs defaultValue="all" className="space-y-4">
         <TabsList>
           <TabsTrigger value="all">Alle ({vernerunder.length})</TabsTrigger>
+          <TabsTrigger value="in_progress">Pågår ({inProgress.length})</TabsTrigger>
           <TabsTrigger value="planned">Planlagt ({planned.length})</TabsTrigger>
           <TabsTrigger value="completed">Fullført ({completed.length})</TabsTrigger>
         </TabsList>
@@ -255,6 +333,18 @@ export default function Ks2Vernerunder() {
                   <Plus className="h-4 w-4 mr-2" />
                   Planlegg vernerunde
                 </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="in_progress" className="space-y-4">
+          {inProgress.length > 0 ? (
+            inProgress.map(renderVernerundeCard)
+          ) : (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                Ingen pågående vernerunder
               </CardContent>
             </Card>
           )}
@@ -310,6 +400,53 @@ export default function Ks2Vernerunder() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="template">Sjekkliste-mal</Label>
+              <Select
+                value={formData.template_id}
+                onValueChange={(value) => setFormData({ ...formData, template_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Velg mal (valgfritt)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {templatesLoading ? (
+                    <div className="flex items-center justify-center p-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </div>
+                  ) : (
+                    <>
+                      <SelectItem value="none">Ingen mal</SelectItem>
+                      {templates.filter(t => t.is_system_template).length > 0 && (
+                        <>
+                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                            System-maler
+                          </div>
+                          {templates.filter(t => t.is_system_template).map(t => (
+                            <SelectItem key={t.id} value={t.id}>
+                              {t.template_name}
+                            </SelectItem>
+                          ))}
+                        </>
+                      )}
+                      {templates.filter(t => !t.is_system_template).length > 0 && (
+                        <>
+                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                            Egne maler
+                          </div>
+                          {templates.filter(t => !t.is_system_template).map(t => (
+                            <SelectItem key={t.id} value={t.id}>
+                              {t.template_name}
+                            </SelectItem>
+                          ))}
+                        </>
+                      )}
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="scheduled_date">Planlagt dato *</Label>
               <Input
                 id="scheduled_date"
@@ -354,6 +491,24 @@ export default function Ks2Vernerunder() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Vernerunde Wizard */}
+      {activeVernerunde && (
+        <Ks2VernerundeWizard
+          open={showWizard}
+          onOpenChange={(open) => {
+            setShowWizard(open);
+            if (!open) {
+              setActiveVernerunde(null);
+              setSelectedTemplate(null);
+            }
+          }}
+          vernerunde={activeVernerunde}
+          template={selectedTemplate}
+          onComplete={handleCompleteVernerunde}
+          isSubmitting={completeVernerunde.isPending}
+        />
+      )}
     </div>
   );
 }

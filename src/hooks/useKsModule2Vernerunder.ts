@@ -7,12 +7,20 @@ import type { Json } from "@/integrations/supabase/types";
 export interface Finding {
   id: string;
   description: string;
-  location: string;
-  severity: "low" | "medium" | "high";
+  location?: string;
+  severity?: "low" | "medium" | "high";
   status: "open" | "closed";
   responsible?: string;
   deadline?: string;
   closedDate?: string;
+  escalate_to_avvik?: boolean;
+  created_at?: string;
+}
+
+export interface CheckpointResponse {
+  checkpoint_id: string;
+  status: "ok" | "avvik" | "na" | null;
+  comment: string;
 }
 
 export interface KsModule2Vernerunde {
@@ -32,6 +40,8 @@ export interface KsModule2Vernerunde {
   completed_by_name: string | null;
   completed_by_id: string | null;
   signature_data: string | null;
+  template_id: string | null;
+  checklist_responses: CheckpointResponse[];
   created_at: string;
   updated_at: string;
 }
@@ -66,6 +76,7 @@ export function useKsModule2Vernerunder(projectId: string | undefined) {
       return (data || []).map(item => ({
         ...item,
         findings: Array.isArray(item.findings) ? item.findings as unknown as Finding[] : [],
+        checklist_responses: Array.isArray(item.checklist_responses) ? item.checklist_responses as unknown as CheckpointResponse[] : [],
       })) as KsModule2Vernerunde[];
     },
     enabled: !!projectId,
@@ -116,10 +127,16 @@ export function useKsModule2Vernerunder(projectId: string | undefined) {
 
   const updateVernerunde = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<KsModule2Vernerunde> & { id: string }) => {
-      const { findings: findingsUpdate, ...restUpdates } = updates;
-      const updatePayload = findingsUpdate 
-        ? { ...restUpdates, findings: JSON.parse(JSON.stringify(findingsUpdate)) as Json }
-        : restUpdates;
+      const { findings: findingsUpdate, checklist_responses: checklistUpdate, ...restUpdates } = updates;
+      
+      // Build update payload with proper JSON serialization
+      const updatePayload: Record<string, unknown> = { ...restUpdates };
+      if (findingsUpdate) {
+        updatePayload.findings = JSON.parse(JSON.stringify(findingsUpdate)) as Json;
+      }
+      if (checklistUpdate) {
+        updatePayload.checklist_responses = JSON.parse(JSON.stringify(checklistUpdate)) as Json;
+      }
       
       const { data, error } = await supabase
         .from("ks_module2_vernerunder")

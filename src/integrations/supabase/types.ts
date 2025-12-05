@@ -4226,8 +4226,63 @@ export type Database = {
           },
         ]
       }
+      ks_module2_vernerunde_templates: {
+        Row: {
+          checkpoints: Json
+          company_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_system_template: boolean
+          project_id: string | null
+          template_name: string
+          updated_at: string
+        }
+        Insert: {
+          checkpoints?: Json
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system_template?: boolean
+          project_id?: string | null
+          template_name: string
+          updated_at?: string
+        }
+        Update: {
+          checkpoints?: Json
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system_template?: boolean
+          project_id?: string | null
+          template_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_vernerunde_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_vernerunde_templates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_vernerunder: {
         Row: {
+          checklist_responses: Json | null
           company_id: string
           completed_by_id: string | null
           completed_by_name: string | null
@@ -4243,11 +4298,13 @@ export type Database = {
           scheduled_date: string
           signature_data: string | null
           status: string
+          template_id: string | null
           title: string
           updated_at: string
           vernerunde_number: string
         }
         Insert: {
+          checklist_responses?: Json | null
           company_id: string
           completed_by_id?: string | null
           completed_by_name?: string | null
@@ -4263,11 +4320,13 @@ export type Database = {
           scheduled_date: string
           signature_data?: string | null
           status?: string
+          template_id?: string | null
           title: string
           updated_at?: string
           vernerunde_number: string
         }
         Update: {
+          checklist_responses?: Json | null
           company_id?: string
           completed_by_id?: string | null
           completed_by_name?: string | null
@@ -4283,6 +4342,7 @@ export type Database = {
           scheduled_date?: string
           signature_data?: string | null
           status?: string
+          template_id?: string | null
           title?: string
           updated_at?: string
           vernerunde_number?: string
@@ -4314,6 +4374,13 @@ export type Database = {
             columns: ["responsible_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_vernerunder_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_vernerunde_templates"
             referencedColumns: ["id"]
           },
         ]
