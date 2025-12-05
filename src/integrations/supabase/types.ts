@@ -4226,6 +4226,98 @@ export type Database = {
           },
         ]
       }
+      ks_module2_vernerunder: {
+        Row: {
+          company_id: string
+          completed_by_id: string | null
+          completed_by_name: string | null
+          completed_date: string | null
+          created_at: string
+          findings: Json | null
+          id: string
+          notes: string | null
+          participants: string[] | null
+          project_id: string
+          responsible_id: string | null
+          responsible_name: string
+          scheduled_date: string
+          signature_data: string | null
+          status: string
+          title: string
+          updated_at: string
+          vernerunde_number: string
+        }
+        Insert: {
+          company_id: string
+          completed_by_id?: string | null
+          completed_by_name?: string | null
+          completed_date?: string | null
+          created_at?: string
+          findings?: Json | null
+          id?: string
+          notes?: string | null
+          participants?: string[] | null
+          project_id: string
+          responsible_id?: string | null
+          responsible_name: string
+          scheduled_date: string
+          signature_data?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          vernerunde_number: string
+        }
+        Update: {
+          company_id?: string
+          completed_by_id?: string | null
+          completed_by_name?: string | null
+          completed_date?: string | null
+          created_at?: string
+          findings?: Json | null
+          id?: string
+          notes?: string | null
+          participants?: string[] | null
+          project_id?: string
+          responsible_id?: string | null
+          responsible_name?: string
+          scheduled_date?: string
+          signature_data?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          vernerunde_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_vernerunder_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_vernerunder_completed_by_id_fkey"
+            columns: ["completed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_vernerunder_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_vernerunder_responsible_id_fkey"
+            columns: ["responsible_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_photos: {
         Row: {
           checklist_item_id: string
