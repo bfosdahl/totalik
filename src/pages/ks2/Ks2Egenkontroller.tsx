@@ -4,12 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ClipboardCheck, Plus, Search, FileText, Calendar, User, ArrowRight, Library } from "lucide-react";
+import { ClipboardCheck, Plus, Search, FileText, Calendar, User, ArrowRight, Library, Eye, Play } from "lucide-react";
 import { useKsModule2ProjectTemplates, ProjectTemplate } from "@/hooks/useKsModule2ProjectTemplates";
-import { useKsModule2Checklists } from "@/hooks/useKsModule2Checklists";
+import { useKsModule2Checklists, KsModule2Checklist } from "@/hooks/useKsModule2Checklists";
 import { Ks2ChecklistWizard, PreSelectedTemplate } from "@/components/ks2/Ks2ChecklistWizard";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Ks2Egenkontroller() {
   const { projectId } = useParams();
@@ -17,6 +18,8 @@ export default function Ks2Egenkontroller() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showWizard, setShowWizard] = useState(false);
   const [selectedTemplateForWizard, setSelectedTemplateForWizard] = useState<PreSelectedTemplate | null>(null);
+  const [existingChecklist, setExistingChecklist] = useState<KsModule2Checklist | null>(null);
+  const [viewingChecklist, setViewingChecklist] = useState<KsModule2Checklist | null>(null);
 
   const { checklistTemplates, isLoading: templatesLoading } = useKsModule2ProjectTemplates(projectId);
   const { checklists, isLoading: checklistsLoading, refetch: refetchChecklists } = useKsModule2Checklists(projectId || "");
@@ -40,8 +43,9 @@ export default function Ks2Egenkontroller() {
   };
 
   const handleStartChecklist = (template: ProjectTemplate) => {
+    setExistingChecklist(null);
     setSelectedTemplateForWizard({
-      id: template.admin_checklist_template_id || "",
+      id: template.admin_checklist_template_id || template.id,
       template_name: template.checklist_template?.template_name || "",
       category: template.checklist_template?.category || "",
       description: template.checklist_template?.description,
@@ -50,10 +54,47 @@ export default function Ks2Egenkontroller() {
     setShowWizard(true);
   };
 
+  const handleContinueChecklist = (checklist: KsModule2Checklist) => {
+    setExistingChecklist(checklist);
+    setSelectedTemplateForWizard(null);
+    setShowWizard(true);
+  };
+
+  const handleViewChecklist = (checklist: KsModule2Checklist) => {
+    setViewingChecklist(checklist);
+  };
+
   const handleWizardClose = () => {
     setShowWizard(false);
     setSelectedTemplateForWizard(null);
+    setExistingChecklist(null);
     refetchChecklists();
+  };
+
+  const getActionButton = (checklist: KsModule2Checklist) => {
+    switch (checklist.status) {
+      case 'completed':
+        return (
+          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleViewChecklist(checklist); }}>
+            <Eye className="h-4 w-4 mr-1" />
+            Se
+          </Button>
+        );
+      case 'in_progress':
+        return (
+          <Button size="sm" onClick={(e) => { e.stopPropagation(); handleContinueChecklist(checklist); }}>
+            <Play className="h-4 w-4 mr-1" />
+            Fortsett
+          </Button>
+        );
+      default:
+        return (
+          <Button size="sm" onClick={(e) => { e.stopPropagation(); handleContinueChecklist(checklist); }}>
+            <Play className="h-4 w-4 mr-1" />
+            Start
+          </Button>
+        );
+    }
   };
 
   if (templatesLoading || checklistsLoading) {
@@ -74,6 +115,7 @@ export default function Ks2Egenkontroller() {
         </div>
         <Button onClick={() => {
           setSelectedTemplateForWizard(null);
+          setExistingChecklist(null);
           setShowWizard(true);
         }}>
           <Plus className="h-4 w-4 mr-2" />
@@ -153,7 +195,7 @@ export default function Ks2Egenkontroller() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Gjennomførte egenkontroller ({filteredChecklists.length})
+              Alle egenkontroller ({filteredChecklists.length})
             </CardTitle>
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -170,7 +212,7 @@ export default function Ks2Egenkontroller() {
           {filteredChecklists.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <ClipboardCheck className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Ingen gjennomførte egenkontroller ennå</p>
+              <p>Ingen egenkontroller ennå</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -199,9 +241,7 @@ export default function Ks2Egenkontroller() {
                           )}
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm">
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
+                      {getActionButton(checklist)}
                     </div>
                   </CardContent>
                 </Card>
@@ -217,8 +257,62 @@ export default function Ks2Egenkontroller() {
           projectId={projectId}
           onClose={handleWizardClose}
           preSelectedTemplate={selectedTemplateForWizard}
+          existingChecklist={existingChecklist}
         />
       )}
+
+      {/* View Checklist Dialog */}
+      <Dialog open={!!viewingChecklist} onOpenChange={() => setViewingChecklist(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{viewingChecklist?.title}</DialogTitle>
+          </DialogHeader>
+          {viewingChecklist && (
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Badge>{viewingChecklist.template_name}</Badge>
+                {getStatusBadge(viewingChecklist.status)}
+              </div>
+              
+              {viewingChecklist.responsible_user_name && (
+                <p className="text-sm text-muted-foreground">
+                  Ansvarlig: {viewingChecklist.responsible_user_name}
+                </p>
+              )}
+              
+              {viewingChecklist.completed_at && (
+                <p className="text-sm text-muted-foreground">
+                  Fullført: {format(new Date(viewingChecklist.completed_at), "d. MMMM yyyy 'kl.' HH:mm", { locale: nb })}
+                </p>
+              )}
+              
+              <div>
+                <h4 className="font-medium mb-2">Kontrollpunkter</h4>
+                <div className="space-y-2">
+                  {Array.isArray(viewingChecklist.checklist_items) && 
+                    viewingChecklist.checklist_items.map((item: any, idx: number) => (
+                      <div key={idx} className="flex items-start gap-2 p-2 bg-muted/50 rounded">
+                        <span className="text-muted-foreground text-sm">{idx + 1}.</span>
+                        <div className="flex-1">
+                          <span className="text-sm">{item.text}</span>
+                          {item.value !== null && item.value !== undefined && (
+                            <Badge variant="outline" className="ml-2">
+                              {item.value === true ? 'OK' : item.value === false ? 'Ikke OK' : item.value}
+                            </Badge>
+                          )}
+                          {item.comment && (
+                            <p className="text-xs text-muted-foreground mt-1">Kommentar: {item.comment}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
