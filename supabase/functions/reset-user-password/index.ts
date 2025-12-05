@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { jwtVerify } from "https://deno.land/x/jose@v5.2.0/index.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,22 +26,38 @@ Deno.serve(async (req) => {
     // Extract the token from the header
     const token = authHeader.replace("Bearer ", "");
 
+    // Verify the JWT token
+    const jwtSecret = Deno.env.get("JWT_SECRET");
+    if (!jwtSecret) {
+      console.error("JWT_SECRET not configured");
+      return new Response(
+        JSON.stringify({ error: "Server configuration error" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    let requestingUserId: string;
+    try {
+      const secret = new TextEncoder().encode(jwtSecret);
+      const { payload } = await jwtVerify(token, secret);
+      requestingUserId = payload.sub as string;
+      if (!requestingUserId) {
+        throw new Error("No user ID in token");
+      }
+    } catch (jwtError) {
+      console.error("JWT verification error:", jwtError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Create Supabase client with service role key for admin operations
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
-
-    // Verify the user's token using admin client
-    const { data: { user: requestingUser }, error: userError } = await supabaseAdmin.auth.getUser(token);
-    if (userError || !requestingUser) {
-      console.error("Auth error:", userError);
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
 
     // Parse request body - userId here is the profile ID, not auth user ID
     const { userId: profileId, newPassword, sendEmail } = await req.json();
@@ -81,7 +98,7 @@ Deno.serve(async (req) => {
     const { data: systemAdminRole } = await supabaseAdmin
       .from("user_roles")
       .select("role")
-      .eq("user_id", requestingUser.id)
+      .eq("user_id", requestingUserId)
       .eq("role", "system_admin")
       .maybeSingle();
     
@@ -91,7 +108,7 @@ Deno.serve(async (req) => {
     const { data: companyAdminRole } = await supabaseAdmin
       .from("user_roles")
       .select("role")
-      .eq("user_id", requestingUser.id)
+      .eq("user_id", requestingUserId)
       .eq("role", "company_admin")
       .maybeSingle();
     
@@ -101,7 +118,7 @@ Deno.serve(async (req) => {
     const { data: requestingProfile } = await supabaseAdmin
       .from("profiles")
       .select("company_id")
-      .eq("user_id", requestingUser.id)
+      .eq("user_id", requestingUserId)
       .single();
 
     // Authorization check:
@@ -143,7 +160,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Password reset successful for user ${userId} by admin ${requestingUser.id}`);
+    console.log(`Password reset successful for user ${userId} by admin ${requestingUserId}`);
 
     // Send email if requested
     let emailSent = false;
