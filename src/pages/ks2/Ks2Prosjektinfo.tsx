@@ -162,7 +162,7 @@ export default function Ks2Prosjektinfo() {
 
       if (error) throw error;
       toast({ title: "Prosjekt slettet" });
-      navigate("/ks2");
+      navigate("/ks");
     } catch (error) {
       console.error("Error deleting:", error);
       toast({ title: "Feil", description: "Kunne ikke slette", variant: "destructive" });
