@@ -1,4 +1,4 @@
-import { Bell, User, LogOut, ChevronDown, Menu, Download } from "lucide-react";
+import { User, LogOut, ChevronDown, Menu, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 interface AppHeaderProps {
   onMenuClick?: () => void;
@@ -49,10 +50,7 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
 
       <div className="flex items-center gap-2 md:gap-3">
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="w-5 h-5" />
-          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-destructive rounded-full" />
-        </Button>
+        <NotificationBell />
 
         {/* User menu */}
         <DropdownMenu>
