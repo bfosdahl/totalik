@@ -148,11 +148,15 @@ export function useDeviationAttachments(deviationId: string | null) {
     }
   };
 
-  const getAttachmentUrl = (filePath: string) => {
-    const { data } = supabase.storage
+  const getAttachmentUrl = async (filePath: string): Promise<string | null> => {
+    const { data, error } = await supabase.storage
       .from("deviation-attachments")
-      .getPublicUrl(filePath);
-    return data.publicUrl;
+      .createSignedUrl(filePath, 3600); // 1 hour expiry
+    if (error) {
+      console.error("Error creating signed URL:", error);
+      return null;
+    }
+    return data.signedUrl;
   };
 
   return {

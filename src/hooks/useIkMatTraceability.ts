@@ -136,12 +136,16 @@ export const useIkMatTraceability = (companyId: string | undefined) => {
     return filePath;
   };
 
-  const getDocumentUrl = (path: string | null) => {
+  const getDocumentUrl = async (path: string | null): Promise<string | null> => {
     if (!path) return null;
-    const { data } = supabase.storage
+    const { data, error } = await supabase.storage
       .from('ik-mat-traceability')
-      .getPublicUrl(path);
-    return data.publicUrl;
+      .createSignedUrl(path, 3600); // 1 hour expiry
+    if (error) {
+      console.error("Error creating signed URL:", error);
+      return null;
+    }
+    return data.signedUrl;
   };
 
   return {

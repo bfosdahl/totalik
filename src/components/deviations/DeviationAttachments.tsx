@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { 
@@ -32,6 +32,76 @@ const formatFileSize = (bytes: number | null) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
+// Component to display attachment with async URL loading
+function AttachmentItem({ 
+  attachment, 
+  getAttachmentUrl, 
+  deleteAttachment 
+}: { 
+  attachment: DeviationAttachment; 
+  getAttachmentUrl: (path: string) => Promise<string | null>;
+  deleteAttachment: (attachment: DeviationAttachment) => Promise<boolean>;
+}) {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const FileIcon = getFileIcon(attachment.file_type);
+  const isImage = attachment.file_type?.startsWith("image/");
+
+  useEffect(() => {
+    if (isImage) {
+      getAttachmentUrl(attachment.file_path).then(setImageUrl);
+    }
+  }, [attachment.file_path, isImage, getAttachmentUrl]);
+
+  const handleDownload = async () => {
+    const url = await getAttachmentUrl(attachment.file_path);
+    if (url) window.open(url, "_blank");
+  };
+
+  return (
+    <div className="flex items-center gap-3 p-2 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group">
+      {isImage && imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={attachment.file_name}
+          className="w-10 h-10 object-cover rounded"
+        />
+      ) : (
+        <div className="w-10 h-10 flex items-center justify-center bg-muted rounded">
+          <FileIcon className="w-5 h-5 text-muted-foreground" />
+        </div>
+      )}
+      
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate">
+          {attachment.file_name}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {formatFileSize(attachment.file_size)} • {attachment.uploaded_by_name} • {format(new Date(attachment.created_at), "d. MMM yyyy", { locale: nb })}
+        </p>
+      </div>
+      
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={handleDownload}
+        >
+          <Download className="w-4 h-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-destructive hover:text-destructive"
+          onClick={() => deleteAttachment(attachment)}
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function DeviationAttachments({ deviationId }: DeviationAttachmentsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
@@ -55,11 +125,6 @@ export function DeviationAttachments({ deviationId }: DeviationAttachmentsProps)
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  };
-
-  const handleDownload = (attachment: DeviationAttachment) => {
-    const url = getAttachmentUrl(attachment.file_path);
-    window.open(url, "_blank");
   };
 
   return (
@@ -102,57 +167,14 @@ export function DeviationAttachments({ deviationId }: DeviationAttachmentsProps)
         </p>
       ) : (
         <div className="space-y-2 pl-6">
-          {attachments.map((attachment) => {
-            const FileIcon = getFileIcon(attachment.file_type);
-            const isImage = attachment.file_type?.startsWith("image/");
-            
-            return (
-              <div
-                key={attachment.id}
-                className="flex items-center gap-3 p-2 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group"
-              >
-                {isImage ? (
-                  <img
-                    src={getAttachmentUrl(attachment.file_path)}
-                    alt={attachment.file_name}
-                    className="w-10 h-10 object-cover rounded"
-                  />
-                ) : (
-                  <div className="w-10 h-10 flex items-center justify-center bg-muted rounded">
-                    <FileIcon className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                )}
-                
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">
-                    {attachment.file_name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatFileSize(attachment.file_size)} • {attachment.uploaded_by_name} • {format(new Date(attachment.created_at), "d. MMM yyyy", { locale: nb })}
-                  </p>
-                </div>
-                
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => handleDownload(attachment)}
-                  >
-                    <Download className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive"
-                    onClick={() => deleteAttachment(attachment)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+          {attachments.map((attachment) => (
+            <AttachmentItem
+              key={attachment.id}
+              attachment={attachment}
+              getAttachmentUrl={getAttachmentUrl}
+              deleteAttachment={deleteAttachment}
+            />
+          ))}
         </div>
       )}
     </div>

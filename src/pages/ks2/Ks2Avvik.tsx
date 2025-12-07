@@ -149,11 +149,12 @@ export default function Ks2Avvik() {
           
         if (uploadError) throw uploadError;
         
-        const { data: urlData } = supabase.storage
+        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
           .from('ks-module2-avvik-photos')
-          .getPublicUrl(fileName);
+          .createSignedUrl(fileName, 86400); // 24 hour expiry
           
-        uploadedPaths.push(urlData.publicUrl);
+        if (signedUrlError) throw signedUrlError;
+        uploadedPaths.push(signedUrlData.signedUrl);
       }
       
       setPendingPhotos(prev => [...prev, ...uploadedPaths]);
