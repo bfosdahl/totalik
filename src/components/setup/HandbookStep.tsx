@@ -39,15 +39,11 @@ interface OrganizationData {
 
 interface RiskItem {
   id: string;
-  category: string;
   description: string;
   probability: number;
   consequence: number;
-  risk_value: number;
-  measures: string;
-  responsible: string;
-  deadline: string;
-  status: "ikke_startet" | "pågår" | "fullført";
+  existing_measures: string;
+  planned_measures: string;
 }
 
 interface RiskAssessmentData {
@@ -429,18 +425,20 @@ export function HandbookStep({
       yPos += 10;
 
       if (riskAssessment && riskAssessment.risks.length > 0) {
-        const riskTableData = riskAssessment.risks.map(risk => [
-          risk.category,
-          (risk.description || "").substring(0, 50) + ((risk.description?.length || 0) > 50 ? "..." : ""),
-          risk.probability.toString(),
-          risk.consequence.toString(),
-          risk.risk_value.toString(),
-          getRiskLevelText(risk.risk_value)
-        ]);
+        const riskTableData = riskAssessment.risks.map(risk => {
+          const riskValue = risk.consequence * risk.probability;
+          return [
+            (risk.description || "").substring(0, 80) + ((risk.description?.length || 0) > 80 ? "..." : ""),
+            risk.probability.toString(),
+            risk.consequence.toString(),
+            riskValue.toString(),
+            getRiskLevelText(riskValue)
+          ];
+        });
 
         autoTable(doc, {
           startY: yPos,
-          head: [["Kategori", "Beskrivelse", "S", "K", "R", "Nivå"]],
+          head: [["Beskrivelse", "S", "K", "R", "Nivå"]],
           body: riskTableData,
           theme: "striped",
           headStyles: { 
@@ -450,17 +448,16 @@ export function HandbookStep({
           },
           bodyStyles: { fontSize: 9 },
           columnStyles: {
-            0: { cellWidth: 30 },
-            1: { cellWidth: 60 },
+            0: { cellWidth: 90 },
+            1: { cellWidth: 15, halign: "center" },
             2: { cellWidth: 15, halign: "center" },
             3: { cellWidth: 15, halign: "center" },
-            4: { cellWidth: 15, halign: "center" },
-            5: { cellWidth: 25, halign: "center" }
+            4: { cellWidth: 25, halign: "center" }
           },
           margin: { left: margin, right: margin },
           didDrawCell: (data) => {
-            if (data.section === "body" && data.column.index === 5) {
-              const riskValue = parseInt(riskTableData[data.row.index][4]);
+            if (data.section === "body" && data.column.index === 4) {
+              const riskValue = parseInt(riskTableData[data.row.index][3]);
               const color = getRiskLevelColor(riskValue);
               doc.setTextColor(color[0], color[1], color[2]);
             }
