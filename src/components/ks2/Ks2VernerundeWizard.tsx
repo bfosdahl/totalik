@@ -1,5 +1,11 @@
 import { useState } from "react"; // Vernerunde wizard
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,6 +30,7 @@ import {
 import { VernerundeTemplate, VernerundeCheckpoint } from "@/hooks/useKsModule2VernerundeTemplates";
 import { KsModule2Vernerunde, Finding, CheckpointResponse } from "@/hooks/useKsModule2Vernerunder";
 import { SignaturePad } from "./SignaturePad";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Props {
   open: boolean;
@@ -47,6 +54,7 @@ export default function Ks2VernerundeWizard({
   onComplete,
   isSubmitting 
 }: Props) {
+  const isMobile = useIsMobile();
   const [step, setStep] = useState(1);
   const [responses, setResponses] = useState<CheckpointResponse[]>(() => {
     if (vernerunde.checklist_responses && Array.isArray(vernerunde.checklist_responses) && vernerunde.checklist_responses.length > 0) {
@@ -175,33 +183,45 @@ export default function Ks2VernerundeWizard({
                             )}
                           </div>
                           
-                          <RadioGroup
-                            value={response?.status || ""}
-                            onValueChange={(value) => handleResponseChange(checkpoint.id, value as "ok" | "avvik" | "na")}
-                            className="flex gap-4"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="ok" id={`${checkpoint.id}-ok`} />
-                              <Label htmlFor={`${checkpoint.id}-ok`} className="flex items-center gap-1 cursor-pointer">
-                                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                                OK
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="avvik" id={`${checkpoint.id}-avvik`} />
-                              <Label htmlFor={`${checkpoint.id}-avvik`} className="flex items-center gap-1 cursor-pointer">
-                                <XCircle className="h-4 w-4 text-red-500" />
-                                Avvik
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="na" id={`${checkpoint.id}-na`} />
-                              <Label htmlFor={`${checkpoint.id}-na`} className="flex items-center gap-1 cursor-pointer">
-                                <AlertTriangle className="h-4 w-4 text-gray-400" />
-                                N/A
-                              </Label>
-                            </div>
-                          </RadioGroup>
+                        {/* Mobile-optimized status buttons */}
+                          <div className="grid grid-cols-3 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleResponseChange(checkpoint.id, "ok")}
+                              className={`flex flex-col items-center justify-center gap-1.5 py-3 sm:py-2 px-2 rounded-xl border-2 transition-all duration-200 active:scale-95 ${
+                                response?.status === "ok"
+                                  ? "bg-green-100 border-green-500 text-green-700 dark:bg-green-900/30 dark:border-green-500 dark:text-green-400"
+                                  : "bg-background border-border text-muted-foreground hover:border-green-300"
+                              }`}
+                            >
+                              <CheckCircle2 className="h-5 w-5 sm:h-4 sm:w-4" />
+                              <span className="text-xs font-medium">OK</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleResponseChange(checkpoint.id, "avvik")}
+                              className={`flex flex-col items-center justify-center gap-1.5 py-3 sm:py-2 px-2 rounded-xl border-2 transition-all duration-200 active:scale-95 ${
+                                response?.status === "avvik"
+                                  ? "bg-red-100 border-red-500 text-red-700 dark:bg-red-900/30 dark:border-red-500 dark:text-red-400"
+                                  : "bg-background border-border text-muted-foreground hover:border-red-300"
+                              }`}
+                            >
+                              <XCircle className="h-5 w-5 sm:h-4 sm:w-4" />
+                              <span className="text-xs font-medium">Avvik</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleResponseChange(checkpoint.id, "na")}
+                              className={`flex flex-col items-center justify-center gap-1.5 py-3 sm:py-2 px-2 rounded-xl border-2 transition-all duration-200 active:scale-95 ${
+                                response?.status === "na"
+                                  ? "bg-muted border-muted-foreground/50 text-foreground"
+                                  : "bg-background border-border text-muted-foreground hover:border-muted-foreground/30"
+                              }`}
+                            >
+                              <AlertTriangle className="h-5 w-5 sm:h-4 sm:w-4" />
+                              <span className="text-xs font-medium">N/A</span>
+                            </button>
+                          </div>
 
                           {response?.status === "avvik" && (
                             <Textarea
@@ -401,6 +421,91 @@ export default function Ks2VernerundeWizard({
     </div>
   );
 
+  const wizardContent = (
+    <>
+      {/* Step indicators */}
+      <div className="flex items-center justify-center gap-2 mb-4">
+        {[1, 2, 3].map((s) => (
+          <div key={s} className="flex items-center">
+            <div className={`w-8 h-8 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+              step === s ? "bg-primary text-primary-foreground" :
+              step > s ? "bg-green-500 text-white" : "bg-muted text-muted-foreground"
+            }`}>
+              {step > s ? <CheckCircle2 className="h-4 w-4" /> : s}
+            </div>
+            {s < 3 && <div className={`w-8 sm:w-12 h-1 mx-1 ${step > s ? "bg-green-500" : "bg-muted"}`} />}
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-center gap-4 sm:gap-8 text-xs sm:text-sm text-muted-foreground mb-4">
+        <span className={step === 1 ? "text-foreground font-medium" : ""}>Sjekkliste</span>
+        <span className={step === 2 ? "text-foreground font-medium" : ""}>Funn</span>
+        <span className={step === 3 ? "text-foreground font-medium" : ""}>Signatur</span>
+      </div>
+
+      <ScrollArea className="h-[350px] sm:h-[450px] pr-2">
+        <div className="pr-2">
+          {step === 1 && renderStep1()}
+          {step === 2 && renderStep2()}
+          {step === 3 && renderStep3()}
+        </div>
+      </ScrollArea>
+
+      <div className="flex justify-between pt-4 border-t gap-2">
+        <Button
+          variant="outline"
+          onClick={() => setStep(s => s - 1)}
+          disabled={step === 1}
+          className="flex-1 sm:flex-none h-12 sm:h-10"
+        >
+          <ChevronLeft className="h-4 w-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Tilbake</span>
+          <span className="sm:hidden">Tilbake</span>
+        </Button>
+        
+        {step < 3 ? (
+          <Button onClick={() => setStep(s => s + 1)} className="flex-1 sm:flex-none h-12 sm:h-10">
+            Neste
+            <ChevronRight className="h-4 w-4 ml-1 sm:ml-2" />
+          </Button>
+        ) : (
+          <Button 
+            onClick={handleComplete}
+            disabled={!signature || !inspectorName || isSubmitting}
+            className="flex-1 sm:flex-none h-12 sm:h-10 bg-green-600 hover:bg-green-700"
+          >
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+            )}
+            <span className="hidden sm:inline">Fullfør vernerunde</span>
+            <span className="sm:hidden">Fullfør</span>
+          </Button>
+        )}
+      </div>
+    </>
+  );
+
+  // Use Drawer on mobile for full-screen experience
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={onOpenChange}>
+        <DrawerContent className="max-h-[95vh]">
+          <DrawerHeader className="text-left px-4 pb-2">
+            <DrawerTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              {vernerunde.vernerunde_number}
+            </DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-4">
+            {wizardContent}
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden">
@@ -410,65 +515,7 @@ export default function Ks2VernerundeWizard({
             {vernerunde.vernerunde_number} - {template?.template_name || "Vernerunde"}
           </DialogTitle>
         </DialogHeader>
-
-        {/* Step indicators */}
-        <div className="flex items-center justify-center gap-2 mb-4">
-          {[1, 2, 3].map((s) => (
-            <div key={s} className="flex items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                step === s ? "bg-primary text-primary-foreground" :
-                step > s ? "bg-green-500 text-white" : "bg-muted text-muted-foreground"
-              }`}>
-                {step > s ? <CheckCircle2 className="h-4 w-4" /> : s}
-              </div>
-              {s < 3 && <div className={`w-12 h-1 mx-1 ${step > s ? "bg-green-500" : "bg-muted"}`} />}
-            </div>
-          ))}
-        </div>
-        <div className="flex justify-center gap-8 text-sm text-muted-foreground mb-4">
-          <span className={step === 1 ? "text-foreground font-medium" : ""}>Sjekkliste</span>
-          <span className={step === 2 ? "text-foreground font-medium" : ""}>Funn</span>
-          <span className={step === 3 ? "text-foreground font-medium" : ""}>Signatur</span>
-        </div>
-
-        <ScrollArea className="h-[450px] pr-2">
-          <div className="pr-2">
-            {step === 1 && renderStep1()}
-            {step === 2 && renderStep2()}
-            {step === 3 && renderStep3()}
-          </div>
-        </ScrollArea>
-
-        <div className="flex justify-between pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={() => setStep(s => s - 1)}
-            disabled={step === 1}
-          >
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Tilbake
-          </Button>
-          
-          {step < 3 ? (
-            <Button onClick={() => setStep(s => s + 1)}>
-              Neste
-              <ChevronRight className="h-4 w-4 ml-2" />
-            </Button>
-          ) : (
-            <Button 
-              onClick={handleComplete}
-              disabled={!signature || !inspectorName || isSubmitting}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {isSubmitting ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-              )}
-              Fullfør vernerunde
-            </Button>
-          )}
-        </div>
+        {wizardContent}
       </DialogContent>
     </Dialog>
   );
