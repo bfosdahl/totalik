@@ -81,7 +81,7 @@ export default function Ks2ProjectDetail() {
   }
 
   // Determine current view based on path
-  const basePath = `/ks2/project/${projectId}`;
+  const basePath = `/ks/project/${projectId}`;
   const currentPath = location.pathname.replace(basePath, "") || "";
 
   const renderContent = () => {

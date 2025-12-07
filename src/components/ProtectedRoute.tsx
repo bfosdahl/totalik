@@ -38,20 +38,20 @@ export function ProtectedRoute({
     return <Navigate to="/auth" replace />;
   }
 
-  // Guest user restrictions - only allow KS2 project routes
+  // Guest user restrictions - only allow KS project routes
   if (isGuestUser && guestProjects.length > 0) {
     const currentPath = location.pathname;
     const allowedProjectIds = guestProjects.map(p => p.project_id);
     
-    // Check if current route is an allowed KS2 project route
+    // Check if current route is an allowed KS project route
     const isAllowedRoute = allowedProjectIds.some(projectId => 
-      currentPath.startsWith(`/ks2/project/${projectId}`)
+      currentPath.startsWith(`/ks/project/${projectId}`)
     );
     
     // If not on allowed route, redirect to first project dashboard
     if (!isAllowedRoute) {
       const firstProject = guestProjects[0];
-      return <Navigate to={`/ks2/project/${firstProject.project_id}`} replace />;
+      return <Navigate to={`/ks/project/${firstProject.project_id}`} replace />;
     }
   }
 

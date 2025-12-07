@@ -250,7 +250,7 @@ export default function Ks2Rutiner() {
             <p className="text-muted-foreground mb-4">
               Gå til Malbibliotek for å legge til rutiner som skal gjelde for dette prosjektet.
             </p>
-            <Button onClick={() => navigate(`/ks2/project/${projectId}/maler`)}>
+            <Button onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
               <Plus className="h-4 w-4 mr-2" />
               Gå til Malbibliotek
             </Button>
@@ -278,7 +278,7 @@ export default function Ks2Rutiner() {
                 </div>
                 <Button 
                   variant="outline"
-                  onClick={() => navigate(`/ks2/project/${projectId}/maler`)}
+                  onClick={() => navigate(`/ks/project/${projectId}/maler`)}
                 >
                   <Library className="h-4 w-4 mr-2" />
                   Legg til flere
@@ -650,7 +650,7 @@ export default function Ks2Rutiner() {
                         size="sm"
                         onClick={() => {
                           setViewingRoutine(null);
-                          navigate(`/ks2/project/${projectId}/maler`);
+                          navigate(`/ks/project/${projectId}/maler`);
                         }}
                       >
                         Gå til Malbibliotek
@@ -891,7 +891,7 @@ export default function Ks2Rutiner() {
                       size="sm"
                       onClick={() => {
                         setViewingCustomRoutine(null);
-                        navigate(`/ks2/project/${projectId}/maler`);
+                        navigate(`/ks/project/${projectId}/maler`);
                       }}
                     >
                       Gå til Malbibliotek

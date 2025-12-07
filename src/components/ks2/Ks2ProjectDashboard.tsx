@@ -127,7 +127,7 @@ export function Ks2ProjectDashboard() {
                   <div
                     key={checklist.id}
                     className="flex items-center justify-between p-2 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer"
-                    onClick={() => navigate(`/ks2/project/${projectId}/egenkontroller`)}
+                    onClick={() => navigate(`/ks/project/${projectId}/egenkontroller`)}
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{checklist.title}</p>
@@ -210,7 +210,7 @@ export function Ks2ProjectDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Button
               className="h-auto py-4 flex-col gap-2"
-              onClick={() => navigate(`/ks2/project/${projectId}/egenkontroller?new=true`)}
+              onClick={() => navigate(`/ks/project/${projectId}/egenkontroller?new=true`)}
             >
               <Plus className="h-6 w-6" />
               <span>Ny egenkontroll</span>

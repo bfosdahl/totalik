@@ -78,7 +78,7 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isGuestUser, guestProjects, signOut, profile } = useAuth();
 
-  const basePath = `/ks2/project/${projectId}`;
+  const basePath = `/ks/project/${projectId}`;
   const currentPath = location.pathname.replace(basePath, "") || "";
 
   // Check if we're in HMS section
@@ -110,10 +110,10 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
             variant="ghost"
             size="sm"
             className="text-sidebar-foreground/70 hover:text-sidebar-foreground mb-3 -ml-2"
-            onClick={() => {
-              navigate("/ks2");
-              onNavigate?.();
-            }}
+          onClick={() => {
+            navigate("/ks");
+            onNavigate?.();
+          }}
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
             Alle prosjekter
@@ -250,7 +250,7 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
             Logg ut
           </Button>
         )}
-        <p className="text-xs text-sidebar-foreground/50">KS Modul #2</p>
+        <p className="text-xs text-sidebar-foreground/50">KS Bygg</p>
       </div>
     </div>
   );

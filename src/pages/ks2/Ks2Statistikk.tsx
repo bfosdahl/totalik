@@ -334,7 +334,7 @@ export default function Ks2Statistikk() {
                     <tr 
                       key={project.id} 
                       className="border-b last:border-0 hover:bg-muted/50 cursor-pointer transition-colors"
-                      onClick={() => navigate(`/ks2/prosjekter/${project.id}`)}
+                      onClick={() => navigate(`/ks/project/${project.id}`)}
                     >
                       <td className="py-3">
                         <div>

@@ -26,7 +26,7 @@ export function Ks2AccessQrCodeDialog({
   const { projects } = useKsModule2Projects();
   const project = projects.find(p => p.id === projectId);
   
-  const loginUrl = `${window.location.origin}/auth?redirect=/ks2/project/${projectId}`;
+  const loginUrl = `${window.location.origin}/auth?redirect=/ks/project/${projectId}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(loginUrl)}`;
 
   const copyLink = () => {

@@ -132,7 +132,7 @@ export default function Ks2Egenkontroller() {
             <p className="text-muted-foreground mb-4">
               Du kan fortsatt opprette egenkontroller. Gå til Malbibliotek for å legge til forhåndsdefinerte maler.
             </p>
-            <Button variant="outline" onClick={() => navigate(`/ks2/project/${projectId}/maler`)}>
+            <Button variant="outline" onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
               <Library className="h-4 w-4 mr-2" />
               Gå til Malbibliotek
             </Button>
@@ -179,7 +179,7 @@ export default function Ks2Egenkontroller() {
             <div className="mt-4 pt-4 border-t">
               <Button 
                 variant="outline" 
-                onClick={() => navigate(`/ks2/project/${projectId}/maler`)}
+                onClick={() => navigate(`/ks/project/${projectId}/maler`)}
               >
                 <Library className="h-4 w-4 mr-2" />
                 Legg til flere maler

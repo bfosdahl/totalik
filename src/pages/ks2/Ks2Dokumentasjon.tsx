@@ -337,7 +337,7 @@ export default function Ks2Dokumentasjon() {
             <FolderPlus className="h-4 w-4 mr-2" />
             Ny mappe
           </Button>
-          <Button onClick={() => navigate(`/ks2/project/${projectId}/rapport`)}>
+          <Button onClick={() => navigate(`/ks/project/${projectId}/rapport`)}>
             <FileText className="h-4 w-4 mr-2" />
             Generer rapport
           </Button>

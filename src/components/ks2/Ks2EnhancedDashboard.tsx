@@ -316,7 +316,7 @@ export function Ks2EnhancedDashboard() {
                     <div
                       key={checklist.id}
                       className="flex items-center justify-between p-2 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer"
-                      onClick={() => navigate(`/ks2/project/${projectId}/egenkontroller`)}
+                      onClick={() => navigate(`/ks/project/${projectId}/egenkontroller`)}
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{checklist.title}</p>
@@ -398,7 +398,7 @@ export function Ks2EnhancedDashboard() {
               variant="outline"
               size="sm"
               className="mt-4"
-              onClick={() => navigate(`/ks2/project/${projectId}/underleverandorer`)}
+              onClick={() => navigate(`/ks/project/${projectId}/underleverandorer`)}
             >
               Se alle underleverandører
             </Button>
@@ -415,7 +415,7 @@ export function Ks2EnhancedDashboard() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Button
               className="h-auto py-4 flex-col gap-2"
-              onClick={() => navigate(`/ks2/project/${projectId}/egenkontroller?new=true`)}
+              onClick={() => navigate(`/ks/project/${projectId}/egenkontroller?new=true`)}
             >
               <Plus className="h-6 w-6" />
               <span className="text-xs">Ny egenkontroll</span>
@@ -423,7 +423,7 @@ export function Ks2EnhancedDashboard() {
             <Button
               variant="outline"
               className="h-auto py-4 flex-col gap-2"
-              onClick={() => navigate(`/ks2/project/${projectId}/avvik`)}
+              onClick={() => navigate(`/ks/project/${projectId}/avvik`)}
             >
               <AlertTriangle className="h-6 w-6" />
               <span className="text-xs">Registrer avvik</span>
