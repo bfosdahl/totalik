@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { 
@@ -6,7 +7,8 @@ import {
   User, 
   FileText,
   Flag,
-  Download
+  Download,
+  Mail
 } from "lucide-react";
 import {
   Dialog,
@@ -32,6 +34,7 @@ import { useDeviationAttachments } from "@/hooks/useDeviationAttachments";
 import { useDeviationComments } from "@/hooks/useDeviationComments";
 import { exportSingleDeviationToPDF } from "@/utils/deviationExport";
 import { useAuth } from "@/contexts/AuthContext";
+import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
 
 interface Deviation {
   id: string;
@@ -102,8 +105,109 @@ export function DeviationDetailDialog({
   const { company } = useAuth();
   const { attachments } = useDeviationAttachments(deviation?.id || null);
   const { comments } = useDeviationComments(deviation?.id || null);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   
   if (!deviation) return null;
+
+  const generateDeviationEmailHtml = () => {
+    const formatDateStr = (dateStr: string) => {
+      try {
+        return format(new Date(dateStr), "d. MMMM yyyy", { locale: nb });
+      } catch {
+        return dateStr;
+      }
+    };
+
+    const priorityLabels: Record<string, string> = {
+      low: "Lav",
+      medium: "Medium",
+      high: "Høy",
+      critical: "Kritisk"
+    };
+
+    const statusLabels: Record<string, string> = {
+      open: "Åpen",
+      "in-progress": "Under arbeid",
+      resolved: "Løst",
+      closed: "Lukket"
+    };
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Avvik - ${deviation.title}</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #333;">
+        <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h1 style="margin: 0 0 10px 0; color: #333;">${deviation.title}</h1>
+          <p style="margin: 0; color: #666;">
+            ${deviation.deviation_number || deviation.id} | ${deviation.category} | ${priorityLabels[deviation.priority] || deviation.priority}
+          </p>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <p><strong>Status:</strong> ${statusLabels[deviation.status] || deviation.status}</p>
+          <p><strong>Ansvarlig:</strong> ${deviation.assignee}</p>
+          <p><strong>Rapportert av:</strong> ${deviation.reporter}</p>
+          <p><strong>Opprettet:</strong> ${formatDateStr(deviation.createdAt)}</p>
+          <p><strong>Frist:</strong> ${formatDateStr(deviation.dueDate)}</p>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <h2 style="font-size: 18px; margin-bottom: 10px;">Beskrivelse</h2>
+          <p style="white-space: pre-wrap;">${deviation.description || "Ingen beskrivelse"}</p>
+        </div>
+
+        ${deviation.type === "ruh" ? `
+          ${deviation.incident_location ? `<p><strong>Hendelsessted:</strong> ${deviation.incident_location}</p>` : ""}
+          ${deviation.incident_time ? `<p><strong>Tidspunkt:</strong> ${deviation.incident_time}</p>` : ""}
+          ${deviation.incident_type ? `<p><strong>Hendelsestype:</strong> ${deviation.incident_type}</p>` : ""}
+          ${deviation.severity ? `<p><strong>Alvorlighetsgrad:</strong> ${deviation.severity}</p>` : ""}
+          ${deviation.consequences ? `<p><strong>Konsekvenser:</strong> ${deviation.consequences}</p>` : ""}
+          ${deviation.involved_persons ? `<p><strong>Involverte personer:</strong> ${deviation.involved_persons}</p>` : ""}
+          ${deviation.immediate_actions ? `<p><strong>Umiddelbare tiltak:</strong> ${deviation.immediate_actions}</p>` : ""}
+          ${deviation.preventive_measures ? `<p><strong>Forebyggende tiltak:</strong> ${deviation.preventive_measures}</p>` : ""}
+          ${deviation.root_cause_analysis ? `<p><strong>Rotårsaksanalyse:</strong> ${deviation.root_cause_analysis}</p>` : ""}
+        ` : ""}
+
+        ${attachments.length > 0 ? `
+          <div style="margin-bottom: 20px;">
+            <h2 style="font-size: 18px; margin-bottom: 10px;">Vedlegg</h2>
+            <ul>
+              ${attachments.map(a => `<li>${a.file_name}</li>`).join("")}
+            </ul>
+          </div>
+        ` : ""}
+
+        ${comments.length > 0 ? `
+          <div style="margin-bottom: 20px;">
+            <h2 style="font-size: 18px; margin-bottom: 10px;">Kommentarer</h2>
+            ${comments.map(c => `
+              <div style="border-left: 3px solid #ddd; padding-left: 10px; margin-bottom: 10px;">
+                <p style="margin: 0; font-weight: bold;">${c.user_name}</p>
+                <p style="margin: 5px 0; color: #666;">${c.content}</p>
+                <p style="margin: 0; font-size: 12px; color: #999;">${formatDateStr(c.created_at)}</p>
+              </div>
+            `).join("")}
+          </div>
+        ` : ""}
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px;">
+          <p>Denne rapporten ble sendt fra HMS-systemet.</p>
+        </div>
+      </body>
+      </html>
+    `;
+  };
+
+  const emailUsers = users.map(u => ({
+    id: u.id,
+    email: u.email || "",
+    first_name: u.first_name || "",
+    last_name: u.last_name || ""
+  })).filter(u => u.email);
 
   const handleDownloadPDF = () => {
     exportSingleDeviationToPDF({
@@ -281,6 +385,10 @@ export function DeviationDetailDialog({
 
         {/* Actions - Fixed at bottom */}
         <div className="flex justify-end gap-2 pt-4 border-t flex-shrink-0">
+          <Button variant="outline" size="sm" onClick={() => setEmailDialogOpen(true)}>
+            <Mail className="w-4 h-4 mr-2" />
+            Send på e-post
+          </Button>
           <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
             <Download className="w-4 h-4 mr-2" />
             Last ned PDF
@@ -290,6 +398,16 @@ export function DeviationDetailDialog({
           </Button>
         </div>
       </DialogContent>
+
+      <EmailSendDialog
+        open={emailDialogOpen}
+        onOpenChange={setEmailDialogOpen}
+        documentType="deviation"
+        subject={`Avvik: ${deviation.title} (${deviation.deviation_number || deviation.id})`}
+        htmlContent={generateDeviationEmailHtml()}
+        users={emailUsers}
+        companyName={company?.name}
+      />
     </Dialog>
   );
 }
