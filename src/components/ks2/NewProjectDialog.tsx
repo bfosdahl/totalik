@@ -6,9 +6,118 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2 } from "lucide-react";
+import { Loader2, FileText } from "lucide-react";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { NewKsModule2ProjectInput } from "@/hooks/useKsModule2Projects";
+
+// Prosjektmaler med forhåndsdefinert informasjon
+const PROJECT_TEMPLATES = [
+  {
+    id: "blank",
+    name: "Tomt prosjekt",
+    description: "Start fra bunnen uten forhåndsutfylling",
+    defaults: {}
+  },
+  {
+    id: "enebolig",
+    name: "Enebolig",
+    description: "Nybygg eller renovering av enebolig",
+    defaults: {
+      description: "Oppføring/renovering av enebolig. Prosjektet omfatter komplett byggearbeid fra grunn til ferdig bygg.",
+      contractor_type: "total" as const
+    }
+  },
+  {
+    id: "leilighet",
+    name: "Leilighetsbygg",
+    description: "Flerboligbygg med leiligheter",
+    defaults: {
+      description: "Oppføring av leilighetsbygg. Prosjektet omfatter komplett byggearbeid inkludert fellesarealer.",
+      contractor_type: "total" as const
+    }
+  },
+  {
+    id: "naeringsbygg",
+    name: "Næringsbygg",
+    description: "Kontor, butikk eller industribygg",
+    defaults: {
+      description: "Oppføring av næringsbygg. Prosjektet omfatter byggearbeid tilpasset næringsdrift.",
+      contractor_type: "hoved" as const
+    }
+  },
+  {
+    id: "renovering",
+    name: "Totalrenovering",
+    description: "Større renovering av eksisterende bygg",
+    defaults: {
+      description: "Totalrenovering av eksisterende bygg. Prosjektet omfatter omfattende oppgradering og modernisering.",
+      contractor_type: "hoved" as const
+    }
+  },
+  {
+    id: "tilbygg",
+    name: "Tilbygg/påbygg",
+    description: "Utvidelse av eksisterende bygg",
+    defaults: {
+      description: "Tilbygg/påbygg til eksisterende bygg. Prosjektet omfatter utvidelse med tilkobling til eksisterende konstruksjon.",
+      contractor_type: "hoved" as const
+    }
+  },
+  {
+    id: "betong",
+    name: "Betongarbeid",
+    description: "Spesialisert betongentreprise",
+    defaults: {
+      description: "Betongarbeider. Prosjektet omfatter forskaling, armering og støping iht. tegninger og beskrivelse.",
+      contractor_type: "under" as const
+    }
+  },
+  {
+    id: "tomrer",
+    name: "Tømrerarbeid",
+    description: "Tømrer- og snekkerarbeid",
+    defaults: {
+      description: "Tømrer- og snekkerarbeid. Prosjektet omfatter trearbeider iht. tegninger og beskrivelse.",
+      contractor_type: "under" as const
+    }
+  },
+  {
+    id: "rorlegger",
+    name: "Rørleggerarbeid",
+    description: "VVS og sanitærinstallasjon",
+    defaults: {
+      description: "VVS og sanitærarbeid. Prosjektet omfatter rørinstallasjon, sanitærutstyr og evt. varmeanlegg.",
+      contractor_type: "under" as const
+    }
+  },
+  {
+    id: "elektro",
+    name: "Elektroarbeid",
+    description: "Elektrisk installasjon",
+    defaults: {
+      description: "Elektroarbeider. Prosjektet omfatter elektrisk installasjon iht. tegninger og beskrivelse.",
+      contractor_type: "under" as const
+    }
+  },
+  {
+    id: "maler",
+    name: "Malerarbeid",
+    description: "Maling og overflatebehandling",
+    defaults: {
+      description: "Maler- og tapetserarbeid. Prosjektet omfatter overflatebehandling av vegger, tak og treverk.",
+      contractor_type: "under" as const
+    }
+  },
+  {
+    id: "flislegger",
+    name: "Flislegging",
+    description: "Flis og våtromsarbeid",
+    defaults: {
+      description: "Flislegging og våtromsarbeid. Prosjektet omfatter membran, flislegging og fuging i våtrom.",
+      contractor_type: "under" as const
+    }
+  }
+];
 
 interface NewProjectDialogProps {
   open: boolean;
@@ -17,54 +126,52 @@ interface NewProjectDialogProps {
   isSaving: boolean;
 }
 
+const getEmptyFormData = (): NewKsModule2ProjectInput => ({
+  project_name: "",
+  project_number: "",
+  address: "",
+  gnr_bnr: "",
+  client_name: "",
+  client_org_number: "",
+  client_contact_person: "",
+  client_phone: "",
+  client_email: "",
+  contractor_type: undefined,
+  project_leader_id: "",
+  project_leader_name: "",
+  sha_coordinator_kp: "",
+  sha_coordinator_ku: "",
+  planned_start_date: "",
+  planned_end_date: "",
+  contract_sum: undefined,
+  description: "",
+});
+
 export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: NewProjectDialogProps) {
   const { users } = useCompanyUsers();
-  const [formData, setFormData] = useState<NewKsModule2ProjectInput>({
-    project_name: "",
-    project_number: "",
-    address: "",
-    gnr_bnr: "",
-    client_name: "",
-    client_org_number: "",
-    client_contact_person: "",
-    client_phone: "",
-    client_email: "",
-    contractor_type: undefined,
-    project_leader_id: "",
-    project_leader_name: "",
-    sha_coordinator_kp: "",
-    sha_coordinator_ku: "",
-    planned_start_date: "",
-    planned_end_date: "",
-    contract_sum: undefined,
-    description: "",
-  });
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("blank");
+  const [formData, setFormData] = useState<NewKsModule2ProjectInput>(getEmptyFormData());
+
+  const handleTemplateChange = (templateId: string) => {
+    setSelectedTemplate(templateId);
+    const template = PROJECT_TEMPLATES.find(t => t.id === templateId);
+    if (template) {
+      setFormData(prev => ({
+        ...getEmptyFormData(),
+        ...template.defaults,
+        // Behold prosjektnavn hvis allerede fylt ut
+        project_name: prev.project_name,
+      }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.project_name.trim()) return;
 
     await onSubmit(formData);
-    setFormData({
-      project_name: "",
-      project_number: "",
-      address: "",
-      gnr_bnr: "",
-      client_name: "",
-      client_org_number: "",
-      client_contact_person: "",
-      client_phone: "",
-      client_email: "",
-      contractor_type: undefined,
-      project_leader_id: "",
-      project_leader_name: "",
-      sha_coordinator_kp: "",
-      sha_coordinator_ku: "",
-      planned_start_date: "",
-      planned_end_date: "",
-      contract_sum: undefined,
-      description: "",
-    });
+    setFormData(getEmptyFormData());
+    setSelectedTemplate("blank");
     onOpenChange(false);
   };
 
@@ -86,6 +193,38 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
 
         <ScrollArea className="max-h-[70vh] pr-4">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Project Template Selection */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Prosjektmal
+              </h3>
+              
+              <div className="space-y-2">
+                <Label>Velg prosjekttype</Label>
+                <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg en mal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PROJECT_TEMPLATES.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        <div className="flex flex-col">
+                          <span>{template.name}</span>
+                          <span className="text-xs text-muted-foreground">{template.description}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedTemplate !== "blank" && (
+                  <p className="text-xs text-muted-foreground">
+                    Malen forhåndsutfyller entreprenørform og beskrivelse. Du kan endre alle felt.
+                  </p>
+                )}
+              </div>
+            </div>
+
             {/* Basic Info */}
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
