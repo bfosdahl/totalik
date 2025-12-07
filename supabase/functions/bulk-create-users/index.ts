@@ -85,7 +85,6 @@ Deno.serve(async (req) => {
     }
 
     const results: CreateResult[] = [];
-    const tempPassword = "TempPass123!"; // Temporary password, should be changed on first login
 
     for (const user of users) {
       try {
@@ -101,33 +100,36 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Create user in Supabase Auth
-        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        // Generate secure invite link instead of using hardcoded password
+        const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.generateLink({
+          type: "invite",
           email: user.email,
-          password: tempPassword,
-          email_confirm: true,
-          user_metadata: {
-            first_name: user.firstName || null,
-            last_name: user.lastName || null,
+          options: {
+            data: {
+              first_name: user.firstName || null,
+              last_name: user.lastName || null,
+            },
           },
         });
 
-        if (authError) {
-          console.error(`Error creating user ${user.email}:`, authError);
+        if (inviteError) {
+          console.error(`Error creating invite for ${user.email}:`, inviteError);
           results.push({ 
             email: user.email, 
             success: false, 
-            error: authError.message.includes("already been registered") 
+            error: inviteError.message.includes("already been registered") 
               ? "Brukeren eksisterer allerede" 
-              : authError.message 
+              : inviteError.message 
           });
           continue;
         }
 
-        if (!authData.user) {
+        if (!inviteData.user) {
           results.push({ email: user.email, success: false, error: "Kunne ikke opprette bruker" });
           continue;
         }
+        
+        const authData = inviteData;
 
         // Update profile with company_id
         const { error: profileError } = await supabaseAdmin
