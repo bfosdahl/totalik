@@ -20,12 +20,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { NewDeviationDialog } from "@/components/deviations/NewDeviationDialog";
+import { NewDeviationDialog, NewDeviation } from "@/components/deviations/NewDeviationDialog";
 import { DeviationDetailDialog } from "@/components/deviations/DeviationDetailDialog";
-import { useDeviations, Deviation, NewDeviationInput } from "@/hooks/useDeviations";
+import { useDeviations, Deviation as DeviationType, NewDeviationInput } from "@/hooks/useDeviations";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
 import { exportDeviationsToPDF, exportDeviationsToExcel } from "@/utils/deviationExport";
 import {
   DropdownMenu,
@@ -33,6 +32,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const priorityConfig = {
   low: { label: "Lav", color: "bg-muted text-muted-foreground" },
@@ -70,6 +71,7 @@ interface DeviationForDialog {
 
 const Deviations = () => {
   const { toast } = useToast();
+  const { profile } = useAuth();
   const { deviations, isLoading, createDeviation, updateDeviation } = useDeviations();
   const { users, getUserDisplayName } = useCompanyUsers();
   const [searchQuery, setSearchQuery] = useState("");
@@ -77,6 +79,49 @@ const Deviations = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedDeviation, setSelectedDeviation] = useState<DeviationForDialog | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+  // Helper function to upload files for a deviation
+  const uploadFilesForDeviation = async (deviationId: string, files: File[]) => {
+    if (!profile?.company_id || files.length === 0) return;
+    
+    const uploaderName = profile.first_name && profile.last_name
+      ? `${profile.first_name} ${profile.last_name}`
+      : profile.email || "Ukjent";
+    
+    for (const file of files) {
+      try {
+        // Create unique file path
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${deviationId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+        // Upload to storage
+        const { error: uploadError } = await supabase.storage
+          .from("deviation-attachments")
+          .upload(fileName, file);
+
+        if (uploadError) {
+          console.error("Upload error:", uploadError);
+          continue;
+        }
+
+        // Save attachment record
+        await supabase
+          .from("deviation_attachments")
+          .insert({
+            deviation_id: deviationId,
+            company_id: profile.company_id,
+            file_name: file.name,
+            file_path: fileName,
+            file_size: file.size,
+            file_type: file.type,
+            uploaded_by: profile.id,
+            uploaded_by_name: uploaderName,
+          });
+      } catch (error) {
+        console.error("Error uploading file:", error);
+      }
+    }
+  };
 
   const filteredDeviations = deviations.filter((dev) => {
     const matchesSearch = dev.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -92,24 +137,7 @@ const Deviations = () => {
     resolved: deviations.filter((d) => d.status === "resolved").length,
   };
 
-  const handleNewDeviation = async (input: { 
-    title: string; 
-    description: string; 
-    category: "HMS" | "MAT" | "BYGG"; 
-    priority: "low" | "medium" | "high" | "critical"; 
-    assignee: string;
-    assigneeId?: string; 
-    dueDate: string;
-    incidentLocation?: string;
-    incidentDate?: string;
-    discoveredBy?: string;
-    happenedBefore?: "yes" | "no" | "unknown";
-    consequenceFor?: string;
-    estimatedLoss?: string;
-    shortTermImprovement?: string;
-    longTermImprovement?: string;
-    responsibleForClosing?: string;
-  }) => {
+  const handleNewDeviation = async (input: NewDeviation) => {
     // Find assignee user by name if not provided by ID
     const assigneeUser = input.assigneeId 
       ? users.find(u => u.id === input.assigneeId)
@@ -141,10 +169,19 @@ const Deviations = () => {
       responsible_receiver: input.responsibleForClosing,
     };
 
-    await createDeviation(newDeviation);
+    const createdDeviation = await createDeviation(newDeviation);
+    
+    // Upload pending files if any
+    if (createdDeviation && input.pendingFiles && input.pendingFiles.length > 0) {
+      await uploadFilesForDeviation(createdDeviation.id, input.pendingFiles);
+      toast({
+        title: "Vedlegg lastet opp",
+        description: `${input.pendingFiles.length} fil(er) ble lastet opp`,
+      });
+    }
   };
 
-  const handleDeviationClick = (deviation: Deviation) => {
+  const handleDeviationClick = (deviation: DeviationType) => {
     // Convert to dialog format
     const dialogDeviation: DeviationForDialog = {
       id: deviation.id,

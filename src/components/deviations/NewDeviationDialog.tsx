@@ -36,12 +36,14 @@ import {
 } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { nb } from "date-fns/locale";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import UserSelect from "@/components/audits/UserSelect";
+import { DeviationFileUpload, PendingFile } from "./DeviationFileUpload";
 
 export interface NewDeviation {
   title: string;
@@ -61,6 +63,8 @@ export interface NewDeviation {
   shortTermImprovement?: string;
   longTermImprovement?: string;
   responsibleForClosing?: string;
+  // Files to upload after creation
+  pendingFiles?: File[];
 }
 
 interface NewDeviationDialogProps {
@@ -102,6 +106,9 @@ export function NewDeviationDialog({
   const [shortTermImprovement, setShortTermImprovement] = useState("");
   const [longTermImprovement, setLongTermImprovement] = useState("");
   const [responsibleForClosingId, setResponsibleForClosingId] = useState<string>("");
+  
+  // Pending files for upload
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
 
   const resetForm = () => {
     setTitle("");
@@ -119,6 +126,11 @@ export function NewDeviationDialog({
     setShortTermImprovement("");
     setLongTermImprovement("");
     setResponsibleForClosingId("");
+    // Clean up file previews
+    pendingFiles.forEach(pf => {
+      if (pf.preview) URL.revokeObjectURL(pf.preview);
+    });
+    setPendingFiles([]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -152,6 +164,7 @@ export function NewDeviationDialog({
         shortTermImprovement: shortTermImprovement.trim() || undefined,
         longTermImprovement: longTermImprovement.trim() || undefined,
         responsibleForClosing: responsibleName || undefined,
+        pendingFiles: pendingFiles.map(pf => pf.file),
       });
       
       resetForm();
@@ -401,6 +414,15 @@ export function NewDeviationDialog({
           />
         </div>
       </div>
+
+      <Separator className="my-2" />
+
+      {/* File upload */}
+      <DeviationFileUpload
+        files={pendingFiles}
+        onFilesChange={setPendingFiles}
+        disabled={isSubmitting}
+      />
 
       {/* Assignee (hidden, same as responsible for closing for simplicity) */}
       <input type="hidden" value={responsibleForClosingId} />

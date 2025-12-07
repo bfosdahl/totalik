@@ -107,15 +107,15 @@ export function useDeviations() {
   }, [companyId]);
 
   // Create deviation
-  const createDeviation = useCallback(async (input: NewDeviationInput): Promise<boolean> => {
-    if (!companyId || !profile) return false;
+  const createDeviation = useCallback(async (input: NewDeviationInput): Promise<Deviation | null> => {
+    if (!companyId || !profile) return null;
 
     setIsSaving(true);
     try {
       const deviationNumber = await getNextDeviationNumber();
       const reporterName = [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.email || "Ukjent";
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("deviations")
         .insert({
           company_id: companyId,
@@ -139,7 +139,9 @@ export function useDeviations() {
           immediate_actions: input.immediate_actions || null,
           preventive_measures: input.preventive_measures || null,
           responsible_receiver: input.responsible_receiver || null,
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
@@ -148,7 +150,7 @@ export function useDeviations() {
         title: "Avvik registrert",
         description: `${deviationNumber}: ${input.title}`,
       });
-      return true;
+      return data as Deviation;
     } catch (error) {
       console.error("Error creating deviation:", error);
       toast({
@@ -156,7 +158,7 @@ export function useDeviations() {
         description: "Kunne ikke registrere avvik. Prøv igjen.",
         variant: "destructive",
       });
-      return false;
+      return null;
     } finally {
       setIsSaving(false);
     }
