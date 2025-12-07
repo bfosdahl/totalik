@@ -312,7 +312,7 @@ export default function Ks2Statistikk() {
               <CardTitle className="text-base sm:text-lg">Prosjektoversikt</CardTitle>
               <CardDescription>Status per prosjekt</CardDescription>
             </div>
-            <Button variant="outline" size="sm" onClick={() => navigate('/ks2')}>
+            <Button variant="outline" size="sm" onClick={() => navigate('/ks')}>
               Se alle
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
