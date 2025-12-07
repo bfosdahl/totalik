@@ -2817,6 +2817,100 @@ export type Database = {
           },
         ]
       }
+      ks_module2_claims: {
+        Row: {
+          actual_cost: number | null
+          category: string
+          claim_number: string
+          company_id: string
+          cost_estimate: number | null
+          created_at: string
+          deadline: string | null
+          description: string | null
+          id: string
+          photos: string[] | null
+          priority: string
+          project_id: string
+          reported_by: string | null
+          reported_date: string
+          resolution: string | null
+          resolved_at: string | null
+          responsible_id: string | null
+          responsible_name: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          actual_cost?: number | null
+          category?: string
+          claim_number: string
+          company_id: string
+          cost_estimate?: number | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          photos?: string[] | null
+          priority?: string
+          project_id: string
+          reported_by?: string | null
+          reported_date?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          responsible_id?: string | null
+          responsible_name?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          actual_cost?: number | null
+          category?: string
+          claim_number?: string
+          company_id?: string
+          cost_estimate?: number | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          photos?: string[] | null
+          priority?: string
+          project_id?: string
+          reported_by?: string | null
+          reported_date?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          responsible_id?: string | null
+          responsible_name?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_claims_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_claims_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_claims_responsible_id_fkey"
+            columns: ["responsible_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_document_templates: {
         Row: {
           category: string
@@ -7476,6 +7570,7 @@ export type Database = {
       }
       generate_ks_module2_avvik_number: { Args: never; Returns: string }
       generate_ks_module2_change_order_number: { Args: never; Returns: string }
+      generate_ks_module2_claim_number: { Args: never; Returns: string }
       generate_ks_module2_project_number: { Args: never; Returns: string }
       generate_ks_module2_routine_number: { Args: never; Returns: string }
       generate_ks_module2_uk_number: { Args: never; Returns: string }
