@@ -223,3 +223,126 @@
 ::-webkit-scrollbar-thumb {
   @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/30 transition-colors;
 }
+
+/* ========================================
+   MOBILE FIELD WORK OPTIMIZATIONS
+   ======================================== */
+
+/* Larger touch targets for field workers */
+@media (max-width: 767px) {
+  /* Ensure minimum touch target size of 44px */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Larger form inputs for easier field entry */
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="email"],
+  input[type="tel"],
+  textarea,
+  select {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+  }
+
+  /* Better button spacing for gloved hands */
+  .field-button {
+    @apply py-4 px-6 text-base font-medium;
+  }
+
+  /* High contrast mode for outdoor visibility */
+  .high-contrast {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --primary: 217 71% 30%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 30%;
+    --border: 0 0% 70%;
+  }
+}
+
+/* Sticky bottom action bar for mobile */
+.mobile-action-bar {
+  @apply fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border p-4;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Safe area padding for notched devices */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Quick action floating button */
+.fab-button {
+  @apply fixed z-50 shadow-xl rounded-full p-4 transition-all duration-200;
+  @apply active:scale-95 hover:shadow-2xl;
+  bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  right: 1.5rem;
+}
+
+/* Swipe-friendly cards */
+.swipe-card {
+  @apply touch-pan-x;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Loading skeleton for slow connections */
+.field-skeleton {
+  @apply animate-pulse bg-muted rounded;
+}
+
+/* Offline indicator */
+.offline-banner {
+  @apply fixed top-0 left-0 right-0 z-[100] bg-warning text-warning-foreground text-center py-2 text-sm font-medium;
+}
+
+/* Progress indicator optimized for outdoor viewing */
+.field-progress {
+  @apply h-3 rounded-full;
+}
+
+.field-progress [data-state="complete"] {
+  @apply bg-success;
+}
+
+/* Quick status chips */
+.status-chip {
+  @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium;
+}
+
+.status-chip-ok {
+  @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400;
+}
+
+.status-chip-warning {
+  @apply bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400;
+}
+
+.status-chip-error {
+  @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400;
+}
+
+/* Card with haptic-like feedback */
+.haptic-card {
+  @apply transition-all duration-150 active:scale-[0.98] active:bg-muted/50;
+}
+
+/* Large icon buttons for quick actions */
+.icon-action-lg {
+  @apply flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-border bg-card;
+  @apply hover:bg-muted/50 active:scale-95 transition-all;
+  min-height: 80px;
+}
+
+/* Bottom sheet handle */
+.sheet-handle {
+  @apply mx-auto mt-4 h-1.5 w-12 rounded-full bg-muted-foreground/20;
+}
