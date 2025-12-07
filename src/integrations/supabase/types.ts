@@ -3122,6 +3122,92 @@ export type Database = {
           },
         ]
       }
+      ks_module2_milestones: {
+        Row: {
+          color: string | null
+          company_id: string
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          parent_id: string | null
+          progress: number | null
+          project_id: string
+          responsible_id: string | null
+          responsible_name: string | null
+          sort_order: number | null
+          start_date: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          company_id: string
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          parent_id?: string | null
+          progress?: number | null
+          project_id: string
+          responsible_id?: string | null
+          responsible_name?: string | null
+          sort_order?: number | null
+          start_date: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          parent_id?: string | null
+          progress?: number | null
+          project_id?: string
+          responsible_id?: string | null
+          responsible_name?: string | null
+          sort_order?: number | null
+          start_date?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_milestones_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_milestones_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_milestones_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_milestones_responsible_id_fkey"
+            columns: ["responsible_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_project_access: {
         Row: {
           access_level: Database["public"]["Enums"]["ks_module2_access_level"]
