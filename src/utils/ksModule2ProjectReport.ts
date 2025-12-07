@@ -3,6 +3,24 @@ import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
+// Helper to load image as base64 data URL
+const loadImageAsBase64 = async (url: string): Promise<string | null> => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error("Failed to load image:", url, error);
+    return null;
+  }
+};
+
 interface ProjectReportData {
   project: {
     project_name: string;
@@ -26,7 +44,7 @@ interface ProjectReportData {
       label: string;
       response: string;
       comment?: string;
-      photoUrl?: string;
+      photos?: string[];
     }>;
     photos?: string[];
   }>;
@@ -180,7 +198,7 @@ export interface ReportSections {
   includeDocuments: boolean;
 }
 
-export const generateProjectReportPdf = (data: ProjectReportData, sections: ReportSections) => {
+export const generateProjectReportPdf = async (data: ProjectReportData, sections: ReportSections) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   let yPos = 20;
@@ -371,7 +389,7 @@ export const generateProjectReportPdf = (data: ProjectReportData, sections: Repo
     if (sections.includeChecklistDetails) {
       const completedChecklists = data.checklists.filter(c => c.status === "completed" && c.checkpoints?.length);
       
-      completedChecklists.forEach((checklist, idx) => {
+      for (const checklist of completedChecklists) {
         doc.addPage();
         yPos = 20;
         
@@ -405,8 +423,62 @@ export const generateProjectReportPdf = (data: ProjectReportData, sections: Repo
               2: { cellWidth: "auto" },
             },
           });
+
+          yPos = (doc as any).lastAutoTable.finalY + 10;
+
+          // Add checklist photos if enabled
+          if (sections.includeChecklistPhotos) {
+            const allPhotos: { label: string; url: string }[] = [];
+            checklist.checkpoints.forEach(cp => {
+              if (cp.photos && cp.photos.length > 0) {
+                cp.photos.forEach(url => allPhotos.push({ label: cp.label, url }));
+              }
+            });
+
+            if (allPhotos.length > 0) {
+              checkPageBreak(50);
+              doc.setFontSize(10);
+              doc.setFont("helvetica", "bold");
+              doc.text(`Bilder (${allPhotos.length}):`, 20, yPos);
+              yPos += 8;
+
+              let xPos = 20;
+              const imageWidth = 50;
+              const imageHeight = 40;
+              const margin = 5;
+
+              for (const photo of allPhotos) {
+                try {
+                  const base64 = await loadImageAsBase64(photo.url);
+                  if (base64) {
+                    // Check if we need a new row
+                    if (xPos + imageWidth > pageWidth - 20) {
+                      xPos = 20;
+                      yPos += imageHeight + 15;
+                    }
+                    // Check if we need a new page
+                    if (yPos + imageHeight + 20 > 270) {
+                      doc.addPage();
+                      yPos = 20;
+                      xPos = 20;
+                    }
+
+                    doc.addImage(base64, "JPEG", xPos, yPos, imageWidth, imageHeight);
+                    doc.setFontSize(6);
+                    doc.setFont("helvetica", "normal");
+                    const truncLabel = photo.label.length > 20 ? photo.label.substring(0, 17) + "..." : photo.label;
+                    doc.text(truncLabel, xPos, yPos + imageHeight + 4);
+                    xPos += imageWidth + margin;
+                  }
+                } catch (err) {
+                  console.error("Error adding checklist image:", err);
+                }
+              }
+              yPos += imageHeight + 20;
+            }
+          }
         }
-      });
+      }
     }
   }
 
@@ -439,7 +511,7 @@ export const generateProjectReportPdf = (data: ProjectReportData, sections: Repo
 
     // Detailed avvik information
     if (sections.includeAvvikDetails) {
-      data.avvik.forEach((avvik) => {
+      for (const avvik of data.avvik) {
         doc.addPage();
         yPos = 20;
         
@@ -498,7 +570,46 @@ export const generateProjectReportPdf = (data: ProjectReportData, sections: Repo
           doc.text(actionLines, 20, yPos);
           yPos += actionLines.length * 5 + 8;
         }
-      });
+
+        // Add avvik photos if enabled
+        if (sections.includeAvvikPhotos && avvik.photos && avvik.photos.length > 0) {
+          checkPageBreak(50);
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "bold");
+          doc.text(`Bilder (${avvik.photos.length}):`, 20, yPos);
+          yPos += 8;
+
+          let xPos = 20;
+          const imageWidth = 50;
+          const imageHeight = 40;
+          const margin = 5;
+
+          for (const photoUrl of avvik.photos) {
+            try {
+              const base64 = await loadImageAsBase64(photoUrl);
+              if (base64) {
+                // Check if we need a new row
+                if (xPos + imageWidth > pageWidth - 20) {
+                  xPos = 20;
+                  yPos += imageHeight + 10;
+                }
+                // Check if we need a new page
+                if (yPos + imageHeight + 20 > 270) {
+                  doc.addPage();
+                  yPos = 20;
+                  xPos = 20;
+                }
+
+                doc.addImage(base64, "JPEG", xPos, yPos, imageWidth, imageHeight);
+                xPos += imageWidth + margin;
+              }
+            } catch (err) {
+              console.error("Error adding avvik image:", err);
+            }
+          }
+          yPos += imageHeight + 15;
+        }
+      }
     }
   }
 

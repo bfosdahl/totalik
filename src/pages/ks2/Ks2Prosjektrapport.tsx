@@ -107,6 +107,10 @@ export default function Ks2Prosjektrapport() {
     }
 
     setIsGenerating(true);
+    const hasPhotos = sections.includeChecklistPhotos || sections.includeAvvikPhotos;
+    if (hasPhotos) {
+      toast.info("Genererer rapport med bilder - dette kan ta litt tid...");
+    }
 
     try {
       // Fetch documents marked for inclusion
@@ -120,7 +124,7 @@ export default function Ks2Prosjektrapport() {
         ? `${profile.first_name} ${profile.last_name}`
         : profile?.email || "Ukjent";
 
-      generateProjectReportPdf({
+      await generateProjectReportPdf({
         project: {
           project_name: project.project_name,
           project_number: project.project_number,
@@ -140,10 +144,11 @@ export default function Ks2Prosjektrapport() {
           completed_at: c.completed_at,
           completed_by_name: c.responsible_user_name,
           checkpoints: c.status === "completed" && c.checklist_items?.length 
-            ? c.checklist_items.map((item) => ({
+            ? c.checklist_items.map((item: any) => ({
                 label: item.text || "Sjekkpunkt",
                 response: item.value === true ? "OK" : item.value === false ? "Nei" : item.value?.toString() || "-",
                 comment: item.comment,
+                photos: item.photos || [],
               }))
             : undefined,
         })),
@@ -159,6 +164,7 @@ export default function Ks2Prosjektrapport() {
           corrective_action: a.corrective_action,
           closed_date: a.closed_at,
           closed_by_name: (a as any).closed_by_name,
+          photos: (a as any).photo_paths || [],
         })),
         ukControls: ukList.map(u => ({
           uk_number: u.uk_number,
