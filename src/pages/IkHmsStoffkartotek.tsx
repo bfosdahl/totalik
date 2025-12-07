@@ -277,7 +277,7 @@ export default function IkHmsStoffkartotek() {
       const fileName = `${company.id}/ik-hms-sds/${Date.now()}-${sdsFile.name}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("ks-module2-files")
+        .from("ik-hms-sds")
         .upload(fileName, sdsFile);
 
       setIsUploading(false);
@@ -295,7 +295,7 @@ export default function IkHmsStoffkartotek() {
 
   const handleViewSds = async (filePath: string) => {
     const { data, error } = await supabase.storage
-      .from("ks-module2-files")
+      .from("ik-hms-sds")
       .createSignedUrl(filePath, 3600);
 
     if (error || !data?.signedUrl) {
@@ -308,7 +308,7 @@ export default function IkHmsStoffkartotek() {
 
   const handleDownloadSds = async (filePath: string, productName: string) => {
     const { data, error } = await supabase.storage
-      .from("ks-module2-files")
+      .from("ik-hms-sds")
       .createSignedUrl(filePath, 3600);
 
     if (error || !data?.signedUrl) {
@@ -329,7 +329,7 @@ export default function IkHmsStoffkartotek() {
     const fileName = `${company.id}/ik-hms-sds/${Date.now()}-${file.name}`;
 
     const { error: uploadError } = await supabase.storage
-      .from("ks-module2-files")
+      .from("ik-hms-sds")
       .upload(fileName, file);
 
     setIsUploading(false);
