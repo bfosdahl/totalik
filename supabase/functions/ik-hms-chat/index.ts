@@ -24,7 +24,11 @@ STEG 1 - BRANSJEVALG (VIKTIG! Start alltid her):
   3. Industri/Produksjon
   4. Frisør/Skjønnhetspleie
   5. Butikk/Detaljhandel
-- Spør: "Hvilken bransje passer best for din bedrift? (Velg 1-5)"
+  6. Restaurant/Spisested
+  7. Transport
+  8. Renhold
+  9. Bilpleie
+- Spør: "Hvilken bransje passer best for din bedrift? (Velg 1-9)"
 - HUSK valgt bransje og tilpass ALLE påfølgende spørsmål til denne bransjen
 
 BRANSJESPESIFIKKE TILPASNINGER:
@@ -33,6 +37,10 @@ BRANSJESPESIFIKKE TILPASNINGER:
 - Industri/Produksjon: Fokus på maskinsikkerhet, kjemikalier, støy, ergonomi, verneutstyr
 - Frisør/Skjønnhetspleie: Fokus på kjemikalier, hudkontakt, ergonomi, ventilasjon, allergier
 - Butikk/Detaljhandel: Fokus på løfteteknikk, ran/trusler, stående arbeid, kundeservice-stress
+- Restaurant/Spisested: Fokus på mattrygghet, varmt arbeid, sklisikring, kjøkkenutstyr, håndtering av mat, stress i rushperioder
+- Transport: Fokus på kjøre- og hviletid, trafikksikkerhet, lasting/lossing, ergonomi ved sitting, alenearbeid
+- Renhold: Fokus på kjemikalier, ergonomi, tunge løft, sklisikring, smittefare, alenearbeid
+- Bilpleie: Fokus på kjemikalier, ventilasjon, ergonomi, sklisikring, maskinsikkerhet, hudkontakt
 
 STEG 2 - FIRMAINFORMASJON:
 - Spør om firmanavn
@@ -91,6 +99,42 @@ STEG 5 - RISIKOVURDERING:
   - Stress ved høy kundebelastning
   - Fallulykker (glatte gulv)
 
+  For Restaurant/Spisested:
+  - Brannskader (varmt utstyr, olje, damp)
+  - Kuttskader (kniver, skjæreutstyr)
+  - Sklisikring (vått/fettete gulv)
+  - Matbåren smitte og hygiene
+  - Stress i rushperioder
+  - Tunge løft (råvarer, oppvask)
+  - Dårlig ventilasjon/varme
+
+  For Transport:
+  - Trafikkulykker
+  - Belastningsskader (lasting/lossing)
+  - Ergonomiske skader ved langvarig sitting
+  - Søvnmangel/trøtthet (kjøretid)
+  - Alenearbeid og vold/trusler
+  - Vibrasjoner fra kjøretøy
+  - Værforhold og føre
+
+  For Renhold:
+  - Kjemikalieeksponering (rengjøringsmidler)
+  - Ergonomiske belastninger (bøying, strekking)
+  - Sklisikring (vått gulv)
+  - Smittefare
+  - Alenearbeid
+  - Tunge løft (utstyr, søppel)
+  - Hudproblemer/allergier
+
+  For Bilpleie:
+  - Kjemikalieeksponering (løsemidler, voks)
+  - Hudkontakt med kjemikalier
+  - Dårlig ventilasjon
+  - Sklisikring (vått gulv)
+  - Støy fra maskiner
+  - Ergonomiske belastninger
+  - Elektriske farer
+
 STEG 6 - TILTAK/HANDLINGSPLAN:
 - For hver valgt risiko, foreslå konkrete bransjerelevante tiltak
 
@@ -116,7 +160,7 @@ ABSOLUTT KRITISK:
 JSON-STRUKTUR (brukeren ser IKKE dette):
 |||JSON_START|||
 {
-  "industry": "kontor|bygg_anlegg|industri|frisor|butikk",
+  "industry": "kontor|bygg_anlegg|industri|frisor|butikk|restaurant|transport|renhold|bilpleie",
   "company": {
     "name": "Firmanavn",
     "address": "Adresse",
