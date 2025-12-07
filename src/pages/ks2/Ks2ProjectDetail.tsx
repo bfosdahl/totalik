@@ -10,7 +10,7 @@ import Ks2Sjekklister from "./Ks2Sjekklister";
 import Ks2Rutiner from "./Ks2Rutiner";
 import Ks2Dokumentasjon from "./Ks2Dokumentasjon";
 import Ks2Prosjektinfo from "./Ks2Prosjektinfo";
-import Ks2Avvik from "./Ks2Avvik";
+import Ks2AvvikIntegrated from "./Ks2AvvikIntegrated";
 import Ks2UavhengigKontroll from "./Ks2UavhengigKontroll";
 import Ks2Malbibliotek from "./Ks2Malbibliotek";
 import Ks2Prosjektrapport from "./Ks2Prosjektrapport";
@@ -22,7 +22,6 @@ import Ks2HmsPlan from "./Ks2HmsPlan";
 import Ks2ShaPlan from "./Ks2ShaPlan";
 import Ks2Sja from "./Ks2Sja";
 import Ks2Vernerunder from "./Ks2Vernerunder";
-import Ks2HmsAvvik from "./Ks2HmsAvvik";
 import Ks2Stoffkartotek from "./Ks2Stoffkartotek";
 
 export default function Ks2ProjectDetail() {
@@ -100,7 +99,7 @@ export default function Ks2ProjectDetail() {
       case "/underleverandorer":
         return <Ks2Underleverandorer />;
       case "/avvik":
-        return <Ks2Avvik />;
+        return <Ks2AvvikIntegrated />;
       case "/uk":
         return <Ks2UavhengigKontroll />;
       case "/maler":
@@ -119,7 +118,7 @@ export default function Ks2ProjectDetail() {
       case "/hms/vernerunder":
         return <Ks2Vernerunder />;
       case "/hms/avvik":
-        return <Ks2HmsAvvik />;
+        return <Ks2AvvikIntegrated />;
       case "/hms/stoffkartotek":
         return <Ks2Stoffkartotek />;
       default:
