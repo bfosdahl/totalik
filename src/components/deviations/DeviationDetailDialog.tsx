@@ -384,16 +384,16 @@ export function DeviationDetailDialog({
         </div>
 
         {/* Actions - Fixed at bottom */}
-        <div className="flex justify-end gap-2 pt-4 border-t flex-shrink-0">
-          <Button variant="outline" size="sm" onClick={() => setEmailDialogOpen(true)}>
+        <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t flex-shrink-0">
+          <Button variant="outline" size="sm" onClick={() => setEmailDialogOpen(true)} className="w-full sm:w-auto">
             <Mail className="w-4 h-4 mr-2" />
             Send på e-post
           </Button>
-          <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
+          <Button variant="outline" size="sm" onClick={handleDownloadPDF} className="w-full sm:w-auto">
             <Download className="w-4 h-4 mr-2" />
             Last ned PDF
           </Button>
-          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
             Lukk
           </Button>
         </div>
