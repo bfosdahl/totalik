@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,10 +6,125 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, FileText, Package, Calendar, Thermometer, Download } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useIkMatTraceability } from "@/hooks/useIkMatTraceability";
+import { useIkMatTraceability, TraceabilityRecord } from "@/hooks/useIkMatTraceability";
 import { NewTraceabilityDialog } from "@/components/ikmat/NewTraceabilityDialog";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+
+// Component to handle async document URL loading
+function DocumentDownloadButton({ 
+  documentPath, 
+  getDocumentUrl 
+}: { 
+  documentPath: string; 
+  getDocumentUrl: (path: string | null) => Promise<string | null>;
+}) {
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    getDocumentUrl(documentPath).then(setUrl);
+  }, [documentPath, getDocumentUrl]);
+
+  if (!url) return null;
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      asChild
+    >
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="gap-2"
+      >
+        <Download className="h-4 w-4" />
+        Dokument
+      </a>
+    </Button>
+  );
+}
+
+function RecordCard({ 
+  record, 
+  getDocumentUrl 
+}: { 
+  record: TraceabilityRecord; 
+  getDocumentUrl: (path: string | null) => Promise<string | null>;
+}) {
+  return (
+    <Card className="hover:border-primary/50 transition-colors">
+      <CardContent className="pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <div className="flex items-start gap-2 mb-1">
+              <Package className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold truncate">{record.product_name}</p>
+                <p className="text-sm text-muted-foreground truncate">
+                  {record.supplier_name}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-start gap-2">
+              <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">Batch-nummer</p>
+                <p className="text-sm text-muted-foreground font-mono">
+                  {record.batch_number || "Ikke oppgitt"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-start gap-2">
+              <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">Mottaksdato</p>
+                <p className="text-sm text-muted-foreground">
+                  {format(new Date(record.receipt_date), "dd. MMM yyyy", { locale: nb })}
+                </p>
+                {record.expiry_date && (
+                  <p className="text-xs text-muted-foreground">
+                    Utløper: {format(new Date(record.expiry_date), "dd.MM.yyyy")}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-2">
+            {record.receipt_temperature && (
+              <Badge variant="outline" className="gap-1">
+                <Thermometer className="h-3 w-3" />
+                {record.receipt_temperature}°C
+              </Badge>
+            )}
+            {record.document_path && (
+              <DocumentDownloadButton 
+                documentPath={record.document_path} 
+                getDocumentUrl={getDocumentUrl} 
+              />
+            )}
+          </div>
+        </div>
+
+        {record.notes && (
+          <div className="mt-3 pt-3 border-t">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium">Merknader:</span> {record.notes}
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function IkMatSporbarhet() {
   const { profile } = useAuth();
@@ -84,86 +199,11 @@ export default function IkMatSporbarhet() {
           ) : (
             <div className="grid gap-4">
               {filteredRecords.map((record) => (
-                <Card key={record.id} className="hover:border-primary/50 transition-colors">
-                  <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div>
-                        <div className="flex items-start gap-2 mb-1">
-                          <Package className="h-4 w-4 text-muted-foreground mt-0.5" />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold truncate">{record.product_name}</p>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {record.supplier_name}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex items-start gap-2">
-                          <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium">Batch-nummer</p>
-                            <p className="text-sm text-muted-foreground font-mono">
-                              {record.batch_number || "Ikke oppgitt"}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex items-start gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium">Mottaksdato</p>
-                            <p className="text-sm text-muted-foreground">
-                              {format(new Date(record.receipt_date), "dd. MMM yyyy", { locale: nb })}
-                            </p>
-                            {record.expiry_date && (
-                              <p className="text-xs text-muted-foreground">
-                                Utløper: {format(new Date(record.expiry_date), "dd.MM.yyyy")}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-2">
-                        {record.receipt_temperature && (
-                          <Badge variant="outline" className="gap-1">
-                            <Thermometer className="h-3 w-3" />
-                            {record.receipt_temperature}°C
-                          </Badge>
-                        )}
-                        {record.document_path && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                          >
-                            <a
-                              href={getDocumentUrl(record.document_path) || "#"}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="gap-2"
-                            >
-                              <Download className="h-4 w-4" />
-                              Dokument
-                            </a>
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-
-                    {record.notes && (
-                      <div className="mt-3 pt-3 border-t">
-                        <p className="text-sm text-muted-foreground">
-                          <span className="font-medium">Merknader:</span> {record.notes}
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                <RecordCard 
+                  key={record.id} 
+                  record={record} 
+                  getDocumentUrl={getDocumentUrl} 
+                />
               ))}
             </div>
           )}

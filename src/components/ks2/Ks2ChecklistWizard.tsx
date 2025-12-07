@@ -206,11 +206,12 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
           
         if (uploadError) throw uploadError;
         
-        const { data: urlData } = supabase.storage
+        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
           .from('ks-module2-checklist-photos')
-          .getPublicUrl(fileName);
+          .createSignedUrl(fileName, 86400); // 24 hour expiry for display
           
-        uploadedUrls.push(urlData.publicUrl);
+        if (signedUrlError) throw signedUrlError;
+        uploadedUrls.push(signedUrlData.signedUrl);
       }
       
       setItems((prev) =>

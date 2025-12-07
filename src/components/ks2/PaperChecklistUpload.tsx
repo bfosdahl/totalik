@@ -36,16 +36,17 @@ export function PaperChecklistUpload({ checklist, projectId, onClose }: PaperChe
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('ks-module2-documents')
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 86400); // 24 hour expiry
 
-      setUploadedFile(urlData.publicUrl);
+      if (signedUrlError) throw signedUrlError;
+      setUploadedFile(signedUrlData.signedUrl);
 
-      // Update checklist with uploaded file
+      // Update checklist with uploaded file - store the file path, not signed URL
       await updateChecklist(checklist.id, {
         paper_uploaded: true,
-        paper_file_path: urlData.publicUrl,
+        paper_file_path: fileName,
         status: "completed",
         completed_at: new Date().toISOString(),
         progress_percent: 100,
