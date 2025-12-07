@@ -24,7 +24,8 @@ import {
   Settings,
   Minus,
   Image,
-  Paperclip
+  Paperclip,
+  Mail
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,8 +39,10 @@ import { useSetupWizard } from "@/hooks/useSetupWizard";
 import { useDeviations } from "@/hooks/useDeviations";
 import { useAudits } from "@/hooks/useAudits";
 import { useAuditFormResponses, formTypeLabels, type FormType } from "@/hooks/useAuditFormResponses";
+import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
 
 const statusConfig = {
   complete: {
@@ -86,12 +89,13 @@ const Handbook = () => {
   const { deviations, isLoading: isLoadingDeviations } = useDeviations();
   const { audits, isLoading: isLoadingAudits } = useAudits();
   const { completedForms, isLoading: isLoadingForms, getLatestByFormType } = useAuditFormResponses();
+  const { users: companyUsers } = useCompanyUsers();
   
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [includeDeviations, setIncludeDeviations] = useState(false);
   const [deviationAttachments, setDeviationAttachments] = useState<DeviationAttachment[]>([]);
   const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>({});
-
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   // Fetch deviation attachments
   useEffect(() => {
     const fetchAttachments = async () => {
@@ -443,7 +447,11 @@ const Handbook = () => {
               Din bedrifts internkontrolldokumentasjon
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button variant="outline" className="gap-2" onClick={() => setEmailDialogOpen(true)}>
+              <Mail className="w-4 h-4" />
+              Send på e-post
+            </Button>
             <Button variant="outline" className="gap-2" onClick={() => navigate("/setup?step=5&from=handbook&section=Handbok")}>
               <Eye className="w-4 h-4" />
               Forhåndsvis
@@ -632,8 +640,88 @@ const Handbook = () => {
           </div>
         </motion.div>
       </div>
+
+      <EmailSendDialog
+        open={emailDialogOpen}
+        onOpenChange={setEmailDialogOpen}
+        documentType="handbook"
+        subject={`IK-Handbok - ${companyInfo?.name || "Bedrift"}`}
+        htmlContent={generateHandbookEmailHtml()}
+        users={companyUsers.map(u => ({
+          id: u.id,
+          email: u.email || "",
+          first_name: u.first_name || "",
+          last_name: u.last_name || ""
+        })).filter(u => u.email)}
+        companyName={companyInfo?.name}
+      />
     </AppLayout>
   );
+
+  function generateHandbookEmailHtml() {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>IK-Handbok - ${companyInfo?.name || "Bedrift"}</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #333;">
+        <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h1 style="margin: 0 0 10px 0; color: #333;">${companyInfo?.name || "Bedrift"} - IK-Handbok</h1>
+          <p style="margin: 0; color: #666;">
+            Sist oppdatert: ${format(new Date(), "d. MMMM yyyy", { locale: nb })}
+          </p>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <h2 style="font-size: 18px; margin-bottom: 10px;">1. Mål for internkontroll</h2>
+          ${goals.length > 0 
+            ? `<ul>${goals.map(g => `<li>${g.goal_text}</li>`).join("")}</ul>` 
+            : "<p>Ingen mål definert.</p>"
+          }
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <h2 style="font-size: 18px; margin-bottom: 10px;">2. Organisering og ansvar</h2>
+          <p style="white-space: pre-wrap;">${organization?.custom_content?.substring(0, 500) || "Ikke definert"}</p>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <h2 style="font-size: 18px; margin-bottom: 10px;">3. Risikovurderinger</h2>
+          <p>${(riskAssessment?.risks?.length ?? 0)} risikoer identifisert</p>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <h2 style="font-size: 18px; margin-bottom: 10px;">4. Handlingsplan</h2>
+          <p>${(actionPlan?.actions?.length ?? 0)} tiltak registrert</p>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <h2 style="font-size: 18px; margin-bottom: 10px;">5. Rutiner og prosedyrer</h2>
+          ${(routines?.routines?.length ?? 0) > 0 
+            ? `<ul>${routines?.routines.slice(0, 10).map(r => `<li>${r.routine_number}: ${r.routine_name}</li>`).join("")}</ul>` 
+            : "<p>Ingen rutiner registrert.</p>"
+          }
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <h2 style="font-size: 18px; margin-bottom: 10px;">6. Avviksbehandling</h2>
+          <p>${deviations.length} avvik totalt, ${openDeviationsCount} åpne</p>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <h2 style="font-size: 18px; margin-bottom: 10px;">7. Revisjoner og evaluering</h2>
+          <p>${completedAuditsCount} revisjoner gjennomført</p>
+        </div>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px;">
+          <p>Denne oppsummeringen ble sendt fra HMS-systemet. For komplett handbok, last ned PDF.</p>
+        </div>
+      </body>
+      </html>
+    `;
+  }
 };
 
 export default Handbook;
