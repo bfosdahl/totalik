@@ -68,6 +68,12 @@ export function useCompanyModules(companyId?: string) {
     return moduleTypes.some(type => hasModule(type));
   };
 
+  // Get the industry setting from IK_HMS module
+  const getIndustry = (): string | null => {
+    const ikhmsModule = modules.find(m => m.module_type === 'IK_HMS');
+    return ikhmsModule?.settings?.industry || null;
+  };
+
   const refetch = async () => {
     if (!targetCompanyId) return;
     
@@ -87,5 +93,5 @@ export function useCompanyModules(companyId?: string) {
     }
   };
 
-  return { modules, isLoading, hasModule, hasAnyModule, refetch };
+  return { modules, isLoading, hasModule, hasAnyModule, getIndustry, refetch };
 }

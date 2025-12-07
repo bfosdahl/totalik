@@ -68,7 +68,7 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg skal hjelpe deg å sette opp HMS-systemet for bedriften din. Det tar bare noen minutter!\n\nLa oss starte med det grunnleggende. Hva heter bedriften din?",
+      content: "Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg skal hjelpe deg å sette opp HMS-systemet for bedriften din. Det tar bare noen minutter!\n\nFørst må jeg vite hvilken bransje du tilhører, så jeg kan tilpasse spørsmålene:\n\n1. Kontor/Administrasjon\n2. Bygg og anlegg\n3. Industri/Produksjon\n4. Frisør/Skjønnhetspleie\n5. Butikk/Detaljhandel\n\nHvilken bransje passer best for din bedrift? (Velg 1-5)",
     },
   ]);
   const [input, setInput] = useState("");
@@ -255,7 +255,7 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
         });
       }
 
-      // Update module settings to mark setup as completed
+      // Update module settings to mark setup as completed AND save industry
       const { data: moduleData } = await supabase
         .from("company_modules")
         .select("*")
@@ -270,6 +270,7 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
             settings: {
               ...(moduleData.settings as Record<string, unknown>),
               setupCompletedAt: new Date().toISOString(),
+              industry: data.industry || null, // Save selected industry
             },
           })
           .eq("id", moduleData.id);
