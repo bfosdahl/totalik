@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Search, 
@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface BrregData {
   navn: string;
@@ -101,26 +102,36 @@ const ansattBaserteKrav = [
 ];
 
 const LoverOgForskrifterCalculator = () => {
+  const { company } = useAuth();
   const [orgnr, setOrgnr] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [bedriftData, setBedriftData] = useState<BrregData | null>(null);
   const [antallAnsatte, setAntallAnsatte] = useState<number>(0);
   const [rapportGenerert, setRapportGenerert] = useState(false);
+  const [autoFetched, setAutoFetched] = useState(false);
 
-  const hentBedriftsinfo = async () => {
-    if (!orgnr.match(/^\d{9}$/)) {
-      setError("Vennligst skriv inn et gyldig organisasjonsnummer (9 siffer)");
-      return;
+  // Auto-fill org.nr from company profile and fetch data
+  useEffect(() => {
+    if (company?.org_number && !autoFetched) {
+      const cleanOrgNr = company.org_number.replace(/\s/g, '');
+      if (cleanOrgNr.match(/^\d{9}$/)) {
+        setOrgnr(cleanOrgNr);
+        setAutoFetched(true);
+        // Auto-fetch company data
+        fetchBedriftsinfo(cleanOrgNr);
+      }
     }
+  }, [company?.org_number, autoFetched]);
 
+  const fetchBedriftsinfo = async (orgNumber: string) => {
     setLoading(true);
     setError("");
     setBedriftData(null);
     setRapportGenerert(false);
 
     try {
-      const response = await fetch(`https://data.brreg.no/enhetsregisteret/api/enheter/${orgnr}`);
+      const response = await fetch(`https://data.brreg.no/enhetsregisteret/api/enheter/${orgNumber}`);
       if (!response.ok) {
         throw new Error("Kunne ikke finne bedriften");
       }
@@ -132,6 +143,14 @@ const LoverOgForskrifterCalculator = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const hentBedriftsinfo = async () => {
+    if (!orgnr.match(/^\d{9}$/)) {
+      setError("Vennligst skriv inn et gyldig organisasjonsnummer (9 siffer)");
+      return;
+    }
+    await fetchBedriftsinfo(orgnr);
   };
 
   const genererRapport = () => {
