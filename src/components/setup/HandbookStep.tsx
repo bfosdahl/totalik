@@ -510,11 +510,19 @@ export function HandbookStep({
       yPos += 10;
 
       if (actionPlan && actionPlan.actions.length > 0) {
+        // Normalize status values for counting (handle both old and new format)
+        const normalizeStatus = (status: string): string => {
+          if (status === "pending" || status === "ikke_startet") return "ikke_startet";
+          if (status === "in_progress" || status === "pågår") return "pågår";
+          if (status === "completed" || status === "fullført") return "fullført";
+          return status;
+        };
+
         // Status summary
         const statusCounts = {
-          ikke_startet: actionPlan.actions.filter(a => a.status === "ikke_startet").length,
-          pågår: actionPlan.actions.filter(a => a.status === "pågår").length,
-          fullført: actionPlan.actions.filter(a => a.status === "fullført").length,
+          ikke_startet: actionPlan.actions.filter(a => normalizeStatus(a.status) === "ikke_startet").length,
+          pågår: actionPlan.actions.filter(a => normalizeStatus(a.status) === "pågår").length,
+          fullført: actionPlan.actions.filter(a => normalizeStatus(a.status) === "fullført").length,
         };
 
         doc.setFont("helvetica", "bold");
@@ -530,7 +538,8 @@ export function HandbookStep({
 
         // Action plan table
         const getStatusText = (status: string): string => {
-          switch (status) {
+          const normalized = normalizeStatus(status);
+          switch (normalized) {
             case "ikke_startet": return "Ikke startet";
             case "pågår": return "Pågår";
             case "fullført": return "Fullført";
@@ -558,13 +567,17 @@ export function HandbookStep({
           }
         };
 
-        const actionTableData = actionPlan.actions.map(action => [
-          action.action_description.substring(0, 40) + (action.action_description.length > 40 ? "..." : ""),
-          action.responsible || "-",
-          action.deadline ? new Date(action.deadline).toLocaleDateString("nb-NO") : "-",
-          getPriorityText(action.priority),
-          getStatusText(action.status)
-        ]);
+        // Handle both field name formats: action_description or description
+        const actionTableData = actionPlan.actions.map(action => {
+          const description = (action as any).action_description || (action as any).description || "";
+          return [
+            description.substring(0, 40) + (description.length > 40 ? "..." : ""),
+            action.responsible || "-",
+            action.deadline ? new Date(action.deadline).toLocaleDateString("nb-NO") : "-",
+            getPriorityText(action.priority || "medium"),
+            getStatusText(action.status)
+          ];
+        });
 
         autoTable(doc, {
           startY: yPos,
@@ -614,47 +627,54 @@ export function HandbookStep({
         routines.routines.forEach((routine, index) => {
           checkPageBreak(60);
           
+          // Handle both field name formats
+          const routineNumber = routine.routine_number || `R${(index + 1).toString().padStart(3, '0')}`;
+          const routineName = routine.routine_name || (routine as any).name || 'Ukjent rutine';
+          const purpose = routine.purpose || (routine as any).description || '';
+          const responsibility = routine.responsibility || (routine as any).responsible || '';
+          const procedure = routine.procedure || '';
+          
           // Routine header
           doc.setFillColor(240, 249, 255);
           doc.roundedRect(margin, yPos, contentWidth, 12, 2, 2, "F");
           doc.setFontSize(12);
           doc.setFont("helvetica", "bold");
-          doc.text(`${routine.routine_number} - ${routine.routine_name}`, margin + 5, yPos + 8);
+          doc.text(`${routineNumber} - ${routineName}`, margin + 5, yPos + 8);
           yPos += 17;
 
           doc.setFontSize(10);
           doc.setFont("helvetica", "normal");
 
-          // Purpose
-          if (routine.purpose) {
+          // Purpose/Description
+          if (purpose) {
             doc.setFont("helvetica", "bold");
             doc.text("Formål:", margin, yPos);
             doc.setFont("helvetica", "normal");
-            const purposeLines = doc.splitTextToSize(routine.purpose, contentWidth - 20);
+            const purposeLines = doc.splitTextToSize(purpose, contentWidth - 20);
             doc.text(purposeLines, margin + 20, yPos);
             yPos += purposeLines.length * 5 + 5;
           }
 
           // Responsibility
-          if (routine.responsibility) {
+          if (responsibility) {
             checkPageBreak(15);
             doc.setFont("helvetica", "bold");
             doc.text("Ansvar:", margin, yPos);
             doc.setFont("helvetica", "normal");
-            const respLines = doc.splitTextToSize(routine.responsibility, contentWidth - 20);
+            const respLines = doc.splitTextToSize(responsibility, contentWidth - 20);
             doc.text(respLines, margin + 20, yPos);
             yPos += respLines.length * 5 + 5;
           }
 
-          // Procedure (abbreviated)
-          if (routine.procedure) {
+          // Procedure (abbreviated) - only if exists
+          if (procedure) {
             checkPageBreak(20);
             doc.setFont("helvetica", "bold");
             doc.text("Fremgangsmåte:", margin, yPos);
             yPos += 5;
             doc.setFont("helvetica", "normal");
-            const procLines = doc.splitTextToSize(routine.procedure.substring(0, 300) + 
-              (routine.procedure.length > 300 ? "..." : ""), contentWidth);
+            const procLines = doc.splitTextToSize(procedure.substring(0, 300) + 
+              (procedure.length > 300 ? "..." : ""), contentWidth);
             procLines.slice(0, 5).forEach((line: string) => {
               checkPageBreak(6);
               doc.text(line, margin, yPos);
