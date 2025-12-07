@@ -19,6 +19,7 @@ import Ks2UnderleverandorDetail from "./Ks2UnderleverandorDetail";
 import Ks2Endringsmeldinger from "./Ks2Endringsmeldinger";
 import Ks2Timeregistrering from "./Ks2Timeregistrering";
 import Ks2Fremdriftsplan from "./Ks2Fremdriftsplan";
+import Ks2Reklamasjoner from "./Ks2Reklamasjoner";
 // HMS Module imports
 import Ks2HmsDashboard from "./Ks2HmsDashboard";
 import Ks2HmsPlan from "./Ks2HmsPlan";
@@ -107,6 +108,8 @@ export default function Ks2ProjectDetail() {
         return <Ks2Timeregistrering />;
       case "/fremdriftsplan":
         return <Ks2Fremdriftsplan />;
+      case "/reklamasjoner":
+        return <Ks2Reklamasjoner />;
       case "/avvik":
         return <Ks2AvvikIntegrated />;
       case "/uk":
