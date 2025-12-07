@@ -17,6 +17,7 @@ import Ks2Prosjektrapport from "./Ks2Prosjektrapport";
 import Ks2Underleverandorer from "./Ks2Underleverandorer";
 import Ks2UnderleverandorDetail from "./Ks2UnderleverandorDetail";
 import Ks2Endringsmeldinger from "./Ks2Endringsmeldinger";
+import Ks2Timeregistrering from "./Ks2Timeregistrering";
 // HMS Module imports
 import Ks2HmsDashboard from "./Ks2HmsDashboard";
 import Ks2HmsPlan from "./Ks2HmsPlan";
@@ -101,6 +102,8 @@ export default function Ks2ProjectDetail() {
         return <Ks2Underleverandorer />;
       case "/endringsmeldinger":
         return <Ks2Endringsmeldinger />;
+      case "/timeregistrering":
+        return <Ks2Timeregistrering />;
       case "/avvik":
         return <Ks2AvvikIntegrated />;
       case "/uk":

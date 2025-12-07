@@ -22,6 +22,7 @@ import {
   HardHat,
   FileCheck,
   FlaskConical,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -42,6 +43,7 @@ const mainMenuItems = [
   { id: "prosjektinfo", label: "Prosjektinfo", icon: Info, path: "/prosjektinfo", guestAllowed: false },
   { id: "underleverandorer", label: "Underleverandører", icon: Building2, path: "/underleverandorer", guestAllowed: false },
   { id: "endringsmeldinger", label: "Endringsmeldinger", icon: FileText, path: "/endringsmeldinger", guestAllowed: false },
+  { id: "timeregistrering", label: "Timeregistrering", icon: Clock, path: "/timeregistrering", guestAllowed: false },
   { id: "avvik", label: "Avvik fra KS", icon: AlertTriangle, path: "/avvik", guestAllowed: true },
   { id: "uk", label: "Uavhengig kontroll", icon: Shield, path: "/uk", guestAllowed: true },
   { id: "malbibliotek", label: "Malbibliotek", icon: Library, path: "/maler", guestAllowed: true },
