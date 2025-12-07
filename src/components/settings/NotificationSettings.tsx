@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Bell, Save, ArrowLeft, Loader2, Send } from "lucide-react";
+import { Bell, Save, ArrowLeft, Loader2, Send, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { NotificationSettingsCard } from "@/components/notifications/NotificationSettingsCard";
 
 interface NotificationSettingsProps {
   onBack: () => void;
@@ -236,11 +237,20 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
         </div>
       </motion.div>
 
-      {/* Settings Form */}
+      {/* Push Notifications */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
+      >
+        <NotificationSettingsCard />
+      </motion.div>
+
+      {/* Email Settings Form */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
         className="space-y-6"
       >
         {/* Deviation Notifications */}
