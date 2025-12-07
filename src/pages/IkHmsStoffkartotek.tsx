@@ -263,6 +263,18 @@ export default function IkHmsStoffkartotek() {
     }
   };
 
+  // Sanitize filename for storage
+  const sanitizeFileName = (name: string) => {
+    return name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remove accents
+      .replace(/[æÆ]/g, "ae")
+      .replace(/[øØ]/g, "o")
+      .replace(/[åÅ]/g, "a")
+      .replace(/\s+/g, "_") // Replace spaces with underscores
+      .replace(/[^a-zA-Z0-9._-]/g, ""); // Remove other special chars
+  };
+
   const handleCreate = async () => {
     if (!formData.product_name.trim()) {
       toast.error("Produktnavn er påkrevd");
@@ -273,8 +285,8 @@ export default function IkHmsStoffkartotek() {
 
     if (sdsFile && company?.id) {
       setIsUploading(true);
-      const fileExt = sdsFile.name.split(".").pop();
-      const fileName = `${company.id}/ik-hms-sds/${Date.now()}-${sdsFile.name}`;
+      const sanitizedName = sanitizeFileName(sdsFile.name);
+      const fileName = `${company.id}/${Date.now()}-${sanitizedName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("ik-hms-sds")
@@ -283,6 +295,7 @@ export default function IkHmsStoffkartotek() {
       setIsUploading(false);
 
       if (uploadError) {
+        console.error("Upload error:", uploadError);
         toast.error("Kunne ikke laste opp SDS-fil");
         return;
       }
@@ -326,7 +339,8 @@ export default function IkHmsStoffkartotek() {
     if (!company?.id) return;
 
     setIsUploading(true);
-    const fileName = `${company.id}/ik-hms-sds/${Date.now()}-${file.name}`;
+    const sanitizedName = sanitizeFileName(file.name);
+    const fileName = `${company.id}/${Date.now()}-${sanitizedName}`;
 
     const { error: uploadError } = await supabase.storage
       .from("ik-hms-sds")
@@ -335,6 +349,7 @@ export default function IkHmsStoffkartotek() {
     setIsUploading(false);
 
     if (uploadError) {
+      console.error("Upload error:", uploadError);
       toast.error("Kunne ikke laste opp SDS-fil");
       return;
     }
