@@ -27,7 +27,47 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    
+    // Verify the requesting user is authenticated and authorized
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Create client with user's token to verify identity
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const { data: { user: requestingUser }, error: authError } = await supabaseAuth.auth.getUser();
+    if (authError || !requestingUser) {
+      console.error("Authentication failed:", authError);
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    console.log("Request from authenticated user:", requestingUser.id);
+
+    // Create admin client for privileged operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Verify the requesting user has permission (is company admin or system admin)
+    const { data: hasPermission } = await supabase.rpc('is_company_admin', { _user_id: requestingUser.id });
+    const { data: isSystemAdmin } = await supabase.rpc('is_system_admin', { _user_id: requestingUser.id });
+
+    if (!hasPermission && !isSystemAdmin) {
+      console.error("User lacks permission to invite:", requestingUser.id);
+      return new Response(
+        JSON.stringify({ error: "You do not have permission to invite users" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     const { email, name, company_name, temp_password, project_id, access_level }: InviteRequest = await req.json();
 
