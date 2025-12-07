@@ -64,6 +64,16 @@ function extractJsonFromContent(content: string): string | null {
   return null;
 }
 
+interface BrregInfo {
+  name: string;
+  orgNumber: string;
+  address: string;
+  industry: string;
+  industryCode: string;
+  employees: number;
+  organizationForm: string;
+}
+
 export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -74,6 +84,7 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [pendingBrregInfo, setPendingBrregInfo] = useState<BrregInfo | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -82,8 +93,7 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Check if input looks like an org number and do Brreg lookup
-  const lookupBrreg = async (orgNumber: string) => {
+  const lookupBrreg = async (orgNumber: string): Promise<BrregInfo | null> => {
     try {
       const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ik-hms-chat`;
       const response = await fetch(CHAT_URL, {
@@ -99,11 +109,45 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
       
       const result = await response.json();
       if (result.success) {
-        return result.data;
+        return result.data as BrregInfo;
       }
       return null;
     } catch {
       return null;
+    }
+  };
+
+  // Save Brreg info to company record
+  const saveBrregToCompany = async (brregInfo: BrregInfo) => {
+    try {
+      // Parse address into components
+      const addressParts = brregInfo.address.split(',');
+      const mainAddress = addressParts[0]?.trim() || '';
+      const postalPart = addressParts[1]?.trim() || '';
+      const postalMatch = postalPart.match(/^(\d{4})\s+(.+)$/);
+      const postalCode = postalMatch?.[1] || '';
+      const city = postalMatch?.[2] || postalPart;
+
+      const { error } = await supabase
+        .from("companies")
+        .update({
+          name: brregInfo.name,
+          org_number: brregInfo.orgNumber,
+          address: mainAddress,
+          postal_code: postalCode,
+          city: city,
+        })
+        .eq("id", companyId);
+
+      if (error) {
+        console.error("Error saving Brreg info:", error);
+        toast.error("Kunne ikke lagre bedriftsinformasjon");
+      } else {
+        toast.success("Bedriftsinformasjon oppdatert fra Brønnøysundregistrene");
+        queryClient.invalidateQueries({ queryKey: ["company"] });
+      }
+    } catch (error) {
+      console.error("Error saving Brreg info:", error);
     }
   };
 
@@ -116,6 +160,117 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
     setInput("");
     setIsLoading(true);
 
+    // Check if user is confirming Brreg info (said "ja" or similar)
+    const isConfirmingBrreg = pendingBrregInfo && 
+      (userInput.toLowerCase() === 'ja' || 
+       userInput.toLowerCase() === 'yes' || 
+       userInput.toLowerCase().startsWith('ja,') ||
+       userInput.toLowerCase().includes('stemmer'));
+
+    if (isConfirmingBrreg && pendingBrregInfo) {
+      // Save the Brreg info to company
+      await saveBrregToCompany(pendingBrregInfo);
+      setPendingBrregInfo(null);
+      
+      // Continue with AI chat - include context about confirmed company
+      const contextMessage = `Brukeren bekreftet at bedriftsinformasjonen stemmer. Firmanavn: ${pendingBrregInfo.name}, Org.nr: ${pendingBrregInfo.orgNumber}, Adresse: ${pendingBrregInfo.address}, Bransje: ${pendingBrregInfo.industry}, Ansatte: ${pendingBrregInfo.employees}. Fortsett med neste steg i oppsettet (målsetting).`;
+      
+      // Add system context to messages for AI
+      const messagesWithContext: Message[] = [...messages, { role: "user", content: contextMessage }];
+      
+      try {
+        const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ik-hms-chat`;
+        const response = await fetch(CHAT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ messages: messagesWithContext }),
+        });
+        
+        if (!response.ok || !response.body) {
+          throw new Error("Failed to start stream");
+        }
+        
+        // Process the streaming response
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let textBuffer = "";
+        let assistantMessage = "";
+        let streamDone = false;
+
+        setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+        while (!streamDone) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          textBuffer += decoder.decode(value, { stream: true });
+
+          let newlineIndex: number;
+          while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+            let line = textBuffer.slice(0, newlineIndex);
+            textBuffer = textBuffer.slice(newlineIndex + 1);
+
+            if (line.endsWith("\r")) line = line.slice(0, -1);
+            if (line.startsWith(":") || line.trim() === "") continue;
+            if (!line.startsWith("data: ")) continue;
+
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === "[DONE]") {
+              streamDone = true;
+              break;
+            }
+
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+              if (content) {
+                assistantMessage += content;
+                const displayContent = getDisplayContent(assistantMessage);
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  newMessages[newMessages.length - 1] = {
+                    role: "assistant",
+                    content: displayContent,
+                  };
+                  return newMessages;
+                });
+              }
+            } catch {
+              textBuffer = line + "\n" + textBuffer;
+              break;
+            }
+          }
+        }
+
+        const jsonContent = extractJsonFromContent(assistantMessage);
+        if (jsonContent) {
+          await saveSetupData(jsonContent);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        toast.error("Noe gikk galt. Vennligst prøv igjen.");
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // Check if user is declining Brreg info
+    if (pendingBrregInfo && 
+        (userInput.toLowerCase() === 'nei' || 
+         userInput.toLowerCase() === 'no' ||
+         userInput.toLowerCase().includes('stemmer ikke'))) {
+      setPendingBrregInfo(null);
+      // Continue with manual entry
+      const manualMessage = "Ingen problem! La oss fylle inn informasjonen manuelt. Hva heter bedriften din?";
+      setMessages((prev) => [...prev, { role: "assistant", content: manualMessage }]);
+      setIsLoading(false);
+      return;
+    }
+
     // Check if user entered something that looks like an org number (9 digits)
     const orgNumberMatch = userInput.replace(/[\s.]/g, '').match(/^\d{9}$/);
     
@@ -124,6 +279,9 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
       const brregInfo = await lookupBrreg(userInput);
       
       if (brregInfo) {
+        // Store the Brreg info for later confirmation
+        setPendingBrregInfo(brregInfo);
+        
         // Create a message with the Brreg info
         const brregMessage = `Flott! Jeg fant følgende info fra Brønnøysundregistrene:\n\n📋 **Firmanavn:** ${brregInfo.name}\n📍 **Adresse:** ${brregInfo.address}\n🏭 **Bransje:** ${brregInfo.industry}\n👥 **Ansatte:** ${brregInfo.employees}\n\nStemmer dette? (Ja/Nei)`;
         
