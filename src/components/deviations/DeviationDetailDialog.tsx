@@ -28,11 +28,14 @@ import { Label } from "@/components/ui/label";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { DeviationAttachments } from "./DeviationAttachments";
 import { DeviationComments } from "./DeviationComments";
+import { useDeviationAttachments } from "@/hooks/useDeviationAttachments";
+import { useDeviationComments } from "@/hooks/useDeviationComments";
 import { exportSingleDeviationToPDF } from "@/utils/deviationExport";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Deviation {
   id: string;
+  deviation_number?: string;
   title: string;
   description: string;
   category: "HMS" | "MAT" | "BYGG";
@@ -42,6 +45,22 @@ interface Deviation {
   reporter: string;
   createdAt: string;
   dueDate: string;
+  // Extended RUH fields
+  type?: string;
+  incident_location?: string | null;
+  incident_time?: string | null;
+  incident_type?: string | null;
+  severity?: string | null;
+  consequences?: string | null;
+  involved_persons?: string | null;
+  immediate_actions?: string | null;
+  preventive_measures?: string | null;
+  root_cause_analysis?: string | null;
+  reporter_contact?: string | null;
+  responsible_receiver?: string | null;
+  additional_info?: string | null;
+  notify_arbeidstilsynet?: boolean | null;
+  notify_insurance?: boolean | null;
 }
 
 const priorityConfig = {
@@ -81,12 +100,15 @@ export function DeviationDetailDialog({
 }: DeviationDetailDialogProps) {
   const { users, getUserDisplayName } = useCompanyUsers();
   const { company } = useAuth();
+  const { attachments } = useDeviationAttachments(deviation?.id || null);
+  const { comments } = useDeviationComments(deviation?.id || null);
   
   if (!deviation) return null;
 
   const handleDownloadPDF = () => {
     exportSingleDeviationToPDF({
       id: deviation.id,
+      deviation_number: deviation.deviation_number,
       title: deviation.title,
       description: deviation.description,
       category: deviation.category,
@@ -96,7 +118,27 @@ export function DeviationDetailDialog({
       reporter: deviation.reporter,
       createdAt: deviation.createdAt,
       dueDate: deviation.dueDate,
-    }, company?.name);
+      // Extended RUH fields
+      type: deviation.type,
+      incident_location: deviation.incident_location,
+      incident_time: deviation.incident_time,
+      incident_type: deviation.incident_type,
+      severity: deviation.severity,
+      consequences: deviation.consequences,
+      involved_persons: deviation.involved_persons,
+      immediate_actions: deviation.immediate_actions,
+      preventive_measures: deviation.preventive_measures,
+      root_cause_analysis: deviation.root_cause_analysis,
+      reporter_contact: deviation.reporter_contact,
+      responsible_receiver: deviation.responsible_receiver,
+      additional_info: deviation.additional_info,
+      notify_arbeidstilsynet: deviation.notify_arbeidstilsynet ?? undefined,
+      notify_insurance: deviation.notify_insurance ?? undefined,
+    }, 
+    company?.name,
+    attachments.map(a => ({ file_name: a.file_name, file_type: a.file_type })),
+    comments.map(c => ({ user_name: c.user_name, content: c.content, created_at: c.created_at }))
+    );
   };
 
   const formatDate = (dateStr: string) => {
