@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { createSeedProjects } from "@/utils/ksModule2SeedProjects";
 
 interface Module {
   id: string;
@@ -136,6 +137,9 @@ export function CompanyModulesDialog({
     setIsSaving(true);
     try {
       for (const module of modules) {
+        const wasInactive = !module.id; // Module didn't exist before
+        const isBeingActivated = module.isActive && wasInactive;
+
         if (module.id) {
           // Update existing module
           const { error } = await supabase
@@ -153,6 +157,11 @@ export function CompanyModulesDialog({
           });
 
           if (error) throw error;
+
+          // If KS Bygg module is being activated for the first time, create seed projects
+          if (module.type === "IK_BYGG" && isBeingActivated) {
+            await createSeedProjects(company.id);
+          }
         }
       }
 
