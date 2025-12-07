@@ -35,7 +35,7 @@ interface IncludeOptions {
   activityLog: boolean;
 }
 
-export const generateProjectReport = (data: ProjectData, options: IncludeOptions) => {
+export const generateProjectReport = async (data: ProjectData, options: IncludeOptions) => {
   const doc = new jsPDF();
   let yPosition = 20;
 
@@ -305,12 +305,12 @@ export const generateProjectReport = (data: ProjectData, options: IncludeOptions
               try {
                 checkPageBreak(60);
                 
-                // Fetch photo from storage
-                const { data: photoData } = supabase.storage
+                // Fetch signed URL for photo from storage
+                const { data: signedData, error: signedError } = await supabase.storage
                   .from('project-documents')
-                  .getPublicUrl(photo.file_path);
+                  .createSignedUrl(photo.file_path, 3600);
                 
-                if (photoData?.publicUrl) {
+                if (!signedError && signedData?.signedUrl) {
                   // Note: jsPDF addImage requires base64 or data URL
                   // For production, you'd need to fetch and convert the image
                   doc.text(`- Bilde tatt: ${format(new Date(photo.taken_at), "dd.MM.yyyy HH:mm", { locale: nb })}`, 35, yPosition);
