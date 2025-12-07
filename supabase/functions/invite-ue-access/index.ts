@@ -14,7 +14,6 @@ interface InviteRequest {
   email: string;
   name: string;
   company_name?: string;
-  temp_password: string;
   project_id: string;
   access_level: 'guest' | 'full_ue';
 }
@@ -69,7 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { email, name, company_name, temp_password, project_id, access_level }: InviteRequest = await req.json();
+    const { email, name, company_name, project_id, access_level }: InviteRequest = await req.json();
 
     console.log("Creating/checking user for:", email);
 
@@ -78,25 +77,27 @@ const handler = async (req: Request): Promise<Response> => {
     const existingUser = existingUsers?.users?.find(u => u.email === email);
 
     let userId: string;
+    let recoveryLink: string | null = null;
 
     if (existingUser) {
       console.log("User already exists:", existingUser.id);
       userId = existingUser.id;
       
-      // Update the user's password to the new temp password
-      const { error: updateError } = await supabase.auth.admin.updateUserById(
-        existingUser.id,
-        { password: temp_password }
-      );
+      // Generate a password reset link for existing user
+      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+        type: 'recovery',
+        email: email,
+      });
       
-      if (updateError) {
-        console.error("Error updating user password:", updateError);
+      if (linkError) {
+        console.error("Error generating recovery link:", linkError);
+      } else {
+        recoveryLink = linkData.properties?.action_link || null;
       }
     } else {
-      // Create new user with temp password
+      // Create new user and generate invite link (no temp password)
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
         email: email,
-        password: temp_password,
         email_confirm: true,
         user_metadata: {
           first_name: name.split(' ')[0] || name,
@@ -113,6 +114,18 @@ const handler = async (req: Request): Promise<Response> => {
 
       userId = newUser.user.id;
       console.log("Created new user:", userId);
+
+      // Generate a recovery/set password link for the new user
+      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+        type: 'recovery',
+        email: email,
+      });
+      
+      if (linkError) {
+        console.error("Error generating recovery link:", linkError);
+      } else {
+        recoveryLink = linkData.properties?.action_link || null;
+      }
 
       // Create a minimal profile for the guest user
       const { error: profileError } = await supabase
@@ -152,11 +165,22 @@ const handler = async (req: Request): Promise<Response> => {
       ? `${project.project_number} - ${project.project_name}${project.address ? ` (${project.address})` : ''}`
       : 'Prosjekt';
 
-    const loginUrl = `${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app')}/auth?redirect=/ks2/project/${project_id}`;
+    const baseUrl = Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || '';
+    const loginUrl = `${baseUrl}/auth?redirect=/ks2/project/${project_id}`;
     
     const accessLevelText = access_level === 'full_ue' 
       ? 'full tilgang til prosjektet' 
       : 'gjeste-tilgang (lese, fylle ut sjekklister og registrere avvik)';
+
+    // Build email content - use recovery link if available, otherwise just login link
+    const actionButtonHtml = recoveryLink
+      ? `<div style="text-align: center; margin: 30px 0;">
+          <a href="${recoveryLink}" style="background: linear-gradient(135deg, #5B6BFF 0%, #8B5CF6 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Sett passord og logg inn</a>
+        </div>
+        <p style="color: #666; font-size: 14px; text-align: center;">Klikk på knappen over for å sette ditt passord og logge inn.</p>`
+      : `<div style="text-align: center; margin: 30px 0;">
+          <a href="${loginUrl}" style="background: linear-gradient(135deg, #5B6BFF 0%, #8B5CF6 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Logg inn nå</a>
+        </div>`;
 
     const emailResponse = await resend.emails.send({
       from: "KS System <onboarding@resend.dev>",
@@ -184,17 +208,9 @@ const handler = async (req: Request): Promise<Response> => {
               <p style="color: #666; margin: 10px 0 0 0;">Du har ${accessLevelText}</p>
             </div>
             
-            <p><strong>Innloggingsdetaljer:</strong></p>
-            <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <p style="margin: 0 0 10px 0;"><strong>E-post:</strong> ${email}</p>
-              <p style="margin: 0;"><strong>Midlertidig passord:</strong> <code style="background: #e9ecef; padding: 4px 8px; border-radius: 4px; font-family: monospace;">${temp_password}</code></p>
-            </div>
+            <p><strong>E-post for innlogging:</strong> ${email}</p>
             
-            <p style="color: #666; font-size: 14px;">Vi anbefaler at du endrer passordet etter første innlogging.</p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${loginUrl}" style="background: linear-gradient(135deg, #5B6BFF 0%, #8B5CF6 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Logg inn nå</a>
-            </div>
+            ${actionButtonHtml}
             
             <hr style="border: none; border-top: 1px solid #e9ecef; margin: 30px 0;">
             
