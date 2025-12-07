@@ -33,7 +33,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Calendar, Trash2, Edit, ChevronRight, Target, Clock, CheckCircle2, BarChart3, CalendarDays } from "lucide-react";
+import { Plus, Calendar, Trash2, Edit, ChevronRight, Target, Clock, CheckCircle2, BarChart3, CalendarDays, History } from "lucide-react";
+import { Ks2ProjectTimeline } from "@/components/ks2/Ks2ProjectTimeline";
 import { useAuth } from "@/contexts/AuthContext";
 import { useKsModule2Milestones, Milestone } from "@/hooks/useKsModule2Milestones";
 import { format, differenceInDays, isWithinInterval, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, isSameMonth, isSameDay } from "date-fns";
@@ -65,7 +66,7 @@ export default function Ks2Fremdriftsplan() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"gantt" | "calendar">("gantt");
+  const [viewMode, setViewMode] = useState<"gantt" | "calendar" | "timeline">("gantt");
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
 
   const [formData, setFormData] = useState({
@@ -437,15 +438,19 @@ export default function Ks2Fremdriftsplan() {
       </div>
 
       {/* View Mode Tabs */}
-      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "gantt" | "calendar")} className="w-full">
-        <TabsList className="grid w-full max-w-xs grid-cols-2">
+      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "gantt" | "calendar" | "timeline")} className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="gantt" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
-            Tidslinje
+            <span className="hidden sm:inline">Gantt</span>
           </TabsTrigger>
           <TabsTrigger value="calendar" className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4" />
-            Kalender
+            <span className="hidden sm:inline">Kalender</span>
+          </TabsTrigger>
+          <TabsTrigger value="timeline" className="flex items-center gap-2">
+            <History className="h-4 w-4" />
+            <span className="hidden sm:inline">Prosjekttidslinje</span>
           </TabsTrigger>
         </TabsList>
 
@@ -656,6 +661,11 @@ export default function Ks2Fremdriftsplan() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* Timeline View */}
+        <TabsContent value="timeline" className="mt-4">
+          {projectId && <Ks2ProjectTimeline projectId={projectId} />}
         </TabsContent>
       </Tabs>
 
