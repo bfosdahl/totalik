@@ -135,11 +135,11 @@ export function EmailSendDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[95vw] max-w-md mx-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Send {documentType === "deviation" ? "avvik" : "håndbok"} på e-post
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Mail className="h-5 w-5 flex-shrink-0" />
+            <span className="truncate">Send {documentType === "deviation" ? "avvik" : "håndbok"} på e-post</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -230,15 +230,15 @@ export function EmailSendDialog({
           </div>
 
           {/* Summary and send button */}
-          <div className="flex items-center justify-between pt-4 border-t">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t">
             <p className="text-sm text-muted-foreground">
               {totalRecipients} mottaker{totalRecipients !== 1 ? "e" : ""} valgt
             </p>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => handleOpenChange(false)}>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button variant="outline" onClick={() => handleOpenChange(false)} className="flex-1 sm:flex-none">
                 Avbryt
               </Button>
-              <Button onClick={handleSend} disabled={isSending || totalRecipients === 0}>
+              <Button onClick={handleSend} disabled={isSending || totalRecipients === 0} className="flex-1 sm:flex-none">
                 {isSending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
