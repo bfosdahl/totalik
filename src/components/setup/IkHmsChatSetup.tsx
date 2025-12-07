@@ -82,13 +82,56 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Check if input looks like an org number and do Brreg lookup
+  const lookupBrreg = async (orgNumber: string) => {
+    try {
+      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ik-hms-chat`;
+      const response = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ lookupOrgNumber: orgNumber }),
+      });
+      
+      if (!response.ok) return null;
+      
+      const result = await response.json();
+      if (result.success) {
+        return result.data;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = { role: "user", content: input.trim() };
+    const userInput = input.trim();
+    const userMessage: Message = { role: "user", content: userInput };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
+
+    // Check if user entered something that looks like an org number (9 digits)
+    const orgNumberMatch = userInput.replace(/[\s.]/g, '').match(/^\d{9}$/);
+    
+    if (orgNumberMatch) {
+      // Try Brreg lookup
+      const brregInfo = await lookupBrreg(userInput);
+      
+      if (brregInfo) {
+        // Create a message with the Brreg info
+        const brregMessage = `Flott! Jeg fant følgende info fra Brønnøysundregistrene:\n\n📋 **Firmanavn:** ${brregInfo.name}\n📍 **Adresse:** ${brregInfo.address}\n🏭 **Bransje:** ${brregInfo.industry}\n👥 **Ansatte:** ${brregInfo.employees}\n\nStemmer dette? (Ja/Nei)`;
+        
+        setMessages((prev) => [...prev, { role: "assistant", content: brregMessage }]);
+        setIsLoading(false);
+        return;
+      }
+    }
 
     try {
       const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ik-hms-chat`;

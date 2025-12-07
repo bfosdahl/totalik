@@ -5,6 +5,46 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Fetch company info from Brreg
+async function fetchBrregInfo(orgNumber: string) {
+  try {
+    // Clean the org number - remove spaces and dots
+    const cleanOrgNr = orgNumber.replace(/[\s.]/g, '');
+    
+    if (!/^\d{9}$/.test(cleanOrgNr)) {
+      return null;
+    }
+    
+    const response = await fetch(`https://data.brreg.no/enhetsregisteret/api/enheter/${cleanOrgNr}`);
+    
+    if (!response.ok) {
+      console.log("Brreg lookup failed:", response.status);
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    // Extract relevant info
+    const address = data.forretningsadresse || data.postadresse;
+    const addressStr = address 
+      ? `${address.adresse?.join(', ') || ''}, ${address.postnummer || ''} ${address.poststed || ''}`.trim()
+      : '';
+    
+    return {
+      name: data.navn,
+      orgNumber: data.organisasjonsnummer,
+      address: addressStr,
+      industry: data.naeringskode1?.beskrivelse || '',
+      industryCode: data.naeringskode1?.kode || '',
+      employees: data.antallAnsatte || 0,
+      organizationForm: data.organisasjonsform?.beskrivelse || ''
+    };
+  } catch (error) {
+    console.error("Error fetching from Brreg:", error);
+    return null;
+  }
+}
+
 const systemPrompt = `Du er Oppsett-hjelperen, en vennlig norsk HMS-rådgiver som hjelper virksomheter å sette opp HMS-systemet sitt på en enkel måte.
 
 VIKTIGE REGLER:
@@ -42,11 +82,18 @@ BRANSJESPESIFIKKE TILPASNINGER:
 - Renhold: Fokus på kjemikalier, ergonomi, tunge løft, sklisikring, smittefare, alenearbeid
 - Bilpleie: Fokus på kjemikalier, ventilasjon, ergonomi, sklisikring, maskinsikkerhet, hudkontakt
 
-STEG 2 - FIRMAINFORMASJON:
-- Spør om firmanavn
-- Spør om adresse  
-- Spør om organisasjonsnummer
-- Spør om antall ansatte
+STEG 2 - FIRMAINFORMASJON (VIKTIG - BRREG OPPSLAG):
+- Spør: "Hva er organisasjonsnummeret til bedriften? (9 siffer)"
+- Når brukeren oppgir org.nr, vil systemet automatisk slå opp info fra Brønnøysundregistrene
+- Hvis oppslag lykkes, vis informasjonen og spør om den stemmer:
+  "Flott! Jeg fant følgende info:
+  📋 Firmanavn: [navn fra Brreg]
+  📍 Adresse: [adresse fra Brreg]
+  🏭 Bransje: [bransje fra Brreg]
+  👥 Ansatte: [antall fra Brreg]
+  
+  Stemmer dette? (Ja/Nei)"
+- Hvis oppslag feiler eller brukeren sier nei, spør manuelt om firmanavn, adresse og antall ansatte
 
 STEG 3 - MÅLSETTING:
 - Spør hva som er viktigst for dem innen HMS
@@ -218,7 +265,30 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, lookupOrgNumber } = await req.json();
+    
+    // Handle Brreg lookup request
+    if (lookupOrgNumber) {
+      console.log("Looking up org number:", lookupOrgNumber);
+      const brregInfo = await fetchBrregInfo(lookupOrgNumber);
+      
+      if (brregInfo) {
+        return new Response(JSON.stringify({ 
+          success: true, 
+          data: brregInfo 
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } else {
+        return new Response(JSON.stringify({ 
+          success: false, 
+          error: "Fant ikke bedriften i Brønnøysundregistrene" 
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+    
     console.log("Received HMS chat messages:", messages?.length);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
