@@ -26,7 +26,9 @@ interface ProjectReportData {
       label: string;
       response: string;
       comment?: string;
+      photoUrl?: string;
     }>;
+    photos?: string[];
   }>;
   avvik: Array<{
     avvik_number: string;
@@ -38,6 +40,9 @@ interface ProjectReportData {
     responsible_name?: string;
     description?: string;
     corrective_action?: string;
+    closed_date?: string;
+    closed_by_name?: string;
+    photos?: string[];
   }>;
   ukControls: Array<{
     uk_number: string;
@@ -46,6 +51,8 @@ interface ProjectReportData {
     controller_company?: string;
     result?: string;
     control_date?: string;
+    description?: string;
+    comments?: string;
   }>;
   sjaList: Array<{
     sja_number: string;
@@ -70,6 +77,12 @@ interface ProjectReportData {
     status: string;
     findings_count: number;
     completed_by_name?: string;
+    findings?: Array<{
+      description: string;
+      severity?: string;
+      status?: string;
+      responsible?: string;
+    }>;
   }>;
   documents: Array<{
     document_name: string;
@@ -130,10 +143,16 @@ export interface ReportSections {
   includeProjectInfo: boolean;
   includeChecklists: boolean;
   includeChecklistDetails: boolean;
+  includeChecklistPhotos: boolean;
   includeAvvik: boolean;
+  includeAvvikDetails: boolean;
+  includeAvvikPhotos: boolean;
   includeUk: boolean;
+  includeUkDetails: boolean;
   includeSja: boolean;
+  includeSjaDetails: boolean;
   includeVernerunder: boolean;
+  includeVernerundeDetails: boolean;
   includeDocuments: boolean;
 }
 
@@ -390,6 +409,70 @@ export const generateProjectReportPdf = (data: ProjectReportData, sections: Repo
       styles: { fontSize: 9 },
       headStyles: { fillColor: [239, 68, 68] },
     });
+
+    // Detailed avvik information
+    if (sections.includeAvvikDetails) {
+      data.avvik.forEach((avvik) => {
+        doc.addPage();
+        yPos = 20;
+        
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Avvik: ${avvik.avvik_number} - ${avvik.title}`, 20, yPos);
+        yPos += 10;
+        
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        
+        const avvikDetails = [
+          ["Kategori", CATEGORY_LABELS[avvik.category] || avvik.category],
+          ["Alvorlighet", SEVERITY_LABELS[avvik.severity] || avvik.severity],
+          ["Status", STATUS_LABELS[avvik.status] || avvik.status],
+          ["Oppdaget", avvik.discovered_date ? format(new Date(avvik.discovered_date), "d. MMM yyyy", { locale: nb }) : "-"],
+          ["Ansvarlig", avvik.responsible_name || "-"],
+        ];
+        
+        if (avvik.closed_date) {
+          avvikDetails.push(["Lukket", format(new Date(avvik.closed_date), "d. MMM yyyy", { locale: nb })]);
+        }
+
+        autoTable(doc, {
+          startY: yPos,
+          head: [],
+          body: avvikDetails,
+          theme: "plain",
+          styles: { fontSize: 9 },
+          columnStyles: { 0: { fontStyle: "bold", cellWidth: 40 } },
+        });
+
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+
+        if (avvik.description) {
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "bold");
+          doc.text("Beskrivelse:", 20, yPos);
+          yPos += 6;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9);
+          const descLines = doc.splitTextToSize(avvik.description, pageWidth - 40);
+          doc.text(descLines, 20, yPos);
+          yPos += descLines.length * 5 + 8;
+        }
+
+        if (avvik.corrective_action) {
+          checkPageBreak(30);
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "bold");
+          doc.text("Korrigerende tiltak:", 20, yPos);
+          yPos += 6;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9);
+          const actionLines = doc.splitTextToSize(avvik.corrective_action, pageWidth - 40);
+          doc.text(actionLines, 20, yPos);
+          yPos += actionLines.length * 5 + 8;
+        }
+      });
+    }
   }
 
   // ============ UK Controls ============
@@ -417,6 +500,70 @@ export const generateProjectReportPdf = (data: ProjectReportData, sections: Repo
       styles: { fontSize: 9 },
       headStyles: { fillColor: [34, 197, 94] },
     });
+
+    // Detailed UK information
+    if (sections.includeUkDetails) {
+      data.ukControls.forEach((uk) => {
+        if (uk.description || uk.comments) {
+          doc.addPage();
+          yPos = 20;
+          
+          doc.setFontSize(12);
+          doc.setFont("helvetica", "bold");
+          doc.text(`UK: ${uk.uk_number} - ${CONTROL_AREA_LABELS[uk.control_area] || uk.control_area}`, 20, yPos);
+          yPos += 10;
+          
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "normal");
+          
+          const ukDetails = [
+            ["Status", STATUS_LABELS[uk.status] || uk.status],
+            ["Kontrollfirma", uk.controller_company || "-"],
+            ["Resultat", uk.result || "-"],
+          ];
+          
+          if (uk.control_date) {
+            ukDetails.push(["Kontrolldato", format(new Date(uk.control_date), "d. MMM yyyy", { locale: nb })]);
+          }
+
+          autoTable(doc, {
+            startY: yPos,
+            head: [],
+            body: ukDetails,
+            theme: "plain",
+            styles: { fontSize: 9 },
+            columnStyles: { 0: { fontStyle: "bold", cellWidth: 40 } },
+          });
+
+          yPos = (doc as any).lastAutoTable.finalY + 10;
+
+          if (uk.description) {
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text("Beskrivelse:", 20, yPos);
+            yPos += 6;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            const descLines = doc.splitTextToSize(uk.description, pageWidth - 40);
+            doc.text(descLines, 20, yPos);
+            yPos += descLines.length * 5 + 8;
+          }
+
+          if (uk.comments) {
+            checkPageBreak(30);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text("Kommentarer:", 20, yPos);
+            yPos += 6;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            const commentLines = doc.splitTextToSize(uk.comments, pageWidth - 40);
+            doc.text(commentLines, 20, yPos);
+            yPos += commentLines.length * 5 + 8;
+          }
+        }
+      });
+    }
   }
 
   // ============ SJA ============
@@ -446,6 +593,110 @@ export const generateProjectReportPdf = (data: ProjectReportData, sections: Repo
       styles: { fontSize: 8 },
       headStyles: { fillColor: [245, 158, 11] },
     });
+
+    // Detailed SJA information
+    if (sections.includeSjaDetails) {
+      data.sjaList.forEach((sja) => {
+        doc.addPage();
+        yPos = 20;
+        
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text(`SJA: ${sja.sja_number} - ${sja.title}`, 20, yPos);
+        yPos += 10;
+        
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        
+        const sjaDetails = [
+          ["Status", STATUS_LABELS[sja.status] || sja.status],
+          ["Risikonivå", RISK_LEVEL_LABELS[sja.overall_risk_level] || sja.overall_risk_level],
+          ["Sted", sja.location || "-"],
+          ["Planlagt dato", format(new Date(sja.planned_date), "d. MMM yyyy", { locale: nb })],
+          ["Ansvarlig", sja.responsible_name],
+        ];
+        
+        if (sja.completed_at) {
+          sjaDetails.push(["Fullført", format(new Date(sja.completed_at), "d. MMM yyyy", { locale: nb })]);
+          sjaDetails.push(["Fullført av", sja.completed_by_name || "-"]);
+        }
+
+        autoTable(doc, {
+          startY: yPos,
+          head: [],
+          body: sjaDetails,
+          theme: "plain",
+          styles: { fontSize: 9 },
+          columnStyles: { 0: { fontStyle: "bold", cellWidth: 40 } },
+        });
+
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+
+        if (sja.work_description) {
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "bold");
+          doc.text("Arbeidsbeskrivelse:", 20, yPos);
+          yPos += 6;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9);
+          const descLines = doc.splitTextToSize(sja.work_description, pageWidth - 40);
+          doc.text(descLines, 20, yPos);
+          yPos += descLines.length * 5 + 8;
+        }
+
+        // Identified risks
+        if (sja.identified_risks && sja.identified_risks.length > 0) {
+          checkPageBreak(40);
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "bold");
+          doc.text("Identifiserte risikoer:", 20, yPos);
+          yPos += 8;
+
+          const riskData = sja.identified_risks.map(r => [
+            r.description,
+            r.consequence,
+            r.probability,
+          ]);
+
+          autoTable(doc, {
+            startY: yPos,
+            head: [["Risiko", "Konsekvens", "Sannsynlighet"]],
+            body: riskData,
+            theme: "striped",
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [245, 158, 11] },
+          });
+
+          yPos = (doc as any).lastAutoTable.finalY + 10;
+        }
+
+        // Risk reducing measures
+        if (sja.risk_reducing_measures && sja.risk_reducing_measures.length > 0) {
+          checkPageBreak(40);
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "bold");
+          doc.text("Risikoreduserende tiltak:", 20, yPos);
+          yPos += 8;
+
+          const measureData = sja.risk_reducing_measures.map(m => [
+            m.risk,
+            m.measure,
+            m.responsible,
+          ]);
+
+          autoTable(doc, {
+            startY: yPos,
+            head: [["Risiko", "Tiltak", "Ansvarlig"]],
+            body: measureData,
+            theme: "striped",
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [34, 197, 94] },
+          });
+
+          yPos = (doc as any).lastAutoTable.finalY + 10;
+        }
+      });
+    }
   }
 
   // ============ Vernerunder ============
@@ -476,6 +727,78 @@ export const generateProjectReportPdf = (data: ProjectReportData, sections: Repo
       styles: { fontSize: 8 },
       headStyles: { fillColor: [139, 92, 246] },
     });
+
+    // Detailed vernerunde information
+    if (sections.includeVernerundeDetails) {
+      data.vernerunder.forEach((vr) => {
+        if (vr.findings && vr.findings.length > 0) {
+          doc.addPage();
+          yPos = 20;
+          
+          doc.setFontSize(12);
+          doc.setFont("helvetica", "bold");
+          doc.text(`Vernerunde: ${vr.vernerunde_number} - ${vr.title}`, 20, yPos);
+          yPos += 10;
+          
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "normal");
+          
+          const vrDetails = [
+            ["Status", STATUS_LABELS[vr.status] || vr.status],
+            ["Planlagt", format(new Date(vr.scheduled_date), "d. MMM yyyy", { locale: nb })],
+            ["Ansvarlig", vr.responsible_name],
+          ];
+          
+          if (vr.completed_date) {
+            vrDetails.push(["Fullført", format(new Date(vr.completed_date), "d. MMM yyyy", { locale: nb })]);
+            vrDetails.push(["Fullført av", vr.completed_by_name || "-"]);
+          }
+
+          autoTable(doc, {
+            startY: yPos,
+            head: [],
+            body: vrDetails,
+            theme: "plain",
+            styles: { fontSize: 9 },
+            columnStyles: { 0: { fontStyle: "bold", cellWidth: 40 } },
+          });
+
+          yPos = (doc as any).lastAutoTable.finalY + 10;
+
+          // Findings table
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "bold");
+          doc.text(`Funn (${vr.findings.length}):`, 20, yPos);
+          yPos += 8;
+
+          const findingsData = vr.findings.map((f, idx) => [
+            (idx + 1).toString(),
+            f.description,
+            SEVERITY_LABELS[f.severity || ""] || f.severity || "-",
+            STATUS_LABELS[f.status || ""] || f.status || "-",
+            f.responsible || "-",
+          ]);
+
+          autoTable(doc, {
+            startY: yPos,
+            head: [["#", "Beskrivelse", "Alvorlighet", "Status", "Ansvarlig"]],
+            body: findingsData,
+            theme: "striped",
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [139, 92, 246] },
+            columnStyles: {
+              0: { cellWidth: 10 },
+              1: { cellWidth: "auto" },
+              2: { cellWidth: 25 },
+              3: { cellWidth: 25 },
+              4: { cellWidth: 35 },
+            },
+          });
+
+          yPos = (doc as any).lastAutoTable.finalY + 10;
+        }
+      });
+    }
   }
 
   // ============ Documents ============

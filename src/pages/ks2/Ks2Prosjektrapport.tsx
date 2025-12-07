@@ -59,10 +59,16 @@ export default function Ks2Prosjektrapport() {
     includeProjectInfo: true,
     includeChecklists: true,
     includeChecklistDetails: false,
+    includeChecklistPhotos: false,
     includeAvvik: true,
+    includeAvvikDetails: false,
+    includeAvvikPhotos: false,
     includeUk: true,
+    includeUkDetails: false,
     includeSja: true,
+    includeSjaDetails: false,
     includeVernerunder: true,
+    includeVernerundeDetails: false,
     includeDocuments: true,
   });
 
@@ -147,6 +153,8 @@ export default function Ks2Prosjektrapport() {
           responsible_name: a.responsible_name,
           description: a.description,
           corrective_action: a.corrective_action,
+          closed_date: a.closed_at,
+          closed_by_name: (a as any).closed_by_name,
         })),
         ukControls: ukList.map(u => ({
           uk_number: u.uk_number,
@@ -154,6 +162,8 @@ export default function Ks2Prosjektrapport() {
           status: u.status,
           controller_company: u.controller_company,
           result: u.result,
+          description: u.description,
+          comments: u.comments,
         })),
         sjaList: sjaList.map(s => ({
           sja_number: s.sja_number,
@@ -178,6 +188,12 @@ export default function Ks2Prosjektrapport() {
           status: v.status,
           findings_count: v.findings?.length || 0,
           completed_by_name: v.completed_by_name,
+          findings: v.findings?.map((f: any) => ({
+            description: f.description || f.finding || "",
+            severity: f.severity,
+            status: f.status,
+            responsible: f.responsible,
+          })),
         })),
         documents: (documents || []).map((d: any) => ({
           document_name: d.document_name,
@@ -259,74 +275,178 @@ export default function Ks2Prosjektrapport() {
                   }
                 />
                 {sections.includeChecklists && (
+                  <div className="ml-14 space-y-2">
+                    <div className="p-3 rounded-lg bg-muted/50 flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm">Inkluder sjekkpunktdetaljer</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Viser alle sjekkpunkter med svar
+                        </p>
+                      </div>
+                      <Switch
+                        checked={sections.includeChecklistDetails}
+                        onCheckedChange={(checked) => 
+                          setSections(s => ({ ...s, includeChecklistDetails: checked }))
+                        }
+                      />
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50 flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm">Inkluder bilder</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Legger ved opplastede bilder fra sjekklister
+                        </p>
+                      </div>
+                      <Switch
+                        checked={sections.includeChecklistPhotos}
+                        onCheckedChange={(checked) => 
+                          setSections(s => ({ ...s, includeChecklistPhotos: checked }))
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Avvik */}
+              <div className="space-y-2">
+                <SectionToggle
+                  icon={AlertTriangle}
+                  iconBgColor="bg-red-100"
+                  iconColor="text-red-600"
+                  label="Avvik"
+                  description={`${closedAvvik} av ${avvikList.length} lukket`}
+                  checked={sections.includeAvvik}
+                  onCheckedChange={(checked) => 
+                    setSections(s => ({ ...s, includeAvvik: !!checked }))
+                  }
+                />
+                {sections.includeAvvik && (
+                  <div className="ml-14 space-y-2">
+                    <div className="p-3 rounded-lg bg-muted/50 flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm">Inkluder beskrivelser og tiltak</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Viser full beskrivelse og korrigerende tiltak
+                        </p>
+                      </div>
+                      <Switch
+                        checked={sections.includeAvvikDetails}
+                        onCheckedChange={(checked) => 
+                          setSections(s => ({ ...s, includeAvvikDetails: checked }))
+                        }
+                      />
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50 flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm">Inkluder bilder</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Legger ved opplastede bilder fra avvik
+                        </p>
+                      </div>
+                      <Switch
+                        checked={sections.includeAvvikPhotos}
+                        onCheckedChange={(checked) => 
+                          setSections(s => ({ ...s, includeAvvikPhotos: checked }))
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* UK */}
+              <div className="space-y-2">
+                <SectionToggle
+                  icon={Shield}
+                  iconBgColor="bg-purple-100"
+                  iconColor="text-purple-600"
+                  label="Uavhengig kontroll"
+                  description={`${approvedUk} av ${ukList.length} godkjent`}
+                  checked={sections.includeUk}
+                  onCheckedChange={(checked) => 
+                    setSections(s => ({ ...s, includeUk: !!checked }))
+                  }
+                />
+                {sections.includeUk && (
                   <div className="ml-14 p-3 rounded-lg bg-muted/50 flex items-center justify-between">
                     <div>
-                      <Label className="text-sm">Inkluder detaljerte sjekkpunkter</Label>
+                      <Label className="text-sm">Inkluder kommentarer og beskrivelser</Label>
                       <p className="text-xs text-muted-foreground">
-                        Viser alle sjekkpunkter med svar for fullførte sjekklister
+                        Viser detaljert kontrollinformasjon
                       </p>
                     </div>
                     <Switch
-                      checked={sections.includeChecklistDetails}
+                      checked={sections.includeUkDetails}
                       onCheckedChange={(checked) => 
-                        setSections(s => ({ ...s, includeChecklistDetails: checked }))
+                        setSections(s => ({ ...s, includeUkDetails: checked }))
                       }
                     />
                   </div>
                 )}
               </div>
 
-              {/* Avvik */}
-              <SectionToggle
-                icon={AlertTriangle}
-                iconBgColor="bg-red-100"
-                iconColor="text-red-600"
-                label="Avvik"
-                description={`${closedAvvik} av ${avvikList.length} lukket`}
-                checked={sections.includeAvvik}
-                onCheckedChange={(checked) => 
-                  setSections(s => ({ ...s, includeAvvik: !!checked }))
-                }
-              />
-
-              {/* UK */}
-              <SectionToggle
-                icon={Shield}
-                iconBgColor="bg-purple-100"
-                iconColor="text-purple-600"
-                label="Uavhengig kontroll"
-                description={`${approvedUk} av ${ukList.length} godkjent`}
-                checked={sections.includeUk}
-                onCheckedChange={(checked) => 
-                  setSections(s => ({ ...s, includeUk: !!checked }))
-                }
-              />
-
               {/* SJA */}
-              <SectionToggle
-                icon={HardHat}
-                iconBgColor="bg-amber-100"
-                iconColor="text-amber-600"
-                label="Sikker Jobb Analyse (SJA)"
-                description={`${completedSja} av ${sjaList.length} fullført`}
-                checked={sections.includeSja}
-                onCheckedChange={(checked) => 
-                  setSections(s => ({ ...s, includeSja: !!checked }))
-                }
-              />
+              <div className="space-y-2">
+                <SectionToggle
+                  icon={HardHat}
+                  iconBgColor="bg-amber-100"
+                  iconColor="text-amber-600"
+                  label="Sikker Jobb Analyse (SJA)"
+                  description={`${completedSja} av ${sjaList.length} fullført`}
+                  checked={sections.includeSja}
+                  onCheckedChange={(checked) => 
+                    setSections(s => ({ ...s, includeSja: !!checked }))
+                  }
+                />
+                {sections.includeSja && (
+                  <div className="ml-14 p-3 rounded-lg bg-muted/50 flex items-center justify-between">
+                    <div>
+                      <Label className="text-sm">Inkluder risikoanalyse og tiltak</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Viser identifiserte risikoer og risikoreduserende tiltak
+                      </p>
+                    </div>
+                    <Switch
+                      checked={sections.includeSjaDetails}
+                      onCheckedChange={(checked) => 
+                        setSections(s => ({ ...s, includeSjaDetails: checked }))
+                      }
+                    />
+                  </div>
+                )}
+              </div>
 
               {/* Vernerunder */}
-              <SectionToggle
-                icon={ShieldCheck}
-                iconBgColor="bg-violet-100"
-                iconColor="text-violet-600"
-                label="Vernerunder"
-                description={`${completedVernerunder} av ${vernerunder.length} fullført`}
-                checked={sections.includeVernerunder}
-                onCheckedChange={(checked) => 
-                  setSections(s => ({ ...s, includeVernerunder: !!checked }))
-                }
-              />
+              <div className="space-y-2">
+                <SectionToggle
+                  icon={ShieldCheck}
+                  iconBgColor="bg-violet-100"
+                  iconColor="text-violet-600"
+                  label="Vernerunder"
+                  description={`${completedVernerunder} av ${vernerunder.length} fullført`}
+                  checked={sections.includeVernerunder}
+                  onCheckedChange={(checked) => 
+                    setSections(s => ({ ...s, includeVernerunder: !!checked }))
+                  }
+                />
+                {sections.includeVernerunder && (
+                  <div className="ml-14 p-3 rounded-lg bg-muted/50 flex items-center justify-between">
+                    <div>
+                      <Label className="text-sm">Inkluder funn og observasjoner</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Viser alle registrerte funn fra vernerundene
+                      </p>
+                    </div>
+                    <Switch
+                      checked={sections.includeVernerundeDetails}
+                      onCheckedChange={(checked) => 
+                        setSections(s => ({ ...s, includeVernerundeDetails: checked }))
+                      }
+                    />
+                  </div>
+                )}
+              </div>
 
               {/* Documents */}
               <SectionToggle
