@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, FolderKanban, Loader2, Settings } from "lucide-react";
+import { Plus, Search, FolderKanban, Loader2, Settings, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -98,6 +98,10 @@ export default function Ks2Dashboard() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/ks2/statistikk")} className="shrink-0">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Statistikk</span>
+            </Button>
             {(isCompanyAdmin || isSystemAdmin) && (
               <Button variant="outline" onClick={() => navigate("/ks2/admin")} className="shrink-0">
                 <Settings className="h-4 w-4 mr-2" />
