@@ -7,6 +7,7 @@ import { Loader2, Send, Bot, User, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Message {
   role: "user" | "assistant";
@@ -87,6 +88,7 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   const [pendingBrregInfo, setPendingBrregInfo] = useState<BrregInfo | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+  const { refreshCompany } = useAuth();
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -145,6 +147,8 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
       } else {
         toast.success("Bedriftsinformasjon oppdatert fra Brønnøysundregistrene");
         queryClient.invalidateQueries({ queryKey: ["company"] });
+        // Refresh company in auth context so other components get updated data
+        await refreshCompany();
       }
     } catch (error) {
       console.error("Error saving Brreg info:", error);
