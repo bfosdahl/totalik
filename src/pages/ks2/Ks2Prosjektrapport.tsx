@@ -18,6 +18,7 @@ import {
   Loader2,
   HardHat,
   ShieldCheck,
+  BookOpen,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useKsModule2Checklists } from "@/hooks/useKsModule2Checklists";
@@ -25,6 +26,7 @@ import { useKsModule2Avvik } from "@/hooks/useKsModule2Avvik";
 import { useKsModule2Uk } from "@/hooks/useKsModule2Uk";
 import { useKsModule2Sja } from "@/hooks/useKsModule2Sja";
 import { useKsModule2Vernerunder } from "@/hooks/useKsModule2Vernerunder";
+import { useKsModule2Routines } from "@/hooks/useKsModule2Routines";
 import { supabase } from "@/integrations/supabase/client";
 import { generateProjectReportPdf, ReportSections } from "@/utils/ksModule2ProjectReport";
 import { toast } from "sonner";
@@ -50,6 +52,7 @@ export default function Ks2Prosjektrapport() {
   const { ukList } = useKsModule2Uk(projectId || null);
   const { sjaList } = useKsModule2Sja(projectId);
   const { vernerunder } = useKsModule2Vernerunder(projectId);
+  const { routines } = useKsModule2Routines(projectId);
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [project, setProject] = useState<ProjectData | null>(null);
@@ -69,6 +72,7 @@ export default function Ks2Prosjektrapport() {
     includeSjaDetails: false,
     includeVernerunder: true,
     includeVernerundeDetails: false,
+    includeRoutines: true,
     includeDocuments: true,
   });
 
@@ -194,6 +198,16 @@ export default function Ks2Prosjektrapport() {
             status: f.status,
             responsible: f.responsible,
           })),
+        })),
+        routines: routines.map(r => ({
+          routine_number: r.routine_number,
+          name: r.name,
+          description: r.description || undefined,
+          category: r.category,
+          responsible_role: r.responsible_role || undefined,
+          is_document: r.is_document,
+          approved_by: r.approved_by || undefined,
+          approved_at: r.approved_at || undefined,
         })),
         documents: (documents || []).map((d: any) => ({
           document_name: d.document_name,
@@ -448,6 +462,19 @@ export default function Ks2Prosjektrapport() {
                 )}
               </div>
 
+              {/* Routines */}
+              <SectionToggle
+                icon={BookOpen}
+                iconBgColor="bg-teal-100"
+                iconColor="text-teal-600"
+                label="Rutiner"
+                description={`${routines.length} rutiner`}
+                checked={sections.includeRoutines}
+                onCheckedChange={(checked) => 
+                  setSections(s => ({ ...s, includeRoutines: !!checked }))
+                }
+              />
+
               {/* Documents */}
               <SectionToggle
                 icon={FolderOpen}
@@ -477,6 +504,7 @@ export default function Ks2Prosjektrapport() {
                 <SummaryRow label="UK-kontroller" count={ukList.length} />
                 <SummaryRow label="SJA" count={sjaList.length} />
                 <SummaryRow label="Vernerunder" count={vernerunder.length} />
+                <SummaryRow label="Rutiner" count={routines.length} />
               </div>
 
               <Separator />

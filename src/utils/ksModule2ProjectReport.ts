@@ -84,6 +84,16 @@ interface ProjectReportData {
       responsible?: string;
     }>;
   }>;
+  routines: Array<{
+    routine_number: string;
+    name: string;
+    description?: string;
+    category: string;
+    responsible_role?: string;
+    is_document: boolean;
+    approved_by?: string;
+    approved_at?: string;
+  }>;
   documents: Array<{
     document_name: string;
     category: string;
@@ -133,6 +143,19 @@ const CONTROL_AREA_LABELS: Record<string, string> = {
   annet: "Annet",
 };
 
+const ROUTINE_CATEGORY_LABELS: Record<string, string> = {
+  general: "Generell",
+  kvalitet: "Kvalitet",
+  hms: "HMS",
+  dokumentasjon: "Dokumentasjon",
+  kommunikasjon: "Kommunikasjon",
+  innkjop: "Innkjøp",
+  prosjektering: "Prosjektering",
+  utforelse: "Utførelse",
+  kontroll: "Kontroll",
+  avslutning: "Avslutning",
+  annet: "Annet",
+};
 const RISK_LEVEL_LABELS: Record<string, string> = {
   low: "Lav risiko",
   medium: "Middels risiko",
@@ -153,6 +176,7 @@ export interface ReportSections {
   includeSjaDetails: boolean;
   includeVernerunder: boolean;
   includeVernerundeDetails: boolean;
+  includeRoutines: boolean;
   includeDocuments: boolean;
 }
 
@@ -260,6 +284,9 @@ export const generateProjectReportPdf = (data: ProjectReportData, sections: Repo
   }
   if (sections.includeVernerunder) {
     tocItems.push({ title: "Vernerunder", count: data.vernerunder.length });
+  }
+  if (sections.includeRoutines) {
+    tocItems.push({ title: "Rutiner", count: data.routines.length });
   }
   if (sections.includeDocuments) {
     tocItems.push({ title: "Dokumentoversikt", count: data.documents.length });
@@ -799,6 +826,33 @@ export const generateProjectReportPdf = (data: ProjectReportData, sections: Repo
         }
       });
     }
+  }
+
+  // ============ Routines ============
+  if (sections.includeRoutines && data.routines.length > 0) {
+    addSectionHeader("Rutiner");
+
+    doc.setFontSize(10);
+    doc.text(`Totalt: ${data.routines.length} rutiner`, 20, yPos);
+    yPos += 10;
+
+    const routineData = data.routines.map(r => [
+      r.routine_number,
+      r.name,
+      ROUTINE_CATEGORY_LABELS[r.category] || r.category,
+      r.responsible_role || "-",
+      r.is_document ? "Dokument" : "Manuell",
+      r.approved_by ? "Godkjent" : "-",
+    ]);
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [["Nr", "Navn", "Kategori", "Ansvarlig rolle", "Type", "Status"]],
+      body: routineData,
+      theme: "striped",
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [20, 184, 166] },
+    });
   }
 
   // ============ Documents ============
