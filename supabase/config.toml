@@ -47,3 +47,6 @@ verify_jwt = true
 
 [functions.check-ks2-deadlines]
 verify_jwt = false
+
+[functions.parse-sds-pdf]
+verify_jwt = true
