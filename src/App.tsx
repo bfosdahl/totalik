@@ -23,34 +23,6 @@ import AdminSgRegister from "./pages/admin/AdminSgRegister";
 import AdminDocuments from "./pages/admin/AdminDocuments";
 import AdminKsPanel from "./pages/admin/AdminKsPanel";
 import SetupSystemAdmin from "./pages/admin/SetupSystemAdmin";
-import KsProjectsOverview from "./pages/ks/KsProjectsOverview";
-import KsProjectDetail from "./pages/ks/KsProjectDetail";
-import KsChecklistDetail from "./pages/ks/KsChecklistDetail";
-
-import KsHmsPlanWizard from "./pages/ks/KsHmsPlanWizard";
-import KsRoutines from "./pages/ks/KsRoutines";
-import KsSja from "./pages/ks/KsSja";
-import KsAvvik from "./pages/ks/KsAvvik";
-import KsVernerunder from "./pages/ks/KsVernerunder";
-import KsFarligeFohold from "./pages/ks/KsFarligeFohold";
-import KsTiltakslogg from "./pages/ks/KsTiltakslogg";
-
-import KsProjectReport from "./pages/ks/KsProjectReport";
-import KsSubcontractorOverview from "./pages/ks/KsSubcontractorOverview";
-import KsSubcontractorView from "./pages/ks/KsSubcontractorView";
-import KsClientManagement from "./pages/ks/KsClientManagement";
-import KsSubcontractorManagement from "./pages/ks/KsSubcontractorManagement";
-import KsChecklists from "./pages/ks/KsChecklists";
-import KsDocumentCenter from "./pages/ks/KsDocumentCenter";
-import KsInspeksjoner from "./pages/ks/KsInspeksjoner";
-import KsInspeksjonDetail from "./pages/ks/KsInspeksjonDetail";
-import KsInspeksjonMalGenerator from "./pages/ks/KsInspeksjonMalGenerator";
-import KsDashboard from "./pages/ks/KsDashboard";
-import KsEgenkontroller from "./pages/ks/KsEgenkontroller";
-import KsUavhengigKontroll from "./pages/ks/KsUavhengigKontroll";
-import KsRapporterFdv from "./pages/ks/KsRapporterFdv";
-import KsMalbibliotek from "./pages/ks/KsMalbibliotek";
-import KsDokumentsenter from "./pages/ks/KsDokumentsenter";
 import Ks2Dashboard from "./pages/ks2/Ks2Dashboard";
 import Ks2ProjectDetail from "./pages/ks2/Ks2ProjectDetail";
 import Ks2Admin from "./pages/ks2/Ks2Admin";
@@ -134,43 +106,10 @@ const App = () => (
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             
             {/* KS Bygg routes */}
-            <Route path="/ks" element={<ProtectedRoute><KsDashboard /></ProtectedRoute>} />
-            <Route path="/ks/dashboard" element={<ProtectedRoute><KsDashboard /></ProtectedRoute>} />
-            <Route path="/ks/egenkontroller" element={<ProtectedRoute><KsEgenkontroller /></ProtectedRoute>} />
-            <Route path="/ks/uavhengig-kontroll" element={<ProtectedRoute><KsUavhengigKontroll /></ProtectedRoute>} />
-            <Route path="/ks/rapporter" element={<ProtectedRoute><KsRapporterFdv /></ProtectedRoute>} />
-            <Route path="/ks/malbibliotek" element={<ProtectedRoute><KsMalbibliotek /></ProtectedRoute>} />
-            <Route path="/ks/dokumentsenter" element={<ProtectedRoute><KsDokumentsenter /></ProtectedRoute>} />
-            <Route path="/ks/projects" element={<ProtectedRoute><KsProjectsOverview /></ProtectedRoute>} />
-            <Route path="/ks/projects/:id" element={<ProtectedRoute><KsProjectDetail /></ProtectedRoute>} />
-            <Route path="/ks/projects/:projectId/hms-plan" element={<ProtectedRoute><KsHmsPlanWizard /></ProtectedRoute>} />
-            <Route path="/ks/projects/:projectId/documents" element={<ProtectedRoute><KsDocumentCenter /></ProtectedRoute>} />
-            <Route path="/ks/checklists" element={<ProtectedRoute><KsChecklists /></ProtectedRoute>} />
-            <Route path="/ks/checklists/:id" element={<ProtectedRoute><KsChecklistDetail /></ProtectedRoute>} />
-            <Route path="/ks/routines" element={<ProtectedRoute><KsRoutines /></ProtectedRoute>} />
-            <Route path="/ks/sja" element={<ProtectedRoute><KsSja /></ProtectedRoute>} />
-            <Route path="/ks/avvik" element={<ProtectedRoute><KsAvvik /></ProtectedRoute>} />
-          <Route path="/ks/inspeksjoner" element={<ProtectedRoute><KsInspeksjoner /></ProtectedRoute>} />
-          <Route path="/ks/inspeksjon/:id" element={<ProtectedRoute><KsInspeksjonDetail /></ProtectedRoute>} />
-          <Route path="/ks/inspeksjon-maler" element={<ProtectedRoute><KsInspeksjonMalGenerator /></ProtectedRoute>} />
-            <Route path="/ks/farlige-forhold" element={<ProtectedRoute><KsFarligeFohold /></ProtectedRoute>} />
-            <Route path="/ks/tiltakslogg" element={<ProtectedRoute><KsTiltakslogg /></ProtectedRoute>} />
-            <Route path="/ks/vernerunder" element={<ProtectedRoute><KsVernerunder /></ProtectedRoute>} />
-            <Route path="/ks/report" element={<ProtectedRoute><KsProjectReport /></ProtectedRoute>} />
-            <Route path="/ks/client/:projectId" element={<ProtectedRoute><KsClientManagement /></ProtectedRoute>} />
-            <Route path="/ks/projects/:id/ue" element={<ProtectedRoute><KsSubcontractorManagement /></ProtectedRoute>} />
-            
-            {/* Subcontractor overview for company */}
-            <Route path="/ks/underleverandorer" element={<ProtectedRoute><KsSubcontractorOverview /></ProtectedRoute>} />
-            
-            {/* Subcontractor view - limited access portal for UE themselves */}
-            <Route path="/ks/subcontractor" element={<ProtectedRoute><KsSubcontractorView /></ProtectedRoute>} />
-            
-            {/* KS Modul 2 routes */}
-            <Route path="/ks2" element={<ProtectedRoute><Ks2Dashboard /></ProtectedRoute>} />
-            <Route path="/ks2/statistikk" element={<ProtectedRoute><Ks2Statistikk /></ProtectedRoute>} />
-            <Route path="/ks2/project/:projectId/*" element={<ProtectedRoute><Ks2ProjectDetail /></ProtectedRoute>} />
-            <Route path="/ks2/admin" element={<ProtectedRoute><Ks2Admin /></ProtectedRoute>} />
+            <Route path="/ks" element={<ProtectedRoute><Ks2Dashboard /></ProtectedRoute>} />
+            <Route path="/ks/statistikk" element={<ProtectedRoute><Ks2Statistikk /></ProtectedRoute>} />
+            <Route path="/ks/project/:projectId/*" element={<ProtectedRoute><Ks2ProjectDetail /></ProtectedRoute>} />
+            <Route path="/ks/admin" element={<ProtectedRoute><Ks2Admin /></ProtectedRoute>} />
             
             {/* Admin routes - require system_admin role */}
             <Route path="/admin" element={<ProtectedRoute requireSystemAdmin><AdminDashboard /></ProtectedRoute>} />
