@@ -431,67 +431,40 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
     try {
       const data = JSON.parse(jsonContent);
 
-      // Save goals
-      if (data.goals?.length > 0) {
-        // Delete existing goals first
-        await supabase.from("company_goals").delete().eq("company_id", companyId);
-        
-        for (const goal of data.goals) {
-          await supabase.from("company_goals").insert({
-            company_id: companyId,
-            goal_text: goal,
-            is_predefined: true,
-          });
-        }
-      }
+      // IMPORTANT: We now save AI-generated content to company_modules.settings.generatedContent
+      // This preserves user-created data in the main tables (avvik, risikovurderinger, handlingsplaner, stoffkartotek, etc.)
+      // The AI content is stored separately and can be regenerated without losing user data.
+      
+      // Transform routines to the expected format
+      const transformedRoutines = data.routines?.map((routine: Record<string, unknown>, index: number) => ({
+        id: routine.id || `ai-routine-${index + 1}`,
+        routine_number: routine.routine_number || `R${(index + 1).toString().padStart(3, '0')}`,
+        routine_name: routine.routine_name || routine.name || 'Ukjent rutine',
+        category: routine.category || 'Generelt',
+        purpose: routine.purpose || routine.description || '',
+        responsibility: routine.responsibility || routine.responsible || '',
+        procedure: routine.procedure || '',
+        examples: routine.examples || '',
+        remember: routine.remember || '',
+        is_predefined: true,
+        is_ai_generated: true,
+      })) || [];
 
-      // Save organization
-      if (data.organization) {
-        await supabase.from("company_organization").upsert({
-          company_id: companyId,
-          custom_content: data.organization.custom_content,
-          is_custom: data.organization.is_custom || false,
-        });
-      }
+      // Transform risks to ensure they have AI marker
+      const transformedRisks = data.risks?.map((risk: Record<string, unknown>, index: number) => ({
+        ...risk,
+        id: risk.id || `ai-risk-${index + 1}`,
+        is_ai_generated: true,
+      })) || [];
 
-      // Save risk assessment
-      if (data.risks?.length > 0) {
-        await supabase.from("company_risk_assessments").upsert({
-          company_id: companyId,
-          risks: data.risks,
-        });
-      }
+      // Transform actions to ensure they have AI marker
+      const transformedActions = data.actions?.map((action: Record<string, unknown>, index: number) => ({
+        ...action,
+        id: action.id || `ai-action-${index + 1}`,
+        is_ai_generated: true,
+      })) || [];
 
-      // Save action plan
-      if (data.actions?.length > 0) {
-        await supabase.from("company_action_plans").upsert({
-          company_id: companyId,
-          actions: data.actions,
-        });
-      }
-
-      // Save routines
-      if (data.routines?.length > 0) {
-        const transformedRoutines = data.routines.map((routine: Record<string, unknown>, index: number) => ({
-          id: routine.id || `routine-${index + 1}`,
-          routine_number: routine.routine_number || `R${(index + 1).toString().padStart(3, '0')}`,
-          routine_name: routine.routine_name || routine.name || 'Ukjent rutine',
-          category: routine.category || 'Generelt',
-          purpose: routine.purpose || routine.description || '',
-          responsibility: routine.responsibility || routine.responsible || '',
-          procedure: routine.procedure || '',
-          examples: routine.examples || '',
-          remember: routine.remember || '',
-          is_predefined: false,
-        }));
-        
-        await supabase.from("company_routines").upsert({
-          company_id: companyId,
-          routines: transformedRoutines,
-        });
-      }
-
-      // Update module settings to mark setup as completed AND save industry
+      // Get existing module data
       const { data: moduleData } = await supabase
         .from("company_modules")
         .select("*")
@@ -500,16 +473,109 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
         .single();
 
       if (moduleData) {
+        // Store AI-generated content in module settings - this REPLACES previous AI content
+        // but does NOT affect user-created content in main tables
         await supabase
           .from("company_modules")
           .update({
             settings: {
               ...(moduleData.settings as Record<string, unknown>),
               setupCompletedAt: new Date().toISOString(),
-              industry: data.industry || null, // Save selected industry
+              industry: data.industry || (moduleData.settings as Record<string, unknown>)?.industry || null,
+              generatedContent: {
+                goals: data.goals || [],
+                organization: data.organization || null,
+                risks: transformedRisks,
+                actions: transformedActions,
+                routines: transformedRoutines,
+                generatedAt: new Date().toISOString(),
+              },
             },
           })
           .eq("id", moduleData.id);
+      }
+
+      // Also save to the standard tables for backward compatibility,
+      // but ONLY add AI-generated goals (don't delete existing user-created goals)
+      if (data.goals?.length > 0) {
+        // Delete only AI-generated goals (is_predefined = true), keep user-created ones
+        await supabase
+          .from("company_goals")
+          .delete()
+          .eq("company_id", companyId)
+          .eq("is_predefined", true);
+        
+        for (const goal of data.goals) {
+          await supabase.from("company_goals").insert({
+            company_id: companyId,
+            goal_text: goal,
+            is_predefined: true, // Marks as AI-generated
+          });
+        }
+      }
+
+      // Save organization (this is typically just company structure info, safe to update)
+      if (data.organization) {
+        await supabase.from("company_organization").upsert({
+          company_id: companyId,
+          custom_content: data.organization.custom_content,
+          is_custom: data.organization.is_custom || false,
+        });
+      }
+
+      // For risk assessments and action plans, we need to merge AI content with existing user content
+      // We'll mark AI-generated items so they can be replaced on re-run
+      if (data.risks?.length > 0) {
+        // Get existing risks
+        const { data: existingRisks } = await supabase
+          .from("company_risk_assessments")
+          .select("risks")
+          .eq("company_id", companyId)
+          .single();
+        
+        // Filter out old AI-generated risks and keep user-created ones
+        const userRisks = (existingRisks?.risks as Array<Record<string, unknown>> || [])
+          .filter((r) => !r.is_ai_generated);
+        
+        // Combine user risks with new AI risks
+        await supabase.from("company_risk_assessments").upsert({
+          company_id: companyId,
+          risks: [...userRisks, ...transformedRisks],
+        });
+      }
+
+      // Same approach for action plans
+      if (data.actions?.length > 0) {
+        const { data: existingActions } = await supabase
+          .from("company_action_plans")
+          .select("actions")
+          .eq("company_id", companyId)
+          .single();
+        
+        const userActions = (existingActions?.actions as Array<Record<string, unknown>> || [])
+          .filter((a) => !a.is_ai_generated);
+        
+        await supabase.from("company_action_plans").upsert({
+          company_id: companyId,
+          actions: [...userActions, ...transformedActions],
+        });
+      }
+
+      // Same approach for routines
+      if (data.routines?.length > 0) {
+        const { data: existingRoutines } = await supabase
+          .from("company_routines")
+          .select("routines")
+          .eq("company_id", companyId)
+          .single();
+        
+        const userRoutines = (existingRoutines?.routines as Array<Record<string, unknown>> || [])
+          .filter((r) => !r.is_ai_generated);
+        
+        await supabase.from("company_routines").upsert({
+          company_id: companyId,
+          routines: [...userRoutines, ...transformedRoutines],
+        });
       }
 
       // Invalidate queries to refetch data
