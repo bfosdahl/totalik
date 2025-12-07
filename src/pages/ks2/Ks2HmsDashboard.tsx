@@ -19,7 +19,7 @@ import { useNavigate } from "react-router-dom";
 export default function Ks2HmsDashboard() {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const basePath = `/ks2/project/${projectId}`;
+  const basePath = `/ks/project/${projectId}`;
 
   // Placeholder stats - will be dynamic later
   const stats = {

@@ -81,7 +81,7 @@ export default function Ks2Underleverandorer() {
   );
 
   const handleSubcontractorClick = (subcontractor: KsModule2Subcontractor) => {
-    navigate(`/ks2/project/${projectId}/underleverandorer/${subcontractor.id}`);
+    navigate(`/ks/project/${projectId}/underleverandorer/${subcontractor.id}`);
   };
 
   const handleRevokeAccess = async () => {

@@ -36,35 +36,35 @@ export function MobileQuickActions({ actions, projectId }: MobileQuickActionsPro
   // Don't render on desktop
   if (!isMobile) return null;
 
-  // Default actions for KS2 projects
+  // Default actions for KS projects
   const defaultActions: QuickAction[] = projectId ? [
     {
       id: "checklist",
       label: "Ny sjekkliste",
       icon: <ClipboardCheck className="h-6 w-6" />,
       color: "bg-primary text-primary-foreground",
-      path: `/ks2/prosjekter/${projectId}/egenkontroller`,
+      path: `/ks/project/${projectId}/egenkontroller`,
     },
     {
       id: "deviation",
       label: "Registrer avvik",
       icon: <AlertTriangle className="h-6 w-6" />,
       color: "bg-destructive text-destructive-foreground",
-      path: `/ks2/prosjekter/${projectId}/avvik`,
+      path: `/ks/project/${projectId}/avvik`,
     },
     {
       id: "vernerunde",
       label: "Ny vernerunde",
       icon: <Shield className="h-6 w-6" />,
       color: "bg-green-600 text-white",
-      path: `/ks2/prosjekter/${projectId}/hms/vernerunder`,
+      path: `/ks/project/${projectId}/hms/vernerunder`,
     },
     {
       id: "sja",
       label: "Ny SJA",
       icon: <HardHat className="h-6 w-6" />,
       color: "bg-amber-600 text-white",
-      path: `/ks2/prosjekter/${projectId}/hms/sja`,
+      path: `/ks/project/${projectId}/hms/sja`,
     },
   ] : [];
 

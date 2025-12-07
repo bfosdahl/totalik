@@ -29,7 +29,7 @@ export function MobileBottomNav({ projectId, onMenuClick }: MobileBottomNavProps
   // Don't render on desktop
   if (!isMobile) return null;
 
-  const basePath = `/ks2/prosjekter/${projectId}`;
+  const basePath = `/ks/project/${projectId}`;
 
   const navItems: NavItem[] = [
     {

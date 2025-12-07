@@ -128,7 +128,7 @@ export default function Ks2Sjekklister() {
           <h1 className="text-2xl font-bold">Sjekklister</h1>
           <p className="text-muted-foreground">Maler og utførte sjekklister i prosjektet</p>
         </div>
-        <Button onClick={() => navigate(`/ks2/project/${projectId}/maler`)}>
+        <Button onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
           <Library className="h-4 w-4 mr-2" />
           Gå til Malbibliotek
         </Button>
@@ -197,7 +197,7 @@ export default function Ks2Sjekklister() {
             <p className="text-muted-foreground mb-4">
               Gå til Malbibliotek for å velge hvilke sjekklister som skal brukes i dette prosjektet
             </p>
-            <Button onClick={() => navigate(`/ks2/project/${projectId}/maler`)}>
+            <Button onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
               <Library className="h-4 w-4 mr-2" />
               Gå til Malbibliotek
               <ArrowRight className="h-4 w-4 ml-2" />
