@@ -6,7 +6,10 @@ import {
   Clock,
   FileCheck,
   Calendar,
-  ChevronRight
+  ChevronRight,
+  Sparkles,
+  Rocket,
+  X
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
@@ -20,11 +23,16 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { useCompanyModules } from "@/hooks/useCompanyModules";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 const Index = () => {
   const { compliancePercent, openDeviations, completedActions, dueSoon, isLoading } = useDashboardStats();
   const { upcomingAudits, isLoading: isLoadingAudits } = useAudits();
+  const { modules, isLoading: modulesLoading } = useCompanyModules();
   const navigate = useNavigate();
+  const [dismissedBanner, setDismissedBanner] = useState(false);
 
   const formatDate = (dateString: string) => {
     try {
@@ -34,9 +42,78 @@ const Index = () => {
     }
   };
 
+  // Check if IK/HMS setup is completed
+  const ikHmsModule = modules.find(m => m.module_type === 'IK_HMS');
+  const isSetupCompleted = ikHmsModule?.settings && (ikHmsModule.settings as any).setupCompletedAt;
+  const showWelcomeBanner = !modulesLoading && !isSetupCompleted && !dismissedBanner;
+
   return (
     <AppLayout>
       <div className="space-y-4 md:space-y-6">
+        {/* Welcome banner for new users */}
+        {showWelcomeBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="relative overflow-hidden rounded-xl border-2 border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-background p-4 md:p-6 shadow-lg"
+          >
+            {/* Dismiss button */}
+            <button
+              onClick={() => setDismissedBanner(true)}
+              className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-primary/10 transition-colors"
+              aria-label="Lukk"
+            >
+              <X className="w-4 h-4 text-muted-foreground" />
+            </button>
+
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
+              {/* Icon */}
+              <div className="flex-shrink-0 p-3 md:p-4 rounded-2xl bg-gradient-primary shadow-md">
+                <Rocket className="w-8 h-8 md:w-10 md:h-10 text-primary-foreground" />
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg md:text-xl font-bold">Velkommen! 🎉</h2>
+                  <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-primary/20 text-primary">
+                    Ny bruker
+                  </span>
+                </div>
+                <p className="text-sm md:text-base text-muted-foreground">
+                  La oss hjelpe deg å sette opp HMS-systemet for bedriften din. Det tar bare 5-10 minutter, 
+                  og du får et skreddersydd system tilpasset din bransje.
+                </p>
+              </div>
+
+              {/* CTA Button */}
+              <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                <Button 
+                  size="lg" 
+                  onClick={() => navigate('/setup/ai')}
+                  className="w-full md:w-auto gap-2 shadow-md hover:shadow-lg transition-shadow"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Start oppsett nå
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  onClick={() => setDismissedBanner(true)}
+                  className="w-full md:w-auto"
+                >
+                  Senere
+                </Button>
+              </div>
+            </div>
+
+            {/* Decorative elements */}
+            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
+            <div className="absolute -top-10 -left-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl" />
+          </motion.div>
+        )}
+
         {/* Page header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
