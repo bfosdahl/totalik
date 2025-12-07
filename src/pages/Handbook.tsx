@@ -96,6 +96,7 @@ const Handbook = () => {
   const [deviationAttachments, setDeviationAttachments] = useState<DeviationAttachment[]>([]);
   const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>({});
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+
   // Fetch deviation attachments
   useEffect(() => {
     const fetchAttachments = async () => {
