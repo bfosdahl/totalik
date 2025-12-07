@@ -79,7 +79,7 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg skal hjelpe deg å sette opp HMS-systemet for bedriften din. Det tar bare noen minutter!\n\nFørst må jeg vite hvilken bransje du tilhører, så jeg kan tilpasse spørsmålene:\n\n1. Kontor/Administrasjon\n2. Bygg og anlegg\n3. Industri/Produksjon\n4. Frisør/Skjønnhetspleie\n5. Butikk/Detaljhandel\n6. Restaurant/Spisested\n7. Transport\n8. Renhold\n9. Bilpleie\n\nHvilken bransje passer best for din bedrift? (Velg 1-9)",
+      content: "Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg skal hjelpe deg å sette opp HMS-systemet for bedriften din. Det tar bare noen minutter!\n\nFor å starte trenger jeg organisasjonsnummeret ditt (9 siffer). Da kan jeg hente informasjon om bedriften automatisk fra Brønnøysundregistrene.\n\n**Skriv inn organisasjonsnummeret:**",
     },
   ]);
   const [input, setInput] = useState("");
@@ -176,8 +176,34 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
       await saveBrregToCompany(pendingBrregInfo);
       setPendingBrregInfo(null);
       
-      // Continue with AI chat - include context about confirmed company
-      const contextMessage = `Brukeren bekreftet at bedriftsinformasjonen stemmer. Firmanavn: ${pendingBrregInfo.name}, Org.nr: ${pendingBrregInfo.orgNumber}, Adresse: ${pendingBrregInfo.address}, Bransje: ${pendingBrregInfo.industry}, Ansatte: ${pendingBrregInfo.employees}. Fortsett med neste steg i oppsettet (målsetting).`;
+      // Now ask for industry selection
+      const industryMessage = `Flott! Bedriftsinformasjonen er lagret. 🎉\n\nNå trenger jeg å vite hvilken bransje som passer best for ${pendingBrregInfo.name}, slik at jeg kan tilpasse HMS-oppsettet:\n\n1. Kontor/Administrasjon\n2. Bygg og anlegg\n3. Industri/Produksjon\n4. Frisør/Skjønnhetspleie\n5. Butikk/Detaljhandel\n6. Restaurant/Spisested\n7. Transport\n8. Renhold\n9. Bilpleie\n\nHvilken bransje passer best? (Velg 1-9)`;
+      
+      setMessages((prev) => [...prev, { role: "assistant", content: industryMessage }]);
+      setIsLoading(false);
+      return;
+    }
+    
+    // Check if user is confirming Brreg info but wants to continue to AI after industry selection
+    const isIndustrySelection = /^[1-9]$/.test(userInput.trim());
+    
+    if (isIndustrySelection) {
+      // Map industry number to name for context
+      const industryMap: Record<string, string> = {
+        '1': 'Kontor/Administrasjon',
+        '2': 'Bygg og anlegg',
+        '3': 'Industri/Produksjon',
+        '4': 'Frisør/Skjønnhetspleie',
+        '5': 'Butikk/Detaljhandel',
+        '6': 'Restaurant/Spisested',
+        '7': 'Transport',
+        '8': 'Renhold',
+        '9': 'Bilpleie'
+      };
+      const selectedIndustry = industryMap[userInput.trim()];
+      
+      // Continue with AI chat - include industry context
+      const contextMessage = `Brukeren har valgt bransje: ${selectedIndustry}. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`;
       
       // Add system context to messages for AI
       const messagesWithContext: Message[] = [...messages, { role: "user", content: contextMessage }];
