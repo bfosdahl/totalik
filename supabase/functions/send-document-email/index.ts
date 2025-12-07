@@ -23,11 +23,21 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Validate API key
+    if (!RESEND_API_KEY) {
+      console.error("RESEND_API_KEY is not configured");
+      throw new Error("E-posttjenesten er ikke konfigurert. Kontakt administrator.");
+    }
+
     const data: SendDocumentEmailRequest = await req.json();
     console.log(`Sending ${data.documentType} email to:`, data.recipients);
 
     if (!data.recipients || data.recipients.length === 0) {
       throw new Error("Ingen mottakere angitt");
+    }
+
+    if (!data.htmlContent) {
+      throw new Error("Ingen innhold å sende");
     }
 
     const res = await fetch("https://api.resend.com/emails", {

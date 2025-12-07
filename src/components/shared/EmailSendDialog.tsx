@@ -42,6 +42,16 @@ export function EmailSendDialog({
   const [newEmail, setNewEmail] = useState("");
   const [isSending, setIsSending] = useState(false);
 
+  // Reset state when dialog closes
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      setSelectedUserIds([]);
+      setCustomEmails([]);
+      setNewEmail("");
+    }
+    onOpenChange(isOpen);
+  };
+
   const handleToggleUser = (userId: string) => {
     setSelectedUserIds((prev) =>
       prev.includes(userId)
@@ -112,9 +122,7 @@ export function EmailSendDialog({
       if (error) throw error;
 
       toast.success(`E-post sendt til ${allRecipients.length} mottaker${allRecipients.length > 1 ? "e" : ""}`);
-      onOpenChange(false);
-      setSelectedUserIds([]);
-      setCustomEmails([]);
+      handleOpenChange(false);
     } catch (error: any) {
       console.error("Error sending email:", error);
       toast.error(error.message || "Kunne ikke sende e-post");
@@ -126,7 +134,7 @@ export function EmailSendDialog({
   const totalRecipients = selectedUserIds.length + customEmails.length;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -227,7 +235,7 @@ export function EmailSendDialog({
               {totalRecipients} mottaker{totalRecipients !== 1 ? "e" : ""} valgt
             </p>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
+              <Button variant="outline" onClick={() => handleOpenChange(false)}>
                 Avbryt
               </Button>
               <Button onClick={handleSend} disabled={isSending || totalRecipients === 0}>
