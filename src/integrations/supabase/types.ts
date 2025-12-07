@@ -2911,6 +2911,66 @@ export type Database = {
           },
         ]
       }
+      ks_module2_cost_entries: {
+        Row: {
+          amount: number
+          category: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          date: string
+          description: string
+          id: string
+          invoice_number: string | null
+          project_id: string
+          supplier: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          description: string
+          id?: string
+          invoice_number?: string | null
+          project_id: string
+          supplier?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          description?: string
+          id?: string
+          invoice_number?: string | null
+          project_id?: string
+          supplier?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_cost_entries_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_cost_entries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_document_templates: {
         Row: {
           category: string
@@ -3051,6 +3111,84 @@ export type Database = {
             columns: ["uploaded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_module2_finances: {
+        Row: {
+          actual_labor: number | null
+          actual_materials: number | null
+          actual_other: number | null
+          actual_subcontractors: number | null
+          budget_labor: number | null
+          budget_materials: number | null
+          budget_other: number | null
+          budget_subcontractors: number | null
+          change_orders_sum: number | null
+          company_id: string
+          contract_sum: number | null
+          created_at: string
+          id: string
+          invoiced_amount: number | null
+          notes: string | null
+          paid_amount: number | null
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          actual_labor?: number | null
+          actual_materials?: number | null
+          actual_other?: number | null
+          actual_subcontractors?: number | null
+          budget_labor?: number | null
+          budget_materials?: number | null
+          budget_other?: number | null
+          budget_subcontractors?: number | null
+          change_orders_sum?: number | null
+          company_id: string
+          contract_sum?: number | null
+          created_at?: string
+          id?: string
+          invoiced_amount?: number | null
+          notes?: string | null
+          paid_amount?: number | null
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          actual_labor?: number | null
+          actual_materials?: number | null
+          actual_other?: number | null
+          actual_subcontractors?: number | null
+          budget_labor?: number | null
+          budget_materials?: number | null
+          budget_other?: number | null
+          budget_subcontractors?: number | null
+          change_orders_sum?: number | null
+          company_id?: string
+          contract_sum?: number | null
+          created_at?: string
+          id?: string
+          invoiced_amount?: number | null
+          notes?: string | null
+          paid_amount?: number | null
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_finances_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_finances_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "ks_module2_projects"
             referencedColumns: ["id"]
           },
         ]
@@ -3212,6 +3350,66 @@ export type Database = {
             columns: ["template_id"]
             isOneToOne: false
             referencedRelation: "ks_module2_inspection_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_module2_invoices: {
+        Row: {
+          amount: number
+          company_id: string
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          invoice_date: string
+          invoice_number: string
+          paid_date: string | null
+          project_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          company_id: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_date: string
+          invoice_number: string
+          paid_date?: string | null
+          project_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          paid_date?: string | null
+          project_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_invoices_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_invoices_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
             referencedColumns: ["id"]
           },
         ]

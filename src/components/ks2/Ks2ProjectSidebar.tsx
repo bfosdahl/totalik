@@ -25,6 +25,7 @@ import {
   Clock,
   GanttChart,
   FileWarning,
+  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -48,6 +49,7 @@ const mainMenuItems = [
   { id: "timeregistrering", label: "Timeregistrering", icon: Clock, path: "/timeregistrering", guestAllowed: false },
   { id: "fremdriftsplan", label: "Fremdriftsplan", icon: GanttChart, path: "/fremdriftsplan", guestAllowed: false },
   { id: "reklamasjoner", label: "Reklamasjoner", icon: FileWarning, path: "/reklamasjoner", guestAllowed: false },
+  { id: "okonomi", label: "Økonomi", icon: Wallet, path: "/okonomi", guestAllowed: false },
   { id: "avvik", label: "Avvik fra KS", icon: AlertTriangle, path: "/avvik", guestAllowed: true },
   { id: "uk", label: "Uavhengig kontroll", icon: Shield, path: "/uk", guestAllowed: true },
   { id: "malbibliotek", label: "Malbibliotek", icon: Library, path: "/maler", guestAllowed: true },
