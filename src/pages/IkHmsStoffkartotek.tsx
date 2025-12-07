@@ -74,6 +74,7 @@ export default function IkHmsStoffkartotek() {
   const [selectedProduct, setSelectedProduct] = useState<IkHmsStoffkartotek | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -187,6 +188,79 @@ export default function IkHmsStoffkartotek() {
       notes: "",
     });
     setSdsFile(null);
+    setIsParsing(false);
+  };
+
+  // Parse PDF using AI
+  const handleParsePdf = async (file: File) => {
+    if (!file || !file.name.toLowerCase().endsWith('.pdf')) {
+      toast.error("Velg en PDF-fil");
+      return;
+    }
+
+    setIsParsing(true);
+    setSdsFile(file);
+
+    try {
+      // Convert file to base64
+      const arrayBuffer = await file.arrayBuffer();
+      const base64 = btoa(
+        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+      );
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/parse-sds-pdf`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            pdfBase64: base64,
+            fileName: file.name,
+          }),
+        }
+      );
+
+      if (response.status === 429) {
+        toast.error("For mange forespørsler. Vennligst vent litt og prøv igjen.");
+        setIsParsing(false);
+        return;
+      }
+
+      if (response.status === 402) {
+        toast.error("AI-kreditter oppbrukt. Kontakt administrator.");
+        setIsParsing(false);
+        return;
+      }
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        toast.error(result.error || "Kunne ikke lese PDF. Fyll ut manuelt.");
+        setIsParsing(false);
+        return;
+      }
+
+      // Auto-fill form with parsed data
+      setFormData((prev) => ({
+        ...prev,
+        product_name: result.data.product_name || prev.product_name,
+        manufacturer: result.data.manufacturer || prev.manufacturer,
+        danger_classes: result.data.danger_classes?.length > 0 
+          ? result.data.danger_classes.filter((dc: string) => DANGER_CLASSES.includes(dc))
+          : prev.danger_classes,
+        notes: result.data.notes || prev.notes,
+      }));
+
+      toast.success("PDF analysert! Sjekk og juster informasjonen før du lagrer.");
+    } catch (error) {
+      console.error("Error parsing PDF:", error);
+      toast.error("Kunne ikke lese PDF. Fyll ut manuelt.");
+    } finally {
+      setIsParsing(false);
+    }
   };
 
   const handleCreate = async () => {
@@ -360,13 +434,33 @@ export default function IkHmsStoffkartotek() {
                 </div>
                 <div>
                   <Label htmlFor="sds_file">Sikkerhetsdatablad (SDS)</Label>
-                  <Input
-                    id="sds_file"
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={(e) => setSdsFile(e.target.files?.[0] || null)}
-                    className="mt-1"
-                  />
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Last opp PDF for å automatisk fylle ut skjemaet med AI
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      id="sds_file"
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          handleParsePdf(file);
+                        }
+                      }}
+                      className="flex-1"
+                      disabled={isParsing}
+                    />
+                    {isParsing && (
+                      <div className="flex items-center gap-2 text-primary text-sm">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Leser PDF...
+                      </div>
+                    )}
+                  </div>
+                  {sdsFile && !isParsing && (
+                    <p className="text-xs text-success mt-1">✓ {sdsFile.name}</p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="notes">Notater</Label>
