@@ -372,7 +372,10 @@ export default function IkHmsStoffkartotek() {
               Oversikt over kjemikalier og farlige stoffer
             </p>
           </div>
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <Dialog open={isCreateOpen} onOpenChange={(open) => {
+              setIsCreateOpen(open);
+              if (open) resetForm();
+            }}>
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <Plus className="w-4 h-4" />
