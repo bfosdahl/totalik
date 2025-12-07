@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { useKsProjects } from "@/hooks/useKsProjects";
+import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 
 interface NewTimeEntryDialogProps {
@@ -54,13 +54,13 @@ export function NewTimeEntryDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useCustomProject, setUseCustomProject] = useState(false);
 
-  const { projects, isLoading: isLoadingProjects } = useKsProjects();
+  const { projects, isLoading: isLoadingProjects } = useKsModule2Projects();
   const { hasModule } = useCompanyModules();
   const hasKsBygg = hasModule("IK_BYGG");
 
   // Filter active projects
   const activeProjects = projects.filter(
-    (p) => p.status !== "arkivert" && p.status !== "ferdig"
+    (p) => p.status !== "completed" && p.status !== "handover"
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -78,7 +78,7 @@ export function NewTimeEntryDialog({
     if (hasKsBygg && selectedProjectId && selectedProjectId !== "custom" && selectedProjectId !== "none") {
       const selectedProject = projects.find((p) => p.id === selectedProjectId);
       if (selectedProject) {
-        projectName = `${selectedProject.project_number} - ${selectedProject.name}`;
+        projectName = `${selectedProject.project_number} - ${selectedProject.project_name}`;
         projectId = selectedProject.id;
       }
     } else if (useCustomProject && customProjectName) {
@@ -185,7 +185,7 @@ export function NewTimeEntryDialog({
                         <span className="font-mono text-xs text-muted-foreground mr-2">
                           {project.project_number}
                         </span>
-                        {project.name}
+                        {project.project_name}
                       </SelectItem>
                     ))}
                     <SelectItem value="custom">Annet (fritekst)</SelectItem>

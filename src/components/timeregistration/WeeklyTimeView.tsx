@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useKsProjects } from "@/hooks/useKsProjects";
+import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 
 interface TimeEntry {
@@ -72,12 +72,12 @@ export function WeeklyTimeView({
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { projects } = useKsProjects();
+  const { projects } = useKsModule2Projects();
   const { modules } = useCompanyModules();
   const hasByggModule = modules.some(
     (m) => m.module_type === "IK_BYGG" && m.is_active
   );
-  const activeProjects = projects.filter((p) => p.status !== "archived");
+  const activeProjects = projects.filter((p) => p.status !== "completed" && p.status !== "handover");
 
   const weekDays = Array.from({ length: 7 }, (_, i) =>
     addDays(currentWeekStart, i)
@@ -125,7 +125,7 @@ export function WeeklyTimeView({
       ? activeProjects.find((p) => p.id === projectId)
       : null;
     const projectName = selectedProject
-      ? `${selectedProject.project_number} - ${selectedProject.name}`
+      ? `${selectedProject.project_number} - ${selectedProject.project_name}`
       : customProject || undefined;
 
     const success = await onCreateEntry({
@@ -300,7 +300,7 @@ export function WeeklyTimeView({
                     <SelectItem value="none">Ingen prosjekt</SelectItem>
                     {activeProjects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
-                        {project.project_number} - {project.name}
+                        {project.project_number} - {project.project_name}
                       </SelectItem>
                     ))}
                     <SelectItem value="custom">Annet (fritekst)</SelectItem>

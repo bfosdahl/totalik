@@ -73,7 +73,7 @@ export default function Ks2Dashboard() {
   };
 
   const handleProjectClick = (projectId: string) => {
-    navigate(`/ks2/project/${projectId}`);
+    navigate(`/ks/project/${projectId}`);
   };
 
   if (isLoading) {
@@ -92,18 +92,18 @@ export default function Ks2Dashboard() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold">KS Modul #2 – Mine prosjekter</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">KS Bygg – Mine prosjekter</h1>
             <p className="text-muted-foreground mt-1">
               Kvalitetssikring for bygg og anlegg
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate("/ks2/statistikk")} className="shrink-0">
+            <Button variant="outline" onClick={() => navigate("/ks/statistikk")} className="shrink-0">
               <BarChart3 className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Statistikk</span>
             </Button>
             {(isCompanyAdmin || isSystemAdmin) && (
-              <Button variant="outline" onClick={() => navigate("/ks2/admin")} className="shrink-0">
+              <Button variant="outline" onClick={() => navigate("/ks/admin")} className="shrink-0">
                 <Settings className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Admin</span>
               </Button>
