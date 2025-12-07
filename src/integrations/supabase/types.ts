@@ -3414,6 +3414,144 @@ export type Database = {
           },
         ]
       }
+      ks_module2_meeting_items: {
+        Row: {
+          created_at: string
+          deadline: string | null
+          decision: string | null
+          discussion: string | null
+          id: string
+          item_number: number
+          linked_avvik_id: string | null
+          meeting_id: string
+          responsible_id: string | null
+          responsible_name: string | null
+          status: string | null
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deadline?: string | null
+          decision?: string | null
+          discussion?: string | null
+          id?: string
+          item_number: number
+          linked_avvik_id?: string | null
+          meeting_id: string
+          responsible_id?: string | null
+          responsible_name?: string | null
+          status?: string | null
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deadline?: string | null
+          decision?: string | null
+          discussion?: string | null
+          id?: string
+          item_number?: number
+          linked_avvik_id?: string | null
+          meeting_id?: string
+          responsible_id?: string | null
+          responsible_name?: string | null
+          status?: string | null
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_meeting_items_linked_avvik_id_fkey"
+            columns: ["linked_avvik_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_avvik"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_meeting_items_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_module2_meetings: {
+        Row: {
+          agenda: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          created_by_name: string | null
+          id: string
+          location: string | null
+          meeting_date: string
+          meeting_number: string | null
+          meeting_type: string
+          notes: string | null
+          participants: Json | null
+          pdf_path: string | null
+          project_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          agenda?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          id?: string
+          location?: string | null
+          meeting_date: string
+          meeting_number?: string | null
+          meeting_type?: string
+          notes?: string | null
+          participants?: Json | null
+          pdf_path?: string | null
+          project_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          agenda?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          id?: string
+          location?: string | null
+          meeting_date?: string
+          meeting_number?: string | null
+          meeting_type?: string
+          notes?: string | null
+          participants?: Json | null
+          pdf_path?: string | null
+          project_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_meetings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_meetings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_milestones: {
         Row: {
           color: string | null
@@ -7769,6 +7907,7 @@ export type Database = {
       generate_ks_module2_avvik_number: { Args: never; Returns: string }
       generate_ks_module2_change_order_number: { Args: never; Returns: string }
       generate_ks_module2_claim_number: { Args: never; Returns: string }
+      generate_ks_module2_meeting_number: { Args: never; Returns: string }
       generate_ks_module2_project_number: { Args: never; Returns: string }
       generate_ks_module2_routine_number: { Args: never; Returns: string }
       generate_ks_module2_uk_number: { Args: never; Returns: string }
