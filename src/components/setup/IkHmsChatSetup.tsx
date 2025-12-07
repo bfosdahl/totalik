@@ -86,6 +86,7 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [pendingBrregInfo, setPendingBrregInfo] = useState<BrregInfo | null>(null);
+  const [awaitingIndustrySelection, setAwaitingIndustrySelection] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const { refreshCompany } = useAuth();
@@ -180,12 +181,13 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
       const industryMessage = `Flott! Bedriftsinformasjonen er lagret. 🎉\n\nNå trenger jeg å vite hvilken bransje som passer best for ${pendingBrregInfo.name}, slik at jeg kan tilpasse HMS-oppsettet:\n\n1. Kontor/Administrasjon\n2. Bygg og anlegg\n3. Industri/Produksjon\n4. Frisør/Skjønnhetspleie\n5. Butikk/Detaljhandel\n6. Restaurant/Spisested\n7. Transport\n8. Renhold\n9. Bilpleie\n\nHvilken bransje passer best? (Velg 1-9)`;
       
       setMessages((prev) => [...prev, { role: "assistant", content: industryMessage }]);
+      setAwaitingIndustrySelection(true);
       setIsLoading(false);
       return;
     }
     
-    // Check if user is confirming Brreg info but wants to continue to AI after industry selection
-    const isIndustrySelection = /^[1-9]$/.test(userInput.trim());
+    // Check if user is selecting industry (only when we're awaiting industry selection)
+    const isIndustrySelection = awaitingIndustrySelection && /^[1-9]$/.test(userInput.trim());
     
     if (isIndustrySelection) {
       // Map industry number to name for context
@@ -201,6 +203,9 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
         '9': 'Bilpleie'
       };
       const selectedIndustry = industryMap[userInput.trim()];
+      
+      // Clear the awaiting flag
+      setAwaitingIndustrySelection(false);
       
       // Continue with AI chat - include industry context
       const contextMessage = `Brukeren har valgt bransje: ${selectedIndustry}. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`;
