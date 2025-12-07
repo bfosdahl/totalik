@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -21,11 +21,18 @@ import {
   Loader2,
   Zap,
   Building2,
-  Settings
+  Settings,
+  Minus,
+  Image,
+  Paperclip
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useSetupWizard } from "@/hooks/useSetupWizard";
 import { useDeviations } from "@/hooks/useDeviations";
@@ -47,10 +54,25 @@ const statusConfig = {
     bg: "bg-warning/10",
     label: "Ufullstendig",
   },
+  ongoing: {
+    icon: Minus,
+    color: "text-muted-foreground",
+    bg: "bg-muted",
+    label: "Løpende",
+  },
 };
+
+interface DeviationAttachment {
+  id: string;
+  deviation_id: string;
+  file_name: string;
+  file_path: string;
+  file_type: string | null;
+}
 
 const Handbook = () => {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const { 
     isLoading, 
     companyInfo, 
@@ -66,15 +88,61 @@ const Handbook = () => {
   const { completedForms, isLoading: isLoadingForms, getLatestByFormType } = useAuditFormResponses();
   
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [includeDeviations, setIncludeDeviations] = useState(false);
+  const [deviationAttachments, setDeviationAttachments] = useState<DeviationAttachment[]>([]);
+  const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>({});
 
-  // Calculate deviation status - complete if no open or in-progress deviations
+  // Fetch deviation attachments
+  useEffect(() => {
+    const fetchAttachments = async () => {
+      if (!profile?.company_id || deviations.length === 0) return;
+      
+      const deviationIds = deviations.map(d => d.id);
+      const { data, error } = await supabase
+        .from("deviation_attachments")
+        .select("id, deviation_id, file_name, file_path, file_type")
+        .in("deviation_id", deviationIds);
+      
+      if (!error && data) {
+        setDeviationAttachments(data);
+        
+        // Get signed URLs for images
+        const urls: Record<string, string> = {};
+        for (const att of data) {
+          if (att.file_type?.startsWith("image/")) {
+            const { data: signedData } = await supabase.storage
+              .from("deviation-attachments")
+              .createSignedUrl(att.file_path, 3600);
+            if (signedData?.signedUrl) {
+              urls[att.id] = signedData.signedUrl;
+            }
+          }
+        }
+        setAttachmentUrls(urls);
+      }
+    };
+    
+    fetchAttachments();
+  }, [profile?.company_id, deviations]);
+
+  // Count attachments per deviation
+  const getDeviationAttachmentCount = (deviationId: string) => {
+    return deviationAttachments.filter(a => a.deviation_id === deviationId).length;
+  };
+
+  // Get image attachments for a deviation
+  const getDeviationImages = (deviationId: string) => {
+    return deviationAttachments.filter(a => 
+      a.deviation_id === deviationId && a.file_type?.startsWith("image/")
+    );
+  };
+
+  // Avvik and other ongoing sections use "ongoing" status instead of complete/incomplete
   const openDeviationsCount = deviations.filter(d => d.status === "open" || d.status === "in-progress").length;
-  const deviationStatus = openDeviationsCount === 0 && deviations.length > 0 ? "complete" : "incomplete";
 
-  // Calculate audit status - complete if at least one audit is completed
+  // Audits - these are also ongoing activities
   const completedAuditsCount = audits.filter(a => a.status === "completed").length;
   const pendingAuditsCount = audits.filter(a => a.status === "scheduled" || a.status === "in-progress").length;
-  const auditStatus = completedAuditsCount > 0 && pendingAuditsCount === 0 ? "complete" : "incomplete";
 
   // Form type icons
   const formTypeIcons: Record<FormType, typeof FileCheck> = {
@@ -84,7 +152,7 @@ const Handbook = () => {
     daglig_drift: Settings,
   };
 
-  // Generate sections for completed audit forms
+  // Generate sections for completed audit forms - these are ongoing activities
   const auditFormSections = (["annual_hms", "elkontroll", "fysiske_forhold", "daglig_drift"] as FormType[])
     .map((formType, index) => {
       const latestForm = getLatestByFormType(formType);
@@ -92,7 +160,7 @@ const Handbook = () => {
       return {
         id: `audit_form_${formType}`,
         title: `${8 + index}. ${formTypeLabels[formType]}`,
-        status: latestForm ? "complete" as const : "incomplete" as const,
+        status: "ongoing" as const, // Always ongoing - these are periodic activities
         stepIndex: -1,
         icon: Icon,
         content: latestForm ? (
@@ -235,27 +303,86 @@ const Handbook = () => {
     {
       id: "deviations",
       title: "6. Avviksbehandling",
-      status: deviationStatus,
-      stepIndex: -1, // Not part of wizard
+      status: "ongoing" as const, // Deviations are ongoing - new ones are added over time
+      stepIndex: -1,
       icon: AlertCircle,
+      isOptional: true, // Mark as optional for handbook export
       content: (
-        <p className="text-sm text-muted-foreground">
-          {openDeviationsCount > 0 
-            ? `${openDeviationsCount} åpne avvik som må behandles.`
-            : deviations.length > 0 
-              ? `Alle ${deviations.length} avvik er lukket.`
-              : "Ingen avvik er registrert. Gå til Avvik-modulen for å registrere avvik."
-          }
-        </p>
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            {openDeviationsCount > 0 
+              ? `${openDeviationsCount} åpne avvik, ${deviations.length - openDeviationsCount} lukkede.`
+              : deviations.length > 0 
+                ? `Alle ${deviations.length} avvik er lukket.`
+                : "Ingen avvik er registrert."
+            }
+          </p>
+          {includeDeviations && deviations.length > 0 && (
+            <div className="space-y-2 border-t border-border pt-3">
+              {deviations.slice(0, 5).map((deviation) => {
+                const images = getDeviationImages(deviation.id);
+                return (
+                  <div key={deviation.id} className="flex flex-col gap-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground truncate flex-1">{deviation.title}</span>
+                      <div className="flex items-center gap-2">
+                        {getDeviationAttachmentCount(deviation.id) > 0 && (
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Paperclip className="w-3 h-3" />
+                            {getDeviationAttachmentCount(deviation.id)}
+                          </span>
+                        )}
+                        <Badge variant="outline" className={cn(
+                          deviation.status === "closed" ? "border-success text-success" :
+                          deviation.status === "in-progress" ? "border-info text-info" :
+                          "border-muted-foreground text-muted-foreground"
+                        )}>
+                          {deviation.status === "closed" ? "Lukket" : deviation.status === "in-progress" ? "Pågår" : "Åpen"}
+                        </Badge>
+                      </div>
+                    </div>
+                    {images.length > 0 && (
+                      <div className="flex gap-2 flex-wrap">
+                        {images.slice(0, 3).map((img) => (
+                          <div key={img.id} className="relative">
+                            {attachmentUrls[img.id] ? (
+                              <img 
+                                src={attachmentUrls[img.id]} 
+                                alt={img.file_name}
+                                className="w-16 h-16 object-cover rounded border border-border"
+                              />
+                            ) : (
+                              <div className="w-16 h-16 bg-muted rounded border border-border flex items-center justify-center">
+                                <Image className="w-4 h-4 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        {images.length > 3 && (
+                          <div className="w-16 h-16 bg-muted rounded border border-border flex items-center justify-center text-xs text-muted-foreground">
+                            +{images.length - 3}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {deviations.length > 5 && (
+                <p className="text-xs text-muted-foreground">+ {deviations.length - 5} flere avvik</p>
+              )}
+            </div>
+          )}
+        </div>
       ),
-      summary: openDeviationsCount > 0 ? `${openDeviationsCount} åpne avvik` : deviations.length > 0 ? "Alle avvik lukket" : "Ingen avvik",
+      summary: `${deviations.length} avvik totalt`,
       linkTo: "/deviations",
     },
     {
       id: "audits",
       title: "7. Revisjoner og evaluering",
-      status: auditStatus,
-      stepIndex: -1, // Not part of wizard
+      status: "ongoing" as const, // Audits are ongoing - new ones are scheduled over time
+      stepIndex: -1,
       icon: Search,
       content: (
         <p className="text-sm text-muted-foreground">
@@ -278,15 +405,8 @@ const Handbook = () => {
   const lastUpdated = new Date();
 
   const handleSectionClick = (section: typeof handbookSections[0]) => {
-    if (section.linkTo) {
-      navigate(section.linkTo);
-    } else if (section.stepIndex >= 0) {
-      // Toggle expand/collapse for wizard sections
-      setExpandedSection(expandedSection === section.id ? null : section.id);
-    } else {
-      // For audit form sections, allow expand/collapse
-      setExpandedSection(expandedSection === section.id ? null : section.id);
-    }
+    // All sections can be expanded/collapsed
+    setExpandedSection(expandedSection === section.id ? null : section.id);
   };
 
   const handleEditSection = (section: typeof handbookSections[0], e: React.MouseEvent) => {
@@ -443,6 +563,22 @@ const Handbook = () => {
                         >
                           <div className="px-4 pb-4 pt-0">
                             <div className="bg-secondary/30 rounded-lg p-4">
+                              {/* Toggle for optional deviation section */}
+                              {section.id === "deviations" && (
+                                <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
+                                  <div className="flex items-center gap-2">
+                                    <Switch
+                                      id="include-deviations"
+                                      checked={includeDeviations}
+                                      onCheckedChange={setIncludeDeviations}
+                                    />
+                                    <Label htmlFor="include-deviations" className="text-sm cursor-pointer">
+                                      Inkluder avvik i håndboken
+                                    </Label>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">Valgfritt</span>
+                                </div>
+                              )}
                               {section.content}
                               <div className="mt-4 pt-3 border-t border-border">
                                 <Button 
@@ -450,7 +586,7 @@ const Handbook = () => {
                                   size="sm"
                                   onClick={(e) => handleEditSection(section, e)}
                                 >
-                                  Rediger i oppsettsveiviseren
+                                  {section.linkTo ? "Gå til" : "Rediger i oppsettsveiviseren"}
                                 </Button>
                               </div>
                             </div>
