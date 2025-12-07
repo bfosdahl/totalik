@@ -4864,6 +4864,73 @@ export type Database = {
         }
         Relationships: []
       }
+      ks_module2_timeline_events: {
+        Row: {
+          category: string | null
+          company_id: string
+          created_at: string
+          created_by_id: string | null
+          created_by_name: string | null
+          description: string | null
+          event_date: string
+          id: string
+          photo_paths: string[] | null
+          project_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          company_id: string
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string | null
+          description?: string | null
+          event_date: string
+          id?: string
+          photo_paths?: string[] | null
+          project_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          company_id?: string
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string | null
+          description?: string | null
+          event_date?: string
+          id?: string
+          photo_paths?: string[] | null
+          project_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_timeline_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_timeline_events_created_by_id_fkey"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_timeline_events_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_uk: {
         Row: {
           approved_at: string | null
