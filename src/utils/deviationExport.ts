@@ -150,6 +150,7 @@ const filename = `avviksrapport_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
 
 export interface SingleDeviationExport {
   id: string;
+  deviation_number?: string;
   title: string;
   description: string;
   category: string;
@@ -159,11 +160,40 @@ export interface SingleDeviationExport {
   reporter: string;
   createdAt: string;
   dueDate: string;
+  // Extended RUH fields
+  type?: string;
+  incident_location?: string;
+  incident_time?: string;
+  incident_type?: string;
+  severity?: string;
+  consequences?: string;
+  involved_persons?: string;
+  immediate_actions?: string;
+  preventive_measures?: string;
+  root_cause_analysis?: string;
+  reporter_contact?: string;
+  responsible_receiver?: string;
+  additional_info?: string;
+  notify_arbeidstilsynet?: boolean;
+  notify_insurance?: boolean;
+}
+
+export interface DeviationAttachmentExport {
+  file_name: string;
+  file_type: string | null;
+}
+
+export interface DeviationCommentExport {
+  user_name: string;
+  content: string;
+  created_at: string;
 }
 
 export const exportSingleDeviationToPDF = (
   deviation: SingleDeviationExport,
-  companyName?: string
+  companyName?: string,
+  attachments?: DeviationAttachmentExport[],
+  comments?: DeviationCommentExport[]
 ) => {
   const doc = new jsPDF();
   const generatedDate = format(new Date(), "dd.MM.yyyy HH:mm", { locale: nb });
@@ -185,7 +215,7 @@ export const exportSingleDeviationToPDF = (
   
   doc.setFontSize(10);
   doc.setTextColor(100, 100, 100);
-  doc.text(`Avviksnummer: ${deviation.id}`, 14, yPos);
+  doc.text(`Avviksnummer: ${deviation.deviation_number || deviation.id}`, 14, yPos);
   yPos += 10;
 
   doc.setFontSize(14);
@@ -193,8 +223,18 @@ export const exportSingleDeviationToPDF = (
   doc.text(deviation.title, 14, yPos);
   yPos += 15;
 
-  // Info table
-  const infoData = [
+  // Type badge if RUH
+  if (deviation.type === "ruh") {
+    doc.setFontSize(10);
+    doc.setFillColor(254, 215, 170);
+    doc.roundedRect(14, yPos - 5, 80, 8, 2, 2, "F");
+    doc.setTextColor(154, 52, 18);
+    doc.text("Rapport Uønsket Hendelse (RUH)", 16, yPos);
+    yPos += 15;
+  }
+
+  // Basic info table
+  const infoData: [string, string][] = [
     ["Kategori", deviation.category],
     ["Prioritet", priorityLabels[deviation.priority] || deviation.priority],
     ["Status", statusLabels[deviation.status] || deviation.status],
@@ -203,6 +243,17 @@ export const exportSingleDeviationToPDF = (
     ["Frist", formatDate(deviation.dueDate)],
     ["Opprettet", formatDate(deviation.createdAt)],
   ];
+
+  // Add severity if present
+  if (deviation.severity) {
+    const severityLabels: Record<string, string> = {
+      minor: "Mindre",
+      moderate: "Moderat",
+      serious: "Alvorlig",
+      critical: "Kritisk"
+    };
+    infoData.push(["Alvorlighetsgrad", severityLabels[deviation.severity] || deviation.severity]);
+  }
 
   autoTable(doc, {
     startY: yPos,
@@ -213,37 +264,164 @@ export const exportSingleDeviationToPDF = (
       cellPadding: 4,
     },
     columnStyles: {
-      0: { fontStyle: "bold", cellWidth: 40, textColor: [100, 100, 100] },
+      0: { fontStyle: "bold", cellWidth: 45, textColor: [100, 100, 100] },
       1: { cellWidth: 100 },
     },
   });
 
+  yPos = (doc as any).lastAutoTable.finalY + 10;
+
+  // Helper function for sections with page break check
+  const addSection = (title: string, content: string | null | undefined) => {
+    if (!content) return;
+    
+    // Check if we need a new page
+    if (yPos > 250) {
+      doc.addPage();
+      yPos = 20;
+    }
+    
+    doc.setFontSize(11);
+    doc.setTextColor(40, 40, 40);
+    doc.text(title, 14, yPos);
+    yPos += 6;
+
+    doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
+    const lines = doc.splitTextToSize(content, 180);
+    doc.text(lines, 14, yPos);
+    yPos += lines.length * 5 + 8;
+  };
+
   // Description section
-  yPos = (doc as any).lastAutoTable.finalY + 15;
-  
-  doc.setFontSize(12);
-  doc.setTextColor(40, 40, 40);
-  doc.text("Beskrivelse", 14, yPos);
-  yPos += 8;
+  addSection("Beskrivelse", deviation.description || "Ingen beskrivelse");
 
-  doc.setFontSize(10);
-  doc.setTextColor(60, 60, 60);
-  const descriptionLines = doc.splitTextToSize(
-    deviation.description || "Ingen beskrivelse",
-    180
-  );
-  doc.text(descriptionLines, 14, yPos);
+  // RUH-specific fields
+  if (deviation.incident_location) {
+    addSection("Hendelsessted", deviation.incident_location);
+  }
+  if (deviation.incident_time) {
+    addSection("Tidspunkt for hendelse", deviation.incident_time);
+  }
+  if (deviation.incident_type) {
+    const incidentTypeLabels: Record<string, string> = {
+      near_miss: "Nestenulykke",
+      injury: "Skade/personskade",
+      property_damage: "Materiell skade",
+      environmental: "Miljøhendelse",
+      other: "Annet"
+    };
+    addSection("Type hendelse", incidentTypeLabels[deviation.incident_type] || deviation.incident_type);
+  }
+  if (deviation.consequences) {
+    addSection("Konsekvenser", deviation.consequences);
+  }
+  if (deviation.involved_persons) {
+    addSection("Involverte personer", deviation.involved_persons);
+  }
+  if (deviation.immediate_actions) {
+    addSection("Umiddelbare tiltak", deviation.immediate_actions);
+  }
+  if (deviation.preventive_measures) {
+    addSection("Forebyggende tiltak", deviation.preventive_measures);
+  }
+  if (deviation.root_cause_analysis) {
+    addSection("Årsaksanalyse", deviation.root_cause_analysis);
+  }
+  if (deviation.reporter_contact) {
+    addSection("Kontaktinfo rapportør", deviation.reporter_contact);
+  }
+  if (deviation.responsible_receiver) {
+    addSection("Ansvarlig mottaker", deviation.responsible_receiver);
+  }
+  if (deviation.additional_info) {
+    addSection("Tilleggsinformasjon", deviation.additional_info);
+  }
 
-  // Footer
-  doc.setFontSize(8);
-  doc.setTextColor(150);
-  doc.text(
-    "Side 1 av 1",
-    doc.internal.pageSize.width / 2,
-    doc.internal.pageSize.height - 10,
-    { align: "center" }
-  );
+  // Notifications
+  if (deviation.notify_arbeidstilsynet || deviation.notify_insurance) {
+    if (yPos > 250) {
+      doc.addPage();
+      yPos = 20;
+    }
+    doc.setFontSize(11);
+    doc.setTextColor(40, 40, 40);
+    doc.text("Varsling", 14, yPos);
+    yPos += 6;
+    doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
+    if (deviation.notify_arbeidstilsynet) {
+      doc.text("• Arbeidstilsynet skal varsles", 14, yPos);
+      yPos += 5;
+    }
+    if (deviation.notify_insurance) {
+      doc.text("• Forsikringsselskap skal varsles", 14, yPos);
+      yPos += 5;
+    }
+    yPos += 8;
+  }
 
-  const filename = `avvik_${deviation.id}_${format(new Date(), "yyyy-MM-dd")}.pdf`;
+  // Attachments section
+  if (attachments && attachments.length > 0) {
+    if (yPos > 250) {
+      doc.addPage();
+      yPos = 20;
+    }
+    doc.setFontSize(11);
+    doc.setTextColor(40, 40, 40);
+    doc.text(`Vedlegg (${attachments.length})`, 14, yPos);
+    yPos += 6;
+    doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
+    attachments.forEach((att) => {
+      doc.text(`• ${att.file_name}`, 14, yPos);
+      yPos += 5;
+    });
+    yPos += 8;
+  }
+
+  // Comments section
+  if (comments && comments.length > 0) {
+    if (yPos > 240) {
+      doc.addPage();
+      yPos = 20;
+    }
+    doc.setFontSize(11);
+    doc.setTextColor(40, 40, 40);
+    doc.text(`Kommentarer (${comments.length})`, 14, yPos);
+    yPos += 8;
+    
+    comments.forEach((comment) => {
+      if (yPos > 270) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.setFontSize(9);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`${comment.user_name} - ${formatDate(comment.created_at.split("T")[0])}`, 14, yPos);
+      yPos += 5;
+      doc.setFontSize(10);
+      doc.setTextColor(60, 60, 60);
+      const commentLines = doc.splitTextToSize(comment.content, 180);
+      doc.text(commentLines, 14, yPos);
+      yPos += commentLines.length * 5 + 6;
+    });
+  }
+
+  // Footer on all pages
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text(
+      `Side ${i} av ${pageCount}`,
+      doc.internal.pageSize.width / 2,
+      doc.internal.pageSize.height - 10,
+      { align: "center" }
+    );
+  }
+
+  const filename = `avvik_${deviation.deviation_number || deviation.id}_${format(new Date(), "yyyy-MM-dd")}.pdf`;
   doc.save(filename);
 };

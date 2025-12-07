@@ -55,9 +55,10 @@ const categoryConfig: Record<string, { color: string }> = {
   BYGG: { color: "bg-info/10 text-info" },
 };
 
-// Helper type for the detail dialog
+// Helper type for the detail dialog - includes all RUH fields
 interface DeviationForDialog {
   id: string;
+  deviation_number: string;
   title: string;
   description: string;
   category: "HMS" | "MAT" | "BYGG";
@@ -67,6 +68,22 @@ interface DeviationForDialog {
   reporter: string;
   createdAt: string;
   dueDate: string;
+  // Extended RUH fields
+  type?: string;
+  incident_location?: string | null;
+  incident_time?: string | null;
+  incident_type?: string | null;
+  severity?: string | null;
+  consequences?: string | null;
+  involved_persons?: string | null;
+  immediate_actions?: string | null;
+  preventive_measures?: string | null;
+  root_cause_analysis?: string | null;
+  reporter_contact?: string | null;
+  responsible_receiver?: string | null;
+  additional_info?: string | null;
+  notify_arbeidstilsynet?: boolean | null;
+  notify_insurance?: boolean | null;
 }
 
 const Deviations = () => {
@@ -182,9 +199,10 @@ const Deviations = () => {
   };
 
   const handleDeviationClick = (deviation: DeviationType) => {
-    // Convert to dialog format
+    // Convert to dialog format with all fields
     const dialogDeviation: DeviationForDialog = {
       id: deviation.id,
+      deviation_number: deviation.deviation_number,
       title: deviation.title,
       description: deviation.description || "",
       category: deviation.category,
@@ -194,6 +212,22 @@ const Deviations = () => {
       reporter: deviation.reporter_name,
       createdAt: deviation.created_at.split("T")[0],
       dueDate: deviation.due_date,
+      // Extended RUH fields
+      type: deviation.type,
+      incident_location: deviation.incident_location,
+      incident_time: deviation.incident_time,
+      incident_type: deviation.incident_type,
+      severity: deviation.severity,
+      consequences: deviation.consequences,
+      involved_persons: deviation.involved_persons,
+      immediate_actions: deviation.immediate_actions,
+      preventive_measures: deviation.preventive_measures,
+      root_cause_analysis: deviation.root_cause_analysis,
+      reporter_contact: deviation.reporter_contact,
+      responsible_receiver: deviation.responsible_receiver,
+      additional_info: deviation.additional_info,
+      notify_arbeidstilsynet: deviation.notify_arbeidstilsynet,
+      notify_insurance: deviation.notify_insurance,
     };
     setSelectedDeviation(dialogDeviation);
     setIsDetailOpen(true);

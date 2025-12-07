@@ -18,6 +18,22 @@ export interface Deviation {
   due_date: string;
   created_at: string;
   updated_at: string;
+  // Extended RUH fields
+  type?: string;
+  incident_location?: string | null;
+  incident_time?: string | null;
+  incident_type?: string | null;
+  severity?: string | null;
+  consequences?: string | null;
+  involved_persons?: string | null;
+  immediate_actions?: string | null;
+  preventive_measures?: string | null;
+  root_cause_analysis?: string | null;
+  reporter_contact?: string | null;
+  responsible_receiver?: string | null;
+  additional_info?: string | null;
+  notify_arbeidstilsynet?: boolean | null;
+  notify_insurance?: boolean | null;
 }
 
 export interface NewDeviationInput {
