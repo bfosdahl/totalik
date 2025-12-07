@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -31,10 +33,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Calendar, Trash2, Edit, ChevronRight, Target, Clock, CheckCircle2 } from "lucide-react";
+import { Plus, Calendar, Trash2, Edit, ChevronRight, Target, Clock, CheckCircle2, BarChart3, CalendarDays } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useKsModule2Milestones, Milestone } from "@/hooks/useKsModule2Milestones";
-import { format, differenceInDays, isWithinInterval, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, isSameMonth } from "date-fns";
+import { format, differenceInDays, isWithinInterval, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, isSameMonth, isSameDay } from "date-fns";
 import { nb } from "date-fns/locale";
 
 const STATUS_OPTIONS = [
@@ -63,6 +65,8 @@ export default function Ks2Fremdriftsplan() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"gantt" | "calendar">("gantt");
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
 
   const [formData, setFormData] = useState({
     title: "",
@@ -196,6 +200,33 @@ export default function Ks2Fremdriftsplan() {
       <Badge className={option.color}>{option.label}</Badge>
     ) : null;
   };
+
+  // Get milestones for a specific date (for calendar view)
+  const getMilestonesForDate = (date: Date) => {
+    return milestones.filter((m) => {
+      const start = parseISO(m.start_date);
+      const end = parseISO(m.end_date);
+      return isWithinInterval(date, { start, end });
+    });
+  };
+
+  // Get dates that have milestones (for calendar highlighting)
+  const milestoneDates = useMemo(() => {
+    const dates: Date[] = [];
+    milestones.forEach((m) => {
+      const start = parseISO(m.start_date);
+      const end = parseISO(m.end_date);
+      const days = eachDayOfInterval({ start, end });
+      dates.push(...days);
+    });
+    return dates;
+  }, [milestones]);
+
+  // Milestones for currently selected calendar date
+  const selectedDateMilestones = useMemo(() => {
+    if (!selectedCalendarDate) return [];
+    return getMilestonesForDate(selectedCalendarDate);
+  }, [selectedCalendarDate, milestones]);
 
   const calculateBarPosition = (milestone: Milestone) => {
     const start = parseISO(milestone.start_date);
@@ -405,122 +436,231 @@ export default function Ks2Fremdriftsplan() {
         </Card>
       </div>
 
-      {/* Gantt Chart */}
-      {milestones.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Tidslinje
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <div className="min-w-[600px]">
-                {/* Month headers */}
-                <div className="flex border-b mb-2">
-                  <div className="w-48 shrink-0 px-2 py-1 font-medium text-sm">
-                    Milepæl
-                  </div>
-                  <div className="flex-1 flex">
-                    {months.map((month, i) => {
-                      const daysInMonth = differenceInDays(endOfMonth(month), startOfMonth(month)) + 1;
-                      const width = (daysInMonth / totalDays) * 100;
-                      return (
-                        <div
-                          key={i}
-                          className="text-center text-sm font-medium py-1 border-l first:border-l-0"
-                          style={{ width: `${width}%` }}
-                        >
-                          {format(month, "MMM yyyy", { locale: nb })}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+      {/* View Mode Tabs */}
+      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "gantt" | "calendar")} className="w-full">
+        <TabsList className="grid w-full max-w-xs grid-cols-2">
+          <TabsTrigger value="gantt" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Tidslinje
+          </TabsTrigger>
+          <TabsTrigger value="calendar" className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4" />
+            Kalender
+          </TabsTrigger>
+        </TabsList>
 
-                {/* Milestone rows */}
-                <div className="space-y-2">
-                  {milestones.map((milestone) => {
-                    const barPos = calculateBarPosition(milestone);
-                    return (
-                      <div key={milestone.id} className="flex items-center group">
-                        <div className="w-48 shrink-0 px-2">
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => handleOpenDialog(milestone)}
-                              className="text-sm font-medium truncate hover:text-primary transition-colors text-left"
-                            >
-                              {milestone.title}
-                            </button>
-                            <button
-                              onClick={() => setDeleteId(milestone.id)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/10 rounded"
-                            >
-                              <Trash2 className="h-3 w-3 text-destructive" />
-                            </button>
-                          </div>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {milestone.responsible_name || "Ingen ansvarlig"}
-                          </p>
-                        </div>
-                        <div className="flex-1 relative h-10">
-                          {/* Background grid */}
-                          <div className="absolute inset-0 flex">
-                            {months.map((month, i) => {
-                              const daysInMonth = differenceInDays(endOfMonth(month), startOfMonth(month)) + 1;
-                              const width = (daysInMonth / totalDays) * 100;
-                              return (
-                                <div
-                                  key={i}
-                                  className="border-l first:border-l-0 border-dashed"
-                                  style={{ width: `${width}%` }}
-                                />
-                              );
-                            })}
-                          </div>
-                          {/* Bar */}
-                          <div
-                            className="absolute top-1 h-8 rounded-md cursor-pointer hover:opacity-90 transition-opacity flex items-center px-2"
-                            style={{
-                              left: barPos.left,
-                              width: barPos.width,
-                              backgroundColor: milestone.color,
-                              minWidth: "20px",
-                            }}
-                            onClick={() => handleOpenDialog(milestone)}
-                          >
-                            <span className="text-xs text-white font-medium truncate">
-                              {milestone.progress}%
-                            </span>
-                          </div>
-                        </div>
+        {/* Gantt View */}
+        <TabsContent value="gantt" className="mt-4">
+          {milestones.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Tidslinje
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <div className="min-w-[600px]">
+                    {/* Month headers */}
+                    <div className="flex border-b mb-2">
+                      <div className="w-48 shrink-0 px-2 py-1 font-medium text-sm">
+                        Milepæl
                       </div>
-                    );
-                  })}
+                      <div className="flex-1 flex">
+                        {months.map((month, i) => {
+                          const daysInMonth = differenceInDays(endOfMonth(month), startOfMonth(month)) + 1;
+                          const width = (daysInMonth / totalDays) * 100;
+                          return (
+                            <div
+                              key={i}
+                              className="text-center text-sm font-medium py-1 border-l first:border-l-0"
+                              style={{ width: `${width}%` }}
+                            >
+                              {format(month, "MMM yyyy", { locale: nb })}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Milestone rows */}
+                    <div className="space-y-2">
+                      {milestones.map((milestone) => {
+                        const barPos = calculateBarPosition(milestone);
+                        return (
+                          <div key={milestone.id} className="flex items-center group">
+                            <div className="w-48 shrink-0 px-2">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleOpenDialog(milestone)}
+                                  className="text-sm font-medium truncate hover:text-primary transition-colors text-left"
+                                >
+                                  {milestone.title}
+                                </button>
+                                <button
+                                  onClick={() => setDeleteId(milestone.id)}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/10 rounded"
+                                >
+                                  <Trash2 className="h-3 w-3 text-destructive" />
+                                </button>
+                              </div>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {milestone.responsible_name || "Ingen ansvarlig"}
+                              </p>
+                            </div>
+                            <div className="flex-1 relative h-10">
+                              {/* Background grid */}
+                              <div className="absolute inset-0 flex">
+                                {months.map((month, i) => {
+                                  const daysInMonth = differenceInDays(endOfMonth(month), startOfMonth(month)) + 1;
+                                  const width = (daysInMonth / totalDays) * 100;
+                                  return (
+                                    <div
+                                      key={i}
+                                      className="border-l first:border-l-0 border-dashed"
+                                      style={{ width: `${width}%` }}
+                                    />
+                                  );
+                                })}
+                              </div>
+                              {/* Bar */}
+                              <div
+                                className="absolute top-1 h-8 rounded-md cursor-pointer hover:opacity-90 transition-opacity flex items-center px-2"
+                                style={{
+                                  left: barPos.left,
+                                  width: barPos.width,
+                                  backgroundColor: milestone.color,
+                                  minWidth: "20px",
+                                }}
+                                onClick={() => handleOpenDialog(milestone)}
+                              >
+                                <span className="text-xs text-white font-medium truncate">
+                                  {milestone.progress}%
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Ingen milepæler ennå</h3>
-            <p className="text-muted-foreground mb-4">
-              Legg til milepæler for å planlegge prosjektfremdriften
-            </p>
-            <Button onClick={() => handleOpenDialog()}>
-              <Plus className="h-4 w-4 mr-2" />
-              Legg til første milepæl
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">Ingen milepæler ennå</h3>
+                <p className="text-muted-foreground mb-4">
+                  Legg til milepæler for å planlegge prosjektfremdriften
+                </p>
+                <Button onClick={() => handleOpenDialog()}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Legg til første milepæl
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* Calendar View */}
+        <TabsContent value="calendar" className="mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarDays className="h-5 w-5" />
+                  Kalender
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex justify-center">
+                <CalendarComponent
+                  mode="single"
+                  selected={selectedCalendarDate}
+                  onSelect={setSelectedCalendarDate}
+                  locale={nb}
+                  className="rounded-md border pointer-events-auto"
+                  modifiers={{
+                    hasMilestone: milestoneDates,
+                  }}
+                  modifiersStyles={{
+                    hasMilestone: {
+                      backgroundColor: "hsl(var(--primary) / 0.15)",
+                      fontWeight: "bold",
+                    },
+                  }}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {selectedCalendarDate
+                    ? format(selectedCalendarDate, "d. MMMM yyyy", { locale: nb })
+                    : "Velg en dato"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {selectedDateMilestones.length > 0 ? (
+                  <div className="space-y-3">
+                    {selectedDateMilestones.map((milestone) => (
+                      <div
+                        key={milestone.id}
+                        className="p-3 border rounded-lg space-y-2 cursor-pointer hover:bg-muted/50 transition-colors"
+                        style={{ borderLeftColor: milestone.color, borderLeftWidth: "4px" }}
+                        onClick={() => handleOpenDialog(milestone)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h4 className="font-medium">{milestone.title}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {format(parseISO(milestone.start_date), "d. MMM", { locale: nb })} - {format(parseISO(milestone.end_date), "d. MMM yyyy", { locale: nb })}
+                            </p>
+                          </div>
+                          {getStatusBadge(milestone.status)}
+                        </div>
+                        <Progress value={milestone.progress} className="h-2" />
+                        <p className="text-xs text-muted-foreground">
+                          {milestone.responsible_name || "Ingen ansvarlig"} • {milestone.progress}% fullført
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <CalendarDays className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                    <p>Ingen milepæler på denne datoen</p>
+                    {selectedCalendarDate && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-3"
+                        onClick={() => {
+                          setFormData({
+                            ...formData,
+                            start_date: format(selectedCalendarDate, "yyyy-MM-dd"),
+                            end_date: format(selectedCalendarDate, "yyyy-MM-dd"),
+                          });
+                          setDialogOpen(true);
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Opprett milepæl
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Milestone list for mobile */}
-      {milestones.length > 0 && (
+      {milestones.length > 0 && viewMode === "gantt" && (
         <Card className="sm:hidden">
           <CardHeader>
             <CardTitle>Alle milepæler</CardTitle>
