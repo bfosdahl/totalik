@@ -53,6 +53,7 @@ const ikHmsItems = [
   { icon: AlertTriangle, label: "Risikovurdering", path: "/setup?step=2" },
   { icon: ListChecks, label: "Handlingsplan", path: "/setup?step=3" },
   { icon: FlaskConical, label: "Stoffkartotek", path: "/stoffkartotek" },
+  { icon: Scale, label: "Lover og forskrifter", path: "/lover-og-forskrifter" },
   { icon: AlertTriangle, label: "Avvik", path: "/deviations" },
   { icon: FileCheck, label: "HMS aktiviteter", path: "/audits" },
   { icon: BookOpen, label: "Handbok", path: "/handbook" },
@@ -91,7 +92,7 @@ const detectActiveSection = (pathname: string): SectionKey => {
   const personalPaths = ['/employees', '/hr/', '/time-registration', '/time-off', '/work-schedule', '/my/'];
   if (personalPaths.some(p => pathname === p || pathname.startsWith(p))) return 'personal';
   
-  const hmsPaths = ['/setup', '/deviations', '/audits', '/handbook', '/hms-chat', '/stoffkartotek'];
+  const hmsPaths = ['/setup', '/deviations', '/audits', '/handbook', '/hms-chat', '/stoffkartotek', '/lover-og-forskrifter'];
   if (hmsPaths.some(p => pathname === p || pathname.startsWith(p))) return 'ikHms';
   
   return 'none';

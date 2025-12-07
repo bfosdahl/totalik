@@ -50,6 +50,7 @@ import IkMatFasteAvtaler from "./pages/IkMatFasteAvtaler";
 import IkMatSporbarhet from "./pages/IkMatSporbarhet";
 import IkHmsOppsett from "./pages/IkHmsOppsett";
 import IkHmsStoffkartotek from "./pages/IkHmsStoffkartotek";
+import LoverOgForskrifter from "./pages/LoverOgForskrifter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -78,6 +79,7 @@ const App = () => (
             <Route path="/audits" element={<ProtectedRoute><Audits /></ProtectedRoute>} />
             <Route path="/handbook" element={<ProtectedRoute><Handbook /></ProtectedRoute>} />
             <Route path="/stoffkartotek" element={<ProtectedRoute><IkHmsStoffkartotek /></ProtectedRoute>} />
+            <Route path="/lover-og-forskrifter" element={<ProtectedRoute><LoverOgForskrifter /></ProtectedRoute>} />
             <Route path="/hms-chat" element={<ProtectedRoute><HmsChat /></ProtectedRoute>} />
             <Route path="/my-courses" element={<ProtectedRoute><MyCourseCard /></ProtectedRoute>} />
             <Route path="/time-registration" element={<ProtectedRoute><TimeRegistration /></ProtectedRoute>} />
