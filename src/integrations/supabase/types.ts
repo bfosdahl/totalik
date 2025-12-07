@@ -2515,6 +2515,102 @@ export type Database = {
           },
         ]
       }
+      ks_module2_change_orders: {
+        Row: {
+          attachments: Json | null
+          change_order_number: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          created_by_name: string | null
+          customer_approved: boolean | null
+          customer_approved_at: string | null
+          customer_approved_by: string | null
+          customer_signature: string | null
+          description: string | null
+          estimated_hours: number | null
+          hourly_rate: number | null
+          id: string
+          internal_notes: string | null
+          material_cost: number | null
+          project_id: string
+          reason: string | null
+          requested_by: string | null
+          requested_date: string | null
+          status: string
+          title: string
+          total_cost: number | null
+          updated_at: string
+        }
+        Insert: {
+          attachments?: Json | null
+          change_order_number: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          customer_approved?: boolean | null
+          customer_approved_at?: string | null
+          customer_approved_by?: string | null
+          customer_signature?: string | null
+          description?: string | null
+          estimated_hours?: number | null
+          hourly_rate?: number | null
+          id?: string
+          internal_notes?: string | null
+          material_cost?: number | null
+          project_id: string
+          reason?: string | null
+          requested_by?: string | null
+          requested_date?: string | null
+          status?: string
+          title: string
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Update: {
+          attachments?: Json | null
+          change_order_number?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          customer_approved?: boolean | null
+          customer_approved_at?: string | null
+          customer_approved_by?: string | null
+          customer_signature?: string | null
+          description?: string | null
+          estimated_hours?: number | null
+          hourly_rate?: number | null
+          id?: string
+          internal_notes?: string | null
+          material_cost?: number | null
+          project_id?: string
+          reason?: string | null
+          requested_by?: string | null
+          requested_date?: string | null
+          status?: string
+          title?: string
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_change_orders_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_change_orders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_checklist_reminders: {
         Row: {
           checklist_id: string
@@ -7293,6 +7389,7 @@ export type Database = {
         Returns: undefined
       }
       generate_ks_module2_avvik_number: { Args: never; Returns: string }
+      generate_ks_module2_change_order_number: { Args: never; Returns: string }
       generate_ks_module2_project_number: { Args: never; Returns: string }
       generate_ks_module2_routine_number: { Args: never; Returns: string }
       generate_ks_module2_uk_number: { Args: never; Returns: string }
