@@ -16,7 +16,7 @@ type FilterType = "all" | "mine" | "active" | "completed" | "with_deviations";
 export default function Ks2Dashboard() {
   const navigate = useNavigate();
   const { isCompanyAdmin, isSystemAdmin } = useAuth();
-  const { projects, isLoading, isSaving, createProject, toggleFavorite, refetch } = useKsModule2Projects();
+  const { projects, isLoading, isSaving, createProject, toggleFavorite, deleteProject, refetch } = useKsModule2Projects();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [isNewProjectOpen, setIsNewProjectOpen] = useState(false);
@@ -150,6 +150,7 @@ export default function Ks2Dashboard() {
                 onClick={() => handleProjectClick(project.id)}
                 onToggleFavorite={toggleFavorite}
                 onCopy={(p) => setCopyProject(p)}
+                onDelete={deleteProject}
                 openDeviationsCount={0} // TODO: Implement deviation counting
               />
             ))}

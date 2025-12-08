@@ -1,4 +1,4 @@
-import { Star, AlertTriangle, Calendar, MapPin, Building2, TrendingUp, Copy } from "lucide-react";
+import { Star, AlertTriangle, Calendar, MapPin, Building2, TrendingUp, Copy, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,12 +6,24 @@ import { cn } from "@/lib/utils";
 import { KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface ProjectCardProps {
   project: KsModule2Project;
   onClick: () => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
   onCopy?: (project: KsModule2Project) => void;
+  onDelete?: (id: string) => void;
   openDeviationsCount?: number;
 }
 
@@ -23,7 +35,7 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   completed: { label: "Avsluttet", className: "bg-secondary text-secondary-foreground" },
 };
 
-export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, openDeviationsCount = 0 }: ProjectCardProps) {
+export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDelete, openDeviationsCount = 0 }: ProjectCardProps) {
   const status = statusConfig[project.status] || statusConfig.planned;
 
   return (
@@ -33,6 +45,42 @@ export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, openDe
     >
       {/* Action buttons */}
       <div className="absolute top-3 right-3 z-10 flex gap-1">
+        {onDelete && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 opacity-0 group-hover:opacity-60 hover:opacity-100 hover:text-destructive transition-opacity"
+                onClick={(e) => e.stopPropagation()}
+                title="Slett prosjekt"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Slett prosjekt?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Er du sikker på at du vil slette "{project.project_name}"? 
+                  Alle data knyttet til prosjektet vil bli slettet permanent. Denne handlingen kan ikke angres.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(project.id);
+                  }}
+                >
+                  Slett prosjekt
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
         {onCopy && (
           <Button
             variant="ghost"
