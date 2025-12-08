@@ -83,7 +83,7 @@ export interface WizardProgress {
 export function useSetupWizard() {
   const { profile, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [goals, setGoals] = useState<CompanyGoal[]>([]);
   const [organization, setOrganization] = useState<OrganizationData | null>(null);
@@ -98,6 +98,9 @@ export function useSetupWizard() {
   });
 
   const companyId = profile?.company_id;
+  
+  // isLoading is true while auth is loading OR while data is loading
+  const isLoading = authLoading || dataLoading;
 
   // Load wizard progress, goals, organization, and risk assessment
   useEffect(() => {
@@ -106,14 +109,13 @@ export function useSetupWizard() {
       return;
     }
 
-    // If no company ID, stop loading
+    // If no company ID, nothing to load
     if (!companyId) {
-      setIsLoading(false);
       return;
     }
 
     const loadData = async () => {
-      setIsLoading(true);
+      setDataLoading(true);
       console.log("[useSetupWizard] Starting data load for company:", companyId);
       console.log("[useSetupWizard] Auth loading state:", authLoading);
       try {
@@ -242,7 +244,7 @@ export function useSetupWizard() {
       } catch (error) {
         console.error("[useSetupWizard] Error loading wizard data:", error);
       } finally {
-        setIsLoading(false);
+        setDataLoading(false);
       }
     };
 
