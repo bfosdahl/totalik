@@ -51,6 +51,7 @@ import IkMatSporbarhet from "./pages/IkMatSporbarhet";
 import IkHmsOppsett from "./pages/IkHmsOppsett";
 import IkHmsStoffkartotek from "./pages/IkHmsStoffkartotek";
 import LoverOgForskrifter from "./pages/LoverOgForskrifter";
+import AnonymousMessages from "./pages/AnonymousMessages";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -106,6 +107,7 @@ const App = () => (
           <Route path="/ik-mat/faste-avtaler" element={<ProtectedRoute><IkMatFasteAvtaler /></ProtectedRoute>} />
           <Route path="/ik-mat/sporbarhet" element={<ProtectedRoute><IkMatSporbarhet /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/anonymous-messages" element={<ProtectedRoute><AnonymousMessages /></ProtectedRoute>} />
             
             {/* KS Bygg routes */}
             <Route path="/ks" element={<ProtectedRoute><Ks2Dashboard /></ProtectedRoute>} />

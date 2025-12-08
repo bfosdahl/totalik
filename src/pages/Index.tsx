@@ -9,7 +9,8 @@ import {
   ChevronRight,
   Sparkles,
   Rocket,
-  X
+  X,
+  ShieldCheck
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
@@ -26,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { AnonymousMessageButton } from "@/components/anonymous/AnonymousMessageButton";
 
 const Index = () => {
   const { compliancePercent, openDeviations, completedActions, dueSoon, isLoading } = useDashboardStats();
@@ -178,6 +180,25 @@ const Index = () => {
           <div className="space-y-4 md:space-y-6">
             <ExpiryAlerts />
             <QuickActions />
+            
+            {/* Anonymous message card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.45 }}
+              className="bg-card rounded-xl border border-border p-4 md:p-6 shadow-card"
+            >
+              <div className="flex items-center gap-2 md:gap-3 mb-3">
+                <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
+                  <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+                </div>
+                <h3 className="text-base md:text-lg font-semibold">Anonym varsling</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Send en anonym melding til ledelsen om bekymringer, uønskede hendelser eller forbedringsforslag.
+              </p>
+              <AnonymousMessageButton className="w-full" />
+            </motion.div>
             
             {/* Upcoming reviews */}
             <motion.div
