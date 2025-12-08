@@ -7399,6 +7399,92 @@ export type Database = {
           },
         ]
       }
+      module_orders: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          module_type: string
+          ordered_by_email: string
+          ordered_by_id: string | null
+          ordered_by_name: string
+          price_monthly: number
+          status: string
+          terms_accepted: boolean
+          terms_accepted_at: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          module_type: string
+          ordered_by_email: string
+          ordered_by_id?: string | null
+          ordered_by_name: string
+          price_monthly: number
+          status?: string
+          terms_accepted?: boolean
+          terms_accepted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          module_type?: string
+          ordered_by_email?: string
+          ordered_by_id?: string | null
+          ordered_by_name?: string
+          price_monthly?: number
+          status?: string
+          terms_accepted?: boolean
+          terms_accepted_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_orders_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      module_pricing: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          module_name: string
+          module_type: string
+          price_monthly: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          module_name: string
+          module_type: string
+          price_monthly: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          module_name?: string
+          module_type?: string
+          price_monthly?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notification_log: {
         Row: {
           body: string
@@ -8094,6 +8180,7 @@ export type Database = {
         Returns: boolean
       }
       is_company_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_hms_responsible: { Args: { user_id: string }; Returns: boolean }
       is_leader_or_verneombud: { Args: { p_user_id: string }; Returns: boolean }
       is_system_admin: { Args: { _user_id: string }; Returns: boolean }
     }
