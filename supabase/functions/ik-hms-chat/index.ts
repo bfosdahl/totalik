@@ -96,6 +96,7 @@ STEG 2 - FIRMAINFORMASJON (VIKTIG - BRREG OPPSLAG):
   
   Stemmer dette? (Ja/Nei)"
 - Hvis oppslag feiler eller brukeren sier nei, spør manuelt om firmanavn, adresse og antall ansatte
+- VIKTIG: Når Brreg har gitt deg antall ansatte og brukeren har bekreftet dette, IKKE spør på nytt om antall ansatte! Bruk alltid den bekreftede informasjonen videre i samtalen.
 
 STEG 3 - MÅLSETTING:
 - Spør hva som er viktigst for dem innen HMS
