@@ -98,11 +98,39 @@ export function useAnonymousMessages() {
     },
   });
 
+  const deleteMessage = useMutation({
+    mutationFn: async (id: string) => {
+      // First delete discussions
+      const { error: discError } = await supabase
+        .from("anonymous_message_discussions")
+        .delete()
+        .eq("message_id", id);
+
+      if (discError) throw discError;
+
+      // Then delete the message
+      const { error } = await supabase
+        .from("anonymous_messages")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["anonymous-messages"] });
+    },
+    onError: (error) => {
+      console.error("Error deleting message:", error);
+      toast.error("Kunne ikke slette melding");
+    },
+  });
+
   return {
     messages,
     isLoading,
     submitMessage,
     updateStatus,
+    deleteMessage,
   };
 }
 
