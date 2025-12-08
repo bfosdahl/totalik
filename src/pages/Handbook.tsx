@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -27,6 +27,9 @@ import {
   Paperclip,
   Mail
 } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -97,6 +100,7 @@ const Handbook = () => {
   const [deviationAttachments, setDeviationAttachments] = useState<DeviationAttachment[]>([]);
   const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>({});
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   // Fetch deviation attachments
   useEffect(() => {
@@ -410,6 +414,312 @@ const Handbook = () => {
   const completeSections = handbookSections.filter((s) => s.status === "complete").length;
   const lastUpdated = new Date();
 
+  // PDF Generation helper functions
+  const getRiskLevelText = (value: number): string => {
+    if (value <= 4) return "Lav";
+    if (value <= 9) return "Moderat";
+    if (value <= 15) return "Høy";
+    return "Kritisk";
+  };
+
+  const getRiskLevelColor = (value: number): [number, number, number] => {
+    if (value <= 4) return [34, 197, 94];
+    if (value <= 9) return [234, 179, 8];
+    if (value <= 15) return [249, 115, 22];
+    return [239, 68, 68];
+  };
+
+  const formatDateForPdf = (date: Date): string => {
+    return date.toLocaleDateString("nb-NO", { day: "2-digit", month: "long", year: "numeric" });
+  };
+
+  const loadImageAsBase64 = (url: string): Promise<string | null> => {
+    return new Promise((resolve) => {
+      const img = new window.Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL("image/png"));
+        } else {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+  };
+
+  const handleDownloadPdf = useCallback(async () => {
+    setIsGeneratingPdf(true);
+    try {
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 20;
+      const contentWidth = pageWidth - margin * 2;
+      let yPos = margin;
+
+      // Load logo
+      let logoBase64: string | null = null;
+      if (companyInfo?.logo_url) {
+        logoBase64 = await loadImageAsBase64(companyInfo.logo_url);
+      }
+
+      const checkPageBreak = (requiredSpace: number) => {
+        if (yPos + requiredSpace > pageHeight - margin) {
+          doc.addPage();
+          yPos = margin;
+          return true;
+        }
+        return false;
+      };
+
+      const addSectionHeader = (title: string) => {
+        checkPageBreak(20);
+        doc.setFillColor(59, 130, 246);
+        doc.rect(margin, yPos, contentWidth, 10, "F");
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text(title, margin + 5, yPos + 7);
+        doc.setTextColor(0, 0, 0);
+        yPos += 15;
+      };
+
+      // COVER PAGE
+      doc.setFillColor(30, 64, 175);
+      doc.rect(0, 0, pageWidth, 80, "F");
+
+      if (logoBase64) {
+        try {
+          doc.addImage(logoBase64, "PNG", pageWidth / 2 - 15, 85, 30, 30);
+        } catch (e) {
+          console.warn("Could not add logo to PDF:", e);
+        }
+      }
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(28);
+      doc.setFont("helvetica", "bold");
+      doc.text("INTERNKONTROLL", pageWidth / 2, 35, { align: "center" });
+      doc.setFontSize(20);
+      doc.text("HMS-HÅNDBOK", pageWidth / 2, 50, { align: "center" });
+
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      const companyName = companyInfo?.name || "Bedriftsnavn";
+      const nameY = logoBase64 ? 130 : 110;
+      doc.text(companyName, pageWidth / 2, nameY, { align: "center" });
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      let detailsY = logoBase64 ? 145 : 125;
+      if (companyInfo?.org_number) {
+        doc.text(`Org.nr: ${companyInfo.org_number}`, pageWidth / 2, detailsY, { align: "center" });
+        detailsY += 7;
+      }
+      if (companyInfo?.address) {
+        doc.text(companyInfo.address, pageWidth / 2, detailsY, { align: "center" });
+        detailsY += 7;
+      }
+      if (companyInfo?.postal_code && companyInfo?.city) {
+        doc.text(`${companyInfo.postal_code} ${companyInfo.city}`, pageWidth / 2, detailsY, { align: "center" });
+      }
+
+      doc.setFontSize(12);
+      doc.text(`Dato: ${formatDateForPdf(new Date())}`, pageWidth / 2, pageHeight - 40, { align: "center" });
+
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Utarbeidet i henhold til forskrift om systematisk helse-, miljø- og sikkerhetsarbeid", pageWidth / 2, pageHeight - 25, { align: "center" });
+
+      // TABLE OF CONTENTS
+      doc.addPage();
+      yPos = margin;
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(20);
+      doc.setFont("helvetica", "bold");
+      doc.text("Innholdsfortegnelse", margin, yPos);
+      yPos += 15;
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      const tocItems = [
+        { title: "1. Mål for internkontroll", page: 3 },
+        { title: "2. Organisering og ansvar", page: 4 },
+        { title: "3. Risikovurdering", page: 5 },
+        { title: "4. Handlingsplan", page: 6 },
+        { title: "5. Rutiner og prosedyrer", page: 7 },
+      ];
+      tocItems.forEach((item) => {
+        doc.text(item.title, margin, yPos);
+        doc.text(item.page.toString(), pageWidth - margin, yPos, { align: "right" });
+        yPos += 8;
+      });
+
+      // SECTION 1: GOALS
+      doc.addPage();
+      yPos = margin;
+      addSectionHeader("1. Mål for internkontroll");
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text("Bedriften har fastsatt følgende mål for sitt systematiske HMS-arbeid:", margin, yPos);
+      yPos += 10;
+      if (goals.length > 0) {
+        goals.forEach((goal, index) => {
+          checkPageBreak(15);
+          doc.setFillColor(240, 249, 255);
+          const lines = doc.splitTextToSize(goal.goal_text, contentWidth - 15);
+          const boxHeight = lines.length * 6 + 6;
+          doc.roundedRect(margin, yPos, contentWidth, boxHeight, 2, 2, "F");
+          doc.setFontSize(11);
+          doc.text(`${index + 1}.`, margin + 5, yPos + 6);
+          doc.text(lines, margin + 12, yPos + 6);
+          yPos += boxHeight + 5;
+        });
+      } else {
+        doc.setTextColor(150, 150, 150);
+        doc.text("Ingen mål er definert.", margin, yPos);
+        doc.setTextColor(0, 0, 0);
+      }
+
+      // SECTION 2: ORGANIZATION
+      doc.addPage();
+      yPos = margin;
+      addSectionHeader("2. Organisering og ansvar");
+      if (organization?.custom_content) {
+        const orgLines = doc.splitTextToSize(organization.custom_content, contentWidth);
+        orgLines.forEach((line: string) => {
+          checkPageBreak(8);
+          doc.setFontSize(11);
+          doc.text(line, margin, yPos);
+          yPos += 6;
+        });
+      } else {
+        doc.setTextColor(150, 150, 150);
+        doc.text("Organisasjonsstruktur er ikke definert.", margin, yPos);
+        doc.setTextColor(0, 0, 0);
+      }
+
+      // SECTION 3: RISK ASSESSMENT
+      doc.addPage();
+      yPos = margin;
+      addSectionHeader("3. Risikovurdering");
+      doc.setFontSize(11);
+      doc.text("Risiko = Sannsynlighet × Konsekvens (Arbeidstilsynets metodikk)", margin, yPos);
+      yPos += 10;
+      if (riskAssessment && riskAssessment.risks.length > 0) {
+        const riskTableData = riskAssessment.risks.map((risk) => {
+          const riskValue = risk.consequence * risk.probability;
+          return [
+            (risk.description || "").substring(0, 80) + ((risk.description?.length || 0) > 80 ? "..." : ""),
+            risk.probability.toString(),
+            risk.consequence.toString(),
+            riskValue.toString(),
+            getRiskLevelText(riskValue),
+          ];
+        });
+        autoTable(doc, {
+          startY: yPos,
+          head: [["Beskrivelse", "S", "K", "R", "Nivå"]],
+          body: riskTableData,
+          theme: "striped",
+          headStyles: { fillColor: [59, 130, 246], fontSize: 9, fontStyle: "bold" },
+          bodyStyles: { fontSize: 9 },
+          columnStyles: {
+            0: { cellWidth: 90 },
+            1: { cellWidth: 15, halign: "center" },
+            2: { cellWidth: 15, halign: "center" },
+            3: { cellWidth: 15, halign: "center" },
+            4: { cellWidth: 25, halign: "center" },
+          },
+          margin: { left: margin, right: margin },
+          didDrawCell: (data) => {
+            if (data.section === "body" && data.column.index === 4) {
+              const riskValue = parseInt(riskTableData[data.row.index][3]);
+              const color = getRiskLevelColor(riskValue);
+              doc.setTextColor(color[0], color[1], color[2]);
+            }
+          },
+          willDrawCell: () => {
+            doc.setTextColor(0, 0, 0);
+          },
+        });
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+      } else {
+        doc.setTextColor(150, 150, 150);
+        doc.text("Ingen risikovurderinger utført.", margin, yPos);
+        doc.setTextColor(0, 0, 0);
+      }
+
+      // SECTION 4: ACTION PLAN
+      doc.addPage();
+      yPos = margin;
+      addSectionHeader("4. Handlingsplan");
+      if (actionPlan && actionPlan.actions.length > 0) {
+        const actionTableData = actionPlan.actions.map((action) => [
+          (action.action_description || "").substring(0, 60),
+          action.responsible || "-",
+          action.deadline || "-",
+          action.status === "fullført" ? "Fullført" : action.status === "pågår" ? "Pågår" : "Ikke startet",
+        ]);
+        autoTable(doc, {
+          startY: yPos,
+          head: [["Tiltak", "Ansvarlig", "Frist", "Status"]],
+          body: actionTableData,
+          theme: "striped",
+          headStyles: { fillColor: [59, 130, 246], fontSize: 9, fontStyle: "bold" },
+          bodyStyles: { fontSize: 9 },
+          margin: { left: margin, right: margin },
+        });
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+      } else {
+        doc.setTextColor(150, 150, 150);
+        doc.text("Ingen tiltak registrert.", margin, yPos);
+        doc.setTextColor(0, 0, 0);
+      }
+
+      // SECTION 5: ROUTINES
+      doc.addPage();
+      yPos = margin;
+      addSectionHeader("5. Rutiner og prosedyrer");
+      if (routines && routines.routines.length > 0) {
+        routines.routines.forEach((routine, index) => {
+          checkPageBreak(40);
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(margin, yPos, contentWidth, 25, 2, 2, "F");
+          doc.setFontSize(11);
+          doc.setFont("helvetica", "bold");
+          doc.text(`5.${index + 1} ${routine.routine_number}: ${routine.routine_name}`, margin + 5, yPos + 7);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9);
+          const purposeLines = doc.splitTextToSize(`Formål: ${routine.purpose || "Ikke spesifisert"}`, contentWidth - 10);
+          doc.text(purposeLines.slice(0, 2), margin + 5, yPos + 14);
+          yPos += 30;
+        });
+      } else {
+        doc.setTextColor(150, 150, 150);
+        doc.text("Ingen rutiner registrert.", margin, yPos);
+        doc.setTextColor(0, 0, 0);
+      }
+
+      // Save PDF
+      const fileName = `IK-Handbok_${companyName.replace(/[^a-zA-Z0-9æøåÆØÅ]/g, "_")}_${format(new Date(), "yyyy-MM-dd")}.pdf`;
+      doc.save(fileName);
+      toast.success("PDF lastet ned!");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Kunne ikke generere PDF");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  }, [goals, organization, riskAssessment, actionPlan, routines, companyInfo]);
+
   const handleSectionClick = (section: typeof handbookSections[0]) => {
     // All sections can be expanded/collapsed
     setExpandedSection(expandedSection === section.id ? null : section.id);
@@ -479,9 +789,13 @@ const Handbook = () => {
               <Eye className="w-4 h-4" />
               Forhåndsvis
             </Button>
-            <Button className="gap-2" onClick={() => navigate("/setup?step=5&from=handbook&section=Handbok")}>
-              <Download className="w-4 h-4" />
-              Last ned PDF
+            <Button className="gap-2" onClick={handleDownloadPdf} disabled={isGeneratingPdf}>
+              {isGeneratingPdf ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              {isGeneratingPdf ? "Genererer..." : "Last ned PDF"}
             </Button>
           </div>
         </motion.div>
