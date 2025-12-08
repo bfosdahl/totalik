@@ -121,6 +121,18 @@ export function HandbookStep({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
 
+  // Debug logging for troubleshooting
+  useEffect(() => {
+    console.log("[HandbookStep] Received props:", {
+      goalsCount: goals?.length ?? 0,
+      hasOrganization: !!organization?.custom_content,
+      risksCount: riskAssessment?.risks?.length ?? 0,
+      actionsCount: actionPlan?.actions?.length ?? 0,
+      routinesCount: routines?.routines?.length ?? 0,
+      companyName: companyInfo?.name ?? "No company"
+    });
+  }, [goals, organization, riskAssessment, actionPlan, routines, companyInfo]);
+
   // Refresh company info to get latest logo
   const refreshCompanyInfo = async () => {
     if (!companyInfo?.id) return;
