@@ -43,6 +43,9 @@ export function Ks2EnhancedDashboard() {
   const { subcontractors } = useKsModule2Subcontractors(projectId || "");
   const { avvikList: avvik } = useKsModule2Avvik(projectId || "");
 
+  // Scroll to top on mount
+  const basePath = `/ks/project/${projectId}`;
+
   // Calculate additional stats
   const enhancedStats = useMemo(() => {
     const now = new Date();
@@ -123,6 +126,46 @@ export function Ks2EnhancedDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Quick Actions - TOP OF PAGE */}
+      <Card className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-primary/20">
+        <CardContent className="p-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="font-semibold text-lg">Hurtighandlinger</h2>
+              <p className="text-sm text-muted-foreground">Kom raskt i gang med de viktigste oppgavene</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="lg"
+                className="gap-2 shadow-md"
+                onClick={() => navigate(`${basePath}/egenkontroller?new=true`)}
+              >
+                <Plus className="h-5 w-5" />
+                Ny egenkontroll
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="gap-2"
+                onClick={() => navigate(`${basePath}/avvik`)}
+              >
+                <AlertTriangle className="h-5 w-5" />
+                Registrer avvik
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="gap-2"
+                onClick={() => navigate(`${basePath}/hms/sja`)}
+              >
+                <ClipboardCheck className="h-5 w-5" />
+                Ny SJA
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Progress Circle and Quick Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="bg-gradient-to-br from-primary/10 to-primary/5 lg:col-span-1">

@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { Ks2ProjectSidebar } from "@/components/ks2/Ks2ProjectSidebar";
+import { Ks2ProjectStatusBar } from "@/components/ks2/Ks2ProjectStatusBar";
 import { Ks2EnhancedDashboard } from "@/components/ks2/Ks2EnhancedDashboard";
 import Ks2Egenkontroller from "./Ks2Egenkontroller";
 import Ks2Sjekklister from "./Ks2Sjekklister";
@@ -159,6 +160,9 @@ export default function Ks2ProjectDetail() {
           <p className="text-xs text-muted-foreground font-medium">{project.project_number}</p>
           <h1 className="text-xl font-semibold">{project.project_name}</h1>
         </div>
+
+        {/* Project Status Bar */}
+        <Ks2ProjectStatusBar />
 
         {/* Page Content */}
         <main className="p-4 md:p-6">

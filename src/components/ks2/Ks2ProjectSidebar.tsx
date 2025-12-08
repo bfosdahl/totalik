@@ -4,17 +4,14 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   ClipboardCheck,
-  ClipboardList,
   FolderOpen,
   Info,
   AlertTriangle,
   Library,
   Shield,
   FileText,
-  BookOpen,
   ArrowLeft,
   Menu,
-  X,
   Building2,
   LogOut,
   ChevronDown,
@@ -27,6 +24,8 @@ import {
   FileWarning,
   Wallet,
   Users,
+  Briefcase,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -38,23 +37,17 @@ interface Ks2ProjectSidebarProps {
   projectNumber: string;
 }
 
-const mainMenuItems = [
+// Top-level standalone items
+const topMenuItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "", guestAllowed: true },
+];
+
+// Grouped menu sections
+const kvalitetssikringItems = [
   { id: "egenkontroller", label: "Egenkontroller", icon: ClipboardCheck, path: "/egenkontroller", guestAllowed: true },
-  { id: "sjekklister", label: "Sjekklister", icon: ClipboardList, path: "/sjekklister", guestAllowed: true },
-  { id: "rutiner", label: "Rutinebank", icon: BookOpen, path: "/rutiner", guestAllowed: false },
-  { id: "dokumentasjon", label: "Dokumentasjon & FDV", icon: FolderOpen, path: "/dokumentasjon", guestAllowed: true },
-  { id: "prosjektinfo", label: "Prosjektinfo", icon: Info, path: "/prosjektinfo", guestAllowed: false },
-  { id: "underleverandorer", label: "Underleverandører", icon: Building2, path: "/underleverandorer", guestAllowed: false },
-  { id: "endringsmeldinger", label: "Endringsmeldinger", icon: FileText, path: "/endringsmeldinger", guestAllowed: false },
-  { id: "motereferater", label: "Møtereferater", icon: Users, path: "/motereferater", guestAllowed: false },
-  { id: "timeregistrering", label: "Timeregistrering", icon: Clock, path: "/timeregistrering", guestAllowed: false },
-  { id: "fremdriftsplan", label: "Fremdriftsplan", icon: GanttChart, path: "/fremdriftsplan", guestAllowed: false },
-  { id: "reklamasjoner", label: "Reklamasjoner", icon: FileWarning, path: "/reklamasjoner", guestAllowed: false },
-  { id: "okonomi", label: "Økonomi", icon: Wallet, path: "/okonomi", guestAllowed: false },
-  { id: "avvik", label: "Avvik fra KS", icon: AlertTriangle, path: "/avvik", guestAllowed: true },
+  { id: "sjekklister", label: "Sjekklister", icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
+  { id: "avvik", label: "KS-avvik", icon: AlertTriangle, path: "/avvik", guestAllowed: true },
   { id: "uk", label: "Uavhengig kontroll", icon: Shield, path: "/uk", guestAllowed: true },
-  { id: "malbibliotek", label: "Malbibliotek", icon: Library, path: "/maler", guestAllowed: true },
 ];
 
 const hmsMenuItems = [
@@ -67,8 +60,45 @@ const hmsMenuItems = [
   { id: "stoffkartotek", label: "Stoffkartotek", icon: FlaskConical, path: "/hms/stoffkartotek", guestAllowed: true },
 ];
 
-const bottomMenuItems = [
+const prosjektstyringItems = [
+  { id: "prosjektinfo", label: "Prosjektinfo", icon: Info, path: "/prosjektinfo", guestAllowed: false },
+  { id: "fremdriftsplan", label: "Fremdriftsplan", icon: GanttChart, path: "/fremdriftsplan", guestAllowed: false },
+  { id: "timeregistrering", label: "Timeregistrering", icon: Clock, path: "/timeregistrering", guestAllowed: false },
+  { id: "motereferater", label: "Møtereferater", icon: Users, path: "/motereferater", guestAllowed: false },
+];
+
+const okonomiFakturaItems = [
+  { id: "okonomi", label: "Økonomi", icon: Wallet, path: "/okonomi", guestAllowed: false },
+  { id: "endringsmeldinger", label: "Endringsmeldinger", icon: FileText, path: "/endringsmeldinger", guestAllowed: false },
+  { id: "reklamasjoner", label: "Reklamasjoner", icon: FileWarning, path: "/reklamasjoner", guestAllowed: false },
+];
+
+const partnereItems = [
+  { id: "underleverandorer", label: "Underleverandører", icon: Building2, path: "/underleverandorer", guestAllowed: false },
+];
+
+const dokumentasjonItems = [
+  { id: "dokumentasjon", label: "Dokumentasjon & FDV", icon: FolderOpen, path: "/dokumentasjon", guestAllowed: true },
+  { id: "rutiner", label: "Rutinebank", icon: FileText, path: "/rutiner", guestAllowed: false },
+  { id: "malbibliotek", label: "Malbibliotek", icon: Library, path: "/maler", guestAllowed: true },
   { id: "rapport", label: "Prosjektrapport", icon: FileText, path: "/rapport", guestAllowed: true },
+];
+
+interface MenuGroup {
+  id: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  items: typeof kvalitetssikringItems;
+  color?: string;
+}
+
+const menuGroups: MenuGroup[] = [
+  { id: "ks", label: "Kvalitetssikring", icon: ClipboardCheck, items: kvalitetssikringItems, color: "text-primary" },
+  { id: "hms", label: "HMS / SHA", icon: Shield, items: hmsMenuItems, color: "text-emerald-500" },
+  { id: "prosjekt", label: "Prosjektstyring", icon: Briefcase, items: prosjektstyringItems, color: "text-blue-500" },
+  { id: "okonomi", label: "Økonomi", icon: Wallet, items: okonomiFakturaItems, color: "text-amber-500" },
+  { id: "partnere", label: "Partnere", icon: Building2, items: partnereItems, color: "text-purple-500" },
+  { id: "dokumenter", label: "Dokumentasjon", icon: FolderOpen, items: dokumentasjonItems, color: "text-cyan-500" },
 ];
 
 export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSidebarProps) {
@@ -81,17 +111,38 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
   const basePath = `/ks/project/${projectId}`;
   const currentPath = location.pathname.replace(basePath, "") || "";
 
-  // Check if we're in HMS section
-  const isInHmsSection = currentPath.startsWith("/hms");
-  const [hmsOpen, setHmsOpen] = useState(isInHmsSection);
+  // Determine which groups should be open based on current path
+  const getActiveGroupId = (): string | null => {
+    for (const group of menuGroups) {
+      if (group.items.some(item => currentPath === item.path || currentPath.startsWith(item.path + "/"))) {
+        return group.id;
+      }
+    }
+    return null;
+  };
+
+  const activeGroupId = getActiveGroupId();
+  const [openGroups, setOpenGroups] = useState<Set<string>>(() => {
+    const initial = new Set<string>();
+    if (activeGroupId) initial.add(activeGroupId);
+    return initial;
+  });
+
+  const toggleGroup = (groupId: string) => {
+    setOpenGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(groupId)) {
+        next.delete(groupId);
+      } else {
+        next.add(groupId);
+      }
+      return next;
+    });
+  };
 
   // Filter menu items based on guest access
   const filterByGuest = <T extends { guestAllowed: boolean }>(items: T[]) => 
     isGuestUser ? items.filter(item => item.guestAllowed) : items;
-
-  const filteredMainItems = filterByGuest(mainMenuItems);
-  const filteredHmsItems = filterByGuest(hmsMenuItems);
-  const filteredBottomItems = filterByGuest(bottomMenuItems);
 
   // Get guest role info
   const currentGuestProject = guestProjects.find(p => p.project_id === projectId);
@@ -110,10 +161,10 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
             variant="ghost"
             size="sm"
             className="text-sidebar-foreground/70 hover:text-sidebar-foreground mb-3 -ml-2"
-          onClick={() => {
-            navigate("/ks");
-            onNavigate?.();
-          }}
+            onClick={() => {
+              navigate("/ks");
+              onNavigate?.();
+            }}
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
             Alle prosjekter
@@ -133,8 +184,8 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
 
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        {/* Main Menu Items */}
-        {filteredMainItems.map((item) => {
+        {/* Top-level items (Dashboard) */}
+        {filterByGuest(topMenuItems).map((item) => {
           const isActive = currentPath === item.path;
           const Icon = item.icon;
 
@@ -158,75 +209,63 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
           );
         })}
 
-        {/* HMS/SHA Collapsible Section */}
-        <Collapsible open={hmsOpen} onOpenChange={setHmsOpen}>
-          <CollapsibleTrigger asChild>
-            <button
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                isInHmsSection
-                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-              )}
-            >
-              <Shield className="h-5 w-5 flex-shrink-0 text-emerald-500" />
-              <span className="flex-1 text-left">HMS / SHA</span>
-              {hmsOpen ? (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              )}
-            </button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pl-4 space-y-1 mt-1">
-            {filteredHmsItems.map((item) => {
-              const isActive = currentPath === item.path;
-              const Icon = item.icon;
+        {/* Grouped Menu Sections */}
+        {menuGroups.map((group) => {
+          const filteredItems = filterByGuest(group.items);
+          if (filteredItems.length === 0) return null;
 
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    navigate(`${basePath}${item.path}`);
-                    onNavigate?.();
-                  }}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-emerald-500 text-white"
-                      : "text-sidebar-foreground/70 hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400"
-                  )}
-                >
-                  <Icon className={cn("h-4 w-4 flex-shrink-0", isActive ? "" : "text-emerald-500")} />
-                  <span className="flex-1 text-left">{item.label}</span>
-                </button>
-              );
-            })}
-          </CollapsibleContent>
-        </Collapsible>
-
-        {/* Bottom Menu Items */}
-        {filteredBottomItems.map((item) => {
-          const isActive = currentPath === item.path;
-          const Icon = item.icon;
+          const isGroupOpen = openGroups.has(group.id);
+          const hasActiveItem = filteredItems.some(item => 
+            currentPath === item.path || currentPath.startsWith(item.path + "/")
+          );
+          const Icon = group.icon;
 
           return (
-            <button
-              key={item.id}
-              onClick={() => {
-                navigate(`${basePath}${item.path}`);
-                onNavigate?.();
-              }}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-              )}
-            >
-              <Icon className="h-5 w-5 flex-shrink-0" />
-              <span className="flex-1 text-left">{item.label}</span>
-            </button>
+            <Collapsible key={group.id} open={isGroupOpen} onOpenChange={() => toggleGroup(group.id)}>
+              <CollapsibleTrigger asChild>
+                <button
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                    hasActiveItem
+                      ? "bg-sidebar-accent text-sidebar-foreground"
+                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                  )}
+                >
+                  <Icon className={cn("h-5 w-5 flex-shrink-0", group.color)} />
+                  <span className="flex-1 text-left">{group.label}</span>
+                  {isGroupOpen ? (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pl-4 space-y-0.5 mt-1">
+                {filteredItems.map((item) => {
+                  const isActive = currentPath === item.path || currentPath.startsWith(item.path + "/");
+                  const ItemIcon = item.icon;
+
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        navigate(`${basePath}${item.path}`);
+                        onNavigate?.();
+                      }}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-primary/90 text-primary-foreground"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      <ItemIcon className="h-4 w-4 flex-shrink-0" />
+                      <span className="flex-1 text-left">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </CollapsibleContent>
+            </Collapsible>
           );
         })}
       </nav>
