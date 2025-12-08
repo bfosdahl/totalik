@@ -478,9 +478,9 @@ export default function AdminKsPanel() {
               <BookOpen className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Admin – Rutiner & Malbank</h1>
+              <h1 className="text-2xl font-bold">Admin – KS Maler</h1>
               <p className="text-muted-foreground text-sm">
-                Administrer standardmaler og rutiner for alle kunder
+                Sjekkliste-maler, kvalitetsrutiner og KS-dokumenter for prosjekter
               </p>
             </div>
           </div>
