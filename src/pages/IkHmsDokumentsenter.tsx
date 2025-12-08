@@ -183,7 +183,7 @@ export default function IkHmsDokumentsenter() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Admin Templates Tab - Folder View */}
+        {/* Admin Templates Tab - Show all admin documents grouped by their actual category */}
         <TabsContent value="templates" className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-2 mb-4">
             <div className="relative flex-1">
@@ -201,64 +201,71 @@ export default function IkHmsDokumentsenter() {
             <div className="text-center py-8 text-muted-foreground">
               Laster maler...
             </div>
+          ) : adminDocuments.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="font-medium">Ingen maler tilgjengelig ennå</p>
+              <p className="text-sm mt-1">Maler vil bli lagt til av systemadministrator</p>
+            </div>
           ) : (
-            <div className="grid gap-4">
-              {IK_HMS_CATEGORIES.map((folder) => {
-                const IconComponent = iconMap[folder.icon] || FolderOpen;
-                const folderTemplates = getTemplatesByCategory(folder.name);
-                const isExpanded = expandedFolders.includes(folder.id);
+            <div className="space-y-4">
+              {/* Group documents by their actual category */}
+              {(() => {
+                // Get unique categories from admin documents
+                const categories = [...new Set(adminDocuments.map(doc => doc.category || "Generelt"))].sort();
                 
-                // Filter by search
-                const filteredFolderTemplates = folderTemplates.filter(doc =>
-                  doc.document_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  doc.description?.toLowerCase().includes(searchQuery.toLowerCase())
-                );
+                return categories.map((categoryName) => {
+                  const categoryDocs = adminDocuments.filter(doc => (doc.category || "Generelt") === categoryName);
+                  const isExpanded = expandedFolders.includes(categoryName);
+                  
+                  // Filter by search
+                  const filteredCategoryDocs = categoryDocs.filter(doc =>
+                    doc.document_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    doc.description?.toLowerCase().includes(searchQuery.toLowerCase())
+                  );
 
-                return (
-                  <Collapsible
-                    key={folder.id}
-                    open={isExpanded}
-                    onOpenChange={() => toggleFolder(folder.id)}
-                  >
-                    <Card className="overflow-hidden">
-                      <CollapsibleTrigger asChild>
-                        <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-4">
-                          <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${folder.color}`}>
-                              <IconComponent className="h-5 w-5 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <CardTitle className="text-base flex items-center gap-2">
-                                {folder.id}. {folder.name}
-                                <Badge variant="secondary" className="ml-2">
-                                  {folderTemplates.length} maler
-                                </Badge>
-                              </CardTitle>
-                              {folder.subfolders.length > 0 && (
-                                <CardDescription className="text-xs mt-1">
-                                  {folder.subfolders.slice(0, 3).join(", ")}
-                                  {folder.subfolders.length > 3 && ` +${folder.subfolders.length - 3} flere`}
-                                </CardDescription>
+                  // Skip if no docs match search
+                  if (searchQuery && filteredCategoryDocs.length === 0) return null;
+
+                  return (
+                    <Collapsible
+                      key={categoryName}
+                      open={isExpanded}
+                      onOpenChange={() => {
+                        setExpandedFolders(prev => 
+                          prev.includes(categoryName) 
+                            ? prev.filter(id => id !== categoryName)
+                            : [...prev, categoryName]
+                        );
+                      }}
+                    >
+                      <Card className="overflow-hidden">
+                        <CollapsibleTrigger asChild>
+                          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-primary">
+                                <FolderOpen className="h-5 w-5 text-primary-foreground" />
+                              </div>
+                              <div className="flex-1">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                  {categoryName}
+                                  <Badge variant="secondary" className="ml-2">
+                                    {categoryDocs.length} maler
+                                  </Badge>
+                                </CardTitle>
+                              </div>
+                              {isExpanded ? (
+                                <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                              ) : (
+                                <ChevronRight className="h-5 w-5 text-muted-foreground" />
                               )}
                             </div>
-                            {isExpanded ? (
-                              <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                            ) : (
-                              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                            )}
-                          </div>
-                        </CardHeader>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <CardContent className="pt-0 pb-4">
-                          {filteredFolderTemplates.length === 0 ? (
-                            <div className="text-center py-6 text-muted-foreground bg-muted/30 rounded-lg">
-                              <FolderOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                              <p className="text-sm">Ingen maler i denne kategorien ennå</p>
-                            </div>
-                          ) : (
+                          </CardHeader>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <CardContent className="pt-0 pb-4">
                             <div className="grid gap-2">
-                              {filteredFolderTemplates.map((doc) => (
+                              {(searchQuery ? filteredCategoryDocs : categoryDocs).map((doc) => (
                                 <div
                                   key={doc.id}
                                   className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -285,13 +292,13 @@ export default function IkHmsDokumentsenter() {
                                 </div>
                               ))}
                             </div>
-                          )}
-                        </CardContent>
-                      </CollapsibleContent>
-                    </Card>
-                  </Collapsible>
-                );
-              })}
+                          </CardContent>
+                        </CollapsibleContent>
+                      </Card>
+                    </Collapsible>
+                  );
+                });
+              })()}
             </div>
           )}
         </TabsContent>
