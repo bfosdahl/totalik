@@ -51,7 +51,7 @@ const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode; co
 export default function Ks2ByggesakDashboard() {
   const { projectId } = useParams<{ projectId: string }>();
   const { company } = useAuth();
-  const { data: projects } = useKsModule2Projects();
+  const { projects } = useKsModule2Projects();
   const project = projects?.find(p => p.id === projectId);
   const { data: byggesak, isLoading: byggesakLoading } = useProjectByggesak(projectId || "");
   const { data: forms, isLoading: formsLoading } = useByggesakForms(byggesak?.id);

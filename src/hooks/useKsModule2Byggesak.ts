@@ -123,7 +123,7 @@ export function useCreateByggesak() {
     mutationFn: async (data: Partial<Byggesak>) => {
       const { data: result, error } = await supabase
         .from("ks_module2_byggesak")
-        .insert(data)
+        .insert([data as any])
         .select()
         .single();
 
@@ -168,10 +168,10 @@ export function useCreateByggesakForm() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: Partial<ByggesakForm>) => {
+    mutationFn: async (data: Omit<Partial<ByggesakForm>, 'form_data'> & { form_data?: Record<string, unknown> }) => {
       const { data: result, error } = await supabase
         .from("ks_module2_byggesak_forms")
-        .insert(data)
+        .insert([data as any])
         .select()
         .single();
 
@@ -193,10 +193,10 @@ export function useUpdateByggesakForm() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...data }: Partial<ByggesakForm> & { id: string }) => {
+    mutationFn: async ({ id, ...data }: { id: string } & Record<string, unknown>) => {
       const { error } = await supabase
         .from("ks_module2_byggesak_forms")
-        .update(data)
+        .update(data as any)
         .eq("id", id);
 
       if (error) throw error;
