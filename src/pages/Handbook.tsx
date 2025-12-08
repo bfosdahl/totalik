@@ -75,7 +75,7 @@ interface DeviationAttachment {
 
 const Handbook = () => {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, isLoading: authLoading } = useAuth();
   const { 
     isLoading, 
     companyInfo, 
@@ -84,7 +84,8 @@ const Handbook = () => {
     riskAssessment, 
     actionPlan, 
     routines,
-    progress 
+    progress,
+    companyId
   } = useSetupWizard();
   const { deviations, isLoading: isLoadingDeviations } = useDeviations();
   const { audits, isLoading: isLoadingAudits } = useAudits();
@@ -423,11 +424,32 @@ const Handbook = () => {
     }
   };
 
-  if (isLoading || isLoadingForms) {
+  // Wait for auth and data to fully load
+  if (authLoading || isLoading || isLoadingForms) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // If no company, show message
+  if (!companyId) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="p-4 rounded-2xl bg-warning/10 mb-4">
+            <Building2 className="w-8 h-8 text-warning" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2">Ingen bedrift tilknyttet</h3>
+          <p className="text-muted-foreground max-w-md mb-6">
+            Du må være tilknyttet en bedrift for å se håndboken.
+          </p>
+          <Button onClick={() => navigate("/")} variant="outline">
+            Gå til dashboard
+          </Button>
         </div>
       </AppLayout>
     );

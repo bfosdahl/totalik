@@ -331,9 +331,9 @@ const Setup = () => {
     return progress.completed_steps.includes(stepId);
   };
 
-  // Wait for auth to load AND companyId to be available before rendering
+  // Wait for auth AND data to fully load before rendering
   // This prevents race conditions where the page renders before user data is ready
-  if (authLoading || isLoading || (!authLoading && profile && !companyId)) {
+  if (authLoading || isLoading) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center min-h-[400px]">
@@ -343,11 +343,20 @@ const Setup = () => {
     );
   }
 
+  // If profile exists but no companyId, show no company message
+  if (profile && !companyId) {
+    return (
+      <AppLayout>
+        <NoCompanyMessage />
+      </AppLayout>
+    );
+  }
+
   // State for declaration dialogs
   const [showHmsDeclaration, setShowHmsDeclaration] = useState(false);
   const [showVerneombudExemption, setShowVerneombudExemption] = useState(false);
 
-  // Show setup choice if no setup has been started and no data exists
+  // Check if we have any existing data to determine if setup has started
   const hasExistingData = goals.length > 0 || organization !== null || riskAssessment !== null || actionPlan !== null || routines !== null;
   if (showSetupChoice && !progress.current_step && progress.completed_steps.length === 0 && !hasExistingData) {
     return (
