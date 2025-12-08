@@ -39,7 +39,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { CompanyModulesDialog } from "@/components/admin/CompanyModulesDialog";
-
+import { applyDefaultHmsSetup } from "@/lib/applyDefaultHmsSetup";
 const companySchema = z.object({
   name: z.string().min(1, "Bedriftsnavn er påkrevd").max(100),
   org_number: z.string().optional(),
@@ -129,6 +129,13 @@ export default function AdminCompanies() {
       if (moduleError) {
         console.error("Error creating IK_HMS module:", moduleError);
         // Don't fail the whole operation, just log it
+      }
+      
+      // 3. Apply default HMS setup (goals, organization, risks, routines, actions)
+      // This ensures the handbook always has content even before AI setup is run
+      const setupResult = await applyDefaultHmsSetup(newCompany.id);
+      if (!setupResult.success) {
+        console.error("Error applying default HMS setup:", setupResult.error);
       }
       
       return newCompany;
