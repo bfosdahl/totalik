@@ -35,6 +35,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { Ks2PopulateExampleButton } from "./Ks2PopulateExampleButton";
 
 export function Ks2EnhancedDashboard() {
   const { projectId } = useParams();
@@ -161,6 +162,7 @@ export function Ks2EnhancedDashboard() {
                 <ClipboardCheck className="h-5 w-5" />
                 Ny SJA
               </Button>
+              {projectId && <Ks2PopulateExampleButton projectId={projectId} />}
             </div>
           </div>
         </CardContent>
