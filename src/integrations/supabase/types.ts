@@ -1735,6 +1735,74 @@ export type Database = {
           },
         ]
       }
+      hms_self_declarations: {
+        Row: {
+          city: string | null
+          company_address: string | null
+          company_id: string
+          company_name: string
+          country: string | null
+          created_at: string
+          declaration_date: string
+          employee_rep_name: string | null
+          employee_rep_signature: string | null
+          employee_rep_signed_at: string | null
+          id: string
+          manager_name: string | null
+          manager_signature: string | null
+          manager_signed_at: string | null
+          postal_code: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          company_address?: string | null
+          company_id: string
+          company_name: string
+          country?: string | null
+          created_at?: string
+          declaration_date?: string
+          employee_rep_name?: string | null
+          employee_rep_signature?: string | null
+          employee_rep_signed_at?: string | null
+          id?: string
+          manager_name?: string | null
+          manager_signature?: string | null
+          manager_signed_at?: string | null
+          postal_code?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          company_address?: string | null
+          company_id?: string
+          company_name?: string
+          country?: string | null
+          created_at?: string
+          declaration_date?: string
+          employee_rep_name?: string | null
+          employee_rep_signature?: string | null
+          employee_rep_signed_at?: string | null
+          id?: string
+          manager_name?: string | null
+          manager_signature?: string | null
+          manager_signed_at?: string | null
+          postal_code?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hms_self_declarations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_hms_stoffkartotek: {
         Row: {
           company_id: string
