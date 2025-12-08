@@ -344,17 +344,9 @@ const Setup = () => {
     );
   }
 
-  // Also wait for company data if we have a companyId
-  if (companyId && !company) {
-    return (
-      <AppLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <span className="sr-only">Laster bedriftsdata...</span>
-        </div>
-      </AppLayout>
-    );
-  }
+  // If we have a companyId but no data loaded yet, show loading
+  // Note: We use companyId from useSetupWizard, NOT company from useAuth
+  // because company from useAuth may not be loaded yet
 
   // If profile exists but no companyId, show no company message
   if (profile && !companyId) {
