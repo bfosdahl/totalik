@@ -331,28 +331,55 @@ const Setup = () => {
     return progress.completed_steps.includes(stepId);
   };
 
-  // Wait for auth AND data to fully load before rendering
-  // This prevents race conditions where the page renders before user data is ready
-  if (authLoading || isLoading) {
+  // Wait for auth to finish loading first
+  if (authLoading) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <span className="sr-only">Laster inn...</span>
+          <span className="sr-only">Laster autentisering...</span>
         </div>
       </AppLayout>
     );
   }
 
-  // If we have a companyId but no data loaded yet, show loading
-  // Note: We use companyId from useSetupWizard, NOT company from useAuth
-  // because company from useAuth may not be loaded yet
+  // If no profile after auth is done, user is not logged in - redirect to auth
+  if (!profile) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+          <div className="p-4 rounded-2xl bg-warning/10 mb-4">
+            <Building2 className="w-8 h-8 text-warning" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2">Ikke innlogget</h3>
+          <p className="text-muted-foreground max-w-md mb-6">
+            Du må være innlogget for å bruke oppsettveiviseren.
+          </p>
+          <Button onClick={() => navigate("/auth")} variant="outline">
+            Logg inn
+          </Button>
+        </div>
+      </AppLayout>
+    );
+  }
 
   // If profile exists but no companyId, show no company message
-  if (profile && !companyId) {
+  if (!companyId) {
     return (
       <AppLayout>
         <NoCompanyMessage />
+      </AppLayout>
+    );
+  }
+
+  // Wait for wizard data to load (company exists, now loading data)
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <span className="sr-only">Laster data...</span>
+        </div>
       </AppLayout>
     );
   }
