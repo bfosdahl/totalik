@@ -101,6 +101,15 @@ const Handbook = () => {
   const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>({});
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [showExportOptions, setShowExportOptions] = useState(false);
+  
+  // Optional sections for PDF export (6-11)
+  const [includeDeviationsInPdf, setIncludeDeviationsInPdf] = useState(false);
+  const [includeAuditsInPdf, setIncludeAuditsInPdf] = useState(false);
+  const [includeAnnualHmsInPdf, setIncludeAnnualHmsInPdf] = useState(false);
+  const [includeElkontrollInPdf, setIncludeElkontrollInPdf] = useState(false);
+  const [includeFysiskeForholdInPdf, setIncludeFysiskeForholdInPdf] = useState(false);
+  const [includeDagligDriftInPdf, setIncludeDagligDriftInPdf] = useState(false);
 
   // Fetch deviation attachments
   useEffect(() => {
@@ -708,17 +717,134 @@ const Handbook = () => {
         doc.setTextColor(0, 0, 0);
       }
 
+      // OPTIONAL SECTION 6: DEVIATIONS
+      if (includeDeviationsInPdf && deviations.length > 0) {
+        doc.addPage();
+        yPos = margin;
+        addSectionHeader("6. Avviksbehandling");
+        doc.setFontSize(11);
+        doc.text(`Totalt ${deviations.length} avvik registrert. ${openDeviationsCount} åpne, ${deviations.length - openDeviationsCount} lukkede.`, margin, yPos);
+        yPos += 10;
+        
+        const deviationTableData = deviations.map((d) => [
+          d.deviation_number || "-",
+          (d.title || "").substring(0, 40) + ((d.title?.length || 0) > 40 ? "..." : ""),
+          d.category || "-",
+          d.status === "closed" ? "Lukket" : d.status === "in-progress" ? "Pågår" : "Åpen",
+          d.created_at ? format(new Date(d.created_at), "dd.MM.yy") : "-",
+        ]);
+        
+        autoTable(doc, {
+          startY: yPos,
+          head: [["Nr", "Tittel", "Kategori", "Status", "Dato"]],
+          body: deviationTableData,
+          theme: "striped",
+          headStyles: { fillColor: [59, 130, 246], fontSize: 9, fontStyle: "bold" },
+          bodyStyles: { fontSize: 8 },
+          margin: { left: margin, right: margin },
+        });
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+      }
+
+      // OPTIONAL SECTION 7: AUDITS
+      if (includeAuditsInPdf && audits.length > 0) {
+        doc.addPage();
+        yPos = margin;
+        addSectionHeader("7. Revisjoner og evaluering");
+        doc.setFontSize(11);
+        doc.text(`${completedAuditsCount} gjennomførte revisjoner, ${pendingAuditsCount} planlagte/pågående.`, margin, yPos);
+        yPos += 10;
+        
+        const auditTableData = audits.map((a) => [
+          a.audit_number || "-",
+          (a.title || "").substring(0, 40),
+          a.type || "-",
+          a.status === "completed" ? "Gjennomført" : a.status === "in-progress" ? "Pågår" : "Planlagt",
+          a.scheduled_date ? format(new Date(a.scheduled_date), "dd.MM.yy") : "-",
+        ]);
+        
+        autoTable(doc, {
+          startY: yPos,
+          head: [["Nr", "Tittel", "Type", "Status", "Dato"]],
+          body: auditTableData,
+          theme: "striped",
+          headStyles: { fillColor: [59, 130, 246], fontSize: 9, fontStyle: "bold" },
+          bodyStyles: { fontSize: 8 },
+          margin: { left: margin, right: margin },
+        });
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+      }
+
+      // OPTIONAL: AUDIT FORM SECTIONS (8-11)
+      const auditFormOptions = [
+        { include: includeAnnualHmsInPdf, formType: "annual_hms" as FormType, title: "8. Årlig HMS-revisjon" },
+        { include: includeElkontrollInPdf, formType: "elkontroll" as FormType, title: "9. El-Kontroll" },
+        { include: includeFysiskeForholdInPdf, formType: "fysiske_forhold" as FormType, title: "10. Fysiske arbeidsforhold" },
+        { include: includeDagligDriftInPdf, formType: "daglig_drift" as FormType, title: "11. Daglig drift" },
+      ];
+
+      for (const option of auditFormOptions) {
+        if (option.include) {
+          const latestForm = getLatestByFormType(option.formType);
+          if (latestForm) {
+            doc.addPage();
+            yPos = margin;
+            addSectionHeader(option.title);
+            doc.setFontSize(11);
+            doc.text(`Sist gjennomført: ${latestForm.completed_at ? format(new Date(latestForm.completed_at), "d. MMMM yyyy", { locale: nb }) : "Ukjent"}`, margin, yPos);
+            yPos += 7;
+            if (latestForm.auditor_name) {
+              doc.text(`Revisor: ${latestForm.auditor_name}`, margin, yPos);
+              yPos += 7;
+            }
+            if (latestForm.participants) {
+              doc.text(`Deltakere: ${latestForm.participants}`, margin, yPos);
+              yPos += 7;
+            }
+            yPos += 5;
+            
+            // Add form data summary if available
+            if (latestForm.form_data && typeof latestForm.form_data === "object") {
+              const formData = latestForm.form_data as Record<string, any>;
+              const entries = Object.entries(formData).slice(0, 20);
+              if (entries.length > 0) {
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "bold");
+                doc.text("Kartleggingsdata:", margin, yPos);
+                yPos += 7;
+                doc.setFont("helvetica", "normal");
+                entries.forEach(([key, value]) => {
+                  checkPageBreak(8);
+                  const displayValue = typeof value === "boolean" ? (value ? "Ja" : "Nei") : String(value || "-").substring(0, 60);
+                  const keyDisplay = key.replace(/_/g, " ").substring(0, 30);
+                  doc.text(`• ${keyDisplay}: ${displayValue}`, margin + 5, yPos);
+                  yPos += 6;
+                });
+              }
+            }
+          } else {
+            doc.addPage();
+            yPos = margin;
+            addSectionHeader(option.title);
+            doc.setTextColor(150, 150, 150);
+            doc.text("Ikke gjennomført ennå.", margin, yPos);
+            doc.setTextColor(0, 0, 0);
+          }
+        }
+      }
+
       // Save PDF
       const fileName = `IK-Handbok_${companyName.replace(/[^a-zA-Z0-9æøåÆØÅ]/g, "_")}_${format(new Date(), "yyyy-MM-dd")}.pdf`;
       doc.save(fileName);
       toast.success("PDF lastet ned!");
+      setShowExportOptions(false);
     } catch (error) {
       console.error("Error generating PDF:", error);
       toast.error("Kunne ikke generere PDF");
     } finally {
       setIsGeneratingPdf(false);
     }
-  }, [goals, organization, riskAssessment, actionPlan, routines, companyInfo]);
+  }, [goals, organization, riskAssessment, actionPlan, routines, companyInfo, deviations, audits, openDeviationsCount, completedAuditsCount, pendingAuditsCount, includeDeviationsInPdf, includeAuditsInPdf, includeAnnualHmsInPdf, includeElkontrollInPdf, includeFysiskeForholdInPdf, includeDagligDriftInPdf, getLatestByFormType]);
 
   const handleSectionClick = (section: typeof handbookSections[0]) => {
     // All sections can be expanded/collapsed
@@ -789,16 +915,128 @@ const Handbook = () => {
               <Eye className="w-4 h-4" />
               Forhåndsvis
             </Button>
-            <Button className="gap-2" onClick={handleDownloadPdf} disabled={isGeneratingPdf}>
-              {isGeneratingPdf ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              {isGeneratingPdf ? "Genererer..." : "Last ned PDF"}
+            <Button className="gap-2" onClick={() => setShowExportOptions(true)}>
+              <Download className="w-4 h-4" />
+              Last ned PDF
             </Button>
           </div>
         </motion.div>
+
+        {/* PDF Export Options Dialog */}
+        <AnimatePresence>
+          {showExportOptions && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setShowExportOptions(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-card rounded-xl border border-border shadow-lg max-w-md w-full p-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="text-lg font-semibold mb-2">Eksporter HMS-håndbok</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Seksjon 1-5 inkluderes alltid. Velg hvilke tilleggsseksjoner du vil ha med:
+                </p>
+                
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center justify-between py-2 border-b border-border">
+                    <Label htmlFor="include-deviations" className="text-sm cursor-pointer">
+                      6. Avviksbehandling ({deviations.length} avvik)
+                    </Label>
+                    <Switch
+                      id="include-deviations"
+                      checked={includeDeviationsInPdf}
+                      onCheckedChange={setIncludeDeviationsInPdf}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-2 border-b border-border">
+                    <Label htmlFor="include-audits" className="text-sm cursor-pointer">
+                      7. Revisjoner og evaluering ({audits.length} revisjoner)
+                    </Label>
+                    <Switch
+                      id="include-audits"
+                      checked={includeAuditsInPdf}
+                      onCheckedChange={setIncludeAuditsInPdf}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-2 border-b border-border">
+                    <Label htmlFor="include-annual-hms" className="text-sm cursor-pointer">
+                      8. Årlig HMS-revisjon
+                    </Label>
+                    <Switch
+                      id="include-annual-hms"
+                      checked={includeAnnualHmsInPdf}
+                      onCheckedChange={setIncludeAnnualHmsInPdf}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-2 border-b border-border">
+                    <Label htmlFor="include-elkontroll" className="text-sm cursor-pointer">
+                      9. El-Kontroll
+                    </Label>
+                    <Switch
+                      id="include-elkontroll"
+                      checked={includeElkontrollInPdf}
+                      onCheckedChange={setIncludeElkontrollInPdf}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-2 border-b border-border">
+                    <Label htmlFor="include-fysiske" className="text-sm cursor-pointer">
+                      10. Fysiske arbeidsforhold
+                    </Label>
+                    <Switch
+                      id="include-fysiske"
+                      checked={includeFysiskeForholdInPdf}
+                      onCheckedChange={setIncludeFysiskeForholdInPdf}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-2">
+                    <Label htmlFor="include-daglig" className="text-sm cursor-pointer">
+                      11. Daglig drift
+                    </Label>
+                    <Switch
+                      id="include-daglig"
+                      checked={includeDagligDriftInPdf}
+                      onCheckedChange={setIncludeDagligDriftInPdf}
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setShowExportOptions(false)}
+                  >
+                    Avbryt
+                  </Button>
+                  <Button
+                    className="flex-1 gap-2"
+                    onClick={handleDownloadPdf}
+                    disabled={isGeneratingPdf}
+                  >
+                    {isGeneratingPdf ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4" />
+                    )}
+                    {isGeneratingPdf ? "Genererer..." : "Last ned"}
+                  </Button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Overview card */}
         <motion.div
