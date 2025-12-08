@@ -34,12 +34,15 @@ import {
   ShieldAlert,
   Scale,
   FlaskConical,
+  ShoppingCart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { SubmitAnonymousMessageDialog } from "@/components/anonymous/SubmitAnonymousMessageDialog";
+import { OrderModuleDialog } from "@/components/modules/OrderModuleDialog";
+import { useModulePricing } from "@/hooks/useModulePricing";
 
 // Standard navigation items - always visible
 const standardNavItems = [
@@ -142,9 +145,32 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   
   // Check if KS Bygg module is active for this company
   const hasKsBygg = hasModule("IK_BYGG");
+  const hasIkMat = hasModule("IK_MAT");
+  const hasGdpr = hasModule("GDPR");
+  const hasApenhetsloven = hasModule("APENHETSLOVEN");
+  
+  // Module pricing for ordering
+  const { getPricing, isLoading: pricingLoading } = useModulePricing();
   
   // State for anonymous message dialog
   const [showAnonymousDialog, setShowAnonymousDialog] = useState(false);
+  
+  // State for order module dialog
+  const [orderDialogOpen, setOrderDialogOpen] = useState(false);
+  const [orderModuleType, setOrderModuleType] = useState<string | null>(null);
+  
+  // Check if user can order modules (company_admin or hms_responsible)
+  const canOrderModules = isCompanyAdmin;
+  
+  const handleOrderModule = (moduleType: string) => {
+    setOrderModuleType(moduleType);
+    setOrderDialogOpen(true);
+  };
+  
+  const handleOrderComplete = () => {
+    // Refresh modules after order
+    window.location.reload();
+  };
 
   // Get company name from context
   const companyName = company?.name || "Ingen bedrift";
@@ -513,22 +539,24 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             </AnimatePresence>
           </div>
 
-          {/* IK/MAT collapsible section - similar to KS Bygg */}
-          {hasModule("IK_MAT") && (
-            <div>
-              <button
-                onClick={() => toggleSection('ikMat')}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
-                  collapsed && "justify-center",
-                  location.pathname.startsWith("/ik-mat")
-                    ? "text-sidebar-foreground"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                )}
-              >
+          {/* IK/MAT collapsible section - visible but locked if module not active */}
+          <div className={cn(!hasIkMat && "opacity-60")}>
+            <button
+              onClick={() => hasIkMat && toggleSection('ikMat')}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
+                collapsed && "justify-center",
+                !hasIkMat && "cursor-not-allowed",
+                hasIkMat && location.pathname.startsWith("/ik-mat")
+                  ? "text-sidebar-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+                !hasIkMat && "hover:bg-transparent"
+              )}
+              title={!hasIkMat ? "Denne modulen er ikke aktivert for din bedrift" : undefined}
+            >
               <ShieldCheck className={cn(
                 "w-5 h-5 flex-shrink-0 transition-transform text-red-500",
-                !location.pathname.startsWith("/ik-mat") && "group-hover:scale-110"
+                hasIkMat && !location.pathname.startsWith("/ik-mat") && "group-hover:scale-110"
               )} />
               <AnimatePresence mode="wait">
                 {!collapsed && (
@@ -542,7 +570,9 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                       <span className="w-2 h-2 rounded-full bg-red-500" />
                       IK/MAT
                     </motion.span>
-                    {expandedSections.has('ikMat') ? (
+                    {!hasIkMat ? (
+                      <Lock className="w-4 h-4 text-muted-foreground" />
+                    ) : expandedSections.has('ikMat') ? (
                       <ChevronUp className="w-4 h-4" />
                     ) : (
                       <ChevronDown className="w-4 h-4" />
@@ -551,122 +581,142 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                 )}
               </AnimatePresence>
             </button>
-              
-              {/* IK/MAT submenu */}
-              <AnimatePresence>
-                {expandedSections.has('ikMat') && !collapsed && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
+            
+            {/* Locked module message with order button */}
+            {!hasIkMat && !collapsed && (
+              <div className="pl-6 pr-3 py-2 space-y-2">
+                {canOrderModules ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleOrderModule("IK_MAT")}
+                    className="w-full justify-start text-xs h-auto py-1.5 text-primary hover:text-primary"
                   >
-                    <div className="pl-6 space-y-1 mt-1">
-                      <NavLink
-                        to="/ik-mat/handbok"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/ik-mat/handbok"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        Håndbok
-                      </NavLink>
-                      <NavLink
-                        to="/ik-mat/oppsett"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/ik-mat/oppsett"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        Oppsett
-                      </NavLink>
-                      <NavLink
-                        to="/ik-mat/haccp"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/ik-mat/haccp"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        HACCP / KKP
-                      </NavLink>
-                      <NavLink
-                        to="/ik-mat/risikovurdering"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/ik-mat/risikovurdering"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        Risikovurdering
-                      </NavLink>
-                      <NavLink
-                        to="/ik-mat/sjekklister"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/ik-mat/sjekklister"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        Sjekklister
-                      </NavLink>
-                      <NavLink
-                        to="/ik-mat/renholdsplan"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/ik-mat/renholdsplan"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        Renholdsplan
-                      </NavLink>
-                      <NavLink
-                        to="/ik-mat/allergener"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/ik-mat/allergener"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        Allergener
-                      </NavLink>
-                      <NavLink
-                        to="/ik-mat/faste-avtaler"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/ik-mat/faste-avtaler"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        Faste avtaler
-                      </NavLink>
-                      <NavLink
-                        to="/ik-mat/sporbarhet"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/ik-mat/sporbarhet"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        Sporbarhet
-                      </NavLink>
-                    </div>
-                  </motion.div>
+                    <ShoppingCart className="w-3 h-3 mr-2" />
+                    Bestill modul
+                  </Button>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Kontakt bedriftsadmin for å aktivere
+                  </p>
                 )}
-              </AnimatePresence>
-            </div>
-          )}
+              </div>
+            )}
+              
+            {/* IK/MAT submenu */}
+            <AnimatePresence>
+              {hasIkMat && expandedSections.has('ikMat') && !collapsed && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-6 space-y-1 mt-1">
+                    <NavLink
+                      to="/ik-mat/handbok"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-mat/handbok"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Håndbok
+                    </NavLink>
+                    <NavLink
+                      to="/ik-mat/oppsett"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-mat/oppsett"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Oppsett
+                    </NavLink>
+                    <NavLink
+                      to="/ik-mat/haccp"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-mat/haccp"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      HACCP / KKP
+                    </NavLink>
+                    <NavLink
+                      to="/ik-mat/risikovurdering"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-mat/risikovurdering"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Risikovurdering
+                    </NavLink>
+                    <NavLink
+                      to="/ik-mat/sjekklister"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-mat/sjekklister"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Sjekklister
+                    </NavLink>
+                    <NavLink
+                      to="/ik-mat/renholdsplan"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-mat/renholdsplan"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Renholdsplan
+                    </NavLink>
+                    <NavLink
+                      to="/ik-mat/allergener"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-mat/allergener"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Allergener
+                    </NavLink>
+                    <NavLink
+                      to="/ik-mat/faste-avtaler"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-mat/faste-avtaler"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Faste avtaler
+                    </NavLink>
+                    <NavLink
+                      to="/ik-mat/sporbarhet"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-mat/sporbarhet"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Sporbarhet
+                    </NavLink>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* KS Bygg collapsible section - visible but locked if module not active */}
           <div className={cn(!hasKsBygg && "opacity-60")}>
@@ -711,12 +761,24 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               </AnimatePresence>
             </button>
             
-            {/* Locked module message */}
+            {/* Locked module message with order button */}
             {!hasKsBygg && !collapsed && (
-              <div className="pl-6 pr-3 py-2">
-                <p className="text-xs text-muted-foreground">
-                  Kontakt oss for å aktivere denne modulen
-                </p>
+              <div className="pl-6 pr-3 py-2 space-y-2">
+                {canOrderModules ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleOrderModule("IK_BYGG")}
+                    className="w-full justify-start text-xs h-auto py-1.5 text-primary hover:text-primary"
+                  >
+                    <ShoppingCart className="w-3 h-3 mr-2" />
+                    Bestill modul
+                  </Button>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Kontakt bedriftsadmin for å aktivere
+                  </p>
+                )}
               </div>
             )}
             
@@ -747,190 +809,238 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             </AnimatePresence>
           </div>
 
-          {/* GDPR collapsible section */}
-          {hasModule("GDPR") && (
-            <div>
-              <button
-                onClick={() => toggleSection('gdpr')}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
-                  collapsed && "justify-center",
-                  location.pathname.startsWith("/gdpr")
-                    ? "text-sidebar-foreground"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                )}
-              >
-                <ShieldAlert className={cn(
-                  "w-5 h-5 flex-shrink-0 transition-transform",
-                  !location.pathname.startsWith("/gdpr") && "group-hover:scale-110"
-                )} />
-                <AnimatePresence mode="wait">
-                  {!collapsed && (
-                    <>
-                      <motion.span
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        className="font-medium text-sm flex-1 text-left"
-                      >
-                        GDPR
-                      </motion.span>
-                      {expandedSections.has('gdpr') ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </>
-                  )}
-                </AnimatePresence>
-              </button>
-              
-              <AnimatePresence>
-                {expandedSections.has('gdpr') && !collapsed && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="pl-6 space-y-1 mt-1">
-                      <NavLink
-                        to="/gdpr/oversikt"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/gdpr/oversikt"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        Oversikt
-                      </NavLink>
-                      <NavLink
-                        to="/gdpr/dokumentasjon"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/gdpr/dokumentasjon"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        Dokumentasjon
-                      </NavLink>
-                      <NavLink
-                        to="/gdpr/sjekkliste"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/gdpr/sjekkliste"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        Sjekkliste
-                      </NavLink>
-                    </div>
-                  </motion.div>
+          {/* GDPR collapsible section - visible but locked if module not active */}
+          <div className={cn(!hasGdpr && "opacity-60")}>
+            <button
+              onClick={() => hasGdpr && toggleSection('gdpr')}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
+                collapsed && "justify-center",
+                !hasGdpr && "cursor-not-allowed",
+                hasGdpr && location.pathname.startsWith("/gdpr")
+                  ? "text-sidebar-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+                !hasGdpr && "hover:bg-transparent"
+              )}
+              title={!hasGdpr ? "Denne modulen er ikke aktivert for din bedrift" : undefined}
+            >
+              <ShieldAlert className={cn(
+                "w-5 h-5 flex-shrink-0 transition-transform",
+                hasGdpr && !location.pathname.startsWith("/gdpr") && "group-hover:scale-110"
+              )} />
+              <AnimatePresence mode="wait">
+                {!collapsed && (
+                  <>
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      className="font-medium text-sm flex-1 text-left"
+                    >
+                      GDPR
+                    </motion.span>
+                    {!hasGdpr ? (
+                      <Lock className="w-4 h-4 text-muted-foreground" />
+                    ) : expandedSections.has('gdpr') ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </>
                 )}
               </AnimatePresence>
-            </div>
-          )}
+            </button>
+            
+            {/* Locked module message with order button */}
+            {!hasGdpr && !collapsed && (
+              <div className="pl-6 pr-3 py-2 space-y-2">
+                {canOrderModules ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleOrderModule("GDPR")}
+                    className="w-full justify-start text-xs h-auto py-1.5 text-primary hover:text-primary"
+                  >
+                    <ShoppingCart className="w-3 h-3 mr-2" />
+                    Bestill modul
+                  </Button>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Kontakt bedriftsadmin for å aktivere
+                  </p>
+                )}
+              </div>
+            )}
+            
+            <AnimatePresence>
+              {hasGdpr && expandedSections.has('gdpr') && !collapsed && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-6 space-y-1 mt-1">
+                    <NavLink
+                      to="/gdpr/oversikt"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/gdpr/oversikt"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Oversikt
+                    </NavLink>
+                    <NavLink
+                      to="/gdpr/dokumentasjon"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/gdpr/dokumentasjon"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Dokumentasjon
+                    </NavLink>
+                    <NavLink
+                      to="/gdpr/sjekkliste"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/gdpr/sjekkliste"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Sjekkliste
+                    </NavLink>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-          {/* Åpenhetsloven collapsible section */}
-          {hasModule("APENHETSLOVEN") && (
-            <div>
-              <button
-                onClick={() => toggleSection('apenhetsloven')}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
-                  collapsed && "justify-center",
-                  location.pathname.startsWith("/apenhetsloven")
-                    ? "text-sidebar-foreground"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                )}
-              >
-                <Scale className={cn(
-                  "w-5 h-5 flex-shrink-0 transition-transform",
-                  !location.pathname.startsWith("/apenhetsloven") && "group-hover:scale-110"
-                )} />
-                <AnimatePresence mode="wait">
-                  {!collapsed && (
-                    <>
-                      <motion.span
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        className="font-medium text-sm flex-1 text-left"
-                      >
-                        Åpenhetsloven
-                      </motion.span>
-                      {expandedSections.has('apenhetsloven') ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </>
-                  )}
-                </AnimatePresence>
-              </button>
-              
-              <AnimatePresence>
-                {expandedSections.has('apenhetsloven') && !collapsed && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="pl-6 space-y-1 mt-1">
-                      <NavLink
-                        to="/apenhetsloven/oversikt"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/apenhetsloven/oversikt"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        Oversikt
-                      </NavLink>
-                      <NavLink
-                        to="/apenhetsloven/aktsomhetsvurdering"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/apenhetsloven/aktsomhetsvurdering"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        Aktsomhetsvurdering
-                      </NavLink>
-                      <NavLink
-                        to="/apenhetsloven/innsyn"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/apenhetsloven/innsyn"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        Innsyn forespørsler
-                      </NavLink>
-                      <NavLink
-                        to="/apenhetsloven/redegjoerelse"
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                          location.pathname === "/apenhetsloven/redegjoerelse"
-                            ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        Årlig redegjørelse
-                      </NavLink>
-                    </div>
-                  </motion.div>
+          {/* Åpenhetsloven collapsible section - visible but locked if module not active */}
+          <div className={cn(!hasApenhetsloven && "opacity-60")}>
+            <button
+              onClick={() => hasApenhetsloven && toggleSection('apenhetsloven')}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
+                collapsed && "justify-center",
+                !hasApenhetsloven && "cursor-not-allowed",
+                hasApenhetsloven && location.pathname.startsWith("/apenhetsloven")
+                  ? "text-sidebar-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+                !hasApenhetsloven && "hover:bg-transparent"
+              )}
+              title={!hasApenhetsloven ? "Denne modulen er ikke aktivert for din bedrift" : undefined}
+            >
+              <Scale className={cn(
+                "w-5 h-5 flex-shrink-0 transition-transform",
+                hasApenhetsloven && !location.pathname.startsWith("/apenhetsloven") && "group-hover:scale-110"
+              )} />
+              <AnimatePresence mode="wait">
+                {!collapsed && (
+                  <>
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      className="font-medium text-sm flex-1 text-left"
+                    >
+                      Åpenhetsloven
+                    </motion.span>
+                    {!hasApenhetsloven ? (
+                      <Lock className="w-4 h-4 text-muted-foreground" />
+                    ) : expandedSections.has('apenhetsloven') ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </>
                 )}
               </AnimatePresence>
-            </div>
-          )}
+            </button>
+            
+            {/* Locked module message with order button */}
+            {!hasApenhetsloven && !collapsed && (
+              <div className="pl-6 pr-3 py-2 space-y-2">
+                {canOrderModules ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleOrderModule("APENHETSLOVEN")}
+                    className="w-full justify-start text-xs h-auto py-1.5 text-primary hover:text-primary"
+                  >
+                    <ShoppingCart className="w-3 h-3 mr-2" />
+                    Bestill modul
+                  </Button>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Kontakt bedriftsadmin for å aktivere
+                  </p>
+                )}
+              </div>
+            )}
+            
+            <AnimatePresence>
+              {hasApenhetsloven && expandedSections.has('apenhetsloven') && !collapsed && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-6 space-y-1 mt-1">
+                    <NavLink
+                      to="/apenhetsloven/oversikt"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/apenhetsloven/oversikt"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Oversikt
+                    </NavLink>
+                    <NavLink
+                      to="/apenhetsloven/aktsomhetsvurdering"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/apenhetsloven/aktsomhetsvurdering"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Aktsomhetsvurdering
+                    </NavLink>
+                    <NavLink
+                      to="/apenhetsloven/innsyn"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/apenhetsloven/innsyn"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Innsyn forespørsler
+                    </NavLink>
+                    <NavLink
+                      to="/apenhetsloven/redegjoerelse"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/apenhetsloven/redegjoerelse"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Årlig redegjørelse
+                    </NavLink>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Admin link for system admins */}
           {isSystemAdmin && (
@@ -1000,6 +1110,15 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
       <SubmitAnonymousMessageDialog 
         open={showAnonymousDialog} 
         onOpenChange={setShowAnonymousDialog} 
+      />
+      
+      {/* Order module dialog */}
+      <OrderModuleDialog
+        open={orderDialogOpen}
+        onOpenChange={setOrderDialogOpen}
+        moduleType={orderModuleType || ""}
+        pricing={orderModuleType ? getPricing(orderModuleType) : null}
+        onOrderComplete={handleOrderComplete}
       />
     </>
   );

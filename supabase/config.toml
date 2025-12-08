@@ -50,3 +50,12 @@ verify_jwt = false
 
 [functions.parse-sds-pdf]
 verify_jwt = true
+
+[functions.send-module-order-confirmation]
+verify_jwt = true
+
+[functions.send-document-email]
+verify_jwt = true
+
+[functions.send-meeting-minutes]
+verify_jwt = true
