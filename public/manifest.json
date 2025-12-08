@@ -1,6 +1,6 @@
 {
-  "name": "Athena HMS",
-  "short_name": "Athena HMS",
+  "name": "Total-IK",
+  "short_name": "Total-IK",
   "description": "Internkontrollsystem for HMS, mat, bygg og alkoholsalg",
   "start_url": "/",
   "display": "standalone",
