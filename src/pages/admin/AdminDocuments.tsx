@@ -34,25 +34,17 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
-// IK-HMS Mappestruktur (17 hovedmapper)
+// IK-HMS Mappestruktur (9 hovedmapper)
 const IK_HMS_FOLDERS = [
-  { id: "0", name: "Virksomhetsinformasjon", subfolders: ["0.1 Bedriftsinfo", "0.2 Kontaktinformasjon", "0.3 Organisasjonskart"] },
-  { id: "1", name: "Organisasjon og personal", subfolders: ["1.1 Roller og ansvar", "1.2 Arbeidsavtaler", "1.3 Personalhåndbok"] },
-  { id: "2", name: "Regelverk og krav", subfolders: ["2.1 Lover", "2.2 Forskrifter", "2.3 Standarder"] },
-  { id: "3", name: "HMS-mål, handlingsplan og årshjul", subfolders: ["3.1 HMS-mål", "3.2 Handlingsplan", "3.3 Årshjul"] },
-  { id: "4", name: "Risikovurderinger", subfolders: ["4.1 Generelle risikovurderinger", "4.2 Spesifikke risikovurderinger", "4.3 Maler"] },
-  { id: "5", name: "HMS-rutiner og prosedyrer", subfolders: ["5.1 Arbeidsrutiner", "5.2 Sikkerhetsprosedyrer", "5.3 Vernerunder"] },
-  { id: "6", name: "Avvikssystem", subfolders: ["6.1 Avviksprosedyrer", "6.2 Skjemaer", "6.3 Rapporter"] },
-  { id: "7", name: "SJA – Sikker Jobb Analyse", subfolders: ["7.1 SJA-maler", "7.2 Veiledninger", "7.3 Utfylte SJA'er"] },
-  { id: "8", name: "Verneombud og medvirkning", subfolders: ["8.1 Verneombudsinfo", "8.2 AMU", "8.3 Medvirkningsrutiner"] },
-  { id: "9", name: "Førstehjelp, beredskap og brannvern", subfolders: ["9.1 Førstehjelp", "9.2 Beredskapsplaner", "9.3 Brannvern"] },
-  { id: "10", name: "Kjemikalier og stoffkartotek", subfolders: ["10.1 Stoffkartotek", "10.2 Sikkerhetsdatablader", "10.3 Rutiner"] },
-  { id: "11", name: "Maskiner, verktøy og utstyr", subfolders: ["11.1 Maskinliste", "11.2 Brukerveiledninger", "11.3 Vedlikeholdsrutiner"] },
-  { id: "12", name: "Sjekklister (HMS)", subfolders: ["12.1 Daglige sjekklister", "12.2 Periodiske sjekklister", "12.3 Maler"] },
-  { id: "13", name: "Revisjon og årlig gjennomgang", subfolders: ["13.1 Revisjonsrapporter", "13.2 Årlig gjennomgang", "13.3 Forbedringstiltak"] },
-  { id: "14", name: "Skjema og dokumentmaler", subfolders: ["14.1 Arbeidsavtaler", "14.2 HMS-skjemaer", "14.3 Generelle maler"] },
-  { id: "15", name: "Eksterne avtaler og rapporter", subfolders: ["15.1 BHT-avtaler", "15.2 Forsikringer", "15.3 Rapporter"] },
-  { id: "16", name: "Arkiv", subfolders: ["16.1 Historiske dokumenter", "16.2 Utgåtte rutiner", "16.3 Gamle versjoner"] },
+  { id: "0", name: "Grunnlag & Policy", subfolders: ["0.1 HMS-policy", "0.2 Organisasjonskart", "0.3 Roller og ansvar"] },
+  { id: "1", name: "SHA-plan", subfolders: ["1.1 SHA-planer", "1.2 Maler", "1.3 Veiledninger"] },
+  { id: "2", name: "Risiko & SJA", subfolders: ["2.1 Risikovurderinger", "2.2 SJA-maler", "2.3 Utfylte SJA'er"] },
+  { id: "3", name: "Rutiner", subfolders: ["3.1 HMS-rutiner", "3.2 Arbeidsprosedyrer", "3.3 Nødprosedyrer"] },
+  { id: "4", name: "Vernerunder & RUH", subfolders: ["4.1 Vernerundemaler", "4.2 RUH-skjemaer", "4.3 Rapporter"] },
+  { id: "5", name: "Stoffkartotek", subfolders: ["5.1 Sikkerhetsdatablader", "5.2 Kjemikalieliste", "5.3 Rutiner"] },
+  { id: "6", name: "Avvik & Hendelser", subfolders: ["6.1 Avviksskjemaer", "6.2 Hendelsesrapporter", "6.3 Oppfølging"] },
+  { id: "7", name: "Opplæring & Kurs", subfolders: ["7.1 Kursmateriell", "7.2 Kompetanseoversikt", "7.3 Sertifikater"] },
+  { id: "8", name: "Årlig gjennomgang", subfolders: ["8.1 Revisjonsrapporter", "8.2 HMS-årshjul", "8.3 Forbedringstiltak"] },
 ];
 
 interface AdminDocument {
@@ -74,7 +66,7 @@ export default function AdminDocuments() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
-  const [expandedFolders, setExpandedFolders] = useState<string[]>(["0", "1", "14"]);
+  const [expandedFolders, setExpandedFolders] = useState<string[]>(["0", "1", "3"]);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -326,9 +318,9 @@ export default function AdminDocuments() {
               <Leaf className="h-6 w-6 text-emerald-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Admin – Dokumenter (IK-HMS)</h1>
+              <h1 className="text-2xl font-bold">Admin – Dokumentsenter (IK-HMS)</h1>
               <p className="text-muted-foreground text-sm">
-                Sentralt lager for IK-HMS dokumenter, maler og rutiner
+                IK-HMS dokumenter: SHA, rutiner, avvik, opplæring og mer
               </p>
             </div>
           </div>
