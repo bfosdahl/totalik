@@ -148,6 +148,8 @@ const Setup = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [hasInitializedStep, setHasInitializedStep] = useState(false);
   const [showSetupChoice, setShowSetupChoice] = useState(true);
+  const [showHmsDeclaration, setShowHmsDeclaration] = useState(false);
+  const [showVerneombudExemption, setShowVerneombudExemption] = useState(false);
   const navigate = useNavigate();
 
   // Get navigation origin from URL params
@@ -384,23 +386,21 @@ const Setup = () => {
     );
   }
 
-  // State for declaration dialogs
-  const [showHmsDeclaration, setShowHmsDeclaration] = useState(false);
-  const [showVerneombudExemption, setShowVerneombudExemption] = useState(false);
+  // Declaration dialogs state is defined at top of component to follow React hooks rules
 
   // Check if we have any existing data to determine if setup has started
   const hasExistingData = goals.length > 0 || organization !== null || riskAssessment !== null || actionPlan !== null || routines !== null;
   if (showSetupChoice && !progress.current_step && progress.completed_steps.length === 0 && !hasExistingData) {
     return (
       <AppLayout>
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col gap-1"
           >
-            <h1 className="text-2xl font-bold tracking-tight">Oppsett av internkontroll</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Oppsett av internkontroll</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Velg hvordan du vil sette opp ditt HMS-system
             </p>
           </motion.div>
@@ -409,25 +409,25 @@ const Setup = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="grid md:grid-cols-2 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"
           >
             {/* AI Setup Card */}
             <Card 
               className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50 group"
               onClick={() => navigate('/setup/ai')}
             >
-              <div className="p-6 space-y-4">
-                <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-primary mx-auto group-hover:scale-110 transition-transform">
-                  <Sparkles className="w-8 h-8 text-primary-foreground" />
+              <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+                <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-primary mx-auto group-hover:scale-110 transition-transform">
+                  <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-primary-foreground" />
                 </div>
-                <div className="text-center space-y-2">
-                  <h3 className="text-xl font-semibold">AI-assistert oppsett</h3>
-                  <p className="text-muted-foreground text-sm">
+                <div className="text-center space-y-1 sm:space-y-2">
+                  <h3 className="text-lg sm:text-xl font-semibold">AI-assistert oppsett</h3>
+                  <p className="text-muted-foreground text-xs sm:text-sm">
                     La vår AI-veileder hjelpe deg gjennom oppsettet. Besvarer spørsmål og får 
                     skreddersydd HMS-system på 5-10 minutter.
                   </p>
                 </div>
-                <div className="space-y-2 text-sm">
+                <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
                     <span>Rask og enkel veiledning</span>
@@ -453,18 +453,18 @@ const Setup = () => {
               className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50 group"
               onClick={() => setShowSetupChoice(false)}
             >
-              <div className="p-6 space-y-4">
-                <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-muted mx-auto group-hover:scale-110 transition-transform">
-                  <Edit className="w-8 h-8 text-foreground" />
+              <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+                <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-muted mx-auto group-hover:scale-110 transition-transform">
+                  <Edit className="w-6 h-6 sm:w-8 sm:h-8 text-foreground" />
                 </div>
-                <div className="text-center space-y-2">
-                  <h3 className="text-xl font-semibold">Manuelt oppsett</h3>
-                  <p className="text-muted-foreground text-sm">
+                <div className="text-center space-y-1 sm:space-y-2">
+                  <h3 className="text-lg sm:text-xl font-semibold">Manuelt oppsett</h3>
+                  <p className="text-muted-foreground text-xs sm:text-sm">
                     Gå gjennom en strukturert 6-stegs veiviser hvor du selv fyller inn 
                     all informasjon og får full kontroll.
                   </p>
                 </div>
-                <div className="space-y-2 text-sm">
+                <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
                     <span>Full kontroll over innhold</span>
