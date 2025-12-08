@@ -1830,6 +1830,62 @@ export type Database = {
           },
         ]
       }
+      ik_hms_company_documents: {
+        Row: {
+          category: string | null
+          company_id: string
+          created_at: string
+          description: string | null
+          document_name: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          updated_at: string
+          uploaded_by: string | null
+          uploaded_by_name: string
+        }
+        Insert: {
+          category?: string | null
+          company_id: string
+          created_at?: string
+          description?: string | null
+          document_name: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name: string
+        }
+        Update: {
+          category?: string | null
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          document_name?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_hms_company_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_hms_stoffkartotek: {
         Row: {
           company_id: string
