@@ -1842,7 +1842,11 @@ export type Database = {
           file_size: number | null
           file_type: string | null
           id: string
+          include_in_pdf: boolean | null
+          original_document_id: string | null
+          requires_signature: boolean | null
           updated_at: string
+          upload_deadline_days: number | null
           uploaded_by: string | null
           uploaded_by_name: string
         }
@@ -1857,7 +1861,11 @@ export type Database = {
           file_size?: number | null
           file_type?: string | null
           id?: string
+          include_in_pdf?: boolean | null
+          original_document_id?: string | null
+          requires_signature?: boolean | null
           updated_at?: string
+          upload_deadline_days?: number | null
           uploaded_by?: string | null
           uploaded_by_name: string
         }
@@ -1872,7 +1880,11 @@ export type Database = {
           file_size?: number | null
           file_type?: string | null
           id?: string
+          include_in_pdf?: boolean | null
+          original_document_id?: string | null
+          requires_signature?: boolean | null
           updated_at?: string
+          upload_deadline_days?: number | null
           uploaded_by?: string | null
           uploaded_by_name?: string
         }
@@ -1882,6 +1894,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_hms_company_documents_original_document_id_fkey"
+            columns: ["original_document_id"]
+            isOneToOne: false
+            referencedRelation: "ik_hms_company_documents"
             referencedColumns: ["id"]
           },
         ]
