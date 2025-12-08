@@ -81,7 +81,7 @@ export interface WizardProgress {
 }
 
 export function useSetupWizard() {
-  const { profile } = useAuth();
+  const { profile, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -101,6 +101,12 @@ export function useSetupWizard() {
 
   // Load wizard progress, goals, organization, and risk assessment
   useEffect(() => {
+    // Wait for auth to finish loading
+    if (authLoading) {
+      return;
+    }
+
+    // If no company ID, stop loading
     if (!companyId) {
       setIsLoading(false);
       return;
@@ -108,6 +114,7 @@ export function useSetupWizard() {
 
     const loadData = async () => {
       setIsLoading(true);
+      console.log("[useSetupWizard] Loading data for company:", companyId);
       try {
         // Load progress
         const { data: progressData } = await supabase
@@ -223,6 +230,7 @@ export function useSetupWizard() {
             logo_url: companyData.logo_url,
           });
         }
+        console.log("[useSetupWizard] Data loaded successfully for company:", companyId);
       } catch (error) {
         console.error("Error loading wizard data:", error);
       } finally {
@@ -231,7 +239,7 @@ export function useSetupWizard() {
     };
 
     loadData();
-  }, [companyId]);
+  }, [companyId, authLoading]);
 
   // Save progress
   const saveProgress = useCallback(async (newProgress: Partial<WizardProgress>) => {
