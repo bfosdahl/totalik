@@ -691,6 +691,45 @@ Kontroll og revisjon
     examples: "",
     remember: "",
     is_predefined: true
+  },
+  {
+    routine_number: "1250",
+    routine_name: "Anonymt Varslingssystem",
+    category: "Helse, Miljø og Sikkerhet",
+    purpose: "Sikre at alle ansatte har mulighet til å varsle om kritikkverdige forhold på arbeidsplassen anonymt, og at slike varsler blir håndtert på en forsvarlig og konfidensiell måte.",
+    responsibility: "Daglig leder har overordnet ansvar for at varslingssystemet er tilgjengelig og fungerer.\n\nVerneombud og leder har ansvar for å motta, behandle og følge opp anonyme meldinger.\n\nAlle ansatte har rett til å varsle anonymt uten frykt for gjengjeldelse.",
+    procedure: `Tilgang til varslingssystemet
+• Alle ansatte har tilgang til anonymt varslingssystem via HMS-systemet.
+• Varsling kan gjøres fra dashboardet eller under "Mitt arbeidsforhold" i sidemenyen.
+• Systemet sikrer at avsenders identitet ikke avsløres.
+
+Innsending av anonym melding
+• Velg kategori for varselet (HMS-forhold, Arbeidsmiljø, Diskriminering, Økonomi/korrupsjon, Annet).
+• Beskriv forholdet så detaljert som mulig uten å avsløre egen identitet.
+• Meldingen sendes automatisk til leder og verneombud.
+
+Mottak og behandling
+• Leder og verneombud mottar varselet i eget dashbord for anonyme meldinger.
+• Meldinger kan diskuteres internt mellom leder og verneombud uten at avsender involveres.
+• Status oppdateres underveis (Ny, Under behandling, Avsluttet).
+
+Undersøkelse og tiltak
+• Undersøk forholdet grundig og objektivt.
+• Iverksett nødvendige tiltak for å rette opp i kritikkverdige forhold.
+• Dokumenter funn og tiltak i HMS-systemet.
+
+Konfidensialitet og beskyttelse
+• Avsenders identitet skal aldri forsøkes avdekket.
+• Alle som er involvert i behandlingen har taushetsplikt.
+• Gjengjeldelse mot varslere er forbudt i henhold til arbeidsmiljøloven.`,
+    examples: `• Mobbing eller trakassering på arbeidsplassen
+• Brudd på sikkerhetsrutiner som ledelsen ikke tar tak i
+• Diskriminering eller urettferdig behandling
+• Mistanke om økonomiske misligheter
+• Farlige arbeidsforhold som ikke blir utbedret
+• Brudd på lover og regler`,
+    remember: "Anonymt varsling er en viktig del av HMS-arbeidet og bidrar til å avdekke forhold som ellers kunne forblitt skjult. Alle varsler skal behandles seriøst og konfidensielt.",
+    is_predefined: true
   }
 ];
 
