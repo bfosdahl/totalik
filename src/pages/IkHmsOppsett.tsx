@@ -26,11 +26,8 @@ const IkHmsOppsett = () => {
       return;
     }
 
-    // Now check if IK/HMS module is active
-    if (!hasModule('IK_HMS')) {
-      navigate('/');
-      return;
-    }
+    // IK_HMS is a standard module for all companies - allow access even if not yet in database
+    // The setup process will create the module entry if it doesn't exist
 
     // Check if setup is already completed (only if not restarting)
     if (modules.length > 0 && !isRestarting) {
@@ -39,7 +36,7 @@ const IkHmsOppsett = () => {
         setSetupCompleted(true);
       }
     }
-  }, [hasModule, isLoading, navigate, modules, isRestarting, company?.id]);
+  }, [isLoading, navigate, modules, isRestarting, company?.id]);
 
   if (isLoading) {
     return (
