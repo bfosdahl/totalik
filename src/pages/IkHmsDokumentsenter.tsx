@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { FileText, Upload, Download, Trash2, FolderOpen, Search, Plus, File, FileSpreadsheet, FileImage, Filter } from "lucide-react";
+import { FileText, Upload, Download, Trash2, FolderOpen, Search, Plus, File, FileSpreadsheet, FileImage, Filter, Shield, UserCheck, AlertTriangle, ClipboardList, GraduationCap, FlaskConical, HeartPulse, FolderPlus, ChevronDown, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,22 +10,25 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useAuth } from "@/contexts/AuthContext";
-import { useIkHmsCompanyDocuments, DOCUMENT_CATEGORIES, IkHmsCompanyDocument } from "@/hooks/useIkHmsCompanyDocuments";
+import { useIkHmsCompanyDocuments, DOCUMENT_CATEGORIES, IK_HMS_CATEGORIES, IkHmsCompanyDocument } from "@/hooks/useIkHmsCompanyDocuments";
 import { useAdminTemplatesForCustomers } from "@/hooks/useAdminTemplatesForCustomers";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
 
-// Template categories relevant for IK HMS
-const TEMPLATE_CATEGORIES = [
-  "Alle",
-  "Arbeidsavtaler",
-  "HMS-skjemaer",
-  "Rutiner",
-  "Risikovurdering",
-  "Opplæring",
-];
+// Icon map for dynamic rendering
+const iconMap: Record<string, React.ElementType> = {
+  Shield,
+  UserCheck,
+  AlertTriangle,
+  ClipboardList,
+  GraduationCap,
+  FlaskConical,
+  HeartPulse,
+  FolderPlus,
+};
 
 export default function IkHmsDokumentsenter() {
   const { profile } = useAuth();
@@ -39,7 +42,21 @@ export default function IkHmsDokumentsenter() {
   const [documentName, setDocumentName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Generelt");
+  const [expandedFolders, setExpandedFolders] = useState<string[]>(["1", "2"]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const toggleFolder = (folderId: string) => {
+    setExpandedFolders(prev => 
+      prev.includes(folderId) 
+        ? prev.filter(id => id !== folderId)
+        : [...prev, folderId]
+    );
+  };
+
+  // Get templates by category
+  const getTemplatesByCategory = (categoryName: string) => {
+    return adminDocuments.filter(doc => doc.category === categoryName);
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -113,13 +130,6 @@ export default function IkHmsDokumentsenter() {
     return matchesSearch && matchesCategory;
   });
 
-  // Filter admin templates
-  const filteredTemplates = adminDocuments.filter(doc => {
-    const matchesSearch = doc.document_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (doc.description?.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesSearch;
-  });
-
   return (
     <div className="space-y-6">
       <div>
@@ -143,73 +153,117 @@ export default function IkHmsDokumentsenter() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Admin Templates Tab */}
+        {/* Admin Templates Tab - Folder View */}
         <TabsContent value="templates" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Maler og skjemaer</CardTitle>
-              <CardDescription>
-                Last ned standardiserte maler og skjemaer for HMS-arbeid. Disse er tilgjengelige for alle bedrifter.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Søk i maler..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-              </div>
+          <div className="flex flex-col sm:flex-row gap-2 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Søk i maler..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
 
-              {adminLoading ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  Laster maler...
-                </div>
-              ) : filteredTemplates.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="font-medium">Ingen maler tilgjengelig ennå</p>
-                  <p className="text-sm mt-1">Maler vil bli lagt til av systemadministrator</p>
-                </div>
-              ) : (
-                <div className="grid gap-3">
-                  {filteredTemplates.map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      {getFileIcon(doc.file_type)}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium truncate">{doc.document_name}</h3>
-                        {doc.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-1">{doc.description}</p>
-                        )}
-                        <div className="flex flex-wrap items-center gap-2 mt-1">
-                          <Badge variant="secondary" className="text-xs">{doc.category || "Generelt"}</Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {formatFileSize(doc.file_size)}
-                          </span>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleAdminDownload(doc.file_path)}
-                        className="shrink-0"
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        <span className="hidden sm:inline">Last ned</span>
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {adminLoading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Laster maler...
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {IK_HMS_CATEGORIES.map((folder) => {
+                const IconComponent = iconMap[folder.icon] || FolderOpen;
+                const folderTemplates = getTemplatesByCategory(folder.name);
+                const isExpanded = expandedFolders.includes(folder.id);
+                
+                // Filter by search
+                const filteredFolderTemplates = folderTemplates.filter(doc =>
+                  doc.document_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  doc.description?.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+
+                return (
+                  <Collapsible
+                    key={folder.id}
+                    open={isExpanded}
+                    onOpenChange={() => toggleFolder(folder.id)}
+                  >
+                    <Card className="overflow-hidden">
+                      <CollapsibleTrigger asChild>
+                        <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-4">
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-lg ${folder.color}`}>
+                              <IconComponent className="h-5 w-5 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <CardTitle className="text-base flex items-center gap-2">
+                                {folder.id}. {folder.name}
+                                <Badge variant="secondary" className="ml-2">
+                                  {folderTemplates.length} maler
+                                </Badge>
+                              </CardTitle>
+                              {folder.subfolders.length > 0 && (
+                                <CardDescription className="text-xs mt-1">
+                                  {folder.subfolders.slice(0, 3).join(", ")}
+                                  {folder.subfolders.length > 3 && ` +${folder.subfolders.length - 3} flere`}
+                                </CardDescription>
+                              )}
+                            </div>
+                            {isExpanded ? (
+                              <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                            )}
+                          </div>
+                        </CardHeader>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <CardContent className="pt-0 pb-4">
+                          {filteredFolderTemplates.length === 0 ? (
+                            <div className="text-center py-6 text-muted-foreground bg-muted/30 rounded-lg">
+                              <FolderOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p className="text-sm">Ingen maler i denne kategorien ennå</p>
+                            </div>
+                          ) : (
+                            <div className="grid gap-2">
+                              {filteredFolderTemplates.map((doc) => (
+                                <div
+                                  key={doc.id}
+                                  className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                                >
+                                  {getFileIcon(doc.file_type)}
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="font-medium text-sm truncate">{doc.document_name}</h4>
+                                    {doc.description && (
+                                      <p className="text-xs text-muted-foreground line-clamp-1">{doc.description}</p>
+                                    )}
+                                    <span className="text-xs text-muted-foreground">
+                                      {formatFileSize(doc.file_size)}
+                                    </span>
+                                  </div>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleAdminDownload(doc.file_path)}
+                                    className="shrink-0"
+                                  >
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Last ned</span>
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Card>
+                  </Collapsible>
+                );
+              })}
+            </div>
+          )}
         </TabsContent>
 
         {/* Company Documents Tab */}

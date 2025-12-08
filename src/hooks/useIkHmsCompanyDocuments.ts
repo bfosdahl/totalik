@@ -19,14 +19,76 @@ export interface IkHmsCompanyDocument {
   updated_at: string;
 }
 
+// IK-HMS folder categories matching admin structure
+export const IK_HMS_CATEGORIES = [
+  {
+    id: "1",
+    name: "Grunnlag & Policy",
+    subfolders: ["HMS-policy", "Visjon og mål", "Organisasjonskart"],
+    icon: "Shield",
+    color: "bg-blue-500"
+  },
+  {
+    id: "2", 
+    name: "Verneombud",
+    subfolders: ["Avtale om verneombud", "Avtale om fritak for verneombud", "Vernerunde sjekkliste (papir)", "Årsrapport verneombud"],
+    icon: "UserCheck",
+    color: "bg-emerald-500"
+  },
+  {
+    id: "3",
+    name: "Risiko & SJA",
+    subfolders: ["SJA-mal papir", "Risikovurdering papir", "Fareidentifikasjon"],
+    icon: "AlertTriangle",
+    color: "bg-amber-500"
+  },
+  {
+    id: "4",
+    name: "Rutiner",
+    subfolders: ["Avviksskjema", "Skademelding", "Nestenulykke-melding", "Fraværsskjema"],
+    icon: "ClipboardList",
+    color: "bg-purple-500"
+  },
+  {
+    id: "5",
+    name: "Opplæring & Kurs",
+    subfolders: ["Arbeidsavtale mal", "Medarbeidersamtale mal", "Kursbevis mal", "Kompetanseoversikt"],
+    icon: "GraduationCap",
+    color: "bg-indigo-500"
+  },
+  {
+    id: "6",
+    name: "Stoffkartotek",
+    subfolders: ["Kjemikalieliste mal", "Sikkerhetsdatablad – blank"],
+    icon: "FlaskConical",
+    color: "bg-rose-500"
+  },
+  {
+    id: "7",
+    name: "Beredskap & Førstehjelp",
+    subfolders: ["Beredskapsplan mal", "Branninstruks", "Førstehjelpsinstruks"],
+    icon: "HeartPulse",
+    color: "bg-red-500"
+  },
+  {
+    id: "8",
+    name: "Diverse & Egendefinerte",
+    subfolders: [],
+    icon: "FolderPlus",
+    color: "bg-slate-500"
+  }
+];
+
+// Flat list for dropdowns
 export const DOCUMENT_CATEGORIES = [
-  "Arbeidsavtaler",
-  "HMS-dokumenter",
-  "Rutiner og prosedyrer",
-  "Risikovurderinger",
-  "Opplæring",
-  "Sertifikater",
-  "Forsikringer",
+  "Grunnlag & Policy",
+  "Verneombud",
+  "Risiko & SJA",
+  "Rutiner",
+  "Opplæring & Kurs",
+  "Stoffkartotek",
+  "Beredskap & Førstehjelp",
+  "Diverse & Egendefinerte",
   "Generelt",
 ];
 
