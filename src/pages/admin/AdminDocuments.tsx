@@ -76,12 +76,11 @@ export default function AdminDocuments() {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<string[]>(["0", "1", "14"]);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   
   const [documentForm, setDocumentForm] = useState({
-    document_name: "",
-    description: "",
     category: "",
     is_mandatory: false,
     version: "2025.1",
@@ -109,23 +108,36 @@ export default function AdminDocuments() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      if (!documentForm.document_name) {
-        setDocumentForm(prev => ({
-          ...prev,
-          document_name: file.name.split('.').slice(0, -1).join('.')
-        }));
-      }
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFiles(prev => [...prev, ...Array.from(e.target.files!)]);
     }
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      setSelectedFiles(prev => [...prev, ...Array.from(e.dataTransfer.files)]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const resetForm = () => {
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setDocumentForm({
-      document_name: "",
-      description: "",
       category: selectedFolder || "",
       is_mandatory: false,
       version: "2025.1",
@@ -145,46 +157,64 @@ export default function AdminDocuments() {
   };
 
   const handleUpload = async () => {
-    if (!selectedFile || !documentForm.document_name) {
-      toast.error("Velg fil og gi dokumentet et navn");
+    if (selectedFiles.length === 0) {
+      toast.error("Velg minst én fil");
       return;
     }
 
     setIsUploading(true);
+    let successCount = 0;
+    let errorCount = 0;
+
     try {
-      const sanitizedName = sanitizeFileName(selectedFile.name);
-      const filePath = `ik-hms/${Date.now()}_${sanitizedName}`;
+      for (const file of selectedFiles) {
+        try {
+          const sanitizedName = sanitizeFileName(file.name);
+          const filePath = `ik-hms/${Date.now()}_${sanitizedName}`;
+          const documentName = file.name.split('.').slice(0, -1).join('.');
 
-      const { error: uploadError } = await supabase.storage
-        .from("admin-documents")
-        .upload(filePath, selectedFile);
+          const { error: uploadError } = await supabase.storage
+            .from("admin-documents")
+            .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+          if (uploadError) throw uploadError;
 
-      const { error: dbError } = await supabase
-        .from("admin_documents")
-        .insert({
-          document_name: documentForm.document_name,
-          document_type: "IK-HMS",
-          file_path: filePath,
-          file_type: selectedFile.type,
-          file_size: selectedFile.size,
-          description: documentForm.description || null,
-          category: documentForm.category || null,
-          is_mandatory: documentForm.is_mandatory,
-          version: documentForm.version,
-          uploaded_by_name: "System Admin",
-        });
+          const { error: dbError } = await supabase
+            .from("admin_documents")
+            .insert({
+              document_name: documentName,
+              document_type: "IK-HMS",
+              file_path: filePath,
+              file_type: file.type,
+              file_size: file.size,
+              description: null,
+              category: documentForm.category || null,
+              is_mandatory: documentForm.is_mandatory,
+              version: documentForm.version,
+              uploaded_by_name: "System Admin",
+            });
 
-      if (dbError) throw dbError;
+          if (dbError) throw dbError;
+          successCount++;
+        } catch (error) {
+          console.error("Upload error for file:", file.name, error);
+          errorCount++;
+        }
+      }
 
-      toast.success("Dokument lastet opp");
+      if (successCount > 0) {
+        toast.success(`${successCount} dokument${successCount > 1 ? 'er' : ''} lastet opp`);
+      }
+      if (errorCount > 0) {
+        toast.error(`${errorCount} fil${errorCount > 1 ? 'er' : ''} feilet`);
+      }
+      
       setUploadDialogOpen(false);
       resetForm();
       queryClient.invalidateQueries({ queryKey: ["admin-ik-hms-documents"] });
     } catch (error: any) {
       console.error("Upload error:", error);
-      toast.error("Kunne ikke laste opp dokument");
+      toast.error("Kunne ikke laste opp dokumenter");
     } finally {
       setIsUploading(false);
     }
@@ -423,30 +453,73 @@ export default function AdminDocuments() {
                         Last opp
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-md">
+                    <DialogContent className="max-w-lg">
                       <DialogHeader>
-                        <DialogTitle>Last opp dokument</DialogTitle>
+                        <DialogTitle>Last opp dokumenter</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="file">Fil</Label>
+                        {/* Drag and Drop Zone */}
+                        <div
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
+                          className={cn(
+                            "border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer",
+                            isDragging 
+                              ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20" 
+                              : "border-muted-foreground/25 hover:border-emerald-500/50"
+                          )}
+                          onClick={() => document.getElementById('multi-file-input')?.click()}
+                        >
+                          <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                          <p className="text-sm font-medium">
+                            Dra og slipp filer her
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            eller klikk for å velge filer
+                          </p>
                           <Input
-                            id="file"
+                            id="multi-file-input"
                             type="file"
+                            multiple
                             onChange={handleFileChange}
                             accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png"
+                            className="hidden"
                           />
                         </div>
+
+                        {/* Selected Files List */}
+                        {selectedFiles.length > 0 && (
+                          <div className="space-y-2">
+                            <Label>Valgte filer ({selectedFiles.length})</Label>
+                            <ScrollArea className="h-32 border rounded-md p-2">
+                              <div className="space-y-1">
+                                {selectedFiles.map((file, index) => (
+                                  <div key={index} className="flex items-center justify-between text-sm bg-muted/50 rounded px-2 py-1">
+                                    <div className="flex items-center gap-2 truncate flex-1">
+                                      <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                      <span className="truncate">{file.name}</span>
+                                      <span className="text-xs text-muted-foreground">
+                                        ({(file.size / 1024).toFixed(0)} KB)
+                                      </span>
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                                      onClick={() => removeFile(index)}
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                          </div>
+                        )}
+
                         <div className="space-y-2">
-                          <Label>Dokumentnavn</Label>
-                          <Input
-                            value={documentForm.document_name}
-                            onChange={(e) => setDocumentForm(prev => ({ ...prev, document_name: e.target.value }))}
-                            placeholder="Gi dokumentet et navn"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Mappe/Kategori</Label>
+                          <Label>Mappe/Kategori (valgfritt)</Label>
                           <Select
                             value={documentForm.category}
                             onValueChange={(v) => setDocumentForm(prev => ({ ...prev, category: v }))}
@@ -463,15 +536,7 @@ export default function AdminDocuments() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-2">
-                          <Label>Beskrivelse</Label>
-                          <Textarea
-                            value={documentForm.description}
-                            onChange={(e) => setDocumentForm(prev => ({ ...prev, description: e.target.value }))}
-                            placeholder="Kort beskrivelse av dokumentet"
-                            rows={2}
-                          />
-                        </div>
+
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label>Versjon</Label>
@@ -488,12 +553,16 @@ export default function AdminDocuments() {
                             <Label>Obligatorisk</Label>
                           </div>
                         </div>
+
                         <Button 
                           onClick={handleUpload} 
-                          disabled={isUploading || !selectedFile}
+                          disabled={isUploading || selectedFiles.length === 0}
                           className="w-full bg-emerald-600 hover:bg-emerald-700"
                         >
-                          {isUploading ? "Laster opp..." : "Last opp dokument"}
+                          {isUploading 
+                            ? "Laster opp..." 
+                            : `Last opp ${selectedFiles.length} dokument${selectedFiles.length !== 1 ? 'er' : ''}`
+                          }
                         </Button>
                       </div>
                     </DialogContent>
