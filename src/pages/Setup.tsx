@@ -15,7 +15,9 @@ import {
   Home,
   Sparkles,
   Edit,
-  CheckCircle2
+  CheckCircle2,
+  Users,
+  Shield
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -36,6 +38,8 @@ import { RiskAssessmentStep, RiskAssessmentStepRef } from "@/components/setup/Ri
 import { ActionPlanStep, ActionPlanStepRef } from "@/components/setup/ActionPlanStep";
 import { RoutinesStep, RoutinesStepRef } from "@/components/setup/RoutinesStep";
 import { HandbookStep } from "@/components/setup/HandbookStep";
+import { HmsSelfDeclarationDialog } from "@/components/setup/HmsSelfDeclarationDialog";
+import { VerneombudExemptionDialog } from "@/components/setup/VerneombudExemptionDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -337,6 +341,10 @@ const Setup = () => {
     );
   }
 
+  // State for declaration dialogs
+  const [showHmsDeclaration, setShowHmsDeclaration] = useState(false);
+  const [showVerneombudExemption, setShowVerneombudExemption] = useState(false);
+
   // Show setup choice if no setup has been started and no data exists
   const hasExistingData = goals.length > 0 || organization !== null || riskAssessment !== null || actionPlan !== null || routines !== null;
   if (showSetupChoice && !progress.current_step && progress.completed_steps.length === 0 && !hasExistingData) {
@@ -434,7 +442,86 @@ const Setup = () => {
               </div>
             </Card>
           </motion.div>
+
+          {/* Declarations Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-4"
+          >
+            <h2 className="text-lg font-semibold">Lovpålagte erklæringer</h2>
+            <p className="text-sm text-muted-foreground">
+              Disse erklæringene kan signeres uavhengig av hvilket oppsett du velger.
+            </p>
+            
+            <div className="grid sm:grid-cols-2 gap-4">
+              {/* HMS Self-Declaration Card */}
+              <Card 
+                className="cursor-pointer transition-all hover:shadow-md hover:border-primary/30 group p-4"
+                onClick={() => setShowHmsDeclaration(true)}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                    <Shield className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-medium">Egenerklæring om HMS</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Bekreftelse på at virksomheten arbeider systematisk med HMS
+                    </p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                </div>
+              </Card>
+
+              {/* Verneombud Exemption Card */}
+              <Card 
+                className="cursor-pointer transition-all hover:shadow-md hover:border-primary/30 group p-4"
+                onClick={() => setShowVerneombudExemption(true)}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                    <Users className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-medium">Fritak fra verneombud</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      For virksomheter med færre enn 5 ansatte
+                    </p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                </div>
+              </Card>
+            </div>
+          </motion.div>
         </div>
+
+        {/* Declaration Dialogs */}
+        {companyId && company && (
+          <>
+            <HmsSelfDeclarationDialog
+              open={showHmsDeclaration}
+              onOpenChange={setShowHmsDeclaration}
+              companyId={companyId}
+              companyName={company.name}
+              companyAddress={company.address || undefined}
+              postalCode={company.postal_code || undefined}
+              city={company.city || undefined}
+              onComplete={() => setShowHmsDeclaration(false)}
+            />
+            <VerneombudExemptionDialog
+              open={showVerneombudExemption}
+              onOpenChange={setShowVerneombudExemption}
+              companyId={companyId}
+              companyName={company.name}
+              companyAddress={company.address || undefined}
+              orgNumber={company.org_number || undefined}
+              totalEmployees={4}
+              onComplete={() => setShowVerneombudExemption(false)}
+            />
+          </>
+        )}
       </AppLayout>
     );
   }
