@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import { VerneombudExemptionDialog } from "./VerneombudExemptionDialog";
 
 interface Message {
   role: "user" | "assistant";
@@ -87,9 +88,13 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [pendingBrregInfo, setPendingBrregInfo] = useState<BrregInfo | null>(null);
   const [awaitingIndustrySelection, setAwaitingIndustrySelection] = useState(false);
+  const [showExemptionDialog, setShowExemptionDialog] = useState(false);
+  const [confirmedEmployeeCount, setConfirmedEmployeeCount] = useState<number | null>(null);
+  const [awaitingEmployeeCount, setAwaitingEmployeeCount] = useState(false);
+  const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
-  const { refreshCompany } = useAuth();
+  const { refreshCompany, company } = useAuth();
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -156,6 +161,93 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
     }
   };
 
+  const continueWithAIChat = async (contextMessage: string) => {
+    const messagesWithContext: Message[] = [...messages, { role: "user", content: contextMessage }];
+    
+    try {
+      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ik-hms-chat`;
+      const response = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ messages: messagesWithContext }),
+      });
+      
+      if (!response.ok || !response.body) {
+        throw new Error("Failed to start stream");
+      }
+      
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = "";
+      let assistantMessage = "";
+      let streamDone = false;
+
+      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") {
+            streamDone = true;
+            break;
+          }
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantMessage += content;
+              const displayContent = getDisplayContent(assistantMessage);
+              setMessages((prev) => {
+                const newMessages = [...prev];
+                newMessages[newMessages.length - 1] = {
+                  role: "assistant",
+                  content: displayContent,
+                };
+                return newMessages;
+              });
+            }
+          } catch {
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
+        }
+      }
+
+      const jsonContent = extractJsonFromContent(assistantMessage);
+      if (jsonContent) {
+        await saveSetupData(jsonContent);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Noe gikk galt. Vennligst prøv igjen.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleExemptionComplete = () => {
+    setShowExemptionDialog(false);
+    setMessages((prev) => [...prev, { role: "assistant", content: "Flott! Avtalen om fritak fra verneombud er nå signert og lagret. ✅\n\nLa oss fortsette med HMS-oppsettet..." }]);
+    continueWithAIChat(`Brukeren har valgt bransje: ${selectedIndustry}. Bedriften har færre enn 5 ansatte og har signert fritak fra verneombud. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`);
+  };
+
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
@@ -202,95 +294,57 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
         '8': 'Renhold',
         '9': 'Bilpleie'
       };
-      const selectedIndustry = industryMap[userInput.trim()];
+      const industry = industryMap[userInput.trim()];
+      setSelectedIndustry(industry);
       
       // Clear the awaiting flag
       setAwaitingIndustrySelection(false);
       
-      // Continue with AI chat - include industry context
-      const contextMessage = `Brukeren har valgt bransje: ${selectedIndustry}. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`;
+      // Ask about employee count for verneombud requirements
+      const employeeCountMessage = `Bra! Du har valgt ${industry}. 👍\n\nNå trenger jeg å vite omtrent hvor mange ansatte dere har. Dette er viktig for å bestemme hvilke HMS-krav som gjelder for bedriften.\n\n**Har bedriften 5 eller flere ansatte?**\n\n1. Ja, vi har 5 eller flere ansatte\n2. Nei, vi har færre enn 5 ansatte\n\n(Velg 1 eller 2)`;
       
-      // Add system context to messages for AI
-      const messagesWithContext: Message[] = [...messages, { role: "user", content: contextMessage }];
-      
-      try {
-        const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ik-hms-chat`;
-        const response = await fetch(CHAT_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ messages: messagesWithContext }),
-        });
-        
-        if (!response.ok || !response.body) {
-          throw new Error("Failed to start stream");
-        }
-        
-        // Process the streaming response
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let textBuffer = "";
-        let assistantMessage = "";
-        let streamDone = false;
-
-        setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
-
-        while (!streamDone) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          textBuffer += decoder.decode(value, { stream: true });
-
-          let newlineIndex: number;
-          while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-            let line = textBuffer.slice(0, newlineIndex);
-            textBuffer = textBuffer.slice(newlineIndex + 1);
-
-            if (line.endsWith("\r")) line = line.slice(0, -1);
-            if (line.startsWith(":") || line.trim() === "") continue;
-            if (!line.startsWith("data: ")) continue;
-
-            const jsonStr = line.slice(6).trim();
-            if (jsonStr === "[DONE]") {
-              streamDone = true;
-              break;
-            }
-
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-              if (content) {
-                assistantMessage += content;
-                const displayContent = getDisplayContent(assistantMessage);
-                setMessages((prev) => {
-                  const newMessages = [...prev];
-                  newMessages[newMessages.length - 1] = {
-                    role: "assistant",
-                    content: displayContent,
-                  };
-                  return newMessages;
-                });
-              }
-            } catch {
-              textBuffer = line + "\n" + textBuffer;
-              break;
-            }
-          }
-        }
-
-        const jsonContent = extractJsonFromContent(assistantMessage);
-        if (jsonContent) {
-          await saveSetupData(jsonContent);
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        toast.error("Noe gikk galt. Vennligst prøv igjen.");
-      } finally {
-        setIsLoading(false);
-      }
+      setMessages((prev) => [...prev, { role: "assistant", content: employeeCountMessage }]);
+      setAwaitingEmployeeCount(true);
+      setIsLoading(false);
       return;
+    }
+    
+    // Check if user is answering employee count question
+    const isEmployeeCountAnswer = awaitingEmployeeCount && /^[1-2]$/.test(userInput.trim());
+    
+    if (isEmployeeCountAnswer) {
+      setAwaitingEmployeeCount(false);
+      const hasMoreThan5 = userInput.trim() === '1';
+      
+      if (!hasMoreThan5) {
+        // Less than 5 employees - offer exemption agreement
+        setConfirmedEmployeeCount(4); // We'll use this as a placeholder
+        const exemptionMessage = `Siden dere har færre enn 5 ansatte, har dere mulighet til å inngå en skriftlig avtale om fritak fra verneombud i henhold til arbeidsmiljøloven § 6-1.\n\n✅ **Fritak fra verneombud:**\nDere kan signere en avtale digitalt her i systemet som dokumenterer at arbeidsgiver og ansatte er enige om at det ikke er nødvendig med verneombud.\n\n**Ønsker du å signere en slik avtale nå?**\n\n1. Ja, signer avtale om fritak\n2. Nei, fortsett uten avtale\n\n(Velg 1 eller 2)`;
+        
+        setMessages((prev) => [...prev, { role: "assistant", content: exemptionMessage }]);
+        setIsLoading(false);
+        return;
+      } else {
+        setConfirmedEmployeeCount(5); // 5 or more
+        // Continue with AI chat
+        await continueWithAIChat(`Brukeren har valgt bransje: ${selectedIndustry}. Bedriften har 5 eller flere ansatte. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`);
+        return;
+      }
+    }
+    
+    // Check if user wants to sign exemption agreement
+    if (confirmedEmployeeCount !== null && confirmedEmployeeCount < 5) {
+      if (userInput.trim() === '1') {
+        // Open exemption dialog
+        setShowExemptionDialog(true);
+        setIsLoading(false);
+        return;
+      } else if (userInput.trim() === '2') {
+        // Continue without exemption
+        setMessages((prev) => [...prev, { role: "assistant", content: "Greit! Du kan alltid signere avtalen senere under Innstillinger hvis du ombestemmer deg.\n\nLa oss fortsette med HMS-oppsettet..." }]);
+        await continueWithAIChat(`Brukeren har valgt bransje: ${selectedIndustry}. Bedriften har færre enn 5 ansatte og ønsker ikke å signere fritak fra verneombud nå. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`);
+        return;
+      }
     }
 
     // Check if user is declining Brreg info
@@ -688,6 +742,17 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
           </ul>
         </div>
       )}
+
+      <VerneombudExemptionDialog
+        open={showExemptionDialog}
+        onOpenChange={setShowExemptionDialog}
+        companyId={companyId}
+        companyName={company?.name || ""}
+        companyAddress={company?.address ? `${company.address}, ${company.postal_code || ""} ${company.city || ""}` : undefined}
+        orgNumber={company?.org_number || undefined}
+        totalEmployees={confirmedEmployeeCount || 4}
+        onComplete={handleExemptionComplete}
+      />
     </div>
   );
 }

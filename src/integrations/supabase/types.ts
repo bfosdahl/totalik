@@ -8154,6 +8154,62 @@ export type Database = {
         }
         Relationships: []
       }
+      verneombud_exemption_agreements: {
+        Row: {
+          agreement_date: string
+          company_id: string
+          created_at: string
+          employee_signatures: Json | null
+          employer_name: string
+          employer_signature: string | null
+          employer_signed_at: string | null
+          id: string
+          notes: string | null
+          status: string
+          total_employees: number
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          agreement_date?: string
+          company_id: string
+          created_at?: string
+          employee_signatures?: Json | null
+          employer_name: string
+          employer_signature?: string | null
+          employer_signed_at?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          total_employees: number
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          agreement_date?: string
+          company_id?: string
+          created_at?: string
+          employee_signatures?: Json | null
+          employer_name?: string
+          employer_signature?: string | null
+          employer_signed_at?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          total_employees?: number
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verneombud_exemption_agreements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_schedules: {
         Row: {
           company_id: string
