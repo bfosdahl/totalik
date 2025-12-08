@@ -39,6 +39,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
+import { SubmitAnonymousMessageDialog } from "@/components/anonymous/SubmitAnonymousMessageDialog";
 
 // Standard navigation items - always visible
 const standardNavItems = [
@@ -71,12 +72,14 @@ const personaladministrasjonItems = {
     { icon: CalendarDays, label: "Godkjenn ferie", path: "/time-off?view=admin" },
     { icon: Calendar, label: "Arbeidsplan", path: "/work-schedule" },
     { icon: Clock, label: "Godkjenn timer", path: "/time-registration?view=admin" },
+    { icon: ShieldAlert, label: "Anonyme meldinger", path: "/anonymous-messages" },
   ],
   mittArbeidsforhold: [
     { icon: Clock, label: "Mine timer", path: "/time-registration" },
     { icon: CalendarDays, label: "Min ferie", path: "/time-off" },
     { icon: HeartPulse, label: "Mitt fravær", path: "/my/absence" },
     { icon: BarChart3, label: "Min respons", path: "/my/surveys" },
+    { icon: ShieldCheck, label: "Send anonym melding", path: "/anonymous-message", isAction: true },
   ],
 };
 
@@ -139,6 +142,9 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   
   // Check if KS Bygg module is active for this company
   const hasKsBygg = hasModule("IK_BYGG");
+  
+  // State for anonymous message dialog
+  const [showAnonymousDialog, setShowAnonymousDialog] = useState(false);
 
   // Get company name from context
   const companyName = company?.name || "Ingen bedrift";
@@ -467,6 +473,23 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                     </div>
                     {personaladministrasjonItems.mittArbeidsforhold.map((item) => {
                       const isActive = location.pathname === item.path;
+                      
+                      // Skip action items - they'll be rendered as dialogs
+                      if ((item as any).isAction) {
+                        return (
+                          <button
+                            key={item.path}
+                            onClick={() => setShowAnonymousDialog(true)}
+                            className={cn(
+                              "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm w-full text-left",
+                              "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                            )}
+                          >
+                            <item.icon className="w-4 h-4 flex-shrink-0" />
+                            <span>{item.label}</span>
+                          </button>
+                        );
+                      }
                       
                       return (
                         <NavLink
@@ -972,6 +995,12 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           </Button>
         </div>
       </aside>
+      
+      {/* Anonymous message dialog */}
+      <SubmitAnonymousMessageDialog 
+        open={showAnonymousDialog} 
+        onOpenChange={setShowAnonymousDialog} 
+      />
     </>
   );
 }

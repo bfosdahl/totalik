@@ -176,6 +176,98 @@ export type Database = {
         }
         Relationships: []
       }
+      anonymous_message_discussions: {
+        Row: {
+          comment: string
+          company_id: string
+          created_at: string
+          id: string
+          message_id: string
+          user_id: string | null
+          user_name: string
+        }
+        Insert: {
+          comment: string
+          company_id: string
+          created_at?: string
+          id?: string
+          message_id: string
+          user_id?: string | null
+          user_name: string
+        }
+        Update: {
+          comment?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          message_id?: string
+          user_id?: string | null
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anonymous_message_discussions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anonymous_message_discussions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "anonymous_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      anonymous_messages: {
+        Row: {
+          category: string
+          company_id: string
+          created_at: string
+          id: string
+          message: string
+          message_number: string
+          priority: string
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          company_id: string
+          created_at?: string
+          id?: string
+          message: string
+          message_number: string
+          priority?: string
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          message_number?: string
+          priority?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anonymous_messages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_form_responses: {
         Row: {
           audit_id: string | null
@@ -7378,6 +7470,8 @@ export type Database = {
           hms_card_required: boolean | null
           id: string
           is_active: boolean
+          is_hms_responsible: boolean | null
+          is_verneombud: boolean | null
           last_name: string | null
           next_of_kin_name: string | null
           next_of_kin_phone: string | null
@@ -7403,6 +7497,8 @@ export type Database = {
           hms_card_required?: boolean | null
           id?: string
           is_active?: boolean
+          is_hms_responsible?: boolean | null
+          is_verneombud?: boolean | null
           last_name?: string | null
           next_of_kin_name?: string | null
           next_of_kin_phone?: string | null
@@ -7428,6 +7524,8 @@ export type Database = {
           hms_card_required?: boolean | null
           id?: string
           is_active?: boolean
+          is_hms_responsible?: boolean | null
+          is_verneombud?: boolean | null
           last_name?: string | null
           next_of_kin_name?: string | null
           next_of_kin_phone?: string | null
@@ -7971,6 +8069,10 @@ export type Database = {
         Args: { target_company_id: string }
         Returns: undefined
       }
+      generate_anonymous_message_number: {
+        Args: { p_company_id: string }
+        Returns: string
+      }
       generate_ks_module2_avvik_number: { Args: never; Returns: string }
       generate_ks_module2_change_order_number: { Args: never; Returns: string }
       generate_ks_module2_claim_number: { Args: never; Returns: string }
@@ -7992,6 +8094,7 @@ export type Database = {
         Returns: boolean
       }
       is_company_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_leader_or_verneombud: { Args: { p_user_id: string }; Returns: boolean }
       is_system_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
