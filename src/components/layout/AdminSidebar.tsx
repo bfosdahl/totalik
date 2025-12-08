@@ -15,19 +15,20 @@ import {
   Award,
   FolderOpen,
   BookOpen,
+  Leaf,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 
 const adminNavItems = [
-  { icon: LayoutDashboard, label: "Oversikt", path: "/admin" },
-  { icon: Building2, label: "Bedrifter", path: "/admin/companies" },
-  { icon: Users, label: "Brukere", path: "/admin/users" },
-  { icon: CreditCard, label: "HMS-kort", path: "/admin/hms-requests" },
-  { icon: Award, label: "SG Register", path: "/admin/sg-register" },
-  { icon: FolderOpen, label: "Dokumentsenter", path: "/admin/documents" },
-  { icon: BookOpen, label: "KS Malbank", path: "/admin/ks-panel" },
+  { icon: LayoutDashboard, label: "Oversikt", path: "/admin", color: undefined },
+  { icon: Building2, label: "Bedrifter", path: "/admin/companies", color: undefined },
+  { icon: Users, label: "Brukere", path: "/admin/users", color: undefined },
+  { icon: CreditCard, label: "HMS-kort", path: "/admin/hms-requests", color: undefined },
+  { icon: Award, label: "SG Register", path: "/admin/sg-register", color: undefined },
+  { icon: Leaf, label: "Dokumenter (IK-HMS)", path: "/admin/documents", color: "text-emerald-500" },
+  { icon: BookOpen, label: "KS Maler", path: "/admin/ks-panel", color: "text-primary" },
 ];
 
 interface SidebarContentProps {
@@ -115,7 +116,8 @@ function SidebarContent({ collapsed, onCollapse, onNavClick }: SidebarContentPro
               <item.icon
                 className={cn(
                   "w-5 h-5 flex-shrink-0 transition-transform",
-                  !isActive && "group-hover:scale-110"
+                  !isActive && "group-hover:scale-110",
+                  !isActive && item.color
                 )}
               />
               <AnimatePresence mode="wait">
