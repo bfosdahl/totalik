@@ -15,6 +15,10 @@ export interface IkHmsCompanyDocument {
   file_size: number | null;
   uploaded_by: string | null;
   uploaded_by_name: string;
+  include_in_pdf: boolean;
+  requires_signature: boolean;
+  upload_deadline_days: number | null;
+  original_document_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -121,12 +125,18 @@ export const useIkHmsCompanyDocuments = () => {
       description,
       category,
       uploaderName,
+      includeInPdf = true,
+      requiresSignature = false,
+      uploadDeadlineDays,
     }: {
       file: File;
       documentName: string;
       description?: string;
       category: string;
       uploaderName: string;
+      includeInPdf?: boolean;
+      requiresSignature?: boolean;
+      uploadDeadlineDays?: number;
     }) => {
       if (!companyId) throw new Error("Ingen bedrift valgt");
 
@@ -163,6 +173,9 @@ export const useIkHmsCompanyDocuments = () => {
           file_type: file.type,
           file_size: file.size,
           uploaded_by_name: uploaderName,
+          include_in_pdf: includeInPdf,
+          requires_signature: requiresSignature,
+          upload_deadline_days: uploadDeadlineDays,
         })
         .select()
         .single();
