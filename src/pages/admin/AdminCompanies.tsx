@@ -105,6 +105,7 @@ export default function AdminCompanies() {
 
   const createMutation = useMutation({
     mutationFn: async (data: CompanyFormData) => {
+      // 1. Create the company
       const { data: newCompany, error } = await supabase.from("companies").insert({
         name: data.name,
         org_number: data.org_number || null,
@@ -115,6 +116,21 @@ export default function AdminCompanies() {
         postal_code: data.postal_code || null,
       }).select().single();
       if (error) throw error;
+      
+      // 2. Automatically create IK_HMS module for the new company
+      // This is CRITICAL - ensures the AI setup and manual setup both work correctly
+      const { error: moduleError } = await supabase.from("company_modules").insert({
+        company_id: newCompany.id,
+        module_type: "IK_HMS",
+        is_active: true,
+        settings: {},
+      });
+      
+      if (moduleError) {
+        console.error("Error creating IK_HMS module:", moduleError);
+        // Don't fail the whole operation, just log it
+      }
+      
       return newCompany;
     },
     onSuccess: async (newCompany) => {
@@ -124,7 +140,6 @@ export default function AdminCompanies() {
       // If inviting admin, call the edge function
       if (inviteAdmin && adminData.email) {
         try {
-          const { data: { session } } = await supabase.auth.getSession();
           const response = await supabase.functions.invoke("create-company-admin", {
             body: {
               email: adminData.email,

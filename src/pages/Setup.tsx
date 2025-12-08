@@ -331,7 +331,9 @@ const Setup = () => {
     return progress.completed_steps.includes(stepId);
   };
 
-  if (authLoading || isLoading) {
+  // Wait for auth to load AND companyId to be available before rendering
+  // This prevents race conditions where the page renders before user data is ready
+  if (authLoading || isLoading || (!authLoading && profile && !companyId)) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center min-h-[400px]">
