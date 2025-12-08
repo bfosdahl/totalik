@@ -81,7 +81,7 @@ export default function Ks2ByggesakForm() {
   const navigate = useNavigate();
   const { company, user, profile } = useAuth();
   const updateForm = useUpdateByggesakForm();
-  const { data: projects } = useKsModule2Projects();
+  const { projects } = useKsModule2Projects();
   const project = projects?.find(p => p.id === projectId);
   
   const { data: form, isLoading } = useQuery({
@@ -111,9 +111,9 @@ export default function Ks2ByggesakForm() {
       setFormData({
         prosjekt_navn: project.project_name || "",
         eiendom_adresse: project.address || "",
-        gnr: project.gnr || "",
-        bnr: project.bnr || "",
-        kommune: project.municipality || "",
+        gnr: "",
+        bnr: "",
+        kommune: "",
         tiltakshaver: project.client_name || "",
         ansvarlig_foretak: company?.name || "",
         kontaktperson: profile ? `${profile.first_name} ${profile.last_name}` : "",
