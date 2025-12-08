@@ -1,9 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const RATE_LIMIT_MAX_REQUESTS = 10; // Max 10 requests
+const RATE_LIMIT_WINDOW_MINUTES = 1; // Per minute
 
 const systemPrompt = `Du er en ekspert på norsk arbeidsmiljølovgivning og internkontrollforskriften (IK-forskriften). 
 
@@ -31,18 +35,79 @@ Retningslinjer for svar:
 
 Du er IKKE en erstatning for juridisk rådgivning. Oppfordre brukere til å søke profesjonell hjelp ved komplekse saker.`;
 
+async function checkRateLimit(supabase: any, userId: string, functionName: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.rpc('check_rate_limit', {
+      p_user_id: userId,
+      p_function_name: functionName,
+      p_max_requests: RATE_LIMIT_MAX_REQUESTS,
+      p_window_minutes: RATE_LIMIT_WINDOW_MINUTES
+    });
+    
+    if (error) {
+      console.error("Rate limit check error:", error);
+      // Allow request if rate limit check fails (fail open for availability)
+      return true;
+    }
+    
+    return data === true;
+  } catch (err) {
+    console.error("Rate limit error:", err);
+    return true; // Fail open
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Get auth token from request
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Autentisering kreves" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Create Supabase client with user's token
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // Get user from token
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: "Ugyldig token" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check rate limit
+    const isAllowed = await checkRateLimit(supabase, user.id, 'hms-chat');
+    if (!isAllowed) {
+      console.log(`Rate limit exceeded for user ${user.id} on hms-chat`);
+      return new Response(JSON.stringify({ 
+        error: "Du har sendt for mange forespørsler. Vennligst vent et minutt og prøv igjen." 
+      }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { messages } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
+
+    console.log(`User ${user.id} making hms-chat request`);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

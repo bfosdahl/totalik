@@ -1,14 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const RATE_LIMIT_MAX_REQUESTS = 10; // Max 10 requests
+const RATE_LIMIT_WINDOW_MINUTES = 1; // Per minute
+
 // Fetch company info from Brreg
 async function fetchBrregInfo(orgNumber: string) {
   try {
-    // Clean the org number - remove spaces and dots
     const cleanOrgNr = orgNumber.replace(/[\s.]/g, '');
     
     if (!/^\d{9}$/.test(cleanOrgNr)) {
@@ -24,7 +27,6 @@ async function fetchBrregInfo(orgNumber: string) {
     
     const data = await response.json();
     
-    // Extract relevant info
     const address = data.forretningsadresse || data.postadresse;
     const addressStr = address 
       ? `${address.adresse?.join(', ') || ''}, ${address.postnummer || ''} ${address.poststed || ''}`.trim()
@@ -106,81 +108,7 @@ STEG 4 - ORGANISASJON OG ROLLER:
 
 STEG 5 - RISIKOVURDERING:
 - Forklar kort hva risikovurdering er (1-2 setninger)
-- Foreslå 5-8 BRANSJESPESIFIKKE risikoer basert på valgt bransje:
-
-  For Kontor/Administrasjon:
-  - Ergonomiske belastninger ved skjermarbeid
-  - Psykososiale utfordringer/stress
-  - Dårlig inneklima
-  - Manglende fysisk aktivitet
-  - Uheldige arbeidsstillinger
-
-  For Bygg og anlegg:
-  - Fall fra høyde
-  - Fallende gjenstander
-  - Tunge løft og belastningsskader
-  - Maskinklemskader
-  - Støy og vibrasjon
-  - Støv og partikler
-  - Elektriske farer
-
-  For Industri/Produksjon:
-  - Maskinklemskader
-  - Kjemikalieeksponering
-  - Støy
-  - Tunge løft
-  - Varmt arbeid
-  - Elektriske farer
-
-  For Frisør/Skjønnhetspleie:
-  - Kjemikalieeksponering (hårfarge, voks, etc.)
-  - Hudproblemer/allergier
-  - Ergonomiske belastninger (stående/bøyd arbeid)
-  - Dårlig ventilasjon
-  - Smittefare
-
-  For Butikk/Detaljhandel:
-  - Tunge løft ved varemottak
-  - Ran og trusler
-  - Stående arbeid
-  - Stress ved høy kundebelastning
-  - Fallulykker (glatte gulv)
-
-  For Restaurant/Spisested:
-  - Brannskader (varmt utstyr, olje, damp)
-  - Kuttskader (kniver, skjæreutstyr)
-  - Sklisikring (vått/fettete gulv)
-  - Matbåren smitte og hygiene
-  - Stress i rushperioder
-  - Tunge løft (råvarer, oppvask)
-  - Dårlig ventilasjon/varme
-
-  For Transport:
-  - Trafikkulykker
-  - Belastningsskader (lasting/lossing)
-  - Ergonomiske skader ved langvarig sitting
-  - Søvnmangel/trøtthet (kjøretid)
-  - Alenearbeid og vold/trusler
-  - Vibrasjoner fra kjøretøy
-  - Værforhold og føre
-
-  For Renhold:
-  - Kjemikalieeksponering (rengjøringsmidler)
-  - Ergonomiske belastninger (bøying, strekking)
-  - Sklisikring (vått gulv)
-  - Smittefare
-  - Alenearbeid
-  - Tunge løft (utstyr, søppel)
-  - Hudproblemer/allergier
-
-  For Bilpleie:
-  - Kjemikalieeksponering (løsemidler, voks)
-  - Hudkontakt med kjemikalier
-  - Dårlig ventilasjon
-  - Sklisikring (vått gulv)
-  - Støy fra maskiner
-  - Ergonomiske belastninger
-  - Elektriske farer
+- Foreslå 5-8 BRANSJESPESIFIKKE risikoer basert på valgt bransje
 
 STEG 6 - TILTAK/HANDLINGSPLAN:
 - For hver valgt risiko, foreslå konkrete bransjerelevante tiltak
@@ -259,6 +187,27 @@ HUSK:
 - START ALLTID med bransjevalg - dette er viktig for å tilpasse hele oppsettet!
 - Generer ALLE rutinene som ble diskutert - ikke bare én!`;
 
+async function checkRateLimit(supabase: any, userId: string, functionName: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.rpc('check_rate_limit', {
+      p_user_id: userId,
+      p_function_name: functionName,
+      p_max_requests: RATE_LIMIT_MAX_REQUESTS,
+      p_window_minutes: RATE_LIMIT_WINDOW_MINUTES
+    });
+    
+    if (error) {
+      console.error("Rate limit check error:", error);
+      return true;
+    }
+    
+    return data === true;
+  } catch (err) {
+    console.error("Rate limit error:", err);
+    return true;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -267,7 +216,7 @@ serve(async (req) => {
   try {
     const { messages, lookupOrgNumber } = await req.json();
     
-    // Handle Brreg lookup request
+    // Handle Brreg lookup request (no rate limit for this)
     if (lookupOrgNumber) {
       console.log("Looking up org number:", lookupOrgNumber);
       const brregInfo = await fetchBrregInfo(lookupOrgNumber);
@@ -288,8 +237,45 @@ serve(async (req) => {
         });
       }
     }
+
+    // Get auth token from request
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Autentisering kreves" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Create Supabase client with service role
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
-    console.log("Received HMS chat messages:", messages?.length);
+    // Get user from token
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: "Ugyldig token" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check rate limit
+    const isAllowed = await checkRateLimit(supabase, user.id, 'ik-hms-chat');
+    if (!isAllowed) {
+      console.log(`Rate limit exceeded for user ${user.id} on ik-hms-chat`);
+      return new Response(JSON.stringify({ 
+        error: "Du har sendt for mange forespørsler. Vennligst vent et minutt og prøv igjen." 
+      }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    
+    console.log(`User ${user.id} making ik-hms-chat request, messages: ${messages?.length}`);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
@@ -334,7 +320,6 @@ serve(async (req) => {
       });
     }
 
-    // Return the streaming response
     return new Response(response.body, {
       headers: { 
         ...corsHeaders, 
