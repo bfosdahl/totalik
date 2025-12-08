@@ -13,7 +13,8 @@ import {
   Loader2,
   Download,
   FileText,
-  FileSpreadsheet
+  FileSpreadsheet,
+  HeartPulse
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { NewDeviationDialog, NewDeviation } from "@/components/deviations/NewDeviationDialog";
 import { DeviationDetailDialog } from "@/components/deviations/DeviationDetailDialog";
+import { WorkAccidentDialog, WorkAccidentData } from "@/components/deviations/WorkAccidentDialog";
 import { useDeviations, Deviation as DeviationType, NewDeviationInput } from "@/hooks/useDeviations";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useToast } from "@/hooks/use-toast";
@@ -94,6 +96,7 @@ const Deviations = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isWorkAccidentOpen, setIsWorkAccidentOpen] = useState(false);
   const [selectedDeviation, setSelectedDeviation] = useState<DeviationForDialog | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
@@ -313,6 +316,15 @@ const Deviations = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Button 
+              variant="destructive" 
+              className="gap-2" 
+              onClick={() => setIsWorkAccidentOpen(true)}
+            >
+              <HeartPulse className="w-4 h-4" />
+              <span className="hidden sm:inline">Meld arbeidsulykke</span>
+              <span className="sm:hidden">Ulykke</span>
+            </Button>
             <Button className="gap-2" onClick={() => setIsDialogOpen(true)}>
               <Plus className="w-4 h-4" />
               Nytt avvik
@@ -503,6 +515,57 @@ const Deviations = () => {
         onOpenChange={setIsDetailOpen}
         onStatusChange={handleStatusChange}
         onAssigneeChange={handleAssigneeChange}
+      />
+
+      {/* Work Accident Dialog */}
+      <WorkAccidentDialog
+        open={isWorkAccidentOpen}
+        onOpenChange={setIsWorkAccidentOpen}
+        onSubmit={async (data: WorkAccidentData) => {
+          const severityMap: Record<string, string> = {
+            minor: "Lav",
+            moderate: "Medium", 
+            serious: "Høy",
+            fatal: "Kritisk",
+          };
+          
+          const priorityMap: Record<string, "low" | "medium" | "high" | "critical"> = {
+            minor: "medium",
+            moderate: "high",
+            serious: "critical",
+            fatal: "critical",
+          };
+
+          const newDeviation: NewDeviationInput = {
+            title: `Arbeidsulykke: ${data.title}`,
+            description: data.description,
+            category: "HMS",
+            priority: priorityMap[data.severity] || "high",
+            assignee_id: null,
+            assignee_name: null,
+            due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+            incident_location: data.incidentLocation,
+            incident_time: data.incidentDate && data.incidentTime 
+              ? `${data.incidentDate}T${data.incidentTime}` 
+              : data.incidentDate,
+            incident_type: "Arbeidsulykke",
+            severity: severityMap[data.severity],
+            consequences: data.consequences,
+            involved_persons: data.involvedPersons,
+            immediate_actions: data.immediateActions,
+            notify_arbeidstilsynet: data.notifyArbeidstilsynet,
+            notify_insurance: data.notifyInsurance,
+          };
+
+          await createDeviation(newDeviation);
+          
+          toast({
+            title: "Arbeidsulykke registrert",
+            description: data.notifyArbeidstilsynet 
+              ? "Husk å melde ulykken til Arbeidstilsynet via Altinn"
+              : "Ulykken er registrert i avvikssystemet",
+          });
+        }}
       />
     </AppLayout>
   );
