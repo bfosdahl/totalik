@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_byggesak_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          form_category: string
+          form_name: string
+          form_number: string
+          id: string
+          is_active: boolean
+          language: string
+          pdf_file_path: string | null
+          required_fields: Json | null
+          sort_order: number | null
+          updated_at: string
+          valid_from: string | null
+          valid_to: string | null
+          version: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          form_category?: string
+          form_name: string
+          form_number: string
+          id?: string
+          is_active?: boolean
+          language?: string
+          pdf_file_path?: string | null
+          required_fields?: Json | null
+          sort_order?: number | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          version?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          form_category?: string
+          form_name?: string
+          form_number?: string
+          id?: string
+          is_active?: boolean
+          language?: string
+          pdf_file_path?: string | null
+          required_fields?: Json | null
+          sort_order?: number | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          version?: string | null
+        }
+        Relationships: []
+      }
       admin_checklist_templates: {
         Row: {
           attached_pdf_path: string | null
@@ -2855,6 +2909,197 @@ export type Database = {
           },
         ]
       }
+      ks_module2_byggesak: {
+        Row: {
+          application_type: string | null
+          approved_at: string | null
+          bnr: string | null
+          building_type: string | null
+          case_number: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          fnr: string | null
+          gnr: string | null
+          id: string
+          municipality: string | null
+          notes: string | null
+          project_id: string
+          property_address: string | null
+          snr: string | null
+          søker_role: string | null
+          status: string
+          submitted_at: string | null
+          tiltaksklasse: string | null
+          updated_at: string
+        }
+        Insert: {
+          application_type?: string | null
+          approved_at?: string | null
+          bnr?: string | null
+          building_type?: string | null
+          case_number?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          fnr?: string | null
+          gnr?: string | null
+          id?: string
+          municipality?: string | null
+          notes?: string | null
+          project_id: string
+          property_address?: string | null
+          snr?: string | null
+          søker_role?: string | null
+          status?: string
+          submitted_at?: string | null
+          tiltaksklasse?: string | null
+          updated_at?: string
+        }
+        Update: {
+          application_type?: string | null
+          approved_at?: string | null
+          bnr?: string | null
+          building_type?: string | null
+          case_number?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          fnr?: string | null
+          gnr?: string | null
+          id?: string
+          municipality?: string | null
+          notes?: string | null
+          project_id?: string
+          property_address?: string | null
+          snr?: string | null
+          søker_role?: string | null
+          status?: string
+          submitted_at?: string | null
+          tiltaksklasse?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_byggesak_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_byggesak_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_module2_byggesak_forms: {
+        Row: {
+          byggesak_id: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          created_by_name: string | null
+          form_category: string
+          form_data: Json | null
+          form_name: string
+          form_number: string
+          id: string
+          notes: string | null
+          pdf_file_path: string | null
+          project_id: string
+          sent_at: string | null
+          sent_to: string | null
+          signature_data: Json | null
+          signed_at: string | null
+          signed_by_name: string | null
+          status: string
+          template_id: string | null
+          updated_at: string
+          uploaded_file_path: string | null
+        }
+        Insert: {
+          byggesak_id: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          form_category: string
+          form_data?: Json | null
+          form_name: string
+          form_number: string
+          id?: string
+          notes?: string | null
+          pdf_file_path?: string | null
+          project_id: string
+          sent_at?: string | null
+          sent_to?: string | null
+          signature_data?: Json | null
+          signed_at?: string | null
+          signed_by_name?: string | null
+          status?: string
+          template_id?: string | null
+          updated_at?: string
+          uploaded_file_path?: string | null
+        }
+        Update: {
+          byggesak_id?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          form_category?: string
+          form_data?: Json | null
+          form_name?: string
+          form_number?: string
+          id?: string
+          notes?: string | null
+          pdf_file_path?: string | null
+          project_id?: string
+          sent_at?: string | null
+          sent_to?: string | null
+          signature_data?: Json | null
+          signed_at?: string | null
+          signed_by_name?: string | null
+          status?: string
+          template_id?: string | null
+          updated_at?: string
+          uploaded_file_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_byggesak_forms_byggesak_id_fkey"
+            columns: ["byggesak_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_byggesak"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_byggesak_forms_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_byggesak_forms_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_byggesak_forms_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "admin_byggesak_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_change_orders: {
         Row: {
           attachments: Json | null
@@ -3974,6 +4219,94 @@ export type Database = {
             columns: ["responsible_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_module2_nabovarsel_recipients: {
+        Row: {
+          bnr: string | null
+          company_id: string
+          created_at: string
+          email: string | null
+          form_id: string
+          gnr: string | null
+          id: string
+          neighbor_address: string | null
+          neighbor_name: string
+          notification_method: string | null
+          phone: string | null
+          project_id: string
+          receipt_confirmed: boolean | null
+          response_date: string | null
+          response_status: string | null
+          response_text: string | null
+          sent_at: string | null
+          updated_at: string
+          viewed_at: string | null
+        }
+        Insert: {
+          bnr?: string | null
+          company_id: string
+          created_at?: string
+          email?: string | null
+          form_id: string
+          gnr?: string | null
+          id?: string
+          neighbor_address?: string | null
+          neighbor_name: string
+          notification_method?: string | null
+          phone?: string | null
+          project_id: string
+          receipt_confirmed?: boolean | null
+          response_date?: string | null
+          response_status?: string | null
+          response_text?: string | null
+          sent_at?: string | null
+          updated_at?: string
+          viewed_at?: string | null
+        }
+        Update: {
+          bnr?: string | null
+          company_id?: string
+          created_at?: string
+          email?: string | null
+          form_id?: string
+          gnr?: string | null
+          id?: string
+          neighbor_address?: string | null
+          neighbor_name?: string
+          notification_method?: string | null
+          phone?: string | null
+          project_id?: string
+          receipt_confirmed?: boolean | null
+          response_date?: string | null
+          response_status?: string | null
+          response_text?: string | null
+          sent_at?: string | null
+          updated_at?: string
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_nabovarsel_recipients_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_nabovarsel_recipients_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_byggesak_forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_nabovarsel_recipients_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
             referencedColumns: ["id"]
           },
         ]
