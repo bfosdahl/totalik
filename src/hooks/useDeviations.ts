@@ -42,17 +42,22 @@ export interface NewDeviationInput {
   category: "HMS" | "MAT" | "BYGG";
   priority: "low" | "medium" | "high" | "critical";
   assignee_id?: string | null;
-  assignee_name: string;
+  assignee_name: string | null;
   due_date: string;
   // Extended fields
   incident_location?: string;
   incident_time?: string;
+  incident_type?: string;
+  severity?: string;
   reporter_contact?: string;
   additional_info?: string;
   consequences?: string;
+  involved_persons?: string;
   immediate_actions?: string;
   preventive_measures?: string;
   responsible_receiver?: string;
+  notify_arbeidstilsynet?: boolean;
+  notify_insurance?: boolean;
 }
 
 export function useDeviations() {
@@ -149,12 +154,17 @@ export function useDeviations() {
           // Extended fields
           incident_location: input.incident_location || null,
           incident_time: input.incident_time || null,
+          incident_type: input.incident_type || null,
+          severity: input.severity || null,
           reporter_contact: input.reporter_contact || null,
           additional_info: input.additional_info || null,
           consequences: input.consequences || null,
+          involved_persons: input.involved_persons || null,
           immediate_actions: input.immediate_actions || null,
           preventive_measures: input.preventive_measures || null,
           responsible_receiver: input.responsible_receiver || null,
+          notify_arbeidstilsynet: input.notify_arbeidstilsynet || false,
+          notify_insurance: input.notify_insurance || false,
         })
         .select()
         .single();
