@@ -338,6 +338,19 @@ const Setup = () => {
       <AppLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <span className="sr-only">Laster inn...</span>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // Also wait for company data if we have a companyId
+  if (companyId && !company) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <span className="sr-only">Laster bedriftsdata...</span>
         </div>
       </AppLayout>
     );
