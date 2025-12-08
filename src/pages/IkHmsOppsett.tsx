@@ -1,70 +1,69 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { IkHmsChatSetup } from "@/components/setup/IkHmsChatSetup";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Building2, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Building2, CheckCircle2, AlertTriangle, RefreshCw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAiSetupValidation } from "@/hooks/useAiSetupValidation";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 
 const IkHmsOppsett = () => {
-  const { profile, company, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { hasModule, modules, isLoading: modulesLoading } = useCompanyModules();
+  const { isValid, isLoading, error, companyId, retry } = useAiSetupValidation("IK_HMS");
+  const { modules, isLoading: modulesLoading, refetch: refetchModules } = useCompanyModules(companyId || undefined);
   const [setupCompleted, setSetupCompleted] = useState(false);
   const [showRestartDialog, setShowRestartDialog] = useState(false);
   const [isRestarting, setIsRestarting] = useState(false);
 
-  // Combined loading state - wait for both auth and modules to load
-  const isLoading = authLoading || modulesLoading;
+  // Check if setup was previously completed
+  const previouslyCompleted = !isRestarting && modules.some(m => 
+    m.module_type === 'IK_HMS' && 
+    (m.settings as any)?.setupCompletedAt
+  );
 
-  useEffect(() => {
-    // Wait until everything is loaded AND we have a company before checking module access
-    if (isLoading || !company?.id) {
-      return;
-    }
-
-    // IK_HMS is a standard module for all companies - allow access even if not yet in database
-    // The setup process will create the module entry if it doesn't exist
-
-    // Check if setup is already completed (only if not restarting)
-    if (modules.length > 0 && !isRestarting) {
-      const ikHmsModule = modules.find(m => m.module_type === 'IK_HMS');
-      if (ikHmsModule?.settings && (ikHmsModule.settings as any).setupCompletedAt) {
-        setSetupCompleted(true);
-      }
-    }
-  }, [isLoading, navigate, modules, isRestarting, company?.id]);
-
-  if (isLoading) {
+  // Show loader while validating
+  if (isLoading || modulesLoading) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Laster...</p>
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">Forbereder AI-oppsett...</p>
           </div>
         </div>
       </AppLayout>
     );
   }
 
-  if (!company?.id) {
+  // Show error state with retry option
+  if (error || !isValid) {
     return (
       <AppLayout>
         <div className="container max-w-4xl mx-auto py-8">
-          <Alert>
-            <Building2 className="h-4 w-4" />
-            <AlertDescription>
-              Du må være tilknyttet en bedrift for å sette opp IK/HMS.
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>{error || "Kunne ikke starte AI-oppsettet."}</span>
+              <Button variant="outline" size="sm" onClick={retry} className="ml-4">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Prøv igjen
+              </Button>
             </AlertDescription>
           </Alert>
         </div>
       </AppLayout>
     );
   }
+
+  // At this point we know companyId is valid
+  const handleSetupComplete = async () => {
+    setSetupCompleted(true);
+    setIsRestarting(false);
+    // Refetch modules to update the state
+    await refetchModules();
+  };
 
   return (
     <AppLayout>
@@ -76,7 +75,7 @@ const IkHmsOppsett = () => {
           </p>
         </div>
 
-        {setupCompleted ? (
+        {(setupCompleted || previouslyCompleted) ? (
           <div className="space-y-4 sm:space-y-6">
             <Alert className="border-success bg-success/10">
               <CheckCircle2 className="h-4 w-4 text-success" />
@@ -120,11 +119,8 @@ const IkHmsOppsett = () => {
           </div>
         ) : (
           <IkHmsChatSetup
-            companyId={company.id}
-            onComplete={() => {
-              setSetupCompleted(true);
-              setIsRestarting(false);
-            }}
+            companyId={companyId!}
+            onComplete={handleSetupComplete}
           />
         )}
 

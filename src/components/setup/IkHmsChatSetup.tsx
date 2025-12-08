@@ -487,191 +487,241 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
 
   const saveSetupData = async (jsonContent: string) => {
     setIsSaving(true);
-    try {
-      const data = JSON.parse(jsonContent);
+    
+    // Retry logic for reliability
+    const maxRetries = 3;
+    let lastError: Error | null = null;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const data = JSON.parse(jsonContent);
 
-      // IMPORTANT: We now save AI-generated content to company_modules.settings.generatedContent
-      // This preserves user-created data in the main tables (avvik, risikovurderinger, handlingsplaner, stoffkartotek, etc.)
-      // The AI content is stored separately and can be regenerated without losing user data.
-      
-      // Transform routines to the expected format
-      const transformedRoutines = data.routines?.map((routine: Record<string, unknown>, index: number) => ({
-        id: routine.id || `ai-routine-${index + 1}`,
-        routine_number: routine.routine_number || `R${(index + 1).toString().padStart(3, '0')}`,
-        routine_name: routine.routine_name || routine.name || 'Ukjent rutine',
-        category: routine.category || 'Generelt',
-        purpose: routine.purpose || routine.description || '',
-        responsibility: routine.responsibility || routine.responsible || '',
-        procedure: routine.procedure || '',
-        examples: routine.examples || '',
-        remember: routine.remember || '',
-        is_predefined: true,
-        is_ai_generated: true,
-      })) || [];
-
-      // Transform risks to ensure they have AI marker
-      const transformedRisks = data.risks?.map((risk: Record<string, unknown>, index: number) => ({
-        ...risk,
-        id: risk.id || `ai-risk-${index + 1}`,
-        is_ai_generated: true,
-      })) || [];
-
-      // Transform actions to ensure they have AI marker
-      const transformedActions = data.actions?.map((action: Record<string, unknown>, index: number) => ({
-        ...action,
-        id: action.id || `ai-action-${index + 1}`,
-        is_ai_generated: true,
-      })) || [];
-
-      // Get existing module data or create new one
-      const { data: moduleData } = await supabase
-        .from("company_modules")
-        .select("*")
-        .eq("company_id", companyId)
-        .eq("module_type", "IK_HMS")
-        .single();
-
-      const newSettings = {
-        setupCompletedAt: new Date().toISOString(),
-        industry: data.industry || (moduleData?.settings as Record<string, unknown>)?.industry || selectedIndustry || null,
-        generatedContent: {
-          goals: data.goals || [],
-          organization: data.organization || null,
-          risks: transformedRisks,
-          actions: transformedActions,
-          routines: transformedRoutines,
-          generatedAt: new Date().toISOString(),
-        },
-      };
-
-      if (moduleData) {
-        // Update existing module
-        await supabase
-          .from("company_modules")
-          .update({
-            settings: {
-              ...(moduleData.settings as Record<string, unknown>),
-              ...newSettings,
-            },
-            is_active: true,
-          })
-          .eq("id", moduleData.id);
-      } else {
-        // Create new IK_HMS module - THIS IS CRITICAL for new companies!
-        const { error: insertError } = await supabase
-          .from("company_modules")
-          .insert({
-            company_id: companyId,
-            module_type: "IK_HMS",
-            is_active: true,
-            settings: newSettings,
-          });
+        // IMPORTANT: We now save AI-generated content to company_modules.settings.generatedContent
+        // This preserves user-created data in the main tables (avvik, risikovurderinger, handlingsplaner, stoffkartotek, etc.)
+        // The AI content is stored separately and can be regenerated without losing user data.
         
-        if (insertError) {
-          console.error("Error creating IK_HMS module:", insertError);
-          throw new Error("Kunne ikke opprette HMS-modul");
+        // Transform routines to the expected format
+        const transformedRoutines = data.routines?.map((routine: Record<string, unknown>, index: number) => ({
+          id: routine.id || `ai-routine-${index + 1}`,
+          routine_number: routine.routine_number || `R${(index + 1).toString().padStart(3, '0')}`,
+          routine_name: routine.routine_name || routine.name || 'Ukjent rutine',
+          category: routine.category || 'Generelt',
+          purpose: routine.purpose || routine.description || '',
+          responsibility: routine.responsibility || routine.responsible || '',
+          procedure: routine.procedure || '',
+          examples: routine.examples || '',
+          remember: routine.remember || '',
+          is_predefined: true,
+          is_ai_generated: true,
+        })) || [];
+
+        // Transform risks to ensure they have AI marker
+        const transformedRisks = data.risks?.map((risk: Record<string, unknown>, index: number) => ({
+          ...risk,
+          id: risk.id || `ai-risk-${index + 1}`,
+          is_ai_generated: true,
+        })) || [];
+
+        // Transform actions to ensure they have AI marker
+        const transformedActions = data.actions?.map((action: Record<string, unknown>, index: number) => ({
+          ...action,
+          id: action.id || `ai-action-${index + 1}`,
+          is_ai_generated: true,
+        })) || [];
+
+        const newSettings = {
+          setupCompletedAt: new Date().toISOString(),
+          industry: data.industry || selectedIndustry || null,
+          generatedContent: {
+            goals: data.goals || [],
+            organization: data.organization || null,
+            risks: transformedRisks,
+            actions: transformedActions,
+            routines: transformedRoutines,
+            generatedAt: new Date().toISOString(),
+          },
+        };
+
+        // STEP 1: Ensure module exists and update it
+        const { data: existingModule } = await supabase
+          .from("company_modules")
+          .select("id, settings")
+          .eq("company_id", companyId)
+          .eq("module_type", "IK_HMS")
+          .maybeSingle();
+
+        let moduleId: string;
+
+        if (existingModule) {
+          // Update existing module
+          const { error: updateError } = await supabase
+            .from("company_modules")
+            .update({
+              settings: {
+                ...(existingModule.settings as Record<string, unknown>),
+                ...newSettings,
+              },
+              is_active: true,
+            })
+            .eq("id", existingModule.id);
+          
+          if (updateError) {
+            throw new Error(`Kunne ikke oppdatere HMS-modul: ${updateError.message}`);
+          }
+          moduleId = existingModule.id;
+        } else {
+          // Create new IK_HMS module
+          const { data: newModule, error: insertError } = await supabase
+            .from("company_modules")
+            .insert({
+              company_id: companyId,
+              module_type: "IK_HMS",
+              is_active: true,
+              settings: newSettings,
+            })
+            .select()
+            .single();
+          
+          if (insertError || !newModule) {
+            throw new Error(`Kunne ikke opprette HMS-modul: ${insertError?.message || 'Ukjent feil'}`);
+          }
+          moduleId = newModule.id;
+        }
+
+        // STEP 2: Verify the module was saved correctly
+        const { data: verifyModule, error: verifyError } = await supabase
+          .from("company_modules")
+          .select("id, settings")
+          .eq("id", moduleId)
+          .single();
+
+        if (verifyError || !verifyModule) {
+          throw new Error("Kunne ikke verifisere at HMS-modul ble lagret");
+        }
+
+        const savedSettings = verifyModule.settings as Record<string, unknown>;
+        if (!savedSettings?.setupCompletedAt) {
+          throw new Error("HMS-modul ble ikke lagret korrekt - mangler setupCompletedAt");
+        }
+
+        // STEP 3: Save to standard tables (with error handling but non-blocking)
+        try {
+          // Also save to the standard tables for backward compatibility,
+          // but ONLY add AI-generated goals (don't delete existing user-created goals)
+          if (data.goals?.length > 0) {
+            // Delete only AI-generated goals (is_predefined = true), keep user-created ones
+            await supabase
+              .from("company_goals")
+              .delete()
+              .eq("company_id", companyId)
+              .eq("is_predefined", true);
+            
+            for (const goal of data.goals) {
+              await supabase.from("company_goals").insert({
+                company_id: companyId,
+                goal_text: goal,
+                is_predefined: true, // Marks as AI-generated
+              });
+            }
+          }
+
+          // Save organization (this is typically just company structure info, safe to update)
+          if (data.organization) {
+            await supabase.from("company_organization").upsert({
+              company_id: companyId,
+              custom_content: data.organization.custom_content,
+              is_custom: data.organization.is_custom || false,
+            });
+          }
+
+          // For risk assessments and action plans, we need to merge AI content with existing user content
+          // We'll mark AI-generated items so they can be replaced on re-run
+          if (data.risks?.length > 0) {
+            // Get existing risks
+            const { data: existingRisks } = await supabase
+              .from("company_risk_assessments")
+              .select("risks")
+              .eq("company_id", companyId)
+              .single();
+            
+            // Filter out old AI-generated risks and keep user-created ones
+            const userRisks = (existingRisks?.risks as Array<Record<string, unknown>> || [])
+              .filter((r) => !r.is_ai_generated);
+            
+            // Combine user risks with new AI risks
+            await supabase.from("company_risk_assessments").upsert({
+              company_id: companyId,
+              risks: [...userRisks, ...transformedRisks],
+            });
+          }
+
+          // Same approach for action plans
+          if (data.actions?.length > 0) {
+            const { data: existingActions } = await supabase
+              .from("company_action_plans")
+              .select("actions")
+              .eq("company_id", companyId)
+              .single();
+            
+            const userActions = (existingActions?.actions as Array<Record<string, unknown>> || [])
+              .filter((a) => !a.is_ai_generated);
+            
+            await supabase.from("company_action_plans").upsert({
+              company_id: companyId,
+              actions: [...userActions, ...transformedActions],
+            });
+          }
+
+          // Same approach for routines
+          if (data.routines?.length > 0) {
+            const { data: existingRoutines } = await supabase
+              .from("company_routines")
+              .select("routines")
+              .eq("company_id", companyId)
+              .single();
+            
+            const userRoutines = (existingRoutines?.routines as Array<Record<string, unknown>> || [])
+              .filter((r) => !r.is_ai_generated);
+            
+            await supabase.from("company_routines").upsert({
+              company_id: companyId,
+              routines: [...userRoutines, ...transformedRoutines],
+            });
+          }
+        } catch (tableError) {
+          // Log but don't fail - the main module data is already saved
+          console.warn("Warning: Could not save to standard tables:", tableError);
+        }
+
+        // Invalidate queries to refetch data
+        queryClient.invalidateQueries({ queryKey: ["company-goals"] });
+        queryClient.invalidateQueries({ queryKey: ["company-organization"] });
+        queryClient.invalidateQueries({ queryKey: ["company-risk-assessments"] });
+        queryClient.invalidateQueries({ queryKey: ["company-action-plans"] });
+        queryClient.invalidateQueries({ queryKey: ["company-routines"] });
+        queryClient.invalidateQueries({ queryKey: ["company-modules"] });
+
+        // Success! Break out of retry loop
+        toast.success("HMS-oppsett fullført!");
+        setIsSaving(false);
+        onComplete();
+        return; // Exit the function successfully
+        
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        console.error(`Attempt ${attempt}/${maxRetries} failed:`, error);
+        
+        if (attempt < maxRetries) {
+          // Wait before retrying (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
         }
       }
-
-      // Also save to the standard tables for backward compatibility,
-      // but ONLY add AI-generated goals (don't delete existing user-created goals)
-      if (data.goals?.length > 0) {
-        // Delete only AI-generated goals (is_predefined = true), keep user-created ones
-        await supabase
-          .from("company_goals")
-          .delete()
-          .eq("company_id", companyId)
-          .eq("is_predefined", true);
-        
-        for (const goal of data.goals) {
-          await supabase.from("company_goals").insert({
-            company_id: companyId,
-            goal_text: goal,
-            is_predefined: true, // Marks as AI-generated
-          });
-        }
-      }
-
-      // Save organization (this is typically just company structure info, safe to update)
-      if (data.organization) {
-        await supabase.from("company_organization").upsert({
-          company_id: companyId,
-          custom_content: data.organization.custom_content,
-          is_custom: data.organization.is_custom || false,
-        });
-      }
-
-      // For risk assessments and action plans, we need to merge AI content with existing user content
-      // We'll mark AI-generated items so they can be replaced on re-run
-      if (data.risks?.length > 0) {
-        // Get existing risks
-        const { data: existingRisks } = await supabase
-          .from("company_risk_assessments")
-          .select("risks")
-          .eq("company_id", companyId)
-          .single();
-        
-        // Filter out old AI-generated risks and keep user-created ones
-        const userRisks = (existingRisks?.risks as Array<Record<string, unknown>> || [])
-          .filter((r) => !r.is_ai_generated);
-        
-        // Combine user risks with new AI risks
-        await supabase.from("company_risk_assessments").upsert({
-          company_id: companyId,
-          risks: [...userRisks, ...transformedRisks],
-        });
-      }
-
-      // Same approach for action plans
-      if (data.actions?.length > 0) {
-        const { data: existingActions } = await supabase
-          .from("company_action_plans")
-          .select("actions")
-          .eq("company_id", companyId)
-          .single();
-        
-        const userActions = (existingActions?.actions as Array<Record<string, unknown>> || [])
-          .filter((a) => !a.is_ai_generated);
-        
-        await supabase.from("company_action_plans").upsert({
-          company_id: companyId,
-          actions: [...userActions, ...transformedActions],
-        });
-      }
-
-      // Same approach for routines
-      if (data.routines?.length > 0) {
-        const { data: existingRoutines } = await supabase
-          .from("company_routines")
-          .select("routines")
-          .eq("company_id", companyId)
-          .single();
-        
-        const userRoutines = (existingRoutines?.routines as Array<Record<string, unknown>> || [])
-          .filter((r) => !r.is_ai_generated);
-        
-        await supabase.from("company_routines").upsert({
-          company_id: companyId,
-          routines: [...userRoutines, ...transformedRoutines],
-        });
-      }
-
-      // Invalidate queries to refetch data
-      queryClient.invalidateQueries({ queryKey: ["company-goals"] });
-      queryClient.invalidateQueries({ queryKey: ["company-organization"] });
-      queryClient.invalidateQueries({ queryKey: ["company-risk-assessments"] });
-      queryClient.invalidateQueries({ queryKey: ["company-action-plans"] });
-      queryClient.invalidateQueries({ queryKey: ["company-routines"] });
-      queryClient.invalidateQueries({ queryKey: ["company-modules"] });
-
-      toast.success("HMS-oppsett fullført!");
-      onComplete();
-    } catch (error) {
-      console.error("Error saving setup data:", error);
-      toast.error("Kunne ikke lagre oppsettdata. Vennligst prøv igjen.");
-    } finally {
-      setIsSaving(false);
     }
+    
+    // All retries failed
+    console.error("All save attempts failed:", lastError);
+    toast.error(lastError?.message || "Kunne ikke lagre oppsettdata. Vennligst prøv igjen.");
+    setIsSaving(false);
   };
 
   return (
