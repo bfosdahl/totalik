@@ -523,7 +523,7 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
         is_ai_generated: true,
       })) || [];
 
-      // Get existing module data
+      // Get existing module data or create new one
       const { data: moduleData } = await supabase
         .from("company_modules")
         .select("*")
@@ -531,27 +531,46 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
         .eq("module_type", "IK_HMS")
         .single();
 
+      const newSettings = {
+        setupCompletedAt: new Date().toISOString(),
+        industry: data.industry || (moduleData?.settings as Record<string, unknown>)?.industry || selectedIndustry || null,
+        generatedContent: {
+          goals: data.goals || [],
+          organization: data.organization || null,
+          risks: transformedRisks,
+          actions: transformedActions,
+          routines: transformedRoutines,
+          generatedAt: new Date().toISOString(),
+        },
+      };
+
       if (moduleData) {
-        // Store AI-generated content in module settings - this REPLACES previous AI content
-        // but does NOT affect user-created content in main tables
+        // Update existing module
         await supabase
           .from("company_modules")
           .update({
             settings: {
               ...(moduleData.settings as Record<string, unknown>),
-              setupCompletedAt: new Date().toISOString(),
-              industry: data.industry || (moduleData.settings as Record<string, unknown>)?.industry || null,
-              generatedContent: {
-                goals: data.goals || [],
-                organization: data.organization || null,
-                risks: transformedRisks,
-                actions: transformedActions,
-                routines: transformedRoutines,
-                generatedAt: new Date().toISOString(),
-              },
+              ...newSettings,
             },
+            is_active: true,
           })
           .eq("id", moduleData.id);
+      } else {
+        // Create new IK_HMS module - THIS IS CRITICAL for new companies!
+        const { error: insertError } = await supabase
+          .from("company_modules")
+          .insert({
+            company_id: companyId,
+            module_type: "IK_HMS",
+            is_active: true,
+            settings: newSettings,
+          });
+        
+        if (insertError) {
+          console.error("Error creating IK_HMS module:", insertError);
+          throw new Error("Kunne ikke opprette HMS-modul");
+        }
       }
 
       // Also save to the standard tables for backward compatibility,
