@@ -95,10 +95,11 @@ const generelleLover: LovKrav[] = [
 ];
 
 const ansattBaserteKrav = [
-  { minAnsatte: 5, krav: "Verneombud", beskrivelse: "Virksomheter med 5 eller flere ansatte må ha verneombud" },
+  { minAnsatte: 5, krav: "Verneombud", beskrivelse: "Virksomheter med 5 eller flere ansatte må ha verneombud. Bedrifter med færre enn 5 ansatte kan avtale skriftlig fritak." },
   { minAnsatte: 10, krav: "Skriftlig avtale om HMS", beskrivelse: "Krav om skriftlig avtale om hvordan HMS-arbeidet skal organiseres" },
+  { minAnsatte: 10, krav: "AMU ved krav fra partene", beskrivelse: "Virksomheter med 10-29 ansatte skal ha AMU hvis én av partene krever det" },
   { minAnsatte: 20, krav: "Verneombud per avdeling", beskrivelse: "Virksomheter med flere avdelinger bør vurdere verneombud per avdeling" },
-  { minAnsatte: 50, krav: "Arbeidsmiljøutvalg (AMU)", beskrivelse: "Virksomheter med 50 eller flere ansatte skal ha arbeidsmiljøutvalg" },
+  { minAnsatte: 30, krav: "Arbeidsmiljøutvalg (AMU)", beskrivelse: "Virksomheter med minst 30 ansatte har plikt til å opprette arbeidsmiljøutvalg" },
 ];
 
 const LoverOgForskrifterCalculator = () => {
