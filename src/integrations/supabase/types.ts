@@ -125,6 +125,84 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_project_type_templates: {
+        Row: {
+          checklist_template_ids: string[] | null
+          contractor_type: string | null
+          created_at: string
+          default_description: string | null
+          description: string | null
+          document_template_ids: string[] | null
+          example_change_orders: Json | null
+          example_client_name: string | null
+          example_client_org_number: string | null
+          example_content_level: string | null
+          example_contract_sum: number | null
+          example_deviations: Json | null
+          example_meeting_notes: Json | null
+          example_milestones: Json | null
+          example_subcontractors: Json | null
+          icon: string | null
+          id: string
+          include_example_content: boolean | null
+          is_active: boolean | null
+          routine_template_ids: string[] | null
+          sort_order: number | null
+          template_name: string
+          updated_at: string
+        }
+        Insert: {
+          checklist_template_ids?: string[] | null
+          contractor_type?: string | null
+          created_at?: string
+          default_description?: string | null
+          description?: string | null
+          document_template_ids?: string[] | null
+          example_change_orders?: Json | null
+          example_client_name?: string | null
+          example_client_org_number?: string | null
+          example_content_level?: string | null
+          example_contract_sum?: number | null
+          example_deviations?: Json | null
+          example_meeting_notes?: Json | null
+          example_milestones?: Json | null
+          example_subcontractors?: Json | null
+          icon?: string | null
+          id?: string
+          include_example_content?: boolean | null
+          is_active?: boolean | null
+          routine_template_ids?: string[] | null
+          sort_order?: number | null
+          template_name: string
+          updated_at?: string
+        }
+        Update: {
+          checklist_template_ids?: string[] | null
+          contractor_type?: string | null
+          created_at?: string
+          default_description?: string | null
+          description?: string | null
+          document_template_ids?: string[] | null
+          example_change_orders?: Json | null
+          example_client_name?: string | null
+          example_client_org_number?: string | null
+          example_content_level?: string | null
+          example_contract_sum?: number | null
+          example_deviations?: Json | null
+          example_meeting_notes?: Json | null
+          example_milestones?: Json | null
+          example_subcontractors?: Json | null
+          icon?: string | null
+          id?: string
+          include_example_content?: boolean | null
+          is_active?: boolean | null
+          routine_template_ids?: string[] | null
+          sort_order?: number | null
+          template_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_routine_templates: {
         Row: {
           category: string
