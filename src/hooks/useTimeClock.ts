@@ -25,6 +25,9 @@ export interface TimeClockEntry {
   hours_worked: number | null;
   notes: string | null;
   status: "active" | "completed" | "cancelled";
+  break_start: string | null;
+  break_end: string | null;
+  total_break_minutes: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -182,7 +185,7 @@ export function useTimeClock() {
       toast.success(`✅ Stemplet ut! (${hoursWorked.toFixed(1)} timer)`);
       await fetchEntries();
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error clocking out:", error);
       toast.error("Kunne ikke stemple ut");
       return false;
@@ -224,14 +227,83 @@ export function useTimeClock() {
     }
   };
 
+  const startBreak = async (): Promise<boolean> => {
+    if (!activeEntry) {
+      toast.error("Du må være stemplet inn for å ta pause");
+      return false;
+    }
+
+    if (activeEntry.break_start && !activeEntry.break_end) {
+      toast.error("Du er allerede på pause");
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("time_clock_entries")
+        .update({
+          break_start: new Date().toISOString(),
+          break_end: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", activeEntry.id);
+
+      if (error) throw error;
+      toast.success("☕ Pause startet");
+      await fetchEntries();
+      return true;
+    } catch (error) {
+      console.error("Error starting break:", error);
+      toast.error("Kunne ikke starte pause");
+      return false;
+    }
+  };
+
+  const endBreak = async (): Promise<boolean> => {
+    if (!activeEntry || !activeEntry.break_start) {
+      toast.error("Du er ikke på pause");
+      return false;
+    }
+
+    try {
+      const breakEnd = new Date();
+      const breakStart = new Date(activeEntry.break_start);
+      const breakMinutes = Math.round((breakEnd.getTime() - breakStart.getTime()) / (1000 * 60));
+      const totalBreak = (activeEntry.total_break_minutes || 0) + breakMinutes;
+
+      const { error } = await supabase
+        .from("time_clock_entries")
+        .update({
+          break_end: breakEnd.toISOString(),
+          total_break_minutes: totalBreak,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", activeEntry.id);
+
+      if (error) throw error;
+      toast.success(`✅ Pause avsluttet (${breakMinutes} min)`);
+      await fetchEntries();
+      return true;
+    } catch (error) {
+      console.error("Error ending break:", error);
+      toast.error("Kunne ikke avslutte pause");
+      return false;
+    }
+  };
+
+  const isOnBreak = activeEntry?.break_start && !activeEntry?.break_end;
+
   return {
     qrCodes,
     entries,
     activeEntry,
     isLoading,
+    isOnBreak: !!isOnBreak,
     generateQrCode,
     clockIn,
     clockOut,
+    startBreak,
+    endBreak,
     deleteQrCode,
     findQrCodeByCode,
     refetch: fetchEntries,
