@@ -22,6 +22,7 @@ import AdminHmsRequests from "./pages/admin/AdminHmsRequests";
 import AdminSgRegister from "./pages/admin/AdminSgRegister";
 import AdminDocuments from "./pages/admin/AdminDocuments";
 import AdminKsPanel from "./pages/admin/AdminKsPanel";
+import AdminByggesakTemplates from "./pages/admin/AdminByggesakTemplates";
 import SetupSystemAdmin from "./pages/admin/SetupSystemAdmin";
 import Ks2Dashboard from "./pages/ks2/Ks2Dashboard";
 import Ks2ProjectDetail from "./pages/ks2/Ks2ProjectDetail";
@@ -125,6 +126,7 @@ const App = () => (
             <Route path="/admin/sg-register" element={<ProtectedRoute requireSystemAdmin><AdminSgRegister /></ProtectedRoute>} />
             <Route path="/admin/documents" element={<ProtectedRoute requireSystemAdmin><AdminDocuments /></ProtectedRoute>} />
             <Route path="/admin/ks-panel" element={<ProtectedRoute requireSystemAdmin><AdminKsPanel /></ProtectedRoute>} />
+            <Route path="/admin/byggesak-templates" element={<ProtectedRoute requireSystemAdmin><AdminByggesakTemplates /></ProtectedRoute>} />
             
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
