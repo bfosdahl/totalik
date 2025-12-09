@@ -5,16 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Save, Zap, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Save, Zap, Loader2, CheckCircle2, ArrowLeft, Shield, Cable, Plug, FileText } from "lucide-react";
 import SavedFormsList from "./SavedFormsList";
+import EditableChecklistSection, { ChecklistQuestion, ChecklistAnswer } from "./EditableChecklistSection";
 import { useAuditFormResponses, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import type { Json } from "@/integrations/supabase/types";
 
-interface ChecklistItem {
-  id: string;
-  label: string;
-  checked: boolean;
+interface SectionData {
+  title: string;
+  questions: ChecklistQuestion[];
+  answers: { [questionId: string]: ChecklistAnswer };
 }
 
 interface FormData {
@@ -22,23 +22,20 @@ interface FormData {
   controlDate: string;
   location: string;
   controlledBy: string;
-  // Sikringsskap
-  sikringsskabChecks: ChecklistItem[];
-  // Fast installasjon
-  fastInstallasjonChecks: ChecklistItem[];
-  // Elektrisk utstyr
-  elektriskUtstyrChecks: ChecklistItem[];
-  // Dokumentasjon
-  dokumentasjonChecks: ChecklistItem[];
-  // Avvik og tiltak
+  sections: {
+    sikringsskap: SectionData;
+    fastInstallasjon: SectionData;
+    elektriskUtstyr: SectionData;
+    dokumentasjon: SectionData;
+  };
   avvikKommentarer: string;
   tiltakOgFrist: string;
   signaturKontrollor: string;
   signaturAnsvarlig: string;
 }
 
-const createChecklist = (items: string[]): ChecklistItem[] => 
-  items.map((label, index) => ({ id: `${index}`, label, checked: false }));
+const createQuestions = (items: string[]): ChecklistQuestion[] =>
+  items.map((question, index) => ({ id: `q${index}`, question }));
 
 const sikringsskabItems = [
   "Kursfortegnelse er til stede og korrekt merket / oppdatert",
@@ -84,10 +81,28 @@ const ElKontrollForm: React.FC = () => {
     controlDate: new Date().toISOString().split("T")[0],
     location: "",
     controlledBy: profile ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() : "",
-    sikringsskabChecks: createChecklist(sikringsskabItems),
-    fastInstallasjonChecks: createChecklist(fastInstallasjonItems),
-    elektriskUtstyrChecks: createChecklist(elektriskUtstyrItems),
-    dokumentasjonChecks: createChecklist(dokumentasjonItems),
+    sections: {
+      sikringsskap: {
+        title: "Sikringsskap / Fordelingstavle",
+        questions: createQuestions(sikringsskabItems),
+        answers: {},
+      },
+      fastInstallasjon: {
+        title: "Fast installasjon / kabler",
+        questions: createQuestions(fastInstallasjonItems),
+        answers: {},
+      },
+      elektriskUtstyr: {
+        title: "Elektrisk utstyr / stikk / skjøteledninger",
+        questions: createQuestions(elektriskUtstyrItems),
+        answers: {},
+      },
+      dokumentasjon: {
+        title: "Dokumentasjon og ansvar",
+        questions: createQuestions(dokumentasjonItems),
+        answers: {},
+      },
+    },
     avvikKommentarer: "",
     tiltakOgFrist: "",
     signaturKontrollor: "",
@@ -132,16 +147,92 @@ const ElKontrollForm: React.FC = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const updateChecklistItem = (
-    checklistField: 'sikringsskabChecks' | 'fastInstallasjonChecks' | 'elektriskUtstyrChecks' | 'dokumentasjonChecks',
-    itemId: string,
-    checked: boolean
+  // Section handlers
+  const handleAnswerChange = (
+    sectionKey: keyof FormData["sections"],
+    questionId: string,
+    field: "answer" | "comment",
+    value: string
   ) => {
     setFormData((prev) => ({
       ...prev,
-      [checklistField]: prev[checklistField].map((item) =>
-        item.id === itemId ? { ...item, checked } : item
-      ),
+      sections: {
+        ...prev.sections,
+        [sectionKey]: {
+          ...prev.sections[sectionKey],
+          answers: {
+            ...prev.sections[sectionKey].answers,
+            [questionId]: {
+              ...prev.sections[sectionKey].answers[questionId],
+              [field]: value,
+            },
+          },
+        },
+      },
+    }));
+  };
+
+  const handleAddQuestion = (sectionKey: keyof FormData["sections"], question: string) => {
+    const newId = `q${Date.now()}`;
+    setFormData((prev) => ({
+      ...prev,
+      sections: {
+        ...prev.sections,
+        [sectionKey]: {
+          ...prev.sections[sectionKey],
+          questions: [...prev.sections[sectionKey].questions, { id: newId, question }],
+        },
+      },
+    }));
+  };
+
+  const handleEditQuestion = (
+    sectionKey: keyof FormData["sections"],
+    questionId: string,
+    newQuestion: string
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      sections: {
+        ...prev.sections,
+        [sectionKey]: {
+          ...prev.sections[sectionKey],
+          questions: prev.sections[sectionKey].questions.map((q) =>
+            q.id === questionId ? { ...q, question: newQuestion } : q
+          ),
+        },
+      },
+    }));
+  };
+
+  const handleDeleteQuestion = (sectionKey: keyof FormData["sections"], questionId: string) => {
+    setFormData((prev) => {
+      const newAnswers = { ...prev.sections[sectionKey].answers };
+      delete newAnswers[questionId];
+      return {
+        ...prev,
+        sections: {
+          ...prev.sections,
+          [sectionKey]: {
+            ...prev.sections[sectionKey],
+            questions: prev.sections[sectionKey].questions.filter((q) => q.id !== questionId),
+            answers: newAnswers,
+          },
+        },
+      };
+    });
+  };
+
+  const handleTitleChange = (sectionKey: keyof FormData["sections"], newTitle: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      sections: {
+        ...prev.sections,
+        [sectionKey]: {
+          ...prev.sections[sectionKey],
+          title: newTitle,
+        },
+      },
     }));
   };
 
@@ -175,35 +266,12 @@ const ElKontrollForm: React.FC = () => {
     }
   };
 
-  const renderChecklist = (
-    title: string,
-    items: ChecklistItem[],
-    checklistField: 'sikringsskabChecks' | 'fastInstallasjonChecks' | 'elektriskUtstyrChecks' | 'dokumentasjonChecks'
-  ) => (
-    <div className="space-y-3">
-      <h3 className="font-semibold text-base">{title}</h3>
-      <div className="space-y-2">
-        {items.map((item) => (
-          <div key={item.id} className="flex items-start gap-3">
-            <Checkbox
-              id={`${checklistField}-${item.id}`}
-              checked={item.checked}
-              onCheckedChange={(checked) => 
-                updateChecklistItem(checklistField, item.id, checked === true)
-              }
-              className="mt-0.5"
-            />
-            <Label 
-              htmlFor={`${checklistField}-${item.id}`}
-              className="text-sm font-normal cursor-pointer leading-relaxed"
-            >
-              {item.label}
-            </Label>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const sectionIcons = {
+    sikringsskap: Shield,
+    fastInstallasjon: Cable,
+    elektriskUtstyr: Plug,
+    dokumentasjon: FileText,
+  };
 
   if (!showForm) {
     return (
@@ -274,37 +342,26 @@ const ElKontrollForm: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Checklists */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Kontrollpunkter</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-8">
-            {renderChecklist(
-              "1. Sikringsskap / Fordelingstavle",
-              formData.sikringsskabChecks,
-              "sikringsskabChecks"
-            )}
-
-            {renderChecklist(
-              "2. Fast installasjon / kabler",
-              formData.fastInstallasjonChecks,
-              "fastInstallasjonChecks"
-            )}
-
-            {renderChecklist(
-              "3. Elektrisk utstyr / stikk / skjøteledninger",
-              formData.elektriskUtstyrChecks,
-              "elektriskUtstyrChecks"
-            )}
-
-            {renderChecklist(
-              "4. Dokumentasjon og ansvar",
-              formData.dokumentasjonChecks,
-              "dokumentasjonChecks"
-            )}
-          </CardContent>
-        </Card>
+        {/* Editable Checklists */}
+        {(Object.keys(formData.sections) as Array<keyof FormData["sections"]>).map((sectionKey, index) => (
+          <EditableChecklistSection
+            key={sectionKey}
+            sectionId={sectionKey}
+            title={`${index + 1}. ${formData.sections[sectionKey].title}`}
+            icon={sectionIcons[sectionKey]}
+            questions={formData.sections[sectionKey].questions}
+            answers={formData.sections[sectionKey].answers}
+            onAnswerChange={(questionId, field, value) =>
+              handleAnswerChange(sectionKey, questionId, field, value)
+            }
+            onAddQuestion={(question) => handleAddQuestion(sectionKey, question)}
+            onEditQuestion={(questionId, newQuestion) =>
+              handleEditQuestion(sectionKey, questionId, newQuestion)
+            }
+            onDeleteQuestion={(questionId) => handleDeleteQuestion(sectionKey, questionId)}
+            onTitleChange={(newTitle) => handleTitleChange(sectionKey, newTitle.replace(/^\d+\.\s*/, ""))}
+          />
+        ))}
 
         {/* Avvik og tiltak */}
         <Card>
