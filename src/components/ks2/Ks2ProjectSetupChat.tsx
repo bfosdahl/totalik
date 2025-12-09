@@ -142,6 +142,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
       if (jsonContent) {
         try {
           const parsed = JSON.parse(jsonContent);
+          console.log("Parsed project data:", parsed);
           setSetupComplete(true);
           
           // Map to project input format
@@ -153,6 +154,8 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
           } = {
             project_name: parsed.project_info?.project_name || "",
             description: parsed.project_info?.description || "",
+            address: parsed.project_info?.address || "",
+            client_name: parsed.project_info?.client_name || "",
             contractor_type: parsed.contractor_type || undefined,
             recommended_checklists: parsed.recommended_checklists || [],
             recommended_routines: parsed.recommended_routines || [],
@@ -160,12 +163,12 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
             milestones: parsed.milestones || []
           };
 
-          // Show completion message
+          // Show completion message and pass data
           setTimeout(() => {
             onComplete(projectData);
-          }, 1500);
+          }, 1000);
         } catch (e) {
-          console.error("Error parsing JSON:", e);
+          console.error("Error parsing JSON:", e, jsonContent);
         }
       }
 
