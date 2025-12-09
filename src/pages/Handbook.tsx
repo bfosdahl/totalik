@@ -25,7 +25,9 @@ import {
   Minus,
   Image,
   Paperclip,
-  Mail
+  Mail,
+  Scale,
+  ExternalLink
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -171,6 +173,18 @@ const Handbook = () => {
     daglig_drift: Settings,
   };
 
+  // Laws data for handbook section
+  const generelleLover = [
+    { tittel: "Arbeidsmiljøloven", beskrivelse: "Hovedloven for arbeidsmiljø, arbeidstid, stillingsvern og medvirkning", lenke: "https://lovdata.no/dokument/NL/lov/2005-06-17-62", kategori: "Arbeidsrett" },
+    { tittel: "Internkontrollforskriften", beskrivelse: "Krav til systematisk HMS-arbeid i alle virksomheter", lenke: "https://lovdata.no/dokument/SF/forskrift/1996-12-06-1127", kategori: "HMS" },
+    { tittel: "Forskrift om organisering, ledelse og medvirkning", beskrivelse: "Krav til organisering av arbeidet og arbeidstakers medvirkning", lenke: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1355", kategori: "Organisering" },
+    { tittel: "Arbeidsplassforskriften", beskrivelse: "Krav til utforming og innretning av arbeidsplasser", lenke: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1356", kategori: "Arbeidsplass" },
+    { tittel: "Forskrift om utførelse av arbeid", beskrivelse: "Krav til sikker utførelse av ulike typer arbeid", lenke: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1357", kategori: "Arbeid" },
+    { tittel: "Forskrift om tiltaks- og grenseverdier", beskrivelse: "Grenseverdier for forurensninger i arbeidsatmosfæren", lenke: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1358", kategori: "Grenseverdier" },
+    { tittel: "Lov om tilsyn med elektriske anlegg", beskrivelse: "Krav til elektriske installasjoner og tilsyn", lenke: "https://lovdata.no/dokument/NL/lov/1929-05-24-4", kategori: "Elektrisitet" },
+    { tittel: "Brann- og eksplosjonsvernloven", beskrivelse: "Krav til forebygging av brann og eksplosjon", lenke: "https://lovdata.no/dokument/NL/lov/2002-06-14-20", kategori: "Brannvern" },
+  ];
+
   // Generate sections for completed audit forms - these are ongoing activities
   const auditFormSections = (["annual_hms", "elkontroll", "fysiske_forhold", "daglig_drift"] as FormType[])
     .map((formType, index) => {
@@ -178,7 +192,7 @@ const Handbook = () => {
       const Icon = formTypeIcons[formType];
       return {
         id: `audit_form_${formType}`,
-        title: `${8 + index}. ${formTypeLabels[formType]}`,
+        title: `${9 + index}. ${formTypeLabels[formType]}`,
         status: "ongoing" as const, // Always ongoing - these are periodic activities
         stepIndex: -1,
         icon: Icon,
@@ -320,8 +334,43 @@ const Handbook = () => {
       summary: `${routines?.routines?.length ?? 0} rutiner`,
     },
     {
+      id: "laws",
+      title: "6. Lover og forskrifter",
+      status: "complete" as const, // Always complete - these are standardized laws
+      stepIndex: -1,
+      icon: Scale,
+      content: (
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground mb-3">
+            Oversikt over lover og forskrifter som gjelder for virksomheten. Se fullstendig kalkulator under HMS aktiviteter.
+          </p>
+          <div className="space-y-2">
+            {generelleLover.slice(0, 4).map((lov, index) => (
+              <div key={index} className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">{lov.kategori}</Badge>
+                  <span className="text-muted-foreground">{lov.tittel}</span>
+                </div>
+                <a 
+                  href={lov.lenke} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary/80"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            ))}
+            <p className="text-xs text-muted-foreground">+ {generelleLover.length - 4} flere lover og forskrifter</p>
+          </div>
+        </div>
+      ),
+      summary: `${generelleLover.length} lover og forskrifter`,
+      linkTo: "/lover-og-forskrifter",
+    },
+    {
       id: "deviations",
-      title: "6. Avviksbehandling",
+      title: "7. Avviksbehandling",
       status: "ongoing" as const, // Deviations are ongoing - new ones are added over time
       stepIndex: -1,
       icon: AlertCircle,
@@ -399,7 +448,7 @@ const Handbook = () => {
     },
     {
       id: "audits",
-      title: "7. Revisjoner og evaluering",
+      title: "8. Revisjoner og evaluering",
       status: "ongoing" as const, // Audits are ongoing - new ones are scheduled over time
       stepIndex: -1,
       icon: Search,
@@ -717,11 +766,41 @@ const Handbook = () => {
         doc.setTextColor(0, 0, 0);
       }
 
-      // OPTIONAL SECTION 6: DEVIATIONS
+      // SECTION 6: LAWS AND REGULATIONS
+      doc.addPage();
+      yPos = margin;
+      addSectionHeader("6. Lover og forskrifter");
+      doc.setFontSize(11);
+      doc.text("Oversikt over lover og forskrifter som gjelder for virksomheten:", margin, yPos);
+      yPos += 10;
+      
+      const lawsTableData = generelleLover.map((lov) => [
+        lov.tittel,
+        lov.kategori,
+        lov.beskrivelse,
+      ]);
+      
+      autoTable(doc, {
+        startY: yPos,
+        head: [["Lov/forskrift", "Kategori", "Beskrivelse"]],
+        body: lawsTableData,
+        theme: "striped",
+        headStyles: { fillColor: [59, 130, 246], fontSize: 9, fontStyle: "bold" },
+        bodyStyles: { fontSize: 8 },
+        columnStyles: {
+          0: { cellWidth: 50 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 90 },
+        },
+        margin: { left: margin, right: margin },
+      });
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+
+      // OPTIONAL SECTION 7: DEVIATIONS
       if (includeDeviationsInPdf && deviations.length > 0) {
         doc.addPage();
         yPos = margin;
-        addSectionHeader("6. Avviksbehandling");
+        addSectionHeader("7. Avviksbehandling");
         doc.setFontSize(11);
         doc.text(`Totalt ${deviations.length} avvik registrert. ${openDeviationsCount} åpne, ${deviations.length - openDeviationsCount} lukkede.`, margin, yPos);
         yPos += 10;
@@ -746,11 +825,11 @@ const Handbook = () => {
         yPos = (doc as any).lastAutoTable.finalY + 10;
       }
 
-      // OPTIONAL SECTION 7: AUDITS
+      // OPTIONAL SECTION 8: AUDITS
       if (includeAuditsInPdf && audits.length > 0) {
         doc.addPage();
         yPos = margin;
-        addSectionHeader("7. Revisjoner og evaluering");
+        addSectionHeader("8. Revisjoner og evaluering");
         doc.setFontSize(11);
         doc.text(`${completedAuditsCount} gjennomførte revisjoner, ${pendingAuditsCount} planlagte/pågående.`, margin, yPos);
         yPos += 10;
@@ -775,12 +854,12 @@ const Handbook = () => {
         yPos = (doc as any).lastAutoTable.finalY + 10;
       }
 
-      // OPTIONAL: AUDIT FORM SECTIONS (8-11)
+      // OPTIONAL: AUDIT FORM SECTIONS (9-12)
       const auditFormOptions = [
-        { include: includeAnnualHmsInPdf, formType: "annual_hms" as FormType, title: "8. Årlig HMS-revisjon" },
-        { include: includeElkontrollInPdf, formType: "elkontroll" as FormType, title: "9. El-Kontroll" },
-        { include: includeFysiskeForholdInPdf, formType: "fysiske_forhold" as FormType, title: "10. Fysiske arbeidsforhold" },
-        { include: includeDagligDriftInPdf, formType: "daglig_drift" as FormType, title: "11. Daglig drift" },
+        { include: includeAnnualHmsInPdf, formType: "annual_hms" as FormType, title: "9. Årlig HMS-revisjon" },
+        { include: includeElkontrollInPdf, formType: "elkontroll" as FormType, title: "10. El-Kontroll" },
+        { include: includeFysiskeForholdInPdf, formType: "fysiske_forhold" as FormType, title: "11. Fysiske arbeidsforhold" },
+        { include: includeDagligDriftInPdf, formType: "daglig_drift" as FormType, title: "12. Daglig drift" },
       ];
 
       for (const option of auditFormOptions) {
