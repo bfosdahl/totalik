@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 export interface TimeEntry {
   id: string;
@@ -19,6 +20,10 @@ export interface TimeEntry {
   approved_at: string | null;
   created_at: string;
   updated_at: string;
+  source?: "manual" | "qr_clock"; // Track where entry came from
+  clock_in?: string | null;
+  clock_out?: string | null;
+  total_break_minutes?: number | null;
 }
 
 export interface CreateTimeEntry {
@@ -42,20 +47,95 @@ export function useTimeEntries() {
     }
 
     try {
-      let query = supabase
+      // Fetch regular time entries
+      let timeQuery = supabase
         .from("time_entries")
         .select("*")
         .order("entry_date", { ascending: false });
 
-      // If not admin, only fetch own entries
       if (!isCompanyAdmin) {
-        query = query.eq("user_id", user.id);
+        timeQuery = timeQuery.eq("user_id", user.id);
       }
 
-      const { data, error } = await query;
+      const { data: timeData, error: timeError } = await timeQuery;
+      if (timeError) throw timeError;
 
-      if (error) throw error;
-      setEntries((data as TimeEntry[]) || []);
+      // Fetch QR clock entries (completed ones with hours)
+      let clockQuery = supabase
+        .from("time_clock_entries")
+        .select("*")
+        .eq("status", "completed")
+        .not("hours_worked", "is", null)
+        .order("clock_in", { ascending: false });
+
+      if (!isCompanyAdmin) {
+        clockQuery = clockQuery.eq("user_id", user.id);
+      } else {
+        clockQuery = clockQuery.eq("company_id", profile.company_id);
+      }
+
+      const { data: clockData, error: clockError } = await clockQuery;
+      if (clockError) throw clockError;
+
+      // Convert clock entries to TimeEntry format
+      const clockEntries: TimeEntry[] = (clockData || []).map((entry: {
+        id: string;
+        company_id: string;
+        user_id: string;
+        user_name: string;
+        clock_in: string;
+        clock_out: string | null;
+        hours_worked: number | null;
+        notes: string | null;
+        status: string;
+        total_break_minutes: number | null;
+        created_at: string;
+        updated_at: string;
+        approval_status: string | null;
+        approved_by: string | null;
+        approved_by_name: string | null;
+        approved_at: string | null;
+      }) => {
+        // Map approval_status to TimeEntry status format
+        let status: "draft" | "submitted" | "approved" | "rejected" = "submitted";
+        if (entry.approval_status === "approved") status = "approved";
+        else if (entry.approval_status === "rejected") status = "rejected";
+
+        return {
+          id: `clock_${entry.id}`,
+          company_id: entry.company_id,
+          user_id: entry.user_id,
+          user_name: entry.user_name,
+          entry_date: format(new Date(entry.clock_in), "yyyy-MM-dd"),
+          hours: entry.hours_worked || 0,
+          project_name: null,
+          project_id: null,
+          description: entry.notes || `QR-stempling: ${format(new Date(entry.clock_in), "HH:mm")} - ${entry.clock_out ? format(new Date(entry.clock_out), "HH:mm") : ""}`,
+          status,
+          approved_by: entry.approved_by,
+          approved_by_name: entry.approved_by_name,
+          approved_at: entry.approved_at,
+          created_at: entry.created_at,
+          updated_at: entry.updated_at,
+          source: "qr_clock" as const,
+          clock_in: entry.clock_in,
+          clock_out: entry.clock_out,
+          total_break_minutes: entry.total_break_minutes,
+        };
+      });
+
+      // Mark manual entries
+      const manualEntries: TimeEntry[] = (timeData || []).map((entry: TimeEntry) => ({
+        ...entry,
+        source: "manual" as const,
+      }));
+
+      // Combine and sort by date
+      const allEntries = [...manualEntries, ...clockEntries].sort(
+        (a, b) => new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime()
+      );
+
+      setEntries(allEntries);
     } catch (error) {
       console.error("Error fetching time entries:", error);
       toast.error("Kunne ikke hente timeregistreringer");
@@ -141,18 +221,36 @@ export function useTimeEntries() {
     }
 
     try {
-      const { error } = await supabase
-        .from("time_entries")
-        .update({
-          status: "approved",
-          approved_by: user.id,
-          approved_by_name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email || "Ukjent",
-          approved_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", id);
+      // Check if it's a clock entry (starts with "clock_")
+      if (id.startsWith("clock_")) {
+        const realId = id.replace("clock_", "");
+        const { error } = await supabase
+          .from("time_clock_entries")
+          .update({
+            approval_status: "approved",
+            approved_by: user.id,
+            approved_by_name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email || "Ukjent",
+            approved_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", realId);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("time_entries")
+          .update({
+            status: "approved",
+            approved_by: user.id,
+            approved_by_name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email || "Ukjent",
+            approved_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", id);
+
+        if (error) throw error;
+      }
+
       toast.success("Timer godkjent");
       await fetchEntries();
       return true;
@@ -165,15 +263,30 @@ export function useTimeEntries() {
 
   const rejectEntry = async (id: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from("time_entries")
-        .update({
-          status: "rejected",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", id);
+      // Check if it's a clock entry (starts with "clock_")
+      if (id.startsWith("clock_")) {
+        const realId = id.replace("clock_", "");
+        const { error } = await supabase
+          .from("time_clock_entries")
+          .update({
+            approval_status: "rejected",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", realId);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("time_entries")
+          .update({
+            status: "rejected",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", id);
+
+        if (error) throw error;
+      }
+
       toast.success("Timer avvist");
       await fetchEntries();
       return true;

@@ -8345,6 +8345,10 @@ export type Database = {
       }
       time_clock_entries: {
         Row: {
+          approval_status: string | null
+          approved_at: string | null
+          approved_by: string | null
+          approved_by_name: string | null
           break_end: string | null
           break_start: string | null
           clock_in: string
@@ -8362,6 +8366,10 @@ export type Database = {
           user_name: string
         }
         Insert: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_by_name?: string | null
           break_end?: string | null
           break_start?: string | null
           clock_in?: string
@@ -8379,6 +8387,10 @@ export type Database = {
           user_name: string
         }
         Update: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_by_name?: string | null
           break_end?: string | null
           break_start?: string | null
           clock_in?: string

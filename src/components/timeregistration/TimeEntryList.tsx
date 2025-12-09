@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Check, X, Clock, Trash2, MoreHorizontal } from "lucide-react";
+import { Check, X, Clock, Trash2, MoreHorizontal, QrCode } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +17,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface TimeEntry {
@@ -31,6 +36,10 @@ interface TimeEntry {
   status: "draft" | "submitted" | "approved" | "rejected";
   approved_by_name: string | null;
   approved_at: string | null;
+  source?: "manual" | "qr_clock";
+  clock_in?: string | null;
+  clock_out?: string | null;
+  total_break_minutes?: number | null;
 }
 
 interface TimeEntryListProps {
@@ -96,7 +105,25 @@ export function TimeEntryList({
             return (
               <TableRow key={entry.id}>
                 <TableCell className="font-medium">
-                  {format(new Date(entry.entry_date), "EEE d. MMM", { locale: nb })}
+                  <div className="flex items-center gap-2">
+                    {entry.source === "qr_clock" && (
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <QrCode className="h-4 w-4 text-primary" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>QR-stempling</p>
+                          {entry.clock_in && entry.clock_out && (
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(entry.clock_in), "HH:mm")} - {format(new Date(entry.clock_out), "HH:mm")}
+                              {entry.total_break_minutes ? ` (${entry.total_break_minutes} min pause)` : ""}
+                            </p>
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                    {format(new Date(entry.entry_date), "EEE d. MMM", { locale: nb })}
+                  </div>
                 </TableCell>
                 {showEmployee && <TableCell>{entry.user_name}</TableCell>}
                 <TableCell className="text-right font-mono">
