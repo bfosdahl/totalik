@@ -30,6 +30,11 @@ import Ks2ShaPlan from "./Ks2ShaPlan";
 import Ks2Sja from "./Ks2Sja";
 import Ks2Vernerunder from "./Ks2Vernerunder";
 import Ks2Stoffkartotek from "./Ks2Stoffkartotek";
+// Byggesak Module imports
+import Ks2ByggesakDashboard from "./Ks2ByggesakDashboard";
+import Ks2ByggesakBlanketter from "./Ks2ByggesakBlanketter";
+import Ks2ByggesakEpost from "./Ks2ByggesakEpost";
+import Ks2ByggesakForm from "./Ks2ByggesakForm";
 
 export default function Ks2ProjectDetail() {
   const { projectId } = useParams();
@@ -140,7 +145,18 @@ export default function Ks2ProjectDetail() {
         return <Ks2AvvikIntegrated />;
       case "/hms/stoffkartotek":
         return <Ks2Stoffkartotek />;
+      // Byggesak Module routes
+      case "/byggesak":
+        return <Ks2ByggesakDashboard />;
+      case "/byggesak/blanketter":
+        return <Ks2ByggesakBlanketter />;
+      case "/byggesak/epost":
+        return <Ks2ByggesakEpost />;
       default:
+        // Handle byggesak form route
+        if (currentPath.startsWith("/byggesak/form/")) {
+          return <Ks2ByggesakForm />;
+        }
         return <Ks2EnhancedDashboard />;
     }
   };

@@ -26,6 +26,8 @@ import {
   Users,
   Briefcase,
   Settings,
+  Home,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -58,6 +60,12 @@ const hmsMenuItems = [
   { id: "vernerunder", label: "Vernerunder & RUH", icon: HardHat, path: "/hms/vernerunder", guestAllowed: true },
   { id: "hms-avvik", label: "HMS-avvik", icon: AlertTriangle, path: "/hms/avvik", guestAllowed: true },
   { id: "stoffkartotek", label: "Stoffkartotek", icon: FlaskConical, path: "/hms/stoffkartotek", guestAllowed: true },
+];
+
+const byggesakItems = [
+  { id: "byggesak-dashboard", label: "Byggesak-oversikt", icon: Home, path: "/byggesak", guestAllowed: false },
+  { id: "byggesak-blanketter", label: "Blanketter", icon: FileText, path: "/byggesak/blanketter", guestAllowed: false },
+  { id: "byggesak-epost", label: "E-post utsending", icon: Mail, path: "/byggesak/epost", guestAllowed: false },
 ];
 
 const prosjektstyringItems = [
@@ -95,6 +103,7 @@ interface MenuGroup {
 const menuGroups: MenuGroup[] = [
   { id: "ks", label: "Kvalitetssikring", icon: ClipboardCheck, items: kvalitetssikringItems, color: "text-primary" },
   { id: "hms", label: "HMS / SHA", icon: Shield, items: hmsMenuItems, color: "text-emerald-500" },
+  { id: "byggesak", label: "Byggesak & Blanketter", icon: Home, items: byggesakItems, color: "text-orange-500" },
   { id: "prosjekt", label: "Prosjektstyring", icon: Briefcase, items: prosjektstyringItems, color: "text-blue-500" },
   { id: "okonomi", label: "Økonomi", icon: Wallet, items: okonomiFakturaItems, color: "text-amber-500" },
   { id: "partnere", label: "Partnere", icon: Building2, items: partnereItems, color: "text-purple-500" },
