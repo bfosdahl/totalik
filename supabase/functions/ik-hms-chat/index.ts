@@ -140,7 +140,7 @@ JSON-STRUKTUR (brukeren ser IKKE dette):
     {
       "id": "action-1",
       "description": "Tiltak",
-      "responsible": "Ansvarlig",
+      "responsible": "Daglig leder|HMS-ansvarlig|Verneombud",
       "deadline": "YYYY-MM-DD",
       "status": "pending",
       "priority": "medium",
@@ -164,7 +164,15 @@ JSON-STRUKTUR (brukeren ser IKKE dette):
 HUSK: 
 - Vær vennlig, hjelpsom og gjør det enkelt for brukeren!
 - START ALLTID med bransjevalg - dette er viktig for å tilpasse hele oppsettet!
-- Generer ALLE rutinene som ble diskutert - ikke bare én!`;
+- Generer ALLE rutinene som ble diskutert - ikke bare én!
+
+KRITISK - ANSVARLIGE ROLLER:
+Når du genererer handlingsplan/tiltak, bruk KUN disse rollene som "responsible":
+- "Daglig leder" (overordnet ansvar)
+- "HMS-ansvarlig" (koordinerer HMS-arbeid)
+- "Verneombud" (kun hvis bedriften har 5+ ansatte)
+ALDRI bruk fiktive roller som "Brannvernleder", "Sikkerhetssjef", "Kvalitetsleder" etc. 
+Disse rollene finnes ikke i organisasjonsstrukturen og skaper forvirring.`;
 
 async function checkRateLimit(supabase: any, userId: string, functionName: string): Promise<boolean> {
   try {

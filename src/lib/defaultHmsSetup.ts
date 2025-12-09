@@ -216,6 +216,11 @@ export const defaultRoutines: DefaultRoutine[] = [
 ];
 
 // Standard actions based on risks
+// IMPORTANT: Only use roles that exist in the default organization:
+// - Daglig leder/Arbeidsgiver
+// - HMS-ansvarlig
+// - Verneombud (may not exist in small companies)
+// - Alle ansatte
 export const defaultActions: DefaultAction[] = [
   {
     id: "action-1",
@@ -244,10 +249,21 @@ export const defaultActions: DefaultAction[] = [
     risk_id: "risk-3",
     risk_description: "Brann og evakuering",
     action_description: "Gjennomføre årlig brannøvelse",
-    responsible: "Brannvernleder",
+    responsible: "HMS-ansvarlig",
     deadline: "",
     status: "ikke_startet",
     priority: "høy",
     comments: "Inkludere alle ansatte",
+  },
+  {
+    id: "action-4",
+    risk_id: "risk-4",
+    risk_description: "Fall og snubling i lokaler",
+    action_description: "Månedlig sjekk av gulvflater og kabler",
+    responsible: "HMS-ansvarlig",
+    deadline: "",
+    status: "ikke_startet",
+    priority: "lav",
+    comments: "Inkluderes i vernerunde",
   },
 ];
