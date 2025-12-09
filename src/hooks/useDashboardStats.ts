@@ -25,15 +25,52 @@ export function useDashboardStats(): DashboardStats {
 
     const fetchStats = async () => {
       try {
-        // Fetch setup wizard progress for compliance percentage
-        const { data: wizardProgress } = await supabase
-          .from("setup_wizard_progress")
-          .select("completed_steps")
-          .eq("company_id", profile.company_id)
-          .single();
-
+        // Calculate compliance based on actual data presence, not wizard progress
+        let completedSteps = 0;
         const totalSteps = 6;
-        const completedSteps = wizardProgress?.completed_steps?.length || 0;
+
+        // Check goals
+        const { count: goalsCount } = await supabase
+          .from("company_goals")
+          .select("*", { count: "exact", head: true })
+          .eq("company_id", profile.company_id);
+        if (goalsCount && goalsCount > 0) completedSteps++;
+
+        // Check organization
+        const { data: orgData } = await supabase
+          .from("company_organization")
+          .select("custom_content")
+          .eq("company_id", profile.company_id)
+          .maybeSingle();
+        if (orgData?.custom_content) completedSteps++;
+
+        // Check risk assessment
+        const { data: riskData } = await supabase
+          .from("company_risk_assessments")
+          .select("risks")
+          .eq("company_id", profile.company_id)
+          .maybeSingle();
+        if (riskData?.risks && Array.isArray(riskData.risks) && riskData.risks.length > 0) completedSteps++;
+
+        // Check action plan
+        const { data: actionData } = await supabase
+          .from("company_action_plans")
+          .select("actions")
+          .eq("company_id", profile.company_id)
+          .maybeSingle();
+        if (actionData?.actions && Array.isArray(actionData.actions) && actionData.actions.length > 0) completedSteps++;
+
+        // Check routines
+        const { data: routinesData } = await supabase
+          .from("company_routines")
+          .select("routines")
+          .eq("company_id", profile.company_id)
+          .maybeSingle();
+        if (routinesData?.routines && Array.isArray(routinesData.routines) && routinesData.routines.length > 0) completedSteps++;
+
+        // Handbook is considered complete if all other steps are complete
+        if (completedSteps === 5) completedSteps++;
+
         const compliancePercent = Math.round((completedSteps / totalSteps) * 100);
 
         // Fetch open deviations count
