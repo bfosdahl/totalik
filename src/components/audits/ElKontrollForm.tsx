@@ -5,77 +5,93 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Save, Zap, AlertTriangle, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
-import ResponsiveActionTable from "./ResponsiveActionTable";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Save, Zap, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
 import SavedFormsList from "./SavedFormsList";
 import { useAuditFormResponses, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import type { Json } from "@/integrations/supabase/types";
-import UserSelect from "./UserSelect";
 
-type DeviationType = "hms" | "quality" | "environment" | "other";
-type Severity = "low" | "medium" | "high" | "critical";
-type Status = "open" | "in_progress" | "closed";
-
-interface ActionRow {
+interface ChecklistItem {
   id: string;
-  action: string;
-  responsible: string;
-  deadline: string;
+  label: string;
+  checked: boolean;
 }
 
 interface FormData {
   companyName: string;
-  reportDate: string;
-  discoveredAt: string;
-  reportedBy: string;
+  controlDate: string;
   location: string;
-  deviationType: DeviationType;
-  severity: Severity;
-  status: Status;
-  title: string;
-  description: string;
-  immediateAction: string;
-  rootCause: string;
-  correctiveAction: string;
-  preventiveAction: string;
-  actions: ActionRow[];
-  attachmentsNote: string;
-  handlerName: string;
-  closedDate: string;
+  controlledBy: string;
+  // Sikringsskap
+  sikringsskabChecks: ChecklistItem[];
+  // Fast installasjon
+  fastInstallasjonChecks: ChecklistItem[];
+  // Elektrisk utstyr
+  elektriskUtstyrChecks: ChecklistItem[];
+  // Dokumentasjon
+  dokumentasjonChecks: ChecklistItem[];
+  // Avvik og tiltak
+  avvikKommentarer: string;
+  tiltakOgFrist: string;
+  signaturKontrollor: string;
+  signaturAnsvarlig: string;
 }
 
+const createChecklist = (items: string[]): ChecklistItem[] => 
+  items.map((label, index) => ({ id: `${index}`, label, checked: false }));
+
+const sikringsskabItems = [
+  "Kursfortegnelse er til stede og korrekt merket / oppdatert",
+  "Sikringer / vern er riktig dimensjonert",
+  "Sikringsskap er ryddig og tilgjengelig",
+  "Sikringsskapets dør kan lukkes og låses",
+  "Ingen tegn til varmegang",
+  "Jordfeilbrytere testet og fungerer",
+  "Overspenningsvern kontrollert",
+];
+
+const fastInstallasjonItems = [
+  "Kabler og ledninger uten synlige skader",
+  "Deksler og koblingsbokser intakte",
+  "Ingen kabler løst, over varme eller fukt uten vern",
+  "Fast installert utstyr er i normal stand",
+  "Sikkerhetsbrytere/nødstopp tilgjengelige og testet",
+];
+
+const elektriskUtstyrItems = [
+  "Høy belastning er ikke koblet via skjøteledninger",
+  "Skjøteledninger og kabler uten varme eller skader",
+  "Korrekt jord eller jordvern i fuktige områder",
+  "Alt utstyr fungerer normalt etter test",
+  "Dokumentasjon finnes for fast installasjon",
+];
+
+const dokumentasjonItems = [
+  "Alt arbeid utført av registrert elektroinstallatør",
+  "Samsvarserklæring og dokumentasjon finnes",
+  "Rutiner for internkontroll foreligger",
+  "Ansvarlig for elsikkerhet er definert",
+];
+
 const ElKontrollForm: React.FC = () => {
-  const { company } = useAuth();
+  const { company, profile } = useAuth();
   const { responses, saveFormResponse, deleteFormResponse, isSaving } = useAuditFormResponses();
   const [existingId, setExistingId] = useState<string | undefined>();
   const [showForm, setShowForm] = useState(false);
 
   const getInitialFormData = (): FormData => ({
     companyName: company?.name || "",
-    reportDate: new Date().toISOString().split("T")[0],
-    discoveredAt: "",
-    reportedBy: "",
+    controlDate: new Date().toISOString().split("T")[0],
     location: "",
-    deviationType: "hms",
-    severity: "medium",
-    status: "open",
-    title: "",
-    description: "",
-    immediateAction: "",
-    rootCause: "",
-    correctiveAction: "",
-    preventiveAction: "",
-    actions: [{ id: "1", action: "", responsible: "", deadline: "" }],
-    attachmentsNote: "",
-    handlerName: "",
-    closedDate: "",
+    controlledBy: profile ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() : "",
+    sikringsskabChecks: createChecklist(sikringsskabItems),
+    fastInstallasjonChecks: createChecklist(fastInstallasjonItems),
+    elektriskUtstyrChecks: createChecklist(elektriskUtstyrItems),
+    dokumentasjonChecks: createChecklist(dokumentasjonItems),
+    avvikKommentarer: "",
+    tiltakOgFrist: "",
+    signaturKontrollor: "",
+    signaturAnsvarlig: "",
   });
 
   const [formData, setFormData] = useState<FormData>(getInitialFormData());
@@ -116,34 +132,15 @@ const ElKontrollForm: React.FC = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const addActionRow = () => {
-    setFormData((prev) => ({
-      ...prev,
-      actions: [
-        ...prev.actions,
-        { id: Date.now().toString(), action: "", responsible: "", deadline: "" },
-      ],
-    }));
-  };
-
-  const removeActionRow = (id: string) => {
-    if (formData.actions.length > 1) {
-      setFormData((prev) => ({
-        ...prev,
-        actions: prev.actions.filter((a) => a.id !== id),
-      }));
-    }
-  };
-
-  const updateAction = (
-    id: string,
-    field: keyof Omit<ActionRow, "id">,
-    value: string
+  const updateChecklistItem = (
+    checklistField: 'sikringsskabChecks' | 'fastInstallasjonChecks' | 'elektriskUtstyrChecks' | 'dokumentasjonChecks',
+    itemId: string,
+    checked: boolean
   ) => {
     setFormData((prev) => ({
       ...prev,
-      actions: prev.actions.map((a) =>
-        a.id === id ? { ...a, [field]: value } : a
+      [checklistField]: prev[checklistField].map((item) =>
+        item.id === itemId ? { ...item, checked } : item
       ),
     }));
   };
@@ -153,8 +150,8 @@ const ElKontrollForm: React.FC = () => {
       "elkontroll",
       formData as unknown as Json,
       {
-        revision_date: formData.reportDate,
-        auditor_name: formData.reportedBy,
+        revision_date: formData.controlDate,
+        auditor_name: formData.controlledBy,
       },
       "draft",
       existingId
@@ -167,8 +164,8 @@ const ElKontrollForm: React.FC = () => {
       "elkontroll",
       formData as unknown as Json,
       {
-        revision_date: formData.reportDate,
-        auditor_name: formData.reportedBy,
+        revision_date: formData.controlDate,
+        auditor_name: formData.controlledBy,
       },
       "completed",
       existingId
@@ -178,18 +175,35 @@ const ElKontrollForm: React.FC = () => {
     }
   };
 
-  const severityConfig = {
-    low: { label: "Lav", color: "text-success" },
-    medium: { label: "Middels", color: "text-warning" },
-    high: { label: "Høy", color: "text-orange-500" },
-    critical: { label: "Kritisk", color: "text-destructive" },
-  };
-
-  const statusConfig = {
-    open: { label: "Åpen", color: "text-destructive" },
-    in_progress: { label: "Under behandling", color: "text-warning" },
-    closed: { label: "Lukket", color: "text-success" },
-  };
+  const renderChecklist = (
+    title: string,
+    items: ChecklistItem[],
+    checklistField: 'sikringsskabChecks' | 'fastInstallasjonChecks' | 'elektriskUtstyrChecks' | 'dokumentasjonChecks'
+  ) => (
+    <div className="space-y-3">
+      <h3 className="font-semibold text-base">{title}</h3>
+      <div className="space-y-2">
+        {items.map((item) => (
+          <div key={item.id} className="flex items-start gap-3">
+            <Checkbox
+              id={`${checklistField}-${item.id}`}
+              checked={item.checked}
+              onCheckedChange={(checked) => 
+                updateChecklistItem(checklistField, item.id, checked === true)
+              }
+              className="mt-0.5"
+            />
+            <Label 
+              htmlFor={`${checklistField}-${item.id}`}
+              className="text-sm font-normal cursor-pointer leading-relaxed"
+            >
+              {item.label}
+            </Label>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   if (!showForm) {
     return (
@@ -212,267 +226,141 @@ const ElKontrollForm: React.FC = () => {
       </Button>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic information */}
+        {/* Header */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Zap className="w-5 h-5" />
-              Grunninformasjon
+              EL-kontroll – Sjekkliste
             </CardTitle>
           </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="companyName">Virksomhet</Label>
-            <Input
-              id="companyName"
-              value={formData.companyName}
-              onChange={(e) => updateField("companyName", e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="reportDate">Dato for rapportering</Label>
-            <Input
-              id="reportDate"
-              type="date"
-              value={formData.reportDate}
-              onChange={(e) => updateField("reportDate", e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="discoveredAt">Tidspunkt avviket ble oppdaget</Label>
-            <Input
-              id="discoveredAt"
-              type="datetime-local"
-              value={formData.discoveredAt}
-              onChange={(e) => updateField("discoveredAt", e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="reportedBy">Rapportert av</Label>
-            <UserSelect
-              value={formData.reportedBy}
-              onValueChange={(value) => updateField("reportedBy", value)}
-              placeholder="Velg bruker"
-            />
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="location">Sted / avdeling</Label>
-            <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) => updateField("location", e.target.value)}
-              placeholder="f.eks. Lageret, Byggeplass X"
-            />
-          </div>
-        </CardContent>
-      </Card>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="companyName">Virksomhet</Label>
+              <Input
+                id="companyName"
+                value={formData.companyName}
+                onChange={(e) => updateField("companyName", e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="controlDate">Kontrolldato</Label>
+              <Input
+                id="controlDate"
+                type="date"
+                value={formData.controlDate}
+                onChange={(e) => updateField("controlDate", e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="location">Sted / lokasjon</Label>
+              <Input
+                id="location"
+                value={formData.location}
+                onChange={(e) => updateField("location", e.target.value)}
+                placeholder="f.eks. Hovedkontor, Lager A"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="controlledBy">Kontrollert av</Label>
+              <Input
+                id="controlledBy"
+                value={formData.controlledBy}
+                onChange={(e) => updateField("controlledBy", e.target.value)}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Classification */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5" />
-            Klassifisering av avvik
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-3">
-          <div className="space-y-2">
-            <Label>Avvikstype</Label>
-            <Select
-              value={formData.deviationType}
-              onValueChange={(value: DeviationType) =>
-                updateField("deviationType", value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="hms">HMS / personskade / sikkerhet</SelectItem>
-                <SelectItem value="quality">Kvalitet / leveranse</SelectItem>
-                <SelectItem value="environment">Ytre miljø</SelectItem>
-                <SelectItem value="other">Annet</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Alvorlighetsgrad</Label>
-            <Select
-              value={formData.severity}
-              onValueChange={(value: Severity) => updateField("severity", value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Lav</SelectItem>
-                <SelectItem value="medium">Middels</SelectItem>
-                <SelectItem value="high">Høy</SelectItem>
-                <SelectItem value="critical">Kritisk</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Status</Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value: Status) => updateField("status", value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="open">Åpen</SelectItem>
-                <SelectItem value="in_progress">Under behandling</SelectItem>
-                <SelectItem value="closed">Lukket</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Checklists */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Kontrollpunkter</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-8">
+            {renderChecklist(
+              "1. Sikringsskap / Fordelingstavle",
+              formData.sikringsskabChecks,
+              "sikringsskabChecks"
+            )}
 
-      {/* Description */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Beskrivelse av avviket</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Tittel / kort beskrivelse</Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) => updateField("title", e.target.value)}
-              placeholder="f.eks. Manglende rekkverk på stillas"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="description">Detaljert beskrivelse</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => updateField("description", e.target.value)}
-              placeholder="Hva skjedde, hvordan ble det oppdaget, hvem var involvert?"
-              rows={4}
-              required
-            />
-          </div>
-        </CardContent>
-      </Card>
+            {renderChecklist(
+              "2. Fast installasjon / kabler",
+              formData.fastInstallasjonChecks,
+              "fastInstallasjonChecks"
+            )}
 
-      {/* Cause and Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Årsak og tiltak</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="immediateAction">
-              Umiddelbare tiltak (hva ble gjort der og da)
-            </Label>
-            <Textarea
-              id="immediateAction"
-              value={formData.immediateAction}
-              onChange={(e) => updateField("immediateAction", e.target.value)}
-              placeholder="Hvilke strakstiltak ble iverksatt for å sikre personell/område?"
-              rows={3}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="rootCause">Årsaksanalyse (rotårsak)</Label>
-            <Textarea
-              id="rootCause"
-              value={formData.rootCause}
-              onChange={(e) => updateField("rootCause", e.target.value)}
-              placeholder="Hvorfor skjedde dette? Menneskelig feil, rutinesvikt, utstyr, opplæring osv."
-              rows={3}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="correctiveAction">
-              Korrigerende tiltak (rette opp feilen)
-            </Label>
-            <Textarea
-              id="correctiveAction"
-              value={formData.correctiveAction}
-              onChange={(e) => updateField("correctiveAction", e.target.value)}
-              placeholder="Hva skal gjøres for å rette opp avviket konkret?"
-              rows={3}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="preventiveAction">
-              Forebyggende tiltak (unngå gjentakelse)
-            </Label>
-            <Textarea
-              id="preventiveAction"
-              value={formData.preventiveAction}
-              onChange={(e) => updateField("preventiveAction", e.target.value)}
-              placeholder="Hva kan endres i rutiner, opplæring, utstyr osv. for å hindre at dette skjer igjen?"
-              rows={3}
-            />
-          </div>
-        </CardContent>
-      </Card>
+            {renderChecklist(
+              "3. Elektrisk utstyr / stikk / skjøteledninger",
+              formData.elektriskUtstyrChecks,
+              "elektriskUtstyrChecks"
+            )}
 
-      {/* Action Plan */}
-      <ResponsiveActionTable
-        title="Oppfølging / handlingsplan"
-        actions={formData.actions}
-        onAdd={addActionRow}
-        onRemove={removeActionRow}
-        onUpdate={updateAction}
-      />
+            {renderChecklist(
+              "4. Dokumentasjon og ansvar",
+              formData.dokumentasjonChecks,
+              "dokumentasjonChecks"
+            )}
+          </CardContent>
+        </Card>
 
-      {/* Attachments */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Vedlegg / dokumentasjon</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor="attachmentsNote">
-              Vedleggsnotat (bilder, dokumenter, rapporter osv.)
-            </Label>
-            <Textarea
-              id="attachmentsNote"
-              value={formData.attachmentsNote}
-              onChange={(e) => updateField("attachmentsNote", e.target.value)}
-              placeholder="Beskriv hvilke vedlegg som hører til avviket"
-              rows={3}
-            />
-          </div>
-        </CardContent>
-      </Card>
+        {/* Avvik og tiltak */}
+        <Card>
+          <CardHeader>
+            <CardTitle>5. Avvik og tiltak</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="avvikKommentarer">Avvik / kommentarer</Label>
+              <Textarea
+                id="avvikKommentarer"
+                value={formData.avvikKommentarer}
+                onChange={(e) => updateField("avvikKommentarer", e.target.value)}
+                placeholder="Beskriv eventuelle avvik som ble funnet..."
+                rows={4}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tiltakOgFrist">Tiltak og frist</Label>
+              <Textarea
+                id="tiltakOgFrist"
+                value={formData.tiltakOgFrist}
+                onChange={(e) => updateField("tiltakOgFrist", e.target.value)}
+                placeholder="Beskriv tiltak som skal gjennomføres og frist..."
+                rows={4}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Signature / Closing */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Signatur / lukking</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="handlerName">Ansvarlig for behandling</Label>
-            <UserSelect
-              value={formData.handlerName}
-              onValueChange={(value) => updateField("handlerName", value)}
-              placeholder="Velg ansvarlig"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="closedDate">Dato for lukking</Label>
-            <Input
-              id="closedDate"
-              type="date"
-              value={formData.closedDate}
-              onChange={(e) => updateField("closedDate", e.target.value)}
-            />
-          </div>
-        </CardContent>
-      </Card>
+        {/* Signaturer */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Signaturer</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="signaturKontrollor">Signatur kontrollør</Label>
+              <Input
+                id="signaturKontrollor"
+                value={formData.signaturKontrollor}
+                onChange={(e) => updateField("signaturKontrollor", e.target.value)}
+                placeholder="Navn på kontrollør"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="signaturAnsvarlig">Signatur ansvarlig (bedrift)</Label>
+              <Input
+                id="signaturAnsvarlig"
+                value={formData.signaturAnsvarlig}
+                onChange={(e) => updateField("signaturAnsvarlig", e.target.value)}
+                placeholder="Navn på ansvarlig"
+              />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Submit */}
         <div className="flex flex-col sm:flex-row justify-end gap-3">
@@ -482,7 +370,7 @@ const ElKontrollForm: React.FC = () => {
           </Button>
           <Button type="submit" size="lg" className="gap-2" disabled={isSaving}>
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-            Fullfør og lagre i handbok
+            Lagre kontroll
           </Button>
         </div>
       </form>
