@@ -41,11 +41,12 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 
 // All DIBK forms with direct download links - simplified list
+// Forms with localUrl have PDF stored locally, others link to DIBK
 const DIBK_FORMS = [
-  // Nabovarsel
-  { number: "5154", name: "Nabovarsel", category: "nabovarsel", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5155", name: "Opplysninger gitt i nabovarsel", category: "nabovarsel", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5156", name: "Kvittering for nabovarsel", category: "nabovarsel", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  // Nabovarsel - these have local PDFs
+  { number: "5154", name: "Nabovarsel", category: "nabovarsel", localUrl: "/blanketter/5154-nabovarsel.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5155", name: "Opplysninger gitt i nabovarsel", category: "nabovarsel", localUrl: "/blanketter/5155-opplysninger-nabovarsel.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5156", name: "Kvittering for nabovarsel", category: "nabovarsel", localUrl: "/blanketter/5156-kvittering-nabovarsel.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5188", name: "Melding unntatt søknadsplikt", category: "nabovarsel", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   
   // Søknader
@@ -352,12 +353,22 @@ export default function Ks2ByggesakBlanketter() {
                       )}
                       
                       <div className="flex items-start gap-3 mb-3">
-                        <FileText className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
+                        <div className="relative">
+                          <FileText className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
+                          {form.localUrl && (
+                            <div className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-green-500" title="PDF tilgjengelig" />
+                          )}
+                        </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm">{form.number}</p>
                           <p className="text-xs text-muted-foreground line-clamp-2">
                             {form.name}
                           </p>
+                          {form.localUrl && (
+                            <Badge variant="outline" className="text-[10px] mt-1 px-1 py-0">
+                              PDF klar
+                            </Badge>
+                          )}
                         </div>
                       </div>
 
@@ -368,9 +379,14 @@ export default function Ks2ByggesakBlanketter() {
                           className="h-8 text-xs gap-1 flex-1"
                           asChild
                         >
-                          <a href={form.dibkUrl} target="_blank" rel="noopener noreferrer">
+                          <a 
+                            href={form.localUrl || form.dibkUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            download={form.localUrl ? `${form.number}-${form.name}.pdf` : undefined}
+                          >
                             <Download className="h-3 w-3" />
-                            Last ned
+                            {form.localUrl ? "Last ned PDF" : "Åpne DIBK"}
                           </a>
                         </Button>
                         
