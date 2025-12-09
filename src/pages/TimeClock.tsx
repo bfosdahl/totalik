@@ -20,7 +20,6 @@ export default function TimeClock() {
   const [qrCodeId, setQrCodeId] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [processing, setProcessing] = useState(false);
-  const [success, setSuccess] = useState<"in" | "out" | "break_start" | "break_end" | null>(null);
 
   const code = searchParams.get("kode");
 
@@ -49,10 +48,7 @@ export default function TimeClock() {
 
   const handleClockIn = async () => {
     setProcessing(true);
-    const result = await clockIn(qrCodeId || undefined);
-    if (result) {
-      setSuccess("in");
-    }
+    await clockIn(qrCodeId || undefined);
     setProcessing(false);
   };
 
@@ -60,7 +56,6 @@ export default function TimeClock() {
     setProcessing(true);
     const result = await clockOut(notes || undefined);
     if (result) {
-      setSuccess("out");
       setNotes("");
     }
     setProcessing(false);
@@ -68,19 +63,13 @@ export default function TimeClock() {
 
   const handleStartBreak = async () => {
     setProcessing(true);
-    const result = await startBreak();
-    if (result) {
-      setSuccess("break_start");
-    }
+    await startBreak();
     setProcessing(false);
   };
 
   const handleEndBreak = async () => {
     setProcessing(true);
-    const result = await endBreak();
-    if (result) {
-      setSuccess("break_end");
-    }
+    await endBreak();
     setProcessing(false);
   };
 
@@ -99,49 +88,7 @@ export default function TimeClock() {
     return null; // Will redirect
   }
 
-  // Success screen
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="pt-8 pb-8">
-            <div className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center ${
-              success === "in" ? "bg-green-100 text-green-600" : 
-              success === "out" ? "bg-blue-100 text-blue-600" :
-              success === "break_start" ? "bg-amber-100 text-amber-600" :
-              "bg-green-100 text-green-600"
-            }`}>
-              {success === "break_start" ? <Coffee className="h-10 w-10" /> : 
-               success === "break_end" ? <Play className="h-10 w-10" /> :
-               <CheckCircle className="h-10 w-10" />}
-            </div>
-            <h2 className="text-2xl font-bold mb-2">
-              {success === "in" ? "Stemplet inn!" : 
-               success === "out" ? "Stemplet ut!" :
-               success === "break_start" ? "Pause startet!" :
-               "Pause avsluttet!"}
-            </h2>
-            <p className="text-muted-foreground mb-2">
-              {format(new Date(), "EEEE d. MMMM yyyy 'kl.' HH:mm", { locale: nb })}
-            </p>
-            {qrCodeName && (
-              <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-                <Building2 className="h-4 w-4" />
-                {qrCodeName}
-              </p>
-            )}
-            <Button 
-              className="mt-6" 
-              variant="outline"
-              onClick={() => setSuccess(null)}
-            >
-              Tilbake
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // No success screen - stay on main page, toast handles feedback
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
