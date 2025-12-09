@@ -31,6 +31,7 @@ import Ks2Statistikk from "./pages/ks2/Ks2Statistikk";
 import HmsChat from "./pages/HmsChat";
 import MyCourseCard from "./pages/MyCourseCard";
 import TimeRegistration from "./pages/TimeRegistration";
+import TimeClock from "./pages/TimeClock";
 import TimeOff from "./pages/TimeOff";
 import WorkSchedule from "./pages/WorkSchedule";
 import HrContracts from "./pages/hr/HrContracts";
@@ -72,6 +73,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/setup-admin" element={<SetupSystemAdmin />} />
               <Route path="/install" element={<InstallApp />} />
+              <Route path="/stemple" element={<TimeClock />} />
             
             {/* Protected app routes */}
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />

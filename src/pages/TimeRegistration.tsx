@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Plus, Download, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List } from "lucide-react";
+import { Plus, Download, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List, QrCode } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { NewTimeEntryDialog } from "@/components/timeregistration/NewTimeEntryDialog";
 import { TimeEntryList } from "@/components/timeregistration/TimeEntryList";
 import { WeeklyTimeView } from "@/components/timeregistration/WeeklyTimeView";
+import { TimeClockQrDialog } from "@/components/timeregistration/TimeClockQrDialog";
 import { exportTimeEntriesToExcel } from "@/utils/timeEntryExport";
 
 type DateFilter = "this-week" | "last-week" | "this-month" | "last-month" | "all";
@@ -34,6 +35,7 @@ export default function TimeRegistration() {
   } = useTimeEntries();
   
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilter>("this-week");
   const [viewMode, setViewMode] = useState<"list" | "week">("week");
 
@@ -102,7 +104,13 @@ export default function TimeRegistration() {
               Registrer og administrer arbeidstimer
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            {isCompanyAdmin && (
+              <Button variant="outline" onClick={() => setQrDialogOpen(true)}>
+                <QrCode className="mr-2 h-4 w-4" />
+                QR-stempling
+              </Button>
+            )}
             <Button variant="outline" onClick={handleExport}>
               <Download className="mr-2 h-4 w-4" />
               Eksporter Excel
@@ -285,6 +293,11 @@ export default function TimeRegistration() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onSubmit={createEntry}
+      />
+
+      <TimeClockQrDialog
+        open={qrDialogOpen}
+        onOpenChange={setQrDialogOpen}
       />
     </AppLayout>
   );
