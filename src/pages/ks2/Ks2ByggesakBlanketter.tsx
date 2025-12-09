@@ -79,9 +79,9 @@ const DIBK_FORMS = [
   { number: "5187", name: "Egenerklæring tiltakshaver", category: "ansvarsrett", localUrl: "/blanketter/5187-egenerklaring-selvbygger.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   
   // Kontroll
-  { number: "5191", name: "Plan for uavhengig kontroll", category: "kontroll", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5192", name: "Åpent avvik ved uavhengig kontroll", category: "kontroll", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5149", name: "Kontrollerklæring", category: "kontroll", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5191", name: "Plan for uavhengig kontroll", category: "kontroll", localUrl: "/blanketter/5191-plan-uavhengig-kontroll.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5192", name: "Åpent avvik ved uavhengig kontroll", category: "kontroll", localUrl: "/blanketter/5192-apent-avvik-kontroll.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5149", name: "Kontrollerklæring", category: "kontroll", localUrl: "/blanketter/5149-kontrollerklaring.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   
   // Ferdigattest
   { number: "5167", name: "Søknad om ferdigattest", category: "ferdigattest", localUrl: "/blanketter/5167-ferdigattest.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
