@@ -117,6 +117,98 @@ interface ProjectReportData {
     category: string;
     uploaded_at: string;
   }>;
+  // New data types
+  shaPlan?: {
+    plan_type: string;
+    status: string;
+    project_name?: string | null;
+    client_name?: string | null;
+    sha_coordinator_kp?: string | null;
+    sha_coordinator_ku?: string | null;
+    planned_start_date?: string | null;
+    planned_end_date?: string | null;
+    risk_areas?: Array<{ paragraph: string; description: string; measures: string }>;
+    entrepreneur_approved?: boolean;
+  };
+  stoffkartotek: Array<{
+    product_name: string;
+    manufacturer?: string | null;
+    danger_classes: string[];
+    location?: string | null;
+    last_updated: string;
+  }>;
+  milestones: Array<{
+    title: string;
+    description?: string | null;
+    start_date: string;
+    end_date: string;
+    status: string;
+    progress: number;
+    responsible_name?: string | null;
+  }>;
+  meetings: Array<{
+    meeting_number: string;
+    meeting_type: string;
+    title: string;
+    meeting_date: string;
+    location?: string | null;
+    participants: Array<{ name: string; role?: string }>;
+    status: string;
+  }>;
+  finances?: {
+    contract_sum: number;
+    budget_materials: number;
+    budget_labor: number;
+    budget_subcontractors: number;
+    budget_other: number;
+    actual_materials: number;
+    actual_labor: number;
+    actual_subcontractors: number;
+    actual_other: number;
+    invoiced_amount: number;
+    paid_amount: number;
+    change_orders_sum: number;
+  };
+  invoices: Array<{
+    invoice_number: string;
+    description?: string | null;
+    amount: number;
+    invoice_date: string;
+    due_date?: string | null;
+    status: string;
+  }>;
+  changeOrders: Array<{
+    change_order_number: string;
+    title: string;
+    description?: string | null;
+    total_cost?: number | null;
+    status: string;
+    customer_approved: boolean;
+    customer_approved_at?: string | null;
+  }>;
+  claims: Array<{
+    claim_number: string;
+    title: string;
+    description?: string | null;
+    category: string;
+    priority: string;
+    status: string;
+    reported_date: string;
+    responsible_name?: string | null;
+    resolution?: string | null;
+    cost_estimate?: number | null;
+    actual_cost?: number | null;
+  }>;
+  subcontractors: Array<{
+    firm_name: string;
+    org_number?: string | null;
+    contact_person?: string | null;
+    work_scope: string;
+    trade?: string | null;
+    contract_value?: number | null;
+    approval_status: string;
+    is_active: boolean;
+  }>;
   companyName: string;
   companyLogoUrl?: string;
   generatedBy: string;
@@ -148,6 +240,9 @@ const STATUS_LABELS: Record<string, string> = {
   completed: "Fullført",
   draft: "Utkast",
   planned: "Planlagt",
+  active: "Aktiv",
+  resolved: "Løst",
+  sent: "Sendt",
 };
 
 const CONTROL_AREA_LABELS: Record<string, string> = {
@@ -174,10 +269,25 @@ const ROUTINE_CATEGORY_LABELS: Record<string, string> = {
   avslutning: "Avslutning",
   annet: "Annet",
 };
+
 const RISK_LEVEL_LABELS: Record<string, string> = {
   low: "Lav risiko",
   medium: "Middels risiko",
   high: "Høy risiko",
+};
+
+const PRIORITY_LABELS: Record<string, string> = {
+  low: "Lav",
+  medium: "Medium",
+  high: "Høy",
+  critical: "Kritisk",
+};
+
+const APPROVAL_STATUS_LABELS: Record<string, string> = {
+  pending: "Venter",
+  approved: "Godkjent",
+  approved_with_remarks: "Godkjent med merknader",
+  rejected: "Avvist",
 };
 
 export interface ReportSections {
@@ -196,6 +306,15 @@ export interface ReportSections {
   includeVernerundeDetails: boolean;
   includeRoutines: boolean;
   includeDocuments: boolean;
+  // New sections
+  includeShaPlan: boolean;
+  includeStoffkartotek: boolean;
+  includeMilestones: boolean;
+  includeMeetings: boolean;
+  includeFinances: boolean;
+  includeChangeOrders: boolean;
+  includeClaims: boolean;
+  includeSubcontractors: boolean;
 }
 
 export const generateProjectReportPdf = async (data: ProjectReportData, sections: ReportSections) => {
@@ -221,6 +340,11 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
     doc.text(`${sectionNumber}. ${title}`, 20, yPos);
     yPos += 15;
     doc.setFont("helvetica", "normal");
+  };
+
+  const formatCurrency = (amount: number | null | undefined) => {
+    if (amount === null || amount === undefined) return "-";
+    return new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(amount);
   };
 
   // ============ Title Page ============
@@ -281,7 +405,6 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
 
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
-  let tocNumber = 1;
 
   const tocItems: { title: string; count?: number }[] = [];
   
@@ -297,11 +420,35 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
   if (sections.includeUk) {
     tocItems.push({ title: "Uavhengig kontroll", count: data.ukControls.length });
   }
+  if (sections.includeShaPlan && data.shaPlan) {
+    tocItems.push({ title: "SHA-plan" });
+  }
   if (sections.includeSja) {
     tocItems.push({ title: "Sikker Jobb Analyse (SJA)", count: data.sjaList.length });
   }
   if (sections.includeVernerunder) {
     tocItems.push({ title: "Vernerunder", count: data.vernerunder.length });
+  }
+  if (sections.includeStoffkartotek) {
+    tocItems.push({ title: "Stoffkartotek", count: data.stoffkartotek.length });
+  }
+  if (sections.includeMilestones) {
+    tocItems.push({ title: "Fremdriftsplan / Milepæler", count: data.milestones.length });
+  }
+  if (sections.includeMeetings) {
+    tocItems.push({ title: "Møtereferater", count: data.meetings.length });
+  }
+  if (sections.includeFinances && data.finances) {
+    tocItems.push({ title: "Økonomioversikt" });
+  }
+  if (sections.includeChangeOrders) {
+    tocItems.push({ title: "Endringsmeldinger", count: data.changeOrders.length });
+  }
+  if (sections.includeClaims) {
+    tocItems.push({ title: "Reklamasjoner", count: data.claims.length });
+  }
+  if (sections.includeSubcontractors) {
+    tocItems.push({ title: "Underleverandører", count: data.subcontractors.length });
   }
   if (sections.includeRoutines) {
     tocItems.push({ title: "Rutiner", count: data.routines.length });
@@ -362,7 +509,6 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
   if (sections.includeChecklists && data.checklists.length > 0) {
     addSectionHeader("Sjekklister og egenkontroller");
 
-    // Summary table
     const completedCount = data.checklists.filter(c => c.status === "completed").length;
     doc.setFontSize(10);
     doc.text(`Totalt: ${data.checklists.length} sjekklister | Fullført: ${completedCount}`, 20, yPos);
@@ -451,12 +597,10 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
                 try {
                   const base64 = await loadImageAsBase64(photo.url);
                   if (base64) {
-                    // Check if we need a new row
                     if (xPos + imageWidth > pageWidth - 20) {
                       xPos = 20;
                       yPos += imageHeight + 15;
                     }
-                    // Check if we need a new page
                     if (yPos + imageHeight + 20 > 270) {
                       doc.addPage();
                       yPos = 20;
@@ -588,12 +732,10 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
             try {
               const base64 = await loadImageAsBase64(photoUrl);
               if (base64) {
-                // Check if we need a new row
                 if (xPos + imageWidth > pageWidth - 20) {
                   xPos = 20;
                   yPos += imageHeight + 10;
                 }
-                // Check if we need a new page
                 if (yPos + imageHeight + 20 > 270) {
                   doc.addPage();
                   yPos = 20;
@@ -700,6 +842,68 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
             yPos += commentLines.length * 5 + 8;
           }
         }
+      });
+    }
+  }
+
+  // ============ SHA Plan ============
+  if (sections.includeShaPlan && data.shaPlan) {
+    addSectionHeader("SHA-plan");
+
+    const shaPlanData = [
+      ["Plantype", data.shaPlan.plan_type === "internal" ? "Intern SHA-plan" : "Ekstern SHA-plan"],
+      ["Status", STATUS_LABELS[data.shaPlan.status] || data.shaPlan.status],
+    ];
+
+    if (data.shaPlan.client_name) {
+      shaPlanData.push(["Byggherre", data.shaPlan.client_name]);
+    }
+    if (data.shaPlan.sha_coordinator_kp) {
+      shaPlanData.push(["SHA-koordinator KP", data.shaPlan.sha_coordinator_kp]);
+    }
+    if (data.shaPlan.sha_coordinator_ku) {
+      shaPlanData.push(["SHA-koordinator KU", data.shaPlan.sha_coordinator_ku]);
+    }
+    if (data.shaPlan.planned_start_date) {
+      shaPlanData.push(["Planlagt start", format(new Date(data.shaPlan.planned_start_date), "d. MMM yyyy", { locale: nb })]);
+    }
+    if (data.shaPlan.planned_end_date) {
+      shaPlanData.push(["Planlagt slutt", format(new Date(data.shaPlan.planned_end_date), "d. MMM yyyy", { locale: nb })]);
+    }
+    shaPlanData.push(["Entreprenør godkjent", data.shaPlan.entrepreneur_approved ? "Ja" : "Nei"]);
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [],
+      body: shaPlanData,
+      theme: "striped",
+      styles: { fontSize: 10 },
+      columnStyles: { 0: { fontStyle: "bold", cellWidth: 50 } },
+    });
+
+    yPos = (doc as any).lastAutoTable.finalY + 10;
+
+    // Risk areas
+    if (data.shaPlan.risk_areas && data.shaPlan.risk_areas.length > 0) {
+      checkPageBreak(40);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("Identifiserte risikoområder (Byggherreforskriften §8):", 20, yPos);
+      yPos += 10;
+
+      const riskData = data.shaPlan.risk_areas.map(r => [
+        r.paragraph,
+        r.description,
+        r.measures || "-",
+      ]);
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [["§", "Risikoområde", "Tiltak"]],
+        body: riskData,
+        theme: "striped",
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [16, 185, 129] },
       });
     }
   }
@@ -937,6 +1141,246 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
         }
       });
     }
+  }
+
+  // ============ Stoffkartotek ============
+  if (sections.includeStoffkartotek && data.stoffkartotek.length > 0) {
+    addSectionHeader("Stoffkartotek");
+
+    doc.setFontSize(10);
+    doc.text(`Totalt: ${data.stoffkartotek.length} kjemikalier`, 20, yPos);
+    yPos += 10;
+
+    const stoffData = data.stoffkartotek.map(s => [
+      s.product_name,
+      s.manufacturer || "-",
+      s.danger_classes?.join(", ") || "-",
+      s.location || "-",
+      format(new Date(s.last_updated), "d. MMM yyyy", { locale: nb }),
+    ]);
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [["Produktnavn", "Produsent", "Fareklasser", "Plassering", "Sist oppdatert"]],
+      body: stoffData,
+      theme: "striped",
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [249, 115, 22] },
+    });
+  }
+
+  // ============ Milestones / Fremdriftsplan ============
+  if (sections.includeMilestones && data.milestones.length > 0) {
+    addSectionHeader("Fremdriftsplan / Milepæler");
+
+    const completedMilestones = data.milestones.filter(m => m.status === "completed").length;
+    doc.setFontSize(10);
+    doc.text(`Totalt: ${data.milestones.length} milepæler | Fullført: ${completedMilestones}`, 20, yPos);
+    yPos += 10;
+
+    const milestoneData = data.milestones.map(m => [
+      m.title,
+      format(new Date(m.start_date), "d. MMM yyyy", { locale: nb }),
+      format(new Date(m.end_date), "d. MMM yyyy", { locale: nb }),
+      STATUS_LABELS[m.status] || m.status,
+      `${m.progress}%`,
+      m.responsible_name || "-",
+    ]);
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [["Milepæl", "Start", "Slutt", "Status", "Fremdrift", "Ansvarlig"]],
+      body: milestoneData,
+      theme: "striped",
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [59, 130, 246] },
+    });
+  }
+
+  // ============ Meetings ============
+  if (sections.includeMeetings && data.meetings.length > 0) {
+    addSectionHeader("Møtereferater");
+
+    const completedMeetings = data.meetings.filter(m => m.status === "completed").length;
+    doc.setFontSize(10);
+    doc.text(`Totalt: ${data.meetings.length} møter | Fullført: ${completedMeetings}`, 20, yPos);
+    yPos += 10;
+
+    const meetingData = data.meetings.map(m => [
+      m.meeting_number,
+      m.title,
+      m.meeting_type,
+      format(new Date(m.meeting_date), "d. MMM yyyy", { locale: nb }),
+      m.location || "-",
+      STATUS_LABELS[m.status] || m.status,
+      m.participants?.length ? `${m.participants.length} deltakere` : "-",
+    ]);
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [["Nr", "Tittel", "Type", "Dato", "Sted", "Status", "Deltakere"]],
+      body: meetingData,
+      theme: "striped",
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [99, 102, 241] },
+    });
+  }
+
+  // ============ Finances ============
+  if (sections.includeFinances && data.finances) {
+    addSectionHeader("Økonomioversikt");
+
+    const totalBudget = data.finances.budget_materials + data.finances.budget_labor + 
+                        data.finances.budget_subcontractors + data.finances.budget_other;
+    const totalActual = data.finances.actual_materials + data.finances.actual_labor + 
+                        data.finances.actual_subcontractors + data.finances.actual_other;
+
+    const financeData = [
+      ["Kontraktssum", formatCurrency(data.finances.contract_sum)],
+      ["", ""],
+      ["Budsjett - Materialer", formatCurrency(data.finances.budget_materials)],
+      ["Budsjett - Arbeidskraft", formatCurrency(data.finances.budget_labor)],
+      ["Budsjett - Underleverandører", formatCurrency(data.finances.budget_subcontractors)],
+      ["Budsjett - Annet", formatCurrency(data.finances.budget_other)],
+      ["Totalt budsjett", formatCurrency(totalBudget)],
+      ["", ""],
+      ["Faktisk - Materialer", formatCurrency(data.finances.actual_materials)],
+      ["Faktisk - Arbeidskraft", formatCurrency(data.finances.actual_labor)],
+      ["Faktisk - Underleverandører", formatCurrency(data.finances.actual_subcontractors)],
+      ["Faktisk - Annet", formatCurrency(data.finances.actual_other)],
+      ["Totalt faktisk", formatCurrency(totalActual)],
+      ["", ""],
+      ["Endringsmeldinger sum", formatCurrency(data.finances.change_orders_sum)],
+      ["Fakturert beløp", formatCurrency(data.finances.invoiced_amount)],
+      ["Betalt beløp", formatCurrency(data.finances.paid_amount)],
+    ];
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [],
+      body: financeData,
+      theme: "striped",
+      styles: { fontSize: 10 },
+      columnStyles: { 0: { fontStyle: "bold", cellWidth: 80 }, 1: { halign: "right" } },
+    });
+
+    // Invoices
+    if (data.invoices && data.invoices.length > 0) {
+      yPos = (doc as any).lastAutoTable.finalY + 15;
+      checkPageBreak(40);
+      
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("Fakturaer:", 20, yPos);
+      yPos += 8;
+
+      const invoiceData = data.invoices.map(i => [
+        i.invoice_number,
+        i.description || "-",
+        formatCurrency(i.amount),
+        format(new Date(i.invoice_date), "d. MMM yyyy", { locale: nb }),
+        i.due_date ? format(new Date(i.due_date), "d. MMM yyyy", { locale: nb }) : "-",
+        STATUS_LABELS[i.status] || i.status,
+      ]);
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [["Fakturanr", "Beskrivelse", "Beløp", "Fakturadato", "Forfallsdato", "Status"]],
+        body: invoiceData,
+        theme: "striped",
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [245, 158, 11] },
+      });
+    }
+  }
+
+  // ============ Change Orders ============
+  if (sections.includeChangeOrders && data.changeOrders.length > 0) {
+    addSectionHeader("Endringsmeldinger");
+
+    const approvedCount = data.changeOrders.filter(c => c.status === "approved").length;
+    const totalValue = data.changeOrders.reduce((sum, c) => sum + (c.total_cost || 0), 0);
+    doc.setFontSize(10);
+    doc.text(`Totalt: ${data.changeOrders.length} endringsmeldinger | Godkjent: ${approvedCount} | Sum: ${formatCurrency(totalValue)}`, 20, yPos);
+    yPos += 10;
+
+    const changeOrderData = data.changeOrders.map(c => [
+      c.change_order_number,
+      c.title,
+      formatCurrency(c.total_cost),
+      STATUS_LABELS[c.status] || c.status,
+      c.customer_approved ? "Ja" : "Nei",
+      c.customer_approved_at ? format(new Date(c.customer_approved_at), "d. MMM yyyy", { locale: nb }) : "-",
+    ]);
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [["Nr", "Tittel", "Beløp", "Status", "Kunde godkjent", "Godkjent dato"]],
+      body: changeOrderData,
+      theme: "striped",
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [6, 182, 212] },
+    });
+  }
+
+  // ============ Claims ============
+  if (sections.includeClaims && data.claims.length > 0) {
+    addSectionHeader("Reklamasjoner");
+
+    const resolvedCount = data.claims.filter(c => c.status === "resolved").length;
+    doc.setFontSize(10);
+    doc.text(`Totalt: ${data.claims.length} reklamasjoner | Løst: ${resolvedCount}`, 20, yPos);
+    yPos += 10;
+
+    const claimData = data.claims.map(c => [
+      c.claim_number,
+      c.title,
+      CATEGORY_LABELS[c.category] || c.category,
+      PRIORITY_LABELS[c.priority] || c.priority,
+      STATUS_LABELS[c.status] || c.status,
+      c.reported_date ? format(new Date(c.reported_date), "d. MMM yyyy", { locale: nb }) : "-",
+      c.responsible_name || "-",
+      formatCurrency(c.actual_cost || c.cost_estimate),
+    ]);
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [["Nr", "Tittel", "Kategori", "Prioritet", "Status", "Rapportert", "Ansvarlig", "Kostnad"]],
+      body: claimData,
+      theme: "striped",
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [244, 63, 94] },
+    });
+  }
+
+  // ============ Subcontractors ============
+  if (sections.includeSubcontractors && data.subcontractors.length > 0) {
+    addSectionHeader("Underleverandører");
+
+    const approvedCount = data.subcontractors.filter(s => s.approval_status === "approved").length;
+    const totalValue = data.subcontractors.reduce((sum, s) => sum + (s.contract_value || 0), 0);
+    doc.setFontSize(10);
+    doc.text(`Totalt: ${data.subcontractors.length} underleverandører | Godkjent: ${approvedCount} | Kontraktsverdi: ${formatCurrency(totalValue)}`, 20, yPos);
+    yPos += 10;
+
+    const subcontractorData = data.subcontractors.map(s => [
+      s.firm_name,
+      s.org_number || "-",
+      s.work_scope,
+      s.trade || "-",
+      formatCurrency(s.contract_value),
+      APPROVAL_STATUS_LABELS[s.approval_status] || s.approval_status,
+      s.is_active ? "Aktiv" : "Inaktiv",
+    ]);
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [["Firma", "Org.nr", "Arbeidsomfang", "Fag", "Kontraktsverdi", "Godkjenning", "Status"]],
+      body: subcontractorData,
+      theme: "striped",
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [168, 85, 247] },
+    });
   }
 
   // ============ Routines ============
