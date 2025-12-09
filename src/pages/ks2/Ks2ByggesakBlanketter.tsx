@@ -57,7 +57,7 @@ const DIBK_FORMS = [
   
   // Søknader
   { number: "5151", name: "Søknad om igangsettingstillatelse", category: "soknad", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5153", name: "Søknad om tiltak uten ansvarsrett", category: "soknad", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5153", name: "Søknad om tiltak uten ansvarsrett", category: "soknad", localUrl: "/blanketter/5153-tiltak-uten-ansvarsrett.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "SØK-PRIVAT", name: "Byggesøknad for privatpersoner (mindre prosjekter)", category: "soknad", localUrl: "/blanketter/byggesoknad-mindre-prosjekter.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "SØK-BRUK", name: "Søknad om bruksendring", category: "soknad", localUrl: "/blanketter/soknad-bruksendring.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5174", name: "Søknad om tillatelse til tiltak", category: "soknad", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
