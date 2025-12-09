@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import type { Json } from "@/integrations/supabase/types";
 
-export type FormType = "annual_hms" | "elkontroll" | "fysiske_forhold" | "daglig_drift";
+export type FormType = "annual_hms" | "elkontroll" | "fysiske_forhold" | "daglig_drift" | "vernerunde";
 
 export interface AuditFormResponse {
   id: string;
@@ -29,6 +29,7 @@ export const formTypeLabels: Record<FormType, string> = {
   elkontroll: "El-Kontroll",
   fysiske_forhold: "Fysiske arbeidsforhold",
   daglig_drift: "Daglig drift",
+  vernerunde: "Vernerunde",
 };
 
 export function useAuditFormResponses() {
