@@ -13,7 +13,9 @@ import {
   Zap,
   Building2,
   Settings,
-  Scale
+  Scale,
+  Shield,
+  CalendarDays
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -26,6 +28,8 @@ import ElKontrollForm from "@/components/audits/ElKontrollForm";
 import FysiskeArbeidsforholdForm from "@/components/audits/FysiskeArbeidsforholdForm";
 import DagligDriftForm from "@/components/audits/DagligDriftForm";
 import LoverOgForskrifterCalculator from "@/components/audits/LoverOgForskrifterCalculator";
+import VernerundeForm from "@/components/audits/VernerundeForm";
+import HmsAarshjul from "@/components/audits/HmsAarshjul";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -144,6 +148,20 @@ const Audits = () => {
                 <Scale className="w-4 h-4" />
                 <span>Lover og forskrifter</span>
               </TabsTrigger>
+              <TabsTrigger 
+                value="vernerunde" 
+                className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
+              >
+                <Shield className="w-4 h-4" />
+                <span>Vernerunde</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="aarshjul" 
+                className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
+              >
+                <CalendarDays className="w-4 h-4" />
+                <span>Årshjul</span>
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -196,6 +214,22 @@ const Audits = () => {
                 >
                   <Scale className="w-6 h-6 text-success" />
                   <span className="text-xs text-center">Lover og forskrifter</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 flex flex-col gap-2 items-center justify-center"
+                  onClick={() => setActiveTab("vernerunde")}
+                >
+                  <Shield className="w-6 h-6 text-emerald-500" />
+                  <span className="text-xs text-center">Vernerunde</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 flex flex-col gap-2 items-center justify-center"
+                  onClick={() => setActiveTab("aarshjul")}
+                >
+                  <CalendarDays className="w-6 h-6 text-purple-500" />
+                  <span className="text-xs text-center">Årshjul</span>
                 </Button>
               </div>
             </motion.div>
@@ -355,6 +389,16 @@ const Audits = () => {
           {/* Lover og forskrifter Tab */}
           <TabsContent value="lover">
             <LoverOgForskrifterCalculator />
+          </TabsContent>
+
+          {/* Vernerunde Tab */}
+          <TabsContent value="vernerunde">
+            <VernerundeForm />
+          </TabsContent>
+
+          {/* Årshjul Tab */}
+          <TabsContent value="aarshjul">
+            <HmsAarshjul />
           </TabsContent>
         </Tabs>
       </div>

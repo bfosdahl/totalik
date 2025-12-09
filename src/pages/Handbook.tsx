@@ -171,6 +171,7 @@ const Handbook = () => {
     elkontroll: Zap,
     fysiske_forhold: Building2,
     daglig_drift: Settings,
+    vernerunde: Shield,
   };
 
   // Laws data for handbook section
