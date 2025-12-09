@@ -46,16 +46,41 @@ export function useAiSetupValidation(moduleType: "IK_HMS" | "IK_MAT" = "IK_HMS")
 
       const targetCompanyId = profile.company_id;
       setCompanyId(targetCompanyId);
+      
+      // Step 2.5: Refresh session to ensure RLS functions work
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        console.error("Session error:", sessionError);
+        // Try to refresh the session
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) {
+          setError("Din sesjon har utløpt. Vennligst logg inn på nytt.");
+          setIsLoading(false);
+          return;
+        }
+      }
+      
+      console.log("[useAiSetupValidation] Session valid, user_id:", session?.user?.id);
 
       // Step 3: Verify company exists in database
+      // Use maybeSingle() to avoid error when RLS blocks access
       const { data: company, error: companyError } = await supabase
         .from("companies")
         .select("id, name")
         .eq("id", targetCompanyId)
-        .single();
+        .maybeSingle();
 
-      if (companyError || !company) {
-        setError("Kunne ikke finne bedriften din. Kontakt administrator.");
+      if (companyError) {
+        console.error("Company fetch error:", companyError);
+        setError("Feil ved henting av bedriftsdata. Prøv å logge ut og inn igjen.");
+        setIsLoading(false);
+        return;
+      }
+
+      if (!company) {
+        // Company not found - likely RLS issue
+        console.error("[useAiSetupValidation] Company not found for ID:", targetCompanyId);
+        setError("Kunne ikke finne bedriften din. Prøv å logge ut og inn igjen.");
         setIsLoading(false);
         return;
       }
@@ -101,8 +126,7 @@ export function useAiSetupValidation(moduleType: "IK_HMS" | "IK_MAT" = "IK_HMS")
         setModuleId(newModule.id);
       }
 
-      // Step 5: Verify auth session is valid for edge functions
-      const { data: { session } } = await supabase.auth.getSession();
+      // Step 5: Session already validated in Step 2.5, just verify access_token
       if (!session?.access_token) {
         setError("Din sesjon har utløpt. Vennligst logg inn på nytt.");
         setIsLoading(false);
