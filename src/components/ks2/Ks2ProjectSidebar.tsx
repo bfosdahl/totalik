@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
@@ -28,11 +28,15 @@ import {
   Settings,
   Home,
   Mail,
+  Search,
+  Command,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Ks2ProjectSidebarProps {
   projectName: string;
@@ -161,6 +165,36 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
     navigate("/auth");
   };
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check for Cmd/Ctrl + key combinations
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey) {
+        switch (e.key) {
+          case "1":
+            e.preventDefault();
+            navigate(`${basePath}/egenkontroller`);
+            break;
+          case "2":
+            e.preventDefault();
+            navigate(`${basePath}/avvik`);
+            break;
+          case "3":
+            e.preventDefault();
+            navigate(`${basePath}/hms/sja`);
+            break;
+          case "d":
+            e.preventDefault();
+            navigate(basePath);
+            break;
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [navigate, basePath]);
+
   const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -194,29 +228,40 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {/* Top-level items (Dashboard) */}
-        {filterByGuest(topMenuItems).map((item) => {
-          const isActive = currentPath === item.path;
-          const Icon = item.icon;
+        <TooltipProvider delayDuration={400}>
+          {filterByGuest(topMenuItems).map((item) => {
+            const isActive = currentPath === item.path;
+            const Icon = item.icon;
 
-          return (
-            <button
-              key={item.id}
-              onClick={() => {
-                navigate(`${basePath}${item.path}`);
-                onNavigate?.();
-              }}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-              )}
-            >
-              <Icon className="h-5 w-5 flex-shrink-0" />
-              <span className="flex-1 text-left">{item.label}</span>
-            </button>
-          );
-        })}
+            return (
+              <Tooltip key={item.id}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => {
+                      navigate(`${basePath}${item.path}`);
+                      onNavigate?.();
+                    }}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                    )}
+                  >
+                    <Icon className="h-5 w-5 flex-shrink-0" />
+                    <span className="flex-1 text-left">{item.label}</span>
+                    <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-60">
+                      ⌘D
+                    </kbd>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="hidden lg:block">
+                  <p>Snarvei: ⌘D</p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </TooltipProvider>
 
         {/* Grouped Menu Sections */}
         {menuGroups.map((group) => {
