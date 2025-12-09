@@ -6,9 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, FileText } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, FileText, Sparkles, ClipboardList } from "lucide-react";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { NewKsModule2ProjectInput } from "@/hooks/useKsModule2Projects";
+import { Ks2ProjectSetupChat } from "./Ks2ProjectSetupChat";
+import { toast } from "sonner";
 
 // Prosjektmaler med forhåndsdefinert informasjon
 const PROJECT_TEMPLATES = [
@@ -151,6 +154,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
   const { users } = useCompanyUsers();
   const [selectedTemplate, setSelectedTemplate] = useState<string>("blank");
   const [formData, setFormData] = useState<NewKsModule2ProjectInput>(getEmptyFormData());
+  const [activeTab, setActiveTab] = useState<string>("manual");
 
   const handleTemplateChange = (templateId: string) => {
     setSelectedTemplate(templateId);
@@ -184,6 +188,33 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
     }));
   };
 
+  const handleAiComplete = async (data: Partial<NewKsModule2ProjectInput> & {
+    recommended_checklists?: any[];
+    recommended_routines?: any[];
+    hms_focus?: any[];
+    milestones?: any[];
+  }) => {
+    // Update form with AI suggestions
+    setFormData(prev => ({
+      ...prev,
+      project_name: data.project_name || prev.project_name,
+      description: data.description || prev.description,
+      contractor_type: data.contractor_type || prev.contractor_type,
+    }));
+    
+    // Show what was generated
+    const checklistCount = data.recommended_checklists?.length || 0;
+    const routineCount = data.recommended_routines?.length || 0;
+    
+    toast.success(
+      `AI genererte forslag med ${checklistCount} sjekklister og ${routineCount} rutiner`,
+      { description: "Skjemaet er fylt ut. Du kan tilpasse og opprette prosjektet." }
+    );
+    
+    // Switch to manual tab to show/edit the form
+    setActiveTab("manual");
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh]">
@@ -191,8 +222,28 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
           <DialogTitle className="text-xl font-semibold">Opprett nytt prosjekt</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[70vh] pr-4">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="manual" className="flex items-center gap-2">
+              <ClipboardList className="w-4 h-4" />
+              Manuelt oppsett
+            </TabsTrigger>
+            <TabsTrigger value="ai" className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Prosjekt-hjelperen
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="ai" className="mt-0">
+            <Ks2ProjectSetupChat 
+              onComplete={handleAiComplete}
+              onCancel={() => setActiveTab("manual")}
+            />
+          </TabsContent>
+
+          <TabsContent value="manual" className="mt-0">
+            <ScrollArea className="max-h-[60vh] pr-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
             {/* Project Template Selection */}
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
@@ -484,8 +535,10 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                 )}
               </Button>
             </div>
-          </form>
-        </ScrollArea>
+              </form>
+            </ScrollArea>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
