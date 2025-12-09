@@ -69,14 +69,14 @@ const DIBK_FORMS = [
   
   // Planer
   { number: "5185", name: "Gjennomføringsplan", category: "plan", localUrl: "/blanketter/5185-gjennomforingsplan.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5148", name: "Samsvarserklæring TEK17", category: "plan", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5148", name: "Samsvarserklæring TEK17", category: "plan", localUrl: "/blanketter/5148-samsvarserklaring.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   
   // Ansvarsrett
   { number: "5181", name: "Erklæring om ansvarsrett", category: "ansvarsrett", localUrl: "/blanketter/5181-ansvarsrett.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5183", name: "Opphør av ansvarsrett", category: "ansvarsrett", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5184", name: "Personlig ansvarsrett (selvbygger)", category: "ansvarsrett", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5186", name: "Melding om endring av ansvarsrett", category: "ansvarsrett", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5187", name: "Egenerklæring tiltakshaver", category: "ansvarsrett", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5183", name: "Opphør av ansvarsrett", category: "ansvarsrett", localUrl: "/blanketter/5183-opphor-ansvarsrett.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5184", name: "Personlig ansvarsrett (selvbygger)", category: "ansvarsrett", localUrl: "/blanketter/5184-personlig-ansvarsrett.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5186", name: "Melding om endring av ansvarsrett", category: "ansvarsrett", localUrl: "/blanketter/5186-endring-ansvarsrett.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5187", name: "Egenerklæring tiltakshaver", category: "ansvarsrett", localUrl: "/blanketter/5187-egenerklaring-selvbygger.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   
   // Kontroll
   { number: "5191", name: "Plan for uavhengig kontroll", category: "kontroll", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
