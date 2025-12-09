@@ -109,11 +109,12 @@ export function TimeClockQrDialog({ open, onOpenChange }: TimeClockQrDialogProps
                   <CardContent className="p-4">
                     <div className="flex items-start gap-4">
                       {/* QR Code preview */}
-                      <div className="w-20 h-20 rounded border bg-white p-1">
+                      <div className="w-20 h-20 rounded border bg-white p-1 overflow-hidden">
                         <QRCodeCanvas
                           value={getQrUrl(qr.code)}
-                          size={72}
-                          level="M"
+                          size={400}
+                          level="H"
+                          style={{ width: '72px', height: '72px' }}
                           ref={(el) => {
                             if (el) canvasRefs.current[qr.id] = el;
                           }}
