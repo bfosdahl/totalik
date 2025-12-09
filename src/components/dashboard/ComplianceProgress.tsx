@@ -74,22 +74,45 @@ const statusConfig = {
 
 export function ComplianceProgress() {
   const navigate = useNavigate();
-  const { progress } = useSetupWizard();
+  const { progress, goals, organization, riskAssessment, actionPlan, routines } = useSetupWizard();
 
-  // Calculate step status based on actual progress
+  // Calculate step status based on actual data presence (not just wizard progress)
   const steps: ComplianceStep[] = baseSteps.map((step) => {
-    const completedSteps = progress?.completed_steps || [];
-    const currentStep = progress?.current_step || 0;
-    const isWizardCompleted = progress?.is_completed || false;
-    
     let status: "completed" | "in-progress" | "pending";
-    // If wizard is completed, mark handbook as completed too
-    if (completedSteps.includes(step.id) || (step.id === "handbook" && isWizardCompleted)) {
-      status = "completed";
-    } else if (step.stepIndex === currentStep) {
+    
+    // Check actual data presence for each step
+    switch (step.id) {
+      case "goals":
+        status = goals && goals.length > 0 ? "completed" : "pending";
+        break;
+      case "organization":
+        status = organization && organization.custom_content ? "completed" : "pending";
+        break;
+      case "risk":
+        status = riskAssessment && riskAssessment.risks && riskAssessment.risks.length > 0 ? "completed" : "pending";
+        break;
+      case "actions":
+        status = actionPlan && actionPlan.actions && actionPlan.actions.length > 0 ? "completed" : "pending";
+        break;
+      case "routines":
+        status = routines && routines.routines && routines.routines.length > 0 ? "completed" : "pending";
+        break;
+      case "handbook":
+        // Handbook is completed if all other steps are completed
+        const hasGoals = goals && goals.length > 0;
+        const hasOrg = organization && organization.custom_content;
+        const hasRisks = riskAssessment && riskAssessment.risks && riskAssessment.risks.length > 0;
+        const hasActions = actionPlan && actionPlan.actions && actionPlan.actions.length > 0;
+        const hasRoutines = routines && routines.routines && routines.routines.length > 0;
+        status = hasGoals && hasOrg && hasRisks && hasActions && hasRoutines ? "completed" : "pending";
+        break;
+      default:
+        status = "pending";
+    }
+    
+    // Mark as in-progress if pending but it's the current wizard step
+    if (status === "pending" && step.stepIndex === (progress?.current_step || 0)) {
       status = "in-progress";
-    } else {
-      status = "pending";
     }
     
     return { ...step, status };
