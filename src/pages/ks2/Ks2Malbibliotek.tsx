@@ -29,7 +29,9 @@ import {
   Check,
   Edit,
   PenLine,
+  Play,
 } from "lucide-react";
+import { Ks2ChecklistWizard, PreSelectedTemplate } from "@/components/ks2/Ks2ChecklistWizard";
 import { useAdminTemplatesForCustomers, AdminChecklistTemplate, AdminRoutineTemplate, AdminDocument } from "@/hooks/useAdminTemplatesForCustomers";
 import { useKsModule2ProjectTemplates } from "@/hooks/useKsModule2ProjectTemplates";
 import { useKsModule2Routines, KsModule2Routine } from "@/hooks/useKsModule2Routines";
@@ -160,6 +162,26 @@ export default function Ks2Malbibliotek() {
   const [customChecklistUseNewCategory, setCustomChecklistUseNewCategory] = useState(false);
   const [customChecklistNewCategory, setCustomChecklistNewCategory] = useState("");
   const [customChecklistCheckpoints, setCustomChecklistCheckpoints] = useState<ChecklistCheckpoint[]>([]);
+
+  // Checklist wizard state
+  const [showChecklistWizard, setShowChecklistWizard] = useState(false);
+  const [selectedTemplateForWizard, setSelectedTemplateForWizard] = useState<PreSelectedTemplate | null>(null);
+
+  const handleStartCustomChecklist = (template: KsModule2ChecklistTemplate) => {
+    setSelectedTemplateForWizard({
+      id: template.id,
+      template_name: template.template_name,
+      category: template.category,
+      description: template.description || undefined,
+      checkpoints: template.checkpoints,
+    });
+    setShowChecklistWizard(true);
+  };
+
+  const handleWizardClose = () => {
+    setShowChecklistWizard(false);
+    setSelectedTemplateForWizard(null);
+  };
 
   // Filter checklist templates
   const filteredChecklists = checklistTemplates.filter(t => {
@@ -679,23 +701,33 @@ export default function Ks2Malbibliotek() {
                     <p className="text-xs text-muted-foreground mb-3">
                       {template.checkpoints.length} sjekkpunkt
                     </p>
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="gap-1"
+                          onClick={() => openEditCustomChecklist(template)}
+                        >
+                          <Edit className="h-3 w-3" />
+                          Rediger
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="gap-1 text-destructive hover:text-destructive"
+                          onClick={() => handleDeleteCustomChecklist(template)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                       <Button 
-                        variant="outline" 
                         size="sm" 
                         className="gap-1"
-                        onClick={() => openEditCustomChecklist(template)}
+                        onClick={() => handleStartCustomChecklist(template)}
                       >
-                        <Edit className="h-3 w-3" />
-                        Rediger
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="gap-1 text-destructive hover:text-destructive"
-                        onClick={() => handleDeleteCustomChecklist(template)}
-                      >
-                        <Trash2 className="h-3 w-3" />
+                        <Play className="h-3 w-3" />
+                        Bruk
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
@@ -1409,6 +1441,15 @@ export default function Ks2Malbibliotek() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Checklist Wizard */}
+      {showChecklistWizard && projectId && (
+        <Ks2ChecklistWizard
+          projectId={projectId}
+          onClose={handleWizardClose}
+          preSelectedTemplate={selectedTemplateForWizard || undefined}
+        />
+      )}
     </div>
   );
 }
