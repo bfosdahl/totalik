@@ -43,11 +43,17 @@ import { useQueryClient } from "@tanstack/react-query";
 // All DIBK forms with direct download links - simplified list
 // Forms with localUrl have PDF stored locally, others link to DIBK
 const DIBK_FORMS = [
-  // Nabovarsel - these have local PDFs
+  // Nabovarsel - standard skjemaer med lokale PDF-er
   { number: "5154", name: "Nabovarsel", category: "nabovarsel", localUrl: "/blanketter/5154-nabovarsel.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5155", name: "Opplysninger gitt i nabovarsel", category: "nabovarsel", localUrl: "/blanketter/5155-opplysninger-nabovarsel.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5156", name: "Kvittering for nabovarsel", category: "nabovarsel", localUrl: "/blanketter/5156-kvittering-nabovarsel.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5188", name: "Melding unntatt søknadsplikt", category: "nabovarsel", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  
+  // Nabovarsel for privatpersoner (mindre prosjekter: garasje, tilbygg, bod, bruksendring)
+  { number: "NV-PRIVAT", name: "Nabovarsel for privatpersoner", category: "nabovarsel", localUrl: "/blanketter/nabovarsel-privatpersoner.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "KV-PERS", name: "Kvittering nabovarsel - Levert personlig", category: "nabovarsel", localUrl: "/blanketter/kvittering-nabovarsel-personlig.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "KV-EPOST", name: "Kvittering nabovarsel - E-post/SMS", category: "nabovarsel", localUrl: "/blanketter/kvittering-nabovarsel-epost-sms.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "KV-REK", name: "Kvittering nabovarsel - Rekommandert", category: "nabovarsel", localUrl: "/blanketter/kvittering-nabovarsel-rekommandert.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   
   // Søknader
   { number: "5151", name: "Søknad om igangsettingstillatelse", category: "soknad", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
