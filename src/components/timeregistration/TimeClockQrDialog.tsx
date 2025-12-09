@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import { QrCode, Copy, Download, Plus, Trash2 } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,7 @@ export function TimeClockQrDialog({ open, onOpenChange }: TimeClockQrDialogProps
   const { qrCodes, generateQrCode, deleteQrCode } = useTimeClock();
   const [newName, setNewName] = useState("Hovedkontor");
   const [isCreating, setIsCreating] = useState(false);
+  const canvasRefs = useRef<{ [key: string]: HTMLCanvasElement | null }>({});
 
   const handleCreate = async () => {
     if (!newName.trim()) {
@@ -46,12 +48,15 @@ export function TimeClockQrDialog({ open, onOpenChange }: TimeClockQrDialogProps
   };
 
   const downloadQrCode = (qrCode: TimeClockQrCode) => {
-    // Generate QR code using Google Charts API
-    const qrUrl = getQrUrl(qrCode.code);
-    const googleQrUrl = `https://chart.googleapis.com/chart?chs=400x400&cht=qr&chl=${encodeURIComponent(qrUrl)}&choe=UTF-8`;
+    const canvas = canvasRefs.current[qrCode.id];
+    if (!canvas) {
+      toast.error("Kunne ikke laste ned QR-koden");
+      return;
+    }
     
+    const url = canvas.toDataURL("image/png");
     const link = document.createElement("a");
-    link.href = googleQrUrl;
+    link.href = url;
     link.download = `qr-stempling-${qrCode.name.toLowerCase().replace(/\s+/g, "-")}.png`;
     link.click();
     toast.success("QR-kode lastet ned");
@@ -104,11 +109,16 @@ export function TimeClockQrDialog({ open, onOpenChange }: TimeClockQrDialogProps
                   <CardContent className="p-4">
                     <div className="flex items-start gap-4">
                       {/* QR Code preview */}
-                      <img
-                        src={`https://chart.googleapis.com/chart?chs=100x100&cht=qr&chl=${encodeURIComponent(getQrUrl(qr.code))}&choe=UTF-8`}
-                        alt={`QR-kode for ${qr.name}`}
-                        className="w-20 h-20 rounded border"
-                      />
+                      <div className="w-20 h-20 rounded border bg-white p-1">
+                        <QRCodeCanvas
+                          value={getQrUrl(qr.code)}
+                          size={72}
+                          level="M"
+                          ref={(el) => {
+                            if (el) canvasRefs.current[qr.id] = el;
+                          }}
+                        />
+                      </div>
                       
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium">{qr.name}</h4>
