@@ -194,11 +194,15 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
     hms_focus?: any[];
     milestones?: any[];
   }) => {
+    console.log("AI data received:", data);
+    
     // Update form with AI suggestions
     setFormData(prev => ({
       ...prev,
       project_name: data.project_name || prev.project_name,
       description: data.description || prev.description,
+      address: data.address || prev.address,
+      client_name: data.client_name || prev.client_name,
       contractor_type: data.contractor_type || prev.contractor_type,
     }));
     
@@ -207,8 +211,8 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
     const routineCount = data.recommended_routines?.length || 0;
     
     toast.success(
-      `AI genererte forslag med ${checklistCount} sjekklister og ${routineCount} rutiner`,
-      { description: "Skjemaet er fylt ut. Du kan tilpasse og opprette prosjektet." }
+      `Prosjektforslag generert!`,
+      { description: `${checklistCount} sjekklister og ${routineCount} rutiner anbefalt. Skjemaet er fylt ut.` }
     );
     
     // Switch to manual tab to show/edit the form
