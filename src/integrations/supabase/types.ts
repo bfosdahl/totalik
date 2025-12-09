@@ -8345,6 +8345,8 @@ export type Database = {
       }
       time_clock_entries: {
         Row: {
+          break_end: string | null
+          break_start: string | null
           clock_in: string
           clock_out: string | null
           company_id: string
@@ -8354,11 +8356,14 @@ export type Database = {
           notes: string | null
           qr_code_id: string | null
           status: string
+          total_break_minutes: number | null
           updated_at: string
           user_id: string
           user_name: string
         }
         Insert: {
+          break_end?: string | null
+          break_start?: string | null
           clock_in?: string
           clock_out?: string | null
           company_id: string
@@ -8368,11 +8373,14 @@ export type Database = {
           notes?: string | null
           qr_code_id?: string | null
           status?: string
+          total_break_minutes?: number | null
           updated_at?: string
           user_id: string
           user_name: string
         }
         Update: {
+          break_end?: string | null
+          break_start?: string | null
           clock_in?: string
           clock_out?: string | null
           company_id?: string
@@ -8382,6 +8390,7 @@ export type Database = {
           notes?: string | null
           qr_code_id?: string | null
           status?: string
+          total_break_minutes?: number | null
           updated_at?: string
           user_id?: string
           user_name?: string
