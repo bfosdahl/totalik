@@ -56,7 +56,7 @@ const DIBK_FORMS = [
   { number: "KV-REK", name: "Kvittering nabovarsel - Rekommandert", category: "nabovarsel", localUrl: "/blanketter/kvittering-nabovarsel-rekommandert.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   
   // Søknader
-  { number: "5151", name: "Søknad om igangsettingstillatelse", category: "soknad", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5151", name: "Søknad om igangsettingstillatelse", category: "soknad", localUrl: "/blanketter/5151-igangsettingstillatelse.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5153", name: "Søknad om tiltak uten ansvarsrett", category: "soknad", localUrl: "/blanketter/5153-tiltak-uten-ansvarsrett.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "SØK-PRIVAT", name: "Byggesøknad for privatpersoner (mindre prosjekter)", category: "soknad", localUrl: "/blanketter/byggesoknad-mindre-prosjekter.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "SØK-BRUK", name: "Søknad om bruksendring", category: "soknad", localUrl: "/blanketter/soknad-bruksendring.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
