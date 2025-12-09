@@ -22,6 +22,7 @@ import {
 import { useKsModule2Checklists } from "@/hooks/useKsModule2Checklists";
 import { useKsModule2Subcontractors } from "@/hooks/useKsModule2Subcontractors";
 import { useKsModule2Avvik } from "@/hooks/useKsModule2Avvik";
+import { useKsModule2Templates } from "@/hooks/useKsModule2Templates";
 import { format, isThisWeek, parseISO, subDays, isAfter, isBefore, startOfWeek, endOfWeek, eachDayOfInterval, differenceInDays } from "date-fns";
 import { nb } from "date-fns/locale";
 import {
@@ -36,6 +37,7 @@ import {
   Cell,
 } from "recharts";
 import { Ks2PopulateExampleButton } from "./Ks2PopulateExampleButton";
+import { Ks2WelcomeCard } from "./Ks2WelcomeCard";
 
 export function Ks2EnhancedDashboard() {
   const { projectId } = useParams();
@@ -43,6 +45,7 @@ export function Ks2EnhancedDashboard() {
   const { checklists, stats, isLoading } = useKsModule2Checklists(projectId || "");
   const { subcontractors } = useKsModule2Subcontractors(projectId || "");
   const { avvikList: avvik } = useKsModule2Avvik(projectId || "");
+  const { templates } = useKsModule2Templates();
 
   // Scroll to top on mount
   const basePath = `/ks/project/${projectId}`;
@@ -127,8 +130,15 @@ export function Ks2EnhancedDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Quick Actions - TOP OF PAGE */}
-      <Card className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-primary/20">
+      {/* Welcome/Onboarding Card for new projects */}
+      <Ks2WelcomeCard 
+        hasChecklists={checklists.length > 0}
+        hasSubcontractors={subcontractors.length > 0}
+        hasTemplates={templates.length > 0}
+      />
+
+      {/* Quick Actions - TOP OF PAGE (hidden on mobile, use FAB instead) */}
+      <Card className="hidden sm:block bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-primary/20">
         <CardContent className="p-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>

@@ -6,6 +6,7 @@ import { KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { Ks2ProjectSidebar } from "@/components/ks2/Ks2ProjectSidebar";
 import { Ks2ProjectStatusBar } from "@/components/ks2/Ks2ProjectStatusBar";
 import { Ks2EnhancedDashboard } from "@/components/ks2/Ks2EnhancedDashboard";
+import { Ks2FloatingActions } from "@/components/ks2/Ks2FloatingActions";
 import Ks2Egenkontroller from "./Ks2Egenkontroller";
 import Ks2Sjekklister from "./Ks2Sjekklister";
 import Ks2Rutiner from "./Ks2Rutiner";
@@ -185,6 +186,9 @@ export default function Ks2ProjectDetail() {
           {renderContent()}
         </main>
       </div>
+
+      {/* Floating Action Button for mobile */}
+      <Ks2FloatingActions />
     </div>
   );
 }
