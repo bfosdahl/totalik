@@ -59,6 +59,7 @@ const DIBK_FORMS = [
   { number: "5151", name: "Søknad om igangsettingstillatelse", category: "soknad", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5153", name: "Søknad om tiltak uten ansvarsrett", category: "soknad", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "SØK-PRIVAT", name: "Byggesøknad for privatpersoner (mindre prosjekter)", category: "soknad", localUrl: "/blanketter/byggesoknad-mindre-prosjekter.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "SØK-BRUK", name: "Søknad om bruksendring", category: "soknad", localUrl: "/blanketter/soknad-bruksendring.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5174", name: "Søknad om tillatelse til tiltak", category: "soknad", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5175", name: "Opplysninger om ytre rammer", category: "soknad", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5176", name: "Boligspesifikasjon i matrikkel", category: "soknad", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
@@ -83,7 +84,7 @@ const DIBK_FORMS = [
   { number: "5149", name: "Kontrollerklæring", category: "kontroll", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   
   // Ferdigattest
-  { number: "5167", name: "Søknad om ferdigattest", category: "ferdigattest", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5167", name: "Søknad om ferdigattest", category: "ferdigattest", localUrl: "/blanketter/5167-ferdigattest.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5168", name: "Søknad om endring av tillatelse", category: "ferdigattest", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5169", name: "Søknad om midlertidig brukstillatelse", category: "ferdigattest", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
 ];
