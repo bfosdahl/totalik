@@ -8343,6 +8343,114 @@ export type Database = {
           },
         ]
       }
+      time_clock_entries: {
+        Row: {
+          clock_in: string
+          clock_out: string | null
+          company_id: string
+          created_at: string
+          hours_worked: number | null
+          id: string
+          notes: string | null
+          qr_code_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          clock_in?: string
+          clock_out?: string | null
+          company_id: string
+          created_at?: string
+          hours_worked?: number | null
+          id?: string
+          notes?: string | null
+          qr_code_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          clock_in?: string
+          clock_out?: string | null
+          company_id?: string
+          created_at?: string
+          hours_worked?: number | null
+          id?: string
+          notes?: string | null
+          qr_code_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_clock_entries_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_clock_entries_qr_code_id_fkey"
+            columns: ["qr_code_id"]
+            isOneToOne: false
+            referencedRelation: "time_clock_qr_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      time_clock_qr_codes: {
+        Row: {
+          code: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_clock_qr_codes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_clock_qr_codes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       time_entries: {
         Row: {
           approved_at: string | null
