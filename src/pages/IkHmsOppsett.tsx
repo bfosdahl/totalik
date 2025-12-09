@@ -4,18 +4,27 @@ import { useNavigate } from "react-router-dom";
 import { IkHmsChatSetup } from "@/components/setup/IkHmsChatSetup";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Building2, CheckCircle2, AlertTriangle, RefreshCw, Loader2 } from "lucide-react";
+import { Building2, CheckCircle2, AlertTriangle, RefreshCw, Loader2, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAiSetupValidation } from "@/hooks/useAiSetupValidation";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
+import { useAuth } from "@/contexts/AuthContext";
 
 const IkHmsOppsett = () => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const { isValid, isLoading, error, companyId, retry } = useAiSetupValidation("IK_HMS");
   const { modules, isLoading: modulesLoading, refetch: refetchModules } = useCompanyModules(companyId || undefined);
   const [setupCompleted, setSetupCompleted] = useState(false);
   const [showRestartDialog, setShowRestartDialog] = useState(false);
   const [isRestarting, setIsRestarting] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    await signOut();
+    navigate("/auth");
+  };
 
   // Check if setup was previously completed
   const previouslyCompleted = !isRestarting && modules.some(m => 
@@ -41,17 +50,35 @@ const IkHmsOppsett = () => {
   if (error || !isValid) {
     return (
       <AppLayout>
-        <div className="container max-w-4xl mx-auto py-8">
+        <div className="container max-w-4xl mx-auto py-8 space-y-4">
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="flex items-center justify-between">
-              <span>{error || "Kunne ikke starte AI-oppsettet."}</span>
-              <Button variant="outline" size="sm" onClick={retry} className="ml-4">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Prøv igjen
-              </Button>
+            <AlertDescription className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <span className="flex-1">{error || "Kunne ikke starte AI-oppsettet."}</span>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={retry}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Prøv igjen
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                >
+                  {isLoggingOut ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <LogOut className="h-4 w-4 mr-2" />
+                  )}
+                  Logg ut
+                </Button>
+              </div>
             </AlertDescription>
           </Alert>
+          <p className="text-sm text-muted-foreground">
+            Hvis problemet vedvarer, prøv å logge ut og inn igjen. Dette kan løse sesjonsproblemer.
+          </p>
         </div>
       </AppLayout>
     );
