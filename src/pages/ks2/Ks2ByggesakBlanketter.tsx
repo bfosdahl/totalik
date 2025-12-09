@@ -47,7 +47,7 @@ const DIBK_FORMS = [
   { number: "5154", name: "Nabovarsel", category: "nabovarsel", localUrl: "/blanketter/5154-nabovarsel.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5155", name: "Opplysninger gitt i nabovarsel", category: "nabovarsel", localUrl: "/blanketter/5155-opplysninger-nabovarsel.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5156", name: "Kvittering for nabovarsel", category: "nabovarsel", localUrl: "/blanketter/5156-kvittering-nabovarsel.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5188", name: "Melding unntatt søknadsplikt", category: "nabovarsel", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5188", name: "Melding unntatt søknadsplikt", category: "nabovarsel", localUrl: "/blanketter/5188-melding-unntatt-soknadsplikt.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   
   // Nabovarsel for privatpersoner (mindre prosjekter: garasje, tilbygg, bod, bruksendring)
   { number: "NV-PRIVAT", name: "Nabovarsel for privatpersoner", category: "nabovarsel", localUrl: "/blanketter/nabovarsel-privatpersoner.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
