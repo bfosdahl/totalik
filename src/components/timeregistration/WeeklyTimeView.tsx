@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format, startOfWeek, addDays, isSameDay } from "date-fns";
 import { nb } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
@@ -34,6 +39,10 @@ interface TimeEntry {
   project_id: string | null;
   description: string | null;
   status: "draft" | "submitted" | "approved" | "rejected";
+  source?: "manual" | "qr_clock";
+  clock_in?: string | null;
+  clock_out?: string | null;
+  total_break_minutes?: number | null;
 }
 
 interface WeeklyTimeViewProps {
@@ -217,36 +226,57 @@ export function WeeklyTimeView({
                   )}
                 </div>
 
-                <div className="space-y-1 mb-2 max-h-[60px] overflow-y-auto">
+                <div className="space-y-1 mb-2 max-h-[80px] overflow-y-auto">
                   {dayEntries.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className={cn(
-                        "text-xs p-1 rounded flex items-center justify-between group",
-                        statusColors[entry.status]
-                      )}
-                    >
-                      <span className="truncate flex-1">
-                        {Number(entry.hours).toFixed(1)}t
-                        {entry.project_name && (
-                          <span className="text-muted-foreground ml-1 truncate">
-                            - {entry.project_name.split(" - ")[0]}
-                          </span>
-                        )}
-                      </span>
-                      {(entry.status === "draft" ||
-                        entry.status === "submitted" ||
-                        entry.status === "rejected") && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-4 w-4 opacity-0 group-hover:opacity-100"
-                          onClick={() => onDeleteEntry(entry.id)}
+                    <Tooltip key={entry.id}>
+                      <TooltipTrigger asChild>
+                        <div
+                          className={cn(
+                            "text-xs p-1 rounded flex items-center justify-between group",
+                            statusColors[entry.status]
+                          )}
                         >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
+                          <span className="truncate flex-1 flex items-center gap-1">
+                            {entry.source === "qr_clock" && (
+                              <QrCode className="h-3 w-3 flex-shrink-0" />
+                            )}
+                            {Number(entry.hours).toFixed(1)}t
+                            {entry.project_name && (
+                              <span className="text-muted-foreground ml-1 truncate">
+                                - {entry.project_name.split(" - ")[0]}
+                              </span>
+                            )}
+                          </span>
+                          {entry.source !== "qr_clock" && (entry.status === "draft" ||
+                            entry.status === "submitted" ||
+                            entry.status === "rejected") && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-4 w-4 opacity-0 group-hover:opacity-100"
+                              onClick={() => onDeleteEntry(entry.id)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {entry.source === "qr_clock" ? (
+                          <div>
+                            <p className="font-medium">QR-stempling</p>
+                            {entry.clock_in && entry.clock_out && (
+                              <p className="text-xs">
+                                {format(new Date(entry.clock_in), "HH:mm")} - {format(new Date(entry.clock_out), "HH:mm")}
+                                {entry.total_break_minutes ? ` (${entry.total_break_minutes} min pause)` : ""}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <p>{entry.description || entry.project_name || "Manuell registrering"}</p>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
                   ))}
                 </div>
 
