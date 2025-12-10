@@ -120,12 +120,15 @@ export function useSetupWizard() {
       console.log("[useSetupWizard] Auth loading state:", authLoading);
       try {
         // Load progress
-        const { data: progressData } = await supabase
+        const { data: progressData, error: progressError } = await supabase
           .from("setup_wizard_progress")
           .select("*")
           .eq("company_id", companyId)
           .maybeSingle();
 
+        if (progressError) {
+          console.error("[useSetupWizard] Progress error:", progressError);
+        }
         if (progressData) {
           setProgress({
             current_step: progressData.current_step,
@@ -135,23 +138,31 @@ export function useSetupWizard() {
         }
 
         // Load goals
-        const { data: goalsData } = await supabase
+        const { data: goalsData, error: goalsError } = await supabase
           .from("company_goals")
           .select("*")
           .eq("company_id", companyId)
           .order("sort_order");
 
+        if (goalsError) {
+          console.error("[useSetupWizard] Goals error:", goalsError);
+        }
+        console.log("[useSetupWizard] Goals loaded:", goalsData?.length ?? 0);
         if (goalsData) {
           setGoals(goalsData);
         }
 
         // Load organization
-        const { data: orgData } = await supabase
+        const { data: orgData, error: orgError } = await supabase
           .from("company_organization")
           .select("*")
           .eq("company_id", companyId)
           .maybeSingle();
 
+        if (orgError) {
+          console.error("[useSetupWizard] Organization error:", orgError);
+        }
+        console.log("[useSetupWizard] Organization loaded:", !!orgData?.custom_content);
         if (orgData) {
           setOrganization({
             template_id: orgData.template_id,
@@ -161,12 +172,16 @@ export function useSetupWizard() {
         }
 
         // Load risk assessment
-        const { data: riskData } = await supabase
+        const { data: riskData, error: riskError } = await supabase
           .from("company_risk_assessments")
           .select("*")
           .eq("company_id", companyId)
           .maybeSingle();
 
+        if (riskError) {
+          console.error("[useSetupWizard] Risk error:", riskError);
+        }
+        console.log("[useSetupWizard] Risks loaded:", (riskData?.risks as any[])?.length ?? 0);
         if (riskData && riskData.risks) {
           setRiskAssessment({
             risks: riskData.risks as unknown as RiskItem[],
