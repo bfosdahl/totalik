@@ -16,72 +16,110 @@ export async function applyDefaultHmsSetup(companyId: string): Promise<{ success
   try {
     console.log("Applying default HMS setup for company:", companyId);
 
-    // 1. Insert default goals
-    const goalsToInsert = defaultGoals.map((goal, index) => ({
-      company_id: companyId,
-      goal_text: goal.goal_text,
-      is_predefined: goal.is_predefined,
-      sort_order: index,
-    }));
-
-    const { error: goalsError } = await supabase
+    // 1. Insert default goals (no unique constraint on sort_order, so just insert)
+    const { data: existingGoals } = await supabase
       .from("company_goals")
-      .upsert(goalsToInsert, { onConflict: "company_id,sort_order", ignoreDuplicates: true });
+      .select("id")
+      .eq("company_id", companyId)
+      .limit(1);
 
-    if (goalsError) {
-      console.error("Error inserting goals:", goalsError);
-      // Try insert without upsert
-      await supabase.from("company_goals").insert(goalsToInsert);
+    if (!existingGoals || existingGoals.length === 0) {
+      const goalsToInsert = defaultGoals.map((goal, index) => ({
+        company_id: companyId,
+        goal_text: goal.goal_text,
+        is_predefined: goal.is_predefined,
+        sort_order: index,
+      }));
+
+      const { error: goalsError } = await supabase
+        .from("company_goals")
+        .insert(goalsToInsert);
+
+      if (goalsError) {
+        console.error("Error inserting goals:", goalsError);
+      }
     }
 
-    // 2. Insert default organization
-    const { error: orgError } = await supabase
+    // 2. Insert default organization (unique constraint on company_id)
+    const { data: existingOrg } = await supabase
       .from("company_organization")
-      .upsert({
-        company_id: companyId,
-        template_id: defaultOrganization.template_id,
-        custom_content: defaultOrganization.custom_content,
-        is_custom: defaultOrganization.is_custom,
-      }, { onConflict: "company_id" });
+      .select("id")
+      .eq("company_id", companyId)
+      .limit(1);
 
-    if (orgError) {
-      console.error("Error inserting organization:", orgError);
+    if (!existingOrg || existingOrg.length === 0) {
+      const { error: orgError } = await supabase
+        .from("company_organization")
+        .insert({
+          company_id: companyId,
+          template_id: defaultOrganization.template_id,
+          custom_content: defaultOrganization.custom_content,
+          is_custom: defaultOrganization.is_custom,
+        });
+
+      if (orgError) {
+        console.error("Error inserting organization:", orgError);
+      }
     }
 
-    // 3. Insert default risks
-    const { error: risksError } = await supabase
+    // 3. Insert default risks (unique constraint on company_id)
+    const { data: existingRisks } = await supabase
       .from("company_risk_assessments")
-      .upsert([{
-        company_id: companyId,
-        risks: JSON.parse(JSON.stringify(defaultRisks)),
-      }], { onConflict: "company_id" });
+      .select("id")
+      .eq("company_id", companyId)
+      .limit(1);
 
-    if (risksError) {
-      console.error("Error inserting risks:", risksError);
+    if (!existingRisks || existingRisks.length === 0) {
+      const { error: risksError } = await supabase
+        .from("company_risk_assessments")
+        .insert({
+          company_id: companyId,
+          risks: JSON.parse(JSON.stringify(defaultRisks)),
+        });
+
+      if (risksError) {
+        console.error("Error inserting risks:", risksError);
+      }
     }
 
-    // 4. Insert default routines
-    const { error: routinesError } = await supabase
+    // 4. Insert default routines (unique constraint on company_id)
+    const { data: existingRoutines } = await supabase
       .from("company_routines")
-      .upsert([{
-        company_id: companyId,
-        routines: JSON.parse(JSON.stringify(defaultRoutines)),
-      }], { onConflict: "company_id" });
+      .select("id")
+      .eq("company_id", companyId)
+      .limit(1);
 
-    if (routinesError) {
-      console.error("Error inserting routines:", routinesError);
+    if (!existingRoutines || existingRoutines.length === 0) {
+      const { error: routinesError } = await supabase
+        .from("company_routines")
+        .insert({
+          company_id: companyId,
+          routines: JSON.parse(JSON.stringify(defaultRoutines)),
+        });
+
+      if (routinesError) {
+        console.error("Error inserting routines:", routinesError);
+      }
     }
 
-    // 5. Insert default action plan
-    const { error: actionsError } = await supabase
+    // 5. Insert default action plan (unique constraint on company_id)
+    const { data: existingActions } = await supabase
       .from("company_action_plans")
-      .upsert([{
-        company_id: companyId,
-        actions: JSON.parse(JSON.stringify(defaultActions)),
-      }], { onConflict: "company_id" });
+      .select("id")
+      .eq("company_id", companyId)
+      .limit(1);
 
-    if (actionsError) {
-      console.error("Error inserting actions:", actionsError);
+    if (!existingActions || existingActions.length === 0) {
+      const { error: actionsError } = await supabase
+        .from("company_action_plans")
+        .insert({
+          company_id: companyId,
+          actions: JSON.parse(JSON.stringify(defaultActions)),
+        });
+
+      if (actionsError) {
+        console.error("Error inserting actions:", actionsError);
+      }
     }
 
     console.log("Default HMS setup applied successfully for company:", companyId);
