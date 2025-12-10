@@ -96,7 +96,29 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
 
     useEffect(() => {
       if (existingData?.actions) {
-        setActions(existingData.actions);
+        // Transform AI-generated actions to manual format if needed
+        const transformedActions = existingData.actions.map((action: any) => {
+          // Check if this is an AI-generated action (has 'description' instead of 'action_description')
+          if ('description' in action && !('action_description' in action)) {
+            return {
+              id: action.id || crypto.randomUUID(),
+              risk_id: action.linked_risk_ids?.[0] || null,
+              risk_description: action.linked_risk_ids?.length ? `Koblet til risiko: ${action.linked_risk_ids.join(', ')}` : '',
+              action_description: action.description || '',
+              responsible: action.responsible || '',
+              deadline: action.deadline || '',
+              status: action.status === 'pending' ? 'ikke_startet' : 
+                      action.status === 'in_progress' ? 'pågår' : 
+                      action.status === 'completed' ? 'fullført' : 'ikke_startet',
+              priority: action.priority === 'high' ? 'høy' : 
+                        action.priority === 'low' ? 'lav' : 
+                        action.priority === 'critical' ? 'kritisk' : 'medium',
+              comments: '',
+            } as ActionItem;
+          }
+          return action as ActionItem;
+        });
+        setActions(transformedActions);
       }
     }, [existingData]);
 
