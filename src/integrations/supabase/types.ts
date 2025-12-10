@@ -4511,6 +4511,7 @@ export type Database = {
           project_leader_name: string | null
           project_name: string
           project_number: string
+          project_type: string | null
           sha_coordinator_kp: string | null
           sha_coordinator_ku: string | null
           status: string
@@ -4541,6 +4542,7 @@ export type Database = {
           project_leader_name?: string | null
           project_name: string
           project_number: string
+          project_type?: string | null
           sha_coordinator_kp?: string | null
           sha_coordinator_ku?: string | null
           status?: string
@@ -4571,6 +4573,7 @@ export type Database = {
           project_leader_name?: string | null
           project_name?: string
           project_number?: string
+          project_type?: string | null
           sha_coordinator_kp?: string | null
           sha_coordinator_ku?: string | null
           status?: string
