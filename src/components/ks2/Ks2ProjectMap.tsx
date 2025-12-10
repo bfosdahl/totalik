@@ -1,18 +1,10 @@
-import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, MapPin, Loader2, AlertCircle } from "lucide-react";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 
-// Fix for default marker icons in Leaflet with Vite
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-});
+// Lazy load the map component to avoid SSR/hydration issues
+const MapComponent = lazy(() => import("./Ks2ProjectMapLeaflet"));
 
 interface Ks2ProjectMapProps {
   address?: string | null;
@@ -109,12 +101,12 @@ export default function Ks2ProjectMap({ address, gnrBnr, projectName }: Ks2Proje
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <MapPin className="h-5 w-5" />
             Lokasjon
           </CardTitle>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {kartverketLink && (
               <Button
                 variant="outline"
@@ -170,34 +162,19 @@ export default function Ks2ProjectMap({ address, gnrBnr, projectName }: Ks2Proje
         )}
 
         {!isLoading && coordinates && (
-          <div className="h-[300px] rounded-lg overflow-hidden border">
-            <MapContainer
-              center={[coordinates.lat, coordinates.lon]}
-              zoom={15}
-              style={{ height: "100%", width: "100%" }}
-              scrollWheelZoom={false}
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <Marker position={[coordinates.lat, coordinates.lon]}>
-                <Popup>
-                  <div className="text-sm">
-                    <strong>{projectName || "Prosjekt"}</strong>
-                    <br />
-                    {address}
-                    {gnrBnr && (
-                      <>
-                        <br />
-                        <span className="text-muted-foreground">Gnr/Bnr: {gnrBnr}</span>
-                      </>
-                    )}
-                  </div>
-                </Popup>
-              </Marker>
-            </MapContainer>
-          </div>
+          <Suspense fallback={
+            <div className="h-[300px] flex items-center justify-center bg-muted rounded-lg">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          }>
+            <MapComponent
+              lat={coordinates.lat}
+              lon={coordinates.lon}
+              projectName={projectName}
+              address={address}
+              gnrBnr={gnrBnr}
+            />
+          </Suspense>
         )}
 
         {gnrBnr && (
