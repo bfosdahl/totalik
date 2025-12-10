@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useToast } from "@/hooks/use-toast";
+import Ks2ProjectMap from "@/components/ks2/Ks2ProjectMap";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -280,6 +281,13 @@ export default function Ks2Prosjektinfo() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Map */}
+        <Ks2ProjectMap 
+          address={formData.address}
+          gnrBnr={formData.gnr_bnr}
+          projectName={formData.project_name}
+        />
 
         {/* Client */}
         <Card>
