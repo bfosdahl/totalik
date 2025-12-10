@@ -181,8 +181,45 @@ export function useSetupWizard() {
           .maybeSingle();
 
         if (actionPlanData && actionPlanData.actions) {
+          // Transform AI-generated actions to manual format if needed
+          const rawActions = actionPlanData.actions as unknown as Record<string, unknown>[];
+          const transformedActions = rawActions.map((action, index) => {
+            // Check if this is an AI-generated action (has 'description' instead of 'action_description')
+            if ('description' in action && !('action_description' in action)) {
+              const linkedRiskIds = action.linked_risk_ids as string[] | undefined;
+              return {
+                id: (action.id as string) || `action-${index + 1}`,
+                risk_id: linkedRiskIds?.[0] || null,
+                risk_description: linkedRiskIds?.length ? `Koblet til risiko: ${linkedRiskIds.join(', ')}` : '',
+                action_description: (action.description as string) || '',
+                responsible: (action.responsible as string) || '',
+                deadline: (action.deadline as string) || '',
+                status: action.status === 'pending' ? 'ikke_startet' : 
+                        action.status === 'in_progress' ? 'pågår' : 
+                        action.status === 'completed' ? 'fullført' : 
+                        (action.status as string) || 'ikke_startet',
+                priority: action.priority === 'high' ? 'høy' : 
+                          action.priority === 'low' ? 'lav' : 
+                          action.priority === 'critical' ? 'kritisk' : 
+                          (action.priority as string) || 'medium',
+                comments: (action.comments as string) || '',
+              } as ActionItem;
+            }
+            // Already in correct format
+            return {
+              id: (action.id as string) || `action-${index + 1}`,
+              risk_id: (action.risk_id as string | null) || null,
+              risk_description: (action.risk_description as string) || '',
+              action_description: (action.action_description as string) || '',
+              responsible: (action.responsible as string) || '',
+              deadline: (action.deadline as string) || '',
+              status: (action.status as ActionItem['status']) || 'ikke_startet',
+              priority: (action.priority as ActionItem['priority']) || 'medium',
+              comments: (action.comments as string) || '',
+            } as ActionItem;
+          });
           setActionPlan({
-            actions: actionPlanData.actions as unknown as ActionItem[],
+            actions: transformedActions,
           });
         }
 
