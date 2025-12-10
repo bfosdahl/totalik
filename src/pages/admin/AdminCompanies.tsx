@@ -131,6 +131,7 @@ export default function AdminCompanies() {
       if (error) throw error;
       
       // 2. Create all selected modules for the new company
+      const moduleErrors: string[] = [];
       for (const moduleType of selectedModules) {
         const { error: moduleError } = await supabase.from("company_modules").insert({
           company_id: newCompany.id,
@@ -141,13 +142,18 @@ export default function AdminCompanies() {
         
         if (moduleError) {
           console.error(`Error creating ${moduleType} module:`, moduleError);
+          moduleErrors.push(`${moduleType}: ${moduleError.message}`);
+        } else {
+          // If KS Bygg module is selected, create seed projects
+          if (moduleType === "IK_BYGG") {
+            const { createSeedProjects } = await import("@/utils/ksModule2SeedProjects");
+            await createSeedProjects(newCompany.id);
+          }
         }
-        
-        // If KS Bygg module is selected, create seed projects
-        if (moduleType === "IK_BYGG") {
-          const { createSeedProjects } = await import("@/utils/ksModule2SeedProjects");
-          await createSeedProjects(newCompany.id);
-        }
+      }
+      
+      if (moduleErrors.length > 0) {
+        throw new Error(`Kunne ikke opprette moduler: ${moduleErrors.join(", ")}`);
       }
       
       // 3. Apply default HMS setup if IK_HMS is selected
