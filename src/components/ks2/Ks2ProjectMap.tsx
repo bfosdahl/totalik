@@ -15,49 +15,15 @@ interface GeocodingResult {
   displayName: string;
 }
 
-// Dynamic import for the Leaflet component - only load on client
-function LeafletMap({ lat, lon, projectName, address, gnrBnr }: {
-  lat: number;
-  lon: number;
-  projectName?: string;
-  address?: string | null;
-  gnrBnr?: string | null;
-}) {
-  const [MapComponent, setMapComponent] = useState<React.ComponentType<any> | null>(null);
-
-  useEffect(() => {
-    // Only import on client-side
-    import("./Ks2ProjectMapLeaflet").then((mod) => {
-      setMapComponent(() => mod.default);
-    });
-  }, []);
-
-  if (!MapComponent) {
-    return (
-      <div className="h-[300px] flex items-center justify-center bg-muted rounded-lg">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  return <MapComponent lat={lat} lon={lon} projectName={projectName} address={address} gnrBnr={gnrBnr} />;
-}
-
 export default function Ks2ProjectMap({ address, gnrBnr, projectName }: Ks2ProjectMapProps) {
   const [coordinates, setCoordinates] = useState<GeocodingResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   // Parse gnr/bnr to create Kartverket link
   const getKartverketLink = () => {
     if (!gnrBnr) return null;
     
-    // Try to parse gnr/bnr format like "62/595" or "3101-62/595" or "3101/62/595"
     const cleanedGnrBnr = gnrBnr.replace(/\s/g, "");
     
     // Pattern: kommunenr/gnr/bnr or kommunenr-gnr/bnr
@@ -67,10 +33,9 @@ export default function Ks2ProjectMap({ address, gnrBnr, projectName }: Ks2Proje
       return `https://eiendomsregisteret.kartverket.no/eiendom/${kommunenr}/${gnr}/${bnr}`;
     }
     
-    // Pattern: gnr/bnr only (user needs to know kommunenr)
+    // Pattern: gnr/bnr only
     const simpleMatch = cleanedGnrBnr.match(/^(\d+)\/(\d+)$/);
     if (simpleMatch) {
-      // Can't create link without kommunenr, but return search link
       return `https://eiendomsregisteret.kartverket.no/`;
     }
     
@@ -89,7 +54,6 @@ export default function Ks2ProjectMap({ address, gnrBnr, projectName }: Ks2Proje
       setError(null);
 
       try {
-        // Add Norway to search to improve results
         const searchQuery = `${address}, Norge`;
         const response = await fetch(
           `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1&countrycodes=no`,
@@ -121,7 +85,6 @@ export default function Ks2ProjectMap({ address, gnrBnr, projectName }: Ks2Proje
       }
     };
 
-    // Debounce geocoding
     const timer = setTimeout(geocodeAddress, 500);
     return () => clearTimeout(timer);
   }, [address]);
@@ -191,14 +154,19 @@ export default function Ks2ProjectMap({ address, gnrBnr, projectName }: Ks2Proje
           </div>
         )}
 
-        {!isLoading && coordinates && isMounted && (
-          <LeafletMap
-            lat={coordinates.lat}
-            lon={coordinates.lon}
-            projectName={projectName}
-            address={address}
-            gnrBnr={gnrBnr}
-          />
+        {/* OpenStreetMap iframe embed - no React compatibility issues */}
+        {!isLoading && coordinates && (
+          <div className="h-[300px] rounded-lg overflow-hidden border">
+            <iframe
+              title={`Kart for ${projectName || 'prosjekt'}`}
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              src={`https://www.openstreetmap.org/export/embed.html?bbox=${coordinates.lon - 0.01}%2C${coordinates.lat - 0.005}%2C${coordinates.lon + 0.01}%2C${coordinates.lat + 0.005}&layer=mapnik&marker=${coordinates.lat}%2C${coordinates.lon}`}
+            />
+          </div>
         )}
 
         {gnrBnr && (
