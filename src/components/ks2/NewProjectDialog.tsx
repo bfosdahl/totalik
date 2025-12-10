@@ -246,8 +246,9 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
           </TabsContent>
 
           <TabsContent value="manual" className="mt-0">
-            <ScrollArea className="max-h-[60vh] pr-4">
-              <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="flex flex-col">
+              <ScrollArea className="max-h-[55vh] pr-4">
+                <div className="space-y-6 pb-4">
             {/* Project Template Selection */}
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
@@ -511,36 +512,37 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
               </div>
             </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Hva skal gjøres?</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                placeholder="Beskriv oppdraget og hva som skal utføres..."
-                rows={4}
-              />
-            </div>
+                {/* Description */}
+                <div className="space-y-2">
+                  <Label htmlFor="description">Hva skal gjøres?</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                    placeholder="Beskriv oppdraget og hva som skal utføres..."
+                    rows={4}
+                  />
+                </div>
+                </div>
+              </ScrollArea>
 
-            {/* Submit */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Avbryt
-              </Button>
-              <Button type="submit" disabled={isSaving || !formData.project_name.trim()}>
-                {isSaving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Oppretter...
-                  </>
-                ) : (
-                  "Opprett prosjekt"
-                )}
-              </Button>
-            </div>
-              </form>
-            </ScrollArea>
+              {/* Submit - Outside ScrollArea for visibility */}
+              <div className="flex justify-end gap-3 pt-4 mt-4 border-t">
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                  Avbryt
+                </Button>
+                <Button type="submit" disabled={isSaving || !formData.project_name.trim()}>
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Oppretter...
+                    </>
+                  ) : (
+                    "Opprett prosjekt"
+                  )}
+                </Button>
+              </div>
+            </form>
           </TabsContent>
         </Tabs>
       </DialogContent>
