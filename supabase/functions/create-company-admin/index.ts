@@ -93,24 +93,69 @@ serve(async (req) => {
     const existingUser = existingUsers?.users?.find(u => u.email === email);
 
     if (existingUser) {
-      // Check if user is already in this company
+      // Check if user is already in this company with company_admin role
       const { data: existingProfile } = await supabaseAdmin
         .from("profiles")
-        .select("company_id")
+        .select("company_id, first_name, last_name")
         .eq("user_id", existingUser.id)
         .single();
 
-      if (existingProfile?.company_id === companyId) {
-        return new Response(JSON.stringify({ error: "User is already in this company" }), {
+      const { data: existingRoles } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", existingUser.id);
+
+      const isAlreadyCompanyAdmin = existingRoles?.some(r => r.role === "company_admin");
+
+      if (existingProfile?.company_id === companyId && isAlreadyCompanyAdmin) {
+        return new Response(JSON.stringify({ error: "Bruker er allerede bedriftsadministrator i dette selskapet" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      return new Response(JSON.stringify({ error: "User already exists with this email" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      // User exists but is not company_admin for this company - add them
+      if (existingProfile?.company_id !== companyId) {
+        // Update profile to this company
+        await supabaseAdmin
+          .from("profiles")
+          .update({ 
+            company_id: companyId,
+            first_name: firstName || existingProfile?.first_name || null,
+            last_name: lastName || existingProfile?.last_name || null,
+          })
+          .eq("user_id", existingUser.id);
+      }
+
+      // Add company_admin role if not already present
+      if (!isAlreadyCompanyAdmin) {
+        await supabaseAdmin
+          .from("user_roles")
+          .insert({
+            user_id: existingUser.id,
+            role: "company_admin",
+          });
+      }
+
+      // Generate password reset link for existing user
+      const { data: resetData } = await supabaseAdmin.auth.admin.generateLink({
+        type: "recovery",
+        email,
       });
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: "Eksisterende bruker lagt til som bedriftsadministrator",
+          userId: existingUser.id,
+          emailSent: false,
+          resetLink: resetData?.properties?.action_link
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     // Generate a random password for the new user
