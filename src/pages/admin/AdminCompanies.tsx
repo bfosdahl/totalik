@@ -58,6 +58,16 @@ interface AdminInviteData {
   lastName: string;
 }
 
+const MODULE_OPTIONS = [
+  { type: "IK_HMS", name: "IK HMS", description: "Internkontroll for helse, miljø og sikkerhet" },
+  { type: "IK_MAT", name: "IK MAT", description: "Internkontroll for matsikkerhet" },
+  { type: "IK_ALKOHOL", name: "IK Alkohol", description: "Internkontroll for alkoholhåndtering" },
+  { type: "IK_BYGG", name: "KS Bygg", description: "Kvalitetssikring for byggprosjekter" },
+  { type: "PERSONALHANDBOK", name: "Personalhåndbok", description: "Digital personalhåndbok" },
+  { type: "GDPR", name: "GDPR", description: "Personvern og datahåndtering" },
+  { type: "APENHETSLOVEN", name: "Åpenhetsloven", description: "Aktsomhetsvurderinger" },
+];
+
 export default function AdminCompanies() {
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -82,6 +92,9 @@ export default function AdminCompanies() {
     firstName: "",
     lastName: "",
   });
+  
+  // Module selection for new company
+  const [selectedModules, setSelectedModules] = useState<string[]>(["IK_HMS"]);
   
   // Modules dialog state
   const [modulesDialogOpen, setModulesDialogOpen] = useState(false);
@@ -117,25 +130,32 @@ export default function AdminCompanies() {
       }).select().single();
       if (error) throw error;
       
-      // 2. Automatically create IK_HMS module for the new company
-      // This is CRITICAL - ensures the AI setup and manual setup both work correctly
-      const { error: moduleError } = await supabase.from("company_modules").insert({
-        company_id: newCompany.id,
-        module_type: "IK_HMS",
-        is_active: true,
-        settings: {},
-      });
-      
-      if (moduleError) {
-        console.error("Error creating IK_HMS module:", moduleError);
-        // Don't fail the whole operation, just log it
+      // 2. Create all selected modules for the new company
+      for (const moduleType of selectedModules) {
+        const { error: moduleError } = await supabase.from("company_modules").insert({
+          company_id: newCompany.id,
+          module_type: moduleType,
+          is_active: true,
+          settings: {},
+        });
+        
+        if (moduleError) {
+          console.error(`Error creating ${moduleType} module:`, moduleError);
+        }
+        
+        // If KS Bygg module is selected, create seed projects
+        if (moduleType === "IK_BYGG") {
+          const { createSeedProjects } = await import("@/utils/ksModule2SeedProjects");
+          await createSeedProjects(newCompany.id);
+        }
       }
       
-      // 3. Apply default HMS setup (goals, organization, risks, routines, actions)
-      // This ensures the handbook always has content even before AI setup is run
-      const setupResult = await applyDefaultHmsSetup(newCompany.id);
-      if (!setupResult.success) {
-        console.error("Error applying default HMS setup:", setupResult.error);
+      // 3. Apply default HMS setup if IK_HMS is selected
+      if (selectedModules.includes("IK_HMS")) {
+        const setupResult = await applyDefaultHmsSetup(newCompany.id);
+        if (!setupResult.success) {
+          console.error("Error applying default HMS setup:", setupResult.error);
+        }
       }
       
       return newCompany;
@@ -284,6 +304,15 @@ export default function AdminCompanies() {
     setErrors({});
     setInviteAdmin(false);
     setAdminData({ email: "", firstName: "", lastName: "" });
+    setSelectedModules(["IK_HMS"]);
+  };
+  
+  const toggleModuleSelection = (moduleType: string) => {
+    setSelectedModules(prev => 
+      prev.includes(moduleType) 
+        ? prev.filter(m => m !== moduleType)
+        : [...prev, moduleType]
+    );
   };
 
   const handleInviteAdmin = (company: any) => {
@@ -457,6 +486,35 @@ export default function AdminCompanies() {
                     />
                   </div>
                 </div>
+                
+                {/* Module selection section - only for new companies */}
+                {!editingCompany && (
+                  <div className="border-t border-border pt-4 mt-4">
+                    <Label className="text-sm font-medium mb-3 block">Velg moduler</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {MODULE_OPTIONS.map((module) => (
+                        <div
+                          key={module.type}
+                          className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-colors ${
+                            selectedModules.includes(module.type)
+                              ? "border-primary bg-primary/5"
+                              : "border-border hover:bg-secondary/30"
+                          }`}
+                          onClick={() => toggleModuleSelection(module.type)}
+                        >
+                          <Checkbox
+                            checked={selectedModules.includes(module.type)}
+                            onCheckedChange={() => toggleModuleSelection(module.type)}
+                          />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium">{module.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{module.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 {/* Admin invite section - only for new companies */}
                 {!editingCompany && (
