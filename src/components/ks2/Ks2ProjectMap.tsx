@@ -1,10 +1,7 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, MapPin, Loader2, AlertCircle } from "lucide-react";
-
-// Lazy load the map component to avoid SSR/hydration issues
-const MapComponent = lazy(() => import("./Ks2ProjectMapLeaflet"));
 
 interface Ks2ProjectMapProps {
   address?: string | null;
@@ -18,10 +15,43 @@ interface GeocodingResult {
   displayName: string;
 }
 
+// Dynamic import for the Leaflet component - only load on client
+function LeafletMap({ lat, lon, projectName, address, gnrBnr }: {
+  lat: number;
+  lon: number;
+  projectName?: string;
+  address?: string | null;
+  gnrBnr?: string | null;
+}) {
+  const [MapComponent, setMapComponent] = useState<React.ComponentType<any> | null>(null);
+
+  useEffect(() => {
+    // Only import on client-side
+    import("./Ks2ProjectMapLeaflet").then((mod) => {
+      setMapComponent(() => mod.default);
+    });
+  }, []);
+
+  if (!MapComponent) {
+    return (
+      <div className="h-[300px] flex items-center justify-center bg-muted rounded-lg">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return <MapComponent lat={lat} lon={lon} projectName={projectName} address={address} gnrBnr={gnrBnr} />;
+}
+
 export default function Ks2ProjectMap({ address, gnrBnr, projectName }: Ks2ProjectMapProps) {
   const [coordinates, setCoordinates] = useState<GeocodingResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Parse gnr/bnr to create Kartverket link
   const getKartverketLink = () => {
@@ -161,20 +191,14 @@ export default function Ks2ProjectMap({ address, gnrBnr, projectName }: Ks2Proje
           </div>
         )}
 
-        {!isLoading && coordinates && (
-          <Suspense fallback={
-            <div className="h-[300px] flex items-center justify-center bg-muted rounded-lg">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          }>
-            <MapComponent
-              lat={coordinates.lat}
-              lon={coordinates.lon}
-              projectName={projectName}
-              address={address}
-              gnrBnr={gnrBnr}
-            />
-          </Suspense>
+        {!isLoading && coordinates && isMounted && (
+          <LeafletMap
+            lat={coordinates.lat}
+            lon={coordinates.lon}
+            projectName={projectName}
+            address={address}
+            gnrBnr={gnrBnr}
+          />
         )}
 
         {gnrBnr && (
