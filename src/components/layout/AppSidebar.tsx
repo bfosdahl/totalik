@@ -47,44 +47,44 @@ import { useModulePricing } from "@/hooks/useModulePricing";
 
 // Standard navigation items - always visible
 const standardNavItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: Settings, label: "Innstillinger", path: "/settings" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/", color: "text-sky-500" },
+  { icon: Settings, label: "Innstillinger", path: "/settings", color: "text-slate-400" },
 ];
 
 // IK/HMS module items - shown in collapsible section
 const ikHmsItems = [
-  { icon: ClipboardList, label: "Oppsett", path: "/setup" },
-  { icon: Shield, label: "Oppsett-hjelperen", path: "/setup/ai" },
-  { icon: AlertTriangle, label: "Risikovurdering", path: "/setup?step=2" },
-  { icon: ListChecks, label: "Handlingsplan", path: "/setup?step=3" },
-  { icon: FlaskConical, label: "Stoffkartotek", path: "/stoffkartotek" },
-  { icon: Scale, label: "Lover og forskrifter", path: "/lover-og-forskrifter" },
-  { icon: AlertTriangle, label: "Avvik", path: "/deviations" },
-  { icon: FileCheck, label: "HMS aktiviteter", path: "/audits" },
-  { icon: BookOpen, label: "Handbok", path: "/handbook" },
-  { icon: FolderOpen, label: "Dokumentsenter", path: "/dokumentsenter" },
-  { icon: MessageCircle, label: "HMS Assistent", path: "/hms-chat" },
+  { icon: ClipboardList, label: "Oppsett", path: "/setup", color: "text-emerald-500" },
+  { icon: Shield, label: "Oppsett-hjelperen", path: "/setup/ai", color: "text-green-500" },
+  { icon: AlertTriangle, label: "Risikovurdering", path: "/setup?step=2", color: "text-orange-500" },
+  { icon: ListChecks, label: "Handlingsplan", path: "/setup?step=3", color: "text-teal-500" },
+  { icon: FlaskConical, label: "Stoffkartotek", path: "/stoffkartotek", color: "text-purple-500" },
+  { icon: Scale, label: "Lover og forskrifter", path: "/lover-og-forskrifter", color: "text-indigo-500" },
+  { icon: AlertTriangle, label: "Avvik", path: "/deviations", color: "text-red-500" },
+  { icon: FileCheck, label: "HMS aktiviteter", path: "/audits", color: "text-blue-500" },
+  { icon: BookOpen, label: "Handbok", path: "/handbook", color: "text-cyan-500" },
+  { icon: FolderOpen, label: "Dokumentsenter", path: "/dokumentsenter", color: "text-amber-500" },
+  { icon: MessageCircle, label: "HMS Assistent", path: "/hms-chat", color: "text-violet-500" },
 ];
 
 // Personaladministrasjon items - standard for all companies
 const personaladministrasjonItems = {
   mineAnsatte: [
-    { icon: Users, label: "Ansattoversikt", path: "/employees" },
-    { icon: FileText, label: "Ansettelsesavtaler", path: "/hr/contracts" },
-    { icon: HeartPulse, label: "Fravær", path: "/hr/absence" },
-    { icon: UserCheck, label: "Medarbeidersamtaler", path: "/hr/meetings" },
-    { icon: BarChart3, label: "Undersøkelser", path: "/hr/surveys" },
-    { icon: CalendarDays, label: "Godkjenn ferie", path: "/time-off?view=admin" },
-    { icon: Calendar, label: "Arbeidsplan", path: "/work-schedule" },
-    { icon: Clock, label: "Godkjenn timer", path: "/time-registration?view=admin" },
-    { icon: ShieldAlert, label: "Anonyme meldinger", path: "/anonymous-messages" },
+    { icon: Users, label: "Ansattoversikt", path: "/employees", color: "text-blue-500" },
+    { icon: FileText, label: "Ansettelsesavtaler", path: "/hr/contracts", color: "text-slate-500" },
+    { icon: HeartPulse, label: "Fravær", path: "/hr/absence", color: "text-rose-500" },
+    { icon: UserCheck, label: "Medarbeidersamtaler", path: "/hr/meetings", color: "text-emerald-500" },
+    { icon: BarChart3, label: "Undersøkelser", path: "/hr/surveys", color: "text-purple-500" },
+    { icon: CalendarDays, label: "Godkjenn ferie", path: "/time-off?view=admin", color: "text-orange-500" },
+    { icon: Calendar, label: "Arbeidsplan", path: "/work-schedule", color: "text-cyan-500" },
+    { icon: Clock, label: "Godkjenn timer", path: "/time-registration?view=admin", color: "text-indigo-500" },
+    { icon: ShieldAlert, label: "Anonyme meldinger", path: "/anonymous-messages", color: "text-amber-500" },
   ],
   mittArbeidsforhold: [
-    { icon: Clock, label: "Mine timer", path: "/time-registration" },
-    { icon: CalendarDays, label: "Min ferie", path: "/time-off" },
-    { icon: HeartPulse, label: "Mitt fravær", path: "/my/absence" },
-    { icon: BarChart3, label: "Min respons", path: "/my/surveys" },
-    { icon: ShieldCheck, label: "Send anonym melding", path: "/anonymous-message", isAction: true },
+    { icon: Clock, label: "Mine timer", path: "/time-registration", color: "text-indigo-500" },
+    { icon: CalendarDays, label: "Min ferie", path: "/time-off", color: "text-orange-500" },
+    { icon: HeartPulse, label: "Mitt fravær", path: "/my/absence", color: "text-rose-500" },
+    { icon: BarChart3, label: "Min respons", path: "/my/surveys", color: "text-purple-500" },
+    { icon: ShieldCheck, label: "Send anonym melding", path: "/anonymous-message", isAction: true, color: "text-teal-500" },
   ],
 };
 
@@ -306,7 +306,8 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               >
                 <item.icon className={cn(
                   "w-5 h-5 flex-shrink-0 transition-transform",
-                  !isActive && "group-hover:scale-110"
+                  !isActive && "group-hover:scale-110",
+                  !isActive && item.color
                 )} />
                 <AnimatePresence mode="wait">
                   {!collapsed && (
@@ -406,7 +407,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                               : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                           )}
                         >
-                          <item.icon className="w-4 h-4 flex-shrink-0" />
+                          <item.icon className={cn("w-4 h-4 flex-shrink-0", !isActive && item.color)} />
                           <span>{item.label}</span>
                         </NavLink>
                       );
@@ -485,7 +486,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                                   : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                               )}
                             >
-                              <item.icon className="w-4 h-4 flex-shrink-0" />
+                              <item.icon className={cn("w-4 h-4 flex-shrink-0", !isActive && item.color)} />
                               <span>{item.label}</span>
                             </NavLink>
                           );
@@ -513,7 +514,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                               "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                             )}
                           >
-                            <item.icon className="w-4 h-4 flex-shrink-0" />
+                            <item.icon className={cn("w-4 h-4 flex-shrink-0", item.color)} />
                             <span>{item.label}</span>
                           </button>
                         );
@@ -530,7 +531,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                               : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                           )}
                         >
-                          <item.icon className="w-4 h-4 flex-shrink-0" />
+                          <item.icon className={cn("w-4 h-4 flex-shrink-0", !isActive && item.color)} />
                           <span>{item.label}</span>
                         </NavLink>
                       );
