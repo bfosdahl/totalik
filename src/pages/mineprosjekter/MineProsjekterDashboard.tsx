@@ -49,12 +49,12 @@ export default function MineProsjekterDashboard() {
     const result = await createProject(data);
     if (result) {
       setDialogOpen(false);
-      navigate(`/mine-prosjekter/${result.id}`);
+      navigate(`/ks/smaaprosjekter/${result.id}`);
     }
   };
 
   const handleProjectClick = (project: SimpleProject) => {
-    navigate(`/mine-prosjekter/${project.id}`);
+    navigate(`/ks/smaaprosjekter/${project.id}`);
   };
 
   return (
@@ -63,9 +63,9 @@ export default function MineProsjekterDashboard() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Mine prosjekter</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Småprosjekter</h1>
             <p className="text-muted-foreground mt-1">
-              Enkel prosjektstyring for småprosjekter
+              Enkel prosjektstyring for mindre jobber
             </p>
           </div>
           <Button onClick={() => setDialogOpen(true)} className="gap-2">

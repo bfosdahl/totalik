@@ -122,9 +122,9 @@ const App = () => (
             <Route path="/ks/project/:projectId/*" element={<ProtectedRoute><Ks2ProjectDetail /></ProtectedRoute>} />
             <Route path="/ks/admin" element={<ProtectedRoute><Ks2Admin /></ProtectedRoute>} />
             
-            {/* Mine prosjekter routes */}
-            <Route path="/mine-prosjekter" element={<ProtectedRoute><MineProsjekterDashboard /></ProtectedRoute>} />
-            <Route path="/mine-prosjekter/:projectId" element={<ProtectedRoute><SimpleProjectDetail /></ProtectedRoute>} />
+            {/* Småprosjekter routes */}
+            <Route path="/ks/smaaprosjekter" element={<ProtectedRoute><MineProsjekterDashboard /></ProtectedRoute>} />
+            <Route path="/ks/smaaprosjekter/:projectId" element={<ProtectedRoute><SimpleProjectDetail /></ProtectedRoute>} />
             
             {/* Admin routes - require system_admin role */}
             <Route path="/admin" element={<ProtectedRoute requireSystemAdmin><AdminDashboard /></ProtectedRoute>} />
