@@ -28,6 +28,7 @@ import Ks2Dashboard from "./pages/ks2/Ks2Dashboard";
 import Ks2ProjectDetail from "./pages/ks2/Ks2ProjectDetail";
 import Ks2Admin from "./pages/ks2/Ks2Admin";
 import Ks2Statistikk from "./pages/ks2/Ks2Statistikk";
+import Ks2Befaring from "./pages/ks2/Ks2Befaring";
 import MineProsjekterDashboard from "./pages/mineprosjekter/MineProsjekterDashboard";
 import SimpleProjectDetail from "./pages/mineprosjekter/SimpleProjectDetail";
 import HmsChat from "./pages/HmsChat";
@@ -121,6 +122,7 @@ const App = () => (
             <Route path="/ks/statistikk" element={<ProtectedRoute><Ks2Statistikk /></ProtectedRoute>} />
             <Route path="/ks/project/:projectId/*" element={<ProtectedRoute><Ks2ProjectDetail /></ProtectedRoute>} />
             <Route path="/ks/admin" element={<ProtectedRoute><Ks2Admin /></ProtectedRoute>} />
+            <Route path="/ks/befaring" element={<ProtectedRoute><Ks2Befaring /></ProtectedRoute>} />
             
             {/* Småprosjekter routes */}
             <Route path="/ks/smaaprosjekter" element={<ProtectedRoute><MineProsjekterDashboard /></ProtectedRoute>} />
