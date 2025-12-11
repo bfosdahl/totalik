@@ -161,12 +161,20 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const [orderDialogOpen, setOrderDialogOpen] = useState(false);
   const [orderModuleType, setOrderModuleType] = useState<string | null>(null);
   
+  // State for showing order option for a specific locked module
+  const [selectedLockedModule, setSelectedLockedModule] = useState<string | null>(null);
+  
   // Check if user can order modules (company_admin or hms_responsible)
   const canOrderModules = isCompanyAdmin;
+  
+  const handleLockedModuleClick = (moduleType: string) => {
+    setSelectedLockedModule(prev => prev === moduleType ? null : moduleType);
+  };
   
   const handleOrderModule = (moduleType: string) => {
     setOrderModuleType(moduleType);
     setOrderDialogOpen(true);
+    setSelectedLockedModule(null);
   };
   
   const handleOrderComplete = () => {
@@ -545,17 +553,15 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           {/* IK/MAT collapsible section - visible but locked if module not active */}
           <div className={cn(!hasIkMat && "opacity-60")}>
             <button
-              onClick={() => hasIkMat && toggleSection('ikMat')}
+              onClick={() => hasIkMat ? toggleSection('ikMat') : handleLockedModuleClick('IK_MAT')}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
                 collapsed && "justify-center",
-                !hasIkMat && "cursor-not-allowed",
                 hasIkMat && location.pathname.startsWith("/ik-mat")
                   ? "text-sidebar-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
-                !hasIkMat && "hover:bg-transparent"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
               )}
-              title={!hasIkMat ? "Denne modulen er ikke aktivert for din bedrift" : undefined}
+              title={!hasIkMat ? "Klikk for å bestille denne modulen" : undefined}
             >
               <ShieldCheck className={cn(
                 "w-5 h-5 flex-shrink-0 transition-transform text-red-500",
@@ -585,26 +591,35 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               </AnimatePresence>
             </button>
             
-            {/* Locked module message with order button */}
-            {!hasIkMat && !collapsed && (
-              <div className="pl-6 pr-3 py-2 space-y-2">
-                {canOrderModules ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleOrderModule("IK_MAT")}
-                    className="w-full justify-start text-xs h-auto py-1.5 text-primary hover:text-primary"
-                  >
-                    <ShoppingCart className="w-3 h-3 mr-2" />
-                    Bestill modul
-                  </Button>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Kontakt bedriftsadmin for å aktivere
-                  </p>
-                )}
-              </div>
-            )}
+            {/* Locked module message with order button - only shown when clicked */}
+            <AnimatePresence>
+              {!hasIkMat && !collapsed && selectedLockedModule === 'IK_MAT' && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-6 pr-3 py-2 space-y-2">
+                    {canOrderModules ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOrderModule("IK_MAT")}
+                        className="w-full justify-start text-xs h-auto py-1.5 text-primary hover:text-primary"
+                      >
+                        <ShoppingCart className="w-3 h-3 mr-2" />
+                        Bestill modul
+                      </Button>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Kontakt bedriftsadmin for å aktivere
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
               
             {/* IK/MAT submenu */}
             <AnimatePresence>
@@ -724,17 +739,15 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           {/* KS Bygg collapsible section - visible but locked if module not active */}
           <div className={cn(!hasKsBygg && "opacity-60")}>
             <button
-              onClick={() => hasKsBygg && toggleSection('ks')}
+              onClick={() => hasKsBygg ? toggleSection('ks') : handleLockedModuleClick('IK_BYGG')}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
                 collapsed && "justify-center",
-                !hasKsBygg && "cursor-not-allowed",
                 hasKsBygg && location.pathname.startsWith("/ks")
                   ? "text-sidebar-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
-                !hasKsBygg && "hover:bg-transparent"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
               )}
-              title={!hasKsBygg ? "Denne modulen er ikke aktivert for din bedrift" : undefined}
+              title={!hasKsBygg ? "Klikk for å bestille denne modulen" : undefined}
             >
               <HardHat className={cn(
                 "w-5 h-5 flex-shrink-0 transition-transform text-purple-500",
@@ -764,26 +777,35 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               </AnimatePresence>
             </button>
             
-            {/* Locked module message with order button */}
-            {!hasKsBygg && !collapsed && (
-              <div className="pl-6 pr-3 py-2 space-y-2">
-                {canOrderModules ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleOrderModule("IK_BYGG")}
-                    className="w-full justify-start text-xs h-auto py-1.5 text-primary hover:text-primary"
-                  >
-                    <ShoppingCart className="w-3 h-3 mr-2" />
-                    Bestill modul
-                  </Button>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Kontakt bedriftsadmin for å aktivere
-                  </p>
-                )}
-              </div>
-            )}
+            {/* Locked module message with order button - only shown when clicked */}
+            <AnimatePresence>
+              {!hasKsBygg && !collapsed && selectedLockedModule === 'IK_BYGG' && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-6 pr-3 py-2 space-y-2">
+                    {canOrderModules ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOrderModule("IK_BYGG")}
+                        className="w-full justify-start text-xs h-auto py-1.5 text-primary hover:text-primary"
+                      >
+                        <ShoppingCart className="w-3 h-3 mr-2" />
+                        Bestill modul
+                      </Button>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Kontakt bedriftsadmin for å aktivere
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
             
             {/* KS Bygg submenu - only when active */}
             <AnimatePresence>
@@ -815,17 +837,15 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           {/* GDPR collapsible section - visible but locked if module not active */}
           <div className={cn(!hasGdpr && "opacity-60")}>
             <button
-              onClick={() => hasGdpr && toggleSection('gdpr')}
+              onClick={() => hasGdpr ? toggleSection('gdpr') : handleLockedModuleClick('GDPR')}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
                 collapsed && "justify-center",
-                !hasGdpr && "cursor-not-allowed",
                 hasGdpr && location.pathname.startsWith("/gdpr")
                   ? "text-sidebar-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
-                !hasGdpr && "hover:bg-transparent"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
               )}
-              title={!hasGdpr ? "Denne modulen er ikke aktivert for din bedrift" : undefined}
+              title={!hasGdpr ? "Klikk for å bestille denne modulen" : undefined}
             >
               <ShieldAlert className={cn(
                 "w-5 h-5 flex-shrink-0 transition-transform",
@@ -854,26 +874,35 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               </AnimatePresence>
             </button>
             
-            {/* Locked module message with order button */}
-            {!hasGdpr && !collapsed && (
-              <div className="pl-6 pr-3 py-2 space-y-2">
-                {canOrderModules ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleOrderModule("GDPR")}
-                    className="w-full justify-start text-xs h-auto py-1.5 text-primary hover:text-primary"
-                  >
-                    <ShoppingCart className="w-3 h-3 mr-2" />
-                    Bestill modul
-                  </Button>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Kontakt bedriftsadmin for å aktivere
-                  </p>
-                )}
-              </div>
-            )}
+            {/* Locked module message with order button - only shown when clicked */}
+            <AnimatePresence>
+              {!hasGdpr && !collapsed && selectedLockedModule === 'GDPR' && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-6 pr-3 py-2 space-y-2">
+                    {canOrderModules ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOrderModule("GDPR")}
+                        className="w-full justify-start text-xs h-auto py-1.5 text-primary hover:text-primary"
+                      >
+                        <ShoppingCart className="w-3 h-3 mr-2" />
+                        Bestill modul
+                      </Button>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Kontakt bedriftsadmin for å aktivere
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
             
             <AnimatePresence>
               {hasGdpr && expandedSections.has('gdpr') && !collapsed && (
@@ -926,17 +955,15 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           {/* Åpenhetsloven collapsible section - visible but locked if module not active */}
           <div className={cn(!hasApenhetsloven && "opacity-60")}>
             <button
-              onClick={() => hasApenhetsloven && toggleSection('apenhetsloven')}
+              onClick={() => hasApenhetsloven ? toggleSection('apenhetsloven') : handleLockedModuleClick('APENHETSLOVEN')}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
                 collapsed && "justify-center",
-                !hasApenhetsloven && "cursor-not-allowed",
                 hasApenhetsloven && location.pathname.startsWith("/apenhetsloven")
                   ? "text-sidebar-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
-                !hasApenhetsloven && "hover:bg-transparent"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
               )}
-              title={!hasApenhetsloven ? "Denne modulen er ikke aktivert for din bedrift" : undefined}
+              title={!hasApenhetsloven ? "Klikk for å bestille denne modulen" : undefined}
             >
               <Scale className={cn(
                 "w-5 h-5 flex-shrink-0 transition-transform",
@@ -965,26 +992,35 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               </AnimatePresence>
             </button>
             
-            {/* Locked module message with order button */}
-            {!hasApenhetsloven && !collapsed && (
-              <div className="pl-6 pr-3 py-2 space-y-2">
-                {canOrderModules ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleOrderModule("APENHETSLOVEN")}
-                    className="w-full justify-start text-xs h-auto py-1.5 text-primary hover:text-primary"
-                  >
-                    <ShoppingCart className="w-3 h-3 mr-2" />
-                    Bestill modul
-                  </Button>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Kontakt bedriftsadmin for å aktivere
-                  </p>
-                )}
-              </div>
-            )}
+            {/* Locked module message with order button - only shown when clicked */}
+            <AnimatePresence>
+              {!hasApenhetsloven && !collapsed && selectedLockedModule === 'APENHETSLOVEN' && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-6 pr-3 py-2 space-y-2">
+                    {canOrderModules ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOrderModule("APENHETSLOVEN")}
+                        className="w-full justify-start text-xs h-auto py-1.5 text-primary hover:text-primary"
+                      >
+                        <ShoppingCart className="w-3 h-3 mr-2" />
+                        Bestill modul
+                      </Button>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Kontakt bedriftsadmin for å aktivere
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
             
             <AnimatePresence>
               {hasApenhetsloven && expandedSections.has('apenhetsloven') && !collapsed && (
