@@ -80,6 +80,7 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
   const { data: inspections, isLoading } = useQuery({
     queryKey: ["simple-project-inspections", projectId],
     queryFn: async () => {
+      if (!projectId) return [];
       const { data, error } = await supabase
         .from("simple_project_inspections")
         .select("*")
@@ -92,6 +93,7 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
         findings: Array.isArray(d.findings) ? d.findings as unknown as Finding[] : []
       })) as Inspection[];
     },
+    enabled: !!projectId,
   });
 
   const createMutation = useMutation({
