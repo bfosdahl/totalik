@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   ArrowLeft, 
   Download, 
@@ -20,7 +22,13 @@ import {
   ExternalLink,
   Save,
   Send,
-  Mail
+  Mail,
+  Monitor,
+  FileUp,
+  Building2,
+  User,
+  Landmark,
+  Trash2
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +38,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { toast } from "sonner";
 import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
+import SignatureCanvas from "react-signature-canvas";
 
 // DIBK official PDF URLs
 const DIBK_PDFS: Record<string, string> = {
@@ -299,6 +308,8 @@ const FORM_FIELDS: Record<string, {
   ],
 };
 
+type FillMode = "online" | "upload";
+
 export default function Ks2ByggesakForm() {
   const { projectId, formId } = useParams<{ projectId: string; formId: string }>();
   const navigate = useNavigate();
@@ -311,6 +322,11 @@ export default function Ks2ByggesakForm() {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [hasChanges, setHasChanges] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [showSignDialog, setShowSignDialog] = useState(false);
+  const [fillMode, setFillMode] = useState<FillMode | null>(null);
+  const [sendTarget, setSendTarget] = useState<"kommune" | "byggherre" | "kunde" | null>(null);
+  
+  const signatureRef = useRef<SignatureCanvas>(null);
 
   const { data: form, isLoading } = useQuery({
     queryKey: ["byggesak-form", formId],
@@ -331,6 +347,10 @@ export default function Ks2ByggesakForm() {
   useEffect(() => {
     if (form?.form_data && Object.keys(form.form_data).length > 0) {
       setFormData(form.form_data as Record<string, string>);
+      // If form already has data, default to online mode
+      if (!fillMode && form.status !== "not_started") {
+        setFillMode("online");
+      }
     } else if (project && company) {
       // Auto-fill from project and company info
       setFormData({
@@ -354,7 +374,7 @@ export default function Ks2ByggesakForm() {
         soker_epost: profile?.email || company?.email || "",
       });
     }
-  }, [form, project, company, profile]);
+  }, [form, project, company, profile, fillMode]);
 
   if (isLoading) {
     return (
@@ -384,17 +404,27 @@ export default function Ks2ByggesakForm() {
       status: form.status === "not_started" ? "draft" : form.status,
     });
     setHasChanges(false);
+    toast.success("Utkast lagret");
   };
 
   const handleSign = async () => {
+    if (!signatureRef.current || signatureRef.current.isEmpty()) {
+      toast.error("Vennligst tegn signaturen din");
+      return;
+    }
+
+    const signatureData = signatureRef.current.toDataURL();
+    
     await updateForm.mutateAsync({
       id: form.id,
-      form_data: formData,
+      form_data: { ...formData, signature: signatureData },
       status: "signed",
       signed_by_name: profile ? `${profile.first_name} ${profile.last_name}` : "Ukjent",
       signed_at: new Date().toISOString(),
     });
-    toast.success("Blankett signert!");
+    
+    setShowSignDialog(false);
+    toast.success("Blankett signert elektronisk!");
     setHasChanges(false);
   };
 
@@ -423,6 +453,11 @@ export default function Ks2ByggesakForm() {
     toast.success("Signert blankett lastet opp!");
   };
 
+  const handleSendTo = (target: "kommune" | "byggherre" | "kunde") => {
+    setSendTarget(target);
+    setShowEmailDialog(true);
+  };
+
   const handleMarkAsSent = async () => {
     await updateForm.mutateAsync({
       id: form.id,
@@ -434,11 +469,6 @@ export default function Ks2ByggesakForm() {
 
   // Generate HTML content for email
   const generateEmailHtml = () => {
-    const fieldLabels = fields.reduce((acc, f) => {
-      acc[f.key] = f.label;
-      return acc;
-    }, {} as Record<string, string>);
-
     let html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #1a1a1a;">${form.form_number} ${form.form_name}</h2>
@@ -446,10 +476,8 @@ export default function Ks2ByggesakForm() {
         <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 20px 0;" />
     `;
 
-    let currentSection = "";
     for (const field of fields) {
       if (field.section === "heading") {
-        currentSection = field.label;
         html += `<h3 style="color: #333; margin-top: 20px; border-bottom: 1px solid #e5e5e5; padding-bottom: 8px;">${field.label}</h3>`;
         continue;
       }
@@ -463,6 +491,16 @@ export default function Ks2ByggesakForm() {
           </p>
         `;
       }
+    }
+
+    // Add signature if exists
+    if (formData.signature) {
+      html += `
+        <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 20px 0;" />
+        <h3 style="color: #333;">Signatur</h3>
+        <img src="${formData.signature}" alt="Signatur" style="max-width: 300px; border: 1px solid #e5e5e5; padding: 10px;" />
+        <p style="color: #666; font-size: 12px;">Signert av: ${form.signed_by_name} - ${form.signed_at ? new Date(form.signed_at).toLocaleDateString("nb-NO") : ""}</p>
+      `;
     }
 
     html += `
@@ -484,6 +522,231 @@ export default function Ks2ByggesakForm() {
     last_name: u.last_name || "",
   })).filter(u => u.email) || [];
 
+  const clearSignature = () => {
+    signatureRef.current?.clear();
+  };
+
+  // Mode selection screen
+  if (!fillMode && form.status === "not_started") {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(`/ks/project/${projectId}/byggesak`)}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">{form.form_number} {form.form_name}</h1>
+            <p className="text-muted-foreground">{project?.project_name}</p>
+          </div>
+        </div>
+
+        {/* Mode Selection */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Velg utfyllingsmetode</CardTitle>
+            <CardDescription>
+              Hvordan ønsker du å fylle ut denne blanketten?
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {/* Online option */}
+              <button
+                onClick={() => setFillMode("online")}
+                className="flex flex-col items-center gap-4 p-6 border-2 rounded-xl hover:border-primary hover:bg-primary/5 transition-all group text-left"
+              >
+                <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <Monitor className="h-8 w-8 text-primary" />
+                </div>
+                <div className="text-center">
+                  <h3 className="font-semibold text-lg">Fyll ut nettbasert</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Fyll ut skjemaet direkte i systemet, signer elektronisk og send til mottaker
+                  </p>
+                </div>
+                <ul className="text-xs text-muted-foreground space-y-1 mt-2">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3 w-3 text-green-500" />
+                    Autofyll fra prosjektinfo
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3 w-3 text-green-500" />
+                    Elektronisk signatur
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3 w-3 text-green-500" />
+                    Send direkte på e-post
+                  </li>
+                </ul>
+              </button>
+
+              {/* Upload option */}
+              <button
+                onClick={() => setFillMode("upload")}
+                className="flex flex-col items-center gap-4 p-6 border-2 rounded-xl hover:border-primary hover:bg-primary/5 transition-all group text-left"
+              >
+                <div className="p-4 rounded-full bg-amber-500/10 group-hover:bg-amber-500/20 transition-colors">
+                  <FileUp className="h-8 w-8 text-amber-600" />
+                </div>
+                <div className="text-center">
+                  <h3 className="font-semibold text-lg">Last ned og fyll ut</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Last ned offisiell PDF, fyll ut manuelt, og last opp signert versjon
+                  </p>
+                </div>
+                <ul className="text-xs text-muted-foreground space-y-1 mt-2">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3 w-3 text-green-500" />
+                    Bruk offisiell DIBK-blankett
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3 w-3 text-green-500" />
+                    Håndskrevet signatur
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3 w-3 text-green-500" />
+                    Skann og last opp
+                  </li>
+                </ul>
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Upload mode
+  if (fillMode === "upload") {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate(`/ks/project/${projectId}/byggesak`)}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold">{form.form_number} {form.form_name}</h1>
+              <p className="text-muted-foreground">{project?.project_name}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setFillMode("online")}>
+              <Monitor className="h-4 w-4 mr-2" />
+              Bytt til nettbasert
+            </Button>
+            <Badge variant={form.status === "uploaded" || form.status === "sent" ? "default" : "secondary"}>
+              {form.status === "not_started" && "Ikke startet"}
+              {form.status === "uploaded" && "Opplastet"}
+              {form.status === "sent" && "Sendt"}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Download and Upload */}
+        <div className="grid gap-6 sm:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Download className="h-5 w-5" />
+                1. Last ned blankett
+              </CardTitle>
+              <CardDescription>
+                Last ned offisiell DIBK-blankett og fyll ut manuelt
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {dibkUrl ? (
+                <Button className="w-full gap-2" asChild>
+                  <a href={dibkUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4" />
+                    Last ned {form.form_number} PDF
+                  </a>
+                </Button>
+              ) : (
+                <p className="text-sm text-muted-foreground">PDF ikke tilgjengelig for dette skjemaet</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                2. Last opp signert versjon
+              </CardTitle>
+              <CardDescription>
+                Skann eller ta bilde av ferdig utfylt blankett
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <label>
+                <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer">
+                  <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm font-medium">Klikk for å laste opp</p>
+                  <p className="text-xs text-muted-foreground">PDF, JPG eller PNG</p>
+                </div>
+                <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={handleUploadSigned} />
+              </label>
+
+              {form.uploaded_file_path && (
+                <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  <span className="text-sm text-green-700 dark:text-green-300">Signert blankett lastet opp</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Send options */}
+        {(form.status === "uploaded" || form.uploaded_file_path) && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Send className="h-5 w-5" />
+                3. Send blankett
+              </CardTitle>
+              <CardDescription>
+                Send til kommune, byggherre eller kunde
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-3">
+                <Button variant="outline" className="gap-2" onClick={() => handleSendTo("kommune")}>
+                  <Landmark className="h-4 w-4" />
+                  Send til kommune
+                </Button>
+                <Button variant="outline" className="gap-2" onClick={() => handleSendTo("byggherre")}>
+                  <Building2 className="h-4 w-4" />
+                  Send til byggherre
+                </Button>
+                <Button variant="outline" className="gap-2" onClick={() => handleSendTo("kunde")}>
+                  <User className="h-4 w-4" />
+                  Send til kunde
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        
+        {/* Email Dialog */}
+        <EmailSendDialog
+          open={showEmailDialog}
+          onOpenChange={setShowEmailDialog}
+          documentType="handbook"
+          subject={`${form.form_number} ${form.form_name} - ${project?.project_name || "Prosjekt"}`}
+          htmlContent={generateEmailHtml()}
+          users={emailUsers}
+          companyName={company?.name}
+        />
+      </div>
+    );
+  }
+
+  // Online mode (default)
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -498,6 +761,12 @@ export default function Ks2ByggesakForm() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {form.status === "not_started" && (
+            <Button variant="outline" size="sm" onClick={() => setFillMode("upload")}>
+              <FileUp className="h-4 w-4 mr-2" />
+              Bytt til nedlasting
+            </Button>
+          )}
           <Badge variant={form.status === "signed" || form.status === "sent" ? "default" : "secondary"}>
             {form.status === "not_started" && "Ikke startet"}
             {form.status === "draft" && "Utkast"}
@@ -507,50 +776,6 @@ export default function Ks2ByggesakForm() {
           </Badge>
         </div>
       </div>
-
-      {/* Actions Bar */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-wrap gap-3">
-            {dibkUrl && (
-              <Button variant="outline" className="gap-2" asChild>
-                <a href={dibkUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4" />
-                  Last ned offisiell PDF
-                </a>
-              </Button>
-            )}
-            <label>
-              <Button variant="outline" className="gap-2" asChild>
-                <span>
-                  <Upload className="h-4 w-4" />
-                  Last opp signert versjon
-                </span>
-              </Button>
-              <input type="file" className="hidden" accept=".pdf,.jpg,.png" onChange={handleUploadSigned} />
-            </label>
-            <Button 
-              variant="outline" 
-              className="gap-2" 
-              onClick={() => setShowEmailDialog(true)}
-              disabled={form.status === "not_started"}
-            >
-              <Mail className="h-4 w-4" />
-              Send på e-post
-            </Button>
-            {form.status === "signed" && (
-              <Button 
-                variant="outline" 
-                className="gap-2"
-                onClick={handleMarkAsSent}
-              >
-                <Send className="h-4 w-4" />
-                Marker som sendt
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Form Fields */}
       <Card>
@@ -647,33 +872,70 @@ export default function Ks2ByggesakForm() {
 
           <Separator className="my-6" />
 
+          {/* Signature display if already signed */}
+          {formData.signature && (
+            <div className="mb-6 p-4 border rounded-lg bg-muted/30">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  Elektronisk signert
+                </h4>
+                <span className="text-sm text-muted-foreground">
+                  {form.signed_by_name} - {form.signed_at && new Date(form.signed_at).toLocaleDateString("nb-NO")}
+                </span>
+              </div>
+              <img src={formData.signature} alt="Signatur" className="max-w-[200px] border rounded p-2 bg-white" />
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-3 justify-end">
             <Button variant="outline" onClick={handleSave} disabled={!hasChanges || updateForm.isPending} className="gap-2">
               <Save className="h-4 w-4" />
               Lagre utkast
             </Button>
-            <Button onClick={handleSign} disabled={updateForm.isPending} className="gap-2">
-              <Pen className="h-4 w-4" />
-              Signer digitalt
-            </Button>
+            {!formData.signature && (
+              <Button onClick={() => setShowSignDialog(true)} disabled={updateForm.isPending} className="gap-2">
+                <Pen className="h-4 w-4" />
+                Signer elektronisk
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Uploaded Document */}
-      {form.uploaded_file_path && (
+      {/* Send options */}
+      {(form.status === "signed" || form.status === "draft") && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
-              Opplastet signert dokument
+            <CardTitle className="flex items-center gap-2">
+              <Send className="h-5 w-5" />
+              Send blankett
             </CardTitle>
+            <CardDescription>
+              Send ferdig utfylt blankett til mottaker
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              Last ned
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button variant="outline" className="gap-2" onClick={() => handleSendTo("kommune")}>
+                <Landmark className="h-4 w-4" />
+                Send til kommune
+              </Button>
+              <Button variant="outline" className="gap-2" onClick={() => handleSendTo("byggherre")}>
+                <Building2 className="h-4 w-4" />
+                Send til byggherre
+              </Button>
+              <Button variant="outline" className="gap-2" onClick={() => handleSendTo("kunde")}>
+                <User className="h-4 w-4" />
+                Send til kunde
+              </Button>
+              {form.status === "signed" && (
+                <Button variant="outline" className="gap-2" onClick={handleMarkAsSent}>
+                  <CheckCircle2 className="h-4 w-4" />
+                  Marker som sendt
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
@@ -695,6 +957,51 @@ export default function Ks2ByggesakForm() {
           </CardContent>
         </Card>
       )}
+
+      {/* Signature Dialog */}
+      <Dialog open={showSignDialog} onOpenChange={setShowSignDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Elektronisk signatur</DialogTitle>
+            <DialogDescription>
+              Tegn signaturen din i feltet nedenfor for å signere blanketten elektronisk
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="border-2 rounded-lg overflow-hidden bg-white">
+              <SignatureCanvas
+                ref={signatureRef}
+                penColor="black"
+                canvasProps={{
+                  width: 400,
+                  height: 200,
+                  className: "w-full"
+                }}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Button variant="outline" size="sm" onClick={clearSignature}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Slett
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Signeres av: {profile?.first_name} {profile?.last_name}
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSignDialog(false)}>
+              Avbryt
+            </Button>
+            <Button onClick={handleSign} disabled={updateForm.isPending}>
+              <Pen className="h-4 w-4 mr-2" />
+              Signer blankett
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Email Dialog */}
       <EmailSendDialog
