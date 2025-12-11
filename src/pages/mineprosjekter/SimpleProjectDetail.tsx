@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft, Save, Trash2, Loader2, Building2, User, Calendar, 
-  FileText, CheckSquare, Users, Receipt, BookOpen, Camera, StickyNote, Clock
+  FileText, CheckSquare, Users, Receipt, BookOpen, Camera, StickyNote, Clock, ClipboardCheck
 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,7 @@ import { SimpleProjectTemplates } from "@/components/mineprosjekter/SimpleProjec
 import { SimpleProjectPhotos } from "@/components/mineprosjekter/SimpleProjectPhotos";
 import { SimpleProjectNotes } from "@/components/mineprosjekter/SimpleProjectNotes";
 import { SimpleProjectTimesheet } from "@/components/mineprosjekter/SimpleProjectTimesheet";
+import { SimpleProjectInspections } from "@/components/mineprosjekter/SimpleProjectInspections";
 
 const statusOptions = [
   { value: "planned", label: "Planlagt" },
@@ -259,6 +260,10 @@ export default function SimpleProjectDetail() {
               <Clock className="w-4 h-4" />
               <span className="hidden sm:inline">Timer</span>
             </TabsTrigger>
+            <TabsTrigger value="inspections" className="gap-2 py-2 px-3">
+              <ClipboardCheck className="w-4 h-4" />
+              <span className="hidden sm:inline">Befaringer</span>
+            </TabsTrigger>
             <TabsTrigger value="documents" className="gap-2 py-2 px-3">
               <FileText className="w-4 h-4" />
               <span className="hidden sm:inline">Dokumenter</span>
@@ -458,6 +463,11 @@ export default function SimpleProjectDetail() {
           {/* Notes Tab */}
           <TabsContent value="notes">
             <SimpleProjectNotes projectId={projectId!} />
+          </TabsContent>
+
+          {/* Inspections Tab */}
+          <TabsContent value="inspections">
+            <SimpleProjectInspections projectId={projectId!} />
           </TabsContent>
 
           {/* Timesheet Tab */}

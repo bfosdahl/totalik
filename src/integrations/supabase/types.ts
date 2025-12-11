@@ -8448,6 +8448,84 @@ export type Database = {
           },
         ]
       }
+      simple_project_inspections: {
+        Row: {
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          created_by_id: string | null
+          created_by_name: string | null
+          findings: Json | null
+          id: string
+          inspection_date: string
+          inspection_number: string
+          location: string | null
+          notes: string | null
+          participants: string | null
+          photos: string[] | null
+          project_id: string
+          status: string
+          title: string
+          updated_at: string
+          weather: string | null
+        }
+        Insert: {
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string | null
+          findings?: Json | null
+          id?: string
+          inspection_date?: string
+          inspection_number: string
+          location?: string | null
+          notes?: string | null
+          participants?: string | null
+          photos?: string[] | null
+          project_id: string
+          status?: string
+          title: string
+          updated_at?: string
+          weather?: string | null
+        }
+        Update: {
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string | null
+          findings?: Json | null
+          id?: string
+          inspection_date?: string
+          inspection_number?: string
+          location?: string | null
+          notes?: string | null
+          participants?: string | null
+          photos?: string[] | null
+          project_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          weather?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simple_project_inspections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "simple_project_inspections_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       survey_responses: {
         Row: {
           company_id: string
@@ -9089,6 +9167,10 @@ export type Database = {
         Returns: undefined
       }
       generate_anonymous_message_number: {
+        Args: { p_company_id: string }
+        Returns: string
+      }
+      generate_inspection_number: {
         Args: { p_company_id: string }
         Returns: string
       }
