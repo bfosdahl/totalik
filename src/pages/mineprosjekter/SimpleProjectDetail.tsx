@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft, Save, Trash2, Loader2, Building2, User, Calendar, 
-  FileText, CheckSquare, Users, Receipt 
+  FileText, CheckSquare, Users, Receipt, BookOpen, Camera, StickyNote, Clock
 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +21,10 @@ import { SimpleProjectDocuments } from "@/components/mineprosjekter/SimpleProjec
 import { SimpleProjectChecklists } from "@/components/mineprosjekter/SimpleProjectChecklists";
 import { SimpleProjectSubcontractors } from "@/components/mineprosjekter/SimpleProjectSubcontractors";
 import { SimpleProjectFinances } from "@/components/mineprosjekter/SimpleProjectFinances";
+import { SimpleProjectTemplates } from "@/components/mineprosjekter/SimpleProjectTemplates";
+import { SimpleProjectPhotos } from "@/components/mineprosjekter/SimpleProjectPhotos";
+import { SimpleProjectNotes } from "@/components/mineprosjekter/SimpleProjectNotes";
+import { SimpleProjectTimesheet } from "@/components/mineprosjekter/SimpleProjectTimesheet";
 
 const statusOptions = [
   { value: "planned", label: "Planlagt" },
@@ -94,7 +98,7 @@ export default function SimpleProjectDetail() {
       } catch (error) {
         console.error("Error fetching project:", error);
         toast.error("Kunne ikke hente prosjekt");
-        navigate("/mine-prosjekter");
+        navigate("/ks/smaaprosjekter");
       } finally {
         setIsLoading(false);
       }
@@ -152,7 +156,7 @@ export default function SimpleProjectDetail() {
 
       if (error) throw error;
       toast.success("Prosjekt slettet");
-      navigate("/mine-prosjekter");
+      navigate("/ks/smaaprosjekter");
     } catch (error) {
       console.error("Error deleting project:", error);
       toast.error("Kunne ikke slette prosjekt");
@@ -184,7 +188,7 @@ export default function SimpleProjectDetail() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/mine-prosjekter")}>
+            <Button variant="ghost" size="icon" onClick={() => navigate("/ks/smaaprosjekter")}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
@@ -230,24 +234,40 @@ export default function SimpleProjectDetail() {
 
         {/* Tabs */}
         <Tabs defaultValue="info" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 h-auto">
-            <TabsTrigger value="info" className="gap-2 py-2">
+          <TabsList className="flex flex-wrap h-auto gap-1 p-1">
+            <TabsTrigger value="info" className="gap-2 py-2 px-3">
               <Building2 className="w-4 h-4" />
               <span className="hidden sm:inline">Info</span>
             </TabsTrigger>
-            <TabsTrigger value="documents" className="gap-2 py-2">
-              <FileText className="w-4 h-4" />
-              <span className="hidden sm:inline">Dokumenter</span>
+            <TabsTrigger value="templates" className="gap-2 py-2 px-3">
+              <BookOpen className="w-4 h-4" />
+              <span className="hidden sm:inline">Malbank</span>
             </TabsTrigger>
-            <TabsTrigger value="checklists" className="gap-2 py-2">
+            <TabsTrigger value="checklists" className="gap-2 py-2 px-3">
               <CheckSquare className="w-4 h-4" />
               <span className="hidden sm:inline">Sjekklister</span>
             </TabsTrigger>
-            <TabsTrigger value="subcontractors" className="gap-2 py-2">
+            <TabsTrigger value="photos" className="gap-2 py-2 px-3">
+              <Camera className="w-4 h-4" />
+              <span className="hidden sm:inline">Bilder</span>
+            </TabsTrigger>
+            <TabsTrigger value="notes" className="gap-2 py-2 px-3">
+              <StickyNote className="w-4 h-4" />
+              <span className="hidden sm:inline">Notater</span>
+            </TabsTrigger>
+            <TabsTrigger value="timesheet" className="gap-2 py-2 px-3">
+              <Clock className="w-4 h-4" />
+              <span className="hidden sm:inline">Timer</span>
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="gap-2 py-2 px-3">
+              <FileText className="w-4 h-4" />
+              <span className="hidden sm:inline">Dokumenter</span>
+            </TabsTrigger>
+            <TabsTrigger value="subcontractors" className="gap-2 py-2 px-3">
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">UE</span>
             </TabsTrigger>
-            <TabsTrigger value="finances" className="gap-2 py-2">
+            <TabsTrigger value="finances" className="gap-2 py-2 px-3">
               <Receipt className="w-4 h-4" />
               <span className="hidden sm:inline">Økonomi</span>
             </TabsTrigger>
@@ -420,14 +440,34 @@ export default function SimpleProjectDetail() {
             </div>
           </TabsContent>
 
-          {/* Documents Tab */}
-          <TabsContent value="documents">
-            <SimpleProjectDocuments projectId={projectId!} />
+          {/* Templates Tab */}
+          <TabsContent value="templates">
+            <SimpleProjectTemplates projectId={projectId!} />
           </TabsContent>
 
           {/* Checklists Tab */}
           <TabsContent value="checklists">
             <SimpleProjectChecklists projectId={projectId!} />
+          </TabsContent>
+
+          {/* Photos Tab */}
+          <TabsContent value="photos">
+            <SimpleProjectPhotos projectId={projectId!} />
+          </TabsContent>
+
+          {/* Notes Tab */}
+          <TabsContent value="notes">
+            <SimpleProjectNotes projectId={projectId!} />
+          </TabsContent>
+
+          {/* Timesheet Tab */}
+          <TabsContent value="timesheet">
+            <SimpleProjectTimesheet projectId={projectId!} />
+          </TabsContent>
+
+          {/* Documents Tab */}
+          <TabsContent value="documents">
+            <SimpleProjectDocuments projectId={projectId!} />
           </TabsContent>
 
           {/* Subcontractors Tab */}
