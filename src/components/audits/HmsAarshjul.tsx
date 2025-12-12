@@ -194,6 +194,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   const navigate = useNavigate();
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
+  const currentMonth = new Date().getMonth() + 1;
 
   const handleActivityClick = (activityId: string) => {
     const routeInfo = activityRoutes[activityId];
@@ -205,7 +206,6 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
       }
     }
   };
-  const currentMonth = new Date().getMonth() + 1;
 
   const activitiesByMonth = useMemo(() => {
     const map: Record<number, Activity[]> = {};
@@ -214,6 +214,13 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
     });
     return map;
   }, []);
+
+  const currentMonthActivities = activitiesByMonth[currentMonth] || [];
+
+  // In compact mode, return null if no activities this month
+  if (compact && currentMonthActivities.length === 0) {
+    return null;
+  }
 
   const displayMonth = selectedMonth || hoveredMonth;
   const displayActivities = displayMonth ? activitiesByMonth[displayMonth] : [];
@@ -346,10 +353,10 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                   {months.find(m => m.id === currentMonth)?.fullName}
                 </p>
                 <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                  {activitiesByMonth[currentMonth]?.length || 0} aktiviteter
+                  {currentMonthActivities.length} aktiviteter
                 </Badge>
               </div>
-              {activitiesByMonth[currentMonth]?.slice(0, 2).map((activity) => (
+              {currentMonthActivities.slice(0, 2).map((activity) => (
                 <div 
                   key={activity.id} 
                   className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
@@ -365,11 +372,6 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                   <ChevronRight className="w-3 h-3 text-muted-foreground shrink-0" />
                 </div>
               ))}
-              {(!activitiesByMonth[currentMonth] || activitiesByMonth[currentMonth].length === 0) && (
-                <p className="text-xs text-muted-foreground text-center py-2">
-                  Ingen aktiviteter denne måneden
-                </p>
-              )}
             </div>
 
             <Button variant="ghost" size="sm" className="mt-3 text-xs w-full" asChild>

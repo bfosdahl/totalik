@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
   FileCheck, 
@@ -68,7 +69,26 @@ const statusConfig = {
 
 const Audits = () => {
   const { audits, isLoading } = useAudits();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("list");
+
+  // Handle ?form= query parameter for direct navigation from HMS Årshjul
+  useEffect(() => {
+    const formType = searchParams.get("form");
+    if (formType) {
+      const tabMapping: Record<string, string> = {
+        "annual-hms-revision": "annual",
+        "vernerunde": "vernerunde",
+        "el-kontroll": "elkontroll",
+        "fysiske-arbeidsforhold": "fysiske",
+        "brannvern": "drift",
+      };
+      const tab = tabMapping[formType];
+      if (tab) {
+        setActiveTab(tab);
+      }
+    }
+  }, [searchParams]);
 
   const formatDate = (dateString: string) => {
     try {
