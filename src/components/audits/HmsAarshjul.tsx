@@ -169,7 +169,11 @@ const months = [
   { id: 12, name: "Des", fullName: "Desember" },
 ];
 
-const HmsAarshjul = () => {
+interface HmsAarshjulProps {
+  compact?: boolean;
+}
+
+const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
   const currentMonth = new Date().getMonth() + 1;
@@ -185,13 +189,168 @@ const HmsAarshjul = () => {
   const displayMonth = selectedMonth || hoveredMonth;
   const displayActivities = displayMonth ? activitiesByMonth[displayMonth] : [];
 
-  // SVG dimensions
-  const size = 340;
+  // SVG dimensions - smaller for compact mode
+  const size = compact ? 220 : 340;
   const center = size / 2;
-  const outerRadius = 150;
-  const innerRadius = 70;
+  const outerRadius = compact ? 95 : 150;
+  const innerRadius = compact ? 45 : 70;
   const labelRadius = (outerRadius + innerRadius) / 2;
 
+  // Compact view for dashboard
+  if (compact) {
+    return (
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-primary/10 rounded-lg">
+              <Calendar className="w-4 h-4 text-primary" />
+            </div>
+            <CardTitle className="text-base">HMS Årshjul</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="flex flex-col items-center">
+            {/* Mini wheel */}
+            <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="mb-3">
+              <circle
+                cx={center}
+                cy={center}
+                r={outerRadius}
+                fill="none"
+                stroke="hsl(var(--border))"
+                strokeWidth="1"
+              />
+              <circle
+                cx={center}
+                cy={center}
+                r={innerRadius}
+                fill="hsl(var(--card))"
+                stroke="hsl(var(--border))"
+                strokeWidth="1"
+              />
+
+              {months.map((month, index) => {
+                const startAngle = (index * 30 - 90) * (Math.PI / 180);
+                const endAngle = ((index + 1) * 30 - 90) * (Math.PI / 180);
+                const midAngle = ((index + 0.5) * 30 - 90) * (Math.PI / 180);
+
+                const x1Outer = center + outerRadius * Math.cos(startAngle);
+                const y1Outer = center + outerRadius * Math.sin(startAngle);
+                const x2Outer = center + outerRadius * Math.cos(endAngle);
+                const y2Outer = center + outerRadius * Math.sin(endAngle);
+                const x1Inner = center + innerRadius * Math.cos(startAngle);
+                const y1Inner = center + innerRadius * Math.sin(startAngle);
+                const x2Inner = center + innerRadius * Math.cos(endAngle);
+                const y2Inner = center + innerRadius * Math.sin(endAngle);
+
+                const labelX = center + labelRadius * Math.cos(midAngle);
+                const labelY = center + labelRadius * Math.sin(midAngle);
+
+                const isCurrentMonth = month.id === currentMonth;
+                const hasActivities = activitiesByMonth[month.id].length > 0;
+
+                const path = `
+                  M ${x1Inner} ${y1Inner}
+                  L ${x1Outer} ${y1Outer}
+                  A ${outerRadius} ${outerRadius} 0 0 1 ${x2Outer} ${y2Outer}
+                  L ${x2Inner} ${y2Inner}
+                  A ${innerRadius} ${innerRadius} 0 0 0 ${x1Inner} ${y1Inner}
+                `;
+
+                return (
+                  <g key={month.id}>
+                    <path
+                      d={path}
+                      fill={
+                        isCurrentMonth
+                          ? "hsl(var(--primary) / 0.2)"
+                          : hasActivities
+                          ? "hsl(var(--muted))"
+                          : "hsl(var(--card))"
+                      }
+                      stroke="hsl(var(--border))"
+                      strokeWidth="1"
+                    />
+                    <text
+                      x={labelX}
+                      y={labelY}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      className="text-[9px] font-medium fill-foreground pointer-events-none select-none"
+                    >
+                      {month.name}
+                    </text>
+                    {hasActivities && (
+                      <circle
+                        cx={center + (outerRadius - 8) * Math.cos(midAngle)}
+                        cy={center + (outerRadius - 8) * Math.sin(midAngle)}
+                        r={3}
+                        fill="hsl(var(--primary))"
+                      />
+                    )}
+                  </g>
+                );
+              })}
+
+              <text
+                x={center}
+                y={center - 5}
+                textAnchor="middle"
+                className="text-xs font-bold fill-foreground"
+              >
+                {new Date().getFullYear()}
+              </text>
+              <text
+                x={center}
+                y={center + 10}
+                textAnchor="middle"
+                className="text-[10px] fill-muted-foreground"
+              >
+                HMS
+              </text>
+            </svg>
+
+            {/* Current month activities */}
+            <div className="w-full space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground">
+                  {months.find(m => m.id === currentMonth)?.fullName}
+                </p>
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                  {activitiesByMonth[currentMonth]?.length || 0} aktiviteter
+                </Badge>
+              </div>
+              {activitiesByMonth[currentMonth]?.slice(0, 2).map((activity) => (
+                <div key={activity.id} className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                  <div className={cn("p-1 rounded shrink-0", activity.color)}>
+                    {activity.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium truncate">{activity.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{activity.responsible}</p>
+                  </div>
+                </div>
+              ))}
+              {(!activitiesByMonth[currentMonth] || activitiesByMonth[currentMonth].length === 0) && (
+                <p className="text-xs text-muted-foreground text-center py-2">
+                  Ingen aktiviteter denne måneden
+                </p>
+              )}
+            </div>
+
+            <Button variant="ghost" size="sm" className="mt-3 text-xs w-full" asChild>
+              <a href="/audits">
+                Se alle aktiviteter
+                <ChevronRight className="w-3 h-3 ml-1" />
+              </a>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Full view
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
