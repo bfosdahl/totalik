@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,22 @@ import {
   ChevronRight,
   Check,
 } from "lucide-react";
+
+// Map activity IDs to their corresponding routes/form types
+const activityRoutes: Record<string, { route: string; formType?: string }> = {
+  "annual-review": { route: "/audits", formType: "annual-hms-revision" },
+  "vernerunde-q1": { route: "/audits", formType: "vernerunde" },
+  "vernerunde-q2": { route: "/audits", formType: "vernerunde" },
+  "vernerunde-q3": { route: "/audits", formType: "vernerunde" },
+  "vernerunde-q4": { route: "/audits", formType: "vernerunde" },
+  "el-kontroll": { route: "/audits", formType: "el-kontroll" },
+  "brannvern": { route: "/audits", formType: "brannvern" },
+  "fysiske-forhold": { route: "/audits", formType: "fysiske-arbeidsforhold" },
+  "stoffkartotek": { route: "/ik-hms/stoffkartotek" },
+  "risikovurdering": { route: "/setup", formType: "risk" },
+  "hms-opplaering": { route: "/employees" },
+  "medarbeidersamtaler": { route: "/hr/meetings" },
+};
 
 interface Activity {
   id: string;
@@ -174,8 +191,20 @@ interface HmsAarshjulProps {
 }
 
 const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
+  const navigate = useNavigate();
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
+
+  const handleActivityClick = (activityId: string) => {
+    const routeInfo = activityRoutes[activityId];
+    if (routeInfo) {
+      if (routeInfo.formType) {
+        navigate(`${routeInfo.route}?form=${routeInfo.formType}`);
+      } else {
+        navigate(routeInfo.route);
+      }
+    }
+  };
   const currentMonth = new Date().getMonth() + 1;
 
   const activitiesByMonth = useMemo(() => {
@@ -321,7 +350,11 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                 </Badge>
               </div>
               {activitiesByMonth[currentMonth]?.slice(0, 2).map((activity) => (
-                <div key={activity.id} className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                <div 
+                  key={activity.id} 
+                  className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
+                  onClick={() => handleActivityClick(activity.id)}
+                >
                   <div className={cn("p-1 rounded shrink-0", activity.color)}>
                     {activity.icon}
                   </div>
@@ -329,6 +362,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                     <p className="text-xs font-medium truncate">{activity.name}</p>
                     <p className="text-[10px] text-muted-foreground">{activity.responsible}</p>
                   </div>
+                  <ChevronRight className="w-3 h-3 text-muted-foreground shrink-0" />
                 </div>
               ))}
               {(!activitiesByMonth[currentMonth] || activitiesByMonth[currentMonth].length === 0) && (
@@ -511,7 +545,8 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                             key={activity.id}
                             initial={{ opacity: 0, x: 10 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg"
+                            className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
+                            onClick={() => handleActivityClick(activity.id)}
                           >
                             <div className={cn("p-2 rounded-lg shrink-0", activity.color)}>
                               {activity.icon}
@@ -530,6 +565,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                                 )}
                               </div>
                             </div>
+                            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
                           </motion.div>
                         ))}
                       </div>
@@ -548,7 +584,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                         <div
                           key={activity.id}
                           className="flex items-center gap-3 p-2 hover:bg-muted/50 rounded-lg transition-colors cursor-pointer"
-                          onClick={() => setSelectedMonth(activity.months[0])}
+                          onClick={() => handleActivityClick(activity.id)}
                         >
                           <div className={cn("p-1.5 rounded shrink-0", activity.color)}>
                             {activity.icon}
