@@ -14,6 +14,7 @@ import {
   Mail,
   Boxes,
   Award,
+  Upload,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { CompanyModulesDialog } from "@/components/admin/CompanyModulesDialog";
+import { BulkCompanyImportDialog } from "@/components/admin/BulkCompanyImportDialog";
 import { applyDefaultHmsSetup } from "@/lib/applyDefaultHmsSetup";
 const companySchema = z.object({
   name: z.string().min(1, "Bedriftsnavn er påkrevd").max(100),
@@ -99,6 +101,9 @@ export default function AdminCompanies() {
   // Modules dialog state
   const [modulesDialogOpen, setModulesDialogOpen] = useState(false);
   const [modulesCompany, setModulesCompany] = useState<any>(null);
+  
+  // Bulk import dialog state
+  const [bulkImportOpen, setBulkImportOpen] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -403,19 +408,28 @@ export default function AdminCompanies() {
               Administrer bedrifter og lisenser
             </p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) {
-              setEditingCompany(null);
-              resetForm();
-            }
-          }}>
-            <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto">
-                <Plus className="w-4 h-4 mr-2" />
-                Ny bedrift
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button 
+              variant="outline" 
+              className="flex-1 sm:flex-none"
+              onClick={() => setBulkImportOpen(true)}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Importer
+            </Button>
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (!open) {
+                setEditingCompany(null);
+                resetForm();
+              }
+            }}>
+              <DialogTrigger asChild>
+                <Button className="flex-1 sm:flex-none">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Ny bedrift
+                </Button>
+              </DialogTrigger>
             <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
               <DialogHeader>
                 <DialogTitle>
@@ -586,6 +600,7 @@ export default function AdminCompanies() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </motion.div>
 
         {/* Search */}
@@ -929,6 +944,13 @@ export default function AdminCompanies() {
           open={modulesDialogOpen}
           onOpenChange={setModulesDialogOpen}
           company={modulesCompany}
+        />
+        
+        {/* Bulk Company Import Dialog */}
+        <BulkCompanyImportDialog
+          open={bulkImportOpen}
+          onOpenChange={setBulkImportOpen}
+          onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-companies"] })}
         />
       </div>
     </AdminLayout>
