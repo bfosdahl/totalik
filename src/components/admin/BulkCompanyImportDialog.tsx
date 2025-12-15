@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Upload, FileSpreadsheet, Check, X, AlertCircle, Download } from "lucide-react";
+import { Upload, FileSpreadsheet, Check, X, AlertCircle, User } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +33,8 @@ interface ParsedCompany {
   city: string;
   email: string;
   phone: string;
-  contactName: string;
+  contactFirstName: string;
+  contactLastName: string;
   isValid: boolean;
   errorMessage?: string;
   isDuplicate?: boolean;
@@ -44,6 +45,8 @@ interface ImportResult {
   name: string;
   success: boolean;
   message: string;
+  userCreated?: boolean;
+  userEmail?: string;
 }
 
 interface BulkCompanyImportDialogProps {
@@ -69,6 +72,7 @@ export function BulkCompanyImportDialog({
   const [importResults, setImportResults] = useState<ImportResult[]>([]);
   const [importProgress, setImportProgress] = useState(0);
   const [existingOrgNumbers, setExistingOrgNumbers] = useState<Set<string>>(new Set());
+  const [createUsers, setCreateUsers] = useState(true);
 
   const resetDialog = () => {
     setStep("upload");
@@ -77,6 +81,7 @@ export function BulkCompanyImportDialog({
     setImportResults([]);
     setImportProgress(0);
     setExistingOrgNumbers(new Set());
+    setCreateUsers(true);
   };
 
   const handleClose = () => {
@@ -140,10 +145,8 @@ export function BulkCompanyImportDialog({
             const city = String(row.Customer_PostalArea || row["Customer_PostalArea"] || "").trim();
             const email = String(row.Customer_Email || row["Customer_Email"] || "").trim();
             const phone = String(row.Customer_Phone || row.Customer_CellPhone || row["Customer_Phone"] || row["Customer_CellPhone"] || "").trim();
-            const contactName = [
-              row.Customer_Name || row["Customer_Name"] || "",
-              row.Customer_SecondName || row["Customer_SecondName"] || "",
-            ].filter(Boolean).join(" ").trim();
+            const contactFirstName = String(row.Customer_Name || row["Customer_Name"] || "").trim();
+            const contactLastName = String(row.Customer_SecondName || row["Customer_SecondName"] || "").trim();
 
             const isDuplicate = existingOrgs.has(orgNumber);
             const isValid = orgNumber.length >= 9 && name.length > 0 && !isDuplicate;
@@ -165,7 +168,8 @@ export function BulkCompanyImportDialog({
               city,
               email,
               phone,
-              contactName,
+              contactFirstName,
+              contactLastName,
               isValid,
               isDuplicate,
               errorMessage,
@@ -255,12 +259,38 @@ export function BulkCompanyImportDialog({
           await applyDefaultHmsSetup(newCompany.id);
         }
 
+        // 4. Create company admin user if enabled and email exists
+        let userCreated = false;
+        let userEmail = "";
+        if (createUsers && company.email) {
+          try {
+            const { error: userError } = await supabase.functions.invoke("invite-user", {
+              body: {
+                email: company.email,
+                firstName: company.contactFirstName || "",
+                lastName: company.contactLastName || "",
+                role: "company_admin",
+                companyId: newCompany.id,
+              },
+            });
+            if (!userError) {
+              userCreated = true;
+              userEmail = company.email;
+            }
+          } catch (userErr) {
+            console.error("Failed to create user:", userErr);
+            // Don't fail the whole import if user creation fails
+          }
+        }
+
         successCount++;
         results.push({
           orgNumber: company.orgNumber,
           name: company.name,
           success: true,
-          message: "Opprettet",
+          message: userCreated ? `Opprettet + bruker (${userEmail})` : "Opprettet",
+          userCreated,
+          userEmail,
         });
       } catch (error: any) {
         failCount++;
@@ -378,15 +408,33 @@ export function BulkCompanyImportDialog({
               </div>
             </div>
 
+            {/* User creation option */}
+            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+              <Checkbox
+                id="create-users"
+                checked={createUsers}
+                onCheckedChange={(checked) => setCreateUsers(checked === true)}
+              />
+              <div className="flex-1">
+                <Label htmlFor="create-users" className="text-sm font-medium cursor-pointer flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Opprett bedriftsadmin for hver bedrift
+                </Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Bruker e-post og kontaktperson fra Excel-filen. Brukere får tilsendt innloggingslenke.
+                </p>
+              </div>
+            </div>
+
             {/* Companies table */}
             <ScrollArea className="flex-1 border rounded-lg">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[100px]">Status</TableHead>
+                    <TableHead className="w-[80px]">Status</TableHead>
                     <TableHead>Org.nr</TableHead>
                     <TableHead>Bedrift</TableHead>
-                    <TableHead className="hidden md:table-cell">Sted</TableHead>
+                    <TableHead className="hidden md:table-cell">Kontakt</TableHead>
                     <TableHead className="hidden lg:table-cell">E-post</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -410,14 +458,14 @@ export function BulkCompanyImportDialog({
                       <TableCell className="font-mono text-xs">
                         {company.orgNumber}
                       </TableCell>
-                      <TableCell className="font-medium text-sm max-w-[200px] truncate">
+                      <TableCell className="font-medium text-sm max-w-[180px] truncate">
                         {company.name}
                       </TableCell>
-                      <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                        {company.city || "-"}
+                      <TableCell className="hidden md:table-cell text-sm text-muted-foreground max-w-[120px] truncate">
+                        {[company.contactFirstName, company.contactLastName].filter(Boolean).join(" ") || "-"}
                       </TableCell>
                       <TableCell className="hidden lg:table-cell text-sm text-muted-foreground max-w-[180px] truncate">
-                        {company.email || "-"}
+                        {company.email || <span className="text-amber-500 text-xs">Mangler</span>}
                       </TableCell>
                     </TableRow>
                   ))}

@@ -57,6 +57,12 @@ serve(async (req) => {
       });
     }
 
+    // Get the request body first to check for companyId
+    const { email, firstName, lastName, role, companyId: requestedCompanyId } = await req.json();
+
+    // Check if system admin (can specify any company)
+    const isSystemAdmin = roles?.some(r => r.role === "system_admin");
+
     // Get the requesting user's company
     const { data: requestingProfile } = await supabaseAdmin
       .from("profiles")
@@ -64,8 +70,16 @@ serve(async (req) => {
       .eq("user_id", requestingUser.id)
       .single();
 
-    if (!requestingProfile?.company_id) {
-      return new Response(JSON.stringify({ error: "No company associated with user" }), {
+    // Determine which company to use
+    let targetCompanyId = requestingProfile?.company_id;
+    
+    // System admins can specify a different company
+    if (isSystemAdmin && requestedCompanyId) {
+      targetCompanyId = requestedCompanyId;
+    }
+
+    if (!targetCompanyId) {
+      return new Response(JSON.stringify({ error: "No company specified" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -75,10 +89,8 @@ serve(async (req) => {
     const { data: company } = await supabaseAdmin
       .from("companies")
       .select("name")
-      .eq("id", requestingProfile.company_id)
+      .eq("id", targetCompanyId)
       .single();
-
-    const { email, firstName, lastName, role } = await req.json();
 
     // Validate input
     if (!email || !email.includes("@")) {
@@ -100,7 +112,7 @@ serve(async (req) => {
         .eq("user_id", existingUser.id)
         .single();
 
-      if (existingProfile?.company_id === requestingProfile.company_id) {
+      if (existingProfile?.company_id === targetCompanyId) {
         return new Response(JSON.stringify({ error: "User is already in this company" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -139,7 +151,7 @@ serve(async (req) => {
     const { error: profileError } = await supabaseAdmin
       .from("profiles")
       .update({ 
-        company_id: requestingProfile.company_id,
+        company_id: targetCompanyId,
         first_name: firstName || null,
         last_name: lastName || null,
       })
