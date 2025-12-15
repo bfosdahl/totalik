@@ -582,6 +582,7 @@ export type Database = {
           city: string | null
           created_at: string
           email: string | null
+          has_departments: boolean
           id: string
           logo_url: string | null
           name: string
@@ -601,6 +602,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           email?: string | null
+          has_departments?: boolean
           id?: string
           logo_url?: string | null
           name: string
@@ -620,6 +622,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           email?: string | null
+          has_departments?: boolean
           id?: string
           logo_url?: string | null
           name?: string
@@ -662,6 +665,53 @@ export type Database = {
             foreignKeyName: "company_action_plans_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_departments: {
+        Row: {
+          address: string | null
+          city: string | null
+          company_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          postal_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          company_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          postal_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          postal_code?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_departments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -8947,6 +8997,45 @@ export type Database = {
           {
             foreignKeyName: "transparency_act_requests_handled_by_id_fkey"
             columns: ["handled_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_departments: {
+        Row: {
+          created_at: string
+          department_id: string
+          id: string
+          is_department_admin: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          department_id: string
+          id?: string
+          is_department_admin?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: string
+          id?: string
+          is_department_admin?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_departments_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_departments_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

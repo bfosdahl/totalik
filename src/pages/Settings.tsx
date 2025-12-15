@@ -10,7 +10,8 @@ import {
   ChevronRight,
   LucideIcon,
   Download,
-  Smartphone
+  Smartphone,
+  Layers
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -20,9 +21,10 @@ import { UserManagementSettings } from "@/components/settings/UserManagementSett
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { CustomizationSettings } from "@/components/settings/CustomizationSettings";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
+import { DepartmentSettings } from "@/components/settings/DepartmentSettings";
 import { SettingsPlaceholder } from "@/components/settings/SettingsPlaceholder";
 
-type SettingsSection = "main" | "company" | "users" | "notifications" | "security" | "customization" | "data";
+type SettingsSection = "main" | "company" | "users" | "departments" | "notifications" | "security" | "customization" | "data";
 
 interface SettingsSectionConfig {
   id: SettingsSection;
@@ -43,6 +45,12 @@ const settingsSections: SettingsSectionConfig[] = [
     icon: Users,
     title: "Brukere og tilgang",
     description: "Administrer brukere og tilgangsrettigheter",
+  },
+  {
+    id: "departments",
+    icon: Layers,
+    title: "Avdelinger",
+    description: "Organiser bedriften i avdelinger",
   },
   {
     id: "notifications",
@@ -125,6 +133,16 @@ const Settings = () => {
       <AppLayout>
         <div className="max-w-3xl mx-auto">
           <SecuritySettings onBack={goBack} />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (activeSection === "departments") {
+    return (
+      <AppLayout>
+        <div className="max-w-3xl mx-auto">
+          <DepartmentSettings onBack={goBack} />
         </div>
       </AppLayout>
     );

@@ -27,6 +27,7 @@ interface CompanyInfo {
   phone: string | null;
   email: string | null;
   accent_color: string | null;
+  has_departments: boolean;
 }
 
 interface GuestAccessInfo {
