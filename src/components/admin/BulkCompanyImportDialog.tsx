@@ -143,7 +143,7 @@ export function BulkCompanyImportDialog({
 
             const postalCode = String(row.Customer_ZipCode || row["Customer_ZipCode"] || "").trim();
             const city = String(row.Customer_PostalArea || row["Customer_PostalArea"] || "").trim();
-            const email = String(row.Customer_Email || row["Customer_Email"] || "").trim();
+            const email = String(row.Customer_Email || row["Customer_Email"] || "").trim().replace(/\\/g, "");
             const phone = String(row.Customer_Phone || row.Customer_CellPhone || row["Customer_Phone"] || row["Customer_CellPhone"] || "").trim();
             const contactFirstName = String(row.Customer_Name || row["Customer_Name"] || "").trim();
             const contactLastName = String(row.Customer_SecondName || row["Customer_SecondName"] || "").trim();
