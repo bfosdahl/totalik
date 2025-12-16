@@ -66,28 +66,30 @@ const CHECKLIST_CATEGORIES: Record<string, string> = {
   general: "Generelt",
 };
 
-const DOCUMENT_CATEGORIES: Record<string, string> = {
-  checklist: "Sjekkliste-mal",
-  form: "Skjema",
-  routine: "Rutine",
-  building_case: "Byggesak",
-  contract: "Kontrakt",
-  samsvar: "Samsvarserklæring",
-  nabovarsel: "Nabovarsel",
-  fdv: "FDV",
-  other: "Annet",
-};
-
-const DOCUMENT_CATEGORY_CONFIG: Record<string, { label: string; icon: typeof FileText; color: string }> = {
-  checklist: { label: "Sjekkliste-mal", icon: ClipboardList, color: "text-primary" },
-  form: { label: "Skjema", icon: FileText, color: "text-blue-500" },
-  routine: { label: "Rutine", icon: BookOpen, color: "text-purple-500" },
-  building_case: { label: "Byggesak", icon: FolderOpen, color: "text-orange-500" },
-  contract: { label: "Kontrakt", icon: FileText, color: "text-emerald-500" },
-  samsvar: { label: "Samsvarserklæring", icon: CheckCircle2, color: "text-green-500" },
-  nabovarsel: { label: "Nabovarsel", icon: FileText, color: "text-yellow-500" },
-  fdv: { label: "FDV", icon: File, color: "text-cyan-500" },
-  other: { label: "Annet", icon: File, color: "text-muted-foreground" },
+// Dynamically get category config with fallback colors
+const getCategoryConfig = (category: string): { label: string; icon: typeof FileText; color: string } => {
+  const categoryColors = [
+    "text-primary",
+    "text-blue-500",
+    "text-purple-500",
+    "text-orange-500",
+    "text-emerald-500",
+    "text-green-500",
+    "text-yellow-500",
+    "text-cyan-500",
+    "text-pink-500",
+    "text-indigo-500",
+  ];
+  
+  // Hash the category name to get a consistent color
+  const hash = category.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const colorIndex = hash % categoryColors.length;
+  
+  return {
+    label: category,
+    icon: FolderOpen,
+    color: categoryColors[colorIndex],
+  };
 };
 
 const ROUTINE_CATEGORIES: Record<string, string> = {
@@ -1016,51 +1018,56 @@ export default function Ks2Malbibliotek() {
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {Object.entries(DOCUMENT_CATEGORY_CONFIG).map(([categoryKey, config]) => {
-                const categoryDocs = documents.filter(doc => {
-                  const matchesCategory = (doc.category || 'other') === categoryKey;
-                  const matchesSearch = !searchQuery || 
-                    doc.document_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    (doc.description?.toLowerCase().includes(searchQuery.toLowerCase()));
-                  return matchesCategory && matchesSearch;
-                });
+              {(() => {
+                // Get unique categories from documents
+                const uniqueCategories = [...new Set(documents.map(d => d.category || 'Annet'))].sort();
                 
-                if (categoryDocs.length === 0) return null;
-                
-                const isExpanded = expandedDocCategories[categoryKey] ?? false;
-                const addedCount = categoryDocs.filter(d => addedDocumentIds.includes(d.id)).length;
-                const CategoryIcon = config.icon;
-                
-                return (
-                  <Collapsible
-                    key={categoryKey}
-                    open={isExpanded}
-                    onOpenChange={(open) => setExpandedDocCategories(prev => ({ ...prev, [categoryKey]: open }))}
-                    className="md:col-span-1"
-                  >
-                    <Card className="overflow-hidden">
-                      <CollapsibleTrigger asChild>
-                        <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pb-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className={cn("p-2 rounded-lg bg-muted", config.color)}>
-                                <CategoryIcon className="h-5 w-5" />
+                return uniqueCategories.map((categoryKey) => {
+                  const config = getCategoryConfig(categoryKey);
+                  const categoryDocs = documents.filter(doc => {
+                    const matchesCategory = (doc.category || 'Annet') === categoryKey;
+                    const matchesSearch = !searchQuery || 
+                      doc.document_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      (doc.description?.toLowerCase().includes(searchQuery.toLowerCase()));
+                    return matchesCategory && matchesSearch;
+                  });
+                  
+                  if (categoryDocs.length === 0) return null;
+                  
+                  const isExpanded = expandedDocCategories[categoryKey] ?? false;
+                  const addedCount = categoryDocs.filter(d => addedDocumentIds.includes(d.id)).length;
+                  const CategoryIcon = config.icon;
+                  
+                  return (
+                    <Collapsible
+                      key={categoryKey}
+                      open={isExpanded}
+                      onOpenChange={(open) => setExpandedDocCategories(prev => ({ ...prev, [categoryKey]: open }))}
+                      className="md:col-span-1"
+                    >
+                      <Card className="overflow-hidden">
+                        <CollapsibleTrigger asChild>
+                          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pb-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className={cn("p-2 rounded-lg bg-muted", config.color)}>
+                                  <CategoryIcon className="h-5 w-5" />
+                                </div>
+                                <div>
+                                  <CardTitle className="text-base">{config.label}</CardTitle>
+                                  <p className="text-sm text-muted-foreground">
+                                    {categoryDocs.length} dokument{categoryDocs.length !== 1 ? 'er' : ''}
+                                    {addedCount > 0 && (
+                                      <span className="text-amber-600 ml-2">
+                                        • {addedCount} lagt til
+                                      </span>
+                                    )}
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <CardTitle className="text-base">{config.label}</CardTitle>
-                                <p className="text-sm text-muted-foreground">
-                                  {categoryDocs.length} dokument{categoryDocs.length !== 1 ? 'er' : ''}
-                                  {addedCount > 0 && (
-                                    <span className="text-amber-600 ml-2">
-                                      • {addedCount} lagt til
-                                    </span>
-                                  )}
-                                </p>
-                              </div>
-                            </div>
-                            {isExpanded ? (
-                              <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                            ) : (
+                              {isExpanded ? (
+                                <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                              ) : (
                               <ChevronRight className="h-5 w-5 text-muted-foreground" />
                             )}
                           </div>
@@ -1159,7 +1166,7 @@ export default function Ks2Malbibliotek() {
                     </Card>
                   </Collapsible>
                 );
-              })}
+              })})()}
             </div>
           )}
         </TabsContent>
