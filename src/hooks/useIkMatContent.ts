@@ -32,12 +32,35 @@ export const calculateRiskLevel = (probability: number, consequence: number): nu
   return probability * consequence;
 };
 
+// Traffic light system for IK/MAT
+export type TrafficLight = 'green' | 'yellow' | 'red';
+
+export const getTrafficLight = (riskLevel: number): TrafficLight => {
+  if (riskLevel <= 4) return 'green';
+  if (riskLevel <= 9) return 'yellow';
+  return 'red';
+};
+
+export const getTrafficLightLabel = (light: TrafficLight): string => {
+  switch (light) {
+    case 'green': return 'Akseptabel';
+    case 'yellow': return 'Tiltak nødvendig';
+    case 'red': return 'Umiddelbar handling';
+  }
+};
+
+export const getTrafficLightDescription = (light: TrafficLight): string => {
+  switch (light) {
+    case 'green': return 'Risikoen er akseptabel. Overvåk og vurder jevnlig.';
+    case 'yellow': return 'Tiltak må iverksettes innen rimelig tid for å redusere risikoen.';
+    case 'red': return 'Umiddelbar handling påkrevd. Risikoen må reduseres før aktiviteten kan fortsette.';
+  }
+};
+
 // Helper function to get risk level label
 export const getRiskLevelLabel = (level: number): string => {
-  if (level <= 4) return 'Lav';
-  if (level <= 9) return 'Middels';
-  if (level <= 15) return 'Høy';
-  return 'Kritisk';
+  const light = getTrafficLight(level);
+  return getTrafficLightLabel(light);
 };
 
 // Helper function to get risk level color variant
@@ -67,10 +90,13 @@ export interface IkMatRoutine {
 
 export interface IkMatActionItem {
   id: string;
+  riskId?: string; // Link to risk that triggered this action
   action: string;
   responsible: string;
   deadline: string;
   status: 'pending' | 'in_progress' | 'completed';
+  completedDate?: string;
+  notes?: string;
 }
 
 export interface IkMatContent {
@@ -198,11 +224,28 @@ export const useIkMatContent = () => {
     }
   };
 
+  // Helper to add action item for a specific risk
+  const addActionForRisk = async (risk: IkMatRisk, actionText?: string) => {
+    const newAction: IkMatActionItem = {
+      id: `action-${Date.now()}`,
+      riskId: risk.id,
+      action: actionText || `Tiltak for: ${risk.hazard}`,
+      responsible: '',
+      deadline: '',
+      status: 'pending',
+    };
+    
+    const updatedActionPlan = [...content.actionPlan, newAction];
+    await saveContent('actionPlan', updatedActionPlan);
+    return newAction;
+  };
+
   return {
     content,
     isLoading,
     isSaving,
     saveContent,
     refetch: fetchContent,
+    addActionForRisk,
   };
 };
