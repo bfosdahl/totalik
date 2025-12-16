@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   BookOpen,
   Plus,
@@ -30,6 +31,25 @@ import {
   Shield,
   FolderOpen,
   Building2,
+  Search,
+  ChevronDown,
+  ChevronRight,
+  Hammer,
+  Droplets,
+  Zap,
+  Flame,
+  HardHat,
+  Home,
+  Wrench,
+  FileCheck,
+  ClipboardCheck,
+  FileArchive,
+  Settings,
+  ScrollText,
+  Users,
+  ShieldCheck,
+  Truck,
+  LayoutGrid,
 } from "lucide-react";
 import {
   useAdminKsTemplates,
@@ -55,6 +75,46 @@ const EXAMPLE_CONTENT_LEVELS = [
   { value: "medium", label: "Medium - Inkluderer byggherre, underleverandører" },
   { value: "full", label: "Full - Alt innhold (møtereferater, økonomi, avvik, etc.)" },
 ];
+
+// Category configurations for visual display
+const CHECKLIST_CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
+  "Tømrerarbeid": { label: "Tømrerarbeid", icon: Hammer, color: "bg-amber-500" },
+  "Våtrom": { label: "Våtrom", icon: Droplets, color: "bg-blue-500" },
+  "Elektro": { label: "Elektro", icon: Zap, color: "bg-yellow-500" },
+  "Rørlegger": { label: "Rørlegger", icon: Flame, color: "bg-orange-500" },
+  "Betong": { label: "Betong", icon: HardHat, color: "bg-gray-500" },
+  "Tak": { label: "Tak", icon: Home, color: "bg-slate-500" },
+  "Generell": { label: "Generell", icon: ClipboardList, color: "bg-primary" },
+  "Maling": { label: "Maling", icon: Wrench, color: "bg-purple-500" },
+  "Ventilasjon": { label: "Ventilasjon", icon: Settings, color: "bg-teal-500" },
+};
+
+const ROUTINE_CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
+  "Kvalitetsstyring": { label: "Kvalitetsstyring", icon: ShieldCheck, color: "bg-blue-500" },
+  "Avvikshåndtering": { label: "Avvikshåndtering", icon: AlertTriangle, color: "bg-red-500" },
+  "Dokumentstyring": { label: "Dokumentstyring", icon: FileArchive, color: "bg-purple-500" },
+  "HMS": { label: "HMS", icon: Shield, color: "bg-green-500" },
+  "Underleverandør": { label: "Underleverandør", icon: Truck, color: "bg-orange-500" },
+  "Kunnskap": { label: "Kunnskap", icon: BookOpen, color: "bg-indigo-500" },
+  "Organisasjon": { label: "Organisasjon", icon: Users, color: "bg-teal-500" },
+  "Generell": { label: "Generell", icon: ScrollText, color: "bg-gray-500" },
+};
+
+const DOCUMENT_CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
+  "Byggesak": { label: "Byggesak", icon: Building2, color: "bg-blue-500" },
+  "Kontrakter": { label: "Kontrakter", icon: FileCheck, color: "bg-green-500" },
+  "HMS-dokumenter": { label: "HMS-dokumenter", icon: Shield, color: "bg-red-500" },
+  "Maler": { label: "Maler", icon: FileText, color: "bg-purple-500" },
+  "Veiledere": { label: "Veiledere", icon: BookOpen, color: "bg-amber-500" },
+  "Skjemaer": { label: "Skjemaer", icon: ClipboardCheck, color: "bg-teal-500" },
+  "Generell": { label: "Generell", icon: FolderOpen, color: "bg-gray-500" },
+};
+
+const getDefaultCategoryConfig = (category: string) => ({
+  label: category,
+  icon: FolderOpen,
+  color: "bg-muted-foreground",
+});
 
 export default function AdminKsPanel() {
   const { profile } = useAuth();
@@ -91,6 +151,11 @@ export default function AdminKsPanel() {
   const [editingChecklist, setEditingChecklist] = useState<AdminChecklistTemplate | null>(null);
   const [editingRoutine, setEditingRoutine] = useState<AdminRoutineTemplate | null>(null);
   const [editingProjectType, setEditingProjectType] = useState<AdminProjectTypeTemplate | null>(null);
+
+  // Search and filter state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   // Custom category state
   const [checklistCustomCategoryMode, setChecklistCustomCategoryMode] = useState(false);
@@ -148,6 +213,58 @@ export default function AdminKsPanel() {
     selectedRoutineIds: [] as string[],
     selectedDocumentIds: [] as string[],
   });
+
+  // Group items by category
+  const checklistsByCategory = useMemo(() => {
+    const grouped: Record<string, AdminChecklistTemplate[]> = {};
+    const filteredTemplates = checklistTemplates.filter(t =>
+      searchQuery === "" || t.template_name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    filteredTemplates.forEach(template => {
+      const cat = template.category || "Generell";
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(template);
+    });
+    return grouped;
+  }, [checklistTemplates, searchQuery]);
+
+  const routinesByCategory = useMemo(() => {
+    const grouped: Record<string, AdminRoutineTemplate[]> = {};
+    const filteredRoutines = routineTemplates.filter(t =>
+      searchQuery === "" || t.routine_name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    filteredRoutines.forEach(routine => {
+      const cat = routine.category || "Generell";
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(routine);
+    });
+    return grouped;
+  }, [routineTemplates, searchQuery]);
+
+  const documentsByCategory = useMemo(() => {
+    const grouped: Record<string, typeof documents> = {};
+    const filteredDocs = documents.filter(d =>
+      searchQuery === "" || d.document_name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    filteredDocs.forEach(doc => {
+      const cat = doc.category || "Generell";
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(doc);
+    });
+    return grouped;
+  }, [documents, searchQuery]);
+
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(category)) {
+        newSet.delete(category);
+      } else {
+        newSet.add(category);
+      }
+      return newSet;
+    });
+  };
 
   const resetChecklistForm = () => {
     setChecklistForm({
@@ -456,6 +573,9 @@ export default function AdminKsPanel() {
     mandatoryRoutines: routineTemplates.filter((t) => t.is_mandatory).length,
     totalDocuments: documents.length,
     mandatoryDocuments: documents.filter((d) => d.is_mandatory).length,
+    checklistCategories: Object.keys(checklistsByCategory).length,
+    routineCategories: Object.keys(routinesByCategory).length,
+    documentCategories: Object.keys(documentsByCategory).length,
   };
 
   if (isLoading) {
@@ -467,6 +587,222 @@ export default function AdminKsPanel() {
       </AdminLayout>
     );
   }
+
+  // Render category card component
+  const renderChecklistCategoryCard = (category: string, templates: AdminChecklistTemplate[]) => {
+    const config = CHECKLIST_CATEGORY_CONFIG[category] || getDefaultCategoryConfig(category);
+    const Icon = config.icon;
+    const isExpanded = expandedCategories.has(`checklist-${category}`);
+    const mandatoryCount = templates.filter(t => t.is_mandatory).length;
+
+    return (
+      <Card key={category} className="overflow-hidden">
+        <Collapsible open={isExpanded} onOpenChange={() => toggleCategory(`checklist-${category}`)}>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${config.color}`}>
+                    <Icon className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base">{config.label}</CardTitle>
+                    <CardDescription className="text-xs">
+                      {templates.length} maler{mandatoryCount > 0 && ` • ${mandatoryCount} obligatoriske`}
+                    </CardDescription>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">{templates.length}</Badge>
+                  {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </div>
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0 pb-4">
+              <div className="space-y-2">
+                {templates.map(template => (
+                  <div key={template.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-sm truncate">{template.template_name}</span>
+                        <Badge variant="outline" className="text-xs">v{template.version}</Badge>
+                        {template.is_mandatory && (
+                          <Badge variant="destructive" className="text-xs gap-1">
+                            <AlertTriangle className="h-3 w-3" />
+                            Obligatorisk
+                          </Badge>
+                        )}
+                        {template.is_locked && (
+                          <Badge variant="secondary" className="text-xs gap-1">
+                            <Lock className="h-3 w-3" />
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {template.checkpoints.length} sjekkpunkter
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditChecklist(template)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteChecklistTemplate.mutate(template.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+    );
+  };
+
+  const renderRoutineCategoryCard = (category: string, routines: AdminRoutineTemplate[]) => {
+    const config = ROUTINE_CATEGORY_CONFIG[category] || getDefaultCategoryConfig(category);
+    const Icon = config.icon;
+    const isExpanded = expandedCategories.has(`routine-${category}`);
+    const mandatoryCount = routines.filter(r => r.is_mandatory).length;
+
+    return (
+      <Card key={category} className="overflow-hidden">
+        <Collapsible open={isExpanded} onOpenChange={() => toggleCategory(`routine-${category}`)}>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${config.color}`}>
+                    <Icon className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base">{config.label}</CardTitle>
+                    <CardDescription className="text-xs">
+                      {routines.length} rutiner{mandatoryCount > 0 && ` • ${mandatoryCount} obligatoriske`}
+                    </CardDescription>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">{routines.length}</Badge>
+                  {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </div>
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0 pb-4">
+              <div className="space-y-2">
+                {routines.map(routine => (
+                  <div key={routine.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-sm truncate">{routine.routine_name}</span>
+                        <Badge variant="outline" className="text-xs">v{routine.version}</Badge>
+                        {routine.is_mandatory && (
+                          <Badge variant="destructive" className="text-xs gap-1">
+                            <AlertTriangle className="h-3 w-3" />
+                            Obligatorisk
+                          </Badge>
+                        )}
+                        {routine.is_locked && (
+                          <Badge variant="secondary" className="text-xs gap-1">
+                            <Lock className="h-3 w-3" />
+                          </Badge>
+                        )}
+                      </div>
+                      {routine.description && (
+                        <p className="text-xs text-muted-foreground mt-1 truncate">{routine.description}</p>
+                      )}
+                    </div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditRoutine(routine)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteRoutineTemplate.mutate(routine.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+    );
+  };
+
+  const renderDocumentCategoryCard = (category: string, docs: typeof documents) => {
+    const config = DOCUMENT_CATEGORY_CONFIG[category] || getDefaultCategoryConfig(category);
+    const Icon = config.icon;
+    const isExpanded = expandedCategories.has(`document-${category}`);
+    const mandatoryCount = docs.filter(d => d.is_mandatory).length;
+
+    return (
+      <Card key={category} className="overflow-hidden">
+        <Collapsible open={isExpanded} onOpenChange={() => toggleCategory(`document-${category}`)}>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${config.color}`}>
+                    <Icon className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base">{config.label}</CardTitle>
+                    <CardDescription className="text-xs">
+                      {docs.length} dokumenter{mandatoryCount > 0 && ` • ${mandatoryCount} obligatoriske`}
+                    </CardDescription>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">{docs.length}</Badge>
+                  {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </div>
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0 pb-4">
+              <div className="space-y-2">
+                {docs.map(doc => (
+                  <div key={doc.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <span className="font-medium text-sm truncate">{doc.document_name}</span>
+                        <Badge variant="outline" className="text-xs">v{doc.version}</Badge>
+                        <Badge variant="secondary" className="text-xs">{doc.document_type}</Badge>
+                        {doc.is_mandatory && (
+                          <Badge variant="destructive" className="text-xs gap-1">
+                            <AlertTriangle className="h-3 w-3" />
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {doc.uploaded_by_name} • {format(new Date(doc.created_at), "d. MMM yyyy", { locale: nb })}
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleViewDocument(doc.file_path)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteDocument.mutate({ id: doc.id, filePath: doc.file_path })}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+    );
+  };
 
   return (
     <AdminLayout>
@@ -490,44 +826,75 @@ export default function AdminKsPanel() {
           </Badge>
         </div>
 
-        {/* Stats */}
+        {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <Card>
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold">{stats.totalChecklists}</div>
+              <div className="flex items-center gap-2">
+                <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                <div className="text-2xl font-bold">{stats.totalChecklists}</div>
+              </div>
               <p className="text-xs text-muted-foreground">Sjekkliste-maler</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-orange-500">{stats.mandatoryChecklists}</div>
-              <p className="text-xs text-muted-foreground">Obligatoriske</p>
+              <div className="flex items-center gap-2">
+                <LayoutGrid className="h-4 w-4 text-muted-foreground" />
+                <div className="text-2xl font-bold">{stats.checklistCategories}</div>
+              </div>
+              <p className="text-xs text-muted-foreground">Kategorier</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold">{stats.totalRoutines}</div>
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-muted-foreground" />
+                <div className="text-2xl font-bold">{stats.totalRoutines}</div>
+              </div>
               <p className="text-xs text-muted-foreground">Rutine-maler</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-orange-500">{stats.mandatoryRoutines}</div>
-              <p className="text-xs text-muted-foreground">Obligatoriske</p>
+              <div className="flex items-center gap-2">
+                <LayoutGrid className="h-4 w-4 text-muted-foreground" />
+                <div className="text-2xl font-bold">{stats.routineCategories}</div>
+              </div>
+              <p className="text-xs text-muted-foreground">Kategorier</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold">{stats.totalDocuments}</div>
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <div className="text-2xl font-bold">{stats.totalDocuments}</div>
+              </div>
               <p className="text-xs text-muted-foreground">Dokumenter</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-orange-500">{stats.mandatoryDocuments}</div>
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-orange-500" />
+                <div className="text-2xl font-bold text-orange-500">
+                  {stats.mandatoryChecklists + stats.mandatoryRoutines + stats.mandatoryDocuments}
+                </div>
+              </div>
               <p className="text-xs text-muted-foreground">Obligatoriske</p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Søk i maler og dokumenter..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
         </div>
 
         {/* Main Tabs */}
@@ -540,18 +907,18 @@ export default function AdminKsPanel() {
             </TabsTrigger>
             <TabsTrigger value="checklists" className="gap-2">
               <ClipboardList className="h-4 w-4" />
-              <span className="hidden sm:inline">Sjekkliste-maler</span>
+              <span className="hidden sm:inline">Sjekklister</span>
               <span className="sm:hidden">Sjekklister</span>
             </TabsTrigger>
             <TabsTrigger value="routines" className="gap-2">
               <BookOpen className="h-4 w-4" />
-              <span className="hidden sm:inline">Rutine-maler</span>
+              <span className="hidden sm:inline">Rutiner</span>
               <span className="sm:hidden">Rutiner</span>
             </TabsTrigger>
             <TabsTrigger value="documents" className="gap-2">
               <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Dokumentbank</span>
-              <span className="sm:hidden">Dokumenter</span>
+              <span className="hidden sm:inline">Dokumenter</span>
+              <span className="sm:hidden">Dok</span>
             </TabsTrigger>
           </TabsList>
 
@@ -709,7 +1076,7 @@ export default function AdminKsPanel() {
           <TabsContent value="checklists" className="space-y-4">
             <div className="flex justify-between items-center">
               <p className="text-sm text-muted-foreground">
-                {checklistTemplates.length} maler totalt
+                {checklistTemplates.length} maler i {stats.checklistCategories} kategorier
               </p>
               <Dialog open={showNewChecklistDialog} onOpenChange={(open) => {
                 setShowNewChecklistDialog(open);
@@ -823,7 +1190,7 @@ export default function AdminKsPanel() {
                           />
                           <Label className="flex items-center gap-1.5 text-sm">
                             <AlertTriangle className="h-3.5 w-3.5 text-orange-500" />
-                            Obligatorisk for alle kunder
+                            Obligatorisk
                           </Label>
                         </div>
                         <div className="flex items-center gap-2">
@@ -833,7 +1200,7 @@ export default function AdminKsPanel() {
                           />
                           <Label className="flex items-center gap-1.5 text-sm">
                             <Lock className="h-3.5 w-3.5" />
-                            Låst (kan ikke redigeres av kunde)
+                            Låst
                           </Label>
                         </div>
                       </div>
@@ -844,22 +1211,22 @@ export default function AdminKsPanel() {
                         <div className="flex items-center justify-between">
                           <Label>Sjekkpunkter</Label>
                           <Button type="button" variant="outline" size="sm" onClick={addCheckpoint}>
-                            <Plus className="h-3.5 w-3.5 mr-1" />
+                            <Plus className="h-4 w-4 mr-1" />
                             Legg til
                           </Button>
                         </div>
-                        {checklistForm.checkpoints.map((cp, index) => (
+                        {checklistForm.checkpoints.map((checkpoint, index) => (
                           <div key={index} className="flex gap-2 items-start">
                             <div className="flex-1 space-y-2">
                               <Input
-                                value={cp.checkpoint_text}
+                                placeholder="Sjekkpunkt tekst"
+                                value={checkpoint.checkpoint_text}
                                 onChange={(e) => updateCheckpoint(index, "checkpoint_text", e.target.value)}
-                                placeholder={`Sjekkpunkt ${index + 1}`}
                               />
                               <Input
-                                value={cp.help_text || ""}
+                                placeholder="Hjelpetekst (valgfritt)"
+                                value={checkpoint.help_text}
                                 onChange={(e) => updateCheckpoint(index, "help_text", e.target.value)}
-                                placeholder="Hjelpetekst (valgfri)"
                                 className="text-sm"
                               />
                             </div>
@@ -893,67 +1260,25 @@ export default function AdminKsPanel() {
               </Dialog>
             </div>
 
-            <div className="grid gap-4">
-              {checklistTemplates.map((template) => (
-                <Card key={template.id}>
-                  <CardContent className="pt-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-medium">{template.template_name}</h3>
-                          <Badge variant="outline" className="text-xs">v{template.version}</Badge>
-                          {template.is_mandatory && (
-                            <Badge variant="destructive" className="text-xs gap-1">
-                              <AlertTriangle className="h-3 w-3" />
-                              Obligatorisk
-                            </Badge>
-                          )}
-                          {template.is_locked && (
-                            <Badge variant="secondary" className="text-xs gap-1">
-                              <Lock className="h-3 w-3" />
-                              Låst
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">{template.category}</p>
-                        {template.description && (
-                          <p className="text-sm text-muted-foreground mt-1">{template.description}</p>
-                        )}
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {template.checkpoints.length} sjekkpunkter
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEditChecklist(template)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => deleteChecklistTemplate.mutate(template.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              {checklistTemplates.length === 0 && (
-                <Card>
-                  <CardContent className="py-8 text-center text-muted-foreground">
-                    Ingen sjekkliste-maler opprettet ennå
-                  </CardContent>
-                </Card>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Object.entries(checklistsByCategory).map(([category, templates]) =>
+                renderChecklistCategoryCard(category, templates)
               )}
             </div>
+            {Object.keys(checklistsByCategory).length === 0 && (
+              <Card>
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  Ingen sjekkliste-maler funnet
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Routines Tab */}
           <TabsContent value="routines" className="space-y-4">
             <div className="flex justify-between items-center">
               <p className="text-sm text-muted-foreground">
-                {routineTemplates.length} rutiner totalt
+                {routineTemplates.length} rutiner i {stats.routineCategories} kategorier
               </p>
               <Dialog open={showNewRoutineDialog} onOpenChange={(open) => {
                 setShowNewRoutineDialog(open);
@@ -971,7 +1296,7 @@ export default function AdminKsPanel() {
                       {editingRoutine ? "Rediger rutine-mal" : "Ny rutine-mal"}
                     </DialogTitle>
                     <DialogDescription>
-                      Opprett en standardisert rutine som alle kunder kan bruke
+                      Opprett en standardisert kvalitetsrutine
                     </DialogDescription>
                   </DialogHeader>
                   <ScrollArea className="max-h-[60vh] pr-4">
@@ -982,7 +1307,7 @@ export default function AdminKsPanel() {
                           <Input
                             value={routineForm.routine_name}
                             onChange={(e) => setRoutineForm({ ...routineForm, routine_name: e.target.value })}
-                            placeholder="F.eks. Kontroll av underentreprenører"
+                            placeholder="F.eks. Avvikshåndtering"
                           />
                         </div>
                         <div className="space-y-2">
@@ -1077,7 +1402,7 @@ export default function AdminKsPanel() {
                           />
                           <Label className="flex items-center gap-1.5 text-sm">
                             <AlertTriangle className="h-3.5 w-3.5 text-orange-500" />
-                            Obligatorisk for alle kunder
+                            Obligatorisk
                           </Label>
                         </div>
                         <div className="flex items-center gap-2">
@@ -1087,7 +1412,7 @@ export default function AdminKsPanel() {
                           />
                           <Label className="flex items-center gap-1.5 text-sm">
                             <Lock className="h-3.5 w-3.5" />
-                            Låst (kan ikke redigeres av kunde)
+                            Låst
                           </Label>
                         </div>
                       </div>
@@ -1108,64 +1433,25 @@ export default function AdminKsPanel() {
               </Dialog>
             </div>
 
-            <div className="grid gap-4">
-              {routineTemplates.map((routine) => (
-                <Card key={routine.id}>
-                  <CardContent className="pt-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-medium">{routine.routine_name}</h3>
-                          <Badge variant="outline" className="text-xs">v{routine.version}</Badge>
-                          {routine.is_mandatory && (
-                            <Badge variant="destructive" className="text-xs gap-1">
-                              <AlertTriangle className="h-3 w-3" />
-                              Obligatorisk
-                            </Badge>
-                          )}
-                          {routine.is_locked && (
-                            <Badge variant="secondary" className="text-xs gap-1">
-                              <Lock className="h-3 w-3" />
-                              Låst
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">{routine.category}</p>
-                        {routine.description && (
-                          <p className="text-sm text-muted-foreground mt-1">{routine.description}</p>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEditRoutine(routine)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => deleteRoutineTemplate.mutate(routine.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              {routineTemplates.length === 0 && (
-                <Card>
-                  <CardContent className="py-8 text-center text-muted-foreground">
-                    Ingen rutine-maler opprettet ennå
-                  </CardContent>
-                </Card>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Object.entries(routinesByCategory).map(([category, routines]) =>
+                renderRoutineCategoryCard(category, routines)
               )}
             </div>
+            {Object.keys(routinesByCategory).length === 0 && (
+              <Card>
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  Ingen rutine-maler funnet
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Documents Tab */}
           <TabsContent value="documents" className="space-y-4">
             <div className="flex justify-between items-center">
               <p className="text-sm text-muted-foreground">
-                {documents.length} dokumenter totalt
+                {documents.length} dokumenter i {stats.documentCategories} kategorier
               </p>
               <Dialog open={showUploadDialog} onOpenChange={(open) => {
                 setShowUploadDialog(open);
@@ -1310,56 +1596,18 @@ export default function AdminKsPanel() {
               </Dialog>
             </div>
 
-            <div className="grid gap-4">
-              {documents.map((doc) => (
-                <Card key={doc.id}>
-                  <CardContent className="pt-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <h3 className="font-medium">{doc.document_name}</h3>
-                          <Badge variant="outline" className="text-xs">v{doc.version}</Badge>
-                          <Badge variant="secondary" className="text-xs">{doc.document_type}</Badge>
-                          {doc.is_mandatory && (
-                            <Badge variant="destructive" className="text-xs gap-1">
-                              <AlertTriangle className="h-3 w-3" />
-                              Obligatorisk
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">{doc.category}</p>
-                        {doc.description && (
-                          <p className="text-sm text-muted-foreground mt-1">{doc.description}</p>
-                        )}
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Lastet opp av {doc.uploaded_by_name} • {format(new Date(doc.created_at), "d. MMMM yyyy", { locale: nb })}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleViewDocument(doc.file_path)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => deleteDocument.mutate({ id: doc.id, filePath: doc.file_path })}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              {documents.length === 0 && (
-                <Card>
-                  <CardContent className="py-8 text-center text-muted-foreground">
-                    Ingen dokumenter lastet opp ennå
-                  </CardContent>
-                </Card>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Object.entries(documentsByCategory).map(([category, docs]) =>
+                renderDocumentCategoryCard(category, docs)
               )}
             </div>
+            {Object.keys(documentsByCategory).length === 0 && (
+              <Card>
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  Ingen dokumenter funnet
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
