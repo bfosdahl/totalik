@@ -25,6 +25,8 @@ export interface IkMatRisk {
   riskLevel: number; // 1-25 (auto-calculated: probability * consequence)
   measures: string;
   isHaccp: boolean; // HACCP kritisk kontrollpunkt
+  controlDate?: string; // Dato for kontroll
+  frequency?: string; // Hyppighet: daily, weekly, monthly, quarterly, yearly
 }
 
 // Helper function to calculate risk level

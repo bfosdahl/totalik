@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ShieldAlert, Plus, Trash2, Save, Loader2, AlertTriangle, CirclePlus, Info, ClipboardList, Link2 } from "lucide-react";
+import { ShieldAlert, Plus, Trash2, Save, Loader2, AlertTriangle, CirclePlus, Info, ClipboardList, Link2, Calendar } from "lucide-react";
 import { toast } from "sonner";
 
 // 5x5 Matrix options
@@ -30,6 +30,15 @@ const STATUS_OPTIONS = [
   { value: 'pending', label: 'Ikke startet', variant: 'secondary' as const },
   { value: 'in_progress', label: 'Pågår', variant: 'default' as const },
   { value: 'completed', label: 'Fullført', variant: 'outline' as const },
+];
+
+const FREQUENCY_OPTIONS = [
+  { value: 'daily', label: 'Daglig' },
+  { value: 'weekly', label: 'Ukentlig' },
+  { value: 'monthly', label: 'Månedlig' },
+  { value: 'quarterly', label: 'Kvartalsvis' },
+  { value: 'biannually', label: 'Halvårlig' },
+  { value: 'yearly', label: 'Årlig' },
 ];
 
 const IkMatRisikoOgTiltak = () => {
@@ -472,6 +481,36 @@ const IkMatRisikoOgTiltak = () => {
                                   <div className={`h-3 w-3 rounded-full ${getTrafficLightCircle(risk.riskLevel)}`} />
                                   {risk.probability} × {risk.consequence} = {risk.riskLevel}
                                 </div>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <Label className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  Neste kontroll
+                                </Label>
+                                <Input
+                                  type="date"
+                                  value={risk.controlDate || ''}
+                                  onChange={(e) => handleUpdateRisk(risk.id, 'controlDate', e.target.value)}
+                                  className="mt-1"
+                                />
+                              </div>
+                              <div>
+                                <Label>Kontrollhyppighet</Label>
+                                <Select
+                                  value={risk.frequency || ''}
+                                  onValueChange={(value) => handleUpdateRisk(risk.id, 'frequency', value)}
+                                >
+                                  <SelectTrigger className="mt-1">
+                                    <SelectValue placeholder="Velg hyppighet" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {FREQUENCY_OPTIONS.map(opt => (
+                                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
                               </div>
                             </div>
                             <div>
