@@ -53,6 +53,11 @@ import IkMatRenholdsplan from "./pages/IkMatRenholdsplan";
 import IkMatAllergener from "./pages/IkMatAllergener";
 import IkMatFasteAvtaler from "./pages/IkMatFasteAvtaler";
 import IkMatSporbarhet from "./pages/IkMatSporbarhet";
+import IkMatMaal from "./pages/IkMatMaal";
+import IkMatOrganisasjon from "./pages/IkMatOrganisasjon";
+import IkMatRutiner from "./pages/IkMatRutiner";
+import IkMatHandlingsplan from "./pages/IkMatHandlingsplan";
+import IkMatRisikoOgHaccp from "./pages/IkMatRisikoOgHaccp";
 import IkHmsOppsett from "./pages/IkHmsOppsett";
 import IkHmsStoffkartotek from "./pages/IkHmsStoffkartotek";
 import IkHmsDokumentsenter from "./pages/IkHmsDokumentsenter";
@@ -107,8 +112,12 @@ const App = () => (
             
           <Route path="/ik-mat/handbok" element={<ProtectedRoute><IkMatHandbok /></ProtectedRoute>} />
           <Route path="/ik-mat/oppsett" element={<ProtectedRoute><IkMatOppsett /></ProtectedRoute>} />
+          <Route path="/ik-mat/maal" element={<ProtectedRoute><IkMatMaal /></ProtectedRoute>} />
+          <Route path="/ik-mat/organisasjon" element={<ProtectedRoute><IkMatOrganisasjon /></ProtectedRoute>} />
+          <Route path="/ik-mat/risikovurdering" element={<ProtectedRoute><IkMatRisikoOgHaccp /></ProtectedRoute>} />
+          <Route path="/ik-mat/rutiner" element={<ProtectedRoute><IkMatRutiner /></ProtectedRoute>} />
+          <Route path="/ik-mat/handlingsplan" element={<ProtectedRoute><IkMatHandlingsplan /></ProtectedRoute>} />
           <Route path="/ik-mat/haccp" element={<ProtectedRoute><IkMatHaccp /></ProtectedRoute>} />
-          <Route path="/ik-mat/risikovurdering" element={<ProtectedRoute><IkMatRisikovurdering /></ProtectedRoute>} />
           <Route path="/ik-mat/sjekklister" element={<ProtectedRoute><IkMatSjekklister /></ProtectedRoute>} />
           <Route path="/ik-mat/renholdsplan" element={<ProtectedRoute><IkMatRenholdsplan /></ProtectedRoute>} />
           <Route path="/ik-mat/allergener" element={<ProtectedRoute><IkMatAllergener /></ProtectedRoute>} />
