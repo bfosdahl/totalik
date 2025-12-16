@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AccentColorProvider } from "@/components/AccentColorProvider";
@@ -56,8 +56,7 @@ import IkMatSporbarhet from "./pages/IkMatSporbarhet";
 import IkMatMaal from "./pages/IkMatMaal";
 import IkMatOrganisasjon from "./pages/IkMatOrganisasjon";
 import IkMatRutiner from "./pages/IkMatRutiner";
-import IkMatHandlingsplan from "./pages/IkMatHandlingsplan";
-import IkMatRisikoOgHaccp from "./pages/IkMatRisikoOgHaccp";
+import IkMatRisikoOgTiltak from "./pages/IkMatRisikoOgTiltak";
 import IkHmsOppsett from "./pages/IkHmsOppsett";
 import IkHmsStoffkartotek from "./pages/IkHmsStoffkartotek";
 import IkHmsDokumentsenter from "./pages/IkHmsDokumentsenter";
@@ -114,9 +113,10 @@ const App = () => (
           <Route path="/ik-mat/oppsett" element={<ProtectedRoute><IkMatOppsett /></ProtectedRoute>} />
           <Route path="/ik-mat/maal" element={<ProtectedRoute><IkMatMaal /></ProtectedRoute>} />
           <Route path="/ik-mat/organisasjon" element={<ProtectedRoute><IkMatOrganisasjon /></ProtectedRoute>} />
-          <Route path="/ik-mat/risikovurdering" element={<ProtectedRoute><IkMatRisikoOgHaccp /></ProtectedRoute>} />
+          <Route path="/ik-mat/risiko-og-tiltak" element={<ProtectedRoute><IkMatRisikoOgTiltak /></ProtectedRoute>} />
+          <Route path="/ik-mat/risikovurdering" element={<Navigate to="/ik-mat/risiko-og-tiltak" replace />} />
+          <Route path="/ik-mat/handlingsplan" element={<Navigate to="/ik-mat/risiko-og-tiltak" replace />} />
           <Route path="/ik-mat/rutiner" element={<ProtectedRoute><IkMatRutiner /></ProtectedRoute>} />
-          <Route path="/ik-mat/handlingsplan" element={<ProtectedRoute><IkMatHandlingsplan /></ProtectedRoute>} />
           <Route path="/ik-mat/haccp" element={<ProtectedRoute><IkMatHaccp /></ProtectedRoute>} />
           <Route path="/ik-mat/sjekklister" element={<ProtectedRoute><IkMatSjekklister /></ProtectedRoute>} />
           <Route path="/ik-mat/renholdsplan" element={<ProtectedRoute><IkMatRenholdsplan /></ProtectedRoute>} />
