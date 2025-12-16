@@ -651,18 +651,29 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                       )}
                     >
-                      Oppsett
+                      Oppsett-hjelperen
                     </NavLink>
                     <NavLink
-                      to="/ik-mat/haccp"
+                      to="/ik-mat/maal"
                       className={cn(
                         "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ik-mat/haccp"
+                        location.pathname === "/ik-mat/maal"
                           ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
                           : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                       )}
                     >
-                      HACCP / KKP
+                      Målsetting
+                    </NavLink>
+                    <NavLink
+                      to="/ik-mat/organisasjon"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-mat/organisasjon"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Organisasjonskart
                     </NavLink>
                     <NavLink
                       to="/ik-mat/risikovurdering"
@@ -673,7 +684,29 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                       )}
                     >
-                      Risikovurdering
+                      Risikovurdering & HACCP
+                    </NavLink>
+                    <NavLink
+                      to="/ik-mat/rutiner"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-mat/rutiner"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Rutiner
+                    </NavLink>
+                    <NavLink
+                      to="/ik-mat/handlingsplan"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-mat/handlingsplan"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Handlingsplan
                     </NavLink>
                     <NavLink
                       to="/ik-mat/sjekklister"
