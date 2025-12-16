@@ -30,7 +30,10 @@ import {
   Edit,
   PenLine,
   Play,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Ks2ChecklistWizard, PreSelectedTemplate } from "@/components/ks2/Ks2ChecklistWizard";
 import { useAdminTemplatesForCustomers, AdminChecklistTemplate, AdminRoutineTemplate, AdminDocument } from "@/hooks/useAdminTemplatesForCustomers";
 import { useKsModule2ProjectTemplates } from "@/hooks/useKsModule2ProjectTemplates";
@@ -73,6 +76,18 @@ const DOCUMENT_CATEGORIES: Record<string, string> = {
   nabovarsel: "Nabovarsel",
   fdv: "FDV",
   other: "Annet",
+};
+
+const DOCUMENT_CATEGORY_CONFIG: Record<string, { label: string; icon: typeof FileText; color: string }> = {
+  checklist: { label: "Sjekkliste-mal", icon: ClipboardList, color: "text-primary" },
+  form: { label: "Skjema", icon: FileText, color: "text-blue-500" },
+  routine: { label: "Rutine", icon: BookOpen, color: "text-purple-500" },
+  building_case: { label: "Byggesak", icon: FolderOpen, color: "text-orange-500" },
+  contract: { label: "Kontrakt", icon: FileText, color: "text-emerald-500" },
+  samsvar: { label: "Samsvarserklæring", icon: CheckCircle2, color: "text-green-500" },
+  nabovarsel: { label: "Nabovarsel", icon: FileText, color: "text-yellow-500" },
+  fdv: { label: "FDV", icon: File, color: "text-cyan-500" },
+  other: { label: "Annet", icon: File, color: "text-muted-foreground" },
 };
 
 const ROUTINE_CATEGORIES: Record<string, string> = {
@@ -140,6 +155,7 @@ export default function Ks2Malbibliotek() {
   const [selectedRoutineCategory, setSelectedRoutineCategory] = useState<string>("all");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [addDialogType, setAddDialogType] = useState<'checklist' | 'routine' | 'document'>('checklist');
+  const [expandedDocCategories, setExpandedDocCategories] = useState<Record<string, boolean>>({});
 
   // Dialog states
   const [selectedChecklist, setSelectedChecklist] = useState<AdminChecklistTemplate | null>(null);
@@ -991,120 +1007,157 @@ export default function Ks2Malbibliotek() {
 
         {/* Documents Tab */}
         <TabsContent value="documents" className="space-y-4">
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={selectedDocumentCategory === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedDocumentCategory("all")}
-            >
-              Alle
-            </Button>
-            {documentCategoriesInUse.map((cat) => (
-              <Button
-                key={cat}
-                variant={selectedDocumentCategory === cat ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedDocumentCategory(cat)}
-              >
-                {DOCUMENT_CATEGORIES[cat || 'other'] || cat}
-              </Button>
-            ))}
-          </div>
-
-          {filteredDocuments.length === 0 ? (
+          {documents.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Ingen dokumenter funnet</p>
+                <p>Ingen dokumenter tilgjengelig</p>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredDocuments.map((doc) => {
-                const isAdded = addedDocumentIds.includes(doc.id);
-                const projectTemplate = projectDocuments.find(
-                  pt => pt.admin_document_id === doc.id
-                );
-
+            <div className="grid gap-4 md:grid-cols-2">
+              {Object.entries(DOCUMENT_CATEGORY_CONFIG).map(([categoryKey, config]) => {
+                const categoryDocs = documents.filter(doc => {
+                  const matchesCategory = (doc.category || 'other') === categoryKey;
+                  const matchesSearch = !searchQuery || 
+                    doc.document_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    (doc.description?.toLowerCase().includes(searchQuery.toLowerCase()));
+                  return matchesCategory && matchesSearch;
+                });
+                
+                if (categoryDocs.length === 0) return null;
+                
+                const isExpanded = expandedDocCategories[categoryKey] ?? false;
+                const addedCount = categoryDocs.filter(d => addedDocumentIds.includes(d.id)).length;
+                const CategoryIcon = config.icon;
+                
                 return (
-                  <Card key={doc.id} className={cn(
-                    "hover:shadow-md transition-shadow relative",
-                    isAdded && "ring-2 ring-amber-500/50"
-                  )}>
-                    {isAdded && (
-                      <div className="absolute -top-2 -right-2 bg-amber-500 text-white rounded-full p-1">
-                        <Check className="h-3 w-3" />
-                      </div>
-                    )}
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start gap-3">
-                        {getFileIcon(doc.file_type)}
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base truncate">{doc.document_name}</CardTitle>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {doc.category && (
-                              <Badge variant="secondary">
-                                {DOCUMENT_CATEGORIES[doc.category] || doc.category}
-                              </Badge>
-                            )}
-                            {doc.is_mandatory && (
-                              <Badge variant="destructive" className="gap-1">
-                                <AlertCircle className="h-3 w-3" />
-                                Obligatorisk
-                              </Badge>
+                  <Collapsible
+                    key={categoryKey}
+                    open={isExpanded}
+                    onOpenChange={(open) => setExpandedDocCategories(prev => ({ ...prev, [categoryKey]: open }))}
+                    className="md:col-span-1"
+                  >
+                    <Card className="overflow-hidden">
+                      <CollapsibleTrigger asChild>
+                        <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pb-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className={cn("p-2 rounded-lg bg-muted", config.color)}>
+                                <CategoryIcon className="h-5 w-5" />
+                              </div>
+                              <div>
+                                <CardTitle className="text-base">{config.label}</CardTitle>
+                                <p className="text-sm text-muted-foreground">
+                                  {categoryDocs.length} dokument{categoryDocs.length !== 1 ? 'er' : ''}
+                                  {addedCount > 0 && (
+                                    <span className="text-amber-600 ml-2">
+                                      • {addedCount} lagt til
+                                    </span>
+                                  )}
+                                </p>
+                              </div>
+                            </div>
+                            {isExpanded ? (
+                              <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="h-5 w-5 text-muted-foreground" />
                             )}
                           </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {doc.description && (
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                          {doc.description}
-                        </p>
-                      )}
-                      <div className="flex items-center justify-between">
-                        {doc.version && (
-                          <span className="text-xs text-muted-foreground">
-                            v{doc.version}
-                          </span>
-                        )}
-                        <div className="flex gap-2 ml-auto">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="gap-1"
-                            onClick={() => handleDownloadDocument(doc)}
-                          >
-                            <Download className="h-3 w-3" />
-                            Last ned
-                          </Button>
-                          {isAdded ? (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="gap-1 text-destructive hover:text-destructive"
-                              onClick={() => projectTemplate && removeTemplate(projectTemplate.id)}
-                              disabled={isSaving}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          ) : (
-                            <Button 
-                              size="sm" 
-                              className="gap-1"
-                              onClick={() => addDocument(doc.id)}
-                              disabled={isSaving}
-                            >
-                              <Plus className="h-3 w-3" />
-                              Legg til
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        </CardHeader>
+                      </CollapsibleTrigger>
+                      
+                      <CollapsibleContent>
+                        <CardContent className="pt-0">
+                          <div className="divide-y">
+                            {categoryDocs.map((doc) => {
+                              const isAdded = addedDocumentIds.includes(doc.id);
+                              const projectTemplate = projectDocuments.find(
+                                pt => pt.admin_document_id === doc.id
+                              );
+                              
+                              return (
+                                <div 
+                                  key={doc.id} 
+                                  className={cn(
+                                    "py-3 first:pt-0 last:pb-0",
+                                    isAdded && "bg-amber-50/50 dark:bg-amber-950/20 -mx-4 px-4 rounded"
+                                  )}
+                                >
+                                  <div className="flex items-start gap-3">
+                                    {getFileIcon(doc.file_type)}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-medium text-sm truncate">
+                                          {doc.document_name}
+                                        </span>
+                                        {isAdded && (
+                                          <Badge variant="secondary" className="bg-amber-100 text-amber-700 text-xs">
+                                            <Check className="h-3 w-3 mr-1" />
+                                            Lagt til
+                                          </Badge>
+                                        )}
+                                        {doc.is_mandatory && (
+                                          <Badge variant="destructive" className="text-xs">
+                                            Obligatorisk
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      {doc.description && (
+                                        <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                                          {doc.description}
+                                        </p>
+                                      )}
+                                      <div className="flex items-center gap-2 mt-2">
+                                        {doc.version && (
+                                          <span className="text-xs text-muted-foreground">
+                                            v{doc.version}
+                                          </span>
+                                        )}
+                                        <div className="flex gap-1 ml-auto">
+                                          <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            className="h-7 text-xs"
+                                            onClick={() => handleDownloadDocument(doc)}
+                                          >
+                                            <Download className="h-3 w-3 mr-1" />
+                                            Last ned
+                                          </Button>
+                                          {isAdded ? (
+                                            <Button 
+                                              variant="ghost" 
+                                              size="sm"
+                                              className="h-7 text-xs text-destructive hover:text-destructive"
+                                              onClick={() => projectTemplate && removeTemplate(projectTemplate.id)}
+                                              disabled={isSaving}
+                                            >
+                                              <Trash2 className="h-3 w-3" />
+                                            </Button>
+                                          ) : (
+                                            <Button 
+                                              variant="ghost"
+                                              size="sm" 
+                                              className="h-7 text-xs"
+                                              onClick={() => addDocument(doc.id)}
+                                              disabled={isSaving}
+                                            >
+                                              <Plus className="h-3 w-3 mr-1" />
+                                              Legg til
+                                            </Button>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Card>
+                  </Collapsible>
                 );
               })}
             </div>
