@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
-import { useIkMatContent, IkMatRisk, IkMatHaccp } from "@/hooks/useIkMatContent";
+import { useIkMatContent, IkMatRisk, IkMatHaccp, calculateRiskLevel, getRiskLevelLabel, getRiskLevelVariant } from "@/hooks/useIkMatContent";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,9 +15,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { ShieldAlert, Plus, Trash2, Save, Loader2, AlertTriangle } from "lucide-react";
 
-const PROBABILITY_OPTIONS = ['Lav', 'Middels', 'Høy'];
-const CONSEQUENCE_OPTIONS = ['Lav', 'Middels', 'Høy', 'Kritisk'];
-const RISK_LEVEL_OPTIONS = ['Lav', 'Middels', 'Høy', 'Kritisk'];
+// 5x5 Matrix options
+const SCALE_OPTIONS = [
+  { value: 1, label: '1 - Svært lav' },
+  { value: 2, label: '2 - Lav' },
+  { value: 3, label: '3 - Middels' },
+  { value: 4, label: '4 - Høy' },
+  { value: 5, label: '5 - Svært høy' },
+];
 
 const IkMatRisikoOgHaccp = () => {
   const navigate = useNavigate();
@@ -46,9 +51,9 @@ const IkMatRisikoOgHaccp = () => {
     const newRisk: IkMatRisk = {
       id: `risk-${Date.now()}`,
       hazard: '',
-      consequence: 'Middels',
-      probability: 'Middels',
-      riskLevel: 'Middels',
+      consequence: 3,
+      probability: 3,
+      riskLevel: 9,
       measures: '',
       isHaccp: false,
     };
@@ -57,7 +62,18 @@ const IkMatRisikoOgHaccp = () => {
   };
 
   const handleUpdateRisk = (id: string, field: keyof IkMatRisk, value: any) => {
-    setRisks(risks.map(r => r.id === id ? { ...r, [field]: value } : r));
+    setRisks(risks.map(r => {
+      if (r.id !== id) return r;
+      const updated = { ...r, [field]: value };
+      // Auto-calculate risk level when probability or consequence changes
+      if (field === 'probability' || field === 'consequence') {
+        updated.riskLevel = calculateRiskLevel(
+          field === 'probability' ? value : r.probability,
+          field === 'consequence' ? value : r.consequence
+        );
+      }
+      return updated;
+    }));
     setHasChanges(true);
   };
 
@@ -97,13 +113,11 @@ const IkMatRisikoOgHaccp = () => {
     setHasChanges(false);
   };
 
-  const getRiskBadgeVariant = (level: string) => {
-    switch (level) {
-      case 'Kritisk': return 'destructive';
-      case 'Høy': return 'destructive';
-      case 'Middels': return 'default';
-      default: return 'secondary';
-    }
+  const getRiskBadgeColor = (level: number) => {
+    if (level <= 4) return 'bg-green-500/20 text-green-700 border-green-500/30';
+    if (level <= 9) return 'bg-yellow-500/20 text-yellow-700 border-yellow-500/30';
+    if (level <= 15) return 'bg-orange-500/20 text-orange-700 border-orange-500/30';
+    return 'bg-destructive/20 text-destructive border-destructive/30';
   };
 
   if (modulesLoading || isLoading) {
@@ -175,8 +189,8 @@ const IkMatRisikoOgHaccp = () => {
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <Badge variant={getRiskBadgeVariant(risk.riskLevel)}>
-                            {risk.riskLevel}
+                          <Badge className={getRiskBadgeColor(risk.riskLevel)}>
+                            Risiko: {risk.riskLevel} ({getRiskLevelLabel(risk.riskLevel)})
                           </Badge>
                           {risk.isHaccp && (
                             <Badge variant="destructive">HACCP/KKP</Badge>
@@ -201,54 +215,44 @@ const IkMatRisikoOgHaccp = () => {
                           className="mt-1"
                         />
                       </div>
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
-                          <Label>Sannsynlighet</Label>
+                          <Label>Sannsynlighet (1-5)</Label>
                           <Select
-                            value={risk.probability}
-                            onValueChange={(value) => handleUpdateRisk(risk.id, 'probability', value)}
+                            value={String(risk.probability)}
+                            onValueChange={(value) => handleUpdateRisk(risk.id, 'probability', Number(value))}
                           >
                             <SelectTrigger className="mt-1">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {PROBABILITY_OPTIONS.map(opt => (
-                                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                              {SCALE_OPTIONS.map(opt => (
+                                <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         </div>
                         <div>
-                          <Label>Konsekvens</Label>
+                          <Label>Konsekvens (1-5)</Label>
                           <Select
-                            value={risk.consequence}
-                            onValueChange={(value) => handleUpdateRisk(risk.id, 'consequence', value)}
+                            value={String(risk.consequence)}
+                            onValueChange={(value) => handleUpdateRisk(risk.id, 'consequence', Number(value))}
                           >
                             <SelectTrigger className="mt-1">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {CONSEQUENCE_OPTIONS.map(opt => (
-                                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                              {SCALE_OPTIONS.map(opt => (
+                                <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         </div>
                         <div>
-                          <Label>Risikonivå</Label>
-                          <Select
-                            value={risk.riskLevel}
-                            onValueChange={(value) => handleUpdateRisk(risk.id, 'riskLevel', value)}
-                          >
-                            <SelectTrigger className="mt-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {RISK_LEVEL_OPTIONS.map(opt => (
-                                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <Label>Risikonivå (auto)</Label>
+                          <div className={`mt-1 h-10 px-3 flex items-center rounded-md border text-sm font-medium ${getRiskBadgeColor(risk.riskLevel)}`}>
+                            {risk.probability} × {risk.consequence} = {risk.riskLevel}
+                          </div>
                         </div>
                       </div>
                       <div>
