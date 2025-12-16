@@ -20,12 +20,32 @@ export interface IkMatOrganization {
 export interface IkMatRisk {
   id: string;
   hazard: string;
-  consequence: string;
-  probability: string;
-  riskLevel: string;
+  consequence: number; // 1-5
+  probability: number; // 1-5
+  riskLevel: number; // 1-25 (auto-calculated: probability * consequence)
   measures: string;
   isHaccp: boolean; // HACCP kritisk kontrollpunkt
 }
+
+// Helper function to calculate risk level
+export const calculateRiskLevel = (probability: number, consequence: number): number => {
+  return probability * consequence;
+};
+
+// Helper function to get risk level label
+export const getRiskLevelLabel = (level: number): string => {
+  if (level <= 4) return 'Lav';
+  if (level <= 9) return 'Middels';
+  if (level <= 15) return 'Høy';
+  return 'Kritisk';
+};
+
+// Helper function to get risk level color variant
+export const getRiskLevelVariant = (level: number): 'secondary' | 'default' | 'destructive' => {
+  if (level <= 4) return 'secondary';
+  if (level <= 9) return 'default';
+  return 'destructive';
+};
 
 export interface IkMatHaccp {
   id: string;
