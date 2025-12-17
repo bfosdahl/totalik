@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -93,7 +94,7 @@ export function useHmsSja() {
       
       const { data, error } = await supabase
         .from("hms_sja")
-        .insert({
+        .insert([{
           company_id: company.id,
           sja_number: "",
           title: input.title,
@@ -104,13 +105,13 @@ export function useHmsSja() {
           responsible_id: input.responsible_id || null,
           participants: input.participants || null,
           work_description: input.work_description || null,
-          risks: (input.risks || []) as unknown as Record<string, unknown>[],
-          measures: (input.measures || []) as unknown as Record<string, unknown>[],
+          risks: (input.risks || []) as unknown as Json,
+          measures: (input.measures || []) as unknown as Json,
           emergency_procedures: input.emergency_procedures || null,
           ppe_required: input.ppe_required || null,
           risk_level: input.risk_level || 'medium',
           status: 'draft',
-        })
+        }])
         .select()
         .single();
       
