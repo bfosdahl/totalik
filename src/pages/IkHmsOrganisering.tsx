@@ -11,6 +11,7 @@ import { Users, Plus, Trash2, Save, Loader2, ChevronUp, ChevronDown, Building2, 
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserSelect from "@/components/audits/UserSelect";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface OrganizationRole {
   id: string;
@@ -24,6 +25,34 @@ interface OrganizationData {
   roles: OrganizationRole[];
   description: string;
 }
+
+// Predefined role templates with standard HMS responsibilities
+const PREDEFINED_ROLES = [
+  {
+    title: "Daglig leder",
+    description: "Daglig leder har det overordnede ansvaret for at gjeldende lover, forskrifter og interne retningslinjer etterleves. Daglig leder skal sørge for at HMS-arbeidet er en integrert del av virksomhetens drift."
+  },
+  {
+    title: "HMS-ansvarlig",
+    description: "HMS-ansvarlig koordinerer det daglige HMS-arbeidet og har ansvar for å følge opp at rutiner og tiltak gjennomføres i henhold til HMS-systemet."
+  },
+  {
+    title: "Arbeidsleder",
+    description: "Arbeidsleder har ansvar for å iverksette og følge opp nødvendige tiltak innen sine ansvarsområder, og rapporterer fortløpende til daglig leder."
+  },
+  {
+    title: "Verneombud",
+    description: "Verneombudet fungerer som arbeidstakernes valgte representant i spørsmål knyttet til arbeidsmiljø og sikkerhet. Verneombudet skal påse at arbeidsgiver følger arbeidsmiljølovens bestemmelser."
+  },
+  {
+    title: "Øvrige ansatte",
+    description: "Alle ansatte har en plikt til å informere nærmeste leder om forhold som kan påvirke helse, miljø eller sikkerhet, dersom dette ikke kan løses direkte. Ansatte skal følge virksomhetens HMS-rutiner og bidra aktivt til et trygt arbeidsmiljø."
+  },
+  {
+    title: "Egendefinert rolle",
+    description: ""
+  }
+];
 
 const IkHmsOrganisering = () => {
   const { profile } = useAuth();
@@ -69,16 +98,35 @@ const IkHmsOrganisering = () => {
     fetchData();
   }, [profile?.company_id]);
 
-  const handleAddRole = () => {
+  const handleAddRole = (predefinedTitle?: string) => {
+    const predefined = predefinedTitle 
+      ? PREDEFINED_ROLES.find(r => r.title === predefinedTitle) 
+      : null;
+    
     const newRole: OrganizationRole = {
       id: `role-${Date.now()}`,
-      title: "",
+      title: predefined?.title || "",
       personName: "",
-      description: "",
+      description: predefined?.description || "",
       sortOrder: data.roles.length,
     };
     setData({ ...data, roles: [...data.roles, newRole] });
     setHasChanges(true);
+  };
+
+  const handleSelectPredefinedRole = (roleId: string, predefinedTitle: string) => {
+    const predefined = PREDEFINED_ROLES.find(r => r.title === predefinedTitle);
+    if (predefined) {
+      setData({
+        ...data,
+        roles: data.roles.map(r => 
+          r.id === roleId 
+            ? { ...r, title: predefined.title, description: predefined.description } 
+            : r
+        ),
+      });
+      setHasChanges(true);
+    }
   };
 
   const handleUpdateRole = (id: string, field: keyof OrganizationRole, value: string) => {
@@ -148,6 +196,20 @@ const IkHmsOrganisering = () => {
     }
   };
 
+  // Generate automatic description from roles
+  const generateDescriptionFromRoles = () => {
+    if (data.roles.length === 0) return;
+    
+    const roleDescriptions = data.roles
+      .filter(r => r.title && r.description)
+      .map(r => `**${r.title}${r.personName ? ` (${r.personName})` : ''}:** ${r.description}`)
+      .join('\n\n');
+    
+    setData({ ...data, description: roleDescriptions });
+    setHasChanges(true);
+    toast.success("Beskrivelse generert fra roller");
+  };
+
   if (isLoading) {
     return (
       <AppLayout>
@@ -172,10 +234,6 @@ const IkHmsOrganisering = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleAddRole}>
-              <Plus className="h-4 w-4 mr-2" />
-              Legg til rolle
-            </Button>
             <Button 
               onClick={handleSave} 
               disabled={!hasChanges || isSaving}
@@ -200,10 +258,38 @@ const IkHmsOrganisering = () => {
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                Definer roller i organisasjonen med navn og ansvarsområder. 
+                Velg forhåndsdefinerte roller med standardbeskrivelser, eller lag egne. 
                 Rollene vises i hierarkisk rekkefølge fra øverst til nederst.
               </AlertDescription>
             </Alert>
+
+            {/* Quick add predefined roles */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Legg til rolle</CardTitle>
+                <CardDescription>Velg en forhåndsdefinert rolle eller lag en egendefinert</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {PREDEFINED_ROLES.map((role) => {
+                    const isAlreadyAdded = data.roles.some(r => r.title === role.title);
+                    return (
+                      <Button
+                        key={role.title}
+                        variant={isAlreadyAdded ? "secondary" : "outline"}
+                        size="sm"
+                        onClick={() => handleAddRole(role.title)}
+                        disabled={isAlreadyAdded && role.title !== "Egendefinert rolle"}
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        {role.title}
+                        {isAlreadyAdded && role.title !== "Egendefinert rolle" && " ✓"}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
 
             {data.roles.length === 0 ? (
               <Card>
@@ -211,12 +297,8 @@ const IkHmsOrganisering = () => {
                   <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p className="font-medium">Ingen roller er definert ennå</p>
                   <p className="text-sm mt-2">
-                    Klikk "Legg til rolle" for å bygge organisasjonskartet.
+                    Velg forhåndsdefinerte roller ovenfor for å bygge organisasjonskartet.
                   </p>
-                  <Button variant="outline" className="mt-4" onClick={handleAddRole}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Legg til første rolle
-                  </Button>
                 </CardContent>
               </Card>
             ) : (
@@ -281,12 +363,28 @@ const IkHmsOrganisering = () => {
                             {index + 1}
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
-                            <Input
-                              value={role.title}
-                              onChange={(e) => handleUpdateRole(role.id, "title", e.target.value)}
-                              placeholder="Rolletittel (f.eks. Daglig leder)"
-                              className="font-semibold"
-                            />
+                            <Select
+                              value={PREDEFINED_ROLES.some(p => p.title === role.title) ? role.title : "custom"}
+                              onValueChange={(value) => {
+                                if (value === "custom") {
+                                  handleUpdateRole(role.id, "title", "");
+                                } else {
+                                  handleSelectPredefinedRole(role.id, value);
+                                }
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Velg rolletype" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {PREDEFINED_ROLES.map((predefined) => (
+                                  <SelectItem key={predefined.title} value={predefined.title}>
+                                    {predefined.title}
+                                  </SelectItem>
+                                ))}
+                                <SelectItem value="custom">Egendefinert tittel</SelectItem>
+                              </SelectContent>
+                            </Select>
                             <UserSelect
                               value={role.personName}
                               onValueChange={(value) => handleUpdateRole(role.id, "personName", value)}
@@ -294,6 +392,16 @@ const IkHmsOrganisering = () => {
                             />
                           </div>
                         </div>
+                        {/* Custom title input if "Egendefinert rolle" is selected */}
+                        {(!PREDEFINED_ROLES.some(p => p.title === role.title) || role.title === "Egendefinert rolle") && (
+                          <div className="mt-3 pl-11">
+                            <Input
+                              value={role.title === "Egendefinert rolle" ? "" : role.title}
+                              onChange={(e) => handleUpdateRole(role.id, "title", e.target.value)}
+                              placeholder="Skriv inn egendefinert rolletittel"
+                            />
+                          </div>
+                        )}
                       </CardHeader>
                       <CardContent>
                         <Textarea
@@ -322,10 +430,19 @@ const IkHmsOrganisering = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Organisasjonsbeskrivelse</CardTitle>
-                <CardDescription>
-                  Beskriv bedriftens organisering av HMS-arbeidet
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Organisasjonsbeskrivelse</CardTitle>
+                    <CardDescription>
+                      Beskriv bedriftens organisering av HMS-arbeidet
+                    </CardDescription>
+                  </div>
+                  {data.roles.length > 0 && (
+                    <Button variant="outline" size="sm" onClick={generateDescriptionFromRoles}>
+                      Generer fra roller
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 <Textarea
@@ -338,26 +455,24 @@ const IkHmsOrganisering = () => {
               </CardContent>
             </Card>
 
-            {/* Example text */}
-            <Card className="bg-muted/50">
-              <CardHeader>
-                <CardTitle className="text-sm text-muted-foreground">Eksempel på organisasjonsbeskrivelse</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground space-y-2">
-                <p>
-                  <strong>Daglig leder</strong> har det overordnede ansvaret for HMS-arbeidet i bedriften, 
-                  inkludert å sørge for at lover og forskrifter følges, og at nødvendige ressurser er tilgjengelige.
-                </p>
-                <p>
-                  <strong>HMS-ansvarlig</strong> bistår daglig leder med det praktiske HMS-arbeidet, 
-                  inkludert oppdatering av risikovurderinger, gjennomføring av vernerunder og oppfølging av avvik.
-                </p>
-                <p>
-                  <strong>Verneombud</strong> er ansattes representant i HMS-saker og deltar i planlegging 
-                  og gjennomføring av HMS-aktiviteter.
-                </p>
-              </CardContent>
-            </Card>
+            {/* Preview of roles */}
+            {data.roles.length > 0 && (
+              <Card className="bg-muted/50">
+                <CardHeader>
+                  <CardTitle className="text-sm text-muted-foreground">Forhåndsvisning av roller</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm space-y-3">
+                  {data.roles.map((role) => (
+                    <div key={role.id}>
+                      <p>
+                        <strong>{role.title}{role.personName ? ` (${role.personName})` : ''}:</strong>{' '}
+                        {role.description || <span className="text-muted-foreground italic">Ingen beskrivelse</span>}
+                      </p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
