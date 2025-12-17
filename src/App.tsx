@@ -58,6 +58,7 @@ import IkMatOrganisasjon from "./pages/IkMatOrganisasjon";
 import IkMatRutiner from "./pages/IkMatRutiner";
 import IkMatRisikoOgTiltak from "./pages/IkMatRisikoOgTiltak";
 import IkHmsOppsett from "./pages/IkHmsOppsett";
+import IkHmsMaal from "./pages/IkHmsMaal";
 import IkHmsStoffkartotek from "./pages/IkHmsStoffkartotek";
 import IkHmsDokumentsenter from "./pages/IkHmsDokumentsenter";
 import LoverOgForskrifter from "./pages/LoverOgForskrifter";
@@ -86,6 +87,7 @@ const App = () => (
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/setup" element={<ProtectedRoute><Setup /></ProtectedRoute>} />
             <Route path="/setup/ai" element={<ProtectedRoute><IkHmsOppsett /></ProtectedRoute>} />
+            <Route path="/maalsetting" element={<ProtectedRoute><IkHmsMaal /></ProtectedRoute>} />
             <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />
             <Route path="/deviations" element={<ProtectedRoute><Deviations /></ProtectedRoute>} />
             <Route path="/audits" element={<ProtectedRoute><Audits /></ProtectedRoute>} />
