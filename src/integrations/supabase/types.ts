@@ -787,6 +787,56 @@ export type Database = {
           },
         ]
       }
+      company_laws_regulations: {
+        Row: {
+          category: string | null
+          company_id: string
+          created_at: string
+          description: string | null
+          employee_threshold: number | null
+          id: string
+          is_employee_based: boolean | null
+          is_manually_added: boolean | null
+          law_name: string
+          link: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          company_id: string
+          created_at?: string
+          description?: string | null
+          employee_threshold?: number | null
+          id?: string
+          is_employee_based?: boolean | null
+          is_manually_added?: boolean | null
+          law_name: string
+          link?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          employee_threshold?: number | null
+          id?: string
+          is_employee_based?: boolean | null
+          is_manually_added?: boolean | null
+          law_name?: string
+          link?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_laws_regulations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_modules: {
         Row: {
           company_id: string
