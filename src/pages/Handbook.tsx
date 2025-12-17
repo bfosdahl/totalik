@@ -45,6 +45,7 @@ import { useDeviations } from "@/hooks/useDeviations";
 import { useAudits } from "@/hooks/useAudits";
 import { useAuditFormResponses, formTypeLabels, type FormType } from "@/hooks/useAuditFormResponses";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
+import { useCompanyLawsRegulations } from "@/hooks/useCompanyLawsRegulations";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
@@ -96,6 +97,7 @@ const Handbook = () => {
   const { audits, isLoading: isLoadingAudits } = useAudits();
   const { completedForms, isLoading: isLoadingForms, getLatestByFormType } = useAuditFormResponses();
   const { users: companyUsers } = useCompanyUsers();
+  const { savedLaws } = useCompanyLawsRegulations();
   
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [includeDeviations, setIncludeDeviations] = useState(false);
@@ -174,17 +176,8 @@ const Handbook = () => {
     vernerunde: Shield,
   };
 
-  // Laws data for handbook section
-  const generelleLover = [
-    { tittel: "Arbeidsmiljøloven", beskrivelse: "Hovedloven for arbeidsmiljø, arbeidstid, stillingsvern og medvirkning", lenke: "https://lovdata.no/dokument/NL/lov/2005-06-17-62", kategori: "Arbeidsrett" },
-    { tittel: "Internkontrollforskriften", beskrivelse: "Krav til systematisk HMS-arbeid i alle virksomheter", lenke: "https://lovdata.no/dokument/SF/forskrift/1996-12-06-1127", kategori: "HMS" },
-    { tittel: "Forskrift om organisering, ledelse og medvirkning", beskrivelse: "Krav til organisering av arbeidet og arbeidstakers medvirkning", lenke: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1355", kategori: "Organisering" },
-    { tittel: "Arbeidsplassforskriften", beskrivelse: "Krav til utforming og innretning av arbeidsplasser", lenke: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1356", kategori: "Arbeidsplass" },
-    { tittel: "Forskrift om utførelse av arbeid", beskrivelse: "Krav til sikker utførelse av ulike typer arbeid", lenke: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1357", kategori: "Arbeid" },
-    { tittel: "Forskrift om tiltaks- og grenseverdier", beskrivelse: "Grenseverdier for forurensninger i arbeidsatmosfæren", lenke: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1358", kategori: "Grenseverdier" },
-    { tittel: "Lov om tilsyn med elektriske anlegg", beskrivelse: "Krav til elektriske installasjoner og tilsyn", lenke: "https://lovdata.no/dokument/NL/lov/1929-05-24-4", kategori: "Elektrisitet" },
-    { tittel: "Brann- og eksplosjonsvernloven", beskrivelse: "Krav til forebygging av brann og eksplosjon", lenke: "https://lovdata.no/dokument/NL/lov/2002-06-14-20", kategori: "Brannvern" },
-  ];
+  // Laws are now fetched from database via useCompanyLawsRegulations hook
+
 
   // Generate sections for completed audit forms - these are ongoing activities
   const auditFormSections = (["annual_hms", "elkontroll", "fysiske_forhold", "daglig_drift"] as FormType[])
@@ -337,36 +330,45 @@ const Handbook = () => {
     {
       id: "laws",
       title: "6. Lover og forskrifter",
-      status: "complete" as const, // Always complete - these are standardized laws
+      status: savedLaws.length > 0 ? "complete" as const : "incomplete" as const,
       stepIndex: -1,
       icon: Scale,
       content: (
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground mb-3">
-            Oversikt over lover og forskrifter som gjelder for virksomheten. Se fullstendig kalkulator under HMS aktiviteter.
+            {savedLaws.length > 0 
+              ? "Oversikt over lover og forskrifter som gjelder for virksomheten."
+              : "Ingen lover er lagret. Gå til Lover og forskrifter for å søke opp og lagre gjeldende krav."
+            }
           </p>
-          <div className="space-y-2">
-            {generelleLover.slice(0, 4).map((lov, index) => (
-              <div key={index} className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-xs">{lov.kategori}</Badge>
-                  <span className="text-muted-foreground">{lov.tittel}</span>
+          {savedLaws.length > 0 && (
+            <div className="space-y-2">
+              {savedLaws.slice(0, 4).map((law) => (
+                <div key={law.id} className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs">{law.category || "Generelt"}</Badge>
+                    <span className="text-muted-foreground">{law.law_name}</span>
+                  </div>
+                  {law.link && (
+                    <a 
+                      href={law.link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:text-primary/80"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
                 </div>
-                <a 
-                  href={lov.lenke} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-primary hover:text-primary/80"
-                >
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-            ))}
-            <p className="text-xs text-muted-foreground">+ {generelleLover.length - 4} flere lover og forskrifter</p>
-          </div>
+              ))}
+              {savedLaws.length > 4 && (
+                <p className="text-xs text-muted-foreground">+ {savedLaws.length - 4} flere lover og forskrifter</p>
+              )}
+            </div>
+          )}
         </div>
       ),
-      summary: `${generelleLover.length} lover og forskrifter`,
+      summary: savedLaws.length > 0 ? `${savedLaws.length} lover og forskrifter` : "Ingen lagret",
       linkTo: "/lover-og-forskrifter",
     },
     {

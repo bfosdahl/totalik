@@ -10,7 +10,11 @@ import {
   Mail,
   AlertCircle,
   CheckCircle2,
-  Scale
+  Scale,
+  Save,
+  Plus,
+  Trash2,
+  BookOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +23,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCompanyLawsRegulations, type NewLawRegulation } from "@/hooks/useCompanyLawsRegulations";
 
 interface BrregData {
   navn: string;
@@ -104,6 +111,8 @@ const ansattBaserteKrav = [
 
 const LoverOgForskrifterCalculator = () => {
   const { company } = useAuth();
+  const { savedLaws, isLoading: isLoadingSaved, saveLaws, addLaw, deleteLaw, isSaving, isAdding } = useCompanyLawsRegulations();
+  
   const [orgnr, setOrgnr] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -111,6 +120,15 @@ const LoverOgForskrifterCalculator = () => {
   const [antallAnsatte, setAntallAnsatte] = useState<number>(0);
   const [rapportGenerert, setRapportGenerert] = useState(false);
   const [autoFetched, setAutoFetched] = useState(false);
+  
+  // Add law dialog
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [newLaw, setNewLaw] = useState<NewLawRegulation>({
+    law_name: "",
+    description: "",
+    link: "",
+    category: "Annet"
+  });
 
   // Auto-fill org.nr from company profile and fetch data
   useEffect(() => {
@@ -119,7 +137,6 @@ const LoverOgForskrifterCalculator = () => {
       if (cleanOrgNr.match(/^\d{9}$/)) {
         setOrgnr(cleanOrgNr);
         setAutoFetched(true);
-        // Auto-fetch company data
         fetchBedriftsinfo(cleanOrgNr);
       }
     }
@@ -158,6 +175,37 @@ const LoverOgForskrifterCalculator = () => {
     setRapportGenerert(true);
   };
 
+  const handleSaveAllLaws = () => {
+    // Save general laws
+    const generalLawsToSave: NewLawRegulation[] = generelleLover.map(lov => ({
+      law_name: lov.tittel,
+      description: lov.beskrivelse,
+      link: lov.lenke,
+      category: lov.kategori,
+      is_employee_based: false,
+      is_manually_added: false
+    }));
+
+    // Save employee-based requirements
+    const employeeKravToSave: NewLawRegulation[] = gjeldeneAnsattkrav.map(krav => ({
+      law_name: krav.krav,
+      description: krav.beskrivelse,
+      category: "Ansattbasert krav",
+      is_employee_based: true,
+      employee_threshold: krav.minAnsatte,
+      is_manually_added: false
+    }));
+
+    saveLaws([...generalLawsToSave, ...employeeKravToSave]);
+  };
+
+  const handleAddManualLaw = () => {
+    if (!newLaw.law_name.trim()) return;
+    addLaw(newLaw);
+    setNewLaw({ law_name: "", description: "", link: "", category: "Annet" });
+    setAddDialogOpen(false);
+  };
+
   const sendRapportEpost = () => {
     if (!bedriftData) return;
 
@@ -182,6 +230,9 @@ const LoverOgForskrifterCalculator = () => {
 
   const gjeldeneAnsattkrav = ansattBaserteKrav.filter(k => antallAnsatte >= k.minAnsatte);
 
+  // Check if laws are already saved
+  const hasAlreadySavedLaws = savedLaws.filter(l => !l.is_manually_added).length > 0;
+
   return (
     <div className="space-y-6">
       {/* Intro */}
@@ -203,6 +254,139 @@ const LoverOgForskrifterCalculator = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Lagrede lover */}
+      {savedLaws.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-primary" />
+                Lagrede lover og forskrifter
+              </CardTitle>
+              <CardDescription>
+                Disse lovene er lagret og inkluderes i håndboken
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {savedLaws.map((law) => (
+                  <div 
+                    key={law.id}
+                    className="flex items-start justify-between gap-4 p-3 rounded-lg bg-muted/50"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-medium text-sm">{law.law_name}</p>
+                        <Badge variant="secondary" className="text-xs">
+                          {law.category || "Generelt"}
+                        </Badge>
+                        {law.is_manually_added && (
+                          <Badge variant="outline" className="text-xs">Manuelt lagt til</Badge>
+                        )}
+                        {law.is_employee_based && (
+                          <Badge variant="outline" className="text-xs border-primary/50 text-primary">
+                            Fra {law.employee_threshold}+ ansatte
+                          </Badge>
+                        )}
+                      </div>
+                      {law.description && (
+                        <p className="text-sm text-muted-foreground">{law.description}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {law.link && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          asChild
+                        >
+                          <a href={law.link} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteLaw(law.id)}
+                      >
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-border">
+                <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Legg til manuelt
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Legg til lov eller forskrift</DialogTitle>
+                      <DialogDescription>
+                        Legg til en egendefinert lov eller forskrift som gjelder for din virksomhet
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Navn på lov/forskrift *</Label>
+                        <Input
+                          value={newLaw.law_name}
+                          onChange={(e) => setNewLaw({ ...newLaw, law_name: e.target.value })}
+                          placeholder="F.eks. Forskrift om maskiner"
+                        />
+                      </div>
+                      <div>
+                        <Label>Beskrivelse</Label>
+                        <Textarea
+                          value={newLaw.description || ""}
+                          onChange={(e) => setNewLaw({ ...newLaw, description: e.target.value })}
+                          placeholder="Kort beskrivelse av hva loven/forskriften omhandler"
+                        />
+                      </div>
+                      <div>
+                        <Label>Lenke til Lovdata</Label>
+                        <Input
+                          value={newLaw.link || ""}
+                          onChange={(e) => setNewLaw({ ...newLaw, link: e.target.value })}
+                          placeholder="https://lovdata.no/..."
+                        />
+                      </div>
+                      <div>
+                        <Label>Kategori</Label>
+                        <Input
+                          value={newLaw.category || ""}
+                          onChange={(e) => setNewLaw({ ...newLaw, category: e.target.value })}
+                          placeholder="F.eks. Maskinsikkerhet"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
+                        Avbryt
+                      </Button>
+                      <Button onClick={handleAddManualLaw} disabled={!newLaw.law_name.trim() || isAdding}>
+                        {isAdding && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                        Legg til
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Søkefelt */}
       <motion.div
@@ -306,10 +490,22 @@ const LoverOgForskrifterCalculator = () => {
                   Generer lovkravrapport
                 </Button>
                 {rapportGenerert && (
-                  <Button variant="outline" onClick={sendRapportEpost}>
-                    <Mail className="w-4 h-4 mr-2" />
-                    Send på e-post
-                  </Button>
+                  <>
+                    <Button variant="outline" onClick={sendRapportEpost}>
+                      <Mail className="w-4 h-4 mr-2" />
+                      Send på e-post
+                    </Button>
+                    {!hasAlreadySavedLaws && (
+                      <Button variant="secondary" onClick={handleSaveAllLaws} disabled={isSaving}>
+                        {isSaving ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Save className="w-4 h-4 mr-2" />
+                        )}
+                        Lagre til håndbok
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
             </CardContent>
@@ -417,6 +613,86 @@ const LoverOgForskrifterCalculator = () => {
                     </Button>
                   </div>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Quick add button when no saved laws */}
+      {savedLaws.length === 0 && !rapportGenerert && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <Card className="border-dashed">
+            <CardContent className="py-6">
+              <div className="text-center">
+                <BookOpen className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground mb-3">
+                  Ingen lover er lagret ennå. Søk opp din bedrift ovenfor for å generere rapport og lagre, 
+                  eller legg til manuelt.
+                </p>
+                <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Legg til manuelt
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Legg til lov eller forskrift</DialogTitle>
+                      <DialogDescription>
+                        Legg til en egendefinert lov eller forskrift som gjelder for din virksomhet
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Navn på lov/forskrift *</Label>
+                        <Input
+                          value={newLaw.law_name}
+                          onChange={(e) => setNewLaw({ ...newLaw, law_name: e.target.value })}
+                          placeholder="F.eks. Forskrift om maskiner"
+                        />
+                      </div>
+                      <div>
+                        <Label>Beskrivelse</Label>
+                        <Textarea
+                          value={newLaw.description || ""}
+                          onChange={(e) => setNewLaw({ ...newLaw, description: e.target.value })}
+                          placeholder="Kort beskrivelse av hva loven/forskriften omhandler"
+                        />
+                      </div>
+                      <div>
+                        <Label>Lenke til Lovdata</Label>
+                        <Input
+                          value={newLaw.link || ""}
+                          onChange={(e) => setNewLaw({ ...newLaw, link: e.target.value })}
+                          placeholder="https://lovdata.no/..."
+                        />
+                      </div>
+                      <div>
+                        <Label>Kategori</Label>
+                        <Input
+                          value={newLaw.category || ""}
+                          onChange={(e) => setNewLaw({ ...newLaw, category: e.target.value })}
+                          placeholder="F.eks. Maskinsikkerhet"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
+                        Avbryt
+                      </Button>
+                      <Button onClick={handleAddManualLaw} disabled={!newLaw.law_name.trim() || isAdding}>
+                        {isAdding && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                        Legg til
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </CardContent>
           </Card>
