@@ -104,7 +104,7 @@ const priorityConfig = {
 };
 
 export function RisikovurderingOgHandlingsplan() {
-  const { company } = useAuth();
+  const { company, profile } = useAuth();
   const { employees } = useEmployees();
   const [risks, setRisks] = useState<RiskItem[]>([]);
   const [actions, setActions] = useState<ActionItem[]>([]);
@@ -115,18 +115,28 @@ export function RisikovurderingOgHandlingsplan() {
   const [showHelp, setShowHelp] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string>("alle");
 
-  // New risk form state
+  // Current user name for default responsible
+  const currentUserName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
+
+  // New risk form state - default responsible to current user
   const [newRisk, setNewRisk] = useState<Partial<RiskItem>>({
     category: "",
     description: "",
-    consequence: 0,
-    probability: 0,
+    consequence: 3,
+    probability: 3,
     existing_measures: "",
     planned_measures: "",
-    responsible: "",
+    responsible: currentUserName,
     deadline: "",
     status: "ikke_startet",
   });
+
+  // Update responsible when profile loads
+  useEffect(() => {
+    if (currentUserName && !newRisk.responsible) {
+      setNewRisk(p => ({ ...p, responsible: currentUserName }));
+    }
+  }, [currentUserName]);
 
   // Load data
   useEffect(() => {
@@ -231,11 +241,11 @@ export function RisikovurderingOgHandlingsplan() {
     setNewRisk({
       category: "",
       description: "",
-      consequence: 0,
-      probability: 0,
+      consequence: 3,
+      probability: 3,
       existing_measures: "",
       planned_measures: "",
-      responsible: "",
+      responsible: currentUserName,
       deadline: "",
       status: "ikke_startet",
     });
@@ -466,7 +476,7 @@ export function RisikovurderingOgHandlingsplan() {
                 </Select>
               </div>
 
-              {/* Add new risk form */}
+              {/* Simplified Add new risk form */}
               <Card className="bg-muted/30">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
@@ -475,10 +485,11 @@ export function RisikovurderingOgHandlingsplan() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Row 1: Category and Description */}
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Select value={newRisk.category} onValueChange={(v) => setNewRisk(p => ({ ...p, category: v }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Velg kategori *" />
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Kategori" />
                       </SelectTrigger>
                       <SelectContent>
                         {RISK_CATEGORIES.map(cat => (
@@ -486,76 +497,106 @@ export function RisikovurderingOgHandlingsplan() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <Select 
-                      value={newRisk.consequence?.toString() || ""} 
-                      onValueChange={(v) => setNewRisk(p => ({ ...p, consequence: parseInt(v) }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Konsekvens *" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CONSEQUENCE_LEVELS.map(l => (
-                          <SelectItem key={l.value} value={l.value.toString()}>{l.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Input 
+                      placeholder="Beskriv risikoen..." 
+                      value={newRisk.description || ""}
+                      onChange={(e) => setNewRisk(p => ({ ...p, description: e.target.value }))}
+                      className="flex-1"
+                    />
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <Select 
-                      value={newRisk.probability?.toString() || ""} 
-                      onValueChange={(v) => setNewRisk(p => ({ ...p, probability: parseInt(v) }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sannsynlighet *" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PROBABILITY_LEVELS.map(l => (
-                          <SelectItem key={l.value} value={l.value.toString()}>{l.label}</SelectItem>
+
+                  {/* Row 2: Consequence and Probability with simple 1-5 buttons */}
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex-1">
+                      <label className="text-xs text-muted-foreground mb-1 block">Konsekvens (1-5)</label>
+                      <div className="flex gap-1">
+                        {[1,2,3,4,5].map(n => (
+                          <Button 
+                            key={n} 
+                            type="button"
+                            variant={newRisk.consequence === n ? "default" : "outline"}
+                            size="sm"
+                            className="flex-1 h-8"
+                            onClick={() => setNewRisk(p => ({ ...p, consequence: n }))}
+                          >
+                            {n}
+                          </Button>
                         ))}
-                      </SelectContent>
-                    </Select>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-xs text-muted-foreground mb-1 block">Sannsynlighet (1-5)</label>
+                      <div className="flex gap-1">
+                        {[1,2,3,4,5].map(n => (
+                          <Button 
+                            key={n} 
+                            type="button"
+                            variant={newRisk.probability === n ? "default" : "outline"}
+                            size="sm"
+                            className="flex-1 h-8"
+                            onClick={() => setNewRisk(p => ({ ...p, probability: n }))}
+                          >
+                            {n}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Row 3: Tiltak (combined) */}
+                  <Input 
+                    placeholder="Tiltak (planlagte/eksisterende)" 
+                    value={newRisk.planned_measures || ""}
+                    onChange={(e) => setNewRisk(p => ({ ...p, planned_measures: e.target.value }))}
+                  />
+
+                  {/* Row 4: Responsible, Deadline, Add button */}
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Select value={newRisk.responsible || ""} onValueChange={(v) => setNewRisk(p => ({ ...p, responsible: v }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Ansvarlig" />
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Ansvarlig">
+                          {newRisk.responsible || "Velg ansvarlig"}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {employees.map(emp => (
+                        {currentUserName && (
+                          <SelectItem value={currentUserName}>
+                            {currentUserName} (meg)
+                          </SelectItem>
+                        )}
+                        {employees.filter(emp => `${emp.first_name} ${emp.last_name}`.trim() !== currentUserName).map(emp => (
                           <SelectItem key={emp.id} value={`${emp.first_name} ${emp.last_name}`}>
                             {emp.first_name} {emp.last_name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                  <Textarea 
-                    placeholder="Beskriv faren/risikoen *" 
-                    value={newRisk.description || ""}
-                    onChange={(e) => setNewRisk(p => ({ ...p, description: e.target.value }))}
-                    className="min-h-[60px]"
-                  />
-                  <Input 
-                    placeholder="Eksisterende tiltak" 
-                    value={newRisk.existing_measures || ""}
-                    onChange={(e) => setNewRisk(p => ({ ...p, existing_measures: e.target.value }))}
-                  />
-                  <Input 
-                    placeholder="Planlagte tiltak" 
-                    value={newRisk.planned_measures || ""}
-                    onChange={(e) => setNewRisk(p => ({ ...p, planned_measures: e.target.value }))}
-                  />
-                  <div className="flex gap-2">
                     <Input 
                       type="date" 
-                      placeholder="Frist"
                       value={newRisk.deadline || ""}
                       onChange={(e) => setNewRisk(p => ({ ...p, deadline: e.target.value }))}
-                      className="flex-1"
+                      className="w-full sm:w-[140px]"
                     />
                     <Button onClick={addRisk} className="flex-shrink-0">
-                      <Plus className="h-4 w-4 mr-2" />
+                      <Plus className="h-4 w-4 mr-1" />
                       Legg til
                     </Button>
                   </div>
+
+                  {/* Risk level preview */}
+                  {newRisk.consequence && newRisk.probability && (
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-muted-foreground">Risikonivå:</span>
+                      {(() => {
+                        const level = getRiskLevel(newRisk.consequence, newRisk.probability);
+                        return (
+                          <Badge className={cn(level.bg, level.color)}>
+                            {newRisk.consequence * newRisk.probability} - {level.level}
+                          </Badge>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
