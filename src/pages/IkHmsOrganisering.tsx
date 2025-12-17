@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Users, Plus, Trash2, Save, Loader2, ChevronUp, ChevronDown, Building2, Info } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import UserSelect from "@/components/audits/UserSelect";
 
 interface OrganizationRole {
   id: string;
@@ -286,10 +287,10 @@ const IkHmsOrganisering = () => {
                               placeholder="Rolletittel (f.eks. Daglig leder)"
                               className="font-semibold"
                             />
-                            <Input
+                            <UserSelect
                               value={role.personName}
-                              onChange={(e) => handleUpdateRole(role.id, "personName", e.target.value)}
-                              placeholder="Navn på person"
+                              onValueChange={(value) => handleUpdateRole(role.id, "personName", value)}
+                              placeholder="Velg ansatt"
                             />
                           </div>
                         </div>
