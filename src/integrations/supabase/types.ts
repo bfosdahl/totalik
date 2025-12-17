@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      action_plan_followups: {
+        Row: {
+          action_description: string
+          action_id: string
+          company_id: string
+          completed_at: string | null
+          completed_by_id: string | null
+          completed_by_name: string | null
+          created_at: string
+          followup_date: string
+          followup_type: string
+          id: string
+          notes: string | null
+          reminder_days_before: number | null
+          reminder_enabled: boolean | null
+          reminder_sent: boolean | null
+          risk_description: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          action_description: string
+          action_id: string
+          company_id: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name?: string | null
+          created_at?: string
+          followup_date: string
+          followup_type?: string
+          id?: string
+          notes?: string | null
+          reminder_days_before?: number | null
+          reminder_enabled?: boolean | null
+          reminder_sent?: boolean | null
+          risk_description?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          action_description?: string
+          action_id?: string
+          company_id?: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name?: string | null
+          created_at?: string
+          followup_date?: string
+          followup_type?: string
+          id?: string
+          notes?: string | null
+          reminder_days_before?: number | null
+          reminder_enabled?: boolean | null
+          reminder_sent?: boolean | null
+          risk_description?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_plan_followups_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_plan_followups_completed_by_id_fkey"
+            columns: ["completed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_byggesak_templates: {
         Row: {
           created_at: string
@@ -1980,6 +2055,109 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hms_sja: {
+        Row: {
+          company_id: string
+          completed_at: string | null
+          completed_by_id: string | null
+          completed_by_name: string | null
+          created_at: string
+          description: string | null
+          emergency_procedures: string | null
+          id: string
+          leader_signature: string | null
+          location: string | null
+          measures: Json | null
+          participants: string | null
+          participants_signatures: Json | null
+          planned_date: string | null
+          ppe_required: string | null
+          responsible_id: string | null
+          responsible_name: string | null
+          risk_level: string | null
+          risks: Json | null
+          sja_number: string
+          status: string
+          title: string
+          updated_at: string
+          work_description: string | null
+        }
+        Insert: {
+          company_id: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name?: string | null
+          created_at?: string
+          description?: string | null
+          emergency_procedures?: string | null
+          id?: string
+          leader_signature?: string | null
+          location?: string | null
+          measures?: Json | null
+          participants?: string | null
+          participants_signatures?: Json | null
+          planned_date?: string | null
+          ppe_required?: string | null
+          responsible_id?: string | null
+          responsible_name?: string | null
+          risk_level?: string | null
+          risks?: Json | null
+          sja_number: string
+          status?: string
+          title: string
+          updated_at?: string
+          work_description?: string | null
+        }
+        Update: {
+          company_id?: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name?: string | null
+          created_at?: string
+          description?: string | null
+          emergency_procedures?: string | null
+          id?: string
+          leader_signature?: string | null
+          location?: string | null
+          measures?: Json | null
+          participants?: string | null
+          participants_signatures?: Json | null
+          planned_date?: string | null
+          ppe_required?: string | null
+          responsible_id?: string | null
+          responsible_name?: string | null
+          risk_level?: string | null
+          risks?: Json | null
+          sja_number?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          work_description?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hms_sja_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hms_sja_completed_by_id_fkey"
+            columns: ["completed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hms_sja_responsible_id_fkey"
+            columns: ["responsible_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -9309,6 +9487,7 @@ export type Database = {
         Args: { p_company_id: string }
         Returns: string
       }
+      generate_hms_sja_number: { Args: never; Returns: string }
       generate_inspection_number: {
         Args: { p_company_id: string }
         Returns: string
