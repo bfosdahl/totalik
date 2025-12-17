@@ -240,24 +240,30 @@ export function RisikovurderingOgHandlingsplan() {
       status: "ikke_startet",
     });
 
-    // Auto-create action if high risk
+    // Auto-create action for all risks
     const riskLevel = getRiskLevel(risk.consequence, risk.probability);
-    if (riskLevel.level === "Høy" || riskLevel.level === "Svært høy") {
-      const action: ActionItem = {
-        id: crypto.randomUUID(),
-        risk_id: risk.id,
-        risk_description: `${RISK_CATEGORIES.find(c => c.value === risk.category)?.label}: ${risk.description}`,
-        action_description: risk.planned_measures || "Definer tiltak",
-        responsible: risk.responsible || "",
-        deadline: risk.deadline || "",
-        status: "ikke_startet",
-        priority: riskLevel.level === "Svært høy" ? "kritisk" : "høy",
-      };
-      setActions(prev => [...prev, action]);
-      toast.info("Tiltak opprettet automatisk for høyrisiko");
-    }
+    const getPriorityFromRiskLevel = (level: string): ActionItem["priority"] => {
+      switch (level) {
+        case "Svært høy": return "kritisk";
+        case "Høy": return "høy";
+        case "Moderat": return "medium";
+        default: return "lav";
+      }
+    };
 
-    toast.success("Risiko lagt til");
+    const action: ActionItem = {
+      id: crypto.randomUUID(),
+      risk_id: risk.id,
+      risk_description: `${RISK_CATEGORIES.find(c => c.value === risk.category)?.label}: ${risk.description}`,
+      action_description: risk.planned_measures || "Definer tiltak",
+      responsible: risk.responsible || "",
+      deadline: risk.deadline || "",
+      status: "ikke_startet",
+      priority: getPriorityFromRiskLevel(riskLevel.level),
+    };
+    setActions(prev => [...prev, action]);
+
+    toast.success("Risiko og tiltak lagt til");
   };
 
   // Delete risk
