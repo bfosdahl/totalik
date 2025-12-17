@@ -651,14 +651,125 @@ const Handbook = () => {
       doc.addPage();
       yPos = margin;
       addSectionHeader("2. Organisering og ansvar");
+      
       if (organization?.custom_content) {
-        const orgLines = doc.splitTextToSize(organization.custom_content, contentWidth);
-        orgLines.forEach((line: string) => {
-          checkPageBreak(8);
+        // Try to parse as JSON (new format with roles)
+        let orgData: { roles?: Array<{ title: string; personName: string; description: string }>; description?: string } | null = null;
+        try {
+          orgData = JSON.parse(organization.custom_content);
+        } catch {
+          // Not JSON, treat as plain text (legacy format)
+          orgData = null;
+        }
+
+        if (orgData && orgData.roles && orgData.roles.length > 0) {
+          // Draw visual org chart
           doc.setFontSize(11);
-          doc.text(line, margin, yPos);
-          yPos += 6;
-        });
+          doc.setFont("helvetica", "bold");
+          doc.text("Organisasjonskart", margin, yPos);
+          yPos += 10;
+          
+          const boxWidth = 80;
+          const boxHeight = 20;
+          const centerX = pageWidth / 2;
+          
+          orgData.roles.forEach((role, index) => {
+            checkPageBreak(35);
+            
+            // Draw connecting line from previous box
+            if (index > 0) {
+              doc.setDrawColor(200, 200, 200);
+              doc.setLineWidth(0.5);
+              doc.line(centerX, yPos - 5, centerX, yPos);
+            }
+            
+            // Draw box
+            doc.setFillColor(248, 250, 252);
+            doc.setDrawColor(59, 130, 246);
+            doc.setLineWidth(0.5);
+            doc.roundedRect(centerX - boxWidth/2, yPos, boxWidth, boxHeight, 2, 2, "FD");
+            
+            // Role title
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(0, 0, 0);
+            const titleText = role.title || "Uten tittel";
+            doc.text(titleText, centerX, yPos + 8, { align: "center" });
+            
+            // Person name
+            if (role.personName) {
+              doc.setFontSize(8);
+              doc.setFont("helvetica", "normal");
+              doc.setTextColor(100, 100, 100);
+              doc.text(role.personName, centerX, yPos + 14, { align: "center" });
+            }
+            
+            doc.setTextColor(0, 0, 0);
+            yPos += boxHeight + 10;
+          });
+          
+          yPos += 10;
+          
+          // Draw role descriptions
+          doc.setFontSize(11);
+          doc.setFont("helvetica", "bold");
+          doc.text("Roller og ansvar", margin, yPos);
+          yPos += 8;
+          
+          orgData.roles.forEach((role) => {
+            if (role.title && role.description) {
+              checkPageBreak(25);
+              
+              // Role title with person name
+              doc.setFontSize(10);
+              doc.setFont("helvetica", "bold");
+              let roleHeader = role.title;
+              if (role.personName) {
+                roleHeader += ` (${role.personName})`;
+              }
+              doc.text(roleHeader, margin, yPos);
+              yPos += 6;
+              
+              // Description
+              doc.setFont("helvetica", "normal");
+              doc.setFontSize(9);
+              const descLines = doc.splitTextToSize(role.description, contentWidth - 5);
+              descLines.forEach((line: string) => {
+                checkPageBreak(6);
+                doc.text(line, margin + 5, yPos);
+                yPos += 5;
+              });
+              yPos += 5;
+            }
+          });
+          
+          // Add general description if exists
+          if (orgData.description && orgData.description.trim()) {
+            checkPageBreak(20);
+            yPos += 5;
+            doc.setFontSize(11);
+            doc.setFont("helvetica", "bold");
+            doc.text("Generell beskrivelse", margin, yPos);
+            yPos += 8;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            const descLines = doc.splitTextToSize(orgData.description, contentWidth);
+            descLines.forEach((line: string) => {
+              checkPageBreak(6);
+              doc.text(line, margin, yPos);
+              yPos += 5;
+            });
+          }
+        } else {
+          // Legacy plain text format
+          const orgLines = doc.splitTextToSize(organization.custom_content, contentWidth);
+          orgLines.forEach((line: string) => {
+            checkPageBreak(8);
+            doc.setFontSize(11);
+            doc.text(line, margin, yPos);
+            yPos += 6;
+          });
+        }
       } else {
         doc.setTextColor(150, 150, 150);
         doc.text("Organisasjonsstruktur er ikke definert.", margin, yPos);
