@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useIkMatContent, IkMatRisk, IkMatHaccp, IkMatActionItem, calculateRiskLevel, getTrafficLight, getTrafficLightLabel, getTrafficLightDescription } from "@/hooks/useIkMatContent";
+import { useEmployees } from "@/hooks/useEmployees";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ShieldAlert, Plus, Trash2, Save, Loader2, AlertTriangle, CirclePlus, Info, ClipboardList, Link2, Calendar } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ShieldAlert, Plus, Trash2, Save, Loader2, AlertTriangle, CirclePlus, Info, ClipboardList, Link2, Calendar, ChevronDown, ChevronRight, User } from "lucide-react";
 import { toast } from "sonner";
 
 // 5x5 Matrix options
@@ -45,6 +47,7 @@ const IkMatRisikoOgTiltak = () => {
   const navigate = useNavigate();
   const { hasModule, isLoading: modulesLoading } = useCompanyModules();
   const { content, isLoading, isSaving, saveContent, addActionForRisk } = useIkMatContent();
+  const { employees } = useEmployees();
   
   // Risk state
   const [risks, setRisks] = useState<IkMatRisk[]>([]);
@@ -56,6 +59,31 @@ const IkMatRisikoOgTiltak = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [activeMainTab, setActiveMainTab] = useState('risikovurdering');
   const [activeRiskSubTab, setActiveRiskSubTab] = useState('risks');
+  const [expandedRisks, setExpandedRisks] = useState<Set<string>>(new Set());
+  const [expandedActions, setExpandedActions] = useState<Set<string>>(new Set());
+
+  const toggleRiskExpanded = (id: string) => {
+    setExpandedRisks(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleActionExpanded = (id: string) => {
+    setExpandedActions(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const getEmployeeName = (id: string) => {
+    const emp = employees?.find(e => e.id === id);
+    return emp ? `${emp.first_name || ''} ${emp.last_name || ''}`.trim() : '';
+  };
 
   useEffect(() => {
     if (!modulesLoading && !hasModule('IK_MAT')) {
@@ -376,62 +404,58 @@ const IkMatRisikoOgTiltak = () => {
                     </AlertDescription>
                   </Alert>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {risks.map((risk) => {
                       const trafficLight = getTrafficLight(risk.riskLevel);
+                      const isExpanded = expandedRisks.has(risk.id);
                       return (
-                        <Card key={risk.id} className={`border-l-4 ${
-                          risk.isHaccp ? 'border-l-destructive' : 
-                          trafficLight === 'green' ? 'border-l-green-500' :
-                          trafficLight === 'yellow' ? 'border-l-yellow-500' : 'border-l-red-500'
-                        }`}>
-                          <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between flex-wrap gap-2">
-                              <div className="flex items-center gap-3 flex-wrap">
-                                <div className="flex items-center gap-2">
-                                  <div className={`h-4 w-4 rounded-full ${getTrafficLightCircle(risk.riskLevel)}`} />
-                                  <Badge className={getTrafficLightStyles(risk.riskLevel)}>
-                                    {risk.riskLevel} - {getTrafficLightLabel(trafficLight)}
-                                  </Badge>
+                        <Collapsible key={risk.id} open={isExpanded} onOpenChange={() => toggleRiskExpanded(risk.id)}>
+                          <Card className={`border-l-4 ${
+                            risk.isHaccp ? 'border-l-destructive' : 
+                            trafficLight === 'green' ? 'border-l-green-500' :
+                            trafficLight === 'yellow' ? 'border-l-yellow-500' : 'border-l-red-500'
+                          }`}>
+                            <CollapsibleTrigger asChild>
+                              <CardHeader className="pb-3 cursor-pointer hover:bg-muted/50 transition-colors">
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    {isExpanded ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
+                                    <div className={`h-4 w-4 rounded-full shrink-0 ${getTrafficLightCircle(risk.riskLevel)}`} />
+                                    <span className="font-medium truncate">{risk.hazard || 'Ikke navngitt risiko'}</span>
+                                    <Badge variant="outline" className={`shrink-0 ${getTrafficLightStyles(risk.riskLevel)}`}>
+                                      {risk.riskLevel}
+                                    </Badge>
+                                    {risk.isHaccp && <Badge variant="destructive" className="shrink-0">KKP</Badge>}
+                                    {risk.frequency && (
+                                      <Badge variant="secondary" className="shrink-0 hidden sm:inline-flex">
+                                        {FREQUENCY_OPTIONS.find(f => f.value === risk.frequency)?.label}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+                                    {(trafficLight === 'yellow' || trafficLight === 'red') && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleCreateActionForRisk(risk)}
+                                        className="text-primary hidden sm:flex"
+                                      >
+                                        <CirclePlus className="h-4 w-4 mr-1" />
+                                        Tiltak
+                                      </Button>
+                                    )}
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => handleDeleteRisk(risk.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                  </div>
                                 </div>
-                                {risk.isHaccp && (
-                                  <Badge variant="destructive">HACCP/KKP</Badge>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                {(trafficLight === 'yellow' || trafficLight === 'red') && (
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => handleCreateActionForRisk(risk)}
-                                          className="text-primary"
-                                        >
-                                          <CirclePlus className="h-4 w-4 mr-1" />
-                                          Opprett tiltak
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        Opprett tiltak i handlingsplanen
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                )}
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleDeleteRisk(risk.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              </div>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {getTrafficLightDescription(trafficLight)}
-                            </p>
-                          </CardHeader>
+                              </CardHeader>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
                           <CardContent className="space-y-4">
                             <div>
                               <Label>Fare/Risiko</Label>
@@ -533,8 +557,21 @@ const IkMatRisikoOgTiltak = () => {
                                 Marker som HACCP kritisk kontrollpunkt (KKP)
                               </Label>
                             </div>
+                            {(trafficLight === 'yellow' || trafficLight === 'red') && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleCreateActionForRisk(risk)}
+                                className="w-full sm:hidden mt-2"
+                              >
+                                <CirclePlus className="h-4 w-4 mr-2" />
+                                Opprett tiltak i handlingsplan
+                              </Button>
+                            )}
                           </CardContent>
-                        </Card>
+                            </CollapsibleContent>
+                          </Card>
+                        </Collapsible>
                       );
                     })}
                   </div>
@@ -789,13 +826,25 @@ const IkMatRisikoOgTiltak = () => {
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div>
-                            <Label>Ansvarlig</Label>
-                            <Input
+                            <Label className="flex items-center gap-1">
+                              <User className="h-3 w-3" />
+                              Ansvarlig
+                            </Label>
+                            <Select
                               value={action.responsible}
-                              onChange={(e) => handleUpdateAction(action.id, 'responsible', e.target.value)}
-                              placeholder="Hvem er ansvarlig?"
-                              className="mt-1"
-                            />
+                              onValueChange={(value) => handleUpdateAction(action.id, 'responsible', value)}
+                            >
+                              <SelectTrigger className="mt-1">
+                                <SelectValue placeholder="Velg ansvarlig" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {employees?.map(emp => (
+                                  <SelectItem key={emp.id} value={`${emp.first_name || ''} ${emp.last_name || ''}`.trim()}>
+                                    {`${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.email}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div>
                             <Label>Frist</Label>
