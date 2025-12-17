@@ -18,6 +18,7 @@ import {
   Check,
   Upload,
   Download,
+  Boxes,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -50,8 +51,19 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "react-router-dom";
+import { applyDefaultHmsSetup } from "@/lib/applyDefaultHmsSetup";
 
 type AppRole = "system_admin" | "company_admin" | "user";
+
+const MODULE_OPTIONS = [
+  { type: "IK_HMS", name: "IK HMS", description: "Internkontroll for helse, miljø og sikkerhet" },
+  { type: "IK_MAT", name: "IK MAT", description: "Internkontroll for matsikkerhet" },
+  { type: "IK_ALKOHOL", name: "IK Alkohol", description: "Internkontroll for alkoholhåndtering" },
+  { type: "IK_BYGG", name: "KS Bygg", description: "Kvalitetssikring for byggprosjekter" },
+  { type: "PERSONALHANDBOK", name: "Personalhåndbok", description: "Digital personalhåndbok" },
+  { type: "GDPR", name: "GDPR", description: "Personvern og datahåndtering" },
+  { type: "APENHETSLOVEN", name: "Åpenhetsloven", description: "Aktsomhetsvurderinger" },
+];
 
 export default function AdminUsers() {
   const [search, setSearch] = useState("");
@@ -76,6 +88,8 @@ export default function AdminUsers() {
   const [newUserLastName, setNewUserLastName] = useState("");
   const [newUserCompanyId, setNewUserCompanyId] = useState("");
   const [newUserRole, setNewUserRole] = useState<"user" | "company_admin">("user");
+  const [selectedModules, setSelectedModules] = useState<string[]>([]);
+  const [addModulesToCompany, setAddModulesToCompany] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -195,6 +209,7 @@ export default function AdminUsers() {
 
   const createUserMutation = useMutation({
     mutationFn: async () => {
+      // First create the user
       const { data, error } = await supabase.functions.invoke("create-user", {
         body: {
           email: newUserEmail,
@@ -206,6 +221,47 @@ export default function AdminUsers() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+
+      // If modules are selected, add them to the company
+      if (addModulesToCompany && selectedModules.length > 0 && newUserCompanyId) {
+        for (const moduleType of selectedModules) {
+          // Check if module already exists for this company
+          const { data: existingModule } = await supabase
+            .from("company_modules")
+            .select("id")
+            .eq("company_id", newUserCompanyId)
+            .eq("module_type", moduleType)
+            .single();
+
+          if (!existingModule) {
+            // Create new module
+            await supabase.from("company_modules").insert({
+              company_id: newUserCompanyId,
+              module_type: moduleType,
+              is_active: true,
+              settings: {},
+            });
+
+            // If KS Bygg module, create seed projects
+            if (moduleType === "IK_BYGG") {
+              const { createSeedProjects } = await import("@/utils/ksModule2SeedProjects");
+              await createSeedProjects(newUserCompanyId);
+            }
+          } else {
+            // Activate existing module if inactive
+            await supabase
+              .from("company_modules")
+              .update({ is_active: true })
+              .eq("id", existingModule.id);
+          }
+        }
+
+        // Apply default HMS setup if IK_HMS is selected
+        if (selectedModules.includes("IK_HMS")) {
+          await applyDefaultHmsSetup(newUserCompanyId);
+        }
+      }
+
       return data;
     },
     onSuccess: (data) => {
@@ -213,9 +269,12 @@ export default function AdminUsers() {
       queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
       setIsCreateUserDialogOpen(false);
       resetNewUserForm();
+      const moduleMsg = addModulesToCompany && selectedModules.length > 0 
+        ? ` + ${selectedModules.length} modul(er) lagt til` 
+        : "";
       toast({ 
         title: "Bruker opprettet", 
-        description: data.emailSent ? "E-post med innloggingslenke er sendt" : "Bruker opprettet (e-post ikke sendt)"
+        description: (data.emailSent ? "E-post med innloggingslenke er sendt" : "Bruker opprettet") + moduleMsg
       });
     },
     onError: (error) => {
@@ -276,6 +335,16 @@ export default function AdminUsers() {
     setNewUserLastName("");
     setNewUserCompanyId("");
     setNewUserRole("user");
+    setSelectedModules([]);
+    setAddModulesToCompany(false);
+  };
+
+  const toggleModuleSelection = (moduleType: string) => {
+    setSelectedModules(prev => 
+      prev.includes(moduleType) 
+        ? prev.filter(m => m !== moduleType)
+        : [...prev, moduleType]
+    );
   };
 
   const generatePassword = useCallback(() => {
@@ -852,6 +921,45 @@ export default function AdminUsers() {
                     <SelectItem value="company_admin">Bedriftsadmin</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Module selection section */}
+              <div className="border-t border-border pt-4 mt-4">
+                <div className="flex items-center space-x-2 mb-3">
+                  <Checkbox
+                    id="addModules"
+                    checked={addModulesToCompany}
+                    onCheckedChange={(checked) => setAddModulesToCompany(checked === true)}
+                  />
+                  <Label htmlFor="addModules" className="text-sm font-medium cursor-pointer flex items-center gap-2">
+                    <Boxes className="w-4 h-4" />
+                    Legg til moduler for bedriften
+                  </Label>
+                </div>
+                
+                {addModulesToCompany && (
+                  <div className="grid grid-cols-2 gap-2 p-3 bg-secondary/30 rounded-lg">
+                    {MODULE_OPTIONS.map((module) => (
+                      <div
+                        key={module.type}
+                        className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors ${
+                          selectedModules.includes(module.type)
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:bg-secondary/30"
+                        }`}
+                        onClick={() => toggleModuleSelection(module.type)}
+                      >
+                        <Checkbox
+                          checked={selectedModules.includes(module.type)}
+                          onCheckedChange={() => toggleModuleSelection(module.type)}
+                        />
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium">{module.name}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
