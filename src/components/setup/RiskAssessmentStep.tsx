@@ -7,8 +7,15 @@ import {
   AlertTriangle,
   HelpCircle,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  ChevronRight,
+  Edit2
 } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -235,6 +242,8 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
   function RiskAssessmentStep({ existingData, onSave, isSaving }, ref) {
     const [risks, setRisks] = useState<RiskItem[]>([]);
     const [hasInitialized, setHasInitialized] = useState(false);
+    const [expandedRisks, setExpandedRisks] = useState<Set<string>>(new Set());
+    const [editingRiskId, setEditingRiskId] = useState<string | null>(null);
     const [newRisk, setNewRisk] = useState<Partial<RiskItem>>({
       description: "",
       consequence: 0,
@@ -242,6 +251,18 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
       existing_measures: "",
       planned_measures: "",
     });
+
+    const toggleRiskExpanded = (id: string) => {
+      setExpandedRisks(prev => {
+        const next = new Set(prev);
+        if (next.has(id)) {
+          next.delete(id);
+        } else {
+          next.add(id);
+        }
+        return next;
+      });
+    };
 
     // Only load from existingData once on initial mount
     useEffect(() => {
@@ -418,48 +439,183 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
             {risks.map((risk, index) => {
               const riskLevel = getRiskLevel(risk.consequence, risk.probability);
               const score = risk.consequence * risk.probability;
+              const isExpanded = expandedRisks.has(risk.id);
+              const isEditing = editingRiskId === risk.id;
 
               return (
-                <motion.div
+                <Collapsible
                   key={risk.id}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="p-4 border border-border rounded-lg bg-card"
+                  open={isExpanded}
+                  onOpenChange={() => toggleRiskExpanded(risk.id)}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm mb-2">{risk.description}</p>
-                      <div className="flex flex-wrap gap-2 text-xs">
-                        <span className="px-2 py-1 rounded bg-muted">
-                          K: {risk.consequence}
-                        </span>
-                        <span className="px-2 py-1 rounded bg-muted">
-                          S: {risk.probability}
-                        </span>
-                        <span className={cn("px-2 py-1 rounded font-medium", riskLevel.bgColor, riskLevel.color)}>
-                          Risiko: {score} ({riskLevel.level})
-                        </span>
-                      </div>
-                      {(risk.existing_measures || risk.planned_measures) && (
-                        <div className="mt-2 text-xs text-muted-foreground space-y-1">
-                          {risk.existing_measures && (
-                            <p><span className="font-medium">Eksisterende tiltak:</span> {risk.existing_measures}</p>
-                          )}
-                          {risk.planned_measures && (
-                            <p><span className="font-medium">Planlagte tiltak:</span> {risk.planned_measures}</p>
-                          )}
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="border border-border rounded-lg bg-card overflow-hidden"
+                  >
+                    <CollapsibleTrigger asChild>
+                      <div className="p-4 cursor-pointer hover:bg-muted/30 transition-colors">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            {isExpanded ? (
+                              <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm truncate">{risk.description}</p>
+                              <div className="flex flex-wrap gap-2 text-xs mt-1">
+                                <span className="px-2 py-0.5 rounded bg-muted">
+                                  K: {risk.consequence}
+                                </span>
+                                <span className="px-2 py-0.5 rounded bg-muted">
+                                  S: {risk.probability}
+                                </span>
+                                <span className={cn("px-2 py-0.5 rounded font-medium", riskLevel.bgColor, riskLevel.color)}>
+                                  {score} ({riskLevel.level})
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => setEditingRiskId(isEditing ? null : risk.id)}
+                              className="p-1.5 hover:bg-muted rounded transition-colors"
+                            >
+                              <Edit2 className="w-4 h-4 text-muted-foreground" />
+                            </button>
+                            <button
+                              onClick={() => removeRisk(risk.id)}
+                              className="p-1.5 hover:bg-destructive/10 rounded transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </button>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => removeRisk(risk.id)}
-                      className="p-1 hover:bg-destructive/10 rounded transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </button>
-                  </div>
-                </motion.div>
+                      </div>
+                    </CollapsibleTrigger>
+                    
+                    <CollapsibleContent>
+                      <div className="px-4 pb-4 pt-0 border-t border-border/50">
+                        {isEditing ? (
+                          <div className="space-y-3 pt-3">
+                            <div>
+                              <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                                Beskrivelse
+                              </label>
+                              <Textarea
+                                value={risk.description}
+                                onChange={(e) => {
+                                  const updated = risks.map(r => r.id === risk.id ? { ...r, description: e.target.value } : r);
+                                  setRisks(updated);
+                                }}
+                                className="min-h-[60px]"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                                  Konsekvens
+                                </label>
+                                <Select
+                                  value={risk.consequence.toString()}
+                                  onValueChange={(v) => {
+                                    const updated = risks.map(r => r.id === risk.id ? { ...r, consequence: parseInt(v) } : r);
+                                    setRisks(updated);
+                                  }}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {consequenceLevels.map((level) => (
+                                      <SelectItem key={level.value} value={level.value.toString()}>
+                                        {level.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                                  Sannsynlighet
+                                </label>
+                                <Select
+                                  value={risk.probability.toString()}
+                                  onValueChange={(v) => {
+                                    const updated = risks.map(r => r.id === risk.id ? { ...r, probability: parseInt(v) } : r);
+                                    setRisks(updated);
+                                  }}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {probabilityLevels.map((level) => (
+                                      <SelectItem key={level.value} value={level.value.toString()}>
+                                        {level.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                                Eksisterende tiltak
+                              </label>
+                              <Input
+                                value={risk.existing_measures}
+                                onChange={(e) => {
+                                  const updated = risks.map(r => r.id === risk.id ? { ...r, existing_measures: e.target.value } : r);
+                                  setRisks(updated);
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                                Planlagte tiltak
+                              </label>
+                              <Input
+                                value={risk.planned_measures}
+                                onChange={(e) => {
+                                  const updated = risks.map(r => r.id === risk.id ? { ...r, planned_measures: e.target.value } : r);
+                                  setRisks(updated);
+                                }}
+                              />
+                            </div>
+                            <Button 
+                              size="sm" 
+                              onClick={async () => {
+                                setEditingRiskId(null);
+                                await onSave({ risks });
+                              }}
+                            >
+                              Lagre endringer
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="pt-3 space-y-2 text-sm">
+                            {risk.existing_measures && (
+                              <p className="text-muted-foreground">
+                                <span className="font-medium text-foreground">Eksisterende tiltak:</span> {risk.existing_measures}
+                              </p>
+                            )}
+                            {risk.planned_measures && (
+                              <p className="text-muted-foreground">
+                                <span className="font-medium text-foreground">Planlagte tiltak:</span> {risk.planned_measures}
+                              </p>
+                            )}
+                            {!risk.existing_measures && !risk.planned_measures && (
+                              <p className="text-muted-foreground italic">Ingen tiltak registrert</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </CollapsibleContent>
+                  </motion.div>
+                </Collapsible>
               );
             })}
           </div>

@@ -21,9 +21,17 @@ import {
   Link2,
   Filter,
   ArrowUpDown,
-  X
+  X,
+  ChevronDown,
+  ChevronRight
 } from "lucide-react";
 import { toast } from "sonner";
+import { useEmployees } from "@/hooks/useEmployees";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 export interface ActionPlanStepRef {
   save: () => Promise<void>;
@@ -88,11 +96,25 @@ const statusOrder = { ikke_startet: 1, pågår: 2, fullført: 3 };
 
 export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>(
   function ActionPlanStep({ existingData, risks, onSave, isSaving }, ref) {
+    const { employees } = useEmployees();
     const [actions, setActions] = useState<ActionItem[]>(existingData?.actions || []);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [expandedActions, setExpandedActions] = useState<Set<string>>(new Set());
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("alle");
     const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("alle");
     const [sortOption, setSortOption] = useState<SortOption>("none");
+
+    const toggleActionExpanded = (id: string) => {
+      setExpandedActions(prev => {
+        const next = new Set(prev);
+        if (next.has(id)) {
+          next.delete(id);
+        } else {
+          next.add(id);
+        }
+        return next;
+      });
+    };
 
     useEffect(() => {
       if (existingData?.actions) {
@@ -440,177 +462,216 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {filteredAndSortedActions.map((action) => {
               const originalIndex = actions.findIndex(a => a.id === action.id);
+              const isExpanded = expandedActions.has(action.id);
+              const isEditing = editingId === action.id;
+              const StatusIcon = statusConfig[action.status].icon;
+
               return (
-              <Card key={action.id} className={editingId === action.id ? "ring-2 ring-primary" : ""}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-muted-foreground">
-                        Tiltak #{originalIndex + 1}
-                      </span>
-                      {action.risk_id && (
-                        <Badge variant="outline" className="text-xs">
-                          <Link2 className="w-3 h-3 mr-1" />
-                          Koblet til risiko
-                        </Badge>
-                      )}
-                      <Badge variant="outline" className={priorityConfig[action.priority].color}>
-                        {priorityConfig[action.priority].label}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setEditingId(editingId === action.id ? null : action.id)}
-                      >
-                        {editingId === action.id ? "Lukk" : "Rediger"}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeAction(action.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                <Collapsible
+                  key={action.id}
+                  open={isExpanded}
+                  onOpenChange={() => toggleActionExpanded(action.id)}
+                >
+                  <div className={`border rounded-lg bg-card overflow-hidden ${isEditing ? "ring-2 ring-primary" : "border-border"}`}>
+                    <CollapsibleTrigger asChild>
+                      <div className="p-4 cursor-pointer hover:bg-muted/30 transition-colors">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            {isExpanded ? (
+                              <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap mb-1">
+                                <span className="text-sm font-medium">
+                                  Tiltak #{originalIndex + 1}
+                                </span>
+                                <Badge variant="outline" className={priorityConfig[action.priority].color}>
+                                  {priorityConfig[action.priority].label}
+                                </Badge>
+                                <Badge variant="outline" className={statusConfig[action.status].bg}>
+                                  <StatusIcon className={`w-3 h-3 mr-1 ${statusConfig[action.status].color}`} />
+                                  {statusConfig[action.status].label}
+                                </Badge>
+                                {action.risk_id && (
+                                  <Badge variant="outline" className="text-xs">
+                                    <Link2 className="w-3 h-3 mr-1" />
+                                    Koblet
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-muted-foreground truncate">
+                                {action.action_description || "Ingen beskrivelse"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setEditingId(isEditing ? null : action.id)}
+                            >
+                              {isEditing ? "Lukk" : "Rediger"}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeAction(action.id)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CollapsibleTrigger>
+                    
+                    <CollapsibleContent>
+                      <div className="px-4 pb-4 pt-0 border-t border-border/50">
+                        {isEditing ? (
+                          <div className="space-y-4 pt-4">
+                            {action.risk_description && (
+                              <div className="p-3 rounded-md bg-muted/50 text-sm">
+                                <span className="font-medium">Koblet risiko:</span> {action.risk_description}
+                              </div>
+                            )}
+
+                            <div className="space-y-2">
+                              <Label>Beskrivelse av tiltak *</Label>
+                              <Textarea
+                                value={action.action_description}
+                                onChange={(e) => updateAction(action.id, { action_description: e.target.value })}
+                                placeholder="Beskriv tiltaket som skal gjennomføres..."
+                                rows={3}
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label className="flex items-center gap-1">
+                                  <User className="w-3 h-3" />
+                                  Ansvarlig
+                                </Label>
+                                <Select
+                                  value={action.responsible}
+                                  onValueChange={(value) => updateAction(action.id, { responsible: value })}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Velg ansvarlig" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {employees.map((emp) => (
+                                      <SelectItem key={emp.id} value={`${emp.first_name} ${emp.last_name}`}>
+                                        {emp.first_name} {emp.last_name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label className="flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  Frist
+                                </Label>
+                                <Input
+                                  type="date"
+                                  value={action.deadline}
+                                  onChange={(e) => updateAction(action.id, { deadline: e.target.value })}
+                                />
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label>Status</Label>
+                                <Select
+                                  value={action.status}
+                                  onValueChange={(value: ActionItem["status"]) => 
+                                    updateAction(action.id, { status: value })
+                                  }
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="ikke_startet">Ikke startet</SelectItem>
+                                    <SelectItem value="pågår">Pågår</SelectItem>
+                                    <SelectItem value="fullført">Fullført</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label>Prioritet</Label>
+                                <Select
+                                  value={action.priority}
+                                  onValueChange={(value: ActionItem["priority"]) => 
+                                    updateAction(action.id, { priority: value })
+                                  }
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="lav">Lav</SelectItem>
+                                    <SelectItem value="medium">Medium</SelectItem>
+                                    <SelectItem value="høy">Høy</SelectItem>
+                                    <SelectItem value="kritisk">Kritisk</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>Kommentarer</Label>
+                              <Textarea
+                                value={action.comments}
+                                onChange={(e) => updateAction(action.id, { comments: e.target.value })}
+                                placeholder="Eventuelle kommentarer eller notater..."
+                                rows={2}
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-3 pt-4">
+                            {action.risk_description && (
+                              <p className="text-xs text-muted-foreground">
+                                <span className="font-medium">Risiko:</span> {action.risk_description}
+                              </p>
+                            )}
+                            <p className="text-sm">
+                              {action.action_description || <span className="text-muted-foreground italic">Ingen beskrivelse</span>}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-3 text-sm">
+                              {action.responsible && (
+                                <span className="flex items-center gap-1 text-muted-foreground">
+                                  <User className="w-3 h-3" />
+                                  {action.responsible}
+                                </span>
+                              )}
+                              {action.deadline && (
+                                <span className="flex items-center gap-1 text-muted-foreground">
+                                  <Calendar className="w-3 h-3" />
+                                  {new Date(action.deadline).toLocaleDateString("nb-NO")}
+                                </span>
+                              )}
+                              {action.comments && (
+                                <p className="text-xs text-muted-foreground w-full mt-2">
+                                  <span className="font-medium">Kommentar:</span> {action.comments}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CollapsibleContent>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  {editingId === action.id ? (
-                    <div className="space-y-4">
-                      {action.risk_description && (
-                        <div className="p-3 rounded-md bg-muted/50 text-sm">
-                          <span className="font-medium">Koblet risiko:</span> {action.risk_description}
-                        </div>
-                      )}
-
-                      <div className="space-y-2">
-                        <Label>Beskrivelse av tiltak *</Label>
-                        <Textarea
-                          value={action.action_description}
-                          onChange={(e) => updateAction(action.id, { action_description: e.target.value })}
-                          placeholder="Beskriv tiltaket som skal gjennomføres..."
-                          rows={3}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label className="flex items-center gap-1">
-                            <User className="w-3 h-3" />
-                            Ansvarlig
-                          </Label>
-                          <Input
-                            value={action.responsible}
-                            onChange={(e) => updateAction(action.id, { responsible: e.target.value })}
-                            placeholder="Navn på ansvarlig person"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            Frist
-                          </Label>
-                          <Input
-                            type="date"
-                            value={action.deadline}
-                            onChange={(e) => updateAction(action.id, { deadline: e.target.value })}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Status</Label>
-                          <Select
-                            value={action.status}
-                            onValueChange={(value: ActionItem["status"]) => 
-                              updateAction(action.id, { status: value })
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="ikke_startet">Ikke startet</SelectItem>
-                              <SelectItem value="pågår">Pågår</SelectItem>
-                              <SelectItem value="fullført">Fullført</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label>Prioritet</Label>
-                          <Select
-                            value={action.priority}
-                            onValueChange={(value: ActionItem["priority"]) => 
-                              updateAction(action.id, { priority: value })
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="lav">Lav</SelectItem>
-                              <SelectItem value="medium">Medium</SelectItem>
-                              <SelectItem value="høy">Høy</SelectItem>
-                              <SelectItem value="kritisk">Kritisk</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Kommentarer</Label>
-                        <Textarea
-                          value={action.comments}
-                          onChange={(e) => updateAction(action.id, { comments: e.target.value })}
-                          placeholder="Eventuelle kommentarer eller notater..."
-                          rows={2}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {action.risk_description && (
-                        <p className="text-xs text-muted-foreground">
-                          Risiko: {action.risk_description}
-                        </p>
-                      )}
-                      <p className="text-sm">
-                        {action.action_description || <span className="text-muted-foreground italic">Ingen beskrivelse</span>}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-3 text-sm">
-                        {action.responsible && (
-                          <span className="flex items-center gap-1 text-muted-foreground">
-                            <User className="w-3 h-3" />
-                            {action.responsible}
-                          </span>
-                        )}
-                        {action.deadline && (
-                          <span className="flex items-center gap-1 text-muted-foreground">
-                            <Calendar className="w-3 h-3" />
-                            {new Date(action.deadline).toLocaleDateString("nb-NO")}
-                          </span>
-                        )}
-                        <Badge variant="outline" className={statusConfig[action.status].bg}>
-                          {(() => {
-                            const StatusIcon = statusConfig[action.status].icon;
-                            return <StatusIcon className={`w-3 h-3 mr-1 ${statusConfig[action.status].color}`} />;
-                          })()}
-                          {statusConfig[action.status].label}
-                        </Badge>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                </Collapsible>
               );
             })}
           </div>
