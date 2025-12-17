@@ -888,27 +888,32 @@ const Handbook = () => {
       doc.text("Oversikt over lover og forskrifter som gjelder for virksomheten:", margin, yPos);
       yPos += 10;
       
-      const lawsTableData = generelleLover.map((lov) => [
-        lov.tittel,
-        lov.kategori,
-        lov.beskrivelse,
+      const lawsTableData = savedLaws.map((law) => [
+        law.law_name,
+        law.category || "Generelt",
+        law.description || "",
       ]);
       
-      autoTable(doc, {
-        startY: yPos,
-        head: [["Lov/forskrift", "Kategori", "Beskrivelse"]],
-        body: lawsTableData,
-        theme: "striped",
-        headStyles: { fillColor: [59, 130, 246], fontSize: 9, fontStyle: "bold" },
-        bodyStyles: { fontSize: 8 },
-        columnStyles: {
-          0: { cellWidth: 50 },
-          1: { cellWidth: 30 },
-          2: { cellWidth: 90 },
-        },
-        margin: { left: margin, right: margin },
-      });
-      yPos = (doc as any).lastAutoTable.finalY + 10;
+      if (lawsTableData.length > 0) {
+        autoTable(doc, {
+          startY: yPos,
+          head: [["Lov/forskrift", "Kategori", "Beskrivelse"]],
+          body: lawsTableData,
+          theme: "striped",
+          headStyles: { fillColor: [59, 130, 246], fontSize: 9, fontStyle: "bold" },
+          bodyStyles: { fontSize: 8 },
+          columnStyles: {
+            0: { cellWidth: 50 },
+            1: { cellWidth: 30 },
+            2: { cellWidth: 90 },
+          },
+          margin: { left: margin, right: margin },
+        });
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+      } else {
+        doc.text("Ingen lover og forskrifter er lagret ennå.", margin, yPos);
+        yPos += 10;
+      }
 
       // OPTIONAL SECTION 7: DEVIATIONS
       if (includeDeviationsInPdf && deviations.length > 0) {
