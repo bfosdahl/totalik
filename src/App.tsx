@@ -64,6 +64,7 @@ import IkHmsStoffkartotek from "./pages/IkHmsStoffkartotek";
 import IkHmsDokumentsenter from "./pages/IkHmsDokumentsenter";
 import LoverOgForskrifter from "./pages/LoverOgForskrifter";
 import AnonymousMessages from "./pages/AnonymousMessages";
+import Risikoanalyse from "./pages/Risikoanalyse";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -90,6 +91,7 @@ const App = () => (
             <Route path="/setup/ai" element={<ProtectedRoute><IkHmsOppsett /></ProtectedRoute>} />
             <Route path="/maalsetting" element={<ProtectedRoute><IkHmsMaal /></ProtectedRoute>} />
             <Route path="/organisering" element={<ProtectedRoute><IkHmsOrganisering /></ProtectedRoute>} />
+            <Route path="/risikoanalyse" element={<ProtectedRoute><Risikoanalyse /></ProtectedRoute>} />
             <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />
             <Route path="/deviations" element={<ProtectedRoute><Deviations /></ProtectedRoute>} />
             <Route path="/audits" element={<ProtectedRoute><Audits /></ProtectedRoute>} />

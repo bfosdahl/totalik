@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEmployees } from "@/hooks/useEmployees";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 
@@ -178,22 +179,22 @@ export function RisikovurderingOgHandlingsplan() {
       // Save risks
       const { error: riskError } = await supabase
         .from("company_risk_assessments")
-        .upsert({
+        .upsert([{
           company_id: company.id,
-          risks: risks as unknown as Record<string, unknown>[],
+          risks: risks as unknown as Json,
           updated_at: new Date().toISOString(),
-        }, { onConflict: "company_id" });
+        }], { onConflict: "company_id" });
 
       if (riskError) throw riskError;
 
       // Save actions
       const { error: actionError } = await supabase
         .from("company_action_plans")
-        .upsert({
+        .upsert([{
           company_id: company.id,
-          actions: actions as unknown as Record<string, unknown>[],
+          actions: actions as unknown as Json,
           updated_at: new Date().toISOString(),
-        }, { onConflict: "company_id" });
+        }], { onConflict: "company_id" });
 
       if (actionError) throw actionError;
 

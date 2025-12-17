@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield, ClipboardList, CalendarCheck, FileCheck } from "lucide-react";
@@ -7,8 +8,28 @@ import { OppfolgingTab } from "@/components/risikoanalyse/OppfolgingTab";
 import { HmsSjaTab } from "@/components/risikoanalyse/HmsSjaTab";
 
 const Risikoanalyse = () => {
-  const [activeTab, setActiveTab] = useState("risiko-handlingsplan");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || "risiko-handlingsplan");
 
+  useEffect(() => {
+    if (tabParam === "oppfolging") {
+      setActiveTab("oppfolging");
+    } else if (tabParam === "sja") {
+      setActiveTab("sja");
+    } else {
+      setActiveTab("risiko-handlingsplan");
+    }
+  }, [tabParam]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    if (value === "risiko-handlingsplan") {
+      setSearchParams({});
+    } else {
+      setSearchParams({ tab: value });
+    }
+  };
   return (
     <AppLayout>
       <div className="container max-w-7xl mx-auto py-6 px-4 sm:px-6">
@@ -28,7 +49,7 @@ const Risikoanalyse = () => {
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-muted/50">
             <TabsTrigger 
               value="risiko-handlingsplan" 

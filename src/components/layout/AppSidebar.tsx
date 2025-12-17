@@ -58,8 +58,17 @@ const ikHmsItems = [
   { icon: Shield, label: "Oppsett-hjelperen", path: "/setup/ai", color: "text-green-500" },
   { icon: Target, label: "Målsetting", path: "/maalsetting", color: "text-yellow-500" },
   { icon: Building2, label: "Organisering", path: "/organisering", color: "text-sky-500" },
-  { icon: AlertTriangle, label: "Risikovurdering", path: "/setup?step=2", color: "text-orange-500" },
-  { icon: ListChecks, label: "Handlingsplan", path: "/setup?step=3", color: "text-teal-500" },
+  { 
+    icon: AlertTriangle, 
+    label: "Risikoanalyse", 
+    path: "/risikoanalyse", 
+    color: "text-orange-500",
+    children: [
+      { icon: ClipboardList, label: "Risikovurdering & Handlingsplan", path: "/risikoanalyse", color: "text-orange-500" },
+      { icon: CalendarDays, label: "Oppfølging", path: "/risikoanalyse?tab=oppfolging", color: "text-teal-500" },
+      { icon: FileCheck, label: "SJA", path: "/risikoanalyse?tab=sja", color: "text-blue-500" },
+    ]
+  },
   { icon: FlaskConical, label: "Stoffkartotek", path: "/stoffkartotek", color: "text-purple-500" },
   { icon: Scale, label: "Lover og forskrifter", path: "/lover-og-forskrifter", color: "text-indigo-500" },
   { icon: AlertTriangle, label: "Avvik", path: "/deviations", color: "text-red-500" },
@@ -103,7 +112,7 @@ const detectActiveSection = (pathname: string): SectionKey => {
   const personalPaths = ['/employees', '/hr/', '/time-registration', '/time-off', '/work-schedule', '/my/'];
   if (personalPaths.some(p => pathname === p || pathname.startsWith(p))) return 'personal';
   
-  const hmsPaths = ['/setup', '/deviations', '/audits', '/handbook', '/hms-chat', '/stoffkartotek', '/lover-og-forskrifter', '/dokumentsenter'];
+  const hmsPaths = ['/setup', '/deviations', '/audits', '/handbook', '/hms-chat', '/stoffkartotek', '/lover-og-forskrifter', '/dokumentsenter', '/risikoanalyse', '/maalsetting', '/organisering'];
   if (hmsPaths.some(p => pathname === p || pathname.startsWith(p))) return 'ikHms';
   
   return 'none';
@@ -383,6 +392,9 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                 >
                   <div className="pl-6 space-y-1 mt-1">
                     {ikHmsItems.map((item) => {
+                      // Check if item has children
+                      const hasChildren = 'children' in item && item.children;
+                      
                       // Handle query parameter matching for setup steps
                       const hasQueryParam = item.path.includes("?");
                       let isActive = false;
@@ -405,6 +417,66 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           navigate(item.path);
                         }
                       };
+                      
+                      if (hasChildren) {
+                        return (
+                          <div key={item.path}>
+                            <NavLink
+                              to={item.path}
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                                isActive
+                                  ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                              )}
+                            >
+                              <item.icon className={cn("w-4 h-4 flex-shrink-0", !isActive && item.color)} />
+                              <span>{item.label}</span>
+                            </NavLink>
+                            {/* Sub-items */}
+                            {location.pathname.startsWith("/risikoanalyse") && (
+                              <div className="pl-4 space-y-1 mt-1">
+                                {(item.children as typeof ikHmsItems).map((child) => {
+                                  const childHasQuery = child.path.includes("?");
+                                  let childIsActive = false;
+                                  
+                                  if (childHasQuery) {
+                                    const [basePath, queryString] = child.path.split("?");
+                                    const itemParams = new URLSearchParams(queryString);
+                                    const currentParams = new URLSearchParams(location.search);
+                                    childIsActive = location.pathname === basePath && 
+                                      itemParams.get("tab") === currentParams.get("tab");
+                                  } else {
+                                    childIsActive = location.pathname === child.path && !location.search;
+                                  }
+                                  
+                                  return (
+                                    <NavLink
+                                      key={child.path}
+                                      to={child.path}
+                                      onClick={(e) => {
+                                        if (childHasQuery) {
+                                          e.preventDefault();
+                                          navigate(child.path);
+                                        }
+                                      }}
+                                      className={cn(
+                                        "flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 text-xs",
+                                        childIsActive
+                                          ? "bg-sidebar-primary/60 text-sidebar-primary-foreground"
+                                          : "text-sidebar-foreground/50 hover:bg-sidebar-accent/30 hover:text-sidebar-foreground"
+                                      )}
+                                    >
+                                      <child.icon className={cn("w-3 h-3 flex-shrink-0", !childIsActive && child.color)} />
+                                      <span>{child.label}</span>
+                                    </NavLink>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
                       
                       return (
                         <NavLink
