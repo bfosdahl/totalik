@@ -36,6 +36,7 @@ import {
   FlaskConical,
   ShoppingCart,
   FolderOpen,
+  Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ const standardNavItems = [
 const ikHmsItems = [
   { icon: ClipboardList, label: "Oppsett", path: "/setup", color: "text-emerald-500" },
   { icon: Shield, label: "Oppsett-hjelperen", path: "/setup/ai", color: "text-green-500" },
+  { icon: Target, label: "Målsetting", path: "/maalsetting", color: "text-yellow-500" },
   { icon: AlertTriangle, label: "Risikovurdering", path: "/setup?step=2", color: "text-orange-500" },
   { icon: ListChecks, label: "Handlingsplan", path: "/setup?step=3", color: "text-teal-500" },
   { icon: FlaskConical, label: "Stoffkartotek", path: "/stoffkartotek", color: "text-purple-500" },
