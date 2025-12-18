@@ -264,17 +264,30 @@ export default function AdminUsers() {
 
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
       queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
       setIsCreateUserDialogOpen(false);
+      
+      // Automatisk synkroniser bedriften til kurssystemet
+      if (newUserCompanyId) {
+        try {
+          await supabase.functions.invoke("sync-to-kurs", {
+            body: { company_id: newUserCompanyId },
+          });
+          console.log("Company synced to kurs system after user creation");
+        } catch (syncError) {
+          console.error("Failed to sync to kurs:", syncError);
+        }
+      }
+      
       resetNewUserForm();
       const moduleMsg = addModulesToCompany && selectedModules.length > 0 
         ? ` + ${selectedModules.length} modul(er) lagt til` 
         : "";
       toast({ 
         title: "Bruker opprettet", 
-        description: (data.emailSent ? "E-post med innloggingslenke er sendt" : "Bruker opprettet") + moduleMsg
+        description: (data.emailSent ? "E-post med innloggingslenke er sendt" : "Bruker opprettet") + moduleMsg + " og synkronisert til kurssystem"
       });
     },
     onError: (error) => {
