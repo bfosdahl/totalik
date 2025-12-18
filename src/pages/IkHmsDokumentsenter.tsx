@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { FileText, Upload, Download, Trash2, FolderOpen, Search, Plus, File, FileSpreadsheet, FileImage, Filter, Shield, UserCheck, AlertTriangle, ClipboardList, GraduationCap, FlaskConical, HeartPulse, FolderPlus, ChevronDown, ChevronRight, FileCheck, Clock, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -163,6 +164,7 @@ export default function IkHmsDokumentsenter() {
   });
 
   return (
+    <AppLayout>
     <div className="space-y-6">
       <div>
         <Button 
@@ -635,5 +637,6 @@ export default function IkHmsDokumentsenter() {
         </TabsContent>
       </Tabs>
     </div>
+    </AppLayout>
   );
 }
