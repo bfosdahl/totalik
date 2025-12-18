@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { FileText, Upload, Download, Trash2, FolderOpen, Search, Plus, File, FileSpreadsheet, FileImage, Filter, Shield, UserCheck, AlertTriangle, ClipboardList, GraduationCap, FlaskConical, HeartPulse, FolderPlus, ChevronDown, ChevronRight, FileCheck, Clock } from "lucide-react";
+import { FileText, Upload, Download, Trash2, FolderOpen, Search, Plus, File, FileSpreadsheet, FileImage, Filter, Shield, UserCheck, AlertTriangle, ClipboardList, GraduationCap, FlaskConical, HeartPulse, FolderPlus, ChevronDown, ChevronRight, FileCheck, Clock, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 export default function IkHmsDokumentsenter() {
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const { documents, isLoading, uploadDocument, deleteDocument, getDownloadUrl, isUploading } = useIkHmsCompanyDocuments();
   const { documents: adminDocuments, isLoading: adminLoading, getDocumentUrl } = useAdminTemplatesForCustomers();
@@ -163,6 +165,15 @@ export default function IkHmsDokumentsenter() {
   return (
     <div className="space-y-6">
       <div>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => navigate(-1)} 
+          className="mb-2"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Tilbake
+        </Button>
         <h1 className="text-2xl sm:text-3xl font-bold">Dokumentsenter</h1>
         <p className="text-muted-foreground mt-1">
           Last ned maler og administrer bedriftens dokumenter
