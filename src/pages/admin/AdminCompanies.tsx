@@ -176,6 +176,16 @@ export default function AdminCompanies() {
       queryClient.invalidateQueries({ queryKey: ["admin-companies"] });
       setIsDialogOpen(false);
       
+      // Automatisk synkroniser til kurssystemet
+      try {
+        await supabase.functions.invoke("sync-to-kurs", {
+          body: { company_id: newCompany.id },
+        });
+        console.log("Company synced to kurs system");
+      } catch (syncError) {
+        console.error("Failed to sync to kurs:", syncError);
+      }
+      
       // If inviting admin, call the edge function
       if (inviteAdmin && adminData.email) {
         try {
@@ -191,24 +201,24 @@ export default function AdminCompanies() {
           if (response.error) {
             toast({ 
               title: "Bedrift opprettet", 
-              description: `Bedrift opprettet, men kunne ikke invitere admin: ${response.error.message}`,
+              description: `Bedrift opprettet og synkronisert, men kunne ikke invitere admin: ${response.error.message}`,
               variant: "destructive"
             });
           } else {
             toast({ 
               title: "Bedrift opprettet", 
-              description: "Bedrift opprettet og administrator invitert." 
+              description: "Bedrift opprettet, synkronisert til kurssystem og administrator invitert." 
             });
           }
         } catch (err: any) {
           toast({ 
             title: "Bedrift opprettet", 
-            description: `Bedrift opprettet, men kunne ikke invitere admin: ${err.message}`,
+            description: `Bedrift opprettet og synkronisert, men kunne ikke invitere admin: ${err.message}`,
             variant: "destructive"
           });
         }
       } else {
-        toast({ title: "Bedrift opprettet", description: "Ny bedrift er lagt til." });
+        toast({ title: "Bedrift opprettet", description: "Ny bedrift er lagt til og synkronisert til kurssystemet." });
       }
       
       resetForm();
