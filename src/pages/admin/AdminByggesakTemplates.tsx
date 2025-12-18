@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -152,6 +153,7 @@ export default function AdminByggesakTemplates() {
   });
 
   return (
+    <AdminLayout>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-start gap-4">
@@ -440,5 +442,6 @@ export default function AdminByggesakTemplates() {
         </DialogContent>
       </Dialog>
     </div>
+    </AdminLayout>
   );
 }
