@@ -947,12 +947,10 @@ export function RisikovurderingOgHandlingsplan() {
             </DialogContent>
           </Dialog>
           
-          {risks.length === 0 && (
-            <Button variant="outline" onClick={addExampleRisks}>
-              <Plus className="h-4 w-4 mr-2" />
-              Legg til eksempler
-            </Button>
-          )}
+          <Button variant="outline" onClick={addExampleRisks}>
+            <Plus className="h-4 w-4 mr-2" />
+            Legg til eksempler
+          </Button>
           </div>
 
           <Button onClick={handleSave} disabled={isSaving} variant="outline">
