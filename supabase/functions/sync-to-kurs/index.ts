@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
     // Hent ansatte fra dette prosjektet
     const { data: employees, error: fetchError } = await supabase
       .from('profiles')
-      .select('email, first_name, last_name, phone, position')
+      .select('email, first_name, last_name, phone')
       .eq('company_id', company_id)
       .eq('is_active', true)
 
