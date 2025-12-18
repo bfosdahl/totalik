@@ -59,3 +59,6 @@ verify_jwt = true
 
 [functions.send-meeting-minutes]
 verify_jwt = true
+
+[functions.sync-employees]
+verify_jwt = false
