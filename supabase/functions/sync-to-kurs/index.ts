@@ -1,6 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const KURS_SYNC_ENDPOINT = 'https://kynycefwxxshkedhncmc.supabase.co/functions/v1/sync-employees'
+const KURS_SYNC_ENDPOINT = 'https://kynycefwxxshkedhncmc.supabase.co/functions/v1/sync-from-cn'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,12 +36,27 @@ Deno.serve(async (req) => {
       })
     }
 
-    console.log(`Syncing employees for company: ${company_id}`)
+    console.log(`Syncing company and employees for: ${company_id}`)
+
+    // Hent bedriftsdata
+    const { data: company, error: companyError } = await supabase
+      .from('companies')
+      .select('id, name, org_number, email, phone, address, postal_code, city')
+      .eq('id', company_id)
+      .single()
+
+    if (companyError || !company) {
+      console.error('Error fetching company:', companyError)
+      return new Response(JSON.stringify({ error: 'Company not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
 
     // Hent ansatte fra dette prosjektet
     const { data: employees, error: fetchError } = await supabase
       .from('profiles')
-      .select('email, first_name, last_name, phone, position, hms_card_number, hms_card_expiry')
+      .select('email, first_name, last_name, phone, position')
       .eq('company_id', company_id)
       .eq('is_active', true)
 
@@ -53,7 +68,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    console.log(`Found ${employees?.length || 0} employees to sync`)
+    console.log(`Found company: ${company.name}, employees: ${employees?.length || 0}`)
 
     // Send til kursprosjektet
     const response = await fetch(KURS_SYNC_ENDPOINT, {
@@ -62,13 +77,19 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
         'x-sync-api-key': syncApiKey
       },
-      body: JSON.stringify({ company_id, employees: employees || [] })
+      body: JSON.stringify({ 
+        company: company,
+        employees: employees || [] 
+      })
     })
 
     const result = await response.json()
     console.log('Sync result:', result)
 
-    return new Response(JSON.stringify(result), {
+    return new Response(JSON.stringify({
+      success: response.ok,
+      result
+    }), {
       status: response.ok ? 200 : response.status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
