@@ -153,6 +153,7 @@ export function RisikovurderingOgHandlingsplan() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showReevaluateDialog, setShowReevaluateDialog] = useState(false);
   const [selectedEventForReeval, setSelectedEventForReeval] = useState<{risk: RiskItem, event: UnwantedEvent} | null>(null);
+  const [editingRisk, setEditingRisk] = useState<RiskItem | null>(null);
 
   const currentUserName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
 
@@ -412,6 +413,107 @@ export function RisikovurderingOgHandlingsplan() {
     toast.success("Tiltak slettet");
   };
 
+  // Start editing a risk
+  const startEditRisk = (risk: RiskItem) => {
+    setEditingRisk(risk);
+    setNewRisk({
+      hazard_source: risk.hazard_source,
+      hazard_source_custom: risk.hazard_source_custom || "",
+      events: risk.events.map(e => ({
+        description: e.description,
+        consequence: e.consequence,
+        probability: e.probability,
+        measures: e.measures,
+        responsible: e.responsible,
+        deadline: e.deadline,
+      }))
+    });
+    setShowAddDialog(true);
+  };
+
+  // Save edited risk
+  const saveEditedRisk = () => {
+    if (!editingRisk) return;
+
+    const hazardLabel = newRisk.hazard_source === "annet" 
+      ? newRisk.hazard_source_custom 
+      : PREDEFINED_HAZARDS.find(h => h.value === newRisk.hazard_source)?.label || newRisk.hazard_source;
+
+    if (!hazardLabel?.trim()) {
+      toast.error("Velg eller skriv inn farekilde");
+      return;
+    }
+
+    if (newRisk.events.some(e => !e.description.trim())) {
+      toast.error("Alle hendelser må ha en beskrivelse");
+      return;
+    }
+
+    // Update the risk with preserved event IDs where possible
+    const updatedRisk: RiskItem = {
+      ...editingRisk,
+      hazard_source: newRisk.hazard_source,
+      hazard_source_custom: newRisk.hazard_source === "annet" ? newRisk.hazard_source_custom : undefined,
+      events: newRisk.events.map((e, idx) => ({
+        id: editingRisk.events[idx]?.id || crypto.randomUUID(),
+        description: e.description,
+        consequence: e.consequence,
+        probability: e.probability,
+        measures: e.measures,
+        responsible: e.responsible || currentUserName,
+        deadline: e.deadline,
+        status: editingRisk.events[idx]?.status || "planlagt" as const,
+        // Preserve re-evaluation data if exists
+        consequence_after: editingRisk.events[idx]?.consequence_after,
+        probability_after: editingRisk.events[idx]?.probability_after,
+        reevaluated_at: editingRisk.events[idx]?.reevaluated_at,
+        reevaluated_by: editingRisk.events[idx]?.reevaluated_by,
+      })),
+    };
+
+    setRisks(risks.map(r => r.id === editingRisk.id ? updatedRisk : r));
+
+    // Update related actions
+    const updatedActions = actions.map(a => {
+      if (a.risk_id === editingRisk.id) {
+        const event = updatedRisk.events.find(e => e.id === a.event_id);
+        if (event) {
+          return {
+            ...a,
+            risk_source: hazardLabel,
+            event_description: event.description,
+            action_description: event.measures || a.action_description,
+            responsible: event.responsible || a.responsible,
+            deadline: event.deadline || a.deadline,
+          };
+        }
+      }
+      return a;
+    });
+    setActions(updatedActions);
+
+    // Reset form and close dialog
+    setNewRisk({
+      hazard_source: "",
+      hazard_source_custom: "",
+      events: [{ description: "", consequence: 3, probability: 3, measures: "", responsible: currentUserName, deadline: "" }]
+    });
+    setEditingRisk(null);
+    setShowAddDialog(false);
+    toast.success("Farekilde oppdatert");
+  };
+
+  // Close dialog and reset
+  const closeDialog = () => {
+    setShowAddDialog(false);
+    setEditingRisk(null);
+    setNewRisk({
+      hazard_source: "",
+      hazard_source_custom: "",
+      events: [{ description: "", consequence: 3, probability: 3, measures: "", responsible: currentUserName, deadline: "" }]
+    });
+  };
+
   // Stats
   const allEvents = risks.flatMap(r => r.events);
   const stats = {
@@ -488,7 +590,7 @@ export function RisikovurderingOgHandlingsplan() {
 
         {/* Action buttons */}
         <div className="flex flex-wrap gap-2 justify-between">
-          <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <Dialog open={showAddDialog} onOpenChange={(open) => !open && closeDialog()}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -497,8 +599,10 @@ export function RisikovurderingOgHandlingsplan() {
             </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Ny risikovurdering</DialogTitle>
-                <DialogDescription>Velg farekilde og legg til uønskede hendelser</DialogDescription>
+                <DialogTitle>{editingRisk ? "Rediger farekilde" : "Ny risikovurdering"}</DialogTitle>
+                <DialogDescription>
+                  {editingRisk ? "Endre farekilde og uønskede hendelser" : "Velg farekilde og legg til uønskede hendelser"}
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-6">
                 {/* Step 1: Hazard Source */}
@@ -675,8 +779,10 @@ export function RisikovurderingOgHandlingsplan() {
                 </div>
               </div>
               <DialogFooter className="mt-4">
-                <Button variant="outline" onClick={() => setShowAddDialog(false)}>Avbryt</Button>
-                <Button onClick={addRisk}>Legg til risikovurdering</Button>
+                <Button variant="outline" onClick={closeDialog}>Avbryt</Button>
+                <Button onClick={editingRisk ? saveEditedRisk : addRisk}>
+                  {editingRisk ? "Lagre endringer" : "Legg til risikovurdering"}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -813,6 +919,10 @@ export function RisikovurderingOgHandlingsplan() {
                               })}
 
                               <div className="flex gap-2 pt-2 border-t">
+                                <Button size="sm" variant="outline" onClick={() => startEditRisk(risk)}>
+                                  <Edit className="h-3 w-3 mr-1" />
+                                  Rediger
+                                </Button>
                                 <Button size="sm" variant="destructive" onClick={() => deleteRisk(risk.id)}>
                                   <Trash2 className="h-3 w-3 mr-1" />
                                   Slett farekilde
