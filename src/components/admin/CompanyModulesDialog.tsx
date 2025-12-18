@@ -121,7 +121,8 @@ export function CompanyModulesDialog({
     };
 
     fetchModules();
-  }, [company, open, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [company?.id, open]);
 
   const toggleModule = (moduleType: string) => {
     setModules((prev) =>
