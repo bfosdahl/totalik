@@ -750,7 +750,7 @@ export function RisikovurderingOgHandlingsplan() {
         {/* Action buttons */}
         <div className="flex flex-wrap gap-2 justify-between">
           <div className="flex gap-2">
-            <Dialog open={showAddDialog} onOpenChange={(open) => !open && closeDialog()}>
+            <Dialog open={showAddDialog} onOpenChange={(open) => open ? setShowAddDialog(true) : closeDialog()}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
