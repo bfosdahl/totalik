@@ -31,8 +31,9 @@ import type { Json } from "@/integrations/supabase/types";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 
-// Predefined hazards (farekilde) for quick selection
+// Predefined hazards (farekilde) for quick selection - "Annet" first for easy access
 const PREDEFINED_HAZARDS = [
+  { value: "annet", label: "Annet (fritekst)", category: "annet" },
   { value: "fall_hoyde", label: "Fall fra høyde", category: "fysisk" },
   { value: "fallende_gjenstander", label: "Fallende gjenstander", category: "fysisk" },
   { value: "stoy", label: "Støy", category: "fysisk" },
@@ -49,7 +50,6 @@ const PREDEFINED_HAZARDS = [
   { value: "alenearbeid", label: "Alenearbeid", category: "organisatorisk" },
   { value: "trafikk", label: "Trafikk/kjøretøy", category: "fysisk" },
   { value: "vold_trusler", label: "Vold/trusler", category: "psykososialt" },
-  { value: "annet", label: "Annet (fritekst)", category: "annet" },
 ];
 
 // Consequence descriptions with tooltips
@@ -82,6 +82,7 @@ interface RiskItem {
   id: string;
   hazard_type: string;
   description: string;
+  descriptions?: string[]; // Multiple descriptions for complex hazards
   who_affected: string[];
   consequence: number;
   probability: number;
@@ -161,6 +162,7 @@ export function RisikovurderingOgHandlingsplan() {
   const [newRisk, setNewRisk] = useState<Partial<RiskItem>>({
     hazard_type: "",
     description: "",
+    descriptions: [""],
     who_affected: ["ansatte"],
     consequence: 3,
     probability: 3,
@@ -253,8 +255,9 @@ export function RisikovurderingOgHandlingsplan() {
 
   // Add new risk
   const addRisk = () => {
-    if (!newRisk.hazard_type || (!newRisk.description && newRisk.hazard_type !== "annet")) {
-      toast.error("Velg farekilde og beskriv risikoen");
+    const descriptions = (newRisk.descriptions || []).filter(d => d.trim());
+    if (!newRisk.hazard_type || descriptions.length === 0) {
+      toast.error("Velg farekilde og beskriv minst én uønsket hendelse");
       return;
     }
 
@@ -264,7 +267,8 @@ export function RisikovurderingOgHandlingsplan() {
     const risk: RiskItem = {
       id: crypto.randomUUID(),
       hazard_type: newRisk.hazard_type,
-      description: newRisk.description || hazard?.label || "",
+      description: descriptions[0] || hazard?.label || "",
+      descriptions: descriptions,
       who_affected: newRisk.who_affected || ["ansatte"],
       consequence: newRisk.consequence || 3,
       probability: newRisk.probability || 3,
@@ -281,7 +285,7 @@ export function RisikovurderingOgHandlingsplan() {
       const action: ActionItem = {
         id: crypto.randomUUID(),
         risk_id: risk.id,
-        risk_description: risk.description,
+        risk_description: descriptions.join(", "),
         action_description: risk.measures || "Definer tiltak",
         action_type: "teknisk",
         responsible: risk.responsible,
@@ -296,6 +300,7 @@ export function RisikovurderingOgHandlingsplan() {
     setNewRisk({
       hazard_type: "",
       description: "",
+      descriptions: [""],
       who_affected: ["ansatte"],
       consequence: 3,
       probability: 3,
@@ -428,12 +433,12 @@ export function RisikovurderingOgHandlingsplan() {
                 Ny risikovurdering
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Ny risikovurdering</DialogTitle>
                 <DialogDescription>Fyll ut skjemaet for å registrere en ny risiko</DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {/* Hazard selection */}
                 <div>
                   <label className="text-sm font-medium flex items-center gap-1">
@@ -448,10 +453,10 @@ export function RisikovurderingOgHandlingsplan() {
                     setNewRisk(p => ({ 
                       ...p, 
                       hazard_type: v,
-                      description: v === "annet" ? "" : (hazard?.label || "")
+                      descriptions: v === "annet" ? [""] : [hazard?.label || ""]
                     }));
                   }}>
-                    <SelectTrigger>
+                    <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Velg farekilde" />
                     </SelectTrigger>
                     <SelectContent>
@@ -462,14 +467,54 @@ export function RisikovurderingOgHandlingsplan() {
                   </Select>
                 </div>
 
-                {/* Custom description if "annet" or additional details */}
+                {/* Multiple descriptions for complex hazards */}
                 <div>
-                  <label className="text-sm font-medium">Uønsket hendelse / Beskrivelse *</label>
-                  <Input 
-                    placeholder="Hva kan skje?"
-                    value={newRisk.description || ""}
-                    onChange={(e) => setNewRisk(p => ({ ...p, description: e.target.value }))}
-                  />
+                  <label className="text-sm font-medium flex items-center gap-1">
+                    Uønsket hendelse / Beskrivelse *
+                    <Tooltip>
+                      <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                      <TooltipContent>Legg til flere hvis faren har flere mulige utfall</TooltipContent>
+                    </Tooltip>
+                  </label>
+                  <div className="space-y-2 mt-1">
+                    {(newRisk.descriptions || [""]).map((desc, idx) => (
+                      <div key={idx} className="flex gap-2">
+                        <Input 
+                          placeholder={idx === 0 ? "Hva kan skje?" : "Annen uønsket hendelse..."}
+                          value={desc}
+                          onChange={(e) => {
+                            const updated = [...(newRisk.descriptions || [""])];
+                            updated[idx] = e.target.value;
+                            setNewRisk(p => ({ ...p, descriptions: updated }));
+                          }}
+                        />
+                        {idx > 0 && (
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => {
+                              const updated = (newRisk.descriptions || []).filter((_, i) => i !== idx);
+                              setNewRisk(p => ({ ...p, descriptions: updated }));
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setNewRisk(p => ({ ...p, descriptions: [...(p.descriptions || []), ""] }));
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Legg til hendelse
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Consequence with tooltips */}
