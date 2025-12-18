@@ -514,7 +514,166 @@ export function RisikovurderingOgHandlingsplan() {
     });
   };
 
-  // Stats
+  // Add example risks
+  const addExampleRisks = () => {
+    const exampleRisks: RiskItem[] = [
+      {
+        id: crypto.randomUUID(),
+        hazard_source: "annet",
+        hazard_source_custom: "Brann på kontoret",
+        events: [
+          {
+            id: crypto.randomUUID(),
+            description: "Brann i elektrisk anlegg",
+            consequence: 4,
+            probability: 2,
+            measures: "Kontroller at man ikke har løse stikkontakter og unødvendig mye bruk av skjøtekabler!",
+            responsible: currentUserName,
+            deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            status: "planlagt",
+          },
+          {
+            id: crypto.randomUUID(),
+            description: "Brann i kaffetrakter",
+            consequence: 4,
+            probability: 2,
+            measures: "Montere timer på kaffetrakter",
+            responsible: currentUserName,
+            deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            status: "planlagt",
+          },
+        ],
+        created_at: new Date().toISOString(),
+        created_by: currentUserName,
+      },
+      {
+        id: crypto.randomUUID(),
+        hazard_source: "arbeid_i_hoyden",
+        events: [
+          {
+            id: crypto.randomUUID(),
+            description: "Fall fra stige eller stillas",
+            consequence: 5,
+            probability: 3,
+            measures: "Bruke godkjent stillas med rekkverk, aldri stige over 2 meter uten sikring",
+            responsible: currentUserName,
+            deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            status: "planlagt",
+          },
+          {
+            id: crypto.randomUUID(),
+            description: "Fallende gjenstander fra høyden",
+            consequence: 4,
+            probability: 3,
+            measures: "Sikre verktøy med stropper, avsperring under arbeidsområde, påbudt hjelm",
+            responsible: currentUserName,
+            deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            status: "planlagt",
+          },
+          {
+            id: crypto.randomUUID(),
+            description: "Hengende igjen i fallsikringsutstyr",
+            consequence: 3,
+            probability: 2,
+            measures: "Opplæring i bruk av fallsikring, aldri alenearbeid i høyden",
+            responsible: currentUserName,
+            deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            status: "planlagt",
+          },
+        ],
+        created_at: new Date().toISOString(),
+        created_by: currentUserName,
+      },
+      {
+        id: crypto.randomUUID(),
+        hazard_source: "vold_trusler",
+        hazard_source_custom: "",
+        events: [
+          {
+            id: crypto.randomUUID(),
+            description: "Mobbing eller trakassering på arbeidsplassen",
+            consequence: 4,
+            probability: 2,
+            measures: "Etablere tydelige rutiner mot mobbing, anonym varslingskanal, jevnlige medarbeidersamtaler",
+            responsible: currentUserName,
+            deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            status: "planlagt",
+          },
+          {
+            id: crypto.randomUUID(),
+            description: "Langvarig stress og utbrenthet",
+            consequence: 4,
+            probability: 3,
+            measures: "Jevnlig oppfølging av arbeidsbelastning, fleksibel arbeidstid, tilgang til bedriftshelsetjeneste",
+            responsible: currentUserName,
+            deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            status: "planlagt",
+          },
+        ],
+        created_at: new Date().toISOString(),
+        created_by: currentUserName,
+      },
+      {
+        id: crypto.randomUUID(),
+        hazard_source: "tunge_loft",
+        events: [
+          {
+            id: crypto.randomUUID(),
+            description: "Ryggskade ved tunge løft",
+            consequence: 4,
+            probability: 3,
+            measures: "Opplæring i riktig løfteteknikk, bruk av løfteutstyr ved last over 15 kg",
+            responsible: currentUserName,
+            deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            status: "planlagt",
+          },
+          {
+            id: crypto.randomUUID(),
+            description: "Belastningsskader ved repetitivt arbeid",
+            consequence: 3,
+            probability: 3,
+            measures: "Variere arbeidsoppgaver, jevnlige pauser, ergonomisk tilpasset arbeidsplass",
+            responsible: currentUserName,
+            deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            status: "planlagt",
+          },
+        ],
+        created_at: new Date().toISOString(),
+        created_by: currentUserName,
+      },
+    ];
+
+    // Create actions for yellow/red risks
+    const newActions: ActionItem[] = [];
+    exampleRisks.forEach(risk => {
+      const hazardLabel = risk.hazard_source === "annet" 
+        ? risk.hazard_source_custom 
+        : PREDEFINED_HAZARDS.find(h => h.value === risk.hazard_source)?.label || risk.hazard_source;
+      
+      risk.events.forEach(event => {
+        const level = getRiskLevel(event.consequence, event.probability);
+        if (level.requiresAction) {
+          newActions.push({
+            id: crypto.randomUUID(),
+            risk_id: risk.id,
+            event_id: event.id,
+            risk_source: hazardLabel || "",
+            event_description: event.description,
+            action_description: event.measures,
+            action_type: "teknisk",
+            responsible: event.responsible,
+            deadline: event.deadline,
+            status: "planlagt",
+            priority: level.level === "Tiltak påkrevd" ? "høy" : "medium",
+          });
+        }
+      });
+    });
+
+    setRisks(prev => [...prev, ...exampleRisks]);
+    setActions(prev => [...prev, ...newActions]);
+    toast.success(`Lagt til 4 eksempler med ${newActions.length} tiltak`);
+  };
   const allEvents = risks.flatMap(r => r.events);
   const stats = {
     totalSources: risks.length,
@@ -590,13 +749,14 @@ export function RisikovurderingOgHandlingsplan() {
 
         {/* Action buttons */}
         <div className="flex flex-wrap gap-2 justify-between">
-          <Dialog open={showAddDialog} onOpenChange={(open) => !open && closeDialog()}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Ny risikovurdering
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Dialog open={showAddDialog} onOpenChange={(open) => !open && closeDialog()}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ny risikovurdering
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingRisk ? "Rediger farekilde" : "Ny risikovurdering"}</DialogTitle>
@@ -786,6 +946,14 @@ export function RisikovurderingOgHandlingsplan() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          
+          {risks.length === 0 && (
+            <Button variant="outline" onClick={addExampleRisks}>
+              <Plus className="h-4 w-4 mr-2" />
+              Legg til eksempler
+            </Button>
+          )}
+          </div>
 
           <Button onClick={handleSave} disabled={isSaving} variant="outline">
             <Save className="h-4 w-4 mr-2" />
