@@ -5,166 +5,174 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { 
-  CalendarCheck, 
-  Plus, 
-  Trash2, 
   CheckCircle2,
   Clock,
   AlertTriangle,
-  Bell,
   Calendar,
-  FileText
+  Save,
+  Trash2,
+  Edit,
+  X,
+  Check
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { useActionPlanFollowups } from "@/hooks/useActionPlanFollowups";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { format, differenceInDays, isPast, isToday } from "date-fns";
+import { format, isPast, isToday } from "date-fns";
 import { nb } from "date-fns/locale";
-
-const FOLLOWUP_TYPES = [
-  { value: "status_check", label: "Statussjekk", icon: Clock },
-  { value: "verification", label: "Verifisering", icon: CheckCircle2 },
-  { value: "audit", label: "Revisjon", icon: FileText },
-  { value: "review", label: "Gjennomgang", icon: CalendarCheck },
-];
+import type { Json } from "@/integrations/supabase/types";
 
 interface ActionItem {
   id: string;
+  risk_id: string;
+  event_id: string;
+  risk_source: string;
+  event_description: string;
   action_description: string;
-  risk_description?: string;
-  status: string;
-  deadline?: string;
+  action_type: string;
+  responsible: string;
+  deadline: string;
+  status: "planlagt" | "pågår" | "utført";
+  priority: "lav" | "medium" | "høy" | "kritisk";
+  notes?: string;
+  completed_at?: string;
+  completed_by?: string;
 }
 
 export function OppfolgingTab() {
-  const { company } = useAuth();
-  const { 
-    followups, 
-    upcomingFollowups, 
-    overdueFollowups,
-    isLoading, 
-    createFollowup, 
-    completeFollowup,
-    deleteFollowup 
-  } = useActionPlanFollowups();
-  
+  const { company, profile } = useAuth();
   const [actions, setActions] = useState<ActionItem[]>([]);
-  const [showNewDialog, setShowNewDialog] = useState(false);
-  const [showCompleteDialog, setShowCompleteDialog] = useState(false);
-  const [selectedFollowup, setSelectedFollowup] = useState<string | null>(null);
-  const [completeNotes, setCompleteNotes] = useState("");
-  
-  const [newFollowup, setNewFollowup] = useState({
-    action_id: "",
-    action_description: "",
-    risk_description: "",
-    followup_date: "",
-    followup_type: "status_check" as const,
-    notes: "",
-    reminder_enabled: true,
-    reminder_days_before: 7,
-  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"alle" | "åpne" | "forfalt" | "utført">("åpne");
 
-  // Load actions from company_action_plans
+  const currentUserName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
+
+  // Load actions
   useEffect(() => {
     const loadActions = async () => {
       if (!company?.id) return;
       
-      const { data } = await supabase
-        .from("company_action_plans")
-        .select("actions")
-        .eq("company_id", company.id)
-        .single();
-      
-      if (data?.actions) {
-        setActions(data.actions as unknown as ActionItem[]);
+      try {
+        const { data } = await supabase
+          .from("company_action_plans")
+          .select("actions")
+          .eq("company_id", company.id)
+          .single();
+        
+        if (data?.actions) {
+          setActions(data.actions as unknown as ActionItem[]);
+        }
+      } catch (error) {
+        console.error("Error loading actions:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     
     loadActions();
   }, [company?.id]);
 
-  const handleCreate = async () => {
-    if (!newFollowup.action_id || !newFollowup.followup_date) {
-      toast.error("Velg tiltak og dato");
-      return;
+  // Save actions
+  const handleSave = async () => {
+    if (!company?.id) return;
+    setIsSaving(true);
+
+    try {
+      const { error } = await supabase
+        .from("company_action_plans")
+        .upsert([{
+          company_id: company.id,
+          actions: actions as unknown as Json,
+          updated_at: new Date().toISOString(),
+        }], { onConflict: "company_id" });
+
+      if (error) throw error;
+      toast.success("Lagret");
+    } catch (error) {
+      console.error("Error saving:", error);
+      toast.error("Kunne ikke lagre");
+    } finally {
+      setIsSaving(false);
     }
-
-    await createFollowup.mutateAsync({
-      action_id: newFollowup.action_id,
-      action_description: newFollowup.action_description,
-      risk_description: newFollowup.risk_description,
-      followup_date: newFollowup.followup_date,
-      followup_type: newFollowup.followup_type,
-      notes: newFollowup.notes,
-      reminder_enabled: newFollowup.reminder_enabled,
-      reminder_days_before: newFollowup.reminder_days_before,
-    });
-
-    setShowNewDialog(false);
-    setNewFollowup({
-      action_id: "",
-      action_description: "",
-      risk_description: "",
-      followup_date: "",
-      followup_type: "status_check",
-      notes: "",
-      reminder_enabled: true,
-      reminder_days_before: 7,
-    });
   };
 
-  const handleComplete = async () => {
-    if (!selectedFollowup) return;
-    
-    await completeFollowup.mutateAsync({
-      id: selectedFollowup,
-      notes: completeNotes,
-    });
-
-    setShowCompleteDialog(false);
-    setSelectedFollowup(null);
-    setCompleteNotes("");
+  // Update action
+  const updateAction = (id: string, updates: Partial<ActionItem>) => {
+    setActions(actions.map(a => {
+      if (a.id === id) {
+        // If marking as utført, add completion info
+        if (updates.status === "utført" && a.status !== "utført") {
+          return { 
+            ...a, 
+            ...updates, 
+            completed_at: new Date().toISOString(),
+            completed_by: currentUserName
+          };
+        }
+        return { ...a, ...updates };
+      }
+      return a;
+    }));
   };
 
-  const getStatusBadge = (status: string, date: string) => {
-    const followupDate = new Date(date);
-    
-    if (status === "completed") {
-      return <Badge className="bg-green-100 text-green-700">Fullført</Badge>;
-    }
-    if (status === "cancelled") {
-      return <Badge variant="secondary">Avbrutt</Badge>;
-    }
-    if (isPast(followupDate) && !isToday(followupDate)) {
-      return <Badge className="bg-red-100 text-red-700">Forfalt</Badge>;
-    }
-    if (isToday(followupDate)) {
-      return <Badge className="bg-orange-100 text-orange-700">I dag</Badge>;
-    }
-    
-    const daysUntil = differenceInDays(followupDate, new Date());
-    if (daysUntil <= 7) {
-      return <Badge className="bg-yellow-100 text-yellow-700">Om {daysUntil} dager</Badge>;
-    }
-    
-    return <Badge variant="outline">Planlagt</Badge>;
+  // Delete action
+  const deleteAction = (id: string) => {
+    setActions(actions.filter(a => a.id !== id));
+    toast.success("Tiltak slettet");
   };
 
-  const pendingFollowups = followups.filter(f => f.status === "pending");
-  const completedFollowups = followups.filter(f => f.status === "completed");
+  // Quick complete
+  const quickComplete = (id: string) => {
+    updateAction(id, { status: "utført" });
+    toast.success("Tiltak fullført");
+  };
+
+  // Get status info
+  const getStatusInfo = (action: ActionItem) => {
+    if (action.status === "utført") {
+      return { label: "Utført", icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50" };
+    }
+    if (action.deadline && isPast(new Date(action.deadline)) && !isToday(new Date(action.deadline))) {
+      return { label: "Forfalt", icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" };
+    }
+    if (action.status === "pågår") {
+      return { label: "Pågår", icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" };
+    }
+    return { label: "Planlagt", icon: Calendar, color: "text-muted-foreground", bg: "bg-muted/50" };
+  };
+
+  // Filter actions
+  const filteredActions = actions.filter(action => {
+    const isOverdue = action.deadline && isPast(new Date(action.deadline)) && !isToday(new Date(action.deadline)) && action.status !== "utført";
+    
+    switch (filter) {
+      case "åpne":
+        return action.status !== "utført";
+      case "forfalt":
+        return isOverdue;
+      case "utført":
+        return action.status === "utført";
+      default:
+        return true;
+    }
+  });
+
+  // Stats
+  const stats = {
+    total: actions.length,
+    open: actions.filter(a => a.status !== "utført").length,
+    overdue: actions.filter(a => a.status !== "utført" && a.deadline && isPast(new Date(a.deadline)) && !isToday(new Date(a.deadline))).length,
+    completed: actions.filter(a => a.status === "utført").length,
+  };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Laster...</p>
-        </div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -173,322 +181,251 @@ export function OppfolgingTab() {
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="border-l-4 border-l-primary">
+        <Card 
+          className={cn("cursor-pointer transition-colors", filter === "alle" && "ring-2 ring-primary")}
+          onClick={() => setFilter("alle")}
+        >
           <CardContent className="p-4">
-            <div className="text-2xl font-bold">{followups.length}</div>
-            <div className="text-sm text-muted-foreground">Totalt oppfølginger</div>
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-sm text-muted-foreground">Totalt tiltak</div>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-red-500">
+        <Card 
+          className={cn("cursor-pointer transition-colors border-l-4 border-l-orange-500", filter === "åpne" && "ring-2 ring-primary")}
+          onClick={() => setFilter("åpne")}
+        >
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-red-600">{overdueFollowups.length}</div>
+            <div className="text-2xl font-bold text-orange-600">{stats.open}</div>
+            <div className="text-sm text-muted-foreground">Åpne</div>
+          </CardContent>
+        </Card>
+        <Card 
+          className={cn("cursor-pointer transition-colors border-l-4 border-l-red-500", filter === "forfalt" && "ring-2 ring-primary")}
+          onClick={() => setFilter("forfalt")}
+        >
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
             <div className="text-sm text-muted-foreground">Forfalt</div>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-yellow-500">
+        <Card 
+          className={cn("cursor-pointer transition-colors border-l-4 border-l-green-500", filter === "utført" && "ring-2 ring-primary")}
+          onClick={() => setFilter("utført")}
+        >
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-yellow-600">{upcomingFollowups.length}</div>
-            <div className="text-sm text-muted-foreground">Neste 7 dager</div>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-green-500">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{completedFollowups.length}</div>
+            <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
             <div className="text-sm text-muted-foreground">Fullført</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Alerts for overdue */}
-      {overdueFollowups.length > 0 && (
+      {/* Overdue alert */}
+      {stats.overdue > 0 && (
         <Card className="border-red-200 bg-red-50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-red-700 flex items-center gap-2 text-base">
-              <AlertTriangle className="h-5 w-5" />
-              {overdueFollowups.length} forfalte oppfølginger
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {overdueFollowups.slice(0, 3).map(f => (
-                <div key={f.id} className="flex items-center justify-between p-2 bg-white rounded border">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{f.action_description}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Forfalt {format(new Date(f.followup_date), "d. MMMM", { locale: nb })}
-                    </p>
-                  </div>
-                  <Button 
-                    size="sm" 
-                    onClick={() => {
-                      setSelectedFollowup(f.id);
-                      setShowCompleteDialog(true);
-                    }}
-                  >
-                    <CheckCircle2 className="h-4 w-4 mr-1" />
-                    Fullfør
-                  </Button>
-                </div>
-              ))}
-            </div>
+          <CardContent className="p-4 flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-600" />
+            <span className="text-sm text-red-700">
+              <strong>{stats.overdue} tiltak</strong> har gått over frist og må følges opp
+            </span>
           </CardContent>
         </Card>
       )}
 
-      {/* New followup button */}
+      {/* Save button */}
       <div className="flex justify-end">
-        <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Ny oppfølging
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Opprett ny oppfølging</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Velg tiltak å følge opp *</label>
-                <Select 
-                  value={newFollowup.action_id} 
-                  onValueChange={(v) => {
-                    const action = actions.find(a => a.id === v);
-                    setNewFollowup(p => ({ 
-                      ...p, 
-                      action_id: v,
-                      action_description: action?.action_description || "",
-                      risk_description: action?.risk_description || "",
-                    }));
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Velg tiltak" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {actions.map(action => (
-                      <SelectItem key={action.id} value={action.id}>
-                        {action.action_description || "Ukjent tiltak"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Type oppfølging</label>
-                <Select 
-                  value={newFollowup.followup_type} 
-                  onValueChange={(v: any) => setNewFollowup(p => ({ ...p, followup_type: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FOLLOWUP_TYPES.map(type => (
-                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Dato for oppfølging *</label>
-                <Input 
-                  type="date" 
-                  value={newFollowup.followup_date}
-                  onChange={(e) => setNewFollowup(p => ({ ...p, followup_date: e.target.value }))}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Notater</label>
-                <Textarea 
-                  placeholder="Eventuelle notater..."
-                  value={newFollowup.notes}
-                  onChange={(e) => setNewFollowup(p => ({ ...p, notes: e.target.value }))}
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox" 
-                  id="reminder" 
-                  checked={newFollowup.reminder_enabled}
-                  onChange={(e) => setNewFollowup(p => ({ ...p, reminder_enabled: e.target.checked }))}
-                  className="rounded"
-                />
-                <label htmlFor="reminder" className="text-sm flex items-center gap-2">
-                  <Bell className="h-4 w-4" />
-                  Send påminnelse
-                </label>
-                {newFollowup.reminder_enabled && (
-                  <Select 
-                    value={newFollowup.reminder_days_before.toString()}
-                    onValueChange={(v) => setNewFollowup(p => ({ ...p, reminder_days_before: parseInt(v) }))}
-                  >
-                    <SelectTrigger className="w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 dag før</SelectItem>
-                      <SelectItem value="3">3 dager før</SelectItem>
-                      <SelectItem value="7">7 dager før</SelectItem>
-                      <SelectItem value="14">14 dager før</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowNewDialog(false)}>Avbryt</Button>
-              <Button onClick={handleCreate} disabled={createFollowup.isPending}>
-                {createFollowup.isPending ? "Oppretter..." : "Opprett"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={handleSave} disabled={isSaving}>
+          <Save className="h-4 w-4 mr-2" />
+          {isSaving ? "Lagrer..." : "Lagre endringer"}
+        </Button>
       </div>
 
-      {/* Followup list */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pending */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Clock className="h-5 w-5 text-yellow-500" />
-              Ventende oppfølginger ({pendingFollowups.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {pendingFollowups.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <CalendarCheck className="h-10 w-10 mx-auto mb-3 opacity-50" />
-                <p>Ingen ventende oppfølginger</p>
-              </div>
-            ) : (
-              <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                {pendingFollowups
-                  .sort((a, b) => new Date(a.followup_date).getTime() - new Date(b.followup_date).getTime())
-                  .map(followup => {
-                    const type = FOLLOWUP_TYPES.find(t => t.value === followup.followup_type);
-                    const TypeIcon = type?.icon || CalendarCheck;
+      {/* Actions list */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">
+            {filter === "alle" ? "Alle tiltak" : 
+             filter === "åpne" ? "Åpne tiltak" :
+             filter === "forfalt" ? "Forfalte tiltak" :
+             "Fullførte tiltak"} ({filteredActions.length})
+          </CardTitle>
+          <CardDescription>Klikk på et tiltak for å redigere</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {filteredActions.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <CheckCircle2 className="h-10 w-10 mx-auto mb-3 opacity-50" />
+              <p>Ingen tiltak å vise</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredActions.map(action => {
+                const statusInfo = getStatusInfo(action);
+                const isEditing = editingId === action.id;
+                const StatusIcon = statusInfo.icon;
 
-                    return (
-                      <div key={followup.id} className="border rounded-lg p-3 space-y-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <TypeIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                            <span className="font-medium text-sm truncate">{followup.action_description}</span>
+                return (
+                  <div 
+                    key={action.id} 
+                    className={cn(
+                      "border rounded-lg p-4 transition-colors",
+                      statusInfo.bg,
+                      isEditing && "ring-2 ring-primary"
+                    )}
+                  >
+                    {isEditing ? (
+                      // Edit mode
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-xs font-medium text-muted-foreground">Tiltak</label>
+                          <Textarea 
+                            value={action.action_description}
+                            onChange={(e) => updateAction(action.id, { action_description: e.target.value })}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground">Status</label>
+                            <Select value={action.status} onValueChange={(v: any) => updateAction(action.id, { status: v })}>
+                              <SelectTrigger className="mt-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="planlagt">Planlagt</SelectItem>
+                                <SelectItem value="pågår">Pågår</SelectItem>
+                                <SelectItem value="utført">Utført</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
-                          {getStatusBadge(followup.status, followup.followup_date)}
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground">Ansvarlig</label>
+                            <Input 
+                              value={action.responsible || ""}
+                              onChange={(e) => updateAction(action.id, { responsible: e.target.value })}
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground">Frist</label>
+                            <Input 
+                              type="date"
+                              value={action.deadline || ""}
+                              onChange={(e) => updateAction(action.id, { deadline: e.target.value })}
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground">Prioritet</label>
+                            <Select value={action.priority || "medium"} onValueChange={(v: any) => updateAction(action.id, { priority: v })}>
+                              <SelectTrigger className="mt-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="lav">Lav</SelectItem>
+                                <SelectItem value="medium">Medium</SelectItem>
+                                <SelectItem value="høy">Høy</SelectItem>
+                                <SelectItem value="kritisk">Kritisk</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-muted-foreground">Notater</label>
+                          <Textarea 
+                            placeholder="Legg til notater om oppfølging..."
+                            value={action.notes || ""}
+                            onChange={(e) => updateAction(action.id, { notes: e.target.value })}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div className="flex justify-between">
+                          <Button variant="destructive" size="sm" onClick={() => deleteAction(action.id)}>
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Slett
+                          </Button>
+                          <Button size="sm" onClick={() => setEditingId(null)}>
+                            <Check className="h-4 w-4 mr-1" />
+                            Ferdig
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      // View mode
+                      <div 
+                        className="cursor-pointer"
+                        onClick={() => setEditingId(action.id)}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <StatusIcon className={cn("h-4 w-4 flex-shrink-0", statusInfo.color)} />
+                              <p className="font-medium text-sm">{action.action_description}</p>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1 ml-6">
+                              {action.risk_source}: {action.event_description}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {action.status !== "utført" && (
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  quickComplete(action.id);
+                                }}
+                              >
+                                <CheckCircle2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                         
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          {format(new Date(followup.followup_date), "d. MMMM yyyy", { locale: nb })}
-                          <span>•</span>
-                          <span>{type?.label}</span>
+                        <div className="flex flex-wrap gap-2 mt-3 ml-6 text-xs">
+                          <Badge variant="outline" className={statusInfo.color}>
+                            {statusInfo.label}
+                          </Badge>
+                          {action.responsible && (
+                            <Badge variant="secondary">{action.responsible}</Badge>
+                          )}
+                          {action.deadline && (
+                            <Badge variant="secondary">
+                              Frist: {format(new Date(action.deadline), "d. MMM yyyy", { locale: nb })}
+                            </Badge>
+                          )}
+                          {action.priority && action.priority !== "medium" && (
+                            <Badge 
+                              className={cn(
+                                action.priority === "kritisk" && "bg-red-100 text-red-700",
+                                action.priority === "høy" && "bg-orange-100 text-orange-700",
+                                action.priority === "lav" && "bg-gray-100 text-gray-700"
+                              )}
+                            >
+                              {action.priority}
+                            </Badge>
+                          )}
                         </div>
 
-                        {followup.notes && (
-                          <p className="text-xs text-muted-foreground">{followup.notes}</p>
+                        {action.notes && (
+                          <p className="text-xs text-muted-foreground mt-2 ml-6 italic">
+                            {action.notes}
+                          </p>
                         )}
 
-                        <div className="flex gap-2 pt-1">
-                          <Button 
-                            size="sm" 
-                            className="flex-1"
-                            onClick={() => {
-                              setSelectedFollowup(followup.id);
-                              setShowCompleteDialog(true);
-                            }}
-                          >
-                            <CheckCircle2 className="h-4 w-4 mr-1" />
-                            Fullfør
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => deleteFollowup.mutateAsync(followup.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        {action.completed_at && (
+                          <p className="text-xs text-green-600 mt-2 ml-6">
+                            ✓ Fullført {format(new Date(action.completed_at), "d. MMM yyyy", { locale: nb })} av {action.completed_by}
+                          </p>
+                        )}
                       </div>
-                    );
-                  })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Completed */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
-              Fullførte oppfølginger ({completedFollowups.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {completedFollowups.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <CheckCircle2 className="h-10 w-10 mx-auto mb-3 opacity-50" />
-                <p>Ingen fullførte oppfølginger ennå</p>
-              </div>
-            ) : (
-              <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                {completedFollowups
-                  .sort((a, b) => new Date(b.completed_at || 0).getTime() - new Date(a.completed_at || 0).getTime())
-                  .map(followup => (
-                    <div key={followup.id} className="border rounded-lg p-3 bg-green-50/50">
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="font-medium text-sm">{followup.action_description}</span>
-                        <Badge className="bg-green-100 text-green-700">Fullført</Badge>
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Fullført {followup.completed_at && format(new Date(followup.completed_at), "d. MMMM yyyy", { locale: nb })}
-                        {followup.completed_by_name && ` av ${followup.completed_by_name}`}
-                      </div>
-                      {followup.notes && (
-                        <p className="text-xs text-muted-foreground mt-1 italic">{followup.notes}</p>
-                      )}
-                    </div>
-                  ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Complete dialog */}
-      <Dialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Fullfør oppfølging</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Notater fra oppfølgingen</label>
-              <Textarea 
-                placeholder="Hva ble gjort? Eventuelle funn eller kommentarer..."
-                value={completeNotes}
-                onChange={(e) => setCompleteNotes(e.target.value)}
-                className="min-h-[100px]"
-              />
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCompleteDialog(false)}>Avbryt</Button>
-            <Button onClick={handleComplete} disabled={completeFollowup.isPending}>
-              <CheckCircle2 className="h-4 w-4 mr-2" />
-              {completeFollowup.isPending ? "Fullfører..." : "Fullfør oppfølging"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
