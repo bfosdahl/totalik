@@ -15,6 +15,7 @@ import {
   Boxes,
   Award,
   Upload,
+  RefreshCw,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -299,6 +300,25 @@ export default function AdminCompanies() {
     },
     onError: (error) => {
       toast({ title: "Feil", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const syncToKursMutation = useMutation({
+    mutationFn: async (companyId: string) => {
+      const response = await supabase.functions.invoke("sync-to-kurs", {
+        body: { company_id: companyId },
+      });
+      if (response.error) throw new Error(response.error.message);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: "Synkronisert", 
+        description: `Bedrift og ansatte synkronisert til kurssystemet.` 
+      });
+    },
+    onError: (error) => {
+      toast({ title: "Synkroniseringsfeil", description: error.message, variant: "destructive" });
     },
   });
 
@@ -717,6 +737,13 @@ export default function AdminCompanies() {
                             }}>
                               <Boxes className="w-4 h-4 mr-2" />
                               Moduler
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => syncToKursMutation.mutate(company.id)}
+                              disabled={syncToKursMutation.isPending}
+                            >
+                              <RefreshCw className={`w-4 h-4 mr-2 ${syncToKursMutation.isPending ? 'animate-spin' : ''}`} />
+                              Synk til kurssystem
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive"
