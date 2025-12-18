@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   AlertTriangle, 
   Plus, 
@@ -14,13 +15,13 @@ import {
   ChevronDown,
   ChevronRight,
   HelpCircle,
-  Calendar,
-  User,
   CheckCircle2,
   Clock,
   Circle,
-  Filter,
-  Link2
+  RefreshCw,
+  ShieldCheck,
+  AlertCircle,
+  Info
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,45 +31,69 @@ import type { Json } from "@/integrations/supabase/types";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 
-// Risk categories
-const RISK_CATEGORIES = [
-  { value: "fysisk", label: "Fysisk arbeidsmiljø", color: "bg-blue-500" },
-  { value: "psykososialt", label: "Psykososialt arbeidsmiljø", color: "bg-purple-500" },
-  { value: "ergonomisk", label: "Ergonomisk", color: "bg-green-500" },
-  { value: "kjemisk", label: "Kjemisk/biologisk", color: "bg-orange-500" },
-  { value: "organisatorisk", label: "Organisatorisk", color: "bg-cyan-500" },
-  { value: "brann", label: "Brann og sikkerhet", color: "bg-red-500" },
-  { value: "annet", label: "Annet", color: "bg-gray-500" },
+// Predefined hazards (farekilde) for quick selection
+const PREDEFINED_HAZARDS = [
+  { value: "fall_hoyde", label: "Fall fra høyde", category: "fysisk" },
+  { value: "fallende_gjenstander", label: "Fallende gjenstander", category: "fysisk" },
+  { value: "stoy", label: "Støy", category: "fysisk" },
+  { value: "vibrasjon", label: "Vibrasjon", category: "fysisk" },
+  { value: "varmt_arbeid", label: "Varmt arbeid (sveising/sliping)", category: "brann" },
+  { value: "brannfare", label: "Brann/eksplosjon", category: "brann" },
+  { value: "elektrisk", label: "Elektrisk fare", category: "fysisk" },
+  { value: "klemfare", label: "Klemfare/maskineri", category: "fysisk" },
+  { value: "tunge_loft", label: "Tunge løft/ergonomi", category: "ergonomisk" },
+  { value: "repetitivt", label: "Repetitivt arbeid", category: "ergonomisk" },
+  { value: "kjemikalier", label: "Kjemikalier/farlige stoffer", category: "kjemisk" },
+  { value: "stov", label: "Støv/partikler", category: "kjemisk" },
+  { value: "stress", label: "Stress/høyt arbeidspress", category: "psykososialt" },
+  { value: "alenearbeid", label: "Alenearbeid", category: "organisatorisk" },
+  { value: "trafikk", label: "Trafikk/kjøretøy", category: "fysisk" },
+  { value: "vold_trusler", label: "Vold/trusler", category: "psykososialt" },
+  { value: "annet", label: "Annet (fritekst)", category: "annet" },
 ];
 
-// Consequence and probability scales
+// Consequence descriptions with tooltips
 const CONSEQUENCE_LEVELS = [
-  { value: 1, label: "1 - Ufarlig", description: "Ubetydelige skader" },
-  { value: 2, label: "2 - Farlig", description: "Mindre skader, kort fravær" },
-  { value: 3, label: "3 - Kritisk", description: "Betydelige skader, lengre fravær" },
-  { value: 4, label: "4 - Meget kritisk", description: "Alvorlige skader, kan være varig" },
-  { value: 5, label: "5 - Katastrofalt", description: "Død eller varige mén" },
+  { value: 1, label: "1", description: "Ubetydelig - Ingen/minimal skade" },
+  { value: 2, label: "2", description: "Mindre alvorlig - Førstehjelp, kort fravær" },
+  { value: 3, label: "3", description: "Alvorlig - Medisinsk behandling, lengre fravær" },
+  { value: 4, label: "4", description: "Svært alvorlig - Sykehusinnleggelse, varig skade" },
+  { value: 5, label: "5", description: "Kritisk/livstruende - Død eller permanent invaliditet" },
 ];
 
+// Probability descriptions with tooltips
 const PROBABILITY_LEVELS = [
-  { value: 1, label: "1 - Lite sannsynlig", description: "Sjeldnere enn hvert 10. år" },
-  { value: 2, label: "2 - Mindre sannsynlig", description: "Hvert 5-10 år" },
-  { value: 3, label: "3 - Sannsynlig", description: "Hvert 1-5 år" },
-  { value: 4, label: "4 - Meget sannsynlig", description: "1-10 ganger årlig" },
-  { value: 5, label: "5 - Svært sannsynlig", description: "Mer enn 10 ganger årlig" },
+  { value: 1, label: "1", description: "Svært lite sannsynlig - Sjeldnere enn hvert 10. år" },
+  { value: 2, label: "2", description: "Lite sannsynlig - Hvert 5-10 år" },
+  { value: 3, label: "3", description: "Mulig - Hvert 1-5 år" },
+  { value: 4, label: "4", description: "Sannsynlig - 1-10 ganger årlig" },
+  { value: 5, label: "5", description: "Svært sannsynlig - Mer enn 10 ganger årlig" },
+];
+
+// Action types
+const ACTION_TYPES = [
+  { value: "teknisk", label: "Teknisk tiltak" },
+  { value: "organisatorisk", label: "Organisatorisk tiltak" },
+  { value: "opplaering", label: "Opplæring" },
+  { value: "ppe", label: "Personlig verneutstyr (PPE)" },
 ];
 
 interface RiskItem {
   id: string;
-  category: string;
+  hazard_type: string;
   description: string;
+  who_affected: string[];
   consequence: number;
   probability: number;
-  existing_measures: string;
-  planned_measures: string;
+  measures: string;
   responsible: string;
   deadline: string;
-  status: "ikke_startet" | "pågår" | "fullført";
+  status: "ikke_vurdert" | "akseptabel" | "tiltak_kreves" | "under_behandling" | "lukket";
+  // Re-evaluation fields
+  consequence_after?: number;
+  probability_after?: number;
+  reevaluated_at?: string;
+  reevaluated_by?: string;
 }
 
 interface ActionItem {
@@ -76,31 +101,46 @@ interface ActionItem {
   risk_id: string | null;
   risk_description: string;
   action_description: string;
+  action_type: string;
   responsible: string;
   deadline: string;
-  status: "ikke_startet" | "pågår" | "fullført";
+  status: "planlagt" | "pågår" | "utført";
   priority: "lav" | "medium" | "høy" | "kritisk";
+  documentation?: string;
 }
 
+// Risk calculation with correct thresholds: Green 1-5, Yellow 6-10, Red 11-25
 const getRiskLevel = (consequence: number, probability: number) => {
   const score = consequence * probability;
-  if (score <= 4) return { level: "Lav", color: "text-green-600", bg: "bg-green-100", border: "border-green-300" };
-  if (score <= 9) return { level: "Moderat", color: "text-yellow-600", bg: "bg-yellow-100", border: "border-yellow-300" };
-  if (score <= 15) return { level: "Høy", color: "text-orange-600", bg: "bg-orange-100", border: "border-orange-300" };
-  return { level: "Svært høy", color: "text-red-600", bg: "bg-red-100", border: "border-red-300" };
+  if (score <= 5) return { 
+    level: "Akseptabel", 
+    color: "text-green-700", 
+    bg: "bg-green-100", 
+    border: "border-green-300",
+    requiresAction: false
+  };
+  if (score <= 10) return { 
+    level: "Bør vurderes", 
+    color: "text-yellow-700", 
+    bg: "bg-yellow-100", 
+    border: "border-yellow-300",
+    requiresAction: true
+  };
+  return { 
+    level: "Tiltak påkrevd", 
+    color: "text-red-700", 
+    bg: "bg-red-100", 
+    border: "border-red-300",
+    requiresAction: true
+  };
 };
 
 const statusConfig = {
-  ikke_startet: { label: "Ikke startet", icon: Circle, color: "text-muted-foreground", bg: "bg-muted" },
-  pågår: { label: "Pågår", icon: Clock, color: "text-warning", bg: "bg-warning/10" },
-  fullført: { label: "Fullført", icon: CheckCircle2, color: "text-success", bg: "bg-success/10" },
-};
-
-const priorityConfig = {
-  lav: { label: "Lav", color: "bg-green-100 text-green-700 border-green-200" },
-  medium: { label: "Medium", color: "bg-yellow-100 text-yellow-700 border-yellow-200" },
-  høy: { label: "Høy", color: "bg-orange-100 text-orange-700 border-orange-200" },
-  kritisk: { label: "Kritisk", color: "bg-red-100 text-red-700 border-red-200" },
+  ikke_vurdert: { label: "Ikke vurdert", icon: Circle, color: "text-muted-foreground" },
+  akseptabel: { label: "Akseptabel", icon: CheckCircle2, color: "text-green-600" },
+  tiltak_kreves: { label: "Tiltak kreves", icon: AlertTriangle, color: "text-red-600" },
+  under_behandling: { label: "Under behandling", icon: Clock, color: "text-yellow-600" },
+  lukket: { label: "Lukket", icon: ShieldCheck, color: "text-green-600" },
 };
 
 export function RisikovurderingOgHandlingsplan() {
@@ -110,31 +150,30 @@ export function RisikovurderingOgHandlingsplan() {
   const [actions, setActions] = useState<ActionItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [expandedRisks, setExpandedRisks] = useState<Set<string>>(new Set());
-  const [expandedActions, setExpandedActions] = useState<Set<string>>(new Set());
-  const [showHelp, setShowHelp] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState<string>("alle");
+  const [expandedRisk, setExpandedRisk] = useState<string | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showReevaluateDialog, setShowReevaluateDialog] = useState(false);
+  const [selectedRiskForReeval, setSelectedRiskForReeval] = useState<RiskItem | null>(null);
 
-  // Current user name for default responsible
   const currentUserName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
 
-  // New risk form state - default responsible to current user
+  // New risk form - simplified
   const [newRisk, setNewRisk] = useState<Partial<RiskItem>>({
-    category: "",
+    hazard_type: "",
     description: "",
+    who_affected: ["ansatte"],
     consequence: 3,
     probability: 3,
-    existing_measures: "",
-    planned_measures: "",
-    responsible: currentUserName,
+    measures: "",
+    responsible: "",
     deadline: "",
-    status: "ikke_startet",
+    status: "ikke_vurdert",
   });
 
-  // Update responsible when profile loads
+  // Set default responsible when profile loads
   useEffect(() => {
-    if (currentUserName && !newRisk.responsible) {
-      setNewRisk(p => ({ ...p, responsible: currentUserName }));
+    if (currentUserName) {
+      setNewRisk(p => ({ ...p, responsible: p.responsible || currentUserName }));
     }
   }, [currentUserName]);
 
@@ -144,7 +183,6 @@ export function RisikovurderingOgHandlingsplan() {
       if (!company?.id) return;
       
       try {
-        // Load risk assessments
         const { data: riskData } = await supabase
           .from("company_risk_assessments")
           .select("*")
@@ -152,15 +190,13 @@ export function RisikovurderingOgHandlingsplan() {
           .single();
         
         if (riskData?.risks) {
-          const loadedRisks = (riskData.risks as unknown as any[]).map(r => ({
+          setRisks((riskData.risks as unknown as RiskItem[]).map(r => ({
             ...r,
-            category: r.category || "annet",
-            status: r.status || "ikke_startet",
-          }));
-          setRisks(loadedRisks);
+            hazard_type: r.hazard_type || "annet",
+            status: r.status || "ikke_vurdert",
+          })));
         }
 
-        // Load action plans
         const { data: actionData } = await supabase
           .from("company_action_plans")
           .select("*")
@@ -186,7 +222,6 @@ export function RisikovurderingOgHandlingsplan() {
     setIsSaving(true);
 
     try {
-      // Save risks
       const { error: riskError } = await supabase
         .from("company_risk_assessments")
         .upsert([{
@@ -197,7 +232,6 @@ export function RisikovurderingOgHandlingsplan() {
 
       if (riskError) throw riskError;
 
-      // Save actions
       const { error: actionError } = await supabase
         .from("company_action_plans")
         .upsert([{
@@ -208,7 +242,7 @@ export function RisikovurderingOgHandlingsplan() {
 
       if (actionError) throw actionError;
 
-      toast.success("Risikovurdering og handlingsplan lagret");
+      toast.success("Lagret");
     } catch (error) {
       console.error("Error saving:", error);
       toast.error("Kunne ikke lagre");
@@ -219,85 +253,95 @@ export function RisikovurderingOgHandlingsplan() {
 
   // Add new risk
   const addRisk = () => {
-    if (!newRisk.description || !newRisk.consequence || !newRisk.probability || !newRisk.category) {
-      toast.error("Fyll ut alle påkrevde felt");
+    if (!newRisk.hazard_type || (!newRisk.description && newRisk.hazard_type !== "annet")) {
+      toast.error("Velg farekilde og beskriv risikoen");
       return;
     }
 
+    const hazard = PREDEFINED_HAZARDS.find(h => h.value === newRisk.hazard_type);
+    const riskLevel = getRiskLevel(newRisk.consequence || 3, newRisk.probability || 3);
+
     const risk: RiskItem = {
       id: crypto.randomUUID(),
-      category: newRisk.category,
-      description: newRisk.description,
-      consequence: newRisk.consequence,
-      probability: newRisk.probability,
-      existing_measures: newRisk.existing_measures || "",
-      planned_measures: newRisk.planned_measures || "",
-      responsible: newRisk.responsible || "",
+      hazard_type: newRisk.hazard_type,
+      description: newRisk.description || hazard?.label || "",
+      who_affected: newRisk.who_affected || ["ansatte"],
+      consequence: newRisk.consequence || 3,
+      probability: newRisk.probability || 3,
+      measures: newRisk.measures || "",
+      responsible: newRisk.responsible || currentUserName,
       deadline: newRisk.deadline || "",
-      status: "ikke_startet",
+      status: riskLevel.requiresAction ? "tiltak_kreves" : "akseptabel",
     };
 
     setRisks([...risks, risk]);
+
+    // Auto-create action if risk requires it (yellow/red)
+    if (riskLevel.requiresAction) {
+      const action: ActionItem = {
+        id: crypto.randomUUID(),
+        risk_id: risk.id,
+        risk_description: risk.description,
+        action_description: risk.measures || "Definer tiltak",
+        action_type: "teknisk",
+        responsible: risk.responsible,
+        deadline: risk.deadline,
+        status: "planlagt",
+        priority: riskLevel.level === "Tiltak påkrevd" ? "høy" : "medium",
+      };
+      setActions(prev => [...prev, action]);
+    }
+
+    // Reset form
     setNewRisk({
-      category: "",
+      hazard_type: "",
       description: "",
+      who_affected: ["ansatte"],
       consequence: 3,
       probability: 3,
-      existing_measures: "",
-      planned_measures: "",
+      measures: "",
       responsible: currentUserName,
       deadline: "",
-      status: "ikke_startet",
+      status: "ikke_vurdert",
     });
 
-    // Auto-create action for all risks
-    const riskLevel = getRiskLevel(risk.consequence, risk.probability);
-    const getPriorityFromRiskLevel = (level: string): ActionItem["priority"] => {
-      switch (level) {
-        case "Svært høy": return "kritisk";
-        case "Høy": return "høy";
-        case "Moderat": return "medium";
-        default: return "lav";
+    setShowAddDialog(false);
+    toast.success("Risiko lagt til" + (riskLevel.requiresAction ? " - tiltak opprettet automatisk" : ""));
+  };
+
+  // Re-evaluate risk after measures
+  const handleReevaluate = () => {
+    if (!selectedRiskForReeval) return;
+
+    const newLevel = getRiskLevel(
+      selectedRiskForReeval.consequence_after || selectedRiskForReeval.consequence,
+      selectedRiskForReeval.probability_after || selectedRiskForReeval.probability
+    );
+
+    setRisks(risks.map(r => {
+      if (r.id === selectedRiskForReeval.id) {
+        return {
+          ...r,
+          consequence_after: selectedRiskForReeval.consequence_after,
+          probability_after: selectedRiskForReeval.probability_after,
+          reevaluated_at: new Date().toISOString(),
+          reevaluated_by: currentUserName,
+          status: newLevel.requiresAction ? "under_behandling" : "lukket",
+        };
       }
-    };
+      return r;
+    }));
 
-    const action: ActionItem = {
-      id: crypto.randomUUID(),
-      risk_id: risk.id,
-      risk_description: `${RISK_CATEGORIES.find(c => c.value === risk.category)?.label}: ${risk.description}`,
-      action_description: risk.planned_measures || "Definer tiltak",
-      responsible: risk.responsible || "",
-      deadline: risk.deadline || "",
-      status: "ikke_startet",
-      priority: getPriorityFromRiskLevel(riskLevel.level),
-    };
-    setActions(prev => [...prev, action]);
-
-    toast.success("Risiko og tiltak lagt til");
+    setShowReevaluateDialog(false);
+    setSelectedRiskForReeval(null);
+    toast.success("Risiko revurdert");
   };
 
   // Delete risk
   const deleteRisk = (id: string) => {
     setRisks(risks.filter(r => r.id !== id));
-    // Also remove linked actions
     setActions(actions.filter(a => a.risk_id !== id));
     toast.success("Risiko slettet");
-  };
-
-  // Add action manually
-  const addAction = () => {
-    const action: ActionItem = {
-      id: crypto.randomUUID(),
-      risk_id: null,
-      risk_description: "",
-      action_description: "",
-      responsible: "",
-      deadline: "",
-      status: "ikke_startet",
-      priority: "medium",
-    };
-    setActions([...actions, action]);
-    setExpandedActions(prev => new Set([...prev, action.id]));
   };
 
   // Update action
@@ -311,508 +355,557 @@ export function RisikovurderingOgHandlingsplan() {
     toast.success("Tiltak slettet");
   };
 
-  // Filter risks by category
-  const filteredRisks = categoryFilter === "alle" 
-    ? risks 
-    : risks.filter(r => r.category === categoryFilter);
-
-  // Sort risks by risk level (highest first)
-  const sortedRisks = [...filteredRisks].sort((a, b) => {
-    const scoreA = a.consequence * a.probability;
-    const scoreB = b.consequence * b.probability;
-    return scoreB - scoreA;
-  });
-
-  // Get statistics
+  // Stats
   const stats = {
     total: risks.length,
-    high: risks.filter(r => r.consequence * r.probability >= 10).length,
-    medium: risks.filter(r => {
+    red: risks.filter(r => r.consequence * r.probability >= 11).length,
+    yellow: risks.filter(r => {
       const score = r.consequence * r.probability;
-      return score >= 5 && score < 10;
+      return score >= 6 && score <= 10;
     }).length,
-    low: risks.filter(r => r.consequence * r.probability < 5).length,
+    green: risks.filter(r => r.consequence * r.probability <= 5).length,
+    openActions: actions.filter(a => a.status !== "utført").length,
+    overdueActions: actions.filter(a => a.status !== "utført" && a.deadline && new Date(a.deadline) < new Date()).length,
   };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Laster...</p>
-        </div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="border-l-4 border-l-primary">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <div className="text-sm text-muted-foreground">Totalt risikoer</div>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-red-500">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-red-600">{stats.high}</div>
-            <div className="text-sm text-muted-foreground">Høy/Svært høy</div>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-yellow-500">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-yellow-600">{stats.medium}</div>
-            <div className="text-sm text-muted-foreground">Moderat</div>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-green-500">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{stats.low}</div>
-            <div className="text-sm text-muted-foreground">Lav</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Save button */}
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={isSaving}>
-          <Save className="h-4 w-4 mr-2" />
-          {isSaving ? "Lagrer..." : "Lagre alt"}
-        </Button>
-      </div>
-
-      {/* Help section */}
-      <Collapsible open={showHelp} onOpenChange={setShowHelp}>
-        <CollapsibleTrigger asChild>
-          <Button variant="outline" className="w-full justify-between">
-            <span className="flex items-center gap-2">
-              <HelpCircle className="h-4 w-4" />
-              Veiledning for risikovurdering
-            </span>
-            {showHelp ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="mt-4">
-          <Card>
-            <CardContent className="p-4 space-y-4">
-              <div>
-                <h4 className="font-medium mb-2">Risikomatrise (Risiko = Konsekvens × Sannsynlighet)</h4>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs border-collapse">
-                    <thead>
-                      <tr>
-                        <th className="border p-2 bg-muted/50">S ↓ / K →</th>
-                        {[1,2,3,4,5].map(c => (
-                          <th key={c} className="border p-2 bg-muted/50 w-12">{c}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[5,4,3,2,1].map(p => (
-                        <tr key={p}>
-                          <td className="border p-2 bg-muted/50 font-medium">{p}</td>
-                          {[1,2,3,4,5].map(c => {
-                            const { bg } = getRiskLevel(c, p);
-                            return (
-                              <td key={c} className={cn("border p-2 text-center font-medium", bg)}>
-                                {c * p}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="flex flex-wrap gap-3 mt-3 text-xs">
-                  <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-100" /> 1-4: Lav</div>
-                  <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-yellow-100" /> 5-9: Moderat</div>
-                  <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-orange-100" /> 10-15: Høy</div>
-                  <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-100" /> 16-25: Svært høy</div>
-                </div>
-              </div>
+    <TooltipProvider>
+      <div className="space-y-6">
+        {/* Dashboard Overview */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <Card className="border-l-4 border-l-primary">
+            <CardContent className="p-3">
+              <div className="text-2xl font-bold">{stats.total}</div>
+              <div className="text-xs text-muted-foreground">Risikoer</div>
             </CardContent>
           </Card>
-        </CollapsibleContent>
-      </Collapsible>
+          <Card className="border-l-4 border-l-red-500">
+            <CardContent className="p-3">
+              <div className="text-2xl font-bold text-red-600">{stats.red}</div>
+              <div className="text-xs text-muted-foreground">Røde (11-25)</div>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-yellow-500">
+            <CardContent className="p-3">
+              <div className="text-2xl font-bold text-yellow-600">{stats.yellow}</div>
+              <div className="text-xs text-muted-foreground">Gule (6-10)</div>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-green-500">
+            <CardContent className="p-3">
+              <div className="text-2xl font-bold text-green-600">{stats.green}</div>
+              <div className="text-xs text-muted-foreground">Grønne (1-5)</div>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-orange-500">
+            <CardContent className="p-3">
+              <div className="text-2xl font-bold text-orange-600">{stats.openActions}</div>
+              <div className="text-xs text-muted-foreground">Åpne tiltak</div>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-destructive">
+            <CardContent className="p-3">
+              <div className="text-2xl font-bold text-destructive">{stats.overdueActions}</div>
+              <div className="text-xs text-muted-foreground">Forfalt</div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Two-column layout for risks and actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Risks column */}
-        <div className="space-y-4">
-          <Card>
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
+        {/* Action buttons */}
+        <div className="flex flex-wrap gap-2 justify-between">
+          <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Ny risikovurdering
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Ny risikovurdering</DialogTitle>
+                <DialogDescription>Fyll ut skjemaet for å registrere en ny risiko</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                {/* Hazard selection */}
                 <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-orange-500" />
-                    Risikovurdering
-                  </CardTitle>
-                  <CardDescription>Identifiser og vurder risikoer etter kategori</CardDescription>
+                  <label className="text-sm font-medium flex items-center gap-1">
+                    Farekilde *
+                    <Tooltip>
+                      <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                      <TooltipContent>Hva kan forårsake skade?</TooltipContent>
+                    </Tooltip>
+                  </label>
+                  <Select value={newRisk.hazard_type} onValueChange={(v) => {
+                    const hazard = PREDEFINED_HAZARDS.find(h => h.value === v);
+                    setNewRisk(p => ({ 
+                      ...p, 
+                      hazard_type: v,
+                      description: v === "annet" ? "" : (hazard?.label || "")
+                    }));
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Velg farekilde" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PREDEFINED_HAZARDS.map(h => (
+                        <SelectItem key={h.value} value={h.value}>{h.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Category filter */}
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="Filtrer etter kategori" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="alle">Alle kategorier</SelectItem>
-                    {RISK_CATEGORIES.map(cat => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        <span className="flex items-center gap-2">
-                          <span className={cn("w-2 h-2 rounded-full", cat.color)} />
-                          {cat.label}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
 
-              {/* Simplified Add new risk form */}
-              <Card className="bg-muted/30">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
-                    Legg til ny risiko
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {/* Row 1: Category and Description */}
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Select value={newRisk.category} onValueChange={(v) => setNewRisk(p => ({ ...p, category: v }))}>
-                      <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder="Kategori" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {RISK_CATEGORIES.map(cat => (
-                          <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Input 
-                      placeholder="Beskriv risikoen..." 
-                      value={newRisk.description || ""}
-                      onChange={(e) => setNewRisk(p => ({ ...p, description: e.target.value }))}
-                      className="flex-1"
-                    />
-                  </div>
-
-                  {/* Row 2: Consequence and Probability with simple 1-5 buttons */}
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="flex-1">
-                      <label className="text-xs text-muted-foreground mb-1 block">Konsekvens (1-5)</label>
-                      <div className="flex gap-1">
-                        {[1,2,3,4,5].map(n => (
-                          <Button 
-                            key={n} 
-                            type="button"
-                            variant={newRisk.consequence === n ? "default" : "outline"}
-                            size="sm"
-                            className="flex-1 h-8"
-                            onClick={() => setNewRisk(p => ({ ...p, consequence: n }))}
-                          >
-                            {n}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <label className="text-xs text-muted-foreground mb-1 block">Sannsynlighet (1-5)</label>
-                      <div className="flex gap-1">
-                        {[1,2,3,4,5].map(n => (
-                          <Button 
-                            key={n} 
-                            type="button"
-                            variant={newRisk.probability === n ? "default" : "outline"}
-                            size="sm"
-                            className="flex-1 h-8"
-                            onClick={() => setNewRisk(p => ({ ...p, probability: n }))}
-                          >
-                            {n}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Row 3: Tiltak (combined) */}
+                {/* Custom description if "annet" or additional details */}
+                <div>
+                  <label className="text-sm font-medium">Uønsket hendelse / Beskrivelse *</label>
                   <Input 
-                    placeholder="Tiltak (planlagte/eksisterende)" 
-                    value={newRisk.planned_measures || ""}
-                    onChange={(e) => setNewRisk(p => ({ ...p, planned_measures: e.target.value }))}
+                    placeholder="Hva kan skje?"
+                    value={newRisk.description || ""}
+                    onChange={(e) => setNewRisk(p => ({ ...p, description: e.target.value }))}
                   />
+                </div>
 
-                  {/* Row 4: Responsible, Deadline, Add button */}
-                  <div className="flex flex-col sm:flex-row gap-2">
+                {/* Consequence with tooltips */}
+                <div>
+                  <label className="text-sm font-medium flex items-center gap-1">
+                    Konsekvens (K)
+                    <Tooltip>
+                      <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                      <TooltipContent className="max-w-xs">Hvor alvorlig kan skaden bli?</TooltipContent>
+                    </Tooltip>
+                  </label>
+                  <div className="flex gap-1 mt-1">
+                    {CONSEQUENCE_LEVELS.map(level => (
+                      <Tooltip key={level.value}>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            type="button"
+                            variant={newRisk.consequence === level.value ? "default" : "outline"}
+                            size="sm"
+                            className="flex-1 h-10"
+                            onClick={() => setNewRisk(p => ({ ...p, consequence: level.value }))}
+                          >
+                            {level.label}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="max-w-[200px]">
+                          {level.description}
+                        </TooltipContent>
+                      </Tooltip>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Probability with tooltips */}
+                <div>
+                  <label className="text-sm font-medium flex items-center gap-1">
+                    Sannsynlighet (S)
+                    <Tooltip>
+                      <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                      <TooltipContent className="max-w-xs">Hvor sannsynlig er det at dette skjer?</TooltipContent>
+                    </Tooltip>
+                  </label>
+                  <div className="flex gap-1 mt-1">
+                    {PROBABILITY_LEVELS.map(level => (
+                      <Tooltip key={level.value}>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            type="button"
+                            variant={newRisk.probability === level.value ? "default" : "outline"}
+                            size="sm"
+                            className="flex-1 h-10"
+                            onClick={() => setNewRisk(p => ({ ...p, probability: level.value }))}
+                          >
+                            {level.label}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="max-w-[200px]">
+                          {level.description}
+                        </TooltipContent>
+                      </Tooltip>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Risk level preview */}
+                {newRisk.consequence && newRisk.probability && (
+                  <div className={cn(
+                    "p-3 rounded-lg flex items-center justify-between",
+                    getRiskLevel(newRisk.consequence, newRisk.probability).bg
+                  )}>
+                    <span className="text-sm font-medium">
+                      Risikonivå: {newRisk.consequence} × {newRisk.probability} = {newRisk.consequence * newRisk.probability}
+                    </span>
+                    <Badge className={cn(
+                      getRiskLevel(newRisk.consequence, newRisk.probability).bg,
+                      getRiskLevel(newRisk.consequence, newRisk.probability).color
+                    )}>
+                      {getRiskLevel(newRisk.consequence, newRisk.probability).level}
+                    </Badge>
+                  </div>
+                )}
+
+                {/* Measures */}
+                <div>
+                  <label className="text-sm font-medium">Tiltak (planlagte/eksisterende)</label>
+                  <Textarea 
+                    placeholder="Hvilke tiltak skal/er iverksatt?"
+                    value={newRisk.measures || ""}
+                    onChange={(e) => setNewRisk(p => ({ ...p, measures: e.target.value }))}
+                    className="min-h-[60px]"
+                  />
+                </div>
+
+                {/* Responsible and deadline */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium">Ansvarlig</label>
                     <Select value={newRisk.responsible || ""} onValueChange={(v) => setNewRisk(p => ({ ...p, responsible: v }))}>
-                      <SelectTrigger className="flex-1">
-                        <SelectValue placeholder="Ansvarlig">
-                          {newRisk.responsible || "Velg ansvarlig"}
-                        </SelectValue>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Velg">{newRisk.responsible || "Velg"}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {currentUserName && (
-                          <SelectItem value={currentUserName}>
-                            {currentUserName} (meg)
-                          </SelectItem>
+                          <SelectItem value={currentUserName}>{currentUserName} (meg)</SelectItem>
                         )}
-                        {employees.filter(emp => `${emp.first_name} ${emp.last_name}`.trim() !== currentUserName).map(emp => (
+                        {employees.filter(e => `${e.first_name} ${e.last_name}`.trim() !== currentUserName).map(emp => (
                           <SelectItem key={emp.id} value={`${emp.first_name} ${emp.last_name}`}>
                             {emp.first_name} {emp.last_name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Frist</label>
                     <Input 
                       type="date" 
                       value={newRisk.deadline || ""}
                       onChange={(e) => setNewRisk(p => ({ ...p, deadline: e.target.value }))}
-                      className="w-full sm:w-[140px]"
                     />
-                    <Button onClick={addRisk} className="flex-shrink-0">
-                      <Plus className="h-4 w-4 mr-1" />
-                      Legg til
-                    </Button>
                   </div>
-
-                  {/* Risk level preview */}
-                  {newRisk.consequence && newRisk.probability && (
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="text-muted-foreground">Risikonivå:</span>
-                      {(() => {
-                        const level = getRiskLevel(newRisk.consequence, newRisk.probability);
-                        return (
-                          <Badge className={cn(level.bg, level.color)}>
-                            {newRisk.consequence * newRisk.probability} - {level.level}
-                          </Badge>
-                        );
-                      })()}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Risk list */}
-              <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                {sortedRisks.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <AlertTriangle className="h-10 w-10 mx-auto mb-3 opacity-50" />
-                    <p>Ingen risikoer registrert ennå</p>
-                  </div>
-                ) : (
-                  sortedRisks.map(risk => {
-                    const riskLevel = getRiskLevel(risk.consequence, risk.probability);
-                    const category = RISK_CATEGORIES.find(c => c.value === risk.category);
-                    const isExpanded = expandedRisks.has(risk.id);
-
-                    return (
-                      <Collapsible
-                        key={risk.id}
-                        open={isExpanded}
-                        onOpenChange={() => {
-                          setExpandedRisks(prev => {
-                            const next = new Set(prev);
-                            if (next.has(risk.id)) next.delete(risk.id);
-                            else next.add(risk.id);
-                            return next;
-                          });
-                        }}
-                      >
-                        <div className={cn("border rounded-lg overflow-hidden", riskLevel.border)}>
-                          <CollapsibleTrigger className="w-full">
-                            <div className={cn("p-3 flex items-center gap-3", riskLevel.bg)}>
-                              {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                              <span className={cn("w-2 h-2 rounded-full flex-shrink-0", category?.color)} />
-                              <span className="flex-1 text-left text-sm font-medium truncate">{risk.description}</span>
-                              <Badge className={cn("text-xs", riskLevel.bg, riskLevel.color)}>
-                                {risk.consequence * risk.probability} - {riskLevel.level}
-                              </Badge>
-                            </div>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="p-3 space-y-2 text-sm border-t bg-background">
-                              <div className="grid grid-cols-2 gap-2">
-                                <div><span className="text-muted-foreground">Kategori:</span> {category?.label}</div>
-                                <div><span className="text-muted-foreground">K×S:</span> {risk.consequence}×{risk.probability}</div>
-                              </div>
-                              {risk.existing_measures && (
-                                <div><span className="text-muted-foreground">Eksisterende tiltak:</span> {risk.existing_measures}</div>
-                              )}
-                              {risk.planned_measures && (
-                                <div><span className="text-muted-foreground">Planlagte tiltak:</span> {risk.planned_measures}</div>
-                              )}
-                              {risk.responsible && (
-                                <div><span className="text-muted-foreground">Ansvarlig:</span> {risk.responsible}</div>
-                              )}
-                              {risk.deadline && (
-                                <div><span className="text-muted-foreground">Frist:</span> {new Date(risk.deadline).toLocaleDateString("nb-NO")}</div>
-                              )}
-                              <div className="flex justify-end pt-2">
-                                <Button variant="destructive" size="sm" onClick={() => deleteRisk(risk.id)}>
-                                  <Trash2 className="h-4 w-4 mr-1" />
-                                  Slett
-                                </Button>
-                              </div>
-                            </div>
-                          </CollapsibleContent>
-                        </div>
-                      </Collapsible>
-                    );
-                  })
-                )}
+                </div>
               </div>
-            </CardContent>
-          </Card>
+              <DialogFooter className="mt-4">
+                <Button variant="outline" onClick={() => setShowAddDialog(false)}>Avbryt</Button>
+                <Button onClick={addRisk}>Legg til risiko</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Button onClick={handleSave} disabled={isSaving} variant="outline">
+            <Save className="h-4 w-4 mr-2" />
+            {isSaving ? "Lagrer..." : "Lagre"}
+          </Button>
         </div>
 
-        {/* Actions column */}
-        <div className="space-y-4">
+        {/* Alert for red risks */}
+        {stats.red > 0 && (
+          <Card className="border-red-300 bg-red-50">
+            <CardContent className="p-3 flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+              <span className="text-sm text-red-700">
+                <strong>{stats.red} risikoer</strong> krever tiltak (rød risiko kan ikke godkjennes uten tiltak)
+              </span>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Two-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Risks */}
           <Card>
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    Handlingsplan
-                  </CardTitle>
-                  <CardDescription>Tiltak og oppfølging av risikoer</CardDescription>
-                </div>
-                <Button variant="outline" size="sm" onClick={addAction}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nytt tiltak
-                </Button>
-              </div>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                Risikovurdering
+              </CardTitle>
+              <CardDescription>Identifiserte risikoer sortert etter alvorlighet</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2 max-h-[700px] overflow-y-auto">
-                {actions.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <CheckCircle2 className="h-10 w-10 mx-auto mb-3 opacity-50" />
-                    <p>Ingen tiltak registrert</p>
-                    <p className="text-xs mt-1">Tiltak opprettes automatisk for høyrisikoer</p>
-                  </div>
-                ) : (
-                  actions.map(action => {
-                    const isExpanded = expandedActions.has(action.id);
-                    const StatusIcon = statusConfig[action.status].icon;
+              {risks.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <AlertTriangle className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                  <p>Ingen risikoer registrert</p>
+                  <Button variant="outline" className="mt-3" onClick={() => setShowAddDialog(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Legg til første risiko
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                  {[...risks]
+                    .sort((a, b) => (b.consequence * b.probability) - (a.consequence * a.probability))
+                    .map(risk => {
+                      const level = getRiskLevel(risk.consequence, risk.probability);
+                      const hazard = PREDEFINED_HAZARDS.find(h => h.value === risk.hazard_type);
+                      const isExpanded = expandedRisk === risk.id;
+                      const hasReeval = risk.consequence_after !== undefined;
+                      const levelAfter = hasReeval ? getRiskLevel(risk.consequence_after!, risk.probability_after!) : null;
 
-                    return (
-                      <Collapsible
-                        key={action.id}
-                        open={isExpanded}
-                        onOpenChange={() => {
-                          setExpandedActions(prev => {
-                            const next = new Set(prev);
-                            if (next.has(action.id)) next.delete(action.id);
-                            else next.add(action.id);
-                            return next;
-                          });
-                        }}
-                      >
-                        <div className="border rounded-lg overflow-hidden">
-                          <CollapsibleTrigger className="w-full">
-                            <div className="p-3 flex items-center gap-3 hover:bg-muted/50">
-                              {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                              <StatusIcon className={cn("h-4 w-4", statusConfig[action.status].color)} />
-                              <span className="flex-1 text-left text-sm truncate">
-                                {action.action_description || "Nytt tiltak"}
-                              </span>
-                              <Badge variant="outline" className={priorityConfig[action.priority].color}>
-                                {priorityConfig[action.priority].label}
-                              </Badge>
-                            </div>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="p-3 space-y-3 border-t bg-muted/20">
-                              {action.risk_id && (
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                  <Link2 className="h-3 w-3" />
-                                  Koblet til: {action.risk_description}
+                      return (
+                        <Collapsible
+                          key={risk.id}
+                          open={isExpanded}
+                          onOpenChange={() => setExpandedRisk(isExpanded ? null : risk.id)}
+                        >
+                          <div className={cn("border rounded-lg overflow-hidden", level.border)}>
+                            <CollapsibleTrigger className="w-full">
+                              <div className={cn("p-3 flex items-center gap-2", level.bg)}>
+                                {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                <span className="flex-1 text-left text-sm font-medium truncate">
+                                  {risk.description || hazard?.label}
+                                </span>
+                                <Badge className={cn("text-xs", level.bg, level.color)}>
+                                  {risk.consequence * risk.probability}
+                                </Badge>
+                                {hasReeval && levelAfter && (
+                                  <>
+                                    <span className="text-xs">→</span>
+                                    <Badge className={cn("text-xs", levelAfter.bg, levelAfter.color)}>
+                                      {risk.consequence_after! * risk.probability_after!}
+                                    </Badge>
+                                  </>
+                                )}
+                              </div>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <div className="p-3 space-y-3 border-t bg-background text-sm">
+                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                  <div><span className="text-muted-foreground">K×S:</span> {risk.consequence}×{risk.probability} = {risk.consequence * risk.probability}</div>
+                                  <div><span className="text-muted-foreground">Nivå:</span> {level.level}</div>
+                                  {risk.responsible && <div><span className="text-muted-foreground">Ansvarlig:</span> {risk.responsible}</div>}
+                                  {risk.deadline && <div><span className="text-muted-foreground">Frist:</span> {new Date(risk.deadline).toLocaleDateString("nb-NO")}</div>}
                                 </div>
-                              )}
-                              <Textarea 
-                                placeholder="Beskriv tiltaket"
-                                value={action.action_description}
-                                onChange={(e) => updateAction(action.id, { action_description: e.target.value })}
-                                className="min-h-[60px]"
-                              />
-                              <div className="grid grid-cols-2 gap-2">
-                                <Select 
-                                  value={action.responsible || ""} 
-                                  onValueChange={(v) => updateAction(action.id, { responsible: v })}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Ansvarlig" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {employees.map(emp => (
-                                      <SelectItem key={emp.id} value={`${emp.first_name} ${emp.last_name}`}>
-                                        {emp.first_name} {emp.last_name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <Input 
-                                  type="date"
-                                  value={action.deadline || ""}
-                                  onChange={(e) => updateAction(action.id, { deadline: e.target.value })}
-                                />
+                                {risk.measures && (
+                                  <div className="text-xs"><span className="text-muted-foreground">Tiltak:</span> {risk.measures}</div>
+                                )}
+                                
+                                {/* Re-evaluation section */}
+                                {hasReeval && (
+                                  <div className={cn("p-2 rounded text-xs", levelAfter?.bg)}>
+                                    <div className="font-medium mb-1">Etter tiltak:</div>
+                                    <div>K×S: {risk.consequence_after}×{risk.probability_after} = {risk.consequence_after! * risk.probability_after!} ({levelAfter?.level})</div>
+                                    {risk.reevaluated_at && (
+                                      <div className="text-muted-foreground mt-1">
+                                        Revurdert {new Date(risk.reevaluated_at).toLocaleDateString("nb-NO")} av {risk.reevaluated_by}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+
+                                <div className="flex gap-2 pt-2">
+                                  {level.requiresAction && !hasReeval && (
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      onClick={() => {
+                                        setSelectedRiskForReeval({ ...risk, consequence_after: risk.consequence, probability_after: risk.probability });
+                                        setShowReevaluateDialog(true);
+                                      }}
+                                    >
+                                      <RefreshCw className="h-3 w-3 mr-1" />
+                                      Revurder
+                                    </Button>
+                                  )}
+                                  <Button size="sm" variant="destructive" onClick={() => deleteRisk(risk.id)}>
+                                    <Trash2 className="h-3 w-3 mr-1" />
+                                    Slett
+                                  </Button>
+                                </div>
                               </div>
-                              <div className="grid grid-cols-2 gap-2">
-                                <Select 
-                                  value={action.status} 
-                                  onValueChange={(v: any) => updateAction(action.id, { status: v })}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="ikke_startet">Ikke startet</SelectItem>
-                                    <SelectItem value="pågår">Pågår</SelectItem>
-                                    <SelectItem value="fullført">Fullført</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <Select 
-                                  value={action.priority} 
-                                  onValueChange={(v: any) => updateAction(action.id, { priority: v })}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="lav">Lav prioritet</SelectItem>
-                                    <SelectItem value="medium">Medium prioritet</SelectItem>
-                                    <SelectItem value="høy">Høy prioritet</SelectItem>
-                                    <SelectItem value="kritisk">Kritisk</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div className="flex justify-end">
-                                <Button variant="destructive" size="sm" onClick={() => deleteAction(action.id)}>
-                                  <Trash2 className="h-4 w-4 mr-1" />
-                                  Slett
-                                </Button>
-                              </div>
-                            </div>
-                          </CollapsibleContent>
+                            </CollapsibleContent>
+                          </div>
+                        </Collapsible>
+                      );
+                    })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Actions */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                Handlingsplan
+              </CardTitle>
+              <CardDescription>Tiltak for å redusere risiko</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {actions.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <CheckCircle2 className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                  <p>Ingen tiltak registrert</p>
+                  <p className="text-xs mt-1">Tiltak opprettes automatisk for gul/rød risiko</p>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                  {actions.map(action => {
+                    const isOverdue = action.status !== "utført" && action.deadline && new Date(action.deadline) < new Date();
+                    
+                    return (
+                      <div key={action.id} className={cn(
+                        "border rounded-lg p-3 space-y-2",
+                        isOverdue && "border-red-300 bg-red-50"
+                      )}>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{action.action_description}</p>
+                            {action.risk_description && (
+                              <p className="text-xs text-muted-foreground truncate">Fra: {action.risk_description}</p>
+                            )}
+                          </div>
+                          <Select value={action.status} onValueChange={(v: any) => updateAction(action.id, { status: v })}>
+                            <SelectTrigger className="w-[110px] h-7 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="planlagt">Planlagt</SelectItem>
+                              <SelectItem value="pågår">Pågår</SelectItem>
+                              <SelectItem value="utført">Utført</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
-                      </Collapsible>
+                        
+                        <div className="flex flex-wrap gap-2 text-xs">
+                          <Select value={action.action_type || "teknisk"} onValueChange={(v) => updateAction(action.id, { action_type: v })}>
+                            <SelectTrigger className="w-[130px] h-6 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ACTION_TYPES.map(t => (
+                                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Input 
+                            placeholder="Ansvarlig"
+                            value={action.responsible || ""}
+                            onChange={(e) => updateAction(action.id, { responsible: e.target.value })}
+                            className="flex-1 h-6 text-xs min-w-[100px]"
+                          />
+                          <Input 
+                            type="date"
+                            value={action.deadline || ""}
+                            onChange={(e) => updateAction(action.id, { deadline: e.target.value })}
+                            className="w-[120px] h-6 text-xs"
+                          />
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => deleteAction(action.id)}>
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
                     );
-                  })
-                )}
-              </div>
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
+
+        {/* Re-evaluate dialog */}
+        <Dialog open={showReevaluateDialog} onOpenChange={setShowReevaluateDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Revurder risiko etter tiltak</DialogTitle>
+              <DialogDescription>
+                Vurder ny konsekvens og sannsynlighet etter at tiltak er gjennomført
+              </DialogDescription>
+            </DialogHeader>
+            {selectedRiskForReeval && (
+              <div className="space-y-4">
+                <div className="p-3 rounded bg-muted text-sm">
+                  <strong>Risiko:</strong> {selectedRiskForReeval.description}
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Før tiltak: {selectedRiskForReeval.consequence}×{selectedRiskForReeval.probability} = {selectedRiskForReeval.consequence * selectedRiskForReeval.probability}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Ny konsekvens (K)</label>
+                  <div className="flex gap-1 mt-1">
+                    {CONSEQUENCE_LEVELS.map(level => (
+                      <Tooltip key={level.value}>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            type="button"
+                            variant={selectedRiskForReeval.consequence_after === level.value ? "default" : "outline"}
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => setSelectedRiskForReeval(p => p ? { ...p, consequence_after: level.value } : null)}
+                          >
+                            {level.label}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">{level.description}</TooltipContent>
+                      </Tooltip>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Ny sannsynlighet (S)</label>
+                  <div className="flex gap-1 mt-1">
+                    {PROBABILITY_LEVELS.map(level => (
+                      <Tooltip key={level.value}>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            type="button"
+                            variant={selectedRiskForReeval.probability_after === level.value ? "default" : "outline"}
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => setSelectedRiskForReeval(p => p ? { ...p, probability_after: level.value } : null)}
+                          >
+                            {level.label}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">{level.description}</TooltipContent>
+                      </Tooltip>
+                    ))}
+                  </div>
+                </div>
+
+                {selectedRiskForReeval.consequence_after && selectedRiskForReeval.probability_after && (
+                  <div className={cn(
+                    "p-3 rounded-lg",
+                    getRiskLevel(selectedRiskForReeval.consequence_after, selectedRiskForReeval.probability_after).bg
+                  )}>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">
+                        Ny risiko: {selectedRiskForReeval.consequence_after} × {selectedRiskForReeval.probability_after} = {selectedRiskForReeval.consequence_after * selectedRiskForReeval.probability_after}
+                      </span>
+                      <Badge className={cn(
+                        getRiskLevel(selectedRiskForReeval.consequence_after, selectedRiskForReeval.probability_after).bg,
+                        getRiskLevel(selectedRiskForReeval.consequence_after, selectedRiskForReeval.probability_after).color
+                      )}>
+                        {getRiskLevel(selectedRiskForReeval.consequence_after, selectedRiskForReeval.probability_after).level}
+                      </Badge>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowReevaluateDialog(false)}>Avbryt</Button>
+              <Button onClick={handleReevaluate}>Bekreft revurdering</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Legal reference footer */}
+        <div className="text-xs text-muted-foreground text-center pt-4 border-t">
+          Risikovurdering i henhold til Internkontrollforskriften §5, Arbeidsmiljøloven §3-1, og Forskrift om organisering, ledelse og medvirkning §7-1
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }
