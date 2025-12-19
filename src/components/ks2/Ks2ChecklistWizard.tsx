@@ -21,6 +21,8 @@ import {
   Image,
   Trash2,
   Download,
+  Plus,
+  Edit,
 } from "lucide-react";
 import {
   useKsModule2Checklists,
@@ -57,7 +59,7 @@ interface Ks2ChecklistWizardProps {
   existingChecklist?: KsModule2Checklist | null;
 }
 
-type WizardStep = "template" | "details" | "items" | "signature" | "summary";
+type WizardStep = "template" | "custom" | "details" | "items" | "signature" | "summary";
 
 export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, existingChecklist }: Ks2ChecklistWizardProps) {
   const { createChecklist, updateChecklist, completeChecklist, isSaving } = useKsModule2Checklists(projectId);
@@ -89,6 +91,12 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
   
   // Track if we're using admin template (pre-selected) or built-in template
   const [isAdminTemplate, setIsAdminTemplate] = useState(!!preSelectedTemplate);
+  
+  // Custom checklist state
+  const [isCustomChecklist, setIsCustomChecklist] = useState(false);
+  const [customChecklistName, setCustomChecklistName] = useState("");
+  const [customCheckpoints, setCustomCheckpoints] = useState<string[]>([""]);
+  const [editingCheckpointIndex, setEditingCheckpointIndex] = useState<number | null>(null);
   
   // Project and company data for PDF generation
   const [projectData, setProjectData] = useState<any>(null);
@@ -168,6 +176,12 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
     if (isEditing) {
       return ["items", "signature", "summary"];
     }
+    if (isCustomChecklist) {
+      if (isPaper || !executeNow) {
+        return ["template", "custom", "details", "summary"];
+      }
+      return ["template", "custom", "details", "items", "signature", "summary"];
+    }
     if (isPaper || !executeNow) {
       return preSelectedTemplate ? ["details", "summary"] : ["template", "details", "summary"];
     }
@@ -179,6 +193,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
 
   const handleSelectTemplate = (template: ChecklistTemplate) => {
     setIsAdminTemplate(false);
+    setIsCustomChecklist(false);
     setSelectedTemplate(template);
     setTitle(`${template.name} – ${format(new Date(), "dd.MM.yyyy")}`);
     setItems(
@@ -190,6 +205,59 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
       }))
     );
     setStep("details");
+  };
+
+  const handleStartCustomChecklist = () => {
+    setIsCustomChecklist(true);
+    setIsAdminTemplate(false);
+    setSelectedTemplate(null);
+    setCustomChecklistName("");
+    setCustomCheckpoints([""]);
+    setStep("custom");
+  };
+
+  const handleConfirmCustomChecklist = () => {
+    const validCheckpoints = customCheckpoints.filter(cp => cp.trim() !== "");
+    if (!customChecklistName.trim() || validCheckpoints.length === 0) {
+      toast.error("Legg til navn og minst ett kontrollpunkt");
+      return;
+    }
+    
+    const convertedItems: ChecklistItem[] = validCheckpoints.map((cp, idx) => ({
+      id: `custom-${idx + 1}`,
+      text: cp.trim(),
+      type: "yes_no" as const,
+      required: true,
+      value: null,
+      comment: "",
+      photos: [],
+    }));
+    
+    setItems(convertedItems);
+    setTitle(`${customChecklistName} – ${format(new Date(), "dd.MM.yyyy")}`);
+    setSelectedTemplate({
+      name: customChecklistName,
+      category: "Egendefinert",
+      items: convertedItems.map(({ value, comment, photos, ...rest }) => rest),
+    });
+    setStep("details");
+  };
+
+  const addCustomCheckpoint = () => {
+    setCustomCheckpoints([...customCheckpoints, ""]);
+    setEditingCheckpointIndex(customCheckpoints.length);
+  };
+
+  const updateCustomCheckpoint = (index: number, value: string) => {
+    const updated = [...customCheckpoints];
+    updated[index] = value;
+    setCustomCheckpoints(updated);
+  };
+
+  const removeCustomCheckpoint = (index: number) => {
+    if (customCheckpoints.length > 1) {
+      setCustomCheckpoints(customCheckpoints.filter((_, i) => i !== index));
+    }
   };
 
   const handleSelectUser = (userId: string) => {
@@ -391,6 +459,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
             <span>Steg {currentStepIndex + 1} av {steps.length}</span>
             <span className="text-muted-foreground">
               {step === "template" && "Velg mal"}
+              {step === "custom" && "Lag sjekkliste"}
               {step === "details" && "Detaljer"}
               {step === "items" && "Fyll ut punkter"}
               {step === "signature" && "Signatur"}
@@ -435,6 +504,25 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
               </div>
             ))}
 
+            {/* Custom checklist option */}
+            <Card className="border-dashed border-primary/50 bg-primary/5">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <Edit className="h-8 w-8 text-primary" />
+                  <div className="flex-1">
+                    <h4 className="font-medium">Lag egen sjekkliste</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Opprett en tilpasset sjekkliste med egne kontrollpunkter
+                    </p>
+                  </div>
+                  <Button onClick={handleStartCustomChecklist}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Lag ny
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Paper version option */}
             <Card className="border-dashed">
               <CardContent className="p-4">
@@ -460,6 +548,84 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                 </div>
               </CardContent>
             </Card>
+          </div>
+        )}
+
+        {/* Step: Custom */}
+        {step === "custom" && (
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              Opprett en egendefinert sjekkliste med dine egne kontrollpunkter.
+            </p>
+            
+            <div>
+              <Label>Navn på sjekkliste *</Label>
+              <Input 
+                placeholder="F.eks. Kontroll av betongstøp"
+                value={customChecklistName}
+                onChange={(e) => setCustomChecklistName(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Kontrollpunkter *</Label>
+              <p className="text-sm text-muted-foreground">
+                Legg til punktene som skal kontrolleres
+              </p>
+              
+              <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-2">
+                {customCheckpoints.map((checkpoint, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground w-6">
+                      {index + 1}.
+                    </span>
+                    <Input
+                      placeholder="Beskriv kontrollpunktet..."
+                      value={checkpoint}
+                      onChange={(e) => updateCustomCheckpoint(index, e.target.value)}
+                      autoFocus={editingCheckpointIndex === index}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeCustomCheckpoint(index)}
+                      disabled={customCheckpoints.length === 1}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addCustomCheckpoint}
+                className="w-full"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Legg til kontrollpunkt
+              </Button>
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button variant="outline" onClick={() => {
+                setIsCustomChecklist(false);
+                setStep("template");
+              }}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Tilbake
+              </Button>
+              <Button 
+                className="flex-1" 
+                onClick={handleConfirmCustomChecklist}
+                disabled={!customChecklistName.trim() || customCheckpoints.filter(cp => cp.trim()).length === 0}
+              >
+                Fortsett til detaljer
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
           </div>
         )}
 
@@ -557,7 +723,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
             )}
 
             <div className="flex gap-2 pt-4">
-              <Button variant="outline" onClick={() => setStep("template")}>
+              <Button variant="outline" onClick={() => setStep(isCustomChecklist ? "custom" : "template")}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Tilbake
               </Button>
