@@ -1,28 +1,63 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ClipboardCheck, Plus, Search, FileText, Calendar, User, ArrowRight, Library, Eye, Play } from "lucide-react";
+import { ClipboardCheck, Plus, Search, FileText, Calendar, User, ArrowRight, Library, Eye, Play, Download } from "lucide-react";
 import { useKsModule2ProjectTemplates, ProjectTemplate } from "@/hooks/useKsModule2ProjectTemplates";
 import { useKsModule2Checklists, KsModule2Checklist } from "@/hooks/useKsModule2Checklists";
 import { Ks2ChecklistWizard, PreSelectedTemplate } from "@/components/ks2/Ks2ChecklistWizard";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { downloadChecklistPdf } from "@/utils/saveChecklistToDocumentation";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 export default function Ks2Egenkontroller() {
   const { projectId } = useParams();
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [showWizard, setShowWizard] = useState(false);
   const [selectedTemplateForWizard, setSelectedTemplateForWizard] = useState<PreSelectedTemplate | null>(null);
   const [existingChecklist, setExistingChecklist] = useState<KsModule2Checklist | null>(null);
   const [viewingChecklist, setViewingChecklist] = useState<KsModule2Checklist | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [projectData, setProjectData] = useState<any>(null);
+  const [companyData, setCompanyData] = useState<any>(null);
 
   const { checklistTemplates, isLoading: templatesLoading } = useKsModule2ProjectTemplates(projectId);
   const { checklists, isLoading: checklistsLoading, refetch: refetchChecklists } = useKsModule2Checklists(projectId || "");
+
+  // Fetch project and company data
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!projectId || !profile?.company_id) return;
+      const [projRes, compRes] = await Promise.all([
+        supabase.from("ks_module2_projects").select("*").eq("id", projectId).single(),
+        supabase.from("companies").select("*").eq("id", profile.company_id).single(),
+      ]);
+      if (projRes.data) setProjectData(projRes.data);
+      if (compRes.data) setCompanyData(compRes.data);
+    };
+    fetchData();
+  }, [projectId, profile?.company_id]);
+
+  const handleDownloadPdf = async () => {
+    if (!viewingChecklist || !projectData || !companyData) return;
+    setIsDownloading(true);
+    try {
+      await downloadChecklistPdf({ checklist: viewingChecklist, project: projectData, company: companyData });
+      toast.success("PDF lastet ned");
+    } catch (e) {
+      toast.error("Kunne ikke laste ned PDF");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   // Filter completed checklists
   const filteredChecklists = checklists.filter(c => 
@@ -265,7 +300,20 @@ export default function Ks2Egenkontroller() {
       <Dialog open={!!viewingChecklist} onOpenChange={() => setViewingChecklist(null)}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{viewingChecklist?.title}</DialogTitle>
+            <DialogTitle className="flex items-center justify-between">
+              <span>{viewingChecklist?.title}</span>
+              {viewingChecklist?.status === 'completed' && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleDownloadPdf}
+                  disabled={isDownloading || !projectData || !companyData}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  {isDownloading ? "Laster..." : "Last ned PDF"}
+                </Button>
+              )}
+            </DialogTitle>
           </DialogHeader>
           {viewingChecklist && (
             <div className="space-y-4">
