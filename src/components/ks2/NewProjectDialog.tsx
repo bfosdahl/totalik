@@ -221,12 +221,12 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh]">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-xl font-semibold">Opprett nytt prosjekt</DialogTitle>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col min-h-0">
           <TabsList className="grid w-full grid-cols-2 mb-4">
             <TabsTrigger value="manual" className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
@@ -245,9 +245,9 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
             />
           </TabsContent>
 
-          <TabsContent value="manual" className="mt-0">
-            <form onSubmit={handleSubmit} className="flex flex-col">
-              <ScrollArea className="max-h-[55vh] pr-4">
+          <TabsContent value="manual" className="mt-0 flex-1 flex flex-col min-h-0">
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+              <ScrollArea className="flex-1 pr-4">
                 <div className="space-y-6 pb-4">
             {/* Project Template Selection */}
             <div className="space-y-4">
