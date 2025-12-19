@@ -38,6 +38,8 @@ import { toast } from "sonner";
 import { SignaturePad } from "./SignaturePad";
 import { downloadChecklistTemplatePdf } from "@/utils/ksChecklistTemplatePdf";
 import UserSelect from "@/components/audits/UserSelect";
+import { saveChecklistToDocumentation } from "@/utils/saveChecklistToDocumentation";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Pre-selected template from Malbibliotek (admin templates)
 export interface PreSelectedTemplate {
@@ -60,6 +62,7 @@ type WizardStep = "template" | "details" | "items" | "signature" | "summary";
 export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, existingChecklist }: Ks2ChecklistWizardProps) {
   const { createChecklist, updateChecklist, completeChecklist, isSaving } = useKsModule2Checklists(projectId);
   const { users } = useCompanyUsers();
+  const { profile } = useAuth();
   
   // Determine initial step based on whether template is pre-selected or continuing existing
   const getInitialStep = (): WizardStep => {
@@ -86,6 +89,27 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
   
   // Track if we're using admin template (pre-selected) or built-in template
   const [isAdminTemplate, setIsAdminTemplate] = useState(!!preSelectedTemplate);
+  
+  // Project and company data for PDF generation
+  const [projectData, setProjectData] = useState<any>(null);
+  const [companyData, setCompanyData] = useState<any>(null);
+  
+  // Fetch project and company data for PDF generation
+  useEffect(() => {
+    const fetchProjectAndCompany = async () => {
+      if (!projectId || !profile?.company_id) return;
+      
+      const [projectResult, companyResult] = await Promise.all([
+        supabase.from("ks_module2_projects").select("*").eq("id", projectId).single(),
+        supabase.from("companies").select("*").eq("id", profile.company_id).single(),
+      ]);
+      
+      if (projectResult.data) setProjectData(projectResult.data);
+      if (companyResult.data) setCompanyData(companyResult.data);
+    };
+    
+    fetchProjectAndCompany();
+  }, [projectId, profile?.company_id]);
 
   // Initialize with existing checklist if continuing
   useEffect(() => {
@@ -251,6 +275,8 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
   const handleCreate = async (isPlanned: boolean = false) => {
     if (!selectedTemplate) return;
 
+    const uploadedByName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email || "Ukjent" : "Ukjent";
+
     // If editing existing checklist, update it
     if (isEditing && editingChecklistId) {
       const hasSignature = !!inspectorSignature;
@@ -266,6 +292,28 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
         }];
         const result = await completeChecklist(editingChecklistId, items, signatures);
         if (result) {
+          // Save completed checklist to documentation folder
+          if (projectData && companyData && existingChecklist) {
+            const completedChecklist: KsModule2Checklist = {
+              ...existingChecklist,
+              checklist_items: items,
+              signatures,
+              status: "completed",
+              progress_percent: 100,
+              completed_at: new Date().toISOString(),
+            };
+            
+            const docId = await saveChecklistToDocumentation({
+              checklist: completedChecklist,
+              project: projectData,
+              company: companyData,
+              uploadedByName,
+            });
+            
+            if (docId) {
+              toast.success("Egenkontroll lagret i dokumentasjon");
+            }
+          }
           onClose();
         }
       } else {
@@ -299,6 +347,22 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
     });
 
     if (result) {
+      // If it's a completed checklist (not planned), save to documentation
+      const hasSignature = !!inspectorSignature;
+      const allItemsFilled = items.every(item => !item.required || (item.value !== null && item.value !== undefined));
+      
+      if (!isPlanned && hasSignature && allItemsFilled && projectData && companyData) {
+        const docId = await saveChecklistToDocumentation({
+          checklist: result,
+          project: projectData,
+          company: companyData,
+          uploadedByName,
+        });
+        
+        if (docId) {
+          toast.success("Egenkontroll lagret i dokumentasjon");
+        }
+      }
       onClose();
     }
   };
