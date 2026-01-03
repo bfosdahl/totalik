@@ -51,6 +51,45 @@ export function OppfolgingTab() {
 
   const currentUserName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
 
+  // Convert setup wizard format to full format
+  const convertSetupWizardAction = (action: any): ActionItem => {
+    // Check if already in OppfolgingTab format (has action_description and risk_source)
+    if (action.action_description && action.risk_source !== undefined) {
+      return action as ActionItem;
+    }
+    
+    // Convert from setup wizard format:
+    // { id, risk_id, risk_description, action_description (or description), responsible, deadline, status, priority, comments }
+    // Status mapping: "ikke_startet" -> "planlagt", "pågår" -> "pågår", "fullført" -> "utført"
+    const statusMap: Record<string, "planlagt" | "pågår" | "utført"> = {
+      "ikke_startet": "planlagt",
+      "pågår": "pågår",
+      "fullført": "utført",
+      "planlagt": "planlagt",
+      "utført": "utført",
+      "pending": "planlagt",
+      "in_progress": "pågår",
+      "completed": "utført",
+    };
+
+    return {
+      id: action.id || crypto.randomUUID(),
+      risk_id: action.risk_id || "",
+      event_id: action.event_id || "",
+      risk_source: action.risk_description || action.risk_source || "Manuelt tiltak",
+      event_description: action.event_description || action.risk_description || "",
+      action_description: action.action_description || action.description || "",
+      action_type: action.action_type || "forebyggende",
+      responsible: action.responsible || "",
+      deadline: action.deadline || "",
+      status: statusMap[action.status] || "planlagt",
+      priority: action.priority || "medium",
+      notes: action.comments || action.notes || "",
+      completed_at: action.completed_at,
+      completed_by: action.completed_by,
+    };
+  };
+
   // Load actions
   useEffect(() => {
     const loadActions = async () => {
@@ -64,7 +103,10 @@ export function OppfolgingTab() {
           .single();
         
         if (data?.actions) {
-          setActions(data.actions as unknown as ActionItem[]);
+          const rawActions = data.actions as unknown as any[];
+          // Convert all actions to full format
+          const convertedActions = rawActions.map(a => convertSetupWizardAction(a));
+          setActions(convertedActions);
         }
       } catch (error) {
         console.error("Error loading actions:", error);
