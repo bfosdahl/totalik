@@ -615,12 +615,23 @@ const Setup = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-1"
+          className="flex items-start justify-between gap-4"
         >
-          <h1 className="text-2xl font-bold tracking-tight">Oppsett av internkontroll</h1>
-          <p className="text-muted-foreground">
-            Følg veiviseren for å etablere din bedrifts internkontrollsystem
-          </p>
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl font-bold tracking-tight">Oppsett av internkontroll</h1>
+            <p className="text-muted-foreground">
+              Følg veiviseren for å etablere din bedrifts internkontrollsystem
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/setup/ai')}
+            className="flex items-center gap-2 shrink-0"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span className="hidden sm:inline">Oppsett-hjelperen</span>
+          </Button>
         </motion.div>
 
         {/* Progress steps */}
