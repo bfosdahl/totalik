@@ -55,7 +55,6 @@ const standardNavItems = [
 // IK/HMS module items - shown in collapsible section
 const ikHmsItems = [
   { icon: ClipboardList, label: "Oppsett", path: "/setup", color: "text-emerald-500" },
-  { icon: Shield, label: "Oppsett-hjelperen", path: "/setup/ai", color: "text-green-500" },
   { icon: Target, label: "Målsetting", path: "/maalsetting", color: "text-yellow-500" },
   { icon: Building2, label: "Organisering", path: "/organisering", color: "text-sky-500" },
   { 
