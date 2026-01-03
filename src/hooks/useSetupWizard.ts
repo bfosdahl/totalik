@@ -116,8 +116,6 @@ export function useSetupWizard() {
 
     const loadData = async () => {
       setDataLoading(true);
-      console.log("[useSetupWizard] Starting data load for company:", companyId);
-      console.log("[useSetupWizard] Auth loading state:", authLoading);
       try {
         // Load progress
         const { data: progressData, error: progressError } = await supabase
@@ -270,14 +268,6 @@ export function useSetupWizard() {
             logo_url: companyData.logo_url,
           });
         }
-        console.log("[useSetupWizard] Data loaded successfully:", {
-          companyId,
-          goalsCount: goalsData?.length ?? 0,
-          hasOrg: !!orgData,
-          risksCount: (riskData?.risks as any[])?.length ?? 0,
-          actionsCount: (actionPlanData?.actions as any[])?.length ?? 0,
-          routinesCount: (routinesData?.routines as any[])?.length ?? 0
-        });
       } catch (error) {
         console.error("[useSetupWizard] Error loading wizard data:", error);
       } finally {

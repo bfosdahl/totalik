@@ -85,7 +85,6 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
     setIsSaving(true);
     try {
       const content = JSON.parse(jsonContent);
-      console.log("Saving IK-MAT generated content:", content);
 
       // NOTE: IK-MAT stores ALL its data in company_modules.settings.generatedContent
       // It does NOT use company_goals, company_risk_assessments, or company_routines
@@ -210,13 +209,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
       // Check if the message contains JSON (setup complete)
       const jsonContent = extractJsonFromContent(assistantMessage);
       if (jsonContent) {
-        console.log("JSON found in IK-MAT response, saving setup data...");
         await saveGeneratedContent(jsonContent);
-      } else {
-        // Log for debugging if we expected JSON but didn't find it
-        if (assistantMessage.includes("Supert") && assistantMessage.includes("IK-MAT")) {
-          console.warn("Expected JSON in final IK-MAT message but none found. Full message:", assistantMessage);
-        }
       }
     } catch (error) {
       console.error("Error:", error);

@@ -95,7 +95,7 @@ export const IkMatSetupStep = ({ companyId, onComplete }: IkMatSetupStepProps) =
         specificProcesses,
       };
 
-      console.log("Sending setup answers to AI:", setupAnswers);
+      
 
       // Call edge function to generate content
       const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-ik-mat-content', {
@@ -112,7 +112,7 @@ export const IkMatSetupStep = ({ companyId, onComplete }: IkMatSetupStepProps) =
       }
 
       const generatedContent = functionData.content;
-      console.log("Generated content:", generatedContent);
+      
 
       // Save generated content to database
       // 1. Save goals (insert new goals)

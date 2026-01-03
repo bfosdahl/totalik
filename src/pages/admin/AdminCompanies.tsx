@@ -181,7 +181,7 @@ export default function AdminCompanies() {
         await supabase.functions.invoke("sync-to-kurs", {
           body: { company_id: newCompany.id },
         });
-        console.log("Company synced to kurs system");
+        
       } catch (syncError) {
         console.error("Failed to sync to kurs:", syncError);
       }

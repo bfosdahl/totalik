@@ -55,16 +55,11 @@ const IkMatAllergener = () => {
   return (
     <AppLayout>
       <div className="container max-w-6xl mx-auto py-8">
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Allergener</h1>
-            <p className="text-muted-foreground">
-              Oversikt over allergener og kontrolltiltak
-            </p>
-          </div>
-          <Button onClick={() => console.log("Bestill meny clicked")}>
-            Bestill meny
-          </Button>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Allergener</h1>
+          <p className="text-muted-foreground">
+            Oversikt over allergener og kontrolltiltak
+          </p>
         </div>
 
         {allergens.length === 0 ? (

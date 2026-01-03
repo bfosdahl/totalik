@@ -60,7 +60,7 @@ export function useAiSetupValidation(moduleType: "IK_HMS" | "IK_MAT" = "IK_HMS")
         }
       }
       
-      console.log("[useAiSetupValidation] Session valid, user_id:", session?.user?.id);
+      
 
       // Step 3: Verify company exists in database
       // Use maybeSingle() to avoid error when RLS blocks access

@@ -84,7 +84,6 @@ export async function createSeedProjects(companyId: string, userId?: string): Pr
 
     // If company already has projects, don't add seeds
     if (existingProjects && existingProjects.length > 0) {
-      console.log("Company already has projects, skipping seed creation");
       return true;
     }
 
@@ -115,12 +114,10 @@ export async function createSeedProjects(companyId: string, userId?: string): Pr
 
       // If this project should be populated with example data
       if (project.populateWithData && insertedProject) {
-        console.log(`Populating project ${project.project_name} with example data...`);
         await populateExampleProject(insertedProject.id, companyId, userId);
       }
     }
 
-    console.log(`Created ${SEED_PROJECTS.length} seed projects for company ${companyId}`);
     return true;
   } catch (error) {
     console.error("Error in createSeedProjects:", error);
