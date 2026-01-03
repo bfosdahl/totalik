@@ -90,7 +90,7 @@ export default function Ks2Dashboard() {
         // Filter projects where user is project leader or created by user
         if (profile?.user_id) {
           result = result.filter(
-            (p) => p.project_leader_id === profile.user_id || p.created_by === profile.id
+            (p) => p.project_leader_id === profile.user_id || p.created_by === profile.user_id
           );
         }
         break;

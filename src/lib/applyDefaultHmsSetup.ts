@@ -14,7 +14,6 @@ import {
 
 export async function applyDefaultHmsSetup(companyId: string): Promise<{ success: boolean; error?: string }> {
   try {
-    console.log("Applying default HMS setup for company:", companyId);
 
     // 1. Insert default goals (no unique constraint on sort_order, so just insert)
     const { data: existingGoals } = await supabase
@@ -122,7 +121,6 @@ export async function applyDefaultHmsSetup(companyId: string): Promise<{ success
       }
     }
 
-    console.log("Default HMS setup applied successfully for company:", companyId);
     return { success: true };
 
   } catch (error) {

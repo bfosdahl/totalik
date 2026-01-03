@@ -275,7 +275,7 @@ export default function AdminUsers() {
           await supabase.functions.invoke("sync-to-kurs", {
             body: { company_id: newUserCompanyId },
           });
-          console.log("Company synced to kurs system after user creation");
+          
         } catch (syncError) {
           console.error("Failed to sync to kurs:", syncError);
         }

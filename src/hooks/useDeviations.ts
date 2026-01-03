@@ -231,7 +231,7 @@ export function useDeviations() {
               category: updatedDeviation.category,
             },
           });
-          console.log("Email notification sent");
+          
         } catch (emailError) {
           console.error("Failed to send email notification:", emailError);
           // Don't fail the update if email fails

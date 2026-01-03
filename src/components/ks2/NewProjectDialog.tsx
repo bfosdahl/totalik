@@ -194,7 +194,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
     hms_focus?: any[];
     milestones?: any[];
   }) => {
-    console.log("AI data received:", data);
+    
     
     // Update form with AI suggestions
     setFormData(prev => ({
