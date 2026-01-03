@@ -181,6 +181,37 @@ export function RisikovurderingOgHandlingsplan() {
     }
   }, [currentUserName]);
 
+  // Convert simple format from setup wizard to full format
+  const convertSimpleToFullFormat = (simpleRisk: any): RiskItem => {
+    // Check if it's already in full format (has hazard_source and events)
+    if (simpleRisk.hazard_source && Array.isArray(simpleRisk.events)) {
+      return {
+        ...simpleRisk,
+        events: simpleRisk.events || [],
+      };
+    }
+    
+    // Convert simple format: { id, description, consequence, probability, existing_measures, planned_measures }
+    // To full format: { id, hazard_source, hazard_source_custom, events: [...], created_at, created_by }
+    return {
+      id: simpleRisk.id,
+      hazard_source: "annet",
+      hazard_source_custom: simpleRisk.description || "Risiko fra oppsett",
+      events: [{
+        id: crypto.randomUUID(),
+        description: simpleRisk.description || "",
+        consequence: simpleRisk.consequence || 3,
+        probability: simpleRisk.probability || 3,
+        measures: [simpleRisk.existing_measures, simpleRisk.planned_measures].filter(Boolean).join(". "),
+        responsible: "",
+        deadline: "",
+        status: "planlagt" as const,
+      }],
+      created_at: simpleRisk.created_at || new Date().toISOString(),
+      created_by: simpleRisk.created_by || "Oppsett-veiviser",
+    };
+  };
+
   // Load data
   useEffect(() => {
     const loadData = async () => {
@@ -194,13 +225,10 @@ export function RisikovurderingOgHandlingsplan() {
           .single();
         
         if (riskData?.risks) {
-          // Convert old format to new format if needed
-          const loadedRisks = riskData.risks as unknown as RiskItem[];
-          setRisks(loadedRisks.map(r => ({
-            ...r,
-            hazard_source: r.hazard_source || "annet",
-            events: r.events || [],
-          })));
+          const rawRisks = riskData.risks as unknown as any[];
+          // Convert all risks to full format
+          const convertedRisks = rawRisks.map(r => convertSimpleToFullFormat(r));
+          setRisks(convertedRisks);
         }
 
         const { data: actionData } = await supabase
