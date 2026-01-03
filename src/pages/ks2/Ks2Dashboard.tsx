@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Search, FolderKanban, Loader2, Settings, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,17 +10,19 @@ import { useKsModule2Projects, NewKsModule2ProjectInput, KsModule2Project } from
 import { NewProjectDialog } from "@/components/ks2/NewProjectDialog";
 import { ProjectCard } from "@/components/ks2/ProjectCard";
 import { CopyProjectDialog } from "@/components/ks2/CopyProjectDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 type FilterType = "all" | "mine" | "active" | "completed" | "with_deviations";
 
 export default function Ks2Dashboard() {
   const navigate = useNavigate();
-  const { isCompanyAdmin, isSystemAdmin } = useAuth();
+  const { isCompanyAdmin, isSystemAdmin, profile } = useAuth();
   const { projects, isLoading, isSaving, createProject, toggleFavorite, deleteProject, refetch } = useKsModule2Projects();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [isNewProjectOpen, setIsNewProjectOpen] = useState(false);
   const [copyProject, setCopyProject] = useState<KsModule2Project | null>(null);
+  const [projectDeviationCounts, setProjectDeviationCounts] = useState<Record<string, number>>({});
 
   const filterButtons: { key: FilterType; label: string }[] = [
     { key: "all", label: "Alle" },
@@ -29,6 +31,38 @@ export default function Ks2Dashboard() {
     { key: "completed", label: "Fullførte" },
     { key: "with_deviations", label: "Med åpne avvik" },
   ];
+
+  // Fetch deviation counts for all projects
+  useEffect(() => {
+    const fetchDeviationCounts = async () => {
+      if (!profile?.company_id || projects.length === 0) return;
+
+      try {
+        const projectIds = projects.map(p => p.id);
+        const { data, error } = await supabase
+          .from("ks_module2_avvik" as any)
+          .select("project_id, status")
+          .in("project_id", projectIds)
+          .neq("status", "closed");
+
+        if (error) {
+          console.error("Error fetching deviation counts:", error);
+          return;
+        }
+
+        // Count open deviations per project
+        const counts: Record<string, number> = {};
+        (data || []).forEach((avvik: any) => {
+          counts[avvik.project_id] = (counts[avvik.project_id] || 0) + 1;
+        });
+        setProjectDeviationCounts(counts);
+      } catch (error) {
+        console.error("Error fetching deviation counts:", error);
+      }
+    };
+
+    fetchDeviationCounts();
+  }, [projects, profile?.company_id]);
 
   const filteredProjects = useMemo(() => {
     let result = [...projects];
@@ -47,12 +81,23 @@ export default function Ks2Dashboard() {
     // Status filter
     switch (activeFilter) {
       case "active":
-        result = result.filter((p) => p.status === "active");
+        result = result.filter((p) => p.status === "active" || p.status === "planned");
         break;
       case "completed":
         result = result.filter((p) => p.status === "completed");
         break;
-      // TODO: Implement "mine" and "with_deviations" when we have user assignment and deviations
+      case "mine":
+        // Filter projects where user is project leader or created by user
+        if (profile?.user_id) {
+          result = result.filter(
+            (p) => p.project_leader_id === profile.user_id || p.created_by === profile.id
+          );
+        }
+        break;
+      case "with_deviations":
+        // Filter projects with open deviations
+        result = result.filter((p) => (projectDeviationCounts[p.id] || 0) > 0);
+        break;
       default:
         break;
     }
@@ -66,7 +111,7 @@ export default function Ks2Dashboard() {
     });
 
     return result;
-  }, [projects, searchQuery, activeFilter]);
+  }, [projects, searchQuery, activeFilter, profile?.user_id, profile?.id, projectDeviationCounts]);
 
   const handleCreateProject = async (data: NewKsModule2ProjectInput) => {
     await createProject(data);
@@ -151,7 +196,7 @@ export default function Ks2Dashboard() {
                 onToggleFavorite={toggleFavorite}
                 onCopy={(p) => setCopyProject(p)}
                 onDelete={deleteProject}
-                openDeviationsCount={0} // TODO: Implement deviation counting
+                openDeviationsCount={projectDeviationCounts[project.id] || 0}
               />
             ))}
           </div>

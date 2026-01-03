@@ -20,15 +20,22 @@ import {
   Download
 } from "lucide-react";
 import { useKsModule2ShaPlan, RiskArea } from "@/hooks/useKsModule2ShaPlan";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Props {
   projectId: string;
 }
 
 export function Ks2ShaPlanView({ projectId }: Props) {
+  const { profile } = useAuth();
   const { shaPlan, updateShaPlan, approveAsEntrepreneur, getExternalFileUrl, isLoading, isSaving } = useKsModule2ShaPlan(projectId);
   const [editedRiskAreas, setEditedRiskAreas] = useState<RiskArea[] | null>(null);
   const [isApproving, setIsApproving] = useState(false);
+
+  // Get current user's full name for approval
+  const currentUserName = profile 
+    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email || 'Ukjent bruker'
+    : 'Ukjent bruker';
 
   if (isLoading || !shaPlan) {
     return (
@@ -55,7 +62,7 @@ export function Ks2ShaPlanView({ projectId }: Props) {
 
   const handleApprove = async () => {
     setIsApproving(true);
-    await approveAsEntrepreneur("Prosjektleder"); // TODO: Get actual name
+    await approveAsEntrepreneur(currentUserName);
     setIsApproving(false);
   };
 
