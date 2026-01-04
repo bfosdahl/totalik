@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { MascotChatHelper } from "@/components/help/MascotChatHelper";
 import { 
   Shield, 
   Target, 
@@ -772,6 +773,9 @@ const Brukerveiledning = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Mascot chat helper */}
+      <MascotChatHelper />
     </AppLayout>
   );
 };
