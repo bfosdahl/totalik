@@ -1,6 +1,7 @@
 import { ReactNode, useState, useCallback } from "react";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader } from "./AppHeader";
+import { MascotChatHelper } from "@/components/help/MascotChatHelper";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -26,6 +27,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           {children}
         </main>
       </div>
+      
+      {/* Global mascot helper */}
+      <MascotChatHelper />
     </div>
   );
 }
