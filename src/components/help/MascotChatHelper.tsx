@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Sparkles, Lightbulb } from "lucide-react";
+import { X, Send, Sparkles, Lightbulb, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
 import mascotImage from "@/assets/mascot-helper.png";
 
 interface Message {
@@ -13,31 +14,21 @@ interface Message {
 }
 
 const tips = [
-  "Visste du at du kan bruke Oppsett-hjelperen for å sette opp HMS-systemet automatisk basert på din bransje?",
-  "Tips: Røde risikoer krever obligatorisk revurdering etter at tiltak er iverksatt.",
-  "Du kan laste opp sikkerhetsdatablader i Stoffkartoteket, så fyller systemet ut informasjonen automatisk!",
-  "HMS-håndboken oppdateres automatisk når du gjør endringer i systemet.",
-  "Bruk avvikssystemet til å rapportere både kvalitetsavvik og uønskede hendelser (RUH).",
-  "Ansatte kan stemple inn og ut med QR-kode i timeregistreringssystemet.",
-  "Vernerunder bør gjennomføres jevnlig - systemet hjelper deg å dokumentere funnene.",
-  "Du kan eksportere timelister til Excel for lønnskjøring.",
+  "Visste du at du kan bruke Oppsett-hjelperen for å sette opp HMS-systemet automatisk basert på din bransje? ✨",
+  "Tips: Røde risikoer krever obligatorisk revurdering etter at tiltak er iverksatt. 🔴",
+  "Du kan laste opp sikkerhetsdatablader i Stoffkartoteket, så fyller systemet ut informasjonen automatisk! 📄",
+  "HMS-håndboken oppdateres automatisk når du gjør endringer i systemet. 📚",
+  "Bruk avvikssystemet til å rapportere både kvalitetsavvik og uønskede hendelser (RUH). ⚠️",
+  "Ansatte kan stemple inn og ut med QR-kode i timeregistreringssystemet. ⏰",
+  "Vernerunder bør gjennomføres jevnlig - systemet hjelper deg å dokumentere funnene. 🔍",
+  "Du kan eksportere timelister til Excel for lønnskjøring. 📊",
 ];
-
-const quickAnswers: Record<string, string> = {
-  "oppsett": "For å sette opp HMS-systemet, gå til Oppsett-siden og bruk enten den manuelle veiviseren eller klikk på 'Oppsett-hjelperen' for AI-assistert oppsett basert på din bransje.",
-  "risikovurdering": "Risikovurdering gjøres ved å identifisere farekilder, vurdere sannsynlighet og konsekvens (1-5), og planlegge tiltak. Gå til Risikoanalyse i menyen for å komme i gang.",
-  "avvik": "For å registrere avvik, gå til Avvik-siden og klikk 'Nytt avvik'. Velg mellom Avvik (kvalitet) eller RUH (uønsket hendelse).",
-  "handbok": "HMS-håndboken genereres automatisk basert på informasjonen du har lagt inn. Gå til Handbok-siden for å se og laste ned PDF.",
-  "ansatte": "Administrer ansatte under Ansattoversikt. Der kan du legge til kurs, HMS-kort og dokumenter per ansatt.",
-  "timer": "Timeregistrering finner du under Mine timer. Du kan registrere manuelt eller bruke stemplingsuret.",
-  "stoffkartotek": "I Stoffkartoteket registrerer du kjemikalier. Last opp sikkerhetsdatablader så fyller systemet ut informasjonen automatisk.",
-  "vernerunde": "Vernerunder planlegges og gjennomføres under HMS aktiviteter. Bruk sjekklisten for systematisk gjennomgang.",
-};
 
 export const MascotChatHelper = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [currentTip, setCurrentTip] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -46,7 +37,7 @@ export const MascotChatHelper = () => {
       setMessages([
         {
           id: "welcome",
-          content: "Hei! 👋 Jeg er din HMS-hjelper. Spør meg om hva som helst, eller se på tipsene under!",
+          content: "Hei! 👋 Jeg er HMS-hjelperen din. Spør meg om hva som helst om systemet, så skal jeg prøve å hjelpe deg!",
           isBot: true,
         },
       ]);
@@ -59,24 +50,8 @@ export const MascotChatHelper = () => {
     }
   }, [messages]);
 
-  const findAnswer = (question: string): string => {
-    const lowerQuestion = question.toLowerCase();
-    
-    for (const [keyword, answer] of Object.entries(quickAnswers)) {
-      if (lowerQuestion.includes(keyword)) {
-        return answer;
-      }
-    }
-    
-    if (lowerQuestion.includes("hjelp") || lowerQuestion.includes("hvordan")) {
-      return "Jeg kan hjelpe deg med oppsett, risikovurdering, avvik, håndbok, ansatte, timer, stoffkartotek og vernerunder. Hva lurer du på?";
-    }
-    
-    return "Beklager, jeg forstår ikke helt spørsmålet. Prøv å spørre om oppsett, risikovurdering, avvik, håndbok, ansatte, timer, stoffkartotek eller vernerunder. Du kan også lese mer i veiledningen over!";
-  };
-
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -85,17 +60,42 @@ export const MascotChatHelper = () => {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const userInput = input;
     setInput("");
+    setIsLoading(true);
 
-    // Simulate bot response
-    setTimeout(() => {
+    try {
+      // Prepare history for context
+      const history = messages
+        .filter(m => m.id !== "welcome")
+        .map(m => ({
+          role: m.isBot ? "assistant" : "user",
+          content: m.content
+        }));
+
+      const { data, error } = await supabase.functions.invoke("mascot-chat", {
+        body: { message: userInput, history }
+      });
+
+      if (error) throw error;
+
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: findAnswer(input),
+        content: data?.reply || "Beklager, jeg forstod ikke helt. Kan du prøve igjen?",
         isBot: true,
       };
       setMessages((prev) => [...prev, botResponse]);
-    }, 500);
+    } catch (error) {
+      console.error("Chat error:", error);
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "Oops! Noe gikk galt. Sjekk brukerveiledningen over for svar! 📖",
+        isBot: true,
+      };
+      setMessages((prev) => [...prev, errorResponse]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const nextTip = () => {
@@ -210,9 +210,10 @@ export const MascotChatHelper = () => {
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
                 placeholder="Skriv et spørsmål..."
                 className="flex-1"
+                disabled={isLoading}
               />
-              <Button size="icon" onClick={handleSend} disabled={!input.trim()}>
-                <Send className="h-4 w-4" />
+              <Button size="icon" onClick={handleSend} disabled={!input.trim() || isLoading}>
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>
           </motion.div>
