@@ -8,6 +8,7 @@ import {
   FileCheck,
   BookOpen,
   Settings,
+  HelpCircle,
   ChevronLeft,
   ChevronRight,
   Shield,
@@ -49,6 +50,7 @@ import { useModulePricing } from "@/hooks/useModulePricing";
 // Standard navigation items - always visible
 const standardNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/", color: "text-sky-500" },
+  { icon: HelpCircle, label: "Brukerveiledning", path: "/brukerveiledning", color: "text-blue-500" },
   { icon: Settings, label: "Innstillinger", path: "/settings", color: "text-slate-400" },
 ];
 
