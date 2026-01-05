@@ -566,6 +566,7 @@ export type Database = {
           completed_by_id: string | null
           completed_by_name: string | null
           created_at: string
+          department_id: string | null
           form_data: Json
           form_type: string
           id: string
@@ -583,6 +584,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name?: string | null
           created_at?: string
+          department_id?: string | null
           form_data?: Json
           form_type: string
           id?: string
@@ -600,6 +602,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name?: string | null
           created_at?: string
+          department_id?: string | null
           form_data?: Json
           form_type?: string
           id?: string
@@ -631,6 +634,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "audit_form_responses_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       audits: {
@@ -641,6 +651,7 @@ export type Database = {
           checklist_total: number
           company_id: string
           created_at: string
+          department_id: string | null
           description: string | null
           form_type: string | null
           id: string
@@ -659,6 +670,7 @@ export type Database = {
           checklist_total?: number
           company_id: string
           created_at?: string
+          department_id?: string | null
           description?: string | null
           form_type?: string | null
           id?: string
@@ -677,6 +689,7 @@ export type Database = {
           checklist_total?: number
           company_id?: string
           created_at?: string
+          department_id?: string | null
           description?: string | null
           form_type?: string | null
           id?: string
@@ -694,6 +707,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audits_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
           {
@@ -1293,6 +1313,7 @@ export type Database = {
           company_id: string
           consequences: string | null
           created_at: string
+          department_id: string | null
           description: string | null
           deviation_number: string
           due_date: string
@@ -1329,6 +1350,7 @@ export type Database = {
           company_id: string
           consequences?: string | null
           created_at?: string
+          department_id?: string | null
           description?: string | null
           deviation_number: string
           due_date: string
@@ -1365,6 +1387,7 @@ export type Database = {
           company_id?: string
           consequences?: string | null
           created_at?: string
+          department_id?: string | null
           description?: string | null
           deviation_number?: string
           due_date?: string
@@ -1406,6 +1429,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deviations_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
           {
@@ -8634,6 +8664,7 @@ export type Database = {
           next_of_kin_phone: string | null
           next_of_kin_relation: string | null
           phone: string | null
+          primary_department_id: string | null
           signature_data: string | null
           updated_at: string
           user_id: string
@@ -8661,6 +8692,7 @@ export type Database = {
           next_of_kin_phone?: string | null
           next_of_kin_relation?: string | null
           phone?: string | null
+          primary_department_id?: string | null
           signature_data?: string | null
           updated_at?: string
           user_id: string
@@ -8688,6 +8720,7 @@ export type Database = {
           next_of_kin_phone?: string | null
           next_of_kin_relation?: string | null
           phone?: string | null
+          primary_department_id?: string | null
           signature_data?: string | null
           updated_at?: string
           user_id?: string
@@ -8698,6 +8731,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_primary_department_id_fkey"
+            columns: ["primary_department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
         ]
@@ -9047,6 +9087,7 @@ export type Database = {
           approved_by_name: string | null
           company_id: string
           created_at: string
+          department_id: string | null
           description: string | null
           entry_date: string
           hours: number
@@ -9064,6 +9105,7 @@ export type Database = {
           approved_by_name?: string | null
           company_id: string
           created_at?: string
+          department_id?: string | null
           description?: string | null
           entry_date: string
           hours: number
@@ -9081,6 +9123,7 @@ export type Database = {
           approved_by_name?: string | null
           company_id?: string
           created_at?: string
+          department_id?: string | null
           description?: string | null
           entry_date?: string
           hours?: number
@@ -9092,7 +9135,15 @@ export type Database = {
           user_id?: string
           user_name?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "time_entries_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       time_off_requests: {
         Row: {
