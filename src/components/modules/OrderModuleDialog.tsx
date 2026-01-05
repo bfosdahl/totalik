@@ -106,8 +106,8 @@ export function OrderModuleDialog({
     onOpenChange(false);
   };
 
-  const content = (
-    <ScrollArea className="max-h-[70vh]">
+  const scrollContent = (
+    <ScrollArea className="max-h-[60vh]">
       <div className="space-y-6 p-1">
         {orderComplete ? (
           <div className="text-center py-8 space-y-4">
@@ -177,31 +177,32 @@ export function OrderModuleDialog({
                 <p className="text-muted-foreground">{profile?.email}</p>
               </div>
             </div>
-
-            {/* Actions */}
-            <div className="flex gap-3 pt-4">
-              <Button variant="outline" onClick={handleClose} className="flex-1">
-                Avbryt
-              </Button>
-              <Button
-                onClick={handleSubmitOrder}
-                disabled={!termsAccepted || isSubmitting}
-                className="flex-1"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Aktiverer...
-                  </>
-                ) : (
-                  "Bestill og aktiver"
-                )}
-              </Button>
-            </div>
           </>
         )}
       </div>
     </ScrollArea>
+  );
+
+  const actionButtons = !orderComplete && (
+    <div className="flex gap-3 pt-4 border-t mt-4">
+      <Button variant="outline" onClick={handleClose} className="flex-1">
+        Avbryt
+      </Button>
+      <Button
+        onClick={handleSubmitOrder}
+        disabled={!termsAccepted || isSubmitting}
+        className="flex-1"
+      >
+        {isSubmitting ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Aktiverer...
+          </>
+        ) : (
+          "Bestill og aktiver"
+        )}
+      </Button>
+    </div>
   );
 
   if (isMobile) {
@@ -215,7 +216,8 @@ export function OrderModuleDialog({
             </DrawerDescription>
           </DrawerHeader>
           <div className="px-4 pb-6">
-            {content}
+            {scrollContent}
+            {actionButtons}
           </div>
         </DrawerContent>
       </Drawer>
@@ -231,7 +233,8 @@ export function OrderModuleDialog({
             Aktiver modulen for din bedrift
           </DialogDescription>
         </DialogHeader>
-        {content}
+        {scrollContent}
+        {actionButtons}
       </DialogContent>
     </Dialog>
   );
