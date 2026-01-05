@@ -78,19 +78,33 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
     
     setIsSaving(true);
     try {
-      // Activate the module directly
-      const { error: moduleError } = await supabase
+      // Check if module already exists
+      const { data: existingModule } = await supabase
         .from("company_modules")
-        .upsert({
-          company_id: company.id,
-          module_type: "AVDELINGER",
-          is_active: true,
-          settings: {},
-        }, {
-          onConflict: "company_id,module_type"
-        });
+        .select("id")
+        .eq("company_id", company.id)
+        .eq("module_type", "AVDELINGER")
+        .maybeSingle();
 
-      if (moduleError) throw moduleError;
+      if (existingModule) {
+        // Update existing
+        const { error: updateError } = await supabase
+          .from("company_modules")
+          .update({ is_active: true })
+          .eq("id", existingModule.id);
+        if (updateError) throw updateError;
+      } else {
+        // Insert new
+        const { error: insertError } = await supabase
+          .from("company_modules")
+          .insert({
+            company_id: company.id,
+            module_type: "AVDELINGER",
+            is_active: true,
+            settings: {},
+          });
+        if (insertError) throw insertError;
+      }
 
       // Also enable departments on the company
       const { error: companyError } = await supabase
@@ -100,9 +114,9 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
 
       if (companyError) throw companyError;
 
-      toast.success("Avdelingsmodul aktivert uten betaling");
-      refetchModules();
-      refreshCompany?.();
+      toast.success("Avdelingsmodul aktivert");
+      await refetchModules();
+      await refreshCompany?.();
     } catch (error) {
       console.error("Error activating module:", error);
       toast.error("Kunne ikke aktivere modulen");
