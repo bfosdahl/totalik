@@ -158,7 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (profileData.company_id) {
           const { data: companyData } = await supabase
             .from("companies")
-            .select("id, name, org_number, logo_url, address, postal_code, city, phone, email, accent_color")
+            .select("id, name, org_number, logo_url, address, postal_code, city, phone, email, accent_color, has_departments")
             .eq("id", profileData.company_id)
             .maybeSingle();
 
@@ -264,11 +264,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!profile?.company_id) return;
     
     try {
-      const { data: companyData } = await supabase
-        .from("companies")
-        .select("id, name, org_number, logo_url, address, postal_code, city, phone, email, accent_color")
-        .eq("id", profile.company_id)
-        .maybeSingle();
+        const { data: companyData } = await supabase
+          .from("companies")
+          .select("id, name, org_number, logo_url, address, postal_code, city, phone, email, accent_color, has_departments")
+          .eq("id", profile.company_id)
+          .maybeSingle();
 
       if (companyData) {
         setCompany(companyData as CompanyInfo);
