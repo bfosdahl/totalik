@@ -20,6 +20,7 @@ export interface TimeEntry {
   approved_at: string | null;
   created_at: string;
   updated_at: string;
+  department_id?: string | null;
   source?: "manual" | "qr_clock"; // Track where entry came from
   clock_in?: string | null;
   clock_out?: string | null;
@@ -124,9 +125,10 @@ export function useTimeEntries() {
         };
       });
 
-      // Mark manual entries
-      const manualEntries: TimeEntry[] = (timeData || []).map((entry: TimeEntry) => ({
+      // Mark manual entries - cast status to correct type
+      const manualEntries: TimeEntry[] = (timeData || []).map((entry: any) => ({
         ...entry,
+        status: entry.status as "draft" | "submitted" | "approved" | "rejected",
         source: "manual" as const,
       }));
 
