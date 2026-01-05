@@ -108,7 +108,7 @@ export function useAuditFormResponses() {
           manager_name: metadata.manager_name || null,
           status,
           completed_at: status === "completed" ? new Date().toISOString() : null,
-          completed_by_id: status === "completed" ? user?.id || null : null,
+          completed_by_id: status === "completed" ? profile?.id || null : null,
           completed_by_name: status === "completed" ? `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || null : null,
         };
 
