@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { DepartmentProvider } from "@/contexts/DepartmentContext";
 import { AccentColorProvider } from "@/components/AccentColorProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
@@ -74,94 +75,96 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <AuthProvider>
-        <AccentColorProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/setup-admin" element={<SetupSystemAdmin />} />
-              <Route path="/install" element={<InstallApp />} />
-              <Route path="/stemple" element={<TimeClock />} />
-            
-            {/* Protected app routes */}
-            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/setup" element={<ProtectedRoute><Setup /></ProtectedRoute>} />
-            <Route path="/setup/ai" element={<ProtectedRoute><IkHmsOppsett /></ProtectedRoute>} />
-            <Route path="/maalsetting" element={<ProtectedRoute><IkHmsMaal /></ProtectedRoute>} />
-            <Route path="/organisering" element={<ProtectedRoute><IkHmsOrganisering /></ProtectedRoute>} />
-            <Route path="/risikoanalyse" element={<ProtectedRoute><Risikoanalyse /></ProtectedRoute>} />
-            <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />
-            <Route path="/deviations" element={<ProtectedRoute><Deviations /></ProtectedRoute>} />
-            <Route path="/audits" element={<ProtectedRoute><Audits /></ProtectedRoute>} />
-            <Route path="/handbook" element={<ProtectedRoute><Handbook /></ProtectedRoute>} />
-            <Route path="/stoffkartotek" element={<ProtectedRoute><IkHmsStoffkartotek /></ProtectedRoute>} />
-            <Route path="/lover-og-forskrifter" element={<ProtectedRoute><LoverOgForskrifter /></ProtectedRoute>} />
-            <Route path="/dokumentsenter" element={<ProtectedRoute><IkHmsDokumentsenter /></ProtectedRoute>} />
-            <Route path="/hms-chat" element={<ProtectedRoute><HmsChat /></ProtectedRoute>} />
-            <Route path="/my-courses" element={<ProtectedRoute><MyCourseCard /></ProtectedRoute>} />
-            <Route path="/time-registration" element={<ProtectedRoute><TimeRegistration /></ProtectedRoute>} />
-            <Route path="/time-off" element={<ProtectedRoute><TimeOff /></ProtectedRoute>} />
-            <Route path="/work-schedule" element={<ProtectedRoute><WorkSchedule /></ProtectedRoute>} />
-            
-            {/* HR/Personaladministrasjon routes - for admins */}
-            <Route path="/hr/contracts" element={<ProtectedRoute><HrContracts /></ProtectedRoute>} />
-            <Route path="/hr/absence" element={<ProtectedRoute><HrAbsence /></ProtectedRoute>} />
-            <Route path="/hr/meetings" element={<ProtectedRoute><HrMeetings /></ProtectedRoute>} />
-            <Route path="/hr/surveys" element={<ProtectedRoute><HrSurveys /></ProtectedRoute>} />
-            
-            {/* My pages - for employees */}
-            <Route path="/my/absence" element={<ProtectedRoute><MyAbsence /></ProtectedRoute>} />
-            <Route path="/my/surveys" element={<ProtectedRoute><MySurveys /></ProtectedRoute>} />
-            
-          <Route path="/ik-mat/handbok" element={<ProtectedRoute><IkMatHandbok /></ProtectedRoute>} />
-          <Route path="/ik-mat/oppsett" element={<ProtectedRoute><IkMatOppsett /></ProtectedRoute>} />
-          <Route path="/ik-mat/maal" element={<ProtectedRoute><IkMatMaal /></ProtectedRoute>} />
-          <Route path="/ik-mat/organisasjon" element={<ProtectedRoute><IkMatOrganisasjon /></ProtectedRoute>} />
-          <Route path="/ik-mat/risiko-og-tiltak" element={<ProtectedRoute><IkMatRisikoOgTiltak /></ProtectedRoute>} />
-          <Route path="/ik-mat/risikovurdering" element={<Navigate to="/ik-mat/risiko-og-tiltak" replace />} />
-          <Route path="/ik-mat/handlingsplan" element={<Navigate to="/ik-mat/risiko-og-tiltak" replace />} />
-          <Route path="/ik-mat/rutiner" element={<ProtectedRoute><IkMatRutiner /></ProtectedRoute>} />
-          <Route path="/ik-mat/haccp" element={<ProtectedRoute><IkMatHaccp /></ProtectedRoute>} />
-          <Route path="/ik-mat/sjekklister" element={<ProtectedRoute><IkMatSjekklister /></ProtectedRoute>} />
-          <Route path="/ik-mat/renholdsplan" element={<ProtectedRoute><IkMatRenholdsplan /></ProtectedRoute>} />
-          <Route path="/ik-mat/allergener" element={<ProtectedRoute><IkMatAllergener /></ProtectedRoute>} />
-          <Route path="/ik-mat/faste-avtaler" element={<ProtectedRoute><IkMatFasteAvtaler /></ProtectedRoute>} />
-          <Route path="/ik-mat/sporbarhet" element={<ProtectedRoute><IkMatSporbarhet /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/brukerveiledning" element={<ProtectedRoute><Brukerveiledning /></ProtectedRoute>} />
-            <Route path="/anonymous-messages" element={<ProtectedRoute><AnonymousMessages /></ProtectedRoute>} />
-            
-            {/* KS Bygg routes */}
-            <Route path="/ks" element={<ProtectedRoute><Ks2Dashboard /></ProtectedRoute>} />
-            <Route path="/ks/statistikk" element={<ProtectedRoute><Ks2Statistikk /></ProtectedRoute>} />
-            <Route path="/ks/project/:projectId/*" element={<ProtectedRoute><Ks2ProjectDetail /></ProtectedRoute>} />
-            <Route path="/ks/admin" element={<ProtectedRoute><Ks2Admin /></ProtectedRoute>} />
-            <Route path="/ks/befaring" element={<ProtectedRoute><Ks2Befaring /></ProtectedRoute>} />
-            
-            {/* Småprosjekter routes */}
-            <Route path="/ks/smaaprosjekter" element={<ProtectedRoute><MineProsjekterDashboard /></ProtectedRoute>} />
-            <Route path="/ks/smaaprosjekter/:projectId" element={<ProtectedRoute><SimpleProjectDetail /></ProtectedRoute>} />
-            
-            {/* Admin routes - require system_admin role */}
-            <Route path="/admin" element={<ProtectedRoute requireSystemAdmin><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/admin/companies" element={<ProtectedRoute requireSystemAdmin><AdminCompanies /></ProtectedRoute>} />
-            <Route path="/admin/users" element={<ProtectedRoute requireSystemAdmin><AdminUsers /></ProtectedRoute>} />
-            <Route path="/admin/hms-requests" element={<ProtectedRoute requireSystemAdmin><AdminHmsRequests /></ProtectedRoute>} />
-            <Route path="/admin/sg-register" element={<ProtectedRoute requireSystemAdmin><AdminSgRegister /></ProtectedRoute>} />
-            <Route path="/admin/documents" element={<ProtectedRoute requireSystemAdmin><AdminDocuments /></ProtectedRoute>} />
-            <Route path="/admin/ks-panel" element={<ProtectedRoute requireSystemAdmin><AdminKsPanel /></ProtectedRoute>} />
-            <Route path="/admin/byggesak-templates" element={<ProtectedRoute requireSystemAdmin><AdminByggesakTemplates /></ProtectedRoute>} />
-            
-            {/* 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-      </AccentColorProvider>
-    </AuthProvider>
+        <DepartmentProvider>
+          <AccentColorProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  {/* Public routes */}
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/setup-admin" element={<SetupSystemAdmin />} />
+                  <Route path="/install" element={<InstallApp />} />
+                  <Route path="/stemple" element={<TimeClock />} />
+                
+                  {/* Protected app routes */}
+                  <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/setup" element={<ProtectedRoute><Setup /></ProtectedRoute>} />
+                  <Route path="/setup/ai" element={<ProtectedRoute><IkHmsOppsett /></ProtectedRoute>} />
+                  <Route path="/maalsetting" element={<ProtectedRoute><IkHmsMaal /></ProtectedRoute>} />
+                  <Route path="/organisering" element={<ProtectedRoute><IkHmsOrganisering /></ProtectedRoute>} />
+                  <Route path="/risikoanalyse" element={<ProtectedRoute><Risikoanalyse /></ProtectedRoute>} />
+                  <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />
+                  <Route path="/deviations" element={<ProtectedRoute><Deviations /></ProtectedRoute>} />
+                  <Route path="/audits" element={<ProtectedRoute><Audits /></ProtectedRoute>} />
+                  <Route path="/handbook" element={<ProtectedRoute><Handbook /></ProtectedRoute>} />
+                  <Route path="/stoffkartotek" element={<ProtectedRoute><IkHmsStoffkartotek /></ProtectedRoute>} />
+                  <Route path="/lover-og-forskrifter" element={<ProtectedRoute><LoverOgForskrifter /></ProtectedRoute>} />
+                  <Route path="/dokumentsenter" element={<ProtectedRoute><IkHmsDokumentsenter /></ProtectedRoute>} />
+                  <Route path="/hms-chat" element={<ProtectedRoute><HmsChat /></ProtectedRoute>} />
+                  <Route path="/my-courses" element={<ProtectedRoute><MyCourseCard /></ProtectedRoute>} />
+                  <Route path="/time-registration" element={<ProtectedRoute><TimeRegistration /></ProtectedRoute>} />
+                  <Route path="/time-off" element={<ProtectedRoute><TimeOff /></ProtectedRoute>} />
+                  <Route path="/work-schedule" element={<ProtectedRoute><WorkSchedule /></ProtectedRoute>} />
+                  
+                  {/* HR/Personaladministrasjon routes - for admins */}
+                  <Route path="/hr/contracts" element={<ProtectedRoute><HrContracts /></ProtectedRoute>} />
+                  <Route path="/hr/absence" element={<ProtectedRoute><HrAbsence /></ProtectedRoute>} />
+                  <Route path="/hr/meetings" element={<ProtectedRoute><HrMeetings /></ProtectedRoute>} />
+                  <Route path="/hr/surveys" element={<ProtectedRoute><HrSurveys /></ProtectedRoute>} />
+                  
+                  {/* My pages - for employees */}
+                  <Route path="/my/absence" element={<ProtectedRoute><MyAbsence /></ProtectedRoute>} />
+                  <Route path="/my/surveys" element={<ProtectedRoute><MySurveys /></ProtectedRoute>} />
+                  
+                  <Route path="/ik-mat/handbok" element={<ProtectedRoute><IkMatHandbok /></ProtectedRoute>} />
+                  <Route path="/ik-mat/oppsett" element={<ProtectedRoute><IkMatOppsett /></ProtectedRoute>} />
+                  <Route path="/ik-mat/maal" element={<ProtectedRoute><IkMatMaal /></ProtectedRoute>} />
+                  <Route path="/ik-mat/organisasjon" element={<ProtectedRoute><IkMatOrganisasjon /></ProtectedRoute>} />
+                  <Route path="/ik-mat/risiko-og-tiltak" element={<ProtectedRoute><IkMatRisikoOgTiltak /></ProtectedRoute>} />
+                  <Route path="/ik-mat/risikovurdering" element={<Navigate to="/ik-mat/risiko-og-tiltak" replace />} />
+                  <Route path="/ik-mat/handlingsplan" element={<Navigate to="/ik-mat/risiko-og-tiltak" replace />} />
+                  <Route path="/ik-mat/rutiner" element={<ProtectedRoute><IkMatRutiner /></ProtectedRoute>} />
+                  <Route path="/ik-mat/haccp" element={<ProtectedRoute><IkMatHaccp /></ProtectedRoute>} />
+                  <Route path="/ik-mat/sjekklister" element={<ProtectedRoute><IkMatSjekklister /></ProtectedRoute>} />
+                  <Route path="/ik-mat/renholdsplan" element={<ProtectedRoute><IkMatRenholdsplan /></ProtectedRoute>} />
+                  <Route path="/ik-mat/allergener" element={<ProtectedRoute><IkMatAllergener /></ProtectedRoute>} />
+                  <Route path="/ik-mat/faste-avtaler" element={<ProtectedRoute><IkMatFasteAvtaler /></ProtectedRoute>} />
+                  <Route path="/ik-mat/sporbarhet" element={<ProtectedRoute><IkMatSporbarhet /></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                  <Route path="/brukerveiledning" element={<ProtectedRoute><Brukerveiledning /></ProtectedRoute>} />
+                  <Route path="/anonymous-messages" element={<ProtectedRoute><AnonymousMessages /></ProtectedRoute>} />
+                  
+                  {/* KS Bygg routes */}
+                  <Route path="/ks" element={<ProtectedRoute><Ks2Dashboard /></ProtectedRoute>} />
+                  <Route path="/ks/statistikk" element={<ProtectedRoute><Ks2Statistikk /></ProtectedRoute>} />
+                  <Route path="/ks/project/:projectId/*" element={<ProtectedRoute><Ks2ProjectDetail /></ProtectedRoute>} />
+                  <Route path="/ks/admin" element={<ProtectedRoute><Ks2Admin /></ProtectedRoute>} />
+                  <Route path="/ks/befaring" element={<ProtectedRoute><Ks2Befaring /></ProtectedRoute>} />
+                  
+                  {/* Småprosjekter routes */}
+                  <Route path="/ks/smaaprosjekter" element={<ProtectedRoute><MineProsjekterDashboard /></ProtectedRoute>} />
+                  <Route path="/ks/smaaprosjekter/:projectId" element={<ProtectedRoute><SimpleProjectDetail /></ProtectedRoute>} />
+                  
+                  {/* Admin routes - require system_admin role */}
+                  <Route path="/admin" element={<ProtectedRoute requireSystemAdmin><AdminDashboard /></ProtectedRoute>} />
+                  <Route path="/admin/companies" element={<ProtectedRoute requireSystemAdmin><AdminCompanies /></ProtectedRoute>} />
+                  <Route path="/admin/users" element={<ProtectedRoute requireSystemAdmin><AdminUsers /></ProtectedRoute>} />
+                  <Route path="/admin/hms-requests" element={<ProtectedRoute requireSystemAdmin><AdminHmsRequests /></ProtectedRoute>} />
+                  <Route path="/admin/sg-register" element={<ProtectedRoute requireSystemAdmin><AdminSgRegister /></ProtectedRoute>} />
+                  <Route path="/admin/documents" element={<ProtectedRoute requireSystemAdmin><AdminDocuments /></ProtectedRoute>} />
+                  <Route path="/admin/ks-panel" element={<ProtectedRoute requireSystemAdmin><AdminKsPanel /></ProtectedRoute>} />
+                  <Route path="/admin/byggesak-templates" element={<ProtectedRoute requireSystemAdmin><AdminByggesakTemplates /></ProtectedRoute>} />
+                  
+                  {/* 404 */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </AccentColorProvider>
+        </DepartmentProvider>
+      </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

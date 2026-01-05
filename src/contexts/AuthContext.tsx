@@ -14,6 +14,7 @@ interface UserProfile {
   phone: string | null;
   avatar_url: string | null;
   is_active: boolean;
+  primary_department_id: string | null;
 }
 
 interface CompanyInfo {

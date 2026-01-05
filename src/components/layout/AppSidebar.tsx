@@ -46,6 +46,8 @@ import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { SubmitAnonymousMessageDialog } from "@/components/anonymous/SubmitAnonymousMessageDialog";
 import { OrderModuleDialog } from "@/components/modules/OrderModuleDialog";
 import { useModulePricing } from "@/hooks/useModulePricing";
+import { DepartmentSelector } from "@/components/layout/DepartmentSelector";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 
 // Standard navigation items - always visible
 const standardNavItems = [
@@ -304,6 +306,9 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               )}
             </AnimatePresence>
           </button>
+          
+          {/* Department selector - shown when company has departments */}
+          <DepartmentSelector />
         </div>
 
         {/* Navigation */}
