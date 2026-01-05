@@ -200,6 +200,50 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_document_folders: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          parent_folder_id: string | null
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          parent_folder_id?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          parent_folder_id?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_document_folders_parent_folder_id_fkey"
+            columns: ["parent_folder_id"]
+            isOneToOne: false
+            referencedRelation: "admin_document_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_documents: {
         Row: {
           category: string | null
@@ -210,6 +254,7 @@ export type Database = {
           file_path: string
           file_size: number | null
           file_type: string | null
+          folder_id: string | null
           id: string
           is_mandatory: boolean | null
           updated_at: string
@@ -227,6 +272,7 @@ export type Database = {
           file_path: string
           file_size?: number | null
           file_type?: string | null
+          folder_id?: string | null
           id?: string
           is_mandatory?: boolean | null
           updated_at?: string
@@ -244,6 +290,7 @@ export type Database = {
           file_path?: string
           file_size?: number | null
           file_type?: string | null
+          folder_id?: string | null
           id?: string
           is_mandatory?: boolean | null
           updated_at?: string
@@ -252,7 +299,15 @@ export type Database = {
           valid_to?: string | null
           version?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "admin_documents_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "admin_document_folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       admin_project_type_templates: {
         Row: {
