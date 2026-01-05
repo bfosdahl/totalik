@@ -15,7 +15,8 @@ import {
   X,
   UserPlus,
   Eye,
-  EyeOff
+  EyeOff,
+  Building2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,7 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useDepartments } from "@/hooks/useDepartments";
 
 interface UserManagementSettingsProps {
   onBack: () => void;
@@ -99,7 +101,12 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
     firstName: "",
     lastName: "",
     role: "user" as "company_admin" | "user",
+    departmentId: "" as string,
   });
+
+  // Fetch departments if company has departments enabled
+  const { departments } = useDepartments(company?.id);
+  const hasDepartments = company?.has_departments && departments.length > 0;
 
   // Edit form state
   const [editForm, setEditForm] = useState({
@@ -222,9 +229,18 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       }
       if (data?.error) throw new Error(data.error);
 
+      // Assign to department if selected
+      if (createForm.departmentId && data?.userId) {
+        await supabase.from("user_departments").insert({
+          user_id: data.userId,
+          department_id: createForm.departmentId,
+          is_department_admin: false,
+        });
+      }
+
       toast.success("Bruker opprettet!");
       setCreateDirectDialogOpen(false);
-      setCreateForm({ email: "", password: "", firstName: "", lastName: "", role: "user" });
+      setCreateForm({ email: "", password: "", firstName: "", lastName: "", role: "user", departmentId: "" });
       setShowPassword(false);
       loadUsers();
     } catch (error: any) {
@@ -672,6 +688,40 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                 Administratorer kan administrere brukere og innstillinger.
               </p>
             </div>
+            {hasDepartments && (
+              <div className="space-y-2">
+                <Label htmlFor="create-department">Avdeling</Label>
+                <Select
+                  value={createForm.departmentId}
+                  onValueChange={(value) => 
+                    setCreateForm({ ...createForm, departmentId: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg avdeling (valgfritt)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-muted-foreground" />
+                        Ingen avdeling
+                      </div>
+                    </SelectItem>
+                    {departments.filter(d => d.is_active).map((dept) => (
+                      <SelectItem key={dept.id} value={dept.id}>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4" />
+                          {dept.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Tildel brukeren til en avdeling for å filtrere data.
+                </p>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateDirectDialogOpen(false)}>
