@@ -8,9 +8,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Building2, Edit, Loader2, MapPin, Plus, Trash2, Users } from "lucide-react";
+import { ArrowLeft, Building2, Edit, Loader2, MapPin, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { useDepartments, Department } from "@/hooks/useDepartments";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCompanyModules } from "@/hooks/useCompanyModules";
+import { useModulePricing } from "@/hooks/useModulePricing";
+import { OrderModuleDialog } from "@/components/modules/OrderModuleDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -20,12 +23,15 @@ interface DepartmentSettingsProps {
 }
 
 export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
-  const { company, refreshCompany } = useAuth();
+  const { company, refreshCompany, isSystemAdmin } = useAuth();
   const { departments, isLoading, createDepartment, updateDepartment, deleteDepartment } = useDepartments();
+  const { hasModule, refetch: refetchModules } = useCompanyModules();
+  const { getPricing } = useModulePricing();
   
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   
@@ -38,10 +44,18 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
     is_active: true,
   });
 
+  const hasDepartmentsModule = hasModule("AVDELINGER");
   const hasDepartments = company?.has_departments ?? false;
+  const pricing = getPricing("AVDELINGER");
 
   const toggleDepartmentsEnabled = async () => {
     if (!company?.id) return;
+    
+    // If trying to enable and module not active, show order dialog (unless system admin)
+    if (!hasDepartments && !hasDepartmentsModule && !isSystemAdmin) {
+      setShowOrderDialog(true);
+      return;
+    }
     
     try {
       const { error } = await supabase
@@ -56,6 +70,51 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
       console.error("Error toggling departments:", error);
       toast.error("Kunne ikke endre innstilling");
     }
+  };
+
+  // Admin function to activate module without payment
+  const activateModuleWithoutPayment = async () => {
+    if (!company?.id || !isSystemAdmin) return;
+    
+    setIsSaving(true);
+    try {
+      // Activate the module directly
+      const { error: moduleError } = await supabase
+        .from("company_modules")
+        .upsert({
+          company_id: company.id,
+          module_type: "AVDELINGER",
+          is_active: true,
+          settings: {},
+        }, {
+          onConflict: "company_id,module_type"
+        });
+
+      if (moduleError) throw moduleError;
+
+      // Also enable departments on the company
+      const { error: companyError } = await supabase
+        .from("companies")
+        .update({ has_departments: true })
+        .eq("id", company.id);
+
+      if (companyError) throw companyError;
+
+      toast.success("Avdelingsmodul aktivert uten betaling");
+      refetchModules();
+      refreshCompany?.();
+    } catch (error) {
+      console.error("Error activating module:", error);
+      toast.error("Kunne ikke aktivere modulen");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleOrderComplete = () => {
+    refetchModules();
+    refreshCompany?.();
+    setShowOrderDialog(false);
   };
 
   const resetForm = () => {
@@ -154,34 +213,98 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
         </div>
       </div>
 
-      {/* Enable/Disable Toggle */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Avdelingsfunksjon
-          </CardTitle>
-          <CardDescription>
-            Aktiver for å organisere bedriften i avdelinger med egne brukere og data
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Bruk avdelinger</p>
-              <p className="text-sm text-muted-foreground">
-                {hasDepartments 
-                  ? "Avdelinger er aktivert for denne bedriften" 
-                  : "Avdelinger er deaktivert"}
-              </p>
+      {/* Module Status / Order */}
+      {!hasDepartmentsModule && !isSystemAdmin && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5 text-primary" />
+              Bestill Avdelingsmodul
+            </CardTitle>
+            <CardDescription>
+              Organiser bedriften i avdelinger med egne brukere, data og tilgangskontroll
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Avdelinger</p>
+                <p className="text-sm text-muted-foreground">
+                  {pricing?.price_monthly ? `${pricing.price_monthly} kr/mnd` : "Kontakt oss for pris"}
+                </p>
+              </div>
+              <Button onClick={() => setShowOrderDialog(true)}>
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Bestill
+              </Button>
             </div>
-            <Switch
-              checked={hasDepartments}
-              onCheckedChange={toggleDepartmentsEnabled}
-            />
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Admin: Activate without payment */}
+      {!hasDepartmentsModule && isSystemAdmin && (
+        <Card className="border-orange-500/20 bg-orange-500/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-orange-500" />
+              Admin: Aktiver Avdelingsmodul
+            </CardTitle>
+            <CardDescription>
+              Som systemadministrator kan du aktivere modulen uten betaling
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Avdelingsmodul ikke aktivert</p>
+                <p className="text-sm text-muted-foreground">
+                  Klikk for å aktivere uten betaling eller ordrebekreftelse
+                </p>
+              </div>
+              <Button 
+                onClick={activateModuleWithoutPayment}
+                variant="outline"
+                className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                disabled={isSaving}
+              >
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aktiver gratis"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Enable/Disable Toggle - only show if module is active */}
+      {hasDepartmentsModule && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Avdelingsfunksjon
+            </CardTitle>
+            <CardDescription>
+              Aktiver for å organisere bedriften i avdelinger med egne brukere og data
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Bruk avdelinger</p>
+                <p className="text-sm text-muted-foreground">
+                  {hasDepartments 
+                    ? "Avdelinger er aktivert for denne bedriften" 
+                    : "Avdelinger er deaktivert"}
+                </p>
+              </div>
+              <Switch
+                checked={hasDepartments}
+                onCheckedChange={toggleDepartmentsEnabled}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Department List */}
       {hasDepartments && (
@@ -433,6 +556,15 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Order Module Dialog */}
+      <OrderModuleDialog
+        open={showOrderDialog}
+        onOpenChange={setShowOrderDialog}
+        moduleType="AVDELINGER"
+        pricing={pricing}
+        onOrderComplete={handleOrderComplete}
+      />
     </div>
   );
 }
