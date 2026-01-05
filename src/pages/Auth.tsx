@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
 
 const loginSchema = z.object({
   email: z.string().email("Ugyldig e-postadresse"),
@@ -27,7 +28,7 @@ export default function Auth() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
+
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
 
@@ -36,6 +37,26 @@ export default function Auth() {
       navigate("/");
     }
   }, [user, navigate]);
+
+  const handleForgotPassword = async () => {
+    const validation = z.string().email("Skriv inn en gyldig e-post").safeParse(email);
+    if (!validation.success) {
+      toast.error("Skriv inn e-postadressen din først");
+      return;
+    }
+
+    const redirectUrl = `${window.location.origin}/auth`;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl,
+    });
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success("Sjekk e-posten din for lenke til å sette nytt passord");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,8 +81,8 @@ export default function Auth() {
         const { error } = await signIn(email, password);
         if (error) {
           toast.error(
-            error.message === "Invalid login credentials" 
-              ? "Feil e-post eller passord" 
+            error.message === "Invalid login credentials"
+              ? "Feil e-post eller passord"
               : error.message
           );
         }
@@ -113,6 +134,7 @@ export default function Auth() {
 
         {/* Auth card */}
         <div className="bg-card rounded-2xl shadow-xl p-8">
+          <h1 className="sr-only">Innlogging</h1>
           <h2 className="text-xl font-semibold text-center mb-6">
             {isLogin ? "Logg inn" : "Opprett konto"}
           </h2>
@@ -164,13 +186,22 @@ export default function Auth() {
                   placeholder="din@epost.no"
                 />
               </div>
-              {errors.email && (
-                <p className="text-xs text-destructive">{errors.email}</p>
-              )}
+              {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Passord</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Passord</Label>
+                {isLogin && (
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Glemt passord?
+                  </button>
+                )}
+              </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -193,8 +224,10 @@ export default function Auth() {
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   {isLogin ? "Logger inn..." : "Oppretter konto..."}
                 </>
+              ) : isLogin ? (
+                "Logg inn"
               ) : (
-                isLogin ? "Logg inn" : "Opprett konto"
+                "Opprett konto"
               )}
             </Button>
           </form>

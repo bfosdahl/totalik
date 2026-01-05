@@ -32,17 +32,14 @@ export default function SetupSystemAdmin() {
   // Check if any system admin exists
   useEffect(() => {
     const checkExistingAdmin = async () => {
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("id")
-        .eq("role", "system_admin")
-        .limit(1);
-
-      if (error) {
+      try {
+        const { data, error } = await supabase.functions.invoke("has-system-admin");
+        if (error) throw error;
+        setHasExistingAdmin(!!data?.hasSystemAdmin);
+      } catch (error) {
+        // If we can't check (network/RLS/etc), fail safe by not allowing creation here.
         console.error("Error checking admin:", error);
-        setHasExistingAdmin(false);
-      } else {
-        setHasExistingAdmin(data && data.length > 0);
+        setHasExistingAdmin(true);
       }
     };
 
