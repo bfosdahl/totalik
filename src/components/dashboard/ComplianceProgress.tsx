@@ -76,43 +76,61 @@ export function ComplianceProgress() {
   const navigate = useNavigate();
   const { progress, goals, organization, riskAssessment, actionPlan, routines } = useSetupWizard();
 
-  // Calculate step status based on actual data presence (not just wizard progress)
+  // Calculate step status based on BOTH wizard progress completion AND actual data presence
+  // A step is only "completed" if the user has explicitly completed it in the wizard
+  // This prevents auto-generated default data from showing as 100% complete
   const steps: ComplianceStep[] = baseSteps.map((step) => {
     let status: "completed" | "in-progress" | "pending";
     
-    // Check actual data presence for each step
+    // First check if the step is marked as completed in the wizard progress
+    const isCompletedInWizard = progress?.completed_steps?.includes(step.id) || false;
+    
+    // Map step IDs to wizard step IDs (they use different naming in some cases)
+    const stepIdMapping: Record<string, string> = {
+      "goals": "goals",
+      "organization": "organization", 
+      "risk": "risk",
+      "actions": "actions",
+      "routines": "routines",
+      "handbook": "handbook"
+    };
+    
+    const wizardStepId = stepIdMapping[step.id] || step.id;
+    const stepCompletedInWizard = progress?.completed_steps?.includes(wizardStepId) || false;
+    
+    // Check if there's actual data present
+    let hasData = false;
     switch (step.id) {
       case "goals":
-        status = goals && goals.length > 0 ? "completed" : "pending";
+        hasData = !!(goals && goals.length > 0);
         break;
       case "organization":
-        status = organization && organization.custom_content ? "completed" : "pending";
+        hasData = !!(organization && organization.custom_content);
         break;
       case "risk":
-        status = riskAssessment && riskAssessment.risks && riskAssessment.risks.length > 0 ? "completed" : "pending";
+        hasData = !!(riskAssessment && riskAssessment.risks && riskAssessment.risks.length > 0);
         break;
       case "actions":
-        status = actionPlan && actionPlan.actions && actionPlan.actions.length > 0 ? "completed" : "pending";
+        hasData = !!(actionPlan && actionPlan.actions && actionPlan.actions.length > 0);
         break;
       case "routines":
-        status = routines && routines.routines && routines.routines.length > 0 ? "completed" : "pending";
+        hasData = !!(routines && routines.routines && routines.routines.length > 0);
         break;
       case "handbook":
-        // Handbook is completed if all other steps are completed
-        const hasGoals = goals && goals.length > 0;
-        const hasOrg = organization && organization.custom_content;
-        const hasRisks = riskAssessment && riskAssessment.risks && riskAssessment.risks.length > 0;
-        const hasActions = actionPlan && actionPlan.actions && actionPlan.actions.length > 0;
-        const hasRoutines = routines && routines.routines && routines.routines.length > 0;
-        status = hasGoals && hasOrg && hasRisks && hasActions && hasRoutines ? "completed" : "pending";
+        // Handbook is completed only if marked as completed in wizard
+        hasData = stepCompletedInWizard;
         break;
-      default:
-        status = "pending";
     }
     
-    // Mark as in-progress if pending but it's the current wizard step
-    if (status === "pending" && step.stepIndex === (progress?.current_step || 0)) {
+    // A step is "completed" ONLY if explicitly marked as completed in the wizard
+    // This prevents pre-populated default data from showing as complete
+    if (stepCompletedInWizard) {
+      status = "completed";
+    } else if (step.stepIndex === (progress?.current_step || 0)) {
+      // Current step is in-progress
       status = "in-progress";
+    } else {
+      status = "pending";
     }
     
     return { ...step, status };

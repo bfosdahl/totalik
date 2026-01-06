@@ -25,51 +25,26 @@ export function useDashboardStats(): DashboardStats {
 
     const fetchStats = async () => {
       try {
-        // Calculate compliance based on actual data presence, not wizard progress
-        let completedSteps = 0;
+        // Calculate compliance based on WIZARD PROGRESS, not just data presence
+        // This prevents pre-populated default data from showing as 100% complete
         const totalSteps = 6;
-
-        // Check goals
-        const { count: goalsCount } = await supabase
-          .from("company_goals")
-          .select("*", { count: "exact", head: true })
-          .eq("company_id", profile.company_id);
-        if (goalsCount && goalsCount > 0) completedSteps++;
-
-        // Check organization
-        const { data: orgData } = await supabase
-          .from("company_organization")
-          .select("custom_content")
+        const stepIds = ["goals", "organization", "risk", "actions", "routines", "handbook"];
+        
+        // Fetch wizard progress to see which steps are actually completed
+        const { data: progressData } = await supabase
+          .from("setup_wizard_progress")
+          .select("completed_steps")
           .eq("company_id", profile.company_id)
           .maybeSingle();
-        if (orgData?.custom_content) completedSteps++;
 
-        // Check risk assessment
-        const { data: riskData } = await supabase
-          .from("company_risk_assessments")
-          .select("risks")
-          .eq("company_id", profile.company_id)
-          .maybeSingle();
-        if (riskData?.risks && Array.isArray(riskData.risks) && riskData.risks.length > 0) completedSteps++;
-
-        // Check action plan
-        const { data: actionData } = await supabase
-          .from("company_action_plans")
-          .select("actions")
-          .eq("company_id", profile.company_id)
-          .maybeSingle();
-        if (actionData?.actions && Array.isArray(actionData.actions) && actionData.actions.length > 0) completedSteps++;
-
-        // Check routines
-        const { data: routinesData } = await supabase
-          .from("company_routines")
-          .select("routines")
-          .eq("company_id", profile.company_id)
-          .maybeSingle();
-        if (routinesData?.routines && Array.isArray(routinesData.routines) && routinesData.routines.length > 0) completedSteps++;
-
-        // Handbook is considered complete if all other steps are complete
-        if (completedSteps === 5) completedSteps++;
+        // Count completed steps based on wizard progress
+        let completedSteps = 0;
+        if (progressData?.completed_steps && Array.isArray(progressData.completed_steps)) {
+          // Count how many of our step IDs are in the completed_steps array
+          completedSteps = stepIds.filter(stepId => 
+            progressData.completed_steps.includes(stepId)
+          ).length;
+        }
 
         const compliancePercent = Math.round((completedSteps / totalSteps) * 100);
 
@@ -85,12 +60,12 @@ export function useDashboardStats(): DashboardStats {
           .from("company_action_plans")
           .select("actions")
           .eq("company_id", profile.company_id)
-          .single();
+          .maybeSingle();
 
         let completedActionsCount = 0;
         if (actionPlans?.actions && Array.isArray(actionPlans.actions)) {
           completedActionsCount = (actionPlans.actions as Array<{ status?: string }>)
-            .filter((action) => action.status === "Fullført")
+            .filter((action) => action.status === "Fullført" || action.status === "fullført")
             .length;
         }
 
