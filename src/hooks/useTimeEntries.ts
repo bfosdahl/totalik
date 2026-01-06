@@ -48,13 +48,14 @@ export function useTimeEntries() {
     }
 
     try {
-      // Fetch regular time entries - always filter by company_id
+      // CRITICAL: Always filter by company_id for strict tenant isolation
       let timeQuery = supabase
         .from("time_entries")
         .select("*")
         .eq("company_id", profile.company_id)
         .order("entry_date", { ascending: false });
 
+      // Regular users only see their own entries
       if (!isCompanyAdmin) {
         timeQuery = timeQuery.eq("user_id", user.id);
       }
@@ -63,17 +64,18 @@ export function useTimeEntries() {
       if (timeError) throw timeError;
 
       // Fetch QR clock entries (completed ones with hours)
+      // CRITICAL: Always filter by company_id first for tenant isolation
       let clockQuery = supabase
         .from("time_clock_entries")
         .select("*")
+        .eq("company_id", profile.company_id)
         .eq("status", "completed")
         .not("hours_worked", "is", null)
         .order("clock_in", { ascending: false });
 
+      // Regular users only see their own entries
       if (!isCompanyAdmin) {
         clockQuery = clockQuery.eq("user_id", user.id);
-      } else {
-        clockQuery = clockQuery.eq("company_id", profile.company_id);
       }
 
       const { data: clockData, error: clockError } = await clockQuery;
