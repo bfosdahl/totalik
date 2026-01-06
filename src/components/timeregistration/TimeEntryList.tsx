@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Check, X, Clock, Trash2, MoreHorizontal, QrCode } from "lucide-react";
+import { Check, X, Clock, Trash2, QrCode } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,12 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
@@ -139,41 +133,54 @@ export function TimeEntryList({
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {canApprove && onApprove && (
-                        <DropdownMenuItem onClick={() => onApprove(entry.id)}>
-                          <Check className="mr-2 h-4 w-4 text-green-500" />
-                          Godkjenn
-                        </DropdownMenuItem>
-                      )}
-                      {canApprove && onReject && (
-                        <DropdownMenuItem onClick={() => onReject(entry.id)}>
-                          <X className="mr-2 h-4 w-4 text-red-500" />
-                          Avvis
-                        </DropdownMenuItem>
-                      )}
-                      {canModify && onDelete && (
-                        <DropdownMenuItem
-                          onClick={() => onDelete(entry.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Slett
-                        </DropdownMenuItem>
-                      )}
-                      {!canApprove && !canModify && (
-                        <DropdownMenuItem disabled>
-                          Ingen handlinger
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex items-center gap-1 justify-end">
+                    {/* Show direct action buttons for pending entries */}
+                    {canApprove && onApprove && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                            onClick={() => onApprove(entry.id)}
+                          >
+                            <Check className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Godkjenn</TooltipContent>
+                      </Tooltip>
+                    )}
+                    {canApprove && onReject && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => onReject(entry.id)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Avvis</TooltipContent>
+                      </Tooltip>
+                    )}
+                    {canModify && onDelete && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => onDelete(entry.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Slett</TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             );
