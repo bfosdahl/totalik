@@ -39,6 +39,37 @@ serve(async (req) => {
   }
 
   try {
+    // Authentication check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      console.log("Unauthorized: No valid auth header");
+      return new Response(
+        JSON.stringify({ error: "Uautorisert. Vennligst logg inn." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Verify the user with Supabase
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    
+    if (claimsError || !claimsData?.claims) {
+      console.log("Unauthorized: Invalid token", claimsError);
+      return new Response(
+        JSON.stringify({ error: "Uautorisert. Vennligst logg inn på nytt." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = claimsData.claims.sub;
+    console.log("Authenticated user:", userId);
+
     const { pdfBase64, fileName } = await req.json();
     
     if (!pdfBase64) {
@@ -48,7 +79,7 @@ serve(async (req) => {
       });
     }
 
-    console.log("Parsing SDS PDF:", fileName);
+    console.log("Parsing SDS PDF:", fileName, "for user:", userId);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
@@ -108,7 +139,7 @@ serve(async (req) => {
     }
 
     const aiResponse = await response.json();
-    console.log("AI response received");
+    console.log("AI response received for user:", userId);
 
     const content = aiResponse.choices?.[0]?.message?.content;
     
@@ -137,7 +168,7 @@ serve(async (req) => {
       });
     }
 
-    console.log("Parsed SDS data:", parsedData);
+    console.log("Parsed SDS data for user:", userId, parsedData);
 
     return new Response(JSON.stringify({
       success: true,
