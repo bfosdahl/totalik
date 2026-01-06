@@ -100,36 +100,35 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Generate secure invite link instead of using hardcoded password
-        const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.generateLink({
-          type: "invite",
+        // Use standard default password for all new users
+        const tempPassword = "Abc_1234";
+
+        const { data: authData, error: createError } = await supabaseAdmin.auth.admin.createUser({
           email: user.email,
-          options: {
-            data: {
-              first_name: user.firstName || null,
-              last_name: user.lastName || null,
-            },
+          password: tempPassword,
+          email_confirm: true,
+          user_metadata: {
+            first_name: user.firstName || null,
+            last_name: user.lastName || null,
           },
         });
 
-        if (inviteError) {
-          console.error(`Error creating invite for ${user.email}:`, inviteError);
+        if (createError) {
+          console.error(`Error creating user ${user.email}:`, createError);
           results.push({ 
             email: user.email, 
             success: false, 
-            error: inviteError.message.includes("already been registered") 
+            error: createError.message.includes("already been registered") 
               ? "Brukeren eksisterer allerede" 
-              : inviteError.message 
+              : createError.message 
           });
           continue;
         }
 
-        if (!inviteData.user) {
+        if (!authData.user) {
           results.push({ email: user.email, success: false, error: "Kunne ikke opprette bruker" });
           continue;
         }
-        
-        const authData = inviteData;
 
         // Update profile with company_id
         const { error: profileError } = await supabaseAdmin
