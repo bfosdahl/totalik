@@ -447,20 +447,29 @@ export default function AdminCompanies() {
               <Upload className="w-4 h-4 mr-2" />
               Importer
             </Button>
-            <Dialog open={isDialogOpen} onOpenChange={(open) => {
-              setIsDialogOpen(open);
-              if (!open) {
+            <Button 
+              className="flex-1 sm:flex-none"
+              onClick={() => {
                 setEditingCompany(null);
                 resetForm();
-              }
-            }}>
-              <DialogTrigger asChild>
-                <Button className="flex-1 sm:flex-none">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Ny bedrift
-                </Button>
-              </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
+                setIsDialogOpen(true);
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Ny bedrift
+            </Button>
+          </div>
+        </motion.div>
+
+        {/* Create/Edit Company Dialog */}
+        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) {
+            setEditingCompany(null);
+            resetForm();
+          }
+        }}>
+          <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
               <DialogHeader>
                 <DialogTitle>
                   {editingCompany ? "Rediger bedrift" : "Opprett ny bedrift"}
@@ -629,9 +638,7 @@ export default function AdminCompanies() {
                 </div>
               </form>
             </DialogContent>
-          </Dialog>
-          </div>
-        </motion.div>
+        </Dialog>
 
         {/* Search */}
         <motion.div
