@@ -16,7 +16,10 @@ import {
   UserPlus,
   Eye,
   EyeOff,
-  Building2
+  Building2,
+  Clock,
+  UserCheck,
+  Ban
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +66,8 @@ interface UserManagementSettingsProps {
   onBack: () => void;
 }
 
+type UserStatus = "pending_approval" | "active" | "suspended";
+
 interface CompanyUser {
   id: string;
   user_id: string;
@@ -71,6 +76,7 @@ interface CompanyUser {
   email: string | null;
   avatar_url: string | null;
   is_active: boolean;
+  status: UserStatus;
   role: "system_admin" | "company_admin" | "user";
 }
 
@@ -146,8 +152,16 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
           email: profile.email,
           avatar_url: profile.avatar_url,
           is_active: profile.is_active,
+          status: (profile.status as UserStatus) || "active",
           role: (userRole?.role as "system_admin" | "company_admin" | "user") || "user",
         };
+      });
+
+      // Sort so pending approval users are first
+      usersWithRoles.sort((a, b) => {
+        if (a.status === "pending_approval" && b.status !== "pending_approval") return -1;
+        if (a.status !== "pending_approval" && b.status === "pending_approval") return 1;
+        return 0;
       });
 
       setUsers(usersWithRoles);
@@ -331,6 +345,62 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
     }
   };
 
+  const handleApproveUser = async (companyUser: CompanyUser) => {
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ status: "active" })
+        .eq("id", companyUser.id);
+
+      if (error) throw error;
+
+      toast.success(`${companyUser.first_name || companyUser.email} er nå godkjent!`);
+      loadUsers();
+    } catch (error: any) {
+      console.error("Error approving user:", error);
+      toast.error(error.message || "Kunne ikke godkjenne bruker");
+    }
+  };
+
+  const handleSuspendUser = async (companyUser: CompanyUser) => {
+    if (companyUser.user_id === user?.id) {
+      toast.error("Du kan ikke suspendere din egen konto");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ status: "suspended" })
+        .eq("id", companyUser.id);
+
+      if (error) throw error;
+
+      toast.success("Bruker suspendert");
+      loadUsers();
+    } catch (error: any) {
+      console.error("Error suspending user:", error);
+      toast.error(error.message || "Kunne ikke suspendere bruker");
+    }
+  };
+
+  const handleReactivateUser = async (companyUser: CompanyUser) => {
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ status: "active", is_active: true })
+        .eq("id", companyUser.id);
+
+      if (error) throw error;
+
+      toast.success("Bruker reaktivert");
+      loadUsers();
+    } catch (error: any) {
+      console.error("Error reactivating user:", error);
+      toast.error(error.message || "Kunne ikke reaktivere bruker");
+    }
+  };
+
   const openEditDialog = (companyUser: CompanyUser) => {
     setSelectedUser(companyUser);
     setEditForm({
@@ -344,6 +414,17 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
   const openDeleteDialog = (companyUser: CompanyUser) => {
     setSelectedUser(companyUser);
     setDeleteDialogOpen(true);
+  };
+
+  const getStatusBadge = (status: UserStatus) => {
+    switch (status) {
+      case "pending_approval":
+        return <Badge variant="outline" className="text-amber-600 border-amber-500 bg-amber-50 dark:bg-amber-950/30">Venter godkjenning</Badge>;
+      case "suspended":
+        return <Badge variant="outline" className="text-destructive border-destructive">Suspendert</Badge>;
+      default:
+        return null;
+    }
   };
 
   const getRoleBadge = (role: string) => {
@@ -444,23 +525,33 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
             {users.map((companyUser) => (
               <div
                 key={companyUser.id}
-                className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+                className={`flex items-center justify-between p-4 hover:bg-muted/50 transition-colors ${
+                  companyUser.status === "pending_approval" ? "bg-amber-50/50 dark:bg-amber-950/10" : ""
+                }`}
               >
                 <div className="flex items-center gap-4">
-                  <Avatar>
-                    <AvatarImage src={companyUser.avatar_url || undefined} />
-                    <AvatarFallback>
-                      {getInitials(companyUser.first_name, companyUser.last_name, companyUser.email)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <Avatar>
+                      <AvatarImage src={companyUser.avatar_url || undefined} />
+                      <AvatarFallback>
+                        {getInitials(companyUser.first_name, companyUser.last_name, companyUser.email)}
+                      </AvatarFallback>
+                    </Avatar>
+                    {companyUser.status === "pending_approval" && (
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
+                        <Clock className="w-2.5 h-2.5 text-white" />
+                      </div>
+                    )}
+                  </div>
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium">
                         {companyUser.first_name && companyUser.last_name
                           ? `${companyUser.first_name} ${companyUser.last_name}`
                           : companyUser.email || "Ukjent bruker"}
                       </span>
-                      {!companyUser.is_active && (
+                      {getStatusBadge(companyUser.status)}
+                      {!companyUser.is_active && companyUser.status !== "suspended" && (
                         <Badge variant="outline" className="text-destructive border-destructive">
                           Deaktivert
                         </Badge>
@@ -474,7 +565,17 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                     <p className="text-sm text-muted-foreground">{companyUser.email}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  {companyUser.status === "pending_approval" && (
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleApproveUser(companyUser)}
+                      className="bg-emerald-600 hover:bg-emerald-700"
+                    >
+                      <UserCheck className="w-4 h-4 mr-1" />
+                      Godkjenn
+                    </Button>
+                  )}
                   {getRoleBadge(companyUser.role)}
                   {companyUser.user_id !== user?.id && companyUser.role !== "system_admin" && (
                     <DropdownMenu>
@@ -488,6 +589,26 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                           <Edit2 className="w-4 h-4 mr-2" />
                           Rediger
                         </DropdownMenuItem>
+                        {companyUser.status === "pending_approval" && (
+                          <DropdownMenuItem onClick={() => handleApproveUser(companyUser)}>
+                            <UserCheck className="w-4 h-4 mr-2" />
+                            Godkjenn bruker
+                          </DropdownMenuItem>
+                        )}
+                        {companyUser.status === "suspended" ? (
+                          <DropdownMenuItem onClick={() => handleReactivateUser(companyUser)}>
+                            <Check className="w-4 h-4 mr-2" />
+                            Reaktiver
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem 
+                            onClick={() => handleSuspendUser(companyUser)}
+                            className="text-destructive"
+                          >
+                            <Ban className="w-4 h-4 mr-2" />
+                            Suspender
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem 
                           onClick={() => openDeleteDialog(companyUser)}
                           className="text-destructive"
