@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 type AppRole = "system_admin" | "company_admin" | "user";
 
+type UserStatus = "pending_approval" | "active" | "suspended";
+
 interface UserProfile {
   id: string;
   user_id: string;
@@ -15,6 +17,7 @@ interface UserProfile {
   avatar_url: string | null;
   is_active: boolean;
   primary_department_id: string | null;
+  status: UserStatus;
 }
 
 interface CompanyInfo {
@@ -51,10 +54,13 @@ interface AuthContextType {
   isGuestUser: boolean;
   guestProjects: GuestAccessInfo[];
   guestCheckComplete: boolean;
+  isPendingApproval: boolean;
+  isSuspended: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshCompany: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -72,6 +78,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isSystemAdmin = roles.includes("system_admin");
   const isCompanyAdmin = roles.includes("company_admin");
+  const isPendingApproval = profile?.status === "pending_approval";
+  const isSuspended = profile?.status === "suspended";
 
   const fetchGuestAccess = async (userId: string) => {
     try {
@@ -235,7 +243,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -246,6 +254,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       },
     });
+
+    // Send welcome email via edge function
+    if (!error && data.user) {
+      try {
+        await supabase.functions.invoke("send-welcome-email", {
+          body: {
+            userId: data.user.id,
+            email: email,
+            firstName: firstName,
+          },
+        });
+      } catch (emailError) {
+        console.error("Error sending welcome email:", emailError);
+        // Don't fail signup if email fails
+      }
+    }
+
     return { error: error as Error | null };
   };
 
@@ -278,6 +303,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (profileData) {
+        setProfile(profileData as UserProfile);
+      }
+    } catch (error) {
+      console.error("Error refreshing profile:", error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -292,10 +335,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isGuestUser,
         guestProjects,
         guestCheckComplete,
+        isPendingApproval,
+        isSuspended,
         signIn,
         signUp,
         signOut,
         refreshCompany,
+        refreshProfile,
       }}
     >
       {children}

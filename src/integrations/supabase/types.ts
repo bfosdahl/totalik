@@ -8666,6 +8666,7 @@ export type Database = {
           phone: string | null
           primary_department_id: string | null
           signature_data: string | null
+          status: string
           updated_at: string
           user_id: string
         }
@@ -8694,6 +8695,7 @@ export type Database = {
           phone?: string | null
           primary_department_id?: string | null
           signature_data?: string | null
+          status?: string
           updated_at?: string
           user_id: string
         }
@@ -8722,6 +8724,7 @@ export type Database = {
           phone?: string | null
           primary_department_id?: string | null
           signature_data?: string | null
+          status?: string
           updated_at?: string
           user_id?: string
         }
