@@ -111,6 +111,31 @@ ABSOLUTT KRITISK:
 - Uten JSON vil ingenting bli lagret - brukeren mister alt arbeidet
 - JSON skal genereres på slutten av avsluttende melding, ikke i separate meldinger
 
+VIKTIG - DATAFORMAT-KRAV:
+
+MÅLSETTING (goals): 
+- Array med tekststrenger som lagres som separate mål i company_goals
+- Hver tekst blir et eget mål-kort på Målsetting-siden
+- Eksempel: ["Null arbeidsulykker...", "Alle ansatte skal ha HMS-opplæring..."]
+
+ORGANISERING (organization):
+- MÅ inneholde "roles" array med roller for organisasjonskartet
+- MÅ inneholde "description" med samlet beskrivelse av HMS-organisasjonen
+- Hver rolle har: title, personName (tomt), description (ansvarsområder), sortOrder
+- Roller vises i organisasjonskart på Organisering-siden
+
+RISIKOER (risks):
+- VIKTIG: Nytt format med hazard_source (farekilde) og events[] (uønskede hendelser)
+- hazard_source er forhåndsdefinert kode: arbeid_i_hoyden, varmt_arbeid, elektrisk_arbeid, maskinarbeid, tunge_loft, kjemikalier, stoystov, trafikk, alenearbeid, trange_rom, utgravning, stress, vold_trusler, eller "annet"
+- Hvis "annet", sett hazard_source_custom med beskrivelse
+- events[] inneholder konkrete uønskede hendelser under farekilden
+- Hver event har: description, consequence (1-5), probability (1-5), measures, responsible, deadline, status
+
+TILTAK (actions):
+- Knyttes til risk_id og event_id
+- action_type: "teknisk", "organisatorisk", "opplaering", eller "ppe"
+- priority: "lav", "medium", "høy", eller "kritisk"
+
 JSON-STRUKTUR (brukeren ser IKKE dette):
 |||JSON_START|||
 {
@@ -122,29 +147,74 @@ JSON-STRUKTUR (brukeren ser IKKE dette):
     "employees": 0,
     "type": "bransje"
   },
-  "goals": ["Mål 1", "Mål 2", "Mål 3"],
+  "goals": ["Mål 1 - konkret målsetning for HMS-arbeidet", "Mål 2 - trygt arbeidsmiljø osv", "Mål 3 - osv"],
   "organization": {
-    "is_custom": false,
-    "custom_content": "Organisasjonsbeskrivelse med roller og ansvar"
+    "roles": [
+      {
+        "id": "role-1",
+        "title": "Daglig leder",
+        "personName": "",
+        "description": "Daglig leder har det overordnede ansvaret for at gjeldende lover, forskrifter og interne retningslinjer etterleves. Daglig leder skal sørge for at HMS-arbeidet er en integrert del av virksomhetens drift.",
+        "sortOrder": 0
+      },
+      {
+        "id": "role-2",
+        "title": "HMS-ansvarlig",
+        "personName": "",
+        "description": "HMS-ansvarlig koordinerer det daglige HMS-arbeidet og har ansvar for å følge opp at rutiner og tiltak gjennomføres i henhold til HMS-systemet.",
+        "sortOrder": 1
+      },
+      {
+        "id": "role-3",
+        "title": "Verneombud",
+        "personName": "",
+        "description": "Verneombudet fungerer som arbeidstakernes valgte representant i spørsmål knyttet til arbeidsmiljø og sikkerhet. Verneombudet skal påse at arbeidsgiver følger arbeidsmiljølovens bestemmelser.",
+        "sortOrder": 2
+      },
+      {
+        "id": "role-4",
+        "title": "Øvrige ansatte",
+        "personName": "",
+        "description": "Alle ansatte har en plikt til å informere nærmeste leder om forhold som kan påvirke helse, miljø eller sikkerhet. Ansatte skal følge virksomhetens HMS-rutiner og bidra aktivt til et trygt arbeidsmiljø.",
+        "sortOrder": 3
+      }
+    ],
+    "description": "**Daglig leder:** Overordnet ansvar for HMS...\\n\\n**HMS-ansvarlig:** Koordinerer daglig HMS-arbeid...\\n\\n**Verneombud:** Arbeidstakernes representant...\\n\\n**Øvrige ansatte:** Plikt til å melde fra..."
   },
   "risks": [
     {
       "id": "risk-1",
-      "description": "Risikobeskrivelse",
-      "probability": 3,
-      "consequence": 3,
-      "planned_measures": "Tiltak"
+      "hazard_source": "ergonomi_skjerm|tunge_loft|kjemikalier|stress|osv",
+      "hazard_source_custom": "Sett kun hvis hazard_source er 'annet'",
+      "events": [
+        {
+          "id": "event-1a",
+          "description": "Konkret uønsket hendelse som kan oppstå",
+          "consequence": 3,
+          "probability": 3,
+          "measures": "Eksisterende og planlagte tiltak",
+          "responsible": "Daglig leder",
+          "deadline": "YYYY-MM-DD",
+          "status": "planlagt"
+        }
+      ],
+      "created_at": "ISO-dato",
+      "created_by": "AI Oppsett"
     }
   ],
   "actions": [
     {
       "id": "action-1",
-      "description": "Tiltak",
+      "risk_id": "risk-1",
+      "event_id": "event-1a",
+      "risk_source": "Farekilde-navn",
+      "event_description": "Beskrivelse av hendelsen",
+      "action_description": "Konkret tiltak",
+      "action_type": "teknisk|organisatorisk|opplaering|ppe",
       "responsible": "Daglig leder|HMS-ansvarlig|Verneombud",
       "deadline": "YYYY-MM-DD",
-      "status": "pending",
-      "priority": "medium",
-      "linked_risk_ids": ["risk-1"]
+      "status": "planlagt",
+      "priority": "lav|medium|høy|kritisk"
     }
   ],
   "routines": [
