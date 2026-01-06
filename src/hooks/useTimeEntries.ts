@@ -48,10 +48,11 @@ export function useTimeEntries() {
     }
 
     try {
-      // Fetch regular time entries
+      // Fetch regular time entries - always filter by company_id
       let timeQuery = supabase
         .from("time_entries")
         .select("*")
+        .eq("company_id", profile.company_id)
         .order("entry_date", { ascending: false });
 
       if (!isCompanyAdmin) {
