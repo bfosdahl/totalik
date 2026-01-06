@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -164,6 +165,54 @@ serve(async (req) => {
 
       if (roleError) {
         console.error("Error adding role:", roleError);
+      }
+    }
+
+    // Send welcome email with password
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (resendApiKey) {
+      try {
+        const resend = new Resend(resendApiKey);
+        
+        // Get company name
+        const { data: company } = await supabaseAdmin
+          .from("companies")
+          .select("name")
+          .eq("id", requestingProfile.company_id)
+          .single();
+
+        const companyName = company?.name || "Athena HMS";
+        const loginUrl = req.headers.get("origin") || "https://athena-kurs-og-internkontroll.lovable.app";
+        
+        await resend.emails.send({
+          from: `${companyName} <noreply@resend.dev>`,
+          to: [email],
+          subject: `Velkommen til ${companyName} - Din brukerkonto er opprettet`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #333;">Velkommen til ${companyName}!</h1>
+              <p>Hei ${firstName || ""},</p>
+              <p>Din brukerkonto har blitt opprettet. Her er innloggingsinformasjonen din:</p>
+              <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>E-post:</strong> ${email}</p>
+                <p><strong>Passord:</strong> ${password}</p>
+              </div>
+              <p>Du kan logge inn her:</p>
+              <p><a href="${loginUrl}/auth" style="background-color: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Logg inn</a></p>
+              <p style="color: #666; font-size: 14px; margin-top: 30px;">
+                Vi anbefaler at du bytter passord etter første innlogging under Innstillinger → Sikkerhet.
+              </p>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+              <p style="color: #999; font-size: 12px;">
+                Dette er en automatisk generert e-post fra ${companyName}.
+              </p>
+            </div>
+          `,
+        });
+        console.log(`Welcome email sent to ${email}`);
+      } catch (emailError) {
+        console.error("Error sending welcome email:", emailError);
+        // Don't fail the request if email fails
       }
     }
 
