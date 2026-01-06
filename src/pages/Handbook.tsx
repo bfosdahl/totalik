@@ -787,12 +787,15 @@ const Handbook = () => {
       yPos += 10;
       if (riskAssessment && riskAssessment.risks.length > 0) {
         const riskTableData = riskAssessment.risks.map((risk) => {
-          const riskValue = risk.consequence * risk.probability;
+          const probability = typeof risk?.probability === "number" ? risk.probability : Number(risk?.probability) || 0;
+          const consequence = typeof risk?.consequence === "number" ? risk.consequence : Number(risk?.consequence) || 0;
+          const riskValue = consequence * probability;
+
           return [
-            (risk.description || "").substring(0, 80) + ((risk.description?.length || 0) > 80 ? "..." : ""),
-            risk.probability.toString(),
-            risk.consequence.toString(),
-            riskValue.toString(),
+            (risk?.description || "").substring(0, 80) + ((risk?.description?.length || 0) > 80 ? "..." : ""),
+            String(probability),
+            String(consequence),
+            String(riskValue),
             getRiskLevelText(riskValue),
           ];
         });
@@ -813,7 +816,7 @@ const Handbook = () => {
           margin: { left: margin, right: margin },
           didDrawCell: (data) => {
             if (data.section === "body" && data.column.index === 4) {
-              const riskValue = parseInt(riskTableData[data.row.index][3]);
+              const riskValue = Number(riskTableData[data.row.index][3]) || 0;
               const color = getRiskLevelColor(riskValue);
               doc.setTextColor(color[0], color[1], color[2]);
             }
