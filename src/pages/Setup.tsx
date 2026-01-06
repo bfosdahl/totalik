@@ -17,7 +17,8 @@ import {
   Edit,
   CheckCircle2,
   Users,
-  Shield
+  Shield,
+  CreditCard
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -40,8 +41,10 @@ import { RoutinesStep, RoutinesStepRef } from "@/components/setup/RoutinesStep";
 import { HandbookStep } from "@/components/setup/HandbookStep";
 import { HmsSelfDeclarationDialog } from "@/components/setup/HmsSelfDeclarationDialog";
 import { VerneombudExemptionDialog } from "@/components/setup/VerneombudExemptionDialog";
+import { SubscriptionAcceptDialog } from "@/components/setup/SubscriptionAcceptDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useCompanyModules } from "@/hooks/useCompanyModules";
 
 interface SetupStep {
   id: string;
@@ -126,6 +129,7 @@ function NoCompanyMessage() {
 const Setup = () => {
   const { profile, company, isLoading: authLoading } = useAuth();
   const [searchParams] = useSearchParams();
+  const { modules, isLoading: modulesLoading, hasModule, refetch: refetchModules } = useCompanyModules();
   const { 
     isLoading, 
     isSaving, 
@@ -150,7 +154,11 @@ const Setup = () => {
   const [showSetupChoice, setShowSetupChoice] = useState(true);
   const [showHmsDeclaration, setShowHmsDeclaration] = useState(false);
   const [showVerneombudExemption, setShowVerneombudExemption] = useState(false);
+  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
   const navigate = useNavigate();
+  
+  // Check if IK_HMS module is active
+  const hasIkHmsSubscription = hasModule("IK_HMS");
 
   // Get navigation origin from URL params
   const fromPage = searchParams.get("from");
@@ -374,8 +382,8 @@ const Setup = () => {
     );
   }
 
-  // Wait for wizard data to load (company exists, now loading data)
-  if (isLoading) {
+  // Wait for wizard data and modules to load (company exists, now loading data)
+  if (isLoading || modulesLoading) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center min-h-[400px]">
@@ -386,10 +394,50 @@ const Setup = () => {
     );
   }
 
-  // Declaration dialogs state is defined at top of component to follow React hooks rules
-
   // Check if we have any existing data to determine if setup has started
   const hasExistingData = goals.length > 0 || organization !== null || riskAssessment !== null || actionPlan !== null || routines !== null;
+  
+  // If user doesn't have IK_HMS subscription and no existing data, show subscription prompt
+  if (!hasIkHmsSubscription && !hasExistingData) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center min-h-[400px] text-center max-w-lg mx-auto px-4">
+          <div className="p-4 rounded-2xl bg-primary/10 mb-4">
+            <CreditCard className="w-8 h-8 text-primary" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2">Aktiver IK/HMS-abonnement</h3>
+          <p className="text-muted-foreground mb-6">
+            For å bruke oppsettveiviseren og få tilgang til komplett HMS-system må du først aktivere IK/HMS-abonnementet.
+          </p>
+          <div className="bg-muted/50 rounded-lg p-4 mb-6 text-left w-full">
+            <div className="flex items-baseline justify-between mb-2">
+              <span className="font-medium">IK/HMS Internkontrollsystem</span>
+              <span className="text-lg font-bold text-primary">3 990,-/år</span>
+            </div>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• 12 måneders bindingstid</li>
+              <li>• 6 måneders oppsigelsesfrist</li>
+              <li>• Ubegrenset antall brukere</li>
+            </ul>
+          </div>
+          <Button onClick={() => setShowSubscriptionDialog(true)} className="gap-2">
+            <CreditCard className="w-4 h-4" />
+            Se vilkår og aktiver
+          </Button>
+          
+          <SubscriptionAcceptDialog
+            open={showSubscriptionDialog}
+            onOpenChange={setShowSubscriptionDialog}
+            onAccept={() => {
+              setShowSubscriptionDialog(false);
+              refetchModules();
+            }}
+          />
+        </div>
+      </AppLayout>
+    );
+  }
+
   if (showSetupChoice && !progress.current_step && progress.completed_steps.length === 0 && !hasExistingData) {
     return (
       <AppLayout>
