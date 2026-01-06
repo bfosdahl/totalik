@@ -625,12 +625,34 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
             }
           }
 
-          // Save organization (this is typically just company structure info, safe to update)
+          // Save organization - needs to be JSON with roles[] and description
           if (data.organization) {
+            // If organization has roles array (new format), stringify the whole thing
+            // Otherwise, use the legacy format
+            let orgContent: string;
+            if (data.organization.roles && Array.isArray(data.organization.roles)) {
+              // New format with roles and description
+              orgContent = JSON.stringify({
+                roles: data.organization.roles.map((role: Record<string, unknown>, idx: number) => ({
+                  id: role.id || `role-${idx + 1}`,
+                  title: role.title || '',
+                  personName: role.personName || '',
+                  description: role.description || '',
+                  sortOrder: role.sortOrder ?? idx,
+                })),
+                description: data.organization.description || '',
+              });
+            } else if (typeof data.organization.custom_content === 'string') {
+              // Legacy format - just text
+              orgContent = data.organization.custom_content;
+            } else {
+              orgContent = JSON.stringify(data.organization);
+            }
+            
             await supabase.from("company_organization").upsert({
               company_id: companyId,
-              custom_content: data.organization.custom_content,
-              is_custom: data.organization.is_custom || false,
+              custom_content: orgContent,
+              is_custom: true,
             });
           }
 
