@@ -1,4 +1,4 @@
-import { User, LogOut, ChevronDown, Menu, Download, Building2, MapPin } from "lucide-react";
+import { User, LogOut, ChevronDown, Menu, Download, Building2, MapPin, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -6,6 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +19,7 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ onMenuClick }: AppHeaderProps) {
-  const { user, profile, signOut, isSystemAdmin, isCompanyAdmin } = useAuth();
+  const { user, profile, company, signOut, isSystemAdmin, isCompanyAdmin } = useAuth();
   const navigate = useNavigate();
   const {
     selectedDepartment,
@@ -65,23 +66,27 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
         {showDepartmentSelector && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2 max-w-[200px]">
+              <Button variant="outline" className="flex items-center gap-2 max-w-[220px]">
                 <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <span className="truncate text-sm hidden sm:inline">
-                  {selectedDepartment?.name ?? "Alle avdelinger"}
+                  {selectedDepartment?.name ?? company?.name ?? "Alle avdelinger"}
                 </span>
                 <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[260px]">
+            <DropdownMenuContent align="end" className="w-[280px]">
+              {/* Hovedbedrift (Parent company) */}
               {canViewAllDepartments && (
                 <>
+                  <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+                    Hovedbedrift
+                  </DropdownMenuLabel>
                   <DropdownMenuItem
                     onClick={() => setSelectedDepartment(null)}
                     className="flex items-center gap-2"
                   >
-                    <Building2 className="h-4 w-4" />
-                    <span>Alle avdelinger</span>
+                    <Home className="h-4 w-4 text-primary" />
+                    <span className="font-medium">{company?.name ?? "Bedrift"}</span>
                     {!selectedDepartment && (
                       <Badge variant="secondary" className="ml-auto text-xs">
                         Aktiv
@@ -91,28 +96,38 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
                   <DropdownMenuSeparator />
                 </>
               )}
-              {userDepartments.map((dept) => (
-                <DropdownMenuItem
-                  key={dept.id}
-                  onClick={() => setSelectedDepartment(dept)}
-                  className="flex flex-col items-start gap-0.5"
-                >
-                  <div className="flex items-center gap-2 w-full">
-                    <span className="truncate">{dept.name}</span>
-                    {selectedDepartment?.id === dept.id && (
-                      <Badge variant="secondary" className="ml-auto text-xs">
-                        Aktiv
-                      </Badge>
-                    )}
-                  </div>
-                  {dept.city && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3" />
-                      <span>{dept.city}</span>
-                    </div>
-                  )}
-                </DropdownMenuItem>
-              ))}
+
+              {/* Avdelinger */}
+              {userDepartments.length > 0 && (
+                <>
+                  <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+                    Avdelinger
+                  </DropdownMenuLabel>
+                  {userDepartments.map((dept) => (
+                    <DropdownMenuItem
+                      key={dept.id}
+                      onClick={() => setSelectedDepartment(dept)}
+                      className="flex flex-col items-start gap-0.5"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <Building2 className="h-4 w-4 text-muted-foreground" />
+                        <span className="truncate">{dept.name}</span>
+                        {selectedDepartment?.id === dept.id && (
+                          <Badge variant="secondary" className="ml-auto text-xs">
+                            Aktiv
+                          </Badge>
+                        )}
+                      </div>
+                      {dept.city && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground ml-6">
+                          <MapPin className="h-3 w-3" />
+                          <span>{dept.city}</span>
+                        </div>
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         )}
