@@ -1,4 +1,4 @@
-import { User, LogOut, ChevronDown, Menu, Download } from "lucide-react";
+import { User, LogOut, ChevronDown, Menu, Download, Building2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,6 +10,8 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
+import { Badge } from "@/components/ui/badge";
 
 interface AppHeaderProps {
   onMenuClick?: () => void;
@@ -18,6 +20,13 @@ interface AppHeaderProps {
 export function AppHeader({ onMenuClick }: AppHeaderProps) {
   const { user, profile, signOut, isSystemAdmin, isCompanyAdmin } = useAuth();
   const navigate = useNavigate();
+  const {
+    selectedDepartment,
+    userDepartments,
+    hasDepartments,
+    setSelectedDepartment,
+    canViewAllDepartments,
+  } = useDepartmentContext();
 
   const handleSignOut = async () => {
     await signOut();
@@ -34,6 +43,9 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
     ? "Bedriftsadmin" 
     : "Bruker";
 
+  // Show department selector if departments are enabled and user has multiple departments (or is admin)
+  const showDepartmentSelector = hasDepartments && (userDepartments.length > 1 || canViewAllDepartments);
+
   return (
     <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4 md:px-6">
       <div className="flex items-center gap-4">
@@ -49,6 +61,70 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2 md:gap-3">
+        {/* Department selector */}
+        {showDepartmentSelector && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2 max-w-[200px]">
+                <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="truncate text-sm hidden sm:inline">
+                  {selectedDepartment?.name ?? "Alle avdelinger"}
+                </span>
+                <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[260px]">
+              {canViewAllDepartments && (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => setSelectedDepartment(null)}
+                    className="flex items-center gap-2"
+                  >
+                    <Building2 className="h-4 w-4" />
+                    <span>Alle avdelinger</span>
+                    {!selectedDepartment && (
+                      <Badge variant="secondary" className="ml-auto text-xs">
+                        Aktiv
+                      </Badge>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              {userDepartments.map((dept) => (
+                <DropdownMenuItem
+                  key={dept.id}
+                  onClick={() => setSelectedDepartment(dept)}
+                  className="flex flex-col items-start gap-0.5"
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    <span className="truncate">{dept.name}</span>
+                    {selectedDepartment?.id === dept.id && (
+                      <Badge variant="secondary" className="ml-auto text-xs">
+                        Aktiv
+                      </Badge>
+                    )}
+                  </div>
+                  {dept.city && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3" />
+                      <span>{dept.city}</span>
+                    </div>
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {/* Single department badge (when user has exactly one) */}
+        {hasDepartments && userDepartments.length === 1 && !canViewAllDepartments && (
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground border rounded-md bg-muted/30">
+            <Building2 className="h-4 w-4" />
+            <span className="truncate max-w-[120px]">{userDepartments[0].name}</span>
+          </div>
+        )}
+
         {/* Notifications */}
         <NotificationBell />
 
