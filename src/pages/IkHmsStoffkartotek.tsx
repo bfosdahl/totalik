@@ -404,6 +404,62 @@ export default function IkHmsStoffkartotek() {
                 <DialogTitle>Legg til nytt stoff</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
+                {/* AI PDF parsing info box - prominent at top */}
+                <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="bg-primary/20 rounded-full p-2 shrink-0">
+                      <FileText className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-medium text-sm text-foreground">
+                        Har du sikkerhetsdatablad (SDS)?
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Last opp PDF-en først! Vår AI leser automatisk produktnavn, 
+                        produsent, fareklasser og annen informasjon fra dokumentet. 
+                        Du slipper å fylle ut manuelt.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <Input
+                      id="sds_file_top"
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          handleParsePdf(file);
+                        }
+                      }}
+                      className="cursor-pointer"
+                      disabled={isParsing}
+                    />
+                    {isParsing && (
+                      <div className="flex items-center gap-2 text-primary text-sm mt-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        AI analyserer sikkerhetsdatabladet...
+                      </div>
+                    )}
+                    {sdsFile && !isParsing && (
+                      <p className="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center gap-1">
+                        ✓ {sdsFile.name} - Skjemaet er fylt ut automatisk
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      {sdsFile ? "Sjekk og juster informasjonen" : "Eller fyll ut manuelt"}
+                    </span>
+                  </div>
+                </div>
+
                 <div>
                   <Label htmlFor="product_name">Produktnavn *</Label>
                   <Input
@@ -451,36 +507,6 @@ export default function IkHmsStoffkartotek() {
                     }
                     placeholder="F.eks. Kjemikalieskap A"
                   />
-                </div>
-                <div>
-                  <Label htmlFor="sds_file">Sikkerhetsdatablad (SDS)</Label>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Last opp PDF for å automatisk fylle ut skjemaet med AI
-                  </p>
-                  <div className="flex gap-2">
-                    <Input
-                      id="sds_file"
-                      type="file"
-                      accept=".pdf"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          handleParsePdf(file);
-                        }
-                      }}
-                      className="flex-1"
-                      disabled={isParsing}
-                    />
-                    {isParsing && (
-                      <div className="flex items-center gap-2 text-primary text-sm">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Leser PDF...
-                      </div>
-                    )}
-                  </div>
-                  {sdsFile && !isParsing && (
-                    <p className="text-xs text-success mt-1">✓ {sdsFile.name}</p>
-                  )}
                 </div>
                 <div>
                   <Label htmlFor="notes">Notater</Label>
