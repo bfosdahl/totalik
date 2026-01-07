@@ -70,7 +70,118 @@ Deno.serve(async (req) => {
       });
     }
 
-    // First delete the profile (this will cascade to related tables if configured)
+    // Get the user's profile to find their company
+    const { data: userProfile, error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .select("id, company_id")
+      .eq("user_id", userId)
+      .single();
+
+    if (profileError || !userProfile) {
+      console.error("Error fetching user profile:", profileError);
+      return new Response(JSON.stringify({ error: "Could not find user profile" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Find the company admin to reassign deviations to
+    let companyAdminId: string | null = null;
+    if (userProfile.company_id) {
+      const { data: companyAdmin } = await supabaseAdmin
+        .from("user_roles")
+        .select("user_id, profiles!inner(id)")
+        .eq("role", "company_admin")
+        .eq("profiles.company_id", userProfile.company_id)
+        .neq("user_id", userId)
+        .limit(1)
+        .single();
+
+      if (companyAdmin) {
+        // Get the profile id for the company admin
+        const { data: adminProfile } = await supabaseAdmin
+          .from("profiles")
+          .select("id")
+          .eq("user_id", companyAdmin.user_id)
+          .single();
+        
+        if (adminProfile) {
+          companyAdminId = adminProfile.id;
+        }
+      }
+    }
+
+    // Reassign deviations where the user is assignee
+    const { error: reassignAssigneeError } = await supabaseAdmin
+      .from("deviations")
+      .update({ assignee_id: companyAdminId, assignee_name: companyAdminId ? null : null })
+      .eq("assignee_id", userProfile.id);
+
+    if (reassignAssigneeError) {
+      console.error("Error reassigning deviations (assignee):", reassignAssigneeError);
+    }
+
+    // Reassign deviations where the user is reporter
+    const { error: reassignReporterError } = await supabaseAdmin
+      .from("deviations")
+      .update({ reporter_id: companyAdminId })
+      .eq("reporter_id", userProfile.id);
+
+    if (reassignReporterError) {
+      console.error("Error reassigning deviations (reporter):", reassignReporterError);
+    }
+
+    // Update deviation attachments to remove uploaded_by reference
+    const { error: attachmentsError } = await supabaseAdmin
+      .from("deviation_attachments")
+      .update({ uploaded_by: null })
+      .eq("uploaded_by", userProfile.id);
+
+    if (attachmentsError) {
+      console.error("Error updating deviation attachments:", attachmentsError);
+    }
+
+    // Update deviation comments to remove user_id reference
+    const { error: commentsError } = await supabaseAdmin
+      .from("deviation_comments")
+      .update({ user_id: null })
+      .eq("user_id", userProfile.id);
+
+    if (commentsError) {
+      console.error("Error updating deviation comments:", commentsError);
+    }
+
+    // Update audits where user is responsible
+    const { error: auditsError } = await supabaseAdmin
+      .from("audits")
+      .update({ responsible_id: null })
+      .eq("responsible_id", userProfile.id);
+
+    if (auditsError) {
+      console.error("Error updating audits:", auditsError);
+    }
+
+    // Update audit_form_responses
+    const { error: auditFormError } = await supabaseAdmin
+      .from("audit_form_responses")
+      .update({ completed_by_id: null })
+      .eq("completed_by_id", userProfile.id);
+
+    if (auditFormError) {
+      console.error("Error updating audit form responses:", auditFormError);
+    }
+
+    // Update action_plan_followups
+    const { error: followupsError } = await supabaseAdmin
+      .from("action_plan_followups")
+      .update({ completed_by_id: null })
+      .eq("completed_by_id", userProfile.id);
+
+    if (followupsError) {
+      console.error("Error updating action plan followups:", followupsError);
+    }
+
+    // Now delete the profile (this will cascade to related tables if configured)
     const { error: profileDeleteError } = await supabaseAdmin
       .from("profiles")
       .delete()
