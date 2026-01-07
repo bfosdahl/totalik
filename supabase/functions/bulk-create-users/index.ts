@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,6 +18,89 @@ interface CreateResult {
   email: string;
   success: boolean;
   error?: string;
+  emailSent?: boolean;
+}
+
+// Function to send welcome email
+async function sendWelcomeEmail(
+  resend: Resend,
+  email: string,
+  firstName: string | null,
+  companyName: string,
+  tempPassword: string
+): Promise<boolean> {
+  try {
+    const displayName = firstName || email.split("@")[0];
+    
+    const emailResponse = await resend.emails.send({
+      from: "HMS Nova <noreply@hmsnova.no>",
+      to: [email],
+      subject: "Velkommen til HMS Nova - Din brukerkonto er opprettet",
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">HMS Nova</h1>
+            <p style="color: rgba(255,255,255,0.9); margin-top: 10px;">Velkommen til ditt HMS-system</p>
+          </div>
+          
+          <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
+            <h2 style="color: #1f2937; margin-top: 0;">Hei ${displayName}!</h2>
+            
+            <p>Din brukerkonto hos <strong>${companyName}</strong> er nå opprettet i HMS Nova.</p>
+            
+            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <h3 style="margin-top: 0; color: #374151;">Påloggingsinformasjon:</h3>
+              <p style="margin: 5px 0;"><strong>E-post:</strong> ${email}</p>
+              <p style="margin: 5px 0;"><strong>Midlertidig passord:</strong> ${tempPassword}</p>
+            </div>
+            
+            <p style="color: #dc2626; font-weight: 500;">⚠️ Viktig: Endre passordet ditt etter første innlogging!</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://hmsnova.no" 
+                 style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); 
+                        color: white; 
+                        padding: 14px 30px; 
+                        text-decoration: none; 
+                        border-radius: 8px; 
+                        font-weight: bold;
+                        display: inline-block;">
+                Logg inn på HMS Nova
+              </a>
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+            
+            <p style="color: #6b7280; font-size: 14px;">
+              Ved å logge inn godtar du våre 
+              <a href="https://hmsnova.no/vilkar" style="color: #6366f1;">avtalevilkår</a>.
+            </p>
+            
+            <p style="color: #6b7280; font-size: 14px;">
+              Har du spørsmål? Kontakt din bedriftsadministrator eller svar på denne e-posten.
+            </p>
+          </div>
+          
+          <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 12px;">
+            <p>© 2025 HMS Nova. Alle rettigheter reservert.</p>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+
+    console.log(`Welcome email sent to ${email}:`, emailResponse);
+    return true;
+  } catch (error) {
+    console.error(`Failed to send welcome email to ${email}:`, error);
+    return false;
+  }
 }
 
 Deno.serve(async (req) => {
@@ -84,7 +168,25 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Initialize Resend for sending emails
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    const resend = resendApiKey ? new Resend(resendApiKey) : null;
+
+    if (!resend) {
+      console.warn("RESEND_API_KEY not configured - welcome emails will not be sent");
+    }
+
+    // Pre-fetch company names for all unique company IDs
+    const companyIds = [...new Set(users.map(u => u.companyId))];
+    const { data: companiesData } = await supabaseAdmin
+      .from("companies")
+      .select("id, name")
+      .in("id", companyIds);
+    
+    const companyMap = new Map(companiesData?.map(c => [c.id, c.name]) || []);
+
     const results: CreateResult[] = [];
+    const tempPassword = "Abc_1234";
 
     for (const user of users) {
       try {
@@ -99,9 +201,6 @@ Deno.serve(async (req) => {
           results.push({ email: user.email, success: false, error: "Bedrift er påkrevd" });
           continue;
         }
-
-        // Use standard default password for all new users
-        const tempPassword = "Abc_1234";
 
         const { data: authData, error: createError } = await supabaseAdmin.auth.admin.createUser({
           email: user.email,
@@ -149,8 +248,21 @@ Deno.serve(async (req) => {
           console.error(`Error adding role for ${user.email}:`, roleError);
         }
 
-        results.push({ email: user.email, success: true });
-        console.log(`Successfully created user: ${user.email}`);
+        // Send welcome email
+        let emailSent = false;
+        if (resend) {
+          const companyName = companyMap.get(user.companyId) || "din bedrift";
+          emailSent = await sendWelcomeEmail(
+            resend,
+            user.email,
+            user.firstName || null,
+            companyName,
+            tempPassword
+          );
+        }
+
+        results.push({ email: user.email, success: true, emailSent });
+        console.log(`Successfully created user: ${user.email}, email sent: ${emailSent}`);
       } catch (error) {
         console.error(`Unexpected error for ${user.email}:`, error);
         results.push({ email: user.email, success: false, error: "Uventet feil" });
@@ -159,14 +271,15 @@ Deno.serve(async (req) => {
 
     const successCount = results.filter(r => r.success).length;
     const failCount = results.filter(r => !r.success).length;
+    const emailsSent = results.filter(r => r.emailSent).length;
 
-    console.log(`Bulk import complete: ${successCount} success, ${failCount} failed`);
+    console.log(`Bulk import complete: ${successCount} success, ${failCount} failed, ${emailsSent} emails sent`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         results,
-        summary: { total: users.length, success: successCount, failed: failCount }
+        summary: { total: users.length, success: successCount, failed: failCount, emailsSent }
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
