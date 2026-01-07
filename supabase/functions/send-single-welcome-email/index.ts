@@ -67,25 +67,6 @@ const handler = async (req: Request): Promise<Response> => {
     const firstName = profile.first_name || "";
     const loginUrl = "https://totalik.no/auth";
 
-    // Generate a password reset link for the user
-    const { data: resetData, error: resetError } = await supabase.auth.admin.generateLink({
-      type: "recovery",
-      email: profile.email,
-      options: {
-        redirectTo: loginUrl,
-      },
-    });
-
-    if (resetError) {
-      console.error(`Failed to generate reset link:`, resetError);
-      return new Response(
-        JSON.stringify({ error: resetError.message }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const resetLink = resetData?.properties?.action_link || loginUrl;
-
     const resend = new Resend(resendApiKey);
 
     await resend.emails.send({
@@ -101,29 +82,28 @@ const handler = async (req: Request): Promise<Response> => {
           <p style="color: #333; font-size: 16px;">Hei${firstName ? ` ${firstName}` : ''},</p>
           
           <p style="color: #333; font-size: 16px;">
-            Du har en brukerkonto hos ${companyName} i Total-IK systemet.
+            Du har fått en brukerkonto hos ${companyName} i Total-IK systemet.
           </p>
           
           <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #0066cc;">
-            <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">📧 Din innloggingsinformasjon</h3>
-            <p style="color: #555; margin: 0;">
+            <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">🔐 Din innloggingsinformasjon</h3>
+            <p style="color: #555; margin: 0 0 8px 0;">
               <strong>Brukernavn:</strong> ${profile.email}
+            </p>
+            <p style="color: #555; margin: 0;">
+              <strong>Passord:</strong> Abc_1234
             </p>
           </div>
           
           <p style="color: #333; font-size: 16px;">
-            Klikk på knappen under for å sette et nytt passord og logge inn:
+            Du kan endre passordet ditt etter innlogging under "Innstillinger" dersom du ønsker det.
           </p>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetLink}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
-              Sett passord og logg inn
+            <a href="${loginUrl}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
+              Logg inn nå
             </a>
           </div>
-          
-          <p style="color: #666; font-size: 14px;">
-            Eller gå direkte til <a href="${loginUrl}" style="color: #0066cc;">${loginUrl}</a> og bruk "Glemt passord" funksjonen.
-          </p>
           
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           
