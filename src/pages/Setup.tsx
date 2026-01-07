@@ -128,28 +128,28 @@ function NoCompanyMessage() {
 }
 
 const Setup = () => {
-  const { profile, company, isLoading: authLoading } = useAuth();
+  const { user, profile, company, isLoading: authLoading } = useAuth();
   const [searchParams] = useSearchParams();
   const { modules, isLoading: modulesLoading, hasModule, refetch: refetchModules } = useCompanyModules();
-  const { 
-    isLoading, 
-    isSaving, 
-    goals, 
+  const {
+    isLoading,
+    isSaving,
+    goals,
     organization,
     riskAssessment,
     actionPlan,
     routines,
-    progress, 
+    progress,
     companyId,
-    saveProgress, 
+    saveProgress,
     saveGoals,
     saveOrganization,
     saveRiskAssessment,
     saveActionPlan,
     saveRoutines,
-    completeStep 
+    completeStep
   } = useSetupWizard();
-  
+
   const [currentStep, setCurrentStep] = useState(0);
   const [hasInitializedStep, setHasInitializedStep] = useState(false);
   const [showSetupChoice, setShowSetupChoice] = useState(true);
@@ -157,7 +157,7 @@ const Setup = () => {
   const [showVerneombudExemption, setShowVerneombudExemption] = useState(false);
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
   const navigate = useNavigate();
-  
+
   // Check if IK_HMS module is active
   const hasIkHmsSubscription = hasModule("IK_HMS");
 
@@ -193,12 +193,18 @@ const Setup = () => {
   // Get the current step's ref based on step id
   const getCurrentStepRef = () => {
     switch (steps[currentStep].id) {
-      case "goals": return goalsRef;
-      case "organization": return organizationRef;
-      case "risk": return riskRef;
-      case "actions": return actionsRef;
-      case "routines": return routinesRef;
-      default: return null;
+      case "goals":
+        return goalsRef;
+      case "organization":
+        return organizationRef;
+      case "risk":
+        return riskRef;
+      case "actions":
+        return actionsRef;
+      case "routines":
+        return routinesRef;
+      default:
+        return null;
     }
   };
 
@@ -247,11 +253,11 @@ const Setup = () => {
     switch (steps[currentStep].id) {
       case "goals":
         return (
-          <GoalsStep 
+          <GoalsStep
             ref={goalsRef}
-            existingGoals={goals} 
-            onSave={saveGoals} 
-            isSaving={isSaving} 
+            existingGoals={goals}
+            onSave={saveGoals}
+            isSaving={isSaving}
           />
         );
       case "organization":
@@ -277,18 +283,20 @@ const Setup = () => {
           <ActionPlanStep
             ref={actionsRef}
             existingData={actionPlan}
-            risks={riskAssessment?.risks.map(r => ({
-              id: r.id,
-              category: "HMS",
-              description: r.description,
-              probability: r.probability,
-              consequence: r.consequence,
-              risk_value: r.probability * r.consequence,
-              measures: r.planned_measures,
-              responsible: "",
-              deadline: "",
-              status: "ikke_startet" as const
-            })) || []}
+            risks={
+              riskAssessment?.risks.map((r) => ({
+                id: r.id,
+                category: "HMS",
+                description: r.description,
+                probability: r.probability,
+                consequence: r.consequence,
+                risk_value: r.probability * r.consequence,
+                measures: r.planned_measures,
+                responsible: "",
+                deadline: "",
+                status: "ikke_startet" as const,
+              })) || []
+            }
             onSave={saveActionPlan}
             isSaving={isSaving}
           />
@@ -307,30 +315,38 @@ const Setup = () => {
           <HandbookStep
             goals={goals}
             organization={organization}
-            riskAssessment={riskAssessment ? {
-              risks: riskAssessment.risks.map(r => ({
-                ...r,
-                category: "HMS",
-                measures: r.planned_measures,
-                risk_value: r.probability * r.consequence,
-                responsible: "",
-                deadline: "",
-                status: "ikke_startet" as const
-              }))
-            } : null}
+            riskAssessment={
+              riskAssessment
+                ? {
+                    risks: riskAssessment.risks.map((r) => ({
+                      ...r,
+                      category: "HMS",
+                      measures: r.planned_measures,
+                      risk_value: r.probability * r.consequence,
+                      responsible: "",
+                      deadline: "",
+                      status: "ikke_startet" as const,
+                    })),
+                  }
+                : null
+            }
             actionPlan={actionPlan}
             routines={routines}
-            companyInfo={company ? {
-              id: company.id,
-              name: company.name,
-              org_number: company.org_number || undefined,
-              address: company.address || undefined,
-              postal_code: company.postal_code || undefined,
-              city: company.city || undefined,
-              phone: company.phone || undefined,
-              email: company.email || undefined,
-              logo_url: company.logo_url,
-            } : null}
+            companyInfo={
+              company
+                ? {
+                    id: company.id,
+                    name: company.name,
+                    org_number: company.org_number || undefined,
+                    address: company.address || undefined,
+                    postal_code: company.postal_code || undefined,
+                    city: company.city || undefined,
+                    phone: company.phone || undefined,
+                    email: company.email || undefined,
+                    logo_url: company.logo_url,
+                  }
+                : null
+            }
           />
         );
       default:
@@ -354,13 +370,26 @@ const Setup = () => {
     );
   }
 
-  // If no profile after auth is done, user is not logged in - redirect to auth
-  if (!profile) {
+  // IMPORTANT: user can be authenticated while profile is still loading/fetching.
+  // In that case, show a loader instead of "Ikke innlogget".
+  if (user && !profile) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <span className="sr-only">Laster brukerdata...</span>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // If no user (and auth is done), user is not logged in - redirect to auth
+  if (!user) {
     return (
       <AppLayout>
         <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-          <div className="p-4 rounded-2xl bg-warning/10 mb-4">
-            <Building2 className="w-8 h-8 text-warning" />
+          <div className="p-4 rounded-2xl bg-muted mb-4">
+            <Building2 className="w-8 h-8 text-muted-foreground" />
           </div>
           <h3 className="text-xl font-semibold mb-2">Ikke innlogget</h3>
           <p className="text-muted-foreground max-w-md mb-6">
@@ -396,8 +425,13 @@ const Setup = () => {
   }
 
   // Check if we have any existing data to determine if setup has started
-  const hasExistingData = goals.length > 0 || organization !== null || riskAssessment !== null || actionPlan !== null || routines !== null;
-  
+  const hasExistingData =
+    goals.length > 0 ||
+    organization !== null ||
+    riskAssessment !== null ||
+    actionPlan !== null ||
+    routines !== null;
+
   // If user doesn't have IK_HMS subscription and no existing data, show subscription prompt
   if (!hasIkHmsSubscription && !hasExistingData) {
     return (
@@ -425,7 +459,7 @@ const Setup = () => {
             <CreditCard className="w-4 h-4" />
             Se vilkår og aktiver
           </Button>
-          
+
           <SubscriptionAcceptDialog
             open={showSubscriptionDialog}
             onOpenChange={setShowSubscriptionDialog}
@@ -438,6 +472,7 @@ const Setup = () => {
       </AppLayout>
     );
   }
+
 
   if (showSetupChoice && !progress.current_step && progress.completed_steps.length === 0 && !hasExistingData) {
     return (
