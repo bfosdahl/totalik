@@ -49,7 +49,7 @@ const handler = async (req: Request): Promise<Response> => {
       .eq("user_id", userId)
       .single();
 
-    let companyName = "Athena HMS";
+    let companyName = "Total-IK";
     if (profile?.company_id) {
       const { data: company } = await supabase
         .from("companies")
@@ -61,16 +61,16 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    const loginUrl = "https://athena-kurs-og-internkontroll.lovable.app/auth";
+    const loginUrl = "https://totalik.no/auth";
 
     const emailResponse = await resend.emails.send({
-      from: `Athena HMS <noreply@resend.dev>`,
+      from: `Total-IK <noreply@resend.dev>`,
       to: [email],
       subject: `Velkommen til ${companyName} - Konto opprettet`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #1a1a2e; margin: 0;">Velkommen til Athena HMS!</h1>
+            <h1 style="color: #1a1a2e; margin: 0;">Velkommen til Total-IK!</h1>
           </div>
           
           <p style="color: #333; font-size: 16px;">Hei${firstName ? ` ${firstName}` : ''},</p>
@@ -101,7 +101,7 @@ const handler = async (req: Request): Promise<Response> => {
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           
           <p style="color: #999; font-size: 12px; text-align: center;">
-            Dette er en automatisk generert e-post fra Athena HMS.<br>
+            Dette er en automatisk generert e-post fra Total-IK.<br>
             Hvis du ikke har opprettet denne kontoen, kan du ignorere denne e-posten.
           </p>
         </div>
