@@ -230,18 +230,25 @@ const Handbook = () => {
     {
       id: "organization",
       title: "2. Organisering og ansvar",
-      status: organization?.custom_content ? "complete" : "incomplete",
+      status: (organization?.roles?.length ?? 0) > 0 ? "complete" : "incomplete",
       stepIndex: 1,
       icon: Users,
-      content: organization?.custom_content ? (
-        <div className="text-sm text-muted-foreground whitespace-pre-wrap max-h-48 overflow-y-auto">
-          {organization.custom_content.substring(0, 500)}
-          {organization.custom_content.length > 500 && "..."}
+      content: (organization?.roles?.length ?? 0) > 0 ? (
+        <div className="text-sm text-muted-foreground space-y-1 max-h-48 overflow-y-auto">
+          {organization?.roles?.slice(0, 5).map((role, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <span className="font-medium">{role.title}</span>
+              {role.personName && <span className="text-xs">({role.personName})</span>}
+            </div>
+          ))}
+          {(organization?.roles?.length ?? 0) > 5 && (
+            <p className="text-xs">+ {(organization?.roles?.length ?? 0) - 5} flere roller</p>
+          )}
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">Organisering er ikke definert ennå.</p>
       ),
-      summary: organization?.custom_content ? "Definert" : "Ikke definert",
+      summary: (organization?.roles?.length ?? 0) > 0 ? `${organization?.roles?.length} roller definert` : "Ikke definert",
     },
     {
       id: "risk",
@@ -654,124 +661,116 @@ const Handbook = () => {
       yPos = margin;
       addSectionHeader("2. Organisering og ansvar");
       
-      if (organization?.custom_content) {
-        // Try to parse as JSON (new format with roles)
-        let orgData: { roles?: Array<{ title: string; personName: string; description: string }>; description?: string } | null = null;
-        try {
-          orgData = JSON.parse(organization.custom_content);
-        } catch {
-          // Not JSON, treat as plain text (legacy format)
-          orgData = null;
-        }
+      // organization is now in new format with roles array directly
+      const orgData = organization;
 
-        if (orgData && orgData.roles && orgData.roles.length > 0) {
-          // Draw visual org chart
-          doc.setFontSize(11);
-          doc.setFont("helvetica", "bold");
-          doc.text("Organisasjonskart", margin, yPos);
-          yPos += 10;
+      if (orgData && orgData.roles && orgData.roles.length > 0) {
+        // Draw visual org chart
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.text("Organisasjonskart", margin, yPos);
+        yPos += 10;
+        
+        const boxWidth = 80;
+        const boxHeight = 20;
+        const centerX = pageWidth / 2;
+        
+        orgData.roles.forEach((role, index) => {
+          checkPageBreak(35);
           
-          const boxWidth = 80;
-          const boxHeight = 20;
-          const centerX = pageWidth / 2;
-          
-          orgData.roles.forEach((role, index) => {
-            checkPageBreak(35);
-            
-            // Draw connecting line from previous box
-            if (index > 0) {
-              doc.setDrawColor(200, 200, 200);
-              doc.setLineWidth(0.5);
-              doc.line(centerX, yPos - 5, centerX, yPos);
-            }
-            
-            // Draw box
-            doc.setFillColor(248, 250, 252);
-            doc.setDrawColor(59, 130, 246);
+          // Draw connecting line from previous box
+          if (index > 0) {
+            doc.setDrawColor(200, 200, 200);
             doc.setLineWidth(0.5);
-            doc.roundedRect(centerX - boxWidth/2, yPos, boxWidth, boxHeight, 2, 2, "FD");
-            
-            // Role title
-            doc.setFontSize(10);
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(0, 0, 0);
-            const titleText = role.title || "Uten tittel";
-            doc.text(titleText, centerX, yPos + 8, { align: "center" });
-            
-            // Person name
-            if (role.personName) {
-              doc.setFontSize(8);
-              doc.setFont("helvetica", "normal");
-              doc.setTextColor(100, 100, 100);
-              doc.text(role.personName, centerX, yPos + 14, { align: "center" });
-            }
-            
-            doc.setTextColor(0, 0, 0);
-            yPos += boxHeight + 10;
-          });
+            doc.line(centerX, yPos - 5, centerX, yPos);
+          }
           
-          yPos += 10;
+          // Draw box
+          doc.setFillColor(248, 250, 252);
+          doc.setDrawColor(59, 130, 246);
+          doc.setLineWidth(0.5);
+          doc.roundedRect(centerX - boxWidth/2, yPos, boxWidth, boxHeight, 2, 2, "FD");
           
-          // Draw role descriptions
-          doc.setFontSize(11);
+          // Role title
+          doc.setFontSize(10);
           doc.setFont("helvetica", "bold");
-          doc.text("Roller og ansvar", margin, yPos);
-          yPos += 8;
+          doc.setTextColor(0, 0, 0);
+          const titleText = role.title || "Uten tittel";
+          doc.text(titleText, centerX, yPos + 8, { align: "center" });
           
-          orgData.roles.forEach((role) => {
-            if (role.title && role.description) {
-              checkPageBreak(25);
-              
-              // Role title with person name
-              doc.setFontSize(10);
-              doc.setFont("helvetica", "bold");
-              let roleHeader = role.title;
-              if (role.personName) {
-                roleHeader += ` (${role.personName})`;
-              }
-              doc.text(roleHeader, margin, yPos);
-              yPos += 6;
-              
-              // Description
-              doc.setFont("helvetica", "normal");
-              doc.setFontSize(9);
-              const descLines = doc.splitTextToSize(role.description, contentWidth - 5);
-              descLines.forEach((line: string) => {
-                checkPageBreak(6);
-                doc.text(line, margin + 5, yPos);
-                yPos += 5;
-              });
-              yPos += 5;
-            }
-          });
-          
-          // Add general description if exists
-          if (orgData.description && orgData.description.trim()) {
-            checkPageBreak(20);
-            yPos += 5;
-            doc.setFontSize(11);
-            doc.setFont("helvetica", "bold");
-            doc.text("Generell beskrivelse", margin, yPos);
-            yPos += 8;
+          // Person name
+          if (role.personName) {
+            doc.setFontSize(8);
             doc.setFont("helvetica", "normal");
+            doc.setTextColor(100, 100, 100);
+            doc.text(role.personName, centerX, yPos + 14, { align: "center" });
+          }
+          
+          doc.setTextColor(0, 0, 0);
+          yPos += boxHeight + 10;
+        });
+        
+        yPos += 10;
+        
+        // Draw role descriptions
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.text("Roller og ansvar", margin, yPos);
+        yPos += 8;
+        
+        orgData.roles.forEach((role) => {
+          if (role.title && role.description) {
+            checkPageBreak(25);
+            
+            // Role title with person name
             doc.setFontSize(10);
-            const descLines = doc.splitTextToSize(orgData.description, contentWidth);
+            doc.setFont("helvetica", "bold");
+            let roleHeader = role.title;
+            if (role.personName) {
+              roleHeader += ` (${role.personName})`;
+            }
+            doc.text(roleHeader, margin, yPos);
+            yPos += 6;
+            
+            // Description
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            const descLines = doc.splitTextToSize(role.description, contentWidth - 5);
             descLines.forEach((line: string) => {
               checkPageBreak(6);
-              doc.text(line, margin, yPos);
+              doc.text(line, margin + 5, yPos);
               yPos += 5;
             });
+            yPos += 5;
           }
-        } else {
-          // Legacy plain text format
-          const orgLines = doc.splitTextToSize(organization.custom_content, contentWidth);
-          orgLines.forEach((line: string) => {
-            checkPageBreak(8);
-            doc.setFontSize(11);
+        });
+        
+        // Add general description if exists
+        if (orgData.description && orgData.description.trim()) {
+          checkPageBreak(20);
+          yPos += 5;
+          doc.setFontSize(11);
+          doc.setFont("helvetica", "bold");
+          doc.text("Generell beskrivelse", margin, yPos);
+          yPos += 8;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(10);
+          const descLines = doc.splitTextToSize(orgData.description, contentWidth);
+          descLines.forEach((line: string) => {
+            checkPageBreak(6);
             doc.text(line, margin, yPos);
-            yPos += 6;
+            yPos += 5;
           });
         }
+      } else if (orgData?.description) {
+        // Just description without roles
+        const orgLines = doc.splitTextToSize(orgData.description, contentWidth);
+        orgLines.forEach((line: string) => {
+          checkPageBreak(8);
+          doc.setFontSize(11);
+          doc.text(line, margin, yPos);
+          yPos += 6;
+        });
       } else {
         doc.setTextColor(150, 150, 150);
         doc.text("Organisasjonsstruktur er ikke definert.", margin, yPos);
@@ -1460,7 +1459,9 @@ const Handbook = () => {
 
         <div style="margin-bottom: 20px;">
           <h2 style="font-size: 18px; margin-bottom: 10px;">2. Organisering og ansvar</h2>
-          <p style="white-space: pre-wrap;">${organization?.custom_content?.substring(0, 500) || "Ikke definert"}</p>
+          <p style="white-space: pre-wrap;">${(organization?.roles?.length ?? 0) > 0 
+            ? organization?.roles?.map(r => `${r.title}${r.personName ? ` (${r.personName})` : ''}`).join(', ')
+            : (organization?.description?.substring(0, 500) || "Ikke definert")}</p>
         </div>
 
         <div style="margin-bottom: 20px;">

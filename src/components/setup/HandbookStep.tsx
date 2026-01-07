@@ -31,10 +31,17 @@ interface GoalData {
   is_predefined: boolean;
 }
 
+interface OrganizationRole {
+  id: string;
+  title: string;
+  personName: string;
+  description: string;
+  sortOrder: number;
+}
+
 interface OrganizationData {
-  custom_content: string;
-  template_id: string | null;
-  is_custom: boolean;
+  roles: OrganizationRole[];
+  description: string;
 }
 
 interface RiskItem {
@@ -170,7 +177,7 @@ export function HandbookStep({
 
   const completionStatus = {
     goals: goals.length > 0,
-    organization: organization && organization.custom_content.trim() !== "",
+    organization: organization && ((organization.roles?.length ?? 0) > 0 || organization.description?.trim() !== ""),
     riskAssessment: riskAssessment && riskAssessment.risks.length > 0,
     actionPlan: actionPlan && actionPlan.actions.length > 0,
     routines: routines && routines.routines.length > 0,
@@ -401,17 +408,10 @@ export function HandbookStep({
 
       addSectionHeader("2. Organisering og ansvar");
 
-      if (organization && organization.custom_content) {
-        // Try to parse as JSON (new format with roles)
-        let orgData: { roles?: Array<{ title: string; personName: string; description: string }>; description?: string } | null = null;
-        try {
-          orgData = JSON.parse(organization.custom_content);
-        } catch {
-          // Not JSON, treat as plain text (legacy format)
-          orgData = null;
-        }
+      if (organization && ((organization.roles?.length ?? 0) > 0 || organization.description)) {
+        const orgData = organization;
 
-        if (orgData && orgData.roles && orgData.roles.length > 0) {
+        if (orgData.roles && orgData.roles.length > 0) {
           // Draw visual org chart
           doc.setFontSize(11);
           doc.setFont("helvetica", "bold");
@@ -509,9 +509,9 @@ export function HandbookStep({
               yPos += 5;
             });
           }
-        } else {
-          // Legacy plain text format
-          const orgLines = doc.splitTextToSize(organization.custom_content, contentWidth);
+        } else if (orgData.description) {
+          // Just description without roles
+          const orgLines = doc.splitTextToSize(orgData.description, contentWidth);
           orgLines.forEach((line: string) => {
             checkPageBreak(8);
             doc.setFontSize(11);

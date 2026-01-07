@@ -10,10 +10,18 @@ export interface CompanyGoal {
   sort_order: number;
 }
 
+// Organization role interface matching IkHmsOrganisering
+export interface OrganizationRole {
+  id: string;
+  title: string;
+  personName: string;
+  description: string;
+  sortOrder: number;
+}
+
 export interface OrganizationData {
-  template_id: string | null;
-  custom_content: string;
-  is_custom: boolean;
+  roles: OrganizationRole[];
+  description: string;
 }
 
 export interface RiskItem {
@@ -150,12 +158,20 @@ export function useSetupWizard() {
           .eq("company_id", companyId)
           .maybeSingle();
 
-        if (orgData) {
-          setOrganization({
-            template_id: orgData.template_id,
-            custom_content: orgData.custom_content,
-            is_custom: orgData.is_custom || false,
-          });
+        if (orgData?.custom_content) {
+          try {
+            const parsed = JSON.parse(orgData.custom_content);
+            setOrganization({
+              roles: parsed.roles || [],
+              description: parsed.description || "",
+            });
+          } catch {
+            // Legacy format - treat as description
+            setOrganization({
+              roles: [],
+              description: orgData.custom_content,
+            });
+          }
         }
 
         // Load risk assessment
@@ -363,13 +379,15 @@ export function useSetupWizard() {
 
     setIsSaving(true);
     try {
+      // Store as JSON in custom_content (same format as IkHmsOrganisering)
+      const content = JSON.stringify(data);
+      
       const { error } = await supabase
         .from("company_organization")
         .upsert({
           company_id: companyId,
-          template_id: data.template_id,
-          custom_content: data.custom_content,
-          is_custom: data.is_custom,
+          custom_content: content,
+          is_custom: true,
         }, { onConflict: "company_id" });
 
       if (error) throw error;
