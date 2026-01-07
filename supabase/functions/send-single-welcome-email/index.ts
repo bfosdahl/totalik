@@ -98,6 +98,10 @@ const handler = async (req: Request): Promise<Response> => {
           <p style="color: #333; font-size: 16px;">
             Du kan endre passordet ditt etter innlogging under "Innstillinger" dersom du ønsker det.
           </p>
+
+          <p style="color: #333; font-size: 14px;">
+            Ved å logge inn godtar du våre <a href="https://totalik.no/avtalevilkar" style="color: #0066cc;">avtalevilkår</a>.
+          </p>
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${loginUrl}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
