@@ -47,7 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: `${data.companyName || "HMS System"} <onboarding@resend.dev>`,
+        from: `${data.companyName || "Total-IK"} <noreply@totalik.no>`,
         to: data.recipients,
         subject: data.subject,
         html: data.htmlContent,

@@ -183,7 +183,7 @@ const handler = async (req: Request): Promise<Response> => {
         </div>`;
 
     const emailResponse = await resend.emails.send({
-      from: "KS System <onboarding@resend.dev>",
+      from: "Total-IK <noreply@totalik.no>",
       to: [email],
       subject: `Du er invitert til prosjekt: ${projectInfo}`,
       html: `

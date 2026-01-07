@@ -64,7 +64,7 @@ const handler = async (req: Request): Promise<Response> => {
     const loginUrl = "https://totalik.no/auth";
 
     const emailResponse = await resend.emails.send({
-      from: `Total-IK <noreply@resend.dev>`,
+      from: `Total-IK <noreply@totalik.no>`,
       to: [email],
       subject: `Velkommen til ${companyName} - Konto opprettet`,
       html: `
