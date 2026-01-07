@@ -105,7 +105,7 @@ export function ComplianceProgress() {
         hasData = !!(goals && goals.length > 0);
         break;
       case "organization":
-        hasData = !!(organization && organization.custom_content);
+        hasData = !!(organization && (organization.roles?.length > 0 || organization.description));
         break;
       case "risk":
         hasData = !!(riskAssessment && riskAssessment.risks && riskAssessment.risks.length > 0);
