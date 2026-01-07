@@ -74,7 +74,7 @@ export default function AdminUsers() {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isBulkImportDialogOpen, setIsBulkImportDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isSendingBulkEmails, setIsSendingBulkEmails] = useState(false);
+  
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole>("user");
   const [showPassword, setShowPassword] = useState(false);
@@ -460,32 +460,6 @@ export default function AdminUsers() {
     toast({ title: "Eksport fullført", description: `${dataToExport.length} brukere eksportert til CSV` });
   }, [profiles, filteredProfiles, getUserRoles, toast]);
 
-  const sendBulkWelcomeEmails = useCallback(async () => {
-    if (!confirm("Er du sikker på at du vil sende velkomst-e-post til alle aktive brukere? Dette vil sende en e-post med innloggingslenke til hver bruker.")) {
-      return;
-    }
-    
-    setIsSendingBulkEmails(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("send-bulk-welcome-emails");
-      
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      
-      toast({ 
-        title: "E-poster sendt", 
-        description: `${data.sent} e-poster sendt${data.failed > 0 ? `, ${data.failed} feilet` : ""}`
-      });
-    } catch (error: any) {
-      toast({ 
-        title: "Feil", 
-        description: error.message, 
-        variant: "destructive" 
-      });
-    } finally {
-      setIsSendingBulkEmails(false);
-    }
-  }, [toast]);
 
   return (
     <AdminLayout>
@@ -503,15 +477,6 @@ export default function AdminUsers() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button 
-              variant="outline" 
-              onClick={sendBulkWelcomeEmails} 
-              disabled={isSendingBulkEmails}
-              className="flex-1 sm:flex-none min-w-[120px]"
-            >
-              <Mail className="w-4 h-4 mr-2" />
-              {isSendingBulkEmails ? "Sender..." : "Send e-post til alle"}
-            </Button>
             <Button variant="outline" onClick={exportUsersToCSV} className="flex-1 sm:flex-none min-w-[120px]">
               <Download className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Eksporter</span>
