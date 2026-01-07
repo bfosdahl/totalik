@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Building2, 
@@ -13,7 +13,7 @@ import {
   Smartphone,
   Layers
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { CompanyInfoSettings } from "@/components/settings/CompanyInfoSettings";
@@ -79,20 +79,33 @@ const settingsSections: SettingsSectionConfig[] = [
 ];
 
 const Settings = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState<SettingsSection>("main");
   const navigate = useNavigate();
 
-  const goBack = () => setActiveSection("main");
+  // Handle URL params for direct navigation (e.g., /settings?tab=company&create=true)
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && settingsSections.some(s => s.id === tab)) {
+      setActiveSection(tab as SettingsSection);
+    }
+  }, [searchParams]);
+
+  const goBack = () => {
+    setActiveSection("main");
+    setSearchParams({});
+  };
 
   // Get current section config
   const currentSection = settingsSections.find(s => s.id === activeSection);
+  const createMode = searchParams.get("create") === "true";
 
   // Render sub-sections
   if (activeSection === "company") {
     return (
       <AppLayout>
         <div className="max-w-3xl mx-auto">
-          <CompanyInfoSettings onBack={goBack} />
+          <CompanyInfoSettings onBack={goBack} createMode={createMode} />
         </div>
       </AppLayout>
     );
