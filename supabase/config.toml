@@ -65,3 +65,9 @@ verify_jwt = false
 
 [functions.sync-to-kurs]
 verify_jwt = false
+
+[functions.send-bulk-welcome-emails]
+verify_jwt = true
+
+[functions.send-welcome-email]
+verify_jwt = false
