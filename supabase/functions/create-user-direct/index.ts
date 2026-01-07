@@ -185,7 +185,7 @@ serve(async (req) => {
         const loginUrl = req.headers.get("origin") || "https://athena-kurs-og-internkontroll.lovable.app";
         
         await resend.emails.send({
-          from: `${companyName} <noreply@resend.dev>`,
+          from: `${companyName} <noreply@totalik.no>`,
           to: [email],
           subject: `Velkommen til ${companyName} - Din brukerkonto er opprettet`,
           html: `

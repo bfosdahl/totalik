@@ -74,7 +74,7 @@ const handler = async (req: Request): Promise<Response> => {
     const priorityColor = priorityColors[priority] || "#6b7280";
 
     const emailResponse = await resend.emails.send({
-      from: "Athena HMS <onboarding@resend.dev>",
+      from: "Total-IK <noreply@totalik.no>",
       to: [assignee_email],
       subject: `Du er tildelt avvik ${deviation_number}: ${deviation_title}`,
       html: `

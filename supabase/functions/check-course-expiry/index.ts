@@ -165,7 +165,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         try {
           await resend.emails.send({
-            from: "HMS System <onboarding@resend.dev>",
+            from: "Total-IK <noreply@totalik.no>",
             to: recipients,
             subject: `Kurs utløper snart: ${course.course_name} - ${employeeName}`,
             html: `

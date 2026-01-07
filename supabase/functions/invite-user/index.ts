@@ -194,7 +194,7 @@ serve(async (req) => {
         const roleName = role === "company_admin" ? "Administrator" : "Bruker";
 
         const emailResponse = await resend.emails.send({
-          from: "Athena HMS <onboarding@resend.dev>",
+          from: "Total-IK <noreply@totalik.no>",
           to: [email],
           subject: `Velkommen til ${companyName} - Din konto er opprettet`,
           html: `

@@ -64,7 +64,7 @@ const handler = async (req: Request): Promise<Response> => {
     for (const email of recipient_emails) {
       try {
         const emailResponse = await resend.emails.send({
-          from: "Athena HMS <onboarding@resend.dev>",
+          from: "Total-IK <noreply@totalik.no>",
           to: [email],
           subject: `Test varsel fra ${company_name}`,
           html: `
