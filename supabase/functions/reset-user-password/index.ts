@@ -50,12 +50,19 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Parse request body - userId is the auth user ID
-    const { userId, sendEmail } = await req.json();
+    // Parse request body - userId is the auth user ID, newPassword is the new password to set
+    const { userId, newPassword, sendEmail } = await req.json();
 
     if (!userId) {
       return new Response(
         JSON.stringify({ error: "Bruker-ID er påkrevd" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      return new Response(
+        JSON.stringify({ error: "Passord må være minst 6 tegn langt" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -129,28 +136,24 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Generate a secure password reset link instead of setting a new password
-    const { data: resetLink, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'recovery',
-      email: targetUser.user.email!,
-      options: {
-        redirectTo: `${Deno.env.get("SITE_URL") || "https://athenahms.no"}/auth?type=recovery`,
-      }
+    // DIRECTLY UPDATE THE USER'S PASSWORD using Supabase Admin API
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+      password: newPassword,
     });
 
-    if (linkError) {
-      console.error("Generate reset link error:", linkError);
+    if (updateError) {
+      console.error("Password update error:", updateError);
       return new Response(
-        JSON.stringify({ error: linkError.message }),
+        JSON.stringify({ error: updateError.message }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`Password reset link generated for user ${userId} by admin ${requestingUserId}`);
+    console.log(`Password directly updated for user ${userId} by admin ${requestingUserId}`);
 
-    // Send email if requested
+    // Send email if requested (with the actual password, not a reset link)
     let emailSent = false;
-    if (sendEmail && targetUser.user.email && resetLink?.properties?.action_link) {
+    if (sendEmail && targetUser.user.email) {
       const resendApiKey = Deno.env.get("RESEND_API_KEY");
       if (resendApiKey) {
         try {
@@ -167,12 +170,10 @@ Deno.serve(async (req) => {
             ? `${profile.first_name}${profile.last_name ? ' ' + profile.last_name : ''}`
             : "bruker";
 
-          const resetUrl = resetLink.properties.action_link;
-
           const emailResponse = await resend.emails.send({
-            from: "Athena HMS <noreply@athenahms.no>",
+            from: "Internkontroll <noreply@totalik.no>",
             to: [targetUser.user.email],
-            subject: "Tilbakestill passordet ditt",
+            subject: "Ditt passord er endret",
             html: `
               <!DOCTYPE html>
               <html>
@@ -183,34 +184,32 @@ Deno.serve(async (req) => {
                   .container { max-width: 600px; margin: 0 auto; padding: 20px; }
                   .header { background: linear-gradient(135deg, #1a365d 0%, #2563eb 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }
                   .content { background: #f8fafc; padding: 30px; border: 1px solid #e2e8f0; border-top: none; }
-                  .button-box { text-align: center; margin: 30px 0; }
-                  .reset-button { display: inline-block; background: #2563eb; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; }
-                  .reset-button:hover { background: #1d4ed8; }
+                  .password-box { background: #fff; border: 2px dashed #e2e8f0; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px; }
+                  .password { font-family: monospace; font-size: 24px; color: #1a365d; font-weight: bold; letter-spacing: 2px; }
                   .footer { text-align: center; padding: 20px; color: #64748b; font-size: 12px; }
                   .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0; }
-                  .link-text { word-break: break-all; font-size: 12px; color: #64748b; margin-top: 20px; }
                 </style>
               </head>
               <body>
                 <div class="container">
                   <div class="header">
-                    <h1 style="margin: 0;">Athena HMS</h1>
-                    <p style="margin: 10px 0 0 0; opacity: 0.9;">Tilbakestill passord</p>
+                    <h1 style="margin: 0;">Internkontroll</h1>
+                    <p style="margin: 10px 0 0 0; opacity: 0.9;">Passord endret</p>
                   </div>
                   <div class="content">
                     <p>Hei ${userName},</p>
-                    <p>En administrator har bedt om tilbakestilling av passordet ditt. Klikk på knappen nedenfor for å opprette et nytt passord:</p>
-                    <div class="button-box">
-                      <a href="${resetUrl}" class="reset-button">Tilbakestill passord</a>
+                    <p>En administrator har endret passordet ditt. Her er ditt nye passord:</p>
+                    <div class="password-box">
+                      <div class="password">${newPassword}</div>
                     </div>
                     <div class="warning">
-                      <strong>Viktig:</strong> Denne lenken utløper om 1 time. Hvis du ikke har bedt om denne tilbakestillingen, kan du ignorere denne e-posten.
+                      <strong>Viktig:</strong> Vi anbefaler at du endrer dette passordet til noe du selv husker etter første innlogging.
                     </div>
-                    <p class="link-text">Hvis knappen ikke fungerer, kopier og lim inn denne lenken i nettleseren din:<br>${resetUrl}</p>
-                    <p>Med vennlig hilsen,<br>Athena HMS Team</p>
+                    <p>Du kan logge inn på <a href="https://totalik.no/auth">totalik.no</a></p>
+                    <p>Med vennlig hilsen,<br>Internkontroll Team</p>
                   </div>
                   <div class="footer">
-                    <p>Denne e-posten ble sendt fra Athena HMS. Hvis du ikke forventet denne meldingen, vennligst kontakt din administrator.</p>
+                    <p>Denne e-posten ble sendt fra Internkontroll. Hvis du ikke forventet denne meldingen, vennligst kontakt din administrator.</p>
                   </div>
                 </div>
               </body>
@@ -218,10 +217,10 @@ Deno.serve(async (req) => {
             `,
           });
 
-          console.log("Password reset email sent successfully:", emailResponse);
-          emailSent = true;
+          console.log("Password change email sent:", emailResponse);
+          emailSent = !emailResponse.error;
         } catch (emailError) {
-          console.error("Error sending password reset email:", emailError);
+          console.error("Error sending password email:", emailError);
           // Don't fail the whole operation if email fails
         }
       } else {
@@ -232,7 +231,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Passordtilbakestillingslenke generert",
+        message: "Passord oppdatert",
         emailSent 
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
