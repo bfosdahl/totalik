@@ -153,7 +153,7 @@ export function useDeviations() {
           due_date: input.due_date,
           // Extended fields
           incident_location: input.incident_location || null,
-          incident_time: input.incident_time || null,
+          incident_time: input.incident_time && input.incident_time.includes(':') ? input.incident_time : null,
           incident_type: input.incident_type || null,
           severity: input.severity || null,
           reporter_contact: input.reporter_contact || null,
