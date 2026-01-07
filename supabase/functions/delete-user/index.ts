@@ -70,7 +70,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Delete the user using admin API
+    // First delete the profile (this will cascade to related tables if configured)
+    const { error: profileDeleteError } = await supabaseAdmin
+      .from("profiles")
+      .delete()
+      .eq("user_id", userId);
+
+    if (profileDeleteError) {
+      console.error("Error deleting profile:", profileDeleteError);
+      return new Response(JSON.stringify({ error: profileDeleteError.message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Now delete the auth user
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (deleteError) {
