@@ -123,15 +123,17 @@ export const TermsAcceptanceDialog = ({
       >
         <DialogHeader>
           <DialogTitle>Avtalevilkår</DialogTitle>
-          <DialogDescription>
-            Vennligst les og godkjenn avtalevilkårene for å fortsette.
-          </DialogDescription>
-        </DialogHeader>
+        <DialogDescription>
+          Vennligst les og godkjenn avtalevilkårene for å fortsette.
+        </DialogDescription>
+      </DialogHeader>
 
-        <ScrollArea className="flex-1 max-h-[50vh] border rounded-md p-4">
+      <ScrollArea className="h-[400px] border rounded-md p-4">
+        <div className="pr-4">
           <pre className="whitespace-pre-wrap text-sm font-sans leading-relaxed">
             {termsContent}
           </pre>
+        </div>
         </ScrollArea>
 
         <div className="flex items-start gap-3 mt-4">
