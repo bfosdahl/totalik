@@ -623,6 +623,7 @@ const Handbook = () => {
         { title: "3. Risikovurdering", page: 5 },
         { title: "4. Handlingsplan", page: 6 },
         { title: "5. Rutiner og prosedyrer", page: 7 },
+        { title: "6. Lover og forskrifter", page: 8 },
       ];
       tocItems.forEach((item) => {
         doc.text(item.title, margin, yPos);
