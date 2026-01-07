@@ -121,18 +121,9 @@ export default function Auth() {
       console.error("Error adding role:", roleError);
     }
 
-    // Create default IK_HMS module for the company
-    const { error: moduleError } = await supabase
-      .from("company_modules")
-      .insert({
-        company_id: newCompany.id,
-        module_type: "IK_HMS",
-        is_active: true
-      });
-
-    if (moduleError) {
-      console.error("Error creating module:", moduleError);
-    }
+    // NOTE: IK_HMS module is NOT created here anymore
+    // Users must accept subscription terms in Setup page first
+    // This ensures proper consent before activating the module
 
     // Send welcome email
     try {
