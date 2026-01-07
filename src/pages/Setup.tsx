@@ -111,16 +111,17 @@ function NoCompanyMessage() {
   
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <div className="p-4 rounded-2xl bg-warning/10 mb-4">
-        <Building2 className="w-8 h-8 text-warning" />
+      <div className="p-4 rounded-2xl bg-primary/10 mb-4">
+        <Building2 className="w-8 h-8 text-primary" />
       </div>
-      <h3 className="text-xl font-semibold mb-2">Ingen bedrift tilknyttet</h3>
+      <h3 className="text-xl font-semibold mb-2">Velkommen til Total-IK!</h3>
       <p className="text-muted-foreground max-w-md mb-6">
-        Du må være tilknyttet en bedrift for å bruke oppsettveiviseren. 
-        Kontakt din administrator for å bli lagt til i en bedrift.
+        For å komme i gang må du først opprette din bedrift. 
+        Dette tar bare noen minutter.
       </p>
-      <Button onClick={() => navigate("/")} variant="outline">
-        Gå til dashboard
+      <Button onClick={() => navigate("/settings?tab=company&create=true")} className="gap-2">
+        <Building2 className="w-4 h-4" />
+        Opprett bedrift
       </Button>
     </div>
   );
