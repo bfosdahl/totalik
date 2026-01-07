@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Shield, Mail, Lock, User, Loader2 } from "lucide-react";
+import { Shield, Mail, Lock, User, Loader2, Building2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ const loginSchema = z.object({
 const signupSchema = loginSchema.extend({
   firstName: z.string().min(1, "Fornavn er påkrevd").max(50),
   lastName: z.string().min(1, "Etternavn er påkrevd").max(50),
+  companyName: z.string().min(2, "Bedriftsnavn må være minst 2 tegn").max(100),
 });
 
 export default function Auth() {
@@ -27,9 +28,10 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -56,6 +58,96 @@ export default function Auth() {
     }
 
     toast.success("Sjekk e-posten din for lenke til å sette nytt passord");
+  };
+
+  const handleSignUp = async () => {
+    const redirectUrl = `${window.location.origin}/`;
+    
+    // Create user in auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+        },
+      },
+    });
+
+    if (authError) throw authError;
+    if (!authData.user) throw new Error("Bruker ble ikke opprettet");
+
+    // Wait a moment for the profile trigger to create the profile
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Create the company
+    const { data: newCompany, error: companyError } = await supabase
+      .from("companies")
+      .insert({
+        name: companyName.trim(),
+      })
+      .select()
+      .single();
+
+    if (companyError) {
+      console.error("Error creating company:", companyError);
+      throw new Error("Kunne ikke opprette bedrift");
+    }
+
+    // Update user profile with company_id
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({ 
+        company_id: newCompany.id,
+        status: "active"
+      })
+      .eq("user_id", authData.user.id);
+
+    if (profileError) {
+      console.error("Error updating profile:", profileError);
+    }
+
+    // Add user as company_admin
+    const { error: roleError } = await supabase
+      .from("user_roles")
+      .insert({
+        user_id: authData.user.id,
+        role: "company_admin"
+      });
+
+    if (roleError && !roleError.message.includes("duplicate")) {
+      console.error("Error adding role:", roleError);
+    }
+
+    // Create default IK_HMS module for the company
+    const { error: moduleError } = await supabase
+      .from("company_modules")
+      .insert({
+        company_id: newCompany.id,
+        module_type: "IK_HMS",
+        is_active: true
+      });
+
+    if (moduleError) {
+      console.error("Error creating module:", moduleError);
+    }
+
+    // Send welcome email
+    try {
+      await supabase.functions.invoke("send-welcome-email", {
+        body: {
+          userId: authData.user.id,
+          email: email,
+          firstName: firstName,
+        },
+      });
+    } catch (emailError) {
+      console.error("Error sending welcome email:", emailError);
+    }
+
+    return { error: null };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,7 +179,7 @@ export default function Auth() {
           );
         }
       } else {
-        const validation = signupSchema.safeParse({ email, password, firstName, lastName });
+        const validation = signupSchema.safeParse({ email, password, firstName, lastName, companyName });
         if (!validation.success) {
           const fieldErrors: Record<string, string> = {};
           validation.error.errors.forEach((err) => {
@@ -100,16 +192,14 @@ export default function Auth() {
           return;
         }
 
-        const { error } = await signUp(email, password, firstName, lastName);
-        if (error) {
-          if (error.message.includes("already registered")) {
-            toast.error("Denne e-postadressen er allerede registrert");
-          } else {
-            toast.error(error.message);
-          }
-        } else {
-          toast.success("Konto opprettet! Du er nå logget inn.");
-        }
+        await handleSignUp();
+        toast.success("Konto og bedrift opprettet! Velkommen!");
+      }
+    } catch (error: any) {
+      if (error.message?.includes("already registered")) {
+        toast.error("Denne e-postadressen er allerede registrert");
+      } else {
+        toast.error(error.message || "En feil oppstod");
       }
     } finally {
       setIsLoading(false);
@@ -128,49 +218,69 @@ export default function Auth() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-primary mb-4">
             <Shield className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Internkontroll</h1>
-          <p className="text-white/60 text-sm mt-1">HMS · MAT · BYGG</p>
+          <h1 className="text-2xl font-bold text-white">Total-IK</h1>
+          <p className="text-white/60 text-sm mt-1">HMS · BYGG · MAT</p>
         </div>
 
         {/* Auth card */}
         <div className="bg-card rounded-2xl shadow-xl p-8">
           <h1 className="sr-only">Innlogging</h1>
           <h2 className="text-xl font-semibold text-center mb-6">
-            {isLogin ? "Logg inn" : "Opprett konto"}
+            {isLogin ? "Logg inn" : "Opprett bedriftskonto"}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <div className="grid grid-cols-2 gap-4">
+              <>
+                {/* Company name - first for new signups */}
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">Fornavn</Label>
+                  <Label htmlFor="companyName">Bedriftsnavn</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      id="firstName"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      id="companyName"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
                       className="pl-10"
-                      placeholder="Ola"
+                      placeholder="Din bedrift AS"
                     />
                   </div>
-                  {errors.firstName && (
-                    <p className="text-xs text-destructive">{errors.firstName}</p>
+                  {errors.companyName && (
+                    <p className="text-xs text-destructive">{errors.companyName}</p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Etternavn</Label>
-                  <Input
-                    id="lastName"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Nordmann"
-                  />
-                  {errors.lastName && (
-                    <p className="text-xs text-destructive">{errors.lastName}</p>
-                  )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">Fornavn</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="firstName"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        className="pl-10"
+                        placeholder="Ola"
+                      />
+                    </div>
+                    {errors.firstName && (
+                      <p className="text-xs text-destructive">{errors.firstName}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Etternavn</Label>
+                    <Input
+                      id="lastName"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Nordmann"
+                    />
+                    {errors.lastName && (
+                      <p className="text-xs text-destructive">{errors.lastName}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </>
             )}
 
             <div className="space-y-2">
@@ -222,12 +332,12 @@ export default function Auth() {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {isLogin ? "Logger inn..." : "Oppretter konto..."}
+                  {isLogin ? "Logger inn..." : "Oppretter bedrift..."}
                 </>
               ) : isLogin ? (
                 "Logg inn"
               ) : (
-                "Opprett konto"
+                "Opprett bedriftskonto"
               )}
             </Button>
           </form>
