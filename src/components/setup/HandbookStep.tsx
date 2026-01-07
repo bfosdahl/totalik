@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { supabase } from "@/integrations/supabase/client";
+import { useCompanyLawsRegulations } from "@/hooks/useCompanyLawsRegulations";
 
 interface GoalData {
   id: string;
@@ -120,6 +121,7 @@ export function HandbookStep({
   companyInfo
 }: HandbookStepProps) {
   const navigate = useNavigate();
+  const { savedLaws } = useCompanyLawsRegulations();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -361,6 +363,7 @@ export function HandbookStep({
         { title: "3. Risikovurdering", page: 5 },
         { title: "4. Handlingsplan", page: 6 },
         { title: "5. Rutiner og prosedyrer", page: 7 },
+        { title: "6. Lover og forskrifter", page: 8 },
       ];
 
       tocItems.forEach(item => {
@@ -806,6 +809,51 @@ export function HandbookStep({
         doc.setTextColor(150, 150, 150);
         doc.text("Ingen rutiner er registrert.", margin, yPos);
         doc.setTextColor(0, 0, 0);
+      }
+
+      // ============= SECTION 6: LAWS AND REGULATIONS =============
+      doc.addPage();
+      yPos = margin;
+
+      addSectionHeader("6. Lover og forskrifter");
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text("Oversikt over lover og forskrifter som gjelder for virksomheten:", margin, yPos);
+      yPos += 10;
+
+      if (savedLaws && savedLaws.length > 0) {
+        const lawTableData = savedLaws.map(law => [
+          law.law_name || "-",
+          law.category || "Generelt",
+          law.description || "-",
+        ]);
+
+        autoTable(doc, {
+          startY: yPos,
+          head: [["Lov/forskrift", "Kategori", "Beskrivelse"]],
+          body: lawTableData,
+          theme: "striped",
+          headStyles: { 
+            fillColor: [59, 130, 246],
+            fontSize: 9,
+            fontStyle: "bold"
+          },
+          bodyStyles: { fontSize: 9 },
+          columnStyles: {
+            0: { cellWidth: 60 },
+            1: { cellWidth: 35 },
+            2: { cellWidth: 75 }
+          },
+          margin: { left: margin, right: margin },
+        });
+
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+      } else {
+        doc.setTextColor(150, 150, 150);
+        doc.text("Ingen lover og forskrifter er registrert.", margin, yPos);
+        doc.setTextColor(0, 0, 0);
+        yPos += 10;
       }
 
       // ============= FOOTER ON ALL PAGES =============
