@@ -183,18 +183,30 @@ export function RisikovurderingOgHandlingsplan() {
 
   // Convert simple format from setup wizard to full format
   const convertSimpleToFullFormat = (simpleRisk: any): RiskItem => {
+    // Ensure events is always an array
+    const safeEvents = Array.isArray(simpleRisk.events) ? simpleRisk.events : [];
+    
     // Check if it's already in full format (has hazard_source and events)
-    if (simpleRisk.hazard_source && Array.isArray(simpleRisk.events)) {
+    if (simpleRisk.hazard_source) {
       return {
         ...simpleRisk,
-        events: simpleRisk.events || [],
+        events: safeEvents.length > 0 ? safeEvents : [{
+          id: crypto.randomUUID(),
+          description: simpleRisk.hazard_source_custom || simpleRisk.description || "",
+          consequence: 3,
+          probability: 3,
+          measures: "",
+          responsible: "",
+          deadline: "",
+          status: "planlagt" as const,
+        }],
       };
     }
     
     // Convert simple format: { id, description, consequence, probability, existing_measures, planned_measures }
     // To full format: { id, hazard_source, hazard_source_custom, events: [...], created_at, created_by }
     return {
-      id: simpleRisk.id,
+      id: simpleRisk.id || crypto.randomUUID(),
       hazard_source: "annet",
       hazard_source_custom: simpleRisk.description || "Risiko fra oppsett",
       events: [{
@@ -702,7 +714,7 @@ export function RisikovurderingOgHandlingsplan() {
     setActions(prev => [...prev, ...newActions]);
     toast.success(`Lagt til 4 eksempler med ${newActions.length} tiltak`);
   };
-  const allEvents = risks.flatMap(r => r.events);
+  const allEvents = risks.flatMap(r => r.events || []);
   const stats = {
     totalSources: risks.length,
     totalEvents: allEvents.length,
@@ -718,9 +730,10 @@ export function RisikovurderingOgHandlingsplan() {
 
   // Get highest risk level for a risk item
   const getHighestRiskLevel = (risk: RiskItem) => {
-    if (risk.events.length === 0) return getRiskLevel(1, 1);
-    const maxScore = Math.max(...risk.events.map(e => e.consequence * e.probability));
-    const event = risk.events.find(e => e.consequence * e.probability === maxScore);
+    const events = risk.events || [];
+    if (events.length === 0) return getRiskLevel(1, 1);
+    const maxScore = Math.max(...events.map(e => e.consequence * e.probability));
+    const event = events.find(e => e.consequence * e.probability === maxScore);
     return event ? getRiskLevel(event.consequence, event.probability) : getRiskLevel(1, 1);
   };
 
@@ -1043,13 +1056,13 @@ export function RisikovurderingOgHandlingsplan() {
                                 {hazardLabel}
                               </span>
                               <Badge variant="secondary" className="text-xs">
-                                {risk.events.length} hendelse{risk.events.length !== 1 ? "r" : ""}
+                                {(risk.events || []).length} hendelse{(risk.events || []).length !== 1 ? "r" : ""}
                               </Badge>
                             </div>
                           </CollapsibleTrigger>
                           <CollapsibleContent>
                             <div className="p-3 space-y-3 border-t bg-background">
-                              {risk.events.map((event, idx) => {
+                              {(risk.events || []).map((event, idx) => {
                                 const eventLevel = getRiskLevel(event.consequence, event.probability);
                                 const hasReeval = event.consequence_after !== undefined;
                                 const levelAfter = hasReeval ? getRiskLevel(event.consequence_after!, event.probability_after!) : null;
