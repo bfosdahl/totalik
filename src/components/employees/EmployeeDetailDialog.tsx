@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +31,9 @@ import {
   CreditCard,
   Pen,
   Key,
-  Loader2
+  Loader2,
+  Building2,
+  Check
 } from "lucide-react";
 import { toast } from "sonner";
 import { Employee, useUpdateEmployee, useEmployeeDocuments, useEmployeeCourses } from "@/hooks/useEmployees";
@@ -43,6 +45,7 @@ import { SignatureManager } from "./SignatureManager";
 import { format, differenceInDays, isPast } from "date-fns";
 import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
+import { useDepartments, useUserDepartments } from "@/hooks/useDepartments";
 
 interface EmployeeDetailDialogProps {
   employee: Employee;
@@ -109,6 +112,14 @@ export function EmployeeDetailDialog({
   };
   const { documents, isLoading: docsLoading, deleteDocument } = useEmployeeDocuments(employee.id);
   const { courses, isLoading: coursesLoading, deleteCourse } = useEmployeeCourses(employee.id);
+  
+  // Department management
+  const { departments, isLoading: deptsLoading } = useDepartments();
+  const { userDepartments, isLoading: userDeptsLoading, assignUserToDepartment, removeUserFromDepartment, refetch: refetchUserDepts } = useUserDepartments(employee.id);
+  const [assigningDept, setAssigningDept] = useState<string | null>(null);
+  
+  // Get IDs of departments the user is already in
+  const assignedDepartmentIds = userDepartments.map(ud => ud.department_id);
 
   const getInitials = () => {
     const first = employee.first_name?.charAt(0) || "";
@@ -183,11 +194,16 @@ export function EmployeeDetailDialog({
           </DialogHeader>
 
           <Tabs defaultValue="info" className="mt-4">
-            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 h-auto gap-1">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 h-auto gap-1">
               <TabsTrigger value="info" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
                 <User className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">Informasjon</span>
                 <span className="sm:hidden">Info</span>
+              </TabsTrigger>
+              <TabsTrigger value="departments" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+                <Building2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Avdelinger</span>
+                <span className="sm:hidden">Avd</span>
               </TabsTrigger>
               <TabsTrigger value="hmscard" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
                 <CreditCard className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -376,6 +392,105 @@ export function EmployeeDetailDialog({
                   </CardContent>
                 </Card>
               )}
+            </TabsContent>
+
+            {/* Departments Tab */}
+            <TabsContent value="departments" className="space-y-4 mt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Building2 className="w-5 h-5" />
+                    Avdelingstilhørighet
+                  </CardTitle>
+                  <CardDescription>
+                    Velg hvilke avdelinger denne ansatte skal tilhøre
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {(deptsLoading || userDeptsLoading) ? (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Laster avdelinger...
+                    </div>
+                  ) : departments.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Building2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>Ingen avdelinger er opprettet ennå.</p>
+                      <p className="text-sm mt-2">
+                        Gå til Innstillinger → Avdelinger for å opprette avdelinger.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {departments.filter(d => d.is_active).map((dept) => {
+                        const isAssigned = assignedDepartmentIds.includes(dept.id);
+                        const isProcessing = assigningDept === dept.id;
+                        
+                        return (
+                          <div 
+                            key={dept.id}
+                            className={`flex items-center justify-between p-3 rounded-lg border ${
+                              isAssigned ? 'bg-primary/5 border-primary/20' : 'bg-muted/30'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`p-2 rounded-lg ${isAssigned ? 'bg-primary/10' : 'bg-muted'}`}>
+                                <Building2 className={`w-4 h-4 ${isAssigned ? 'text-primary' : 'text-muted-foreground'}`} />
+                              </div>
+                              <div>
+                                <p className="font-medium">{dept.name}</p>
+                                {dept.city && (
+                                  <p className="text-sm text-muted-foreground">{dept.city}</p>
+                                )}
+                              </div>
+                            </div>
+                            {canManage && (
+                              <Button
+                                variant={isAssigned ? "outline" : "default"}
+                                size="sm"
+                                disabled={isProcessing}
+                                onClick={async () => {
+                                  setAssigningDept(dept.id);
+                                  try {
+                                    if (isAssigned) {
+                                      await removeUserFromDepartment(employee.id, dept.id);
+                                    } else {
+                                      await assignUserToDepartment(employee.id, dept.id, false);
+                                    }
+                                    await refetchUserDepts();
+                                  } finally {
+                                    setAssigningDept(null);
+                                  }
+                                }}
+                              >
+                                {isProcessing ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : isAssigned ? (
+                                  <>
+                                    <X className="w-4 h-4 mr-1" />
+                                    Fjern
+                                  </>
+                                ) : (
+                                  <>
+                                    <Plus className="w-4 h-4 mr-1" />
+                                    Legg til
+                                  </>
+                                )}
+                              </Button>
+                            )}
+                            {!canManage && isAssigned && (
+                              <Badge variant="secondary">
+                                <Check className="w-3 h-3 mr-1" />
+                                Tilhører
+                              </Badge>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* HMS Card Tab */}
