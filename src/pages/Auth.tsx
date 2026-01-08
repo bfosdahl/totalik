@@ -291,18 +291,7 @@ export default function Auth() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Passord</Label>
-                {isLogin && (
-                  <button
-                    type="button"
-                    onClick={handleForgotPassword}
-                    className="text-xs text-primary hover:underline"
-                  >
-                    Glemt passord?
-                  </button>
-                )}
-              </div>
+              <Label htmlFor="password">Passord</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -333,7 +322,16 @@ export default function Auth() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-3">
+            {isLogin && (
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-sm text-muted-foreground hover:text-primary hover:underline block w-full"
+              >
+                Glemt passord?
+              </button>
+            )}
             <button
               type="button"
               onClick={() => {
