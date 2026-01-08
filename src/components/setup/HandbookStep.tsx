@@ -357,6 +357,7 @@ export function HandbookStep({
 
       doc.setFontSize(12);
       doc.setFont("helvetica", "normal");
+      // Table of contents with all 6 sections
       const tocItems = [
         { title: "1. Mål for internkontroll", page: 3 },
         { title: "2. Organisering og ansvar", page: 4 },
