@@ -69,6 +69,7 @@ import Risikoanalyse from "./pages/Risikoanalyse";
 import IkHmsRutiner from "./pages/IkHmsRutiner";
 import Brukerveiledning from "./pages/Brukerveiledning";
 import NotFound from "./pages/NotFound";
+import DepartmentDashboard from "./pages/DepartmentDashboard";
 
 const queryClient = new QueryClient();
 
@@ -91,6 +92,7 @@ const App = () => (
                 
                   {/* Protected app routes */}
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/avdeling/:departmentId" element={<ProtectedRoute><DepartmentDashboard /></ProtectedRoute>} />
                   <Route path="/setup" element={<ProtectedRoute><Setup /></ProtectedRoute>} />
                   <Route path="/setup/ai" element={<ProtectedRoute><IkHmsOppsett /></ProtectedRoute>} />
                   <Route path="/maalsetting" element={<ProtectedRoute><IkHmsMaal /></ProtectedRoute>} />
