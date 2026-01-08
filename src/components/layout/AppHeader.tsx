@@ -9,10 +9,11 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { Badge } from "@/components/ui/badge";
+import { Department } from "@/hooks/useDepartments";
 
 interface AppHeaderProps {
   onMenuClick?: () => void;
@@ -21,6 +22,7 @@ interface AppHeaderProps {
 export function AppHeader({ onMenuClick }: AppHeaderProps) {
   const { user, profile, company, signOut, isSystemAdmin, isCompanyAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     selectedDepartment,
     userDepartments,
@@ -32,6 +34,21 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
   const handleSignOut = async () => {
     await signOut();
     navigate("/auth");
+  };
+
+  // Handle department selection - navigate to department dashboard
+  const handleSelectDepartment = (dept: Department) => {
+    setSelectedDepartment(dept);
+    navigate(`/avdeling/${dept.id}`);
+  };
+
+  // Handle going back to main company
+  const handleSelectMainCompany = () => {
+    setSelectedDepartment(null);
+    // If on a department page, go to main dashboard
+    if (location.pathname.startsWith("/avdeling/")) {
+      navigate("/");
+    }
   };
 
   const displayName = profile?.first_name 
@@ -82,7 +99,7 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
                     Hovedbedrift
                   </DropdownMenuLabel>
                   <DropdownMenuItem
-                    onClick={() => setSelectedDepartment(null)}
+                    onClick={handleSelectMainCompany}
                     className="flex items-center gap-2"
                   >
                     <Home className="h-4 w-4 text-primary" />
@@ -106,8 +123,8 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
                   {userDepartments.map((dept) => (
                     <DropdownMenuItem
                       key={dept.id}
-                      onClick={() => setSelectedDepartment(dept)}
-                      className="flex flex-col items-start gap-0.5"
+                      onClick={() => handleSelectDepartment(dept)}
+                      className="flex flex-col items-start gap-0.5 cursor-pointer"
                     >
                       <div className="flex items-center gap-2 w-full">
                         <Building2 className="h-4 w-4 text-muted-foreground" />
