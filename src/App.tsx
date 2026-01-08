@@ -66,6 +66,7 @@ import IkHmsDokumentsenter from "./pages/IkHmsDokumentsenter";
 import LoverOgForskrifter from "./pages/LoverOgForskrifter";
 import AnonymousMessages from "./pages/AnonymousMessages";
 import Risikoanalyse from "./pages/Risikoanalyse";
+import IkHmsRutiner from "./pages/IkHmsRutiner";
 import Brukerveiledning from "./pages/Brukerveiledning";
 import NotFound from "./pages/NotFound";
 
@@ -95,6 +96,7 @@ const App = () => (
                   <Route path="/maalsetting" element={<ProtectedRoute><IkHmsMaal /></ProtectedRoute>} />
                   <Route path="/organisering" element={<ProtectedRoute><IkHmsOrganisering /></ProtectedRoute>} />
                   <Route path="/risikoanalyse" element={<ProtectedRoute><Risikoanalyse /></ProtectedRoute>} />
+                  <Route path="/rutiner" element={<ProtectedRoute><IkHmsRutiner /></ProtectedRoute>} />
                   <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />
                   <Route path="/deviations" element={<ProtectedRoute><Deviations /></ProtectedRoute>} />
                   <Route path="/audits" element={<ProtectedRoute><Audits /></ProtectedRoute>} />
