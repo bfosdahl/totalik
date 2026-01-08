@@ -163,7 +163,7 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
               <p className="text-xs text-muted-foreground">{user?.email}</p>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate("/settings")}>
+            <DropdownMenuItem onClick={() => navigate("/settings?tab=security")}>
               <User className="w-4 h-4 mr-2" />
               Min profil
             </DropdownMenuItem>
