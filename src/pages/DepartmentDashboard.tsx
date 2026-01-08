@@ -12,26 +12,21 @@ import {
   MapPin,
   Sparkles,
   Rocket,
-  Target
+  Target,
+  ShieldCheck
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
-import { ComplianceProgress } from "@/components/dashboard/ComplianceProgress";
-import { RecentDeviations } from "@/components/dashboard/RecentDeviations";
-import { ExpiryAlerts } from "@/components/dashboard/ExpiryAlerts";
-import { QuickActions } from "@/components/dashboard/QuickActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
-import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { useDepartmentDashboardStats } from "@/hooks/useDepartmentDashboardStats";
 import { supabase } from "@/integrations/supabase/client";
 import { Department } from "@/hooks/useDepartments";
-import HmsAarshjul from "@/components/audits/HmsAarshjul";
 import { AnonymousMessageButton } from "@/components/anonymous/AnonymousMessageButton";
-import { ShieldCheck } from "lucide-react";
 
 const DepartmentDashboard = () => {
   const { departmentId } = useParams<{ departmentId: string }>();
@@ -93,8 +88,17 @@ const DepartmentDashboard = () => {
     fetchDepartment();
   }, [departmentId, setSelectedDepartment]);
 
-  // Use dashboard stats (will be filtered by department via context)
-  const { compliancePercent, openDeviations, completedActions, dueSoon, isLoading: statsLoading } = useDashboardStats();
+  // Use department-specific dashboard stats (isolated from main company)
+  const { 
+    compliancePercent, 
+    openDeviations, 
+    completedActions, 
+    dueSoon, 
+    isLoading: statsLoading,
+    goalsCount,
+    routinesCount,
+    hasOrganization
+  } = useDepartmentDashboardStats(departmentId);
 
   const handleBackToMain = () => {
     setSelectedDepartment(null);
@@ -306,16 +310,131 @@ const DepartmentDashboard = () => {
 
         {/* Main content grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-          {/* Left column */}
+          {/* Left column - Department setup progress */}
           <div className="lg:col-span-2 space-y-4 md:space-y-6">
-            <ComplianceProgress />
-            <RecentDeviations />
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Oppsett-fremgang for {department.name}</CardTitle>
+                <CardDescription>
+                  {goalsCount + (hasOrganization ? 1 : 0) + (routinesCount > 0 ? 1 : 0)} av 4 steg fullført
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div className="flex items-center gap-3">
+                    {goalsCount > 0 ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30" />
+                    )}
+                    <div>
+                      <p className="font-medium">Mål for internkontroll</p>
+                      <p className="text-sm text-muted-foreground">
+                        {goalsCount > 0 ? `${goalsCount} mål definert` : "Ikke satt opp"}
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => navigate(`/avdeling/${departmentId}/maal`)}
+                  >
+                    {goalsCount > 0 ? "Rediger" : "Sett opp"}
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div className="flex items-center gap-3">
+                    {hasOrganization ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30" />
+                    )}
+                    <div>
+                      <p className="font-medium">Organisering</p>
+                      <p className="text-sm text-muted-foreground">
+                        {hasOrganization ? "Dokumentert" : "Ikke satt opp"}
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => navigate(`/avdeling/${departmentId}/organisering`)}
+                  >
+                    {hasOrganization ? "Rediger" : "Sett opp"}
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div className="flex items-center gap-3">
+                    {routinesCount > 0 ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30" />
+                    )}
+                    <div>
+                      <p className="font-medium">Rutiner</p>
+                      <p className="text-sm text-muted-foreground">
+                        {routinesCount > 0 ? `${routinesCount} rutiner etablert` : "Ikke satt opp"}
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => navigate(`/avdeling/${departmentId}/rutiner`)}
+                  >
+                    {routinesCount > 0 ? "Rediger" : "Sett opp"}
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div className="flex items-center gap-3">
+                    <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30" />
+                    <div>
+                      <p className="font-medium">Risikovurdering</p>
+                      <p className="text-sm text-muted-foreground">Ikke satt opp</p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => navigate(`/avdeling/${departmentId}/oppsett/ai`)}
+                  >
+                    Sett opp
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Right column */}
           <div className="space-y-4 md:space-y-6">
-            <ExpiryAlerts />
-            <QuickActions />
+            {/* Quick actions for department */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Hurtighandlinger</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-2">
+                <Button 
+                  variant="outline" 
+                  className="h-auto py-3 flex flex-col gap-1"
+                  onClick={() => navigate("/deviations")}
+                >
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  <span className="text-xs">Registrer avvik</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-auto py-3 flex flex-col gap-1"
+                  onClick={() => navigate(`/avdeling/${departmentId}/oppsett/ai`)}
+                >
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  <span className="text-xs">AI-oppsett</span>
+                </Button>
+              </CardContent>
+            </Card>
             
             {/* Anonymous message card */}
             <motion.div
@@ -334,15 +453,6 @@ const DepartmentDashboard = () => {
                 Send en anonym melding til ledelsen om bekymringer, uønskede hendelser eller forbedringsforslag.
               </p>
               <AnonymousMessageButton className="w-full" />
-            </motion.div>
-            
-            {/* HMS Årshjul */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.5 }}
-            >
-              <HmsAarshjul compact />
             </motion.div>
           </div>
         </div>
