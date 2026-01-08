@@ -15,8 +15,9 @@ interface Message {
   content: string;
 }
 
-interface IkHmsChatSetupProps {
+export interface IkHmsChatSetupProps {
   companyId: string;
+  departmentId?: string;
   onComplete: () => void;
 }
 
