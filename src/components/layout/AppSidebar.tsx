@@ -71,6 +71,7 @@ const ikHmsItems = [
       { icon: FileCheck, label: "SJA", path: "/risikoanalyse?tab=sja", color: "text-blue-500" },
     ]
   },
+  { icon: ListChecks, label: "Rutiner", path: "/rutiner", color: "text-teal-500" },
   { icon: FlaskConical, label: "Stoffkartotek", path: "/stoffkartotek", color: "text-purple-500" },
   { icon: Scale, label: "Lover og forskrifter", path: "/lover-og-forskrifter", color: "text-indigo-500" },
   { icon: AlertTriangle, label: "Avvik", path: "/deviations", color: "text-red-500" },
@@ -114,7 +115,7 @@ const detectActiveSection = (pathname: string): SectionKey => {
   const personalPaths = ['/employees', '/hr/', '/time-registration', '/time-off', '/work-schedule', '/my/'];
   if (personalPaths.some(p => pathname === p || pathname.startsWith(p))) return 'personal';
   
-  const hmsPaths = ['/setup', '/deviations', '/audits', '/handbook', '/hms-chat', '/stoffkartotek', '/lover-og-forskrifter', '/dokumentsenter', '/risikoanalyse', '/maalsetting', '/organisering'];
+  const hmsPaths = ['/setup', '/deviations', '/audits', '/handbook', '/hms-chat', '/stoffkartotek', '/lover-og-forskrifter', '/dokumentsenter', '/risikoanalyse', '/rutiner', '/maalsetting', '/organisering'];
   if (hmsPaths.some(p => pathname === p || pathname.startsWith(p))) return 'ikHms';
   
   return 'none';
