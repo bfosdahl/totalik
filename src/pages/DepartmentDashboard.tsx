@@ -11,7 +11,8 @@ import {
   ArrowLeft,
   MapPin,
   Sparkles,
-  Rocket
+  Rocket,
+  Target
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -196,13 +197,70 @@ const DepartmentDashboard = () => {
 
               <Button 
                 size="lg" 
-                onClick={() => navigate('/setup/ai')}
+                onClick={() => navigate(`/avdeling/${departmentId}/oppsett/ai`)}
                 className="w-full md:w-auto gap-2 shadow-md hover:shadow-lg transition-shadow"
               >
                 <Sparkles className="w-4 h-4" />
                 Start oppsett
               </Button>
             </div>
+          </motion.div>
+        )}
+
+        {/* Department HMS Setup Links */}
+        {!showSetupBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  HMS-oppsett for {department.name}
+                </CardTitle>
+                <CardDescription>
+                  Administrer avdelingens egne HMS-dokumenter og innstillinger
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <Button 
+                    variant="outline" 
+                    className="h-auto py-3 flex flex-col gap-1"
+                    onClick={() => navigate(`/avdeling/${departmentId}/maal`)}
+                  >
+                    <Target className="h-5 w-5 text-primary" />
+                    <span className="text-sm">Målsetting</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-auto py-3 flex flex-col gap-1"
+                    onClick={() => navigate(`/avdeling/${departmentId}/organisering`)}
+                  >
+                    <Users className="h-5 w-5 text-primary" />
+                    <span className="text-sm">Organisering</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-auto py-3 flex flex-col gap-1"
+                    onClick={() => navigate(`/avdeling/${departmentId}/rutiner`)}
+                  >
+                    <FileText className="h-5 w-5 text-primary" />
+                    <span className="text-sm">Rutiner</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-auto py-3 flex flex-col gap-1"
+                    onClick={() => navigate(`/avdeling/${departmentId}/oppsett/ai`)}
+                  >
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    <span className="text-sm">AI-oppsett</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
 

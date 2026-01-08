@@ -69,6 +69,10 @@ import Risikoanalyse from "./pages/Risikoanalyse";
 import IkHmsRutiner from "./pages/IkHmsRutiner";
 import Brukerveiledning from "./pages/Brukerveiledning";
 import NotFound from "./pages/NotFound";
+import DepartmentGoals from "./pages/department/DepartmentGoals";
+import DepartmentOrganization from "./pages/department/DepartmentOrganization";
+import DepartmentRoutines from "./pages/department/DepartmentRoutines";
+import DepartmentAiSetup from "./pages/department/DepartmentAiSetup";
 import DepartmentDashboard from "./pages/DepartmentDashboard";
 
 const queryClient = new QueryClient();
@@ -93,6 +97,10 @@ const App = () => (
                   {/* Protected app routes */}
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/avdeling/:departmentId" element={<ProtectedRoute><DepartmentDashboard /></ProtectedRoute>} />
+                  <Route path="/avdeling/:departmentId/maal" element={<ProtectedRoute><DepartmentGoals /></ProtectedRoute>} />
+                  <Route path="/avdeling/:departmentId/organisering" element={<ProtectedRoute><DepartmentOrganization /></ProtectedRoute>} />
+                  <Route path="/avdeling/:departmentId/rutiner" element={<ProtectedRoute><DepartmentRoutines /></ProtectedRoute>} />
+                  <Route path="/avdeling/:departmentId/oppsett/ai" element={<ProtectedRoute><DepartmentAiSetup /></ProtectedRoute>} />
                   <Route path="/setup" element={<ProtectedRoute><Setup /></ProtectedRoute>} />
                   <Route path="/setup/ai" element={<ProtectedRoute><IkHmsOppsett /></ProtectedRoute>} />
                   <Route path="/maalsetting" element={<ProtectedRoute><IkHmsMaal /></ProtectedRoute>} />
