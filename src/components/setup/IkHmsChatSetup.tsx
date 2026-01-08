@@ -119,14 +119,25 @@ function clearChatState(companyId: string) {
 export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   // Load initial state from session storage
   const initialState = loadChatState(companyId);
+  const { refreshCompany, company } = useAuth();
+  const hasAutoCheckedOrgRef = useRef(false);
+  
+  // Determine initial message based on whether company already has org_number
+  const getInitialMessage = (): Message => {
+    if (company?.org_number) {
+      return {
+        role: "assistant",
+        content: `Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg skal hjelpe deg å sette opp HMS-systemet for ${company.name || 'bedriften din'}. Det tar bare noen minutter!\n\nEtt øyeblikk, jeg henter informasjon fra Brønnøysundregistrene...`,
+      };
+    }
+    return {
+      role: "assistant",
+      content: "Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg skal hjelpe deg å sette opp HMS-systemet for bedriften din. Det tar bare noen minutter!\n\nFor å starte trenger jeg organisasjonsnummeret ditt (9 siffer). Da kan jeg hente informasjon om bedriften automatisk fra Brønnøysundregistrene.\n\n**Skriv inn organisasjonsnummeret:**",
+    };
+  };
   
   const [messages, setMessages] = useState<Message[]>(
-    initialState?.messages ?? [
-      {
-        role: "assistant",
-        content: "Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg skal hjelpe deg å sette opp HMS-systemet for bedriften din. Det tar bare noen minutter!\n\nFor å starte trenger jeg organisasjonsnummeret ditt (9 siffer). Da kan jeg hente informasjon om bedriften automatisk fra Brønnøysundregistrene.\n\n**Skriv inn organisasjonsnummeret:**",
-      },
-    ]
+    initialState?.messages ?? [getInitialMessage()]
   );
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -139,7 +150,6 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(initialState?.selectedIndustry ?? null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
-  const { refreshCompany, company } = useAuth();
 
   // Persist chat state when it changes
   useEffect(() => {
@@ -157,6 +167,40 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Forward declaration for lookupBrreg (used in auto-lookup effect)
+  const lookupBrregRef = useRef<((orgNumber: string) => Promise<BrregInfo | null>) | null>(null);
+
+  // Auto-lookup Brreg if company already has org_number (from CSV import)
+  useEffect(() => {
+    const autoLookupBrreg = async () => {
+      // Skip if already loaded from session, or if we've already checked
+      if (initialState || hasAutoCheckedOrgRef.current) return;
+      if (!company?.org_number) return;
+      if (!lookupBrregRef.current) return;
+      
+      hasAutoCheckedOrgRef.current = true;
+      setIsLoading(true);
+      
+      const brregInfo = await lookupBrregRef.current(company.org_number);
+      
+      if (brregInfo) {
+        setPendingBrregInfo(brregInfo);
+        const brregMessage = `Flott! Jeg fant følgende info fra Brønnøysundregistrene:\n\n📋 **Firmanavn:** ${brregInfo.name}\n📍 **Adresse:** ${brregInfo.address}\n🏭 **Bransje:** ${brregInfo.industry}\n👥 **Ansatte:** ${brregInfo.employees}\n\nStemmer dette? (Ja/Nei)`;
+        setMessages((prev) => [...prev, { role: "assistant", content: brregMessage }]);
+      } else {
+        // Brreg lookup failed, ask for manual input
+        setMessages([{
+          role: "assistant",
+          content: "Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg kunne dessverre ikke hente informasjon fra Brønnøysundregistrene akkurat nå. La oss fortsette manuelt.\n\nHvilken bransje passer best for bedriften din?\n\n1. Kontor/Administrasjon\n2. Bygg og anlegg\n3. Industri/Produksjon\n4. Frisør/Skjønnhetspleie\n5. Butikk/Detaljhandel\n6. Restaurant/Spisested\n7. Transport\n8. Renhold\n9. Bilpleie\n\n(Velg 1-9)",
+        }]);
+        setAwaitingIndustrySelection(true);
+      }
+      setIsLoading(false);
+    };
+    
+    autoLookupBrreg();
+  }, [company?.org_number, initialState]);
 
   const lookupBrreg = async (orgNumber: string): Promise<BrregInfo | null> => {
     try {
@@ -183,6 +227,9 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
       return null;
     }
   };
+
+  // Set the ref after function is defined
+  lookupBrregRef.current = lookupBrreg;
 
   // Save Brreg info to company record
   const saveBrregToCompany = async (brregInfo: BrregInfo) => {
@@ -328,15 +375,33 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
     if (isConfirmingBrreg && pendingBrregInfo) {
       // Save the Brreg info to company
       await saveBrregToCompany(pendingBrregInfo);
+      
+      // Use industry from Brreg directly instead of asking
+      const brregIndustry = pendingBrregInfo.industry;
+      setSelectedIndustry(brregIndustry);
       setPendingBrregInfo(null);
       
-      // Now ask for industry selection
-      const industryMessage = `Flott! Bedriftsinformasjonen er lagret. 🎉\n\nNå trenger jeg å vite hvilken bransje som passer best for ${pendingBrregInfo.name}, slik at jeg kan tilpasse HMS-oppsettet:\n\n1. Kontor/Administrasjon\n2. Bygg og anlegg\n3. Industri/Produksjon\n4. Frisør/Skjønnhetspleie\n5. Butikk/Detaljhandel\n6. Restaurant/Spisested\n7. Transport\n8. Renhold\n9. Bilpleie\n\nHvilken bransje passer best? (Velg 1-9)`;
+      // Check employee count - use Brreg data if available
+      const brregEmployees = pendingBrregInfo.employees;
       
-      setMessages((prev) => [...prev, { role: "assistant", content: industryMessage }]);
-      setAwaitingIndustrySelection(true);
-      setIsLoading(false);
-      return;
+      if (brregEmployees >= 5) {
+        // 5+ employees, continue directly with AI chat
+        setConfirmedEmployeeCount(brregEmployees);
+        setMessages((prev) => [...prev, { 
+          role: "assistant", 
+          content: `Flott! Bedriftsinformasjonen er lagret. 🎉\n\nJeg ser at dere har ${brregEmployees} ansatte og tilhører bransjen "${brregIndustry}". La oss tilpasse HMS-oppsettet for dere...` 
+        }]);
+        await continueWithAIChat(`Bedriften heter ${pendingBrregInfo.name}, bransje: ${brregIndustry}, og har ${brregEmployees} ansatte (5 eller flere). Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`);
+        return;
+      } else {
+        // Less than 5 employees - ask about verneombud exemption
+        const employeeCountMessage = `Flott! Bedriftsinformasjonen er lagret. 🎉\n\nJeg ser at dere tilhører bransjen "${brregIndustry}" og har ${brregEmployees} registrerte ansatte.\n\nSiden dere har færre enn 5 ansatte, har dere mulighet til å inngå en skriftlig avtale om fritak fra verneombud i henhold til arbeidsmiljøloven § 6-1.\n\n✅ **Fritak fra verneombud:**\nDere kan signere en avtale digitalt her i systemet som dokumenterer at arbeidsgiver og ansatte er enige om at det ikke er nødvendig med verneombud.\n\n**Ønsker du å signere en slik avtale nå?**\n\n1. Ja, signer avtale om fritak\n2. Nei, fortsett uten avtale\n\n(Velg 1 eller 2)`;
+        
+        setConfirmedEmployeeCount(brregEmployees);
+        setMessages((prev) => [...prev, { role: "assistant", content: employeeCountMessage }]);
+        setIsLoading(false);
+        return;
+      }
     }
     
     // Check if user is selecting industry (only when we're awaiting industry selection)
@@ -414,9 +479,10 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
          userInput.toLowerCase() === 'no' ||
          userInput.toLowerCase().includes('stemmer ikke'))) {
       setPendingBrregInfo(null);
-      // Continue with manual entry
-      const manualMessage = "Ingen problem! La oss fylle inn informasjonen manuelt. Hva heter bedriften din?";
-      setMessages((prev) => [...prev, { role: "assistant", content: manualMessage }]);
+      // Ask for industry selection manually
+      const industryMessage = "Ingen problem! La oss fortsette manuelt.\n\nHvilken bransje passer best for bedriften din?\n\n1. Kontor/Administrasjon\n2. Bygg og anlegg\n3. Industri/Produksjon\n4. Frisør/Skjønnhetspleie\n5. Butikk/Detaljhandel\n6. Restaurant/Spisested\n7. Transport\n8. Renhold\n9. Bilpleie\n\n(Velg 1-9)";
+      setMessages((prev) => [...prev, { role: "assistant", content: industryMessage }]);
+      setAwaitingIndustrySelection(true);
       setIsLoading(false);
       return;
     }
