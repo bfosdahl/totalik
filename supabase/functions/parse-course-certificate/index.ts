@@ -53,7 +53,7 @@ Vær nøye med datoer - konverter alle datoer til YYYY-MM-DD format.
 Hvis dokumentet er et HMS-kort, varme arbeider-sertifikat, truckkurs, eller lignende norsk sertifikat, gjenkjenn dette.`;
 
     // Use Lovable AI with Gemini Flash
-    const response = await fetch("https://api.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
