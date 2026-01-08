@@ -19,7 +19,10 @@ import {
 } from "@/components/ui/select";
 import { useEmployeeCourses } from "@/hooks/useEmployees";
 import { addYears, format } from "date-fns";
-import { FileText, Upload, X } from "lucide-react";
+import { FileText, Upload, X, Loader2, Sparkles, AlertCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AddCourseDialogProps {
   open: boolean;
@@ -56,6 +59,8 @@ export function AddCourseDialog({ open, onOpenChange, employeeId }: AddCourseDia
     notes: "",
   });
   const [certificateFile, setCertificateFile] = useState<File | null>(null);
+  const [isParsing, setIsParsing] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
 
   const handleCourseSelect = (courseName: string) => {
     const course = COMMON_COURSES.find(c => c.name === courseName);
@@ -66,20 +71,78 @@ export function AddCourseDialog({ open, onOpenChange, employeeId }: AddCourseDia
     }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const parseFileWithAI = async (file: File) => {
+    setIsParsing(true);
+    setParseError(null);
+    
+    try {
+      // Convert file to base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          // Remove data URL prefix to get pure base64
+          const base64Data = result.split(",")[1];
+          resolve(base64Data);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const { data, error } = await supabase.functions.invoke("parse-course-certificate", {
+        body: {
+          fileBase64: base64,
+          fileName: file.name,
+          fileType: file.type,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success && data?.data) {
+        const parsed = data.data;
+        
+        // Update form with parsed data
+        setFormData(prev => ({
+          ...prev,
+          course_name: parsed.course_name || prev.course_name,
+          course_provider: parsed.course_provider || prev.course_provider,
+          certificate_number: parsed.certificate_number || prev.certificate_number,
+          completed_date: parsed.completed_date || prev.completed_date,
+          validity_years: parsed.validity_years ? String(parsed.validity_years) : prev.validity_years,
+          notes: parsed.notes || prev.notes,
+        }));
+
+        toast.success("Kursbevis analysert! Feltene er fylt ut automatisk.");
+      } else {
+        setParseError("Kunne ikke lese dokumentet. Vennligst fyll inn manuelt.");
+      }
+    } catch (err) {
+      console.error("Parse error:", err);
+      setParseError("Feil ved analyse av dokumentet. Vennligst fyll inn manuelt.");
+    } finally {
+      setIsParsing(false);
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       // Max 10MB
       if (file.size > 10 * 1024 * 1024) {
-        alert("Filen er for stor. Maks 10MB.");
+        toast.error("Filen er for stor. Maks 10MB.");
         return;
       }
       setCertificateFile(file);
+      
+      // Automatically parse the file with AI
+      await parseFileWithAI(file);
     }
   };
 
   const removeFile = () => {
     setCertificateFile(null);
+    setParseError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -200,30 +263,53 @@ export function AddCourseDialog({ open, onOpenChange, employeeId }: AddCourseDia
             </div>
           </div>
 
-          {/* Certificate Upload */}
+          {/* Certificate Upload with AI Parsing */}
           <div className="space-y-2">
-            <Label>Last opp kursbevis (valgfritt)</Label>
+            <Label className="flex items-center gap-2">
+              Last opp kursbevis
+              <span className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                <Sparkles className="h-3 w-3" />
+                AI-analyse
+              </span>
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Last opp kursbeviset så fyller vi ut feltene automatisk
+            </p>
             <div className="border-2 border-dashed border-border rounded-lg p-4">
-              {certificateFile ? (
-                <div className="flex items-center justify-between gap-3 bg-muted/50 rounded-md p-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <FileText className="h-8 w-8 text-primary shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{certificateFile.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {(certificateFile.size / 1024).toFixed(1)} KB
-                      </p>
+              {isParsing ? (
+                <div className="flex flex-col items-center justify-center py-6">
+                  <Loader2 className="h-8 w-8 text-primary animate-spin mb-3" />
+                  <p className="text-sm font-medium">Analyserer kursbevis...</p>
+                  <p className="text-xs text-muted-foreground">Dette kan ta noen sekunder</p>
+                </div>
+              ) : certificateFile ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3 bg-muted/50 rounded-md p-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <FileText className="h-8 w-8 text-primary shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{certificateFile.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(certificateFile.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
                     </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={removeFile}
+                      className="shrink-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={removeFile}
-                    className="shrink-0"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+                  {parseError && (
+                    <Alert variant="destructive" className="py-2">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription className="text-xs">{parseError}</AlertDescription>
+                    </Alert>
+                  )}
                 </div>
               ) : (
                 <div 
@@ -241,6 +327,7 @@ export function AddCourseDialog({ open, onOpenChange, employeeId }: AddCourseDia
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={handleFileChange}
                 className="hidden"
+                disabled={isParsing}
               />
             </div>
           </div>
@@ -260,7 +347,7 @@ export function AddCourseDialog({ open, onOpenChange, employeeId }: AddCourseDia
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Avbryt
             </Button>
-            <Button type="submit" disabled={addCourse.isPending}>
+            <Button type="submit" disabled={addCourse.isPending || isParsing}>
               {addCourse.isPending ? "Lagrer..." : "Legg til"}
             </Button>
           </DialogFooter>
