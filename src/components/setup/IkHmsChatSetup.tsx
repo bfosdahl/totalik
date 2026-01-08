@@ -121,26 +121,17 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   const initialState = loadChatState(companyId);
   const { refreshCompany, company } = useAuth();
   const hasAutoCheckedOrgRef = useRef(false);
+  const hasInitializedRef = useRef(false);
   
-  // Determine initial message based on whether company already has org_number
-  const getInitialMessage = (): Message => {
-    if (company?.org_number) {
-      return {
-        role: "assistant",
-        content: `Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg skal hjelpe deg å sette opp HMS-systemet for ${company.name || 'bedriften din'}. Det tar bare noen minutter!\n\nEtt øyeblikk, jeg henter informasjon fra Brønnøysundregistrene...`,
-      };
-    }
-    return {
-      role: "assistant",
-      content: "Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg skal hjelpe deg å sette opp HMS-systemet for bedriften din. Det tar bare noen minutter!\n\nFor å starte trenger jeg organisasjonsnummeret ditt (9 siffer). Da kan jeg hente informasjon om bedriften automatisk fra Brønnøysundregistrene.\n\n**Skriv inn organisasjonsnummeret:**",
-    };
-  };
-  
+  // Start with a loading message if we have org_number
   const [messages, setMessages] = useState<Message[]>(
-    initialState?.messages ?? [getInitialMessage()]
+    initialState?.messages ?? [{
+      role: "assistant",
+      content: "Hei! Jeg er Oppsett-hjelperen 👋\n\nEtt øyeblikk, jeg laster inn informasjon...",
+    }]
   );
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(!initialState);
   const [isSaving, setIsSaving] = useState(false);
   const [pendingBrregInfo, setPendingBrregInfo] = useState<BrregInfo | null>(initialState?.pendingBrregInfo ?? null);
   const [awaitingIndustrySelection, setAwaitingIndustrySelection] = useState(initialState?.awaitingIndustrySelection ?? false);
@@ -151,56 +142,60 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
-  // Persist chat state when it changes
-  useEffect(() => {
-    saveChatState(companyId, {
-      messages,
-      pendingBrregInfo,
-      awaitingIndustrySelection,
-      confirmedEmployeeCount,
-      awaitingEmployeeCount,
-      selectedIndustry,
-    });
-  }, [companyId, messages, pendingBrregInfo, awaitingIndustrySelection, confirmedEmployeeCount, awaitingEmployeeCount, selectedIndustry]);
-
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
   // Forward declaration for lookupBrreg (used in auto-lookup effect)
   const lookupBrregRef = useRef<((orgNumber: string) => Promise<BrregInfo | null>) | null>(null);
 
-  // Auto-lookup Brreg if company already has org_number (from CSV import)
+  // Initialize chat based on whether company has org_number
   useEffect(() => {
-    const autoLookupBrreg = async () => {
-      // Skip if already loaded from session, or if we've already checked
-      if (initialState || hasAutoCheckedOrgRef.current) return;
-      if (!company?.org_number) return;
-      if (!lookupBrregRef.current) return;
-      
-      hasAutoCheckedOrgRef.current = true;
-      setIsLoading(true);
-      
-      const brregInfo = await lookupBrregRef.current(company.org_number);
-      
-      if (brregInfo) {
-        setPendingBrregInfo(brregInfo);
-        const brregMessage = `Flott! Jeg fant følgende info fra Brønnøysundregistrene:\n\n📋 **Firmanavn:** ${brregInfo.name}\n📍 **Adresse:** ${brregInfo.address}\n🏭 **Bransje:** ${brregInfo.industry}\n👥 **Ansatte:** ${brregInfo.employees}\n\nStemmer dette? (Ja/Nei)`;
-        setMessages((prev) => [...prev, { role: "assistant", content: brregMessage }]);
-      } else {
-        // Brreg lookup failed, ask for manual input
-        setMessages([{
-          role: "assistant",
-          content: "Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg kunne dessverre ikke hente informasjon fra Brønnøysundregistrene akkurat nå. La oss fortsette manuelt.\n\nHvilken bransje passer best for bedriften din?\n\n1. Kontor/Administrasjon\n2. Bygg og anlegg\n3. Industri/Produksjon\n4. Frisør/Skjønnhetspleie\n5. Butikk/Detaljhandel\n6. Restaurant/Spisested\n7. Transport\n8. Renhold\n9. Bilpleie\n\n(Velg 1-9)",
-        }]);
-        setAwaitingIndustrySelection(true);
-      }
-      setIsLoading(false);
-    };
+    // Skip if loaded from session or already initialized
+    if (initialState || hasInitializedRef.current) return;
+    if (!company) return; // Wait for company to load
     
-    autoLookupBrreg();
-  }, [company?.org_number, initialState]);
+    hasInitializedRef.current = true;
+
+    if (company.org_number && !hasAutoCheckedOrgRef.current) {
+      // We have org_number, show loading message and auto-lookup
+      hasAutoCheckedOrgRef.current = true;
+      setMessages([{
+        role: "assistant",
+        content: `Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg skal hjelpe deg å sette opp HMS-systemet for ${company.name || 'bedriften din'}. Det tar bare noen minutter!\n\nEtt øyeblikk, jeg henter informasjon fra Brønnøysundregistrene...`,
+      }]);
+      
+      // Perform Brreg lookup
+      const doLookup = async () => {
+        if (!lookupBrregRef.current) {
+          setIsLoading(false);
+          return;
+        }
+        
+        const brregInfo = await lookupBrregRef.current(company.org_number!);
+        
+        if (brregInfo) {
+          setPendingBrregInfo(brregInfo);
+          const brregMessage = `Flott! Jeg fant følgende info fra Brønnøysundregistrene:\n\n📋 **Firmanavn:** ${brregInfo.name}\n📍 **Adresse:** ${brregInfo.address}\n🏭 **Bransje:** ${brregInfo.industry}\n👥 **Ansatte:** ${brregInfo.employees}\n\nStemmer dette? (Ja/Nei)`;
+          setMessages((prev) => [...prev, { role: "assistant", content: brregMessage }]);
+        } else {
+          // Brreg lookup failed, ask for manual input
+          setMessages((prev) => [...prev, {
+            role: "assistant",
+            content: "Jeg kunne dessverre ikke hente informasjon fra Brønnøysundregistrene akkurat nå. La oss fortsette manuelt.\n\nHvilken bransje passer best for bedriften din?\n\n1. Kontor/Administrasjon\n2. Bygg og anlegg\n3. Industri/Produksjon\n4. Frisør/Skjønnhetspleie\n5. Butikk/Detaljhandel\n6. Restaurant/Spisested\n7. Transport\n8. Renhold\n9. Bilpleie\n\n(Velg 1-9)",
+          }]);
+          setAwaitingIndustrySelection(true);
+        }
+        setIsLoading(false);
+      };
+      
+      // Small delay to ensure lookupBrregRef is set
+      setTimeout(doLookup, 100);
+    } else {
+      // No org_number, ask for it
+      setMessages([{
+        role: "assistant",
+        content: "Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg skal hjelpe deg å sette opp HMS-systemet for bedriften din. Det tar bare noen minutter!\n\nFor å starte trenger jeg organisasjonsnummeret ditt (9 siffer). Da kan jeg hente informasjon om bedriften automatisk fra Brønnøysundregistrene.\n\n**Skriv inn organisasjonsnummeret:**",
+      }]);
+      setIsLoading(false);
+    }
+  }, [company, initialState]);
 
   const lookupBrreg = async (orgNumber: string): Promise<BrregInfo | null> => {
     try {
