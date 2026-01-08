@@ -262,9 +262,10 @@ export function BulkCompanyImportDialog({
         // 4. Create company admin user if enabled and email exists
         let userCreated = false;
         let userEmail = "";
+        let userCreateError: string | undefined;
         if (createUsers && company.email) {
           try {
-            const { error: userError } = await supabase.functions.invoke("invite-user", {
+            const { data: inviteData, error: userError } = await supabase.functions.invoke("invite-user", {
               body: {
                 email: company.email,
                 firstName: company.contactFirstName || "",
@@ -273,12 +274,18 @@ export function BulkCompanyImportDialog({
                 companyId: newCompany.id,
               },
             });
-            if (!userError) {
+
+            if (userError) {
+              userCreateError = userError.message;
+            } else if (inviteData?.error) {
+              userCreateError = inviteData.error;
+            } else {
               userCreated = true;
               userEmail = company.email;
             }
           } catch (userErr) {
             console.error("Failed to create user:", userErr);
+            userCreateError = userErr instanceof Error ? userErr.message : "Ukjent feil ved brukeropprettelse";
             // Don't fail the whole import if user creation fails
           }
         }
@@ -288,7 +295,11 @@ export function BulkCompanyImportDialog({
           orgNumber: company.orgNumber,
           name: company.name,
           success: true,
-          message: userCreated ? `Opprettet + bruker (${userEmail})` : "Opprettet",
+          message: userCreated
+            ? `Opprettet + bruker (${userEmail})`
+            : userCreateError
+              ? `Opprettet (bruker feilet: ${userCreateError})`
+              : "Opprettet",
           userCreated,
           userEmail,
         });
