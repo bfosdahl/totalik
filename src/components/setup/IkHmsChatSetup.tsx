@@ -76,25 +76,82 @@ interface BrregInfo {
   organizationForm: string;
 }
 
+// Session storage key for persisting chat state
+const CHAT_STATE_KEY = 'ik-hms-chat-setup-state';
+
+interface ChatState {
+  messages: Message[];
+  pendingBrregInfo: BrregInfo | null;
+  awaitingIndustrySelection: boolean;
+  confirmedEmployeeCount: number | null;
+  awaitingEmployeeCount: boolean;
+  selectedIndustry: string | null;
+}
+
+function loadChatState(companyId: string): ChatState | null {
+  try {
+    const stored = sessionStorage.getItem(`${CHAT_STATE_KEY}-${companyId}`);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error('Failed to load chat state:', e);
+  }
+  return null;
+}
+
+function saveChatState(companyId: string, state: ChatState) {
+  try {
+    sessionStorage.setItem(`${CHAT_STATE_KEY}-${companyId}`, JSON.stringify(state));
+  } catch (e) {
+    console.error('Failed to save chat state:', e);
+  }
+}
+
+function clearChatState(companyId: string) {
+  try {
+    sessionStorage.removeItem(`${CHAT_STATE_KEY}-${companyId}`);
+  } catch (e) {
+    console.error('Failed to clear chat state:', e);
+  }
+}
+
 export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg skal hjelpe deg å sette opp HMS-systemet for bedriften din. Det tar bare noen minutter!\n\nFor å starte trenger jeg organisasjonsnummeret ditt (9 siffer). Da kan jeg hente informasjon om bedriften automatisk fra Brønnøysundregistrene.\n\n**Skriv inn organisasjonsnummeret:**",
-    },
-  ]);
+  // Load initial state from session storage
+  const initialState = loadChatState(companyId);
+  
+  const [messages, setMessages] = useState<Message[]>(
+    initialState?.messages ?? [
+      {
+        role: "assistant",
+        content: "Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg skal hjelpe deg å sette opp HMS-systemet for bedriften din. Det tar bare noen minutter!\n\nFor å starte trenger jeg organisasjonsnummeret ditt (9 siffer). Da kan jeg hente informasjon om bedriften automatisk fra Brønnøysundregistrene.\n\n**Skriv inn organisasjonsnummeret:**",
+      },
+    ]
+  );
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [pendingBrregInfo, setPendingBrregInfo] = useState<BrregInfo | null>(null);
-  const [awaitingIndustrySelection, setAwaitingIndustrySelection] = useState(false);
+  const [pendingBrregInfo, setPendingBrregInfo] = useState<BrregInfo | null>(initialState?.pendingBrregInfo ?? null);
+  const [awaitingIndustrySelection, setAwaitingIndustrySelection] = useState(initialState?.awaitingIndustrySelection ?? false);
   const [showExemptionDialog, setShowExemptionDialog] = useState(false);
-  const [confirmedEmployeeCount, setConfirmedEmployeeCount] = useState<number | null>(null);
-  const [awaitingEmployeeCount, setAwaitingEmployeeCount] = useState(false);
-  const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
+  const [confirmedEmployeeCount, setConfirmedEmployeeCount] = useState<number | null>(initialState?.confirmedEmployeeCount ?? null);
+  const [awaitingEmployeeCount, setAwaitingEmployeeCount] = useState(initialState?.awaitingEmployeeCount ?? false);
+  const [selectedIndustry, setSelectedIndustry] = useState<string | null>(initialState?.selectedIndustry ?? null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const { refreshCompany, company } = useAuth();
+
+  // Persist chat state when it changes
+  useEffect(() => {
+    saveChatState(companyId, {
+      messages,
+      pendingBrregInfo,
+      awaitingIndustrySelection,
+      confirmedEmployeeCount,
+      awaitingEmployeeCount,
+      selectedIndustry,
+    });
+  }, [companyId, messages, pendingBrregInfo, awaitingIndustrySelection, confirmedEmployeeCount, awaitingEmployeeCount, selectedIndustry]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -726,6 +783,8 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
         // Success! Break out of retry loop
         toast.success("HMS-oppsett fullført!");
         setIsSaving(false);
+        // Clear session storage since setup is complete
+        clearChatState(companyId);
         onComplete();
         return; // Exit the function successfully
         
