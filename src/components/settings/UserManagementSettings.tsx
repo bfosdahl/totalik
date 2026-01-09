@@ -212,6 +212,11 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       return;
     }
 
+    if (inviteForm.role === "department_admin" && (!inviteForm.departmentId || inviteForm.departmentId === "none")) {
+      toast.error("Du må velge en avdeling for avdelingsleder");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const { data, error } = await supabase.functions.invoke("invite-user", {
@@ -219,7 +224,9 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
           email: inviteForm.email.trim(),
           firstName: inviteForm.firstName.trim(),
           lastName: inviteForm.lastName.trim(),
-          role: inviteForm.role,
+          role: inviteForm.role === "department_admin" ? "user" : inviteForm.role, // department_admin is not a user_roles role
+          departmentId: inviteForm.departmentId,
+          isDepartmentAdmin: inviteForm.role === "department_admin",
         },
       });
 
@@ -312,23 +319,87 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
 
       // Update role if changed
       if (editForm.role !== selectedUser.role) {
-        // Remove existing role
+        // Remove existing role (except system_admin)
         await supabase
           .from("user_roles")
           .delete()
           .eq("user_id", selectedUser.user_id)
-          .neq("role", "system_admin"); // Don't remove system_admin role
+          .neq("role", "system_admin");
 
-        // Add new role if not just "user"
+        // Remove existing department admin status
+        await supabase
+          .from("user_departments")
+          .update({ is_department_admin: false })
+          .eq("user_id", selectedUser.user_id);
+
+        // Add new role based on selection
         if (editForm.role === "company_admin") {
           const { error: roleError } = await supabase
             .from("user_roles")
             .insert({
               user_id: selectedUser.user_id,
-              role: editForm.role,
+              role: "company_admin",
             });
-
           if (roleError) throw roleError;
+        } else if (editForm.role === "department_admin" && editForm.departmentId && editForm.departmentId !== "none") {
+          // Handle department admin - upsert to user_departments
+          const { data: existing } = await supabase
+            .from("user_departments")
+            .select("id")
+            .eq("user_id", selectedUser.user_id)
+            .eq("department_id", editForm.departmentId)
+            .maybeSingle();
+
+          if (existing) {
+            await supabase
+              .from("user_departments")
+              .update({ is_department_admin: true })
+              .eq("id", existing.id);
+          } else {
+            await supabase
+              .from("user_departments")
+              .insert({
+                user_id: selectedUser.user_id,
+                department_id: editForm.departmentId,
+                is_department_admin: true,
+              });
+          }
+        }
+      } else if (editForm.role === "department_admin") {
+        // Role didn't change but department might have
+        const currentDeptId = selectedUser.adminDepartmentIds?.[0];
+        if (editForm.departmentId !== currentDeptId && editForm.departmentId && editForm.departmentId !== "none") {
+          // Remove old department admin
+          if (currentDeptId) {
+            await supabase
+              .from("user_departments")
+              .update({ is_department_admin: false })
+              .eq("user_id", selectedUser.user_id)
+              .eq("department_id", currentDeptId);
+          }
+          
+          // Add new department admin
+          const { data: existing } = await supabase
+            .from("user_departments")
+            .select("id")
+            .eq("user_id", selectedUser.user_id)
+            .eq("department_id", editForm.departmentId)
+            .maybeSingle();
+
+          if (existing) {
+            await supabase
+              .from("user_departments")
+              .update({ is_department_admin: true })
+              .eq("id", existing.id);
+          } else {
+            await supabase
+              .from("user_departments")
+              .insert({
+                user_id: selectedUser.user_id,
+                department_id: editForm.departmentId,
+                is_department_admin: true,
+              });
+          }
         }
       }
 
@@ -706,8 +777,8 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
               <Label htmlFor="invite-role">Rolle</Label>
               <Select
                 value={inviteForm.role}
-                onValueChange={(value: "company_admin" | "user") => 
-                  setInviteForm({ ...inviteForm, role: value })
+                onValueChange={(value: "company_admin" | "department_admin" | "user") => 
+                  setInviteForm({ ...inviteForm, role: value, isDepartmentAdmin: value === "department_admin" })
                 }
               >
                 <SelectTrigger>
@@ -720,6 +791,14 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                       Bruker
                     </div>
                   </SelectItem>
+                  {hasDepartments && (
+                    <SelectItem value="department_admin">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4" />
+                        Avdelingsleder
+                      </div>
+                    </SelectItem>
+                  )}
                   <SelectItem value="company_admin">
                     <div className="flex items-center gap-2">
                       <Shield className="w-4 h-4" />
@@ -729,9 +808,36 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Administratorer kan administrere brukere og innstillinger.
+                {inviteForm.role === "department_admin" 
+                  ? "Avdelingsleder kan administrere sin egen avdeling."
+                  : "Administratorer kan administrere brukere og innstillinger."}
               </p>
             </div>
+            {hasDepartments && inviteForm.role === "department_admin" && (
+              <div className="space-y-2">
+                <Label htmlFor="invite-department">Avdeling *</Label>
+                <Select
+                  value={inviteForm.departmentId}
+                  onValueChange={(value) => 
+                    setInviteForm({ ...inviteForm, departmentId: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg avdeling" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {departments.filter(d => d.is_active).map((dept) => (
+                      <SelectItem key={dept.id} value={dept.id}>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4" />
+                          {dept.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
@@ -971,6 +1077,31 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                 </SelectContent>
               </Select>
             </div>
+            {hasDepartments && editForm.role === "department_admin" && (
+              <div className="space-y-2">
+                <Label htmlFor="edit-department">Avdeling *</Label>
+                <Select
+                  value={editForm.departmentId}
+                  onValueChange={(value) => 
+                    setEditForm({ ...editForm, departmentId: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg avdeling" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {departments.filter(d => d.is_active).map((dept) => (
+                      <SelectItem key={dept.id} value={dept.id}>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4" />
+                          {dept.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
