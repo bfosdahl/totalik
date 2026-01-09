@@ -45,10 +45,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import UserSelect from "@/components/audits/UserSelect";
 import { DeviationFileUpload, PendingFile } from "./DeviationFileUpload";
 
+// Valid database category values
+export type DeviationCategory = "quality" | "safety" | "environment" | "documentation" | "other" | "process" | "equipment" | "personnel";
+
 export interface NewDeviation {
   title: string;
   description: string;
-  category: "HMS" | "MAT" | "BYGG";
+  category: DeviationCategory;
   priority: "low" | "medium" | "high" | "critical";
   assignee: string;
   assigneeId?: string;
@@ -86,7 +89,7 @@ export function NewDeviationDialog({
   // Basic fields
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<"HMS" | "MAT" | "BYGG">("HMS");
+  const [category, setCategory] = useState<DeviationCategory>("safety");
   const [priority, setPriority] = useState<"low" | "medium" | "high" | "critical">("medium");
   const [assigneeId, setAssigneeId] = useState<string>("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
@@ -113,7 +116,7 @@ export function NewDeviationDialog({
   const resetForm = () => {
     setTitle("");
     setDescription("");
-    setCategory("HMS");
+    setCategory("safety");
     setPriority("medium");
     setAssigneeId("");
     setDueDate(undefined);
@@ -192,14 +195,19 @@ export function NewDeviationDialog({
 
         <div className="space-y-2">
           <Label htmlFor="category" className="text-sm font-medium">Kategori *</Label>
-          <Select value={category} onValueChange={(v) => setCategory(v as typeof category)}>
+          <Select value={category} onValueChange={(v) => setCategory(v as DeviationCategory)}>
             <SelectTrigger className="h-11">
               <SelectValue placeholder="Velg kategori" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="HMS">HMS</SelectItem>
-              <SelectItem value="MAT">Matsikkerhet</SelectItem>
-              <SelectItem value="BYGG">Bygg og anlegg</SelectItem>
+              <SelectItem value="safety">HMS / Sikkerhet</SelectItem>
+              <SelectItem value="quality">Kvalitet</SelectItem>
+              <SelectItem value="environment">Miljø</SelectItem>
+              <SelectItem value="process">Prosess</SelectItem>
+              <SelectItem value="equipment">Utstyr</SelectItem>
+              <SelectItem value="personnel">Personell</SelectItem>
+              <SelectItem value="documentation">Dokumentasjon</SelectItem>
+              <SelectItem value="other">Annet</SelectItem>
             </SelectContent>
           </Select>
         </div>

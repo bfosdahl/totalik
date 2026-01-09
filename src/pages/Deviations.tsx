@@ -51,10 +51,18 @@ const statusConfig = {
   closed: { label: "Lukket", color: "bg-success/10 text-success" },
 };
 
-const categoryConfig: Record<string, { color: string }> = {
-  HMS: { color: "bg-primary/10 text-primary" },
-  MAT: { color: "bg-accent/10 text-accent" },
-  BYGG: { color: "bg-info/10 text-info" },
+// Valid database category values
+type DeviationCategory = "quality" | "safety" | "environment" | "documentation" | "other" | "process" | "equipment" | "personnel";
+
+const categoryConfig: Record<DeviationCategory, { label: string; color: string }> = {
+  safety: { label: "HMS / Sikkerhet", color: "bg-primary/10 text-primary" },
+  quality: { label: "Kvalitet", color: "bg-blue-500/10 text-blue-600" },
+  environment: { label: "Miljø", color: "bg-green-500/10 text-green-600" },
+  process: { label: "Prosess", color: "bg-purple-500/10 text-purple-600" },
+  equipment: { label: "Utstyr", color: "bg-orange-500/10 text-orange-600" },
+  personnel: { label: "Personell", color: "bg-pink-500/10 text-pink-600" },
+  documentation: { label: "Dokumentasjon", color: "bg-slate-500/10 text-slate-600" },
+  other: { label: "Annet", color: "bg-muted text-muted-foreground" },
 };
 
 // Helper type for the detail dialog - includes all RUH fields
@@ -63,7 +71,7 @@ interface DeviationForDialog {
   deviation_number: string;
   title: string;
   description: string;
-  category: "HMS" | "MAT" | "BYGG";
+  category: DeviationCategory;
   priority: "low" | "medium" | "high" | "critical";
   status: "open" | "in-progress" | "resolved" | "closed";
   assignee: string;
@@ -539,7 +547,7 @@ const Deviations = () => {
           const newDeviation: NewDeviationInput = {
             title: `Arbeidsulykke: ${data.title}`,
             description: data.description,
-            category: "HMS",
+            category: "safety",
             priority: priorityMap[data.severity] || "high",
             assignee_id: null,
             assignee_name: null,
