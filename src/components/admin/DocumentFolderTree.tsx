@@ -65,14 +65,16 @@ interface DocumentFolderTreeProps {
   selectedFolderId: string | null;
   onSelectFolder: (folderId: string | null) => void;
   documentCounts: Record<string, number>;
+  moduleType?: "ik-hms" | "ik-mat" | "ks-bygg";
 }
 
 export function DocumentFolderTree({
   selectedFolderId,
   onSelectFolder,
   documentCounts,
+  moduleType = "ik-hms",
 }: DocumentFolderTreeProps) {
-  const { folders, folderTree, createFolder, updateFolder, deleteFolder } = useAdminDocumentFolders();
+  const { folders, folderTree, createFolder, updateFolder, deleteFolder } = useAdminDocumentFolders(moduleType);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [editingFolder, setEditingFolder] = useState<AdminDocumentFolder | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -102,6 +104,7 @@ export function DocumentFolderTree({
       icon: folderForm.icon,
       parent_folder_id: newFolderParentId,
       sort_order: (folders?.length || 0),
+      module_type: moduleType,
     });
     setIsCreateDialogOpen(false);
     setFolderForm({ name: "", description: "", color: "blue", icon: "Folder" });

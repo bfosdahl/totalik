@@ -207,6 +207,7 @@ export type Database = {
           description: string | null
           icon: string | null
           id: string
+          module_type: string | null
           name: string
           parent_folder_id: string | null
           sort_order: number | null
@@ -218,6 +219,7 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id?: string
+          module_type?: string | null
           name: string
           parent_folder_id?: string | null
           sort_order?: number | null
@@ -229,6 +231,7 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id?: string
+          module_type?: string | null
           name?: string
           parent_folder_id?: string | null
           sort_order?: number | null
