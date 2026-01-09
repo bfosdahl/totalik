@@ -43,9 +43,24 @@ export interface AdminDocument {
   valid_from: string | null;
   valid_to: string | null;
   created_at: string;
+  folder_id: string | null;
 }
 
-export function useAdminTemplatesForCustomers() {
+export interface AdminDocumentFolder {
+  id: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  color: string | null;
+  parent_folder_id: string | null;
+  sort_order: number | null;
+  module_type: string | null;
+  created_at: string;
+}
+
+export type ModuleType = 'ik-hms' | 'ik-mat' | 'ks-bygg';
+
+export function useAdminTemplatesForCustomers(moduleType?: ModuleType) {
   // Fetch checklist templates from admin table
   const { data: checklistTemplates = [], isLoading: checklistsLoading } = useQuery({
     queryKey: ["admin-checklist-templates-customer"],
@@ -78,20 +93,63 @@ export function useAdminTemplatesForCustomers() {
     },
   });
 
-  // Fetch documents from admin table
-  const { data: documents = [], isLoading: documentsLoading } = useQuery({
-    queryKey: ["admin-documents-customer"],
+  // Fetch document folders from admin table filtered by module type
+  const { data: folders = [], isLoading: foldersLoading } = useQuery({
+    queryKey: ["admin-document-folders-customer", moduleType],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
+        .from("admin_document_folders")
+        .select("*")
+        .order("sort_order", { ascending: true })
+        .order("name");
+
+      if (moduleType) {
+        query = query.eq("module_type", moduleType);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data || []) as AdminDocumentFolder[];
+    },
+  });
+
+  // Fetch documents from admin table filtered by folders in the selected module
+  const { data: documents = [], isLoading: documentsLoading } = useQuery({
+    queryKey: ["admin-documents-customer", moduleType, folders],
+    queryFn: async () => {
+      if (moduleType && folders.length === 0) {
+        return [] as AdminDocument[];
+      }
+
+      let query = supabase
         .from("admin_documents")
         .select("*")
-        .order("category")
         .order("document_name");
 
+      if (moduleType) {
+        const folderIds = folders.map(f => f.id);
+        if (folderIds.length > 0) {
+          query = query.in("folder_id", folderIds);
+        } else {
+          return [] as AdminDocument[];
+        }
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return (data || []) as AdminDocument[];
     },
+    enabled: !moduleType || folders.length > 0 || !foldersLoading,
   });
+
+  // Build folder tree
+  const getFolderTree = (): (AdminDocumentFolder & { children: AdminDocumentFolder[] })[] => {
+    const rootFolders = folders.filter(f => !f.parent_folder_id);
+    return rootFolders.map(folder => ({
+      ...folder,
+      children: folders.filter(f => f.parent_folder_id === folder.id),
+    }));
+  };
 
   const getDocumentUrl = async (filePath: string): Promise<string | null> => {
     const { data, error } = await supabase.storage
@@ -109,7 +167,9 @@ export function useAdminTemplatesForCustomers() {
     checklistTemplates,
     routineTemplates,
     documents,
-    isLoading: checklistsLoading || routinesLoading || documentsLoading,
+    folders,
+    folderTree: getFolderTree(),
+    isLoading: checklistsLoading || routinesLoading || documentsLoading || foldersLoading,
     getDocumentUrl,
   };
 }

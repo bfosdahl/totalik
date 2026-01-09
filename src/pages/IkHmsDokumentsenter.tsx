@@ -37,7 +37,7 @@ export default function IkHmsDokumentsenter() {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { documents, isLoading, uploadDocument, deleteDocument, getDownloadUrl, isUploading } = useIkHmsCompanyDocuments();
-  const { documents: adminDocuments, isLoading: adminLoading, getDocumentUrl } = useAdminTemplatesForCustomers();
+  const { documents: adminDocuments, folders: adminFolders, folderTree, isLoading: adminLoading, getDocumentUrl } = useAdminTemplatesForCustomers('ik-hms');
   
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("Alle");
@@ -69,12 +69,20 @@ export default function IkHmsDokumentsenter() {
     );
   };
 
-  // Get templates by category
-  const getTemplatesByCategory = (categoryName: string) => {
-    return adminDocuments.filter(doc => doc.category === categoryName);
+  // Get templates by folder
+  const getDocumentsByFolder = (folderId: string) => {
+    return adminDocuments.filter(doc => doc.folder_id === folderId);
   };
 
-  // Get company documents by category
+  // Count documents in folder and subfolders
+  const countDocumentsInFolder = (folderId: string): number => {
+    const directDocs = adminDocuments.filter(doc => doc.folder_id === folderId).length;
+    const subFolders = adminFolders.filter(f => f.parent_folder_id === folderId);
+    const subDocsCount = subFolders.reduce((sum, sf) => sum + countDocumentsInFolder(sf.id), 0);
+    return directDocs + subDocsCount;
+  };
+
+  // Get company documents by category (for "Mine dokumenter" tab)
   const getDocumentsByCategory = (categoryName: string) => {
     return documents.filter(doc => doc.category === categoryName);
   };
@@ -214,7 +222,7 @@ export default function IkHmsDokumentsenter() {
             <div className="text-center py-8 text-muted-foreground">
               Laster maler...
             </div>
-          ) : adminDocuments.length === 0 ? (
+          ) : folderTree.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="font-medium">Ingen maler tilgjengelig ennå</p>
@@ -222,63 +230,65 @@ export default function IkHmsDokumentsenter() {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Group documents by their actual category */}
-              {(() => {
-                // Get unique categories from admin documents
-                const categories = [...new Set(adminDocuments.map(doc => doc.category || "Generelt"))].sort();
+              {/* Show folders from admin */}
+              {folderTree.map((folder) => {
+                const folderDocs = getDocumentsByFolder(folder.id);
+                const totalDocs = countDocumentsInFolder(folder.id);
+                const isExpanded = expandedFolders.includes(folder.id);
                 
-                return categories.map((categoryName) => {
-                  const categoryDocs = adminDocuments.filter(doc => (doc.category || "Generelt") === categoryName);
-                  const isExpanded = expandedFolders.includes(categoryName);
-                  
-                  // Filter by search
-                  const filteredCategoryDocs = categoryDocs.filter(doc =>
-                    doc.document_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    doc.description?.toLowerCase().includes(searchQuery.toLowerCase())
-                  );
+                // Filter by search
+                const filteredFolderDocs = folderDocs.filter(doc =>
+                  doc.document_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  doc.description?.toLowerCase().includes(searchQuery.toLowerCase())
+                );
 
-                  // Skip if no docs match search
-                  if (searchQuery && filteredCategoryDocs.length === 0) return null;
+                // Skip if no docs match search
+                if (searchQuery && filteredFolderDocs.length === 0 && folder.children.length === 0) return null;
 
-                  return (
-                    <Collapsible
-                      key={categoryName}
-                      open={isExpanded}
-                      onOpenChange={() => {
-                        setExpandedFolders(prev => 
-                          prev.includes(categoryName) 
-                            ? prev.filter(id => id !== categoryName)
-                            : [...prev, categoryName]
-                        );
-                      }}
-                    >
-                      <Card className="overflow-hidden">
-                        <CollapsibleTrigger asChild>
-                          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-4">
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-lg bg-primary">
-                                <FolderOpen className="h-5 w-5 text-primary-foreground" />
-                              </div>
-                              <div className="flex-1">
-                                <CardTitle className="text-base flex items-center gap-2">
-                                  {categoryName}
-                                  <Badge variant="secondary" className="ml-2">
-                                    {categoryDocs.length} maler
-                                  </Badge>
-                                </CardTitle>
-                              </div>
-                              {isExpanded ? (
-                                <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                              ) : (
-                                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                return (
+                  <Collapsible
+                    key={folder.id}
+                    open={isExpanded}
+                    onOpenChange={() => {
+                      setExpandedFolders(prev => 
+                        prev.includes(folder.id) 
+                          ? prev.filter(id => id !== folder.id)
+                          : [...prev, folder.id]
+                      );
+                    }}
+                  >
+                    <Card className="overflow-hidden">
+                      <CollapsibleTrigger asChild>
+                        <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-primary">
+                              <FolderOpen className="h-5 w-5 text-primary-foreground" />
+                            </div>
+                            <div className="flex-1">
+                              <CardTitle className="text-base flex items-center gap-2">
+                                {folder.name}
+                                <Badge variant="secondary" className="ml-2">
+                                  {totalDocs} maler
+                                </Badge>
+                              </CardTitle>
+                              {folder.description && (
+                                <p className="text-sm text-muted-foreground mt-1">{folder.description}</p>
                               )}
                             </div>
-                          </CardHeader>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <CardContent className="pt-0 pb-4">
+                            {isExpanded ? (
+                              <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                            )}
+                          </div>
+                        </CardHeader>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <CardContent className="pt-0 pb-4 space-y-4">
+                          {/* Documents in this folder */}
+                          {(searchQuery ? filteredFolderDocs : folderDocs).length > 0 && (
                             <div className="grid gap-2">
-                              {(searchQuery ? filteredCategoryDocs : categoryDocs).map((doc) => (
+                              {(searchQuery ? filteredFolderDocs : folderDocs).map((doc) => (
                                 <div
                                   key={doc.id}
                                   className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -305,13 +315,92 @@ export default function IkHmsDokumentsenter() {
                                 </div>
                               ))}
                             </div>
-                          </CardContent>
-                        </CollapsibleContent>
-                      </Card>
-                    </Collapsible>
-                  );
-                });
-              })()}
+                          )}
+                          
+                          {/* Subfolders */}
+                          {folder.children.length > 0 && (
+                            <div className="space-y-2 pl-4">
+                              {folder.children.map((subFolder) => {
+                                const subFolderDocs = getDocumentsByFolder(subFolder.id);
+                                const subIsExpanded = expandedFolders.includes(subFolder.id);
+                                
+                                const filteredSubDocs = subFolderDocs.filter(doc =>
+                                  doc.document_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                  doc.description?.toLowerCase().includes(searchQuery.toLowerCase())
+                                );
+
+                                if (searchQuery && filteredSubDocs.length === 0) return null;
+
+                                return (
+                                  <Collapsible
+                                    key={subFolder.id}
+                                    open={subIsExpanded}
+                                    onOpenChange={() => {
+                                      setExpandedFolders(prev => 
+                                        prev.includes(subFolder.id) 
+                                          ? prev.filter(id => id !== subFolder.id)
+                                          : [...prev, subFolder.id]
+                                      );
+                                    }}
+                                  >
+                                    <div className="border rounded-lg overflow-hidden">
+                                      <CollapsibleTrigger asChild>
+                                        <div className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted/50 transition-colors">
+                                          <FolderOpen className="h-4 w-4 text-primary" />
+                                          <span className="flex-1 font-medium text-sm">{subFolder.name}</span>
+                                          <Badge variant="outline" className="text-xs">
+                                            {subFolderDocs.length}
+                                          </Badge>
+                                          {subIsExpanded ? (
+                                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                          ) : (
+                                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                                          )}
+                                        </div>
+                                      </CollapsibleTrigger>
+                                      <CollapsibleContent>
+                                        <div className="p-3 pt-0 space-y-2">
+                                          {(searchQuery ? filteredSubDocs : subFolderDocs).map((doc) => (
+                                            <div
+                                              key={doc.id}
+                                              className="flex items-center gap-3 p-2 border rounded hover:bg-muted/50 transition-colors"
+                                            >
+                                              {getFileIcon(doc.file_type)}
+                                              <div className="flex-1 min-w-0">
+                                                <h4 className="font-medium text-sm truncate">{doc.document_name}</h4>
+                                                <span className="text-xs text-muted-foreground">
+                                                  {formatFileSize(doc.file_size)}
+                                                </span>
+                                              </div>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleAdminDownload(doc.file_path)}
+                                              >
+                                                <Download className="h-4 w-4" />
+                                              </Button>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </CollapsibleContent>
+                                    </div>
+                                  </Collapsible>
+                                );
+                              })}
+                            </div>
+                          )}
+                          
+                          {folderDocs.length === 0 && folder.children.length === 0 && (
+                            <div className="text-center py-4 text-muted-foreground">
+                              <p className="text-sm">Ingen dokumenter i denne mappen</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Card>
+                  </Collapsible>
+                );
+              })}
             </div>
           )}
         </TabsContent>

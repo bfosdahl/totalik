@@ -113,7 +113,7 @@ const getFileIcon = (fileType: string | null) => {
 
 export default function Ks2Malbibliotek() {
   const { projectId } = useParams();
-  const { checklistTemplates, routineTemplates, documents, isLoading } = useAdminTemplatesForCustomers();
+  const { checklistTemplates, routineTemplates, documents, folders, folderTree, isLoading } = useAdminTemplatesForCustomers('ks-bygg');
   const { 
     checklistTemplates: projectChecklists,
     routineTemplates: projectRoutines,
@@ -1009,164 +1009,228 @@ export default function Ks2Malbibliotek() {
 
         {/* Documents Tab */}
         <TabsContent value="documents" className="space-y-4">
-          {documents.length === 0 ? (
+          {folderTree.length === 0 && documents.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Ingen dokumenter tilgjengelig</p>
+                <p className="text-sm mt-1">Dokumenter vil bli lagt til av systemadministrator</p>
               </CardContent>
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {(() => {
-                // Get unique categories from documents
-                const uniqueCategories = [...new Set(documents.map(d => d.category || 'Annet'))].sort();
+              {folderTree.map((folder) => {
+                const folderDocs = documents.filter(d => d.folder_id === folder.id);
+                const filteredFolderDocs = folderDocs.filter(doc => {
+                  const matchesSearch = !searchQuery || 
+                    doc.document_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    (doc.description?.toLowerCase().includes(searchQuery.toLowerCase()));
+                  return matchesSearch;
+                });
                 
-                return uniqueCategories.map((categoryKey) => {
-                  const config = getCategoryConfig(categoryKey);
-                  const categoryDocs = documents.filter(doc => {
-                    const matchesCategory = (doc.category || 'Annet') === categoryKey;
-                    const matchesSearch = !searchQuery || 
-                      doc.document_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      (doc.description?.toLowerCase().includes(searchQuery.toLowerCase()));
-                    return matchesCategory && matchesSearch;
-                  });
-                  
-                  if (categoryDocs.length === 0) return null;
-                  
-                  const isExpanded = expandedDocCategories[categoryKey] ?? false;
-                  const addedCount = categoryDocs.filter(d => addedDocumentIds.includes(d.id)).length;
-                  const CategoryIcon = config.icon;
-                  
-                  return (
-                    <Collapsible
-                      key={categoryKey}
-                      open={isExpanded}
-                      onOpenChange={(open) => setExpandedDocCategories(prev => ({ ...prev, [categoryKey]: open }))}
-                      className="md:col-span-1"
-                    >
-                      <Card className="overflow-hidden">
-                        <CollapsibleTrigger asChild>
-                          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pb-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className={cn("p-2 rounded-lg bg-muted", config.color)}>
-                                  <CategoryIcon className="h-5 w-5" />
-                                </div>
-                                <div>
-                                  <CardTitle className="text-base">{config.label}</CardTitle>
-                                  <p className="text-sm text-muted-foreground">
-                                    {categoryDocs.length} dokument{categoryDocs.length !== 1 ? 'er' : ''}
-                                    {addedCount > 0 && (
-                                      <span className="text-amber-600 ml-2">
-                                        • {addedCount} lagt til
-                                      </span>
-                                    )}
-                                  </p>
-                                </div>
+                if (searchQuery && filteredFolderDocs.length === 0 && folder.children.length === 0) return null;
+                
+                const isExpanded = expandedDocCategories[folder.id] ?? false;
+                const addedCount = filteredFolderDocs.filter(d => addedDocumentIds.includes(d.id)).length;
+                
+                return (
+                  <Collapsible
+                    key={folder.id}
+                    open={isExpanded}
+                    onOpenChange={(open) => setExpandedDocCategories(prev => ({ ...prev, [folder.id]: open }))}
+                    className="md:col-span-1"
+                  >
+                    <Card className="overflow-hidden">
+                      <CollapsibleTrigger asChild>
+                        <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pb-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-primary/10">
+                                <FolderOpen className="h-5 w-5 text-primary" />
                               </div>
-                              {isExpanded ? (
-                                <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                              ) : (
-                              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                            )}
-                          </div>
-                        </CardHeader>
-                      </CollapsibleTrigger>
-                      
-                      <CollapsibleContent>
-                        <CardContent className="pt-0">
-                          <div className="divide-y">
-                            {categoryDocs.map((doc) => {
-                              const isAdded = addedDocumentIds.includes(doc.id);
-                              const projectTemplate = projectDocuments.find(
-                                pt => pt.admin_document_id === doc.id
-                              );
-                              
-                              return (
-                                <div 
-                                  key={doc.id} 
-                                  className={cn(
-                                    "py-3 first:pt-0 last:pb-0",
-                                    isAdded && "bg-amber-50/50 dark:bg-amber-950/20 -mx-4 px-4 rounded"
+                              <div>
+                                <CardTitle className="text-base">{folder.name}</CardTitle>
+                                <p className="text-sm text-muted-foreground">
+                                  {filteredFolderDocs.length} dokument{filteredFolderDocs.length !== 1 ? 'er' : ''}
+                                  {addedCount > 0 && (
+                                    <span className="text-amber-600 ml-2">
+                                      • {addedCount} lagt til
+                                    </span>
                                   )}
-                                >
-                                  <div className="flex items-start gap-3">
-                                    {getFileIcon(doc.file_type)}
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="font-medium text-sm truncate">
-                                          {doc.document_name}
-                                        </span>
-                                        {isAdded && (
-                                          <Badge variant="secondary" className="bg-amber-100 text-amber-700 text-xs">
-                                            <Check className="h-3 w-3 mr-1" />
-                                            Lagt til
-                                          </Badge>
-                                        )}
-                                        {doc.is_mandatory && (
-                                          <Badge variant="destructive" className="text-xs">
-                                            Obligatorisk
-                                          </Badge>
-                                        )}
-                                      </div>
-                                      {doc.description && (
-                                        <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                                          {doc.description}
-                                        </p>
+                                </p>
+                              </div>
+                            </div>
+                            {isExpanded ? (
+                              <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                            ) : (
+                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+                      </CardHeader>
+                    </CollapsibleTrigger>
+                    
+                    <CollapsibleContent>
+                      <CardContent className="pt-0">
+                        <div className="divide-y">
+                          {filteredFolderDocs.map((doc) => {
+                            const isAdded = addedDocumentIds.includes(doc.id);
+                            const projectTemplate = projectDocuments.find(
+                              pt => pt.admin_document_id === doc.id
+                            );
+                            
+                            return (
+                              <div 
+                                key={doc.id} 
+                                className={cn(
+                                  "py-3 first:pt-0 last:pb-0",
+                                  isAdded && "bg-amber-50/50 dark:bg-amber-950/20 -mx-4 px-4 rounded"
+                                )}
+                              >
+                                <div className="flex items-start gap-3">
+                                  {getFileIcon(doc.file_type)}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="font-medium text-sm truncate">
+                                        {doc.document_name}
+                                      </span>
+                                      {isAdded && (
+                                        <Badge variant="secondary" className="bg-amber-100 text-amber-700 text-xs">
+                                          <Check className="h-3 w-3 mr-1" />
+                                          Lagt til
+                                        </Badge>
                                       )}
-                                      <div className="flex items-center gap-2 mt-2">
-                                        {doc.version && (
-                                          <span className="text-xs text-muted-foreground">
-                                            v{doc.version}
-                                          </span>
-                                        )}
-                                        <div className="flex gap-1 ml-auto">
+                                      {doc.is_mandatory && (
+                                        <Badge variant="destructive" className="text-xs">
+                                          Obligatorisk
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    {doc.description && (
+                                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                                        {doc.description}
+                                      </p>
+                                    )}
+                                    <div className="flex items-center gap-2 mt-2">
+                                      {doc.version && (
+                                        <span className="text-xs text-muted-foreground">
+                                          v{doc.version}
+                                        </span>
+                                      )}
+                                      <div className="flex gap-1 ml-auto">
+                                        <Button 
+                                          variant="ghost" 
+                                          size="sm" 
+                                          className="h-7 text-xs"
+                                          onClick={() => handleDownloadDocument(doc)}
+                                        >
+                                          <Download className="h-3 w-3 mr-1" />
+                                          Last ned
+                                        </Button>
+                                        {isAdded ? (
                                           <Button 
                                             variant="ghost" 
+                                            size="sm"
+                                            className="h-7 text-xs text-destructive hover:text-destructive"
+                                            onClick={() => projectTemplate && removeTemplate(projectTemplate.id)}
+                                            disabled={isSaving}
+                                          >
+                                            <Trash2 className="h-3 w-3" />
+                                          </Button>
+                                        ) : (
+                                          <Button 
+                                            variant="ghost"
                                             size="sm" 
                                             className="h-7 text-xs"
-                                            onClick={() => handleDownloadDocument(doc)}
+                                            onClick={() => addDocument(doc.id)}
+                                            disabled={isSaving}
                                           >
-                                            <Download className="h-3 w-3 mr-1" />
-                                            Last ned
+                                            <Plus className="h-3 w-3 mr-1" />
+                                            Legg til
                                           </Button>
-                                          {isAdded ? (
-                                            <Button 
-                                              variant="ghost" 
-                                              size="sm"
-                                              className="h-7 text-xs text-destructive hover:text-destructive"
-                                              onClick={() => projectTemplate && removeTemplate(projectTemplate.id)}
-                                              disabled={isSaving}
-                                            >
-                                              <Trash2 className="h-3 w-3" />
-                                            </Button>
-                                          ) : (
-                                            <Button 
-                                              variant="ghost"
-                                              size="sm" 
-                                              className="h-7 text-xs"
-                                              onClick={() => addDocument(doc.id)}
-                                              disabled={isSaving}
-                                            >
-                                              <Plus className="h-3 w-3 mr-1" />
-                                              Legg til
-                                            </Button>
-                                          )}
-                                        </div>
+                                        )}
                                       </div>
                                     </div>
                                   </div>
                                 </div>
+                              </div>
+                            );
+                          })}
+                          
+                          {filteredFolderDocs.length === 0 && (
+                            <p className="text-sm text-muted-foreground py-2">Ingen dokumenter i denne mappen</p>
+                          )}
+                        </div>
+                        
+                        {/* Subfolders */}
+                        {folder.children.length > 0 && (
+                          <div className="mt-4 space-y-2 border-t pt-4">
+                            {folder.children.map((subFolder) => {
+                              const subFolderDocs = documents.filter(d => d.folder_id === subFolder.id);
+                              const filteredSubDocs = subFolderDocs.filter(doc => {
+                                const matchesSearch = !searchQuery || 
+                                  doc.document_name.toLowerCase().includes(searchQuery.toLowerCase());
+                                return matchesSearch;
+                              });
+                              
+                              if (searchQuery && filteredSubDocs.length === 0) return null;
+                              
+                              const subIsExpanded = expandedDocCategories[subFolder.id] ?? false;
+                              
+                              return (
+                                <Collapsible
+                                  key={subFolder.id}
+                                  open={subIsExpanded}
+                                  onOpenChange={(open) => setExpandedDocCategories(prev => ({ ...prev, [subFolder.id]: open }))}
+                                >
+                                  <div className="border rounded-lg overflow-hidden">
+                                    <CollapsibleTrigger asChild>
+                                      <div className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted/50 transition-colors">
+                                        <FolderOpen className="h-4 w-4 text-primary" />
+                                        <span className="flex-1 font-medium text-sm">{subFolder.name}</span>
+                                        <Badge variant="outline" className="text-xs">
+                                          {filteredSubDocs.length}
+                                        </Badge>
+                                        {subIsExpanded ? (
+                                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                        ) : (
+                                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                                        )}
+                                      </div>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                      <div className="p-3 pt-0 space-y-2">
+                                        {filteredSubDocs.map((doc) => (
+                                          <div
+                                            key={doc.id}
+                                            className="flex items-center gap-3 p-2 border rounded hover:bg-muted/50 transition-colors"
+                                          >
+                                            {getFileIcon(doc.file_type)}
+                                            <div className="flex-1 min-w-0">
+                                              <span className="font-medium text-sm truncate">{doc.document_name}</span>
+                                            </div>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => handleDownloadDocument(doc)}
+                                            >
+                                              <Download className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </CollapsibleContent>
+                                  </div>
+                                </Collapsible>
                               );
                             })}
                           </div>
-                        </CardContent>
-                      </CollapsibleContent>
-                    </Card>
-                  </Collapsible>
-                );
-              })})()}
+                        )}
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
+              );
+            })}
             </div>
           )}
         </TabsContent>
