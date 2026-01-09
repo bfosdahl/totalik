@@ -2,6 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  safeString, 
+  safeStringOrNull, 
+  safeCategory, 
+  safePriority, 
+  safeTimeFormat, 
+  safeBoolean 
+} from "@/utils/deviationSanitizer";
 
 // Valid database category values
 export type DeviationCategory = "quality" | "safety" | "environment" | "documentation" | "other" | "process" | "equipment" | "personnel";
@@ -63,26 +71,8 @@ export interface NewDeviationInput {
   notify_insurance?: boolean;
 }
 
-// Helper function to extract time from various input formats
-function extractTimeFromInput(input: string): string | null {
-  if (!input) return null;
-  
-  // If it's already a valid time format (HH:MM or HH:MM:SS), return as-is
-  if (/^\d{2}:\d{2}(:\d{2})?$/.test(input)) {
-    return input.length === 5 ? `${input}:00` : input;
-  }
-  
-  // If it's a datetime string like "2026-01-09T15:46", extract the time part
-  if (input.includes('T')) {
-    const timePart = input.split('T')[1];
-    if (timePart) {
-      const time = timePart.substring(0, 5); // Get HH:MM
-      return `${time}:00`;
-    }
-  }
-  
-  return null;
-}
+// Note: Time format conversion is handled by safeTimeFormat from deviationSanitizer
+
 
 export function useDeviations() {
   const { profile } = useAuth();
@@ -151,7 +141,7 @@ export function useDeviations() {
     }
   }, [companyId]);
 
-  // Create deviation
+  // Create deviation with sanitized data
   const createDeviation = useCallback(async (input: NewDeviationInput): Promise<Deviation | null> => {
     if (!companyId || !profile) return null;
 
@@ -160,37 +150,39 @@ export function useDeviations() {
       const deviationNumber = await getNextDeviationNumber();
       const reporterName = [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.email || "Ukjent";
 
+      // Sanitize all input data to prevent database errors
+      const sanitizedData = {
+        company_id: companyId,
+        deviation_number: deviationNumber,
+        title: safeString(input.title, 'Uten tittel'),
+        description: safeStringOrNull(input.description),
+        category: safeCategory(input.category),
+        priority: safePriority(input.priority),
+        status: "open",
+        assignee_id: safeStringOrNull(input.assignee_id),
+        assignee_name: safeStringOrNull(input.assignee_name),
+        reporter_id: profile.id,
+        reporter_name: reporterName,
+        due_date: input.due_date,
+        // Extended fields - all sanitized
+        incident_location: safeStringOrNull(input.incident_location),
+        incident_time: safeTimeFormat(input.incident_time),
+        incident_type: safeStringOrNull(input.incident_type),
+        severity: safeStringOrNull(input.severity),
+        reporter_contact: safeStringOrNull(input.reporter_contact),
+        additional_info: safeStringOrNull(input.additional_info),
+        consequences: safeStringOrNull(input.consequences),
+        involved_persons: safeStringOrNull(input.involved_persons),
+        immediate_actions: safeStringOrNull(input.immediate_actions),
+        preventive_measures: safeStringOrNull(input.preventive_measures),
+        responsible_receiver: safeStringOrNull(input.responsible_receiver),
+        notify_arbeidstilsynet: safeBoolean(input.notify_arbeidstilsynet),
+        notify_insurance: safeBoolean(input.notify_insurance),
+      };
+
       const { data, error } = await supabase
         .from("deviations")
-        .insert({
-          company_id: companyId,
-          deviation_number: deviationNumber,
-          title: input.title,
-          description: input.description || null,
-          category: input.category,
-          priority: input.priority,
-          status: "open",
-          assignee_id: input.assignee_id || null,
-          assignee_name: input.assignee_name || null,
-          reporter_id: profile.id,
-          reporter_name: reporterName,
-          due_date: input.due_date,
-          // Extended fields
-          incident_location: input.incident_location || null,
-          // Ensure incident_time is in HH:MM:SS format (strip date if datetime was passed)
-          incident_time: input.incident_time ? extractTimeFromInput(input.incident_time) : null,
-          incident_type: input.incident_type || null,
-          severity: input.severity || null,
-          reporter_contact: input.reporter_contact || null,
-          additional_info: input.additional_info || null,
-          consequences: input.consequences || null,
-          involved_persons: input.involved_persons || null,
-          immediate_actions: input.immediate_actions || null,
-          preventive_measures: input.preventive_measures || null,
-          responsible_receiver: input.responsible_receiver || null,
-          notify_arbeidstilsynet: input.notify_arbeidstilsynet || false,
-          notify_insurance: input.notify_insurance || false,
-        })
+        .insert(sanitizedData)
         .select()
         .single();
 
@@ -199,7 +191,7 @@ export function useDeviations() {
       await fetchDeviations();
       toast({
         title: "Avvik registrert",
-        description: `${deviationNumber}: ${input.title}`,
+        description: `${deviationNumber}: ${sanitizedData.title}`,
       });
       return data as Deviation;
     } catch (error) {
