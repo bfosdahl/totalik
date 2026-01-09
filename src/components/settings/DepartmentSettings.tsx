@@ -41,6 +41,7 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
     address: "",
     city: "",
     postal_code: "",
+    org_number: "",
     is_active: true,
   });
 
@@ -138,6 +139,7 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
       address: "",
       city: "",
       postal_code: "",
+      org_number: "",
       is_active: true,
     });
   };
@@ -150,6 +152,7 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
       address: dept.address || "",
       city: dept.city || "",
       postal_code: dept.postal_code || "",
+      org_number: dept.org_number || "",
       is_active: dept.is_active,
     });
     setShowEditDialog(true);
@@ -381,6 +384,11 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
                     </div>
                   </CardHeader>
                   <CardContent>
+                    {dept.org_number && (
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Org.nr: {dept.org_number}
+                      </p>
+                    )}
                     {dept.description && (
                       <p className="text-sm text-muted-foreground mb-2">
                         {dept.description}
@@ -412,14 +420,25 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="name">Avdelingsnavn *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="F.eks. Oslo-kontoret"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name">Avdelingsnavn *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="F.eks. Oslo-kontoret"
+                />
+              </div>
+              <div>
+                <Label htmlFor="org_number">Org. nummer</Label>
+                <Input
+                  id="org_number"
+                  value={formData.org_number}
+                  onChange={(e) => setFormData({ ...formData, org_number: e.target.value })}
+                  placeholder="123 456 789"
+                />
+              </div>
             </div>
             <div>
               <Label htmlFor="description">Beskrivelse</Label>
@@ -483,13 +502,24 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="edit-name">Avdelingsnavn *</Label>
-              <Input
-                id="edit-name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-name">Avdelingsnavn *</Label>
+                <Input
+                  id="edit-name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-org_number">Org. nummer</Label>
+                <Input
+                  id="edit-org_number"
+                  value={formData.org_number}
+                  onChange={(e) => setFormData({ ...formData, org_number: e.target.value })}
+                  placeholder="123 456 789"
+                />
+              </div>
             </div>
             <div>
               <Label htmlFor="edit-description">Beskrivelse</Label>

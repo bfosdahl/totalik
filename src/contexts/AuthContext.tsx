@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-type AppRole = "system_admin" | "company_admin" | "user";
+type AppRole = "system_admin" | "company_admin" | "department_admin" | "user" | "subcontractor";
 
 type UserStatus = "pending_approval" | "active" | "suspended";
 
@@ -51,6 +51,8 @@ interface AuthContextType {
   isLoading: boolean;
   isSystemAdmin: boolean;
   isCompanyAdmin: boolean;
+  isDepartmentAdmin: boolean;
+  adminDepartmentIds: string[];
   isGuestUser: boolean;
   guestProjects: GuestAccessInfo[];
   guestCheckComplete: boolean;
@@ -75,11 +77,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isGuestUser, setIsGuestUser] = useState(false);
   const [guestProjects, setGuestProjects] = useState<GuestAccessInfo[]>([]);
   const [guestCheckComplete, setGuestCheckComplete] = useState(false);
+  const [adminDepartmentIds, setAdminDepartmentIds] = useState<string[]>([]);
 
   const isSystemAdmin = roles.includes("system_admin");
   const isCompanyAdmin = roles.includes("company_admin");
+  const isDepartmentAdmin = adminDepartmentIds.length > 0;
   const isPendingApproval = profile?.status === "pending_approval";
   const isSuspended = profile?.status === "suspended";
+
+  const fetchAdminDepartments = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("user_departments")
+        .select("department_id")
+        .eq("user_id", userId)
+        .eq("is_department_admin", true);
+
+      if (error) throw error;
+      setAdminDepartmentIds((data || []).map(d => d.department_id));
+    } catch (error) {
+      console.error("Error fetching admin departments:", error);
+      setAdminDepartmentIds([]);
+    }
+  };
 
   const fetchGuestAccess = async (userId: string) => {
     try {
@@ -188,6 +208,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // If no roles, check if this is a guest user
         await fetchGuestAccess(userId);
       }
+
+      // Always fetch admin department IDs
+      await fetchAdminDepartments(userId);
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
@@ -211,6 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setIsGuestUser(false);
           setGuestProjects([]);
           setGuestCheckComplete(false);
+          setAdminDepartmentIds([]);
         }
       }
     );
@@ -332,6 +356,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isSystemAdmin,
         isCompanyAdmin,
+        isDepartmentAdmin,
+        adminDepartmentIds,
         isGuestUser,
         guestProjects,
         guestCheckComplete,

@@ -77,7 +77,9 @@ interface CompanyUser {
   avatar_url: string | null;
   is_active: boolean;
   status: UserStatus;
-  role: "system_admin" | "company_admin" | "user";
+  role: "system_admin" | "company_admin" | "department_admin" | "user";
+  isDepartmentAdmin?: boolean;
+  adminDepartmentIds?: string[];
 }
 
 export function UserManagementSettings({ onBack }: UserManagementSettingsProps) {
@@ -97,7 +99,9 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
     email: "",
     firstName: "",
     lastName: "",
-    role: "user" as "company_admin" | "user",
+    role: "user" as "company_admin" | "department_admin" | "user",
+    departmentId: "" as string,
+    isDepartmentAdmin: false,
   });
 
   // Direct create form state
@@ -106,8 +110,9 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
     password: "",
     firstName: "",
     lastName: "",
-    role: "user" as "company_admin" | "user",
+    role: "user" as "company_admin" | "department_admin" | "user",
     departmentId: "" as string,
+    isDepartmentAdmin: false,
   });
 
   // Fetch departments if company has departments enabled
@@ -118,7 +123,9 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
   const [editForm, setEditForm] = useState({
     firstName: "",
     lastName: "",
-    role: "user" as "company_admin" | "user",
+    role: "user" as "company_admin" | "department_admin" | "user",
+    departmentId: "" as string,
+    isDepartmentAdmin: false,
   });
 
   const loadUsers = async () => {
@@ -141,9 +148,29 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
         .select("user_id, role")
         .in("user_id", userIds);
 
+      // Get department admin info
+      const { data: deptAdmins } = await supabase
+        .from("user_departments")
+        .select("user_id, department_id, is_department_admin")
+        .in("user_id", userIds)
+        .eq("is_department_admin", true);
+
       // Combine profile and role data
       const usersWithRoles: CompanyUser[] = (profiles || []).map(profile => {
         const userRole = roles?.find(r => r.user_id === profile.user_id);
+        const userDeptAdmins = deptAdmins?.filter(d => d.user_id === profile.user_id) || [];
+        const isDeptAdmin = userDeptAdmins.length > 0;
+        
+        // Determine role priority: system_admin > company_admin > department_admin > user
+        let effectiveRole: "system_admin" | "company_admin" | "department_admin" | "user" = "user";
+        if (userRole?.role === "system_admin") {
+          effectiveRole = "system_admin";
+        } else if (userRole?.role === "company_admin") {
+          effectiveRole = "company_admin";
+        } else if (isDeptAdmin) {
+          effectiveRole = "department_admin";
+        }
+        
         return {
           id: profile.id,
           user_id: profile.user_id,
@@ -153,7 +180,9 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
           avatar_url: profile.avatar_url,
           is_active: profile.is_active,
           status: (profile.status as UserStatus) || "active",
-          role: (userRole?.role as "system_admin" | "company_admin" | "user") || "user",
+          role: effectiveRole,
+          isDepartmentAdmin: isDeptAdmin,
+          adminDepartmentIds: userDeptAdmins.map(d => d.department_id),
         };
       });
 
@@ -199,7 +228,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
 
       toast.success("Bruker invitert!");
       setInviteDialogOpen(false);
-      setInviteForm({ email: "", firstName: "", lastName: "", role: "user" });
+      setInviteForm({ email: "", firstName: "", lastName: "", role: "user", departmentId: "", isDepartmentAdmin: false });
       loadUsers();
     } catch (error: any) {
       console.error("Error inviting user:", error);
@@ -248,13 +277,13 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
         await supabase.from("user_departments").insert({
           user_id: data.userId,
           department_id: createForm.departmentId,
-          is_department_admin: false,
+          is_department_admin: createForm.isDepartmentAdmin,
         });
       }
 
       toast.success("Bruker opprettet!");
       setCreateDirectDialogOpen(false);
-      setCreateForm({ email: "", password: "", firstName: "", lastName: "", role: "user", departmentId: "" });
+      setCreateForm({ email: "", password: "", firstName: "", lastName: "", role: "user", departmentId: "", isDepartmentAdmin: false });
       setShowPassword(false);
       loadUsers();
     } catch (error: any) {
@@ -407,6 +436,8 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       firstName: companyUser.first_name || "",
       lastName: companyUser.last_name || "",
       role: companyUser.role === "system_admin" ? "company_admin" : companyUser.role,
+      departmentId: companyUser.adminDepartmentIds?.[0] || "",
+      isDepartmentAdmin: companyUser.isDepartmentAdmin || false,
     });
     setEditDialogOpen(true);
   };
@@ -427,13 +458,18 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
     }
   };
 
-  const getRoleBadge = (role: string) => {
+  const getRoleBadge = (role: string, isDepartmentAdmin?: boolean) => {
     switch (role) {
       case "system_admin":
         return <Badge variant="default" className="bg-primary">System Admin</Badge>;
       case "company_admin":
         return <Badge variant="secondary">Administrator</Badge>;
+      case "department_admin":
+        return <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">Avdelingsleder</Badge>;
       default:
+        if (isDepartmentAdmin) {
+          return <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">Avdelingsleder</Badge>;
+        }
         return <Badge variant="outline">Bruker</Badge>;
     }
   };
@@ -783,8 +819,8 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
               <Label htmlFor="create-role">Rolle</Label>
               <Select
                 value={createForm.role}
-                onValueChange={(value: "company_admin" | "user") => 
-                  setCreateForm({ ...createForm, role: value })
+                onValueChange={(value: "company_admin" | "department_admin" | "user") => 
+                  setCreateForm({ ...createForm, role: value, isDepartmentAdmin: value === "department_admin" })
                 }
               >
                 <SelectTrigger>
@@ -797,6 +833,14 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                       Bruker
                     </div>
                   </SelectItem>
+                  {hasDepartments && (
+                    <SelectItem value="department_admin">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4" />
+                        Avdelingsleder
+                      </div>
+                    </SelectItem>
+                  )}
                   <SelectItem value="company_admin">
                     <div className="flex items-center gap-2">
                       <Shield className="w-4 h-4" />
@@ -806,7 +850,9 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Administratorer kan administrere brukere og innstillinger.
+                {createForm.role === "department_admin" 
+                  ? "Avdelingsleder kan administrere sin egen avdeling."
+                  : "Administratorer kan administrere alle brukere og innstillinger."}
               </p>
             </div>
             {hasDepartments && (
@@ -894,8 +940,8 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
               <Label htmlFor="edit-role">Rolle</Label>
               <Select
                 value={editForm.role}
-                onValueChange={(value: "company_admin" | "user") => 
-                  setEditForm({ ...editForm, role: value })
+                onValueChange={(value: "company_admin" | "department_admin" | "user") => 
+                  setEditForm({ ...editForm, role: value, isDepartmentAdmin: value === "department_admin" })
                 }
               >
                 <SelectTrigger>
@@ -908,6 +954,14 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                       Bruker
                     </div>
                   </SelectItem>
+                  {hasDepartments && (
+                    <SelectItem value="department_admin">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4" />
+                        Avdelingsleder
+                      </div>
+                    </SelectItem>
+                  )}
                   <SelectItem value="company_admin">
                     <div className="flex items-center gap-2">
                       <Shield className="w-4 h-4" />
