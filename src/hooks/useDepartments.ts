@@ -11,6 +11,7 @@ export interface Department {
   address: string | null;
   city: string | null;
   postal_code: string | null;
+  org_number: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

@@ -830,6 +830,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          org_number: string | null
           postal_code: string | null
           updated_at: string
         }
@@ -842,6 +843,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          org_number?: string | null
           postal_code?: string | null
           updated_at?: string
         }
@@ -854,6 +856,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          org_number?: string | null
           postal_code?: string | null
           updated_at?: string
         }
@@ -9639,6 +9642,10 @@ export type Database = {
       generate_ks_module2_routine_number: { Args: never; Returns: string }
       generate_ks_module2_uk_number: { Args: never; Returns: string }
       generate_project_number: { Args: never; Returns: string }
+      get_admin_department_ids: {
+        Args: { _user_id: string }
+        Returns: string[]
+      }
       get_user_company_id: { Args: { _user_id: string }; Returns: string }
       has_guest_project_access: {
         Args: { project_uuid: string }
@@ -9651,13 +9658,23 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_any_department_admin: { Args: { _user_id: string }; Returns: boolean }
       is_company_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_department_admin_for: {
+        Args: { _department_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_hms_responsible: { Args: { user_id: string }; Returns: boolean }
       is_leader_or_verneombud: { Args: { p_user_id: string }; Returns: boolean }
       is_system_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "system_admin" | "company_admin" | "user" | "subcontractor"
+      app_role:
+        | "system_admin"
+        | "company_admin"
+        | "user"
+        | "subcontractor"
+        | "department_admin"
       company_status: "active" | "inactive" | "suspended"
       ks_module2_access_level: "none" | "guest" | "full_ue"
     }
@@ -9787,7 +9804,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["system_admin", "company_admin", "user", "subcontractor"],
+      app_role: [
+        "system_admin",
+        "company_admin",
+        "user",
+        "subcontractor",
+        "department_admin",
+      ],
       company_status: ["active", "inactive", "suspended"],
       ks_module2_access_level: ["none", "guest", "full_ue"],
     },
