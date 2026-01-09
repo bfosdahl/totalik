@@ -35,9 +35,11 @@ interface ParsedCompany {
   phone: string;
   contactFirstName: string;
   contactLastName: string;
+  productName: string;
   isValid: boolean;
   errorMessage?: string;
   isDuplicate?: boolean;
+  isKurslisensOnly?: boolean;
 }
 
 interface ImportResult {
@@ -147,13 +149,33 @@ export function BulkCompanyImportDialog({
             const phone = String(row.Customer_Phone || row.Customer_CellPhone || row["Customer_Phone"] || row["Customer_CellPhone"] || "").trim();
             const contactFirstName = String(row.Customer_Name || row["Customer_Name"] || "").trim();
             const contactLastName = String(row.Customer_SecondName || row["Customer_SecondName"] || "").trim();
+            const productName = String(row.ProductName || row["ProductName"] || row.AllProducts || row["AllProducts"] || "").trim();
 
             const isDuplicate = existingOrgs.has(orgNumber);
-            const isValid = orgNumber.length >= 9 && name.length > 0 && !isDuplicate;
+            
+            // Check if this is a kurslisens-only order (no IK system)
+            // Valid IK products contain: IK/HMS, IK/MAT, IK-BYGG, IK/KHMS, Internkontroll
+            const productNameLower = productName.toLowerCase();
+            const isIkProduct = 
+              productNameLower.includes("ik/hms") ||
+              productNameLower.includes("ik/mat") ||
+              productNameLower.includes("ik-bygg") ||
+              productNameLower.includes("ik/khms") ||
+              productNameLower.includes("internkontroll");
+            
+            const isKurslisensOnly = !isIkProduct && (
+              productNameLower.includes("kurs") ||
+              productNameLower.includes("lisens") ||
+              productName === ""
+            );
+            
+            const isValid = orgNumber.length >= 9 && name.length > 0 && !isDuplicate && !isKurslisensOnly;
             
             let errorMessage: string | undefined;
             if (isDuplicate) {
               errorMessage = "Finnes allerede";
+            } else if (isKurslisensOnly) {
+              errorMessage = "Kun kurslisens";
             } else if (orgNumber.length < 9) {
               errorMessage = "Ugyldig org.nr";
             } else if (!name) {
@@ -170,8 +192,10 @@ export function BulkCompanyImportDialog({
               phone,
               contactFirstName,
               contactLastName,
+              productName,
               isValid,
               isDuplicate,
+              isKurslisensOnly,
               errorMessage,
             });
           }
@@ -329,6 +353,7 @@ export function BulkCompanyImportDialog({
   const validCount = parsedCompanies.filter((c) => c.isValid).length;
   const invalidCount = parsedCompanies.filter((c) => !c.isValid).length;
   const duplicateCount = parsedCompanies.filter((c) => c.isDuplicate).length;
+  const kurslisensCount = parsedCompanies.filter((c) => c.isKurslisensOnly).length;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -392,10 +417,16 @@ export function BulkCompanyImportDialog({
                   {duplicateCount} duplikater
                 </Badge>
               )}
-              {invalidCount - duplicateCount > 0 && (
+              {kurslisensCount > 0 && (
+                <Badge variant="outline" className="text-sm border-orange-500 text-orange-600">
+                  <AlertCircle className="w-3 h-3 mr-1" />
+                  {kurslisensCount} kurslisens (blokkert)
+                </Badge>
+              )}
+              {invalidCount - duplicateCount - kurslisensCount > 0 && (
                 <Badge variant="destructive" className="text-sm">
                   <X className="w-3 h-3 mr-1" />
-                  {invalidCount - duplicateCount} ugyldige
+                  {invalidCount - duplicateCount - kurslisensCount} ugyldige
                 </Badge>
               )}
             </div>
@@ -437,6 +468,19 @@ export function BulkCompanyImportDialog({
               </div>
             </div>
 
+            {/* Kurslisens warning */}
+            {kurslisensCount > 0 && (
+              <div className="p-3 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-lg">
+                <p className="text-sm font-medium text-orange-700 dark:text-orange-400 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4" />
+                  {kurslisensCount} kunder har kun kurslisens og vil IKKE bli importert
+                </p>
+                <p className="text-xs text-orange-600 dark:text-orange-500 mt-1">
+                  Kurslisens-kunder skal ikke ha tilgang til Total-IK. Disse er automatisk blokkert.
+                </p>
+              </div>
+            )}
+
             {/* Companies table */}
             <ScrollArea className="flex-1 border rounded-lg">
               <Table>
@@ -445,7 +489,7 @@ export function BulkCompanyImportDialog({
                     <TableHead className="w-[80px]">Status</TableHead>
                     <TableHead>Org.nr</TableHead>
                     <TableHead>Bedrift</TableHead>
-                    <TableHead className="hidden md:table-cell">Kontakt</TableHead>
+                    <TableHead className="hidden md:table-cell">Produkt</TableHead>
                     <TableHead className="hidden lg:table-cell">E-post</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -453,12 +497,22 @@ export function BulkCompanyImportDialog({
                   {parsedCompanies.map((company, index) => (
                     <TableRow
                       key={index}
-                      className={company.isValid ? "" : "opacity-60 bg-muted/30"}
+                      className={
+                        company.isValid 
+                          ? "" 
+                          : company.isKurslisensOnly 
+                            ? "opacity-60 bg-orange-50/50 dark:bg-orange-950/20" 
+                            : "opacity-60 bg-muted/30"
+                      }
                     >
                       <TableCell>
                         {company.isValid ? (
                           <Badge variant="success" className="text-xs">
                             <Check className="w-3 h-3" />
+                          </Badge>
+                        ) : company.isKurslisensOnly ? (
+                          <Badge variant="outline" className="text-xs border-orange-500 text-orange-600">
+                            Kurslisens
                           </Badge>
                         ) : (
                           <Badge variant="destructive" className="text-xs">
@@ -472,8 +526,8 @@ export function BulkCompanyImportDialog({
                       <TableCell className="font-medium text-sm max-w-[180px] truncate">
                         {company.name}
                       </TableCell>
-                      <TableCell className="hidden md:table-cell text-sm text-muted-foreground max-w-[120px] truncate">
-                        {[company.contactFirstName, company.contactLastName].filter(Boolean).join(" ") || "-"}
+                      <TableCell className="hidden md:table-cell text-xs text-muted-foreground max-w-[200px] truncate" title={company.productName}>
+                        {company.productName || "-"}
                       </TableCell>
                       <TableCell className="hidden lg:table-cell text-sm text-muted-foreground max-w-[180px] truncate">
                         {company.email || <span className="text-amber-500 text-xs">Mangler</span>}
