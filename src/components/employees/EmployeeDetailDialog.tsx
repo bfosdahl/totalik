@@ -122,8 +122,27 @@ export function EmployeeDetailDialog({
   // Get IDs of departments the user is already in
   const assignedDepartmentIds = userDepartments.map(ud => ud.department_id);
   
-  // Check if user is assigned to main company (no departments or primary_department_id is null)
-  const isAssignedToMain = employee.primary_department_id === null;
+  // Check if user is assigned to main company
+  const [isAssignedToMain, setIsAssignedToMain] = useState(true);
+  
+  // Fetch is_assigned_to_main status
+  useEffect(() => {
+    const fetchMainAssignment = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("is_assigned_to_main")
+        .eq("id", employee.id)
+        .single();
+      
+      if (data) {
+        setIsAssignedToMain(data.is_assigned_to_main ?? true);
+      }
+    };
+    
+    if (employee.id && open) {
+      fetchMainAssignment();
+    }
+  }, [employee.id, open]);
 
   const getInitials = () => {
     const first = employee.first_name?.charAt(0) || "";
@@ -442,12 +461,14 @@ export function EmployeeDetailDialog({
                               setIsAssigningMain(true);
                               try {
                                 // Toggle is_assigned_to_main flag
+                                const newValue = !isAssignedToMain;
                                 const { error } = await supabase
                                   .from("profiles")
-                                  .update({ is_assigned_to_main: !isAssignedToMain })
+                                  .update({ is_assigned_to_main: newValue } as any)
                                   .eq("id", employee.id);
                                 
                                 if (error) throw error;
+                                setIsAssignedToMain(newValue);
                                 toast.success(isAssignedToMain ? "Fjernet fra hovedenheten" : "Lagt til i hovedenheten");
                               } catch (err) {
                                 console.error("Error updating main company assignment:", err);
