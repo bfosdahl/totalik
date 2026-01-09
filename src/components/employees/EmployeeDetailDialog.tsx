@@ -441,10 +441,10 @@ export function EmployeeDetailDialog({
                             onClick={async () => {
                               setIsAssigningMain(true);
                               try {
-                                // Toggle primary_department_id - null means main company
+                                // Toggle is_assigned_to_main flag
                                 const { error } = await supabase
                                   .from("profiles")
-                                  .update({ primary_department_id: isAssignedToMain ? (departments[0]?.id || null) : null })
+                                  .update({ is_assigned_to_main: !isAssignedToMain })
                                   .eq("id", employee.id);
                                 
                                 if (error) throw error;
