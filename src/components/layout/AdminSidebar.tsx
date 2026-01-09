@@ -27,9 +27,7 @@ const adminNavItems = [
   { icon: Users, label: "Brukere", path: "/admin/users", color: undefined },
   { icon: CreditCard, label: "HMS-kort", path: "/admin/hms-requests", color: undefined },
   { icon: Award, label: "SG Register", path: "/admin/sg-register", color: undefined },
-  { icon: BookOpen, label: "KS Malbank", path: "/admin/ks-panel", color: "text-primary" },
-  { icon: FolderOpen, label: "Byggesak-maler", path: "/admin/byggesak-templates", color: "text-orange-500" },
-  { icon: Leaf, label: "Dokumentsenter (IK-HMS)", path: "/admin/documents", color: "text-emerald-500" },
+  { icon: FolderOpen, label: "Dokumentsenter", path: "/admin/documents", color: "text-primary" },
 ];
 
 interface SidebarContentProps {
