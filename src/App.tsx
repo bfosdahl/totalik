@@ -58,6 +58,7 @@ import IkMatMaal from "./pages/IkMatMaal";
 import IkMatOrganisasjon from "./pages/IkMatOrganisasjon";
 import IkMatRutiner from "./pages/IkMatRutiner";
 import IkMatRisikoOgTiltak from "./pages/IkMatRisikoOgTiltak";
+import IkMatDokumentsenter from "./pages/IkMatDokumentsenter";
 import IkHmsOppsett from "./pages/IkHmsOppsett";
 import IkHmsMaal from "./pages/IkHmsMaal";
 import IkHmsOrganisering from "./pages/IkHmsOrganisering";
@@ -144,6 +145,7 @@ const App = () => (
                   <Route path="/ik-mat/allergener" element={<ProtectedRoute><IkMatAllergener /></ProtectedRoute>} />
                   <Route path="/ik-mat/faste-avtaler" element={<ProtectedRoute><IkMatFasteAvtaler /></ProtectedRoute>} />
                   <Route path="/ik-mat/sporbarhet" element={<ProtectedRoute><IkMatSporbarhet /></ProtectedRoute>} />
+                  <Route path="/ik-mat/dokumentsenter" element={<ProtectedRoute><IkMatDokumentsenter /></ProtectedRoute>} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="/brukerveiledning" element={<ProtectedRoute><Brukerveiledning /></ProtectedRoute>} />
                   <Route path="/anonymous-messages" element={<ProtectedRoute><AnonymousMessages /></ProtectedRoute>} />
