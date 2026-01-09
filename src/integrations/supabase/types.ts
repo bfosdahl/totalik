@@ -8663,6 +8663,7 @@ export type Database = {
           hms_card_required: boolean | null
           id: string
           is_active: boolean
+          is_assigned_to_main: boolean | null
           is_hms_responsible: boolean | null
           is_verneombud: boolean | null
           last_name: string | null
@@ -8692,6 +8693,7 @@ export type Database = {
           hms_card_required?: boolean | null
           id?: string
           is_active?: boolean
+          is_assigned_to_main?: boolean | null
           is_hms_responsible?: boolean | null
           is_verneombud?: boolean | null
           last_name?: string | null
@@ -8721,6 +8723,7 @@ export type Database = {
           hms_card_required?: boolean | null
           id?: string
           is_active?: boolean
+          is_assigned_to_main?: boolean | null
           is_hms_responsible?: boolean | null
           is_verneombud?: boolean | null
           last_name?: string | null
