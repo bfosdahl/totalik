@@ -60,7 +60,7 @@ export function EmployeeDetailDialog({
   onOpenChange,
   canManage 
 }: EmployeeDetailDialogProps) {
-  const { profile } = useAuth();
+  const { profile, company } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     phone: employee.phone || "",
@@ -117,9 +117,13 @@ export function EmployeeDetailDialog({
   const { departments, isLoading: deptsLoading } = useDepartments();
   const { userDepartments, isLoading: userDeptsLoading, assignUserToDepartment, removeUserFromDepartment, refetch: refetchUserDepts } = useUserDepartments(employee.id);
   const [assigningDept, setAssigningDept] = useState<string | null>(null);
+  const [isAssigningMain, setIsAssigningMain] = useState(false);
   
   // Get IDs of departments the user is already in
   const assignedDepartmentIds = userDepartments.map(ud => ud.department_id);
+  
+  // Check if user is assigned to main company (no departments or primary_department_id is null)
+  const isAssignedToMain = employee.primary_department_id === null;
 
   const getInitials = () => {
     const first = employee.first_name?.charAt(0) || "";
@@ -403,7 +407,7 @@ export function EmployeeDetailDialog({
                     Avdelingstilhørighet
                   </CardTitle>
                   <CardDescription>
-                    Velg hvilke avdelinger denne ansatte skal tilhøre
+                    Velg hvilke enheter denne ansatte skal tilhøre
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -412,16 +416,71 @@ export function EmployeeDetailDialog({
                       <Loader2 className="w-4 h-4 animate-spin" />
                       Laster avdelinger...
                     </div>
-                  ) : departments.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Building2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p>Ingen avdelinger er opprettet ennå.</p>
-                      <p className="text-sm mt-2">
-                        Gå til Innstillinger → Avdelinger for å opprette avdelinger.
-                      </p>
-                    </div>
                   ) : (
                     <div className="space-y-2">
+                      {/* Hovedenheten (Main Company) */}
+                      <div 
+                        className={`flex items-center justify-between p-3 rounded-lg border ${
+                          isAssignedToMain ? 'bg-primary/5 border-primary/20' : 'bg-muted/30'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-lg ${isAssignedToMain ? 'bg-primary/10' : 'bg-muted'}`}>
+                            <Building2 className={`w-4 h-4 ${isAssignedToMain ? 'text-primary' : 'text-muted-foreground'}`} />
+                          </div>
+                          <div>
+                            <p className="font-medium">{company?.name || 'Hovedenheten'}</p>
+                            <p className="text-sm text-muted-foreground">Hovedenhet</p>
+                          </div>
+                        </div>
+                        {canManage && (
+                          <Button
+                            variant={isAssignedToMain ? "outline" : "default"}
+                            size="sm"
+                            disabled={isAssigningMain}
+                            onClick={async () => {
+                              setIsAssigningMain(true);
+                              try {
+                                // Toggle primary_department_id - null means main company
+                                const { error } = await supabase
+                                  .from("profiles")
+                                  .update({ primary_department_id: isAssignedToMain ? (departments[0]?.id || null) : null })
+                                  .eq("id", employee.id);
+                                
+                                if (error) throw error;
+                                toast.success(isAssignedToMain ? "Fjernet fra hovedenheten" : "Lagt til i hovedenheten");
+                              } catch (err) {
+                                console.error("Error updating main company assignment:", err);
+                                toast.error("Kunne ikke oppdatere tilhørighet");
+                              } finally {
+                                setIsAssigningMain(false);
+                              }
+                            }}
+                          >
+                            {isAssigningMain ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : isAssignedToMain ? (
+                              <>
+                                <X className="w-4 h-4 mr-1" />
+                                Fjern
+                              </>
+                            ) : (
+                              <>
+                                <Plus className="w-4 h-4 mr-1" />
+                                Legg til
+                              </>
+                            )}
+                          </Button>
+                        )}
+                        {!canManage && isAssignedToMain && (
+                          <Badge variant="secondary">
+                            <Check className="w-3 h-3 mr-1" />
+                            Tilhører
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Avdelinger (Departments) */}
                       {departments.filter(d => d.is_active).map((dept) => {
                         const isAssigned = assignedDepartmentIds.includes(dept.id);
                         const isProcessing = assigningDept === dept.id;
@@ -487,6 +546,12 @@ export function EmployeeDetailDialog({
                           </div>
                         );
                       })}
+                      
+                      {departments.filter(d => d.is_active).length === 0 && (
+                        <p className="text-sm text-muted-foreground py-2">
+                          Ingen avdelinger er opprettet ennå. Gå til Innstillinger → Avdelinger for å opprette avdelinger.
+                        </p>
+                      )}
                     </div>
                   )}
                 </CardContent>
