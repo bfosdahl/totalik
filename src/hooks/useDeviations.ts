@@ -3,12 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
+// Valid database category values
+export type DeviationCategory = "quality" | "safety" | "environment" | "documentation" | "other" | "process" | "equipment" | "personnel";
+
 export interface Deviation {
   id: string;
   deviation_number: string;
   title: string;
   description: string | null;
-  category: "HMS" | "MAT" | "BYGG";
+  category: DeviationCategory;
   priority: "low" | "medium" | "high" | "critical";
   status: "open" | "in-progress" | "resolved" | "closed";
   assignee_id: string | null;
@@ -39,7 +42,7 @@ export interface Deviation {
 export interface NewDeviationInput {
   title: string;
   description: string;
-  category: "HMS" | "MAT" | "BYGG";
+  category: DeviationCategory;
   priority: "low" | "medium" | "high" | "critical";
   assignee_id?: string | null;
   assignee_name: string | null;
@@ -58,6 +61,27 @@ export interface NewDeviationInput {
   responsible_receiver?: string;
   notify_arbeidstilsynet?: boolean;
   notify_insurance?: boolean;
+}
+
+// Helper function to extract time from various input formats
+function extractTimeFromInput(input: string): string | null {
+  if (!input) return null;
+  
+  // If it's already a valid time format (HH:MM or HH:MM:SS), return as-is
+  if (/^\d{2}:\d{2}(:\d{2})?$/.test(input)) {
+    return input.length === 5 ? `${input}:00` : input;
+  }
+  
+  // If it's a datetime string like "2026-01-09T15:46", extract the time part
+  if (input.includes('T')) {
+    const timePart = input.split('T')[1];
+    if (timePart) {
+      const time = timePart.substring(0, 5); // Get HH:MM
+      return `${time}:00`;
+    }
+  }
+  
+  return null;
 }
 
 export function useDeviations() {
@@ -153,7 +177,8 @@ export function useDeviations() {
           due_date: input.due_date,
           // Extended fields
           incident_location: input.incident_location || null,
-          incident_time: input.incident_time && input.incident_time.includes(':') ? input.incident_time : null,
+          // Ensure incident_time is in HH:MM:SS format (strip date if datetime was passed)
+          incident_time: input.incident_time ? extractTimeFromInput(input.incident_time) : null,
           incident_type: input.incident_type || null,
           severity: input.severity || null,
           reporter_contact: input.reporter_contact || null,

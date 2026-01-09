@@ -36,12 +36,15 @@ import { exportSingleDeviationToPDF } from "@/utils/deviationExport";
 import { useAuth } from "@/contexts/AuthContext";
 import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
 
+// Valid database category values
+type DeviationCategory = "quality" | "safety" | "environment" | "documentation" | "other" | "process" | "equipment" | "personnel";
+
 interface Deviation {
   id: string;
   deviation_number?: string;
   title: string;
   description: string;
-  category: "HMS" | "MAT" | "BYGG";
+  category: DeviationCategory;
   priority: "low" | "medium" | "high" | "critical";
   status: "open" | "in-progress" | "resolved" | "closed";
   assignee: string;
@@ -80,10 +83,15 @@ const statusConfig = {
   closed: { label: "Lukket", color: "bg-muted text-muted-foreground" },
 };
 
-const categoryConfig = {
-  HMS: { color: "bg-primary/10 text-primary", label: "HMS" },
-  MAT: { color: "bg-accent/10 text-accent", label: "Matsikkerhet" },
-  BYGG: { color: "bg-info/10 text-info", label: "Bygg og anlegg" },
+const categoryConfig: Record<DeviationCategory, { label: string; color: string }> = {
+  safety: { label: "HMS / Sikkerhet", color: "bg-primary/10 text-primary" },
+  quality: { label: "Kvalitet", color: "bg-blue-500/10 text-blue-600" },
+  environment: { label: "Miljø", color: "bg-green-500/10 text-green-600" },
+  process: { label: "Prosess", color: "bg-purple-500/10 text-purple-600" },
+  equipment: { label: "Utstyr", color: "bg-orange-500/10 text-orange-600" },
+  personnel: { label: "Personell", color: "bg-pink-500/10 text-pink-600" },
+  documentation: { label: "Dokumentasjon", color: "bg-slate-500/10 text-slate-600" },
+  other: { label: "Annet", color: "bg-muted text-muted-foreground" },
 };
 
 interface DeviationDetailDialogProps {
