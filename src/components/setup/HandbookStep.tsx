@@ -25,6 +25,19 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { supabase } from "@/integrations/supabase/client";
 import { useCompanyLawsRegulations } from "@/hooks/useCompanyLawsRegulations";
+import {
+  sanitizeGoals,
+  sanitizeOrganization,
+  sanitizeRisks,
+  sanitizeActions,
+  sanitizeRoutines,
+  sanitizeLaws,
+  sanitizeCompanyInfo,
+  getRiskLevelText,
+  getRiskLevelColor,
+  formatDateForPdf,
+  loadImageAsBase64,
+} from "@/utils/handbookPdfSanitizer";
 
 interface GoalData {
   id: string;
@@ -187,49 +200,7 @@ export function HandbookStep({
 
   const allComplete = Object.values(completionStatus).every(Boolean);
 
-  const getRiskLevelText = (value: number): string => {
-    if (value <= 4) return "Lav";
-    if (value <= 9) return "Moderat";
-    if (value <= 15) return "Høy";
-    return "Kritisk";
-  };
-
-  const getRiskLevelColor = (value: number): [number, number, number] => {
-    if (value <= 4) return [34, 197, 94]; // green
-    if (value <= 9) return [234, 179, 8]; // yellow
-    if (value <= 15) return [249, 115, 22]; // orange
-    return [239, 68, 68]; // red
-  };
-
-  const formatDate = (date: Date): string => {
-    return date.toLocaleDateString("nb-NO", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric"
-    });
-  };
-
-  // Helper function to load image as base64
-  const loadImageAsBase64 = (url: string): Promise<string | null> => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(img, 0, 0);
-          resolve(canvas.toDataURL("image/png"));
-        } else {
-          resolve(null);
-        }
-      };
-      img.onerror = () => resolve(null);
-      img.src = url;
-    });
-  };
+  // Helper functions now imported from handbookPdfSanitizer
 
   const generatePDF = async (preview: boolean = false) => {
     if (preview) {
@@ -337,7 +308,7 @@ export function HandbookStep({
 
       // Date
       doc.setFontSize(12);
-      doc.text(`Dato: ${formatDate(new Date())}`, pageWidth / 2, pageHeight - 40, { align: "center" });
+      doc.text(`Dato: ${formatDateForPdf(new Date())}`, pageWidth / 2, pageHeight - 40, { align: "center" });
 
       // Footer
       doc.setFontSize(10);
@@ -539,19 +510,16 @@ export function HandbookStep({
       doc.text("Risiko = Sannsynlighet × Konsekvens (Arbeidstilsynets metodikk)", margin, yPos);
       yPos += 10;
 
-      if (riskAssessment && riskAssessment.risks.length > 0) {
-        const riskTableData = riskAssessment.risks.map(risk => {
-          const probability = risk.probability ?? 1;
-          const consequence = risk.consequence ?? 1;
-          const riskValue = consequence * probability;
-          return [
-            (risk.description || "").substring(0, 80) + ((risk.description?.length || 0) > 80 ? "..." : ""),
-            probability.toString(),
-            consequence.toString(),
-            riskValue.toString(),
-            getRiskLevelText(riskValue)
-          ];
-        });
+      // Use sanitized risk data to prevent undefined errors
+      const sanitizedRisks = sanitizeRisks(riskAssessment);
+      if (sanitizedRisks.length > 0) {
+        const riskTableData = sanitizedRisks.map(risk => [
+          risk.description.substring(0, 80) + (risk.description.length > 80 ? "..." : ""),
+          String(risk.probability),
+          String(risk.consequence),
+          String(risk.riskValue),
+          risk.riskLevel
+        ]);
 
         autoTable(doc, {
           startY: yPos,
@@ -626,20 +594,14 @@ export function HandbookStep({
       doc.text("Handlingsplanen viser tiltak som skal gjennomføres for å redusere identifiserte risikoer.", margin, yPos);
       yPos += 10;
 
-      if (actionPlan && actionPlan.actions.length > 0) {
-        // Normalize status values for counting (handle both old and new format)
-        const normalizeStatus = (status: string): string => {
-          if (status === "pending" || status === "ikke_startet") return "ikke_startet";
-          if (status === "in_progress" || status === "pågår") return "pågår";
-          if (status === "completed" || status === "fullført") return "fullført";
-          return status;
-        };
-
+      // Use sanitized action data to prevent undefined errors
+      const sanitizedActions = sanitizeActions(actionPlan);
+      if (sanitizedActions.length > 0) {
         // Status summary
         const statusCounts = {
-          ikke_startet: actionPlan.actions.filter(a => normalizeStatus(a.status) === "ikke_startet").length,
-          pågår: actionPlan.actions.filter(a => normalizeStatus(a.status) === "pågår").length,
-          fullført: actionPlan.actions.filter(a => normalizeStatus(a.status) === "fullført").length,
+          ikke_startet: sanitizedActions.filter(a => a.status === "ikke_startet").length,
+          pågår: sanitizedActions.filter(a => a.status === "pågår").length,
+          fullført: sanitizedActions.filter(a => a.status === "fullført").length,
         };
 
         doc.setFont("helvetica", "bold");
@@ -653,24 +615,13 @@ export function HandbookStep({
         doc.text(`• Fullført: ${statusCounts.fullført}`, margin + 5, yPos);
         yPos += 10;
 
-        // Action plan table
-        const getStatusText = (status: string): string => {
-          const normalized = normalizeStatus(status);
-          switch (normalized) {
-            case "ikke_startet": return "Ikke startet";
-            case "pågår": return "Pågår";
-            case "fullført": return "Fullført";
-            default: return status;
-          }
-        };
-
         const getPriorityText = (priority: string): string => {
           switch (priority) {
             case "lav": return "Lav";
             case "medium": return "Medium";
             case "høy": return "Høy";
             case "kritisk": return "Kritisk";
-            default: return priority;
+            default: return priority || "Medium";
           }
         };
 
@@ -684,17 +635,13 @@ export function HandbookStep({
           }
         };
 
-        // Handle both field name formats: action_description or description
-        const actionTableData = actionPlan.actions.map(action => {
-          const description = (action as any).action_description || (action as any).description || "";
-          return [
-            description.substring(0, 40) + (description.length > 40 ? "..." : ""),
-            action.responsible || "-",
-            action.deadline ? new Date(action.deadline).toLocaleDateString("nb-NO") : "-",
-            getPriorityText(action.priority || "medium"),
-            getStatusText(action.status)
-          ];
-        });
+        const actionTableData = sanitizedActions.map(action => [
+          action.action_description.substring(0, 40) + (action.action_description.length > 40 ? "..." : ""),
+          action.responsible,
+          action.deadline !== "-" && action.deadline ? new Date(action.deadline).toLocaleDateString("nb-NO") : "-",
+          getPriorityText(action.priority),
+          action.statusLabel
+        ]);
 
         autoTable(doc, {
           startY: yPos,
@@ -740,58 +687,53 @@ export function HandbookStep({
 
       addSectionHeader("5. Rutiner og prosedyrer");
 
-      if (routines && routines.routines.length > 0) {
-        routines.routines.forEach((routine, index) => {
+      // Use sanitized routines data to prevent undefined errors
+      const sanitizedRoutinesList = sanitizeRoutines(routines);
+      if (sanitizedRoutinesList.length > 0) {
+        sanitizedRoutinesList.forEach((routine, index) => {
           checkPageBreak(60);
-          
-          // Handle both field name formats
-          const routineNumber = routine.routine_number || `R${(index + 1).toString().padStart(3, '0')}`;
-          const routineName = routine.routine_name || (routine as any).name || 'Ukjent rutine';
-          const purpose = routine.purpose || (routine as any).description || '';
-          const responsibility = routine.responsibility || (routine as any).responsible || '';
-          const procedure = routine.procedure || '';
           
           // Routine header
           doc.setFillColor(240, 249, 255);
           doc.roundedRect(margin, yPos, contentWidth, 12, 2, 2, "F");
           doc.setFontSize(12);
           doc.setFont("helvetica", "bold");
-          doc.text(`${routineNumber} - ${routineName}`, margin + 5, yPos + 8);
+          doc.text(`${routine.routine_number} - ${routine.routine_name}`, margin + 5, yPos + 8);
           yPos += 17;
 
           doc.setFontSize(10);
           doc.setFont("helvetica", "normal");
 
           // Purpose/Description
-          if (purpose) {
+          if (routine.purpose) {
             doc.setFont("helvetica", "bold");
             doc.text("Formål:", margin, yPos);
             doc.setFont("helvetica", "normal");
-            const purposeLines = doc.splitTextToSize(purpose, contentWidth - 20);
+            const purposeLines = doc.splitTextToSize(routine.purpose, contentWidth - 20);
             doc.text(purposeLines, margin + 20, yPos);
             yPos += purposeLines.length * 5 + 5;
           }
 
           // Responsibility
-          if (responsibility) {
+          if (routine.responsibility) {
             checkPageBreak(15);
             doc.setFont("helvetica", "bold");
             doc.text("Ansvar:", margin, yPos);
             doc.setFont("helvetica", "normal");
-            const respLines = doc.splitTextToSize(responsibility, contentWidth - 20);
+            const respLines = doc.splitTextToSize(routine.responsibility, contentWidth - 20);
             doc.text(respLines, margin + 20, yPos);
             yPos += respLines.length * 5 + 5;
           }
 
           // Procedure (abbreviated) - only if exists
-          if (procedure) {
+          if (routine.procedure) {
             checkPageBreak(20);
             doc.setFont("helvetica", "bold");
             doc.text("Fremgangsmåte:", margin, yPos);
             yPos += 5;
             doc.setFont("helvetica", "normal");
-            const procLines = doc.splitTextToSize(procedure.substring(0, 300) + 
-              (procedure.length > 300 ? "..." : ""), contentWidth);
+            const procLines = doc.splitTextToSize(routine.procedure.substring(0, 300) + 
+              (routine.procedure.length > 300 ? "..." : ""), contentWidth);
             procLines.slice(0, 5).forEach((line: string) => {
               checkPageBreak(6);
               doc.text(line, margin, yPos);
@@ -802,7 +744,7 @@ export function HandbookStep({
           yPos += 10;
           
           // Add separator between routines
-          if (index < routines.routines.length - 1) {
+          if (index < sanitizedRoutinesList.length - 1) {
             doc.setDrawColor(200, 200, 200);
             doc.line(margin, yPos, pageWidth - margin, yPos);
             yPos += 10;
@@ -825,11 +767,13 @@ export function HandbookStep({
       doc.text("Oversikt over lover og forskrifter som gjelder for virksomheten:", margin, yPos);
       yPos += 10;
 
-      if (savedLaws && savedLaws.length > 0) {
-        const lawTableData = savedLaws.map(law => [
-          law.law_name || "-",
-          law.category || "Generelt",
-          law.description || "-",
+      // Use sanitized laws data to prevent undefined errors
+      const sanitizedLawsList = sanitizeLaws(savedLaws);
+      if (sanitizedLawsList.length > 0) {
+        const lawTableData = sanitizedLawsList.map(law => [
+          law.law_name,
+          law.category,
+          law.description,
         ]);
 
         autoTable(doc, {
