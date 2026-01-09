@@ -49,6 +49,19 @@ import { useCompanyLawsRegulations } from "@/hooks/useCompanyLawsRegulations";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
+import {
+  sanitizeHandbookData,
+  sanitizeRisks,
+  sanitizeActions,
+  sanitizeRoutines,
+  sanitizeLaws,
+  safeString,
+  safeTruncate,
+  getRiskLevelText,
+  getRiskLevelColor,
+  formatDateForPdf,
+  loadImageAsBase64,
+} from "@/utils/handbookPdfSanitizer";
 
 const statusConfig = {
   complete: {
@@ -482,45 +495,7 @@ const Handbook = () => {
   const completeSections = handbookSections.filter((s) => s.status === "complete").length;
   const lastUpdated = new Date();
 
-  // PDF Generation helper functions
-  const getRiskLevelText = (value: number): string => {
-    if (value <= 4) return "Lav";
-    if (value <= 9) return "Moderat";
-    if (value <= 15) return "Høy";
-    return "Kritisk";
-  };
-
-  const getRiskLevelColor = (value: number): [number, number, number] => {
-    if (value <= 4) return [34, 197, 94];
-    if (value <= 9) return [234, 179, 8];
-    if (value <= 15) return [249, 115, 22];
-    return [239, 68, 68];
-  };
-
-  const formatDateForPdf = (date: Date): string => {
-    return date.toLocaleDateString("nb-NO", { day: "2-digit", month: "long", year: "numeric" });
-  };
-
-  const loadImageAsBase64 = (url: string): Promise<string | null> => {
-    return new Promise((resolve) => {
-      const img = new window.Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(img, 0, 0);
-          resolve(canvas.toDataURL("image/png"));
-        } else {
-          resolve(null);
-        }
-      };
-      img.onerror = () => resolve(null);
-      img.src = url;
-    });
-  };
+  // PDF Generation - now uses sanitized data from handbookPdfSanitizer
 
   const handleDownloadPdf = useCallback(async () => {
     setIsGeneratingPdf(true);
@@ -785,20 +760,16 @@ const Handbook = () => {
       doc.setFontSize(11);
       doc.text("Risiko = Sannsynlighet × Konsekvens (Arbeidstilsynets metodikk)", margin, yPos);
       yPos += 10;
-      if (riskAssessment && riskAssessment.risks.length > 0) {
-        const riskTableData = riskAssessment.risks.map((risk) => {
-          const probability = typeof risk?.probability === "number" ? risk.probability : Number(risk?.probability) || 0;
-          const consequence = typeof risk?.consequence === "number" ? risk.consequence : Number(risk?.consequence) || 0;
-          const riskValue = consequence * probability;
-
-          return [
-            (risk?.description || "").substring(0, 80) + ((risk?.description?.length || 0) > 80 ? "..." : ""),
-            String(probability),
-            String(consequence),
-            String(riskValue),
-            getRiskLevelText(riskValue),
-          ];
-        });
+      // Use sanitized risk data to prevent undefined errors
+      const sanitizedRisks = sanitizeRisks(riskAssessment);
+      if (sanitizedRisks.length > 0) {
+        const riskTableData = sanitizedRisks.map((risk) => [
+          risk.description.substring(0, 80) + (risk.description.length > 80 ? "..." : ""),
+          String(risk.probability),
+          String(risk.consequence),
+          String(risk.riskValue),
+          risk.riskLevel,
+        ]);
         autoTable(doc, {
           startY: yPos,
           head: [["Beskrivelse", "S", "K", "R", "Nivå"]],
@@ -836,12 +807,14 @@ const Handbook = () => {
       doc.addPage();
       yPos = margin;
       addSectionHeader("4. Handlingsplan");
-      if (actionPlan && actionPlan.actions.length > 0) {
-        const actionTableData = actionPlan.actions.map((action) => [
-          (action.action_description || "").substring(0, 60),
-          action.responsible || "-",
-          action.deadline || "-",
-          action.status === "fullført" ? "Fullført" : action.status === "pågår" ? "Pågår" : "Ikke startet",
+      // Use sanitized action data to prevent undefined errors
+      const sanitizedActions = sanitizeActions(actionPlan);
+      if (sanitizedActions.length > 0) {
+        const actionTableData = sanitizedActions.map((action) => [
+          action.action_description.substring(0, 60) + (action.action_description.length > 60 ? "..." : ""),
+          action.responsible,
+          action.deadline,
+          action.statusLabel,
         ]);
         autoTable(doc, {
           startY: yPos,
@@ -863,8 +836,10 @@ const Handbook = () => {
       doc.addPage();
       yPos = margin;
       addSectionHeader("5. Rutiner og prosedyrer");
-      if (routines && routines.routines.length > 0) {
-        routines.routines.forEach((routine, index) => {
+      // Use sanitized routines data to prevent undefined errors
+      const sanitizedRoutinesList = sanitizeRoutines(routines);
+      if (sanitizedRoutinesList.length > 0) {
+        sanitizedRoutinesList.forEach((routine, index) => {
           checkPageBreak(40);
           doc.setFillColor(248, 250, 252);
           doc.roundedRect(margin, yPos, contentWidth, 25, 2, 2, "F");
