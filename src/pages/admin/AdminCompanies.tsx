@@ -16,6 +16,7 @@ import {
   Award,
   Upload,
   RefreshCw,
+  Building,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { CompanyModulesDialog } from "@/components/admin/CompanyModulesDialog";
 import { BulkCompanyImportDialog } from "@/components/admin/BulkCompanyImportDialog";
+import { CompanyDepartmentsDialog } from "@/components/admin/CompanyDepartmentsDialog";
 import { applyDefaultHmsSetup } from "@/lib/applyDefaultHmsSetup";
 const companySchema = z.object({
   name: z.string().min(1, "Bedriftsnavn er påkrevd").max(100),
@@ -102,6 +104,10 @@ export default function AdminCompanies() {
   // Modules dialog state
   const [modulesDialogOpen, setModulesDialogOpen] = useState(false);
   const [modulesCompany, setModulesCompany] = useState<any>(null);
+  
+  // Departments dialog state
+  const [departmentsDialogOpen, setDepartmentsDialogOpen] = useState(false);
+  const [departmentsCompany, setDepartmentsCompany] = useState<any>(null);
   
   // Bulk import dialog state
   const [bulkImportOpen, setBulkImportOpen] = useState(false);
@@ -755,6 +761,13 @@ export default function AdminCompanies() {
                               <Boxes className="w-4 h-4 mr-2" />
                               Moduler
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setDepartmentsCompany(company);
+                              setDepartmentsDialogOpen(true);
+                            }}>
+                              <Building className="w-4 h-4 mr-2" />
+                              Avdelinger
+                            </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => syncToKursMutation.mutate(company.id)}
                               disabled={syncToKursMutation.isPending}
@@ -863,6 +876,18 @@ export default function AdminCompanies() {
                     </Button>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setDepartmentsCompany(company);
+                        setDepartmentsDialogOpen(true);
+                      }}
+                      className="w-full"
+                    >
+                      <Building className="w-4 h-4 mr-2" />
+                      Avdelinger
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -995,6 +1020,13 @@ export default function AdminCompanies() {
           open={bulkImportOpen}
           onOpenChange={setBulkImportOpen}
           onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-companies"] })}
+        />
+
+        {/* Company Departments Dialog */}
+        <CompanyDepartmentsDialog
+          open={departmentsDialogOpen}
+          onOpenChange={setDepartmentsDialogOpen}
+          company={departmentsCompany}
         />
       </div>
     </AdminLayout>
