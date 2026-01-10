@@ -130,12 +130,14 @@ export function EmployeeDetailDialog({
     const fetchMainAssignment = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("is_assigned_to_main")
+        .select("*")
         .eq("id", employee.id)
         .single();
       
       if (data) {
-        setIsAssignedToMain(data.is_assigned_to_main ?? true);
+        // Use type assertion since is_assigned_to_main was recently added
+        const profileData = data as typeof data & { is_assigned_to_main?: boolean };
+        setIsAssignedToMain(profileData.is_assigned_to_main ?? true);
       }
     };
     
