@@ -80,6 +80,13 @@ interface BrregInfo {
 // Session storage key for persisting chat state
 const CHAT_STATE_KEY = 'ik-hms-chat-setup-state';
 
+// Helper to get unique storage key (for company or department)
+function getStorageKey(companyId: string, departmentId?: string): string {
+  return departmentId 
+    ? `${CHAT_STATE_KEY}-dept-${departmentId}` 
+    : `${CHAT_STATE_KEY}-${companyId}`;
+}
+
 interface ChatState {
   messages: Message[];
   pendingBrregInfo: BrregInfo | null;
@@ -89,9 +96,9 @@ interface ChatState {
   selectedIndustry: string | null;
 }
 
-function loadChatState(companyId: string): ChatState | null {
+function loadChatState(companyId: string, departmentId?: string): ChatState | null {
   try {
-    const stored = sessionStorage.getItem(`${CHAT_STATE_KEY}-${companyId}`);
+    const stored = sessionStorage.getItem(getStorageKey(companyId, departmentId));
     if (stored) {
       return JSON.parse(stored);
     }
@@ -101,25 +108,27 @@ function loadChatState(companyId: string): ChatState | null {
   return null;
 }
 
-function saveChatState(companyId: string, state: ChatState) {
+function saveChatState(companyId: string, departmentId: string | undefined, state: ChatState) {
   try {
-    sessionStorage.setItem(`${CHAT_STATE_KEY}-${companyId}`, JSON.stringify(state));
+    sessionStorage.setItem(getStorageKey(companyId, departmentId), JSON.stringify(state));
   } catch (e) {
     console.error('Failed to save chat state:', e);
   }
 }
 
-function clearChatState(companyId: string) {
+function clearChatState(companyId: string, departmentId?: string) {
   try {
-    sessionStorage.removeItem(`${CHAT_STATE_KEY}-${companyId}`);
+    sessionStorage.removeItem(getStorageKey(companyId, departmentId));
   } catch (e) {
     console.error('Failed to clear chat state:', e);
   }
 }
 
-export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
+export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsChatSetupProps) {
+  // Determine if we're setting up a department (separate from company)
+  const isDepartmentSetup = !!departmentId;
   // Load initial state from session storage
-  const initialState = loadChatState(companyId);
+  const initialState = loadChatState(companyId, departmentId);
   const { refreshCompany, company } = useAuth();
   const hasAutoCheckedOrgRef = useRef(false);
   const hasInitializedRef = useRef(false);
@@ -146,13 +155,24 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
   // Forward declaration for lookupBrreg (used in auto-lookup effect)
   const lookupBrregRef = useRef<((orgNumber: string) => Promise<BrregInfo | null>) | null>(null);
 
-  // Initialize chat based on whether company has org_number
+  // Initialize chat based on whether company has org_number (skip Brreg for departments)
   useEffect(() => {
     // Skip if loaded from session or already initialized
     if (initialState || hasInitializedRef.current) return;
     if (!company) return; // Wait for company to load
     
     hasInitializedRef.current = true;
+
+    // Departments start fresh with industry selection (no Brreg lookup)
+    if (isDepartmentSetup) {
+      setMessages([{
+        role: "assistant",
+        content: "Hei! Jeg er Oppsett-hjelperen 👋\n\nJeg skal hjelpe deg å sette opp et helt eget HMS-system for denne avdelingen. Avdelingen får sine egne mål, risikovurderinger, rutiner og handlingsplaner - helt uavhengig av hovedbedriften.\n\nHvilken bransje passer best for avdelingens arbeidsmiljø?\n\n1. Kontor/Administrasjon\n2. Bygg og anlegg\n3. Industri/Produksjon\n4. Frisør/Skjønnhetspleie\n5. Butikk/Detaljhandel\n6. Restaurant/Spisested\n7. Transport\n8. Renhold\n9. Bilpleie\n\n(Velg 1-9)",
+      }]);
+      setAwaitingIndustrySelection(true);
+      setIsLoading(false);
+      return;
+    }
 
     if (company.org_number && !hasAutoCheckedOrgRef.current) {
       // We have org_number, show loading message and auto-lookup
@@ -196,7 +216,7 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
       }]);
       setIsLoading(false);
     }
-  }, [company, initialState]);
+  }, [company, initialState, isDepartmentSetup]);
 
   const lookupBrreg = async (orgNumber: string): Promise<BrregInfo | null> => {
     try {
@@ -615,10 +635,6 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
       try {
         const data = JSON.parse(jsonContent);
 
-        // IMPORTANT: We now save AI-generated content to company_modules.settings.generatedContent
-        // This preserves user-created data in the main tables (avvik, risikovurderinger, handlingsplaner, stoffkartotek, etc.)
-        // The AI content is stored separately and can be regenerated without losing user data.
-        
         // Transform routines to the expected format
         const transformedRoutines = data.routines?.map((routine: Record<string, unknown>, index: number) => ({
           id: routine.id || `ai-routine-${index + 1}`,
@@ -661,7 +677,154 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
           },
         };
 
-        // STEP 1: Ensure module exists and update it
+        // DEPARTMENT SETUP: Save to department-specific tables
+        if (isDepartmentSetup && departmentId) {
+          // Save department module settings
+          const { data: existingModule } = await supabase
+            .from("company_modules")
+            .select("id, settings")
+            .eq("company_id", companyId)
+            .eq("module_type", `IK_HMS_DEPT_${departmentId}`)
+            .maybeSingle();
+
+          if (existingModule) {
+            await supabase
+              .from("company_modules")
+              .update({
+                settings: {
+                  ...(existingModule.settings as Record<string, unknown>),
+                  ...newSettings,
+                },
+                is_active: true,
+              })
+              .eq("id", existingModule.id);
+          } else {
+            await supabase
+              .from("company_modules")
+              .insert({
+                company_id: companyId,
+                module_type: `IK_HMS_DEPT_${departmentId}`,
+                is_active: true,
+                settings: newSettings,
+              });
+          }
+
+          // Save to department-specific tables
+          try {
+            // Department goals
+            if (data.goals?.length > 0) {
+              await supabase
+                .from("department_goals")
+                .delete()
+                .eq("department_id", departmentId)
+                .eq("is_predefined", true);
+              
+              for (const goal of data.goals) {
+                await supabase.from("department_goals").insert({
+                  department_id: departmentId,
+                  goal_text: goal,
+                  is_predefined: true,
+                });
+              }
+            }
+
+            // Department organization
+            if (data.organization) {
+              let orgContent: string;
+              if (data.organization.roles && Array.isArray(data.organization.roles)) {
+                orgContent = JSON.stringify({
+                  roles: data.organization.roles.map((role: Record<string, unknown>, idx: number) => ({
+                    id: role.id || `role-${idx + 1}`,
+                    title: role.title || '',
+                    personName: role.personName || '',
+                    description: role.description || '',
+                    sortOrder: role.sortOrder ?? idx,
+                  })),
+                  description: data.organization.description || '',
+                });
+              } else if (typeof data.organization.custom_content === 'string') {
+                orgContent = data.organization.custom_content;
+              } else {
+                orgContent = JSON.stringify(data.organization);
+              }
+              
+              await supabase.from("department_organization").upsert({
+                department_id: departmentId,
+                custom_content: orgContent,
+                is_custom: true,
+              });
+            }
+
+            // Department risks
+            if (data.risks?.length > 0) {
+              const { data: existingRisks } = await supabase
+                .from("department_risk_assessments")
+                .select("risks")
+                .eq("department_id", departmentId)
+                .single();
+              
+              const userRisks = (existingRisks?.risks as Array<Record<string, unknown>> || [])
+                .filter((r) => !r.is_ai_generated);
+              
+              await supabase.from("department_risk_assessments").upsert({
+                department_id: departmentId,
+                risks: [...userRisks, ...transformedRisks],
+              });
+            }
+
+            // Department actions
+            if (data.actions?.length > 0) {
+              const { data: existingActions } = await supabase
+                .from("department_action_plans")
+                .select("actions")
+                .eq("department_id", departmentId)
+                .single();
+              
+              const userActions = (existingActions?.actions as Array<Record<string, unknown>> || [])
+                .filter((a) => !a.is_ai_generated);
+              
+              await supabase.from("department_action_plans").upsert({
+                department_id: departmentId,
+                actions: [...userActions, ...transformedActions],
+              });
+            }
+
+            // Department routines
+            if (data.routines?.length > 0) {
+              const { data: existingRoutines } = await supabase
+                .from("department_routines")
+                .select("routines")
+                .eq("department_id", departmentId)
+                .single();
+              
+              const userRoutines = (existingRoutines?.routines as Array<Record<string, unknown>> || [])
+                .filter((r) => !r.is_ai_generated);
+              
+              await supabase.from("department_routines").upsert({
+                department_id: departmentId,
+                routines: [...userRoutines, ...transformedRoutines],
+              });
+            }
+          } catch (tableError) {
+            console.warn("Warning: Could not save to department tables:", tableError);
+          }
+
+          // Invalidate department queries
+          queryClient.invalidateQueries({ queryKey: ["department-goals"] });
+          queryClient.invalidateQueries({ queryKey: ["department-organization"] });
+          queryClient.invalidateQueries({ queryKey: ["department-risk-assessments"] });
+          queryClient.invalidateQueries({ queryKey: ["department-action-plans"] });
+          queryClient.invalidateQueries({ queryKey: ["department-routines"] });
+          queryClient.invalidateQueries({ queryKey: ["company-modules"] });
+
+          toast.success("HMS-oppsett for avdelingen fullført!");
+          setIsSaving(false);
+          clearChatState(companyId, departmentId);
+          onComplete();
+          return;
+        }
+
+        // COMPANY SETUP: Original company-level saving logic
         const { data: existingModule } = await supabase
           .from("company_modules")
           .select("id, settings")
@@ -672,7 +835,6 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
         let moduleId: string;
 
         if (existingModule) {
-          // Update existing module
           const { error: updateError } = await supabase
             .from("company_modules")
             .update({
@@ -689,7 +851,6 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
           }
           moduleId = existingModule.id;
         } else {
-          // Create new IK_HMS module
           const { data: newModule, error: insertError } = await supabase
             .from("company_modules")
             .insert({
@@ -707,7 +868,6 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
           moduleId = newModule.id;
         }
 
-        // STEP 2: Verify the module was saved correctly
         const { data: verifyModule, error: verifyError } = await supabase
           .from("company_modules")
           .select("id, settings")
@@ -723,12 +883,9 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
           throw new Error("HMS-modul ble ikke lagret korrekt - mangler setupCompletedAt");
         }
 
-        // STEP 3: Save to standard tables (with error handling but non-blocking)
+        // Save to standard company tables
         try {
-          // Also save to the standard tables for backward compatibility,
-          // but ONLY add AI-generated goals (don't delete existing user-created goals)
           if (data.goals?.length > 0) {
-            // Delete only AI-generated goals (is_predefined = true), keep user-created ones
             await supabase
               .from("company_goals")
               .delete()
@@ -739,18 +896,14 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
               await supabase.from("company_goals").insert({
                 company_id: companyId,
                 goal_text: goal,
-                is_predefined: true, // Marks as AI-generated
+                is_predefined: true,
               });
             }
           }
 
-          // Save organization - needs to be JSON with roles[] and description
           if (data.organization) {
-            // If organization has roles array (new format), stringify the whole thing
-            // Otherwise, use the legacy format
             let orgContent: string;
             if (data.organization.roles && Array.isArray(data.organization.roles)) {
-              // New format with roles and description
               orgContent = JSON.stringify({
                 roles: data.organization.roles.map((role: Record<string, unknown>, idx: number) => ({
                   id: role.id || `role-${idx + 1}`,
@@ -762,7 +915,6 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
                 description: data.organization.description || '',
               });
             } else if (typeof data.organization.custom_content === 'string') {
-              // Legacy format - just text
               orgContent = data.organization.custom_content;
             } else {
               orgContent = JSON.stringify(data.organization);
@@ -775,28 +927,22 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
             });
           }
 
-          // For risk assessments and action plans, we need to merge AI content with existing user content
-          // We'll mark AI-generated items so they can be replaced on re-run
           if (data.risks?.length > 0) {
-            // Get existing risks
             const { data: existingRisks } = await supabase
               .from("company_risk_assessments")
               .select("risks")
               .eq("company_id", companyId)
               .single();
             
-            // Filter out old AI-generated risks and keep user-created ones
             const userRisks = (existingRisks?.risks as Array<Record<string, unknown>> || [])
               .filter((r) => !r.is_ai_generated);
             
-            // Combine user risks with new AI risks
             await supabase.from("company_risk_assessments").upsert({
               company_id: companyId,
               risks: [...userRisks, ...transformedRisks],
             });
           }
 
-          // Same approach for action plans
           if (data.actions?.length > 0) {
             const { data: existingActions } = await supabase
               .from("company_action_plans")
@@ -813,7 +959,6 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
             });
           }
 
-          // Same approach for routines
           if (data.routines?.length > 0) {
             const { data: existingRoutines } = await supabase
               .from("company_routines")
@@ -830,11 +975,9 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
             });
           }
         } catch (tableError) {
-          // Log but don't fail - the main module data is already saved
           console.warn("Warning: Could not save to standard tables:", tableError);
         }
 
-        // Invalidate queries to refetch data
         queryClient.invalidateQueries({ queryKey: ["company-goals"] });
         queryClient.invalidateQueries({ queryKey: ["company-organization"] });
         queryClient.invalidateQueries({ queryKey: ["company-risk-assessments"] });
@@ -842,13 +985,11 @@ export function IkHmsChatSetup({ companyId, onComplete }: IkHmsChatSetupProps) {
         queryClient.invalidateQueries({ queryKey: ["company-routines"] });
         queryClient.invalidateQueries({ queryKey: ["company-modules"] });
 
-        // Success! Break out of retry loop
         toast.success("HMS-oppsett fullført!");
         setIsSaving(false);
-        // Clear session storage since setup is complete
-        clearChatState(companyId);
+        clearChatState(companyId, departmentId);
         onComplete();
-        return; // Exit the function successfully
+        return;
         
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));

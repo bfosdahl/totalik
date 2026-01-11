@@ -39,18 +39,17 @@ const DepartmentAiSetup = () => {
         setSelectedDepartment(deptData as Department);
         setCompanyId(deptData.company_id);
 
-        // Check if department setup was completed
+        // Check if department setup was completed using department-specific module
         const { data: moduleData } = await supabase
           .from("company_modules")
           .select("settings")
           .eq("company_id", deptData.company_id)
-          .eq("module_type", "IK_HMS")
-          .single();
+          .eq("module_type", `IK_HMS_DEPT_${departmentId}`)
+          .maybeSingle();
 
         if (moduleData?.settings) {
           const settings = moduleData.settings as Record<string, any>;
-          const deptSetup = settings.departmentData?.[departmentId];
-          setPreviouslyCompleted(!!deptSetup?.setupCompletedAt);
+          setPreviouslyCompleted(!!settings.setupCompletedAt);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -64,34 +63,32 @@ const DepartmentAiSetup = () => {
   }, [departmentId, setSelectedDepartment]);
 
   const handleSetupComplete = async () => {
-    if (!department || !companyId) return;
+    if (!department || !companyId || !departmentId) return;
 
     try {
-      // Mark department setup as completed
+      // Mark department setup as completed in department-specific module
       const { data: moduleData, error: fetchError } = await supabase
         .from("company_modules")
         .select("id, settings")
         .eq("company_id", companyId)
-        .eq("module_type", "IK_HMS")
-        .single();
+        .eq("module_type", `IK_HMS_DEPT_${departmentId}`)
+        .maybeSingle();
 
       if (fetchError) throw fetchError;
 
-      const currentSettings = (moduleData?.settings || {}) as Record<string, any>;
-      const departmentData = currentSettings.departmentData || {};
-
-      departmentData[departmentId!] = {
-        ...(departmentData[departmentId!] || {}),
-        setupCompletedAt: new Date().toISOString(),
-      };
-
-      await supabase
-        .from("company_modules")
-        .update({
-          settings: { ...currentSettings, departmentData },
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", moduleData.id);
+      if (moduleData) {
+        const currentSettings = (moduleData.settings || {}) as Record<string, any>;
+        await supabase
+          .from("company_modules")
+          .update({
+            settings: { 
+              ...currentSettings, 
+              setupCompletedAt: new Date().toISOString(),
+            },
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", moduleData.id);
+      }
 
       setSetupCompleted(true);
       setIsRestarting(false);
