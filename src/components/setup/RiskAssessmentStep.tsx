@@ -101,6 +101,10 @@ interface RiskAssessmentStepProps {
 }
 
 function getRiskLevel(consequence: number, probability: number): { level: string; color: string; bgColor: string } {
+  // Handle invalid/missing values
+  if (!consequence || !probability || isNaN(consequence) || isNaN(probability)) {
+    return { level: "Ikke vurdert", color: "text-muted-foreground", bgColor: "bg-muted" };
+  }
   const score = consequence * probability;
   if (score <= 4) return { level: "Lav", color: "text-success", bgColor: "bg-success/20" };
   if (score <= 9) return { level: "Moderat", color: "text-warning", bgColor: "bg-warning/20" };
@@ -264,10 +268,31 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
       });
     };
 
+    // Helper to normalize and validate risk values
+    const normalizeRisk = (risk: any): RiskItem => {
+      const consequence = typeof risk.consequence === 'number' && !isNaN(risk.consequence) && risk.consequence >= 1 && risk.consequence <= 5 
+        ? risk.consequence 
+        : 3;
+      const probability = typeof risk.probability === 'number' && !isNaN(risk.probability) && risk.probability >= 1 && risk.probability <= 5 
+        ? risk.probability 
+        : 3;
+      
+      return {
+        id: risk.id || crypto.randomUUID(),
+        description: risk.description || "",
+        consequence,
+        probability,
+        existing_measures: risk.existing_measures || "",
+        planned_measures: risk.planned_measures || "",
+      };
+    };
+
     // Only load from existingData once on initial mount
     useEffect(() => {
       if (existingData?.risks && !hasInitialized) {
-        setRisks(existingData.risks);
+        // Normalize all risks to ensure valid values
+        const normalizedRisks = existingData.risks.map(normalizeRisk);
+        setRisks(normalizedRisks);
         setHasInitialized(true);
       }
     }, [existingData, hasInitialized]);
@@ -467,13 +492,13 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
                               <p className="font-medium text-sm truncate">{risk.description}</p>
                               <div className="flex flex-wrap gap-2 text-xs mt-1">
                                 <span className="px-2 py-0.5 rounded bg-muted">
-                                  K: {risk.consequence}
+                                  K: {risk.consequence || "-"}
                                 </span>
                                 <span className="px-2 py-0.5 rounded bg-muted">
-                                  S: {risk.probability}
+                                  S: {risk.probability || "-"}
                                 </span>
                                 <span className={cn("px-2 py-0.5 rounded font-medium", riskLevel.bgColor, riskLevel.color)}>
-                                  {score} ({riskLevel.level})
+                                  {isNaN(score) ? "-" : score} ({riskLevel.level})
                                 </span>
                               </div>
                             </div>

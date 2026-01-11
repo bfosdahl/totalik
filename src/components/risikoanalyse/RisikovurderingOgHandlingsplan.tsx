@@ -118,6 +118,16 @@ interface ActionItem {
 
 // Risk calculation with correct thresholds: Green 1-5, Yellow 6-10, Red 11-25
 const getRiskLevel = (consequence: number, probability: number) => {
+  // Handle invalid/missing values
+  if (!consequence || !probability || isNaN(consequence) || isNaN(probability)) {
+    return { 
+      level: "Ikke vurdert", 
+      color: "text-muted-foreground", 
+      bg: "bg-muted", 
+      border: "border-muted",
+      requiresAction: false
+    };
+  }
   const score = consequence * probability;
   if (score <= 5) return { 
     level: "Akseptabel", 
@@ -181,6 +191,31 @@ export function RisikovurderingOgHandlingsplan() {
     }
   }, [currentUserName]);
 
+  // Helper to normalize and validate event values
+  const normalizeEvent = (event: any): UnwantedEvent => {
+    const consequence = typeof event.consequence === 'number' && !isNaN(event.consequence) && event.consequence >= 1 && event.consequence <= 5 
+      ? event.consequence 
+      : 3;
+    const probability = typeof event.probability === 'number' && !isNaN(event.probability) && event.probability >= 1 && event.probability <= 5 
+      ? event.probability 
+      : 3;
+    
+    return {
+      id: event.id || crypto.randomUUID(),
+      description: event.description || "",
+      consequence,
+      probability,
+      measures: event.measures || "",
+      responsible: event.responsible || "",
+      deadline: event.deadline || "",
+      status: event.status || "planlagt",
+      consequence_after: event.consequence_after,
+      probability_after: event.probability_after,
+      reevaluated_at: event.reevaluated_at,
+      reevaluated_by: event.reevaluated_by,
+    };
+  };
+
   // Convert simple format from setup wizard to full format
   const convertSimpleToFullFormat = (simpleRisk: any): RiskItem => {
     // Ensure events is always an array
@@ -188,23 +223,35 @@ export function RisikovurderingOgHandlingsplan() {
     
     // Check if it's already in full format (has hazard_source and events)
     if (simpleRisk.hazard_source) {
+      // Normalize all events to ensure valid values
+      const normalizedEvents = safeEvents.length > 0 
+        ? safeEvents.map(normalizeEvent)
+        : [{
+            id: crypto.randomUUID(),
+            description: simpleRisk.hazard_source_custom || simpleRisk.description || "",
+            consequence: 3,
+            probability: 3,
+            measures: "",
+            responsible: "",
+            deadline: "",
+            status: "planlagt" as const,
+          }];
+      
       return {
         ...simpleRisk,
-        events: safeEvents.length > 0 ? safeEvents : [{
-          id: crypto.randomUUID(),
-          description: simpleRisk.hazard_source_custom || simpleRisk.description || "",
-          consequence: 3,
-          probability: 3,
-          measures: "",
-          responsible: "",
-          deadline: "",
-          status: "planlagt" as const,
-        }],
+        events: normalizedEvents,
       };
     }
     
     // Convert simple format: { id, description, consequence, probability, existing_measures, planned_measures }
     // To full format: { id, hazard_source, hazard_source_custom, events: [...], created_at, created_by }
+    const consequence = typeof simpleRisk.consequence === 'number' && !isNaN(simpleRisk.consequence) && simpleRisk.consequence >= 1 && simpleRisk.consequence <= 5 
+      ? simpleRisk.consequence 
+      : 3;
+    const probability = typeof simpleRisk.probability === 'number' && !isNaN(simpleRisk.probability) && simpleRisk.probability >= 1 && simpleRisk.probability <= 5 
+      ? simpleRisk.probability 
+      : 3;
+
     return {
       id: simpleRisk.id || crypto.randomUUID(),
       hazard_source: "annet",
@@ -212,8 +259,8 @@ export function RisikovurderingOgHandlingsplan() {
       events: [{
         id: crypto.randomUUID(),
         description: simpleRisk.description || "",
-        consequence: simpleRisk.consequence || 3,
-        probability: simpleRisk.probability || 3,
+        consequence,
+        probability,
         measures: [simpleRisk.existing_measures, simpleRisk.planned_measures].filter(Boolean).join(". "),
         responsible: "",
         deadline: "",
