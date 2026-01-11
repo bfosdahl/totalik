@@ -182,8 +182,53 @@ export function useSetupWizard() {
           .maybeSingle();
 
         if (riskData && riskData.risks) {
+          // Convert risks from new format (with events array) to flat format for setup wizard
+          const rawRisks = riskData.risks as unknown as any[];
+          const flattenedRisks: RiskItem[] = [];
+          
+          for (const risk of rawRisks) {
+            // Check if this is the new format (has hazard_source and events array)
+            if (risk.hazard_source && Array.isArray(risk.events)) {
+              // Convert each event to a separate RiskItem
+              for (const event of risk.events) {
+                const consequence = typeof event.consequence === 'number' && !isNaN(event.consequence) && event.consequence >= 1 && event.consequence <= 5 
+                  ? event.consequence 
+                  : 3;
+                const probability = typeof event.probability === 'number' && !isNaN(event.probability) && event.probability >= 1 && event.probability <= 5 
+                  ? event.probability 
+                  : 3;
+                
+                flattenedRisks.push({
+                  id: event.id || crypto.randomUUID(),
+                  description: event.description || risk.hazard_source_custom || "",
+                  consequence,
+                  probability,
+                  existing_measures: event.measures || "",
+                  planned_measures: "",
+                });
+              }
+            } else {
+              // Already in flat format - just normalize values
+              const consequence = typeof risk.consequence === 'number' && !isNaN(risk.consequence) && risk.consequence >= 1 && risk.consequence <= 5 
+                ? risk.consequence 
+                : 3;
+              const probability = typeof risk.probability === 'number' && !isNaN(risk.probability) && risk.probability >= 1 && risk.probability <= 5 
+                ? risk.probability 
+                : 3;
+              
+              flattenedRisks.push({
+                id: risk.id || crypto.randomUUID(),
+                description: risk.description || "",
+                consequence,
+                probability,
+                existing_measures: risk.existing_measures || risk.existingMeasures || "",
+                planned_measures: risk.planned_measures || risk.suggestedMeasures || "",
+              });
+            }
+          }
+          
           setRiskAssessment({
-            risks: riskData.risks as unknown as RiskItem[],
+            risks: flattenedRisks,
           });
         }
 
