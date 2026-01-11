@@ -45,6 +45,7 @@ export interface Deviation {
   additional_info?: string | null;
   notify_arbeidstilsynet?: boolean | null;
   notify_insurance?: boolean | null;
+  department_id?: string | null;
 }
 
 export interface NewDeviationInput {
@@ -82,6 +83,7 @@ export function useDeviations() {
   const [isSaving, setIsSaving] = useState(false);
 
   const companyId = profile?.company_id;
+  const departmentId = profile?.primary_department_id;
 
   // Fetch deviations
   const fetchDeviations = useCallback(async () => {
@@ -178,6 +180,8 @@ export function useDeviations() {
         responsible_receiver: safeStringOrNull(input.responsible_receiver),
         notify_arbeidstilsynet: safeBoolean(input.notify_arbeidstilsynet),
         notify_insurance: safeBoolean(input.notify_insurance),
+        // Set department_id from user's profile (for department-specific deviations)
+        department_id: departmentId || null,
       };
 
       const { data, error } = await supabase
