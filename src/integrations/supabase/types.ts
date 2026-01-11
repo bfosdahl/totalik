@@ -1192,6 +1192,178 @@ export type Database = {
           },
         ]
       }
+      department_action_plans: {
+        Row: {
+          actions: Json
+          created_at: string
+          department_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          actions?: Json
+          created_at?: string
+          department_id: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          actions?: Json
+          created_at?: string
+          department_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_action_plans_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: true
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      department_goals: {
+        Row: {
+          created_at: string
+          department_id: string
+          goal_text: string
+          id: string
+          is_predefined: boolean | null
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department_id: string
+          goal_text: string
+          id?: string
+          is_predefined?: boolean | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: string
+          goal_text?: string
+          id?: string
+          is_predefined?: boolean | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_goals_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      department_organization: {
+        Row: {
+          created_at: string
+          custom_content: string
+          department_id: string
+          id: string
+          is_custom: boolean | null
+          template_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          custom_content?: string
+          department_id: string
+          id?: string
+          is_custom?: boolean | null
+          template_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          custom_content?: string
+          department_id?: string
+          id?: string
+          is_custom?: boolean | null
+          template_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_organization_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: true
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      department_risk_assessments: {
+        Row: {
+          created_at: string
+          department_id: string
+          id: string
+          risks: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department_id: string
+          id?: string
+          risks?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: string
+          id?: string
+          risks?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_risk_assessments_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: true
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      department_routines: {
+        Row: {
+          created_at: string
+          department_id: string
+          id: string
+          routines: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department_id: string
+          id?: string
+          routines?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: string
+          id?: string
+          routines?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_routines_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: true
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deviation_attachments: {
         Row: {
           company_id: string
