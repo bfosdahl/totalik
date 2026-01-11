@@ -34,6 +34,7 @@ export interface NewAuditInput {
 export function useAudits() {
   const { profile } = useAuth();
   const companyId = profile?.company_id;
+  const departmentId = profile?.primary_department_id;
   const [audits, setAudits] = useState<Audit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -98,6 +99,7 @@ export function useAudits() {
           .from("audits")
           .insert({
             company_id: companyId,
+            department_id: departmentId || null,
             audit_number: auditNumber,
             title: input.title,
             type: input.type,

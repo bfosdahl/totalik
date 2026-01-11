@@ -35,6 +35,7 @@ export const formTypeLabels: Record<FormType, string> = {
 export function useAuditFormResponses() {
   const { profile, user } = useAuth();
   const companyId = profile?.company_id;
+  const departmentId = profile?.primary_department_id;
   const [responses, setResponses] = useState<AuditFormResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -100,6 +101,7 @@ export function useAuditFormResponses() {
 
         const payload = {
           company_id: companyId,
+          department_id: departmentId || null,
           form_type: formType,
           form_data: formData,
           revision_date: metadata.revision_date || null,
