@@ -125,7 +125,12 @@ export function BulkCompanyImportDialog({
           const companies: ParsedCompany[] = [];
 
           for (const row of jsonData as any[]) {
-            const orgNumber = String(row.Customer_OrgNumber || row["Customer_OrgNumber"] || "").replace(/\s/g, "");
+            // Parse org number and pad with leading zeros if needed (Norwegian org numbers are 9 digits)
+            let orgNumber = String(row.Customer_OrgNumber || row["Customer_OrgNumber"] || "").replace(/\s/g, "");
+            // Pad with leading zeros to ensure 9 digits (Excel often strips leading zeros)
+            if (orgNumber.length > 0 && orgNumber.length < 9) {
+              orgNumber = orgNumber.padStart(9, '0');
+            }
             const name = String(row.Customer_Company || row["Customer_Company"] || "").trim();
             
             // Skip if no org number or company name
