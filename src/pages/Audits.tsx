@@ -87,6 +87,7 @@ const Audits = () => {
         "fysiske-arbeidsforhold": "fysiske",
         "brannvern": "drift",
         "egenerklaring": "egenerklaring",
+        "forsvarlighetsvurdering": "forsvarlig",
       };
       const tab = tabMapping[formType];
       if (tab) {
