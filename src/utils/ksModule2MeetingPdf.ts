@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Meeting, MeetingItem, MeetingParticipant } from "@/hooks/useKsModule2Meetings";
 import { format } from "date-fns";

@@ -21,7 +21,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { supabase } from "@/integrations/supabase/client";
 import { useCompanyLawsRegulations } from "@/hooks/useCompanyLawsRegulations";
