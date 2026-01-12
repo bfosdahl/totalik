@@ -492,21 +492,21 @@ export function NewDeviationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] lg:max-w-[800px] max-h-[90vh] p-0">
-        <DialogHeader className="px-6 pt-6 pb-4">
+      <DialogContent className="sm:max-w-[700px] lg:max-w-[800px] max-h-[90vh] p-0 flex flex-col">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle>Registrer nytt avvik</DialogTitle>
           <DialogDescription>
             Fyll ut skjemaet for å registrere et nytt avvik eller hendelse.
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(90vh-180px)] px-6">
+        <ScrollArea className="flex-1 min-h-0 px-6">
           <div className="pb-4">
             {formContent}
           </div>
         </ScrollArea>
 
-        <DialogFooter className="px-6 py-4 border-t gap-2">
+        <DialogFooter className="px-6 py-4 border-t gap-2 flex-shrink-0 bg-background">
           {footerButtons}
         </DialogFooter>
       </DialogContent>
