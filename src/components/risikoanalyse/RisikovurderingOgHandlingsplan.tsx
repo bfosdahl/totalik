@@ -164,7 +164,9 @@ export function RisikovurderingOgHandlingsplan() {
   const [showReevaluateDialog, setShowReevaluateDialog] = useState(false);
   const [selectedEventForReeval, setSelectedEventForReeval] = useState<{risk: RiskItem, event: UnwantedEvent} | null>(null);
   const [editingRisk, setEditingRisk] = useState<RiskItem | null>(null);
-
+  const [showAddActionDialog, setShowAddActionDialog] = useState(false);
+  const [selectedEventForAction, setSelectedEventForAction] = useState<{risk: RiskItem, event: UnwantedEvent} | null>(null);
+  const [newActionDescription, setNewActionDescription] = useState("");
   const currentUserName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
 
   // New risk form
@@ -498,6 +500,53 @@ export function RisikovurderingOgHandlingsplan() {
   const deleteAction = (id: string) => {
     setActions(actions.filter(a => a.id !== id));
     toast.success("Tiltak slettet");
+  };
+
+  // Add action for a specific event
+  const addActionForEvent = (risk: RiskItem, event: UnwantedEvent) => {
+    setSelectedEventForAction({ risk, event });
+    setNewActionDescription(event.measures || "");
+    setShowAddActionDialog(true);
+  };
+
+  // Save new action from dialog
+  const saveNewAction = () => {
+    if (!selectedEventForAction || !newActionDescription.trim()) {
+      toast.error("Fyll inn beskrivelse av tiltaket");
+      return;
+    }
+
+    const { risk, event } = selectedEventForAction;
+    const hazardLabel = risk.hazard_source === "annet" 
+      ? risk.hazard_source_custom 
+      : PREDEFINED_HAZARDS.find(h => h.value === risk.hazard_source)?.label || risk.hazard_source;
+    
+    const level = getRiskLevel(event.consequence, event.probability);
+
+    const newAction: ActionItem = {
+      id: crypto.randomUUID(),
+      risk_id: risk.id,
+      event_id: event.id,
+      risk_source: hazardLabel || "",
+      event_description: event.description,
+      action_description: newActionDescription,
+      action_type: "teknisk",
+      responsible: event.responsible || currentUserName,
+      deadline: event.deadline || "",
+      status: "planlagt",
+      priority: level.level === "Tiltak påkrevd" ? "høy" : level.requiresAction ? "medium" : "lav",
+    };
+
+    setActions(prev => [...prev, newAction]);
+    setShowAddActionDialog(false);
+    setSelectedEventForAction(null);
+    setNewActionDescription("");
+    toast.success("Tiltak lagt til");
+  };
+
+  // Check if event already has action
+  const eventHasAction = (eventId: string) => {
+    return actions.some(a => a.event_id === eventId);
   };
 
   // Start editing a risk
@@ -1150,24 +1199,47 @@ export function RisikovurderingOgHandlingsplan() {
                                       </div>
                                     )}
 
-                                    {eventLevel.requiresAction && !hasReeval && (
-                                      <Button 
-                                        size="sm" 
-                                        variant="outline"
-                                        className="mt-2"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setSelectedEventForReeval({ 
-                                            risk, 
-                                            event: { ...event, consequence_after: event.consequence, probability_after: event.probability } 
-                                          });
-                                          setShowReevaluateDialog(true);
-                                        }}
-                                      >
-                                        <RefreshCw className="h-3 w-3 mr-1" />
-                                        Revurder
-                                      </Button>
-                                    )}
+                                    {/* Action buttons for this event */}
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                      {/* Show "Add action" button */}
+                                      {!eventHasAction(event.id) ? (
+                                        <Button 
+                                          size="sm" 
+                                          variant="default"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            addActionForEvent(risk, event);
+                                          }}
+                                        >
+                                          <Plus className="h-3 w-3 mr-1" />
+                                          Legg til tiltak
+                                        </Button>
+                                      ) : (
+                                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-300">
+                                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                                          Har tiltak
+                                        </Badge>
+                                      )}
+
+                                      {/* Re-evaluate button for yellow/red risks */}
+                                      {eventLevel.requiresAction && !hasReeval && (
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedEventForReeval({ 
+                                              risk, 
+                                              event: { ...event, consequence_after: event.consequence, probability_after: event.probability } 
+                                            });
+                                            setShowReevaluateDialog(true);
+                                          }}
+                                        >
+                                          <RefreshCw className="h-3 w-3 mr-1" />
+                                          Revurder
+                                        </Button>
+                                      )}
+                                    </div>
                                   </div>
                                 );
                               })}
@@ -1365,6 +1437,51 @@ export function RisikovurderingOgHandlingsplan() {
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowReevaluateDialog(false)}>Avbryt</Button>
               <Button onClick={handleReevaluate}>Bekreft revurdering</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Add action dialog */}
+        <Dialog open={showAddActionDialog} onOpenChange={setShowAddActionDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Legg til tiltak</DialogTitle>
+              <DialogDescription>
+                Beskriv tiltaket som skal redusere risikoen
+              </DialogDescription>
+            </DialogHeader>
+            {selectedEventForAction && (
+              <div className="space-y-4">
+                <div className="p-3 rounded bg-muted text-sm">
+                  <strong>Farekilde:</strong> {selectedEventForAction.risk.hazard_source === "annet" 
+                    ? selectedEventForAction.risk.hazard_source_custom 
+                    : PREDEFINED_HAZARDS.find(h => h.value === selectedEventForAction.risk.hazard_source)?.label || selectedEventForAction.risk.hazard_source}
+                  <div className="mt-1"><strong>Hendelse:</strong> {selectedEventForAction.event.description}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Risiko: {selectedEventForAction.event.consequence}×{selectedEventForAction.event.probability} = {selectedEventForAction.event.consequence * selectedEventForAction.event.probability}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Beskrivelse av tiltak *</label>
+                  <Textarea 
+                    placeholder="Hva skal gjøres for å redusere risikoen?"
+                    value={newActionDescription}
+                    onChange={(e) => setNewActionDescription(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                setShowAddActionDialog(false);
+                setSelectedEventForAction(null);
+                setNewActionDescription("");
+              }}>
+                Avbryt
+              </Button>
+              <Button onClick={saveNewAction}>Legg til tiltak</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
