@@ -3,6 +3,7 @@ import { CheckCircle2, Circle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useSetupWizard } from "@/hooks/useSetupWizard";
+import { useHmsDeclarations } from "@/hooks/useHmsDeclarations";
 
 interface ComplianceStep {
   id: string;
@@ -75,37 +76,21 @@ const statusConfig = {
 export function ComplianceProgress() {
   const navigate = useNavigate();
   const { progress, goals, organization, riskAssessment, actionPlan, routines } = useSetupWizard();
+  const { hasSelfDeclaration } = useHmsDeclarations();
 
-  // Calculate step status based on BOTH wizard progress completion AND actual data presence
-  // A step is only "completed" if the user has explicitly completed it in the wizard
-  // This prevents auto-generated default data from showing as 100% complete
+  // Calculate step status based on ACTUAL DATA PRESENCE
+  // This ensures AI-setup data is counted correctly
   const steps: ComplianceStep[] = baseSteps.map((step) => {
     let status: "completed" | "in-progress" | "pending";
     
-    // First check if the step is marked as completed in the wizard progress
-    const isCompletedInWizard = progress?.completed_steps?.includes(step.id) || false;
-    
-    // Map step IDs to wizard step IDs (they use different naming in some cases)
-    const stepIdMapping: Record<string, string> = {
-      "goals": "goals",
-      "organization": "organization", 
-      "risk": "risk",
-      "actions": "actions",
-      "routines": "routines",
-      "handbook": "handbook"
-    };
-    
-    const wizardStepId = stepIdMapping[step.id] || step.id;
-    const stepCompletedInWizard = progress?.completed_steps?.includes(wizardStepId) || false;
-    
-    // Check if there's actual data present
+    // Check if there's actual data present for this step
     let hasData = false;
     switch (step.id) {
       case "goals":
         hasData = !!(goals && goals.length > 0);
         break;
       case "organization":
-        hasData = !!(organization && (organization.roles?.length > 0 || organization.description));
+        hasData = !!(organization && (organization.roles?.length > 0 || (organization.description && organization.description.trim().length > 0)));
         break;
       case "risk":
         hasData = !!(riskAssessment && riskAssessment.risks && riskAssessment.risks.length > 0);
@@ -117,14 +102,13 @@ export function ComplianceProgress() {
         hasData = !!(routines && routines.routines && routines.routines.length > 0);
         break;
       case "handbook":
-        // Handbook is completed only if marked as completed in wizard
-        hasData = stepCompletedInWizard;
+        // Handbook is considered complete if HMS self-declaration is signed
+        hasData = hasSelfDeclaration;
         break;
     }
     
-    // A step is "completed" ONLY if explicitly marked as completed in the wizard
-    // This prevents pre-populated default data from showing as complete
-    if (stepCompletedInWizard) {
+    // A step is "completed" if there is actual data
+    if (hasData) {
       status = "completed";
     } else if (step.stepIndex === (progress?.current_step || 0)) {
       // Current step is in-progress
