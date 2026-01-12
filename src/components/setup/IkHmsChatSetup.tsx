@@ -591,17 +591,22 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
       const hasMoreThan5 = userInput.trim() === '1';
       
       if (!hasMoreThan5) {
-        // Less than 5 employees - offer exemption agreement
-        setConfirmedEmployeeCount(4); // We'll use this as a placeholder
-        const exemptionMessage = `Siden dere har færre enn 5 ansatte, har dere mulighet til å inngå en skriftlig avtale om fritak fra verneombud i henhold til arbeidsmiljøloven § 6-1.\n\n✅ **Fritak fra verneombud:**\nDere kan signere en avtale digitalt her i systemet som dokumenterer at arbeidsgiver og ansatte er enige om at det ikke er nødvendig med verneombud.\n\n**Ønsker du å signere en slik avtale nå?**\n\n1. Ja, signer avtale om fritak\n2. Nei, fortsett uten avtale\n\n(Velg 1 eller 2)`;
-        
-        setMessages((prev) => [...prev, { role: "assistant", content: exemptionMessage }]);
-        setIsLoading(false);
+        // Less than 5 employees - start signature flow immediately
+        setConfirmedEmployeeCount(4);
+        setMessages((prev) => [...prev, {
+          role: "assistant",
+          content: `Siden dere har færre enn 5 ansatte, må vi signere:\n1) Egenerklæring om HMS\n2) Avtale om fritak fra verneombud\n\nVi tar dem i riktig rekkefølge nå.`,
+        }]);
+        await startRequiredSignatures(selectedIndustry || "den valgte bransjen", 4);
         return;
       } else {
         setConfirmedEmployeeCount(5); // 5 or more
-        // Continue with AI chat
-        await continueWithAIChat(`Brukeren har valgt bransje: ${selectedIndustry}. Bedriften har 5 eller flere ansatte. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`);
+        // Show signature dialogs first before AI chat
+        setMessages((prev) => [...prev, {
+          role: "assistant",
+          content: `Flott! Siden dere har 5 eller flere ansatte, må vi signere Egenerklæring om HMS før vi fortsetter med oppsettet.`,
+        }]);
+        await startRequiredSignatures(selectedIndustry || "den valgte bransjen", 5);
         return;
       }
     }
