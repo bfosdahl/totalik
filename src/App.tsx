@@ -30,6 +30,10 @@ import Ks2ProjectDetail from "./pages/ks2/Ks2ProjectDetail";
 import Ks2Admin from "./pages/ks2/Ks2Admin";
 import Ks2Statistikk from "./pages/ks2/Ks2Statistikk";
 import Ks2Befaring from "./pages/ks2/Ks2Befaring";
+import IkKsRutiner from "./pages/ks2/IkKsRutiner";
+import IkKsMaal from "./pages/ks2/IkKsMaal";
+import IkKsDokumenter from "./pages/ks2/IkKsDokumenter";
+import IkKsSjekklister from "./pages/ks2/IkKsSjekklister";
 import MineProsjekterDashboard from "./pages/mineprosjekter/MineProsjekterDashboard";
 import SimpleProjectDetail from "./pages/mineprosjekter/SimpleProjectDetail";
 import HmsChat from "./pages/HmsChat";
@@ -156,6 +160,12 @@ const App = () => (
                   <Route path="/ks/project/:projectId/*" element={<ProtectedRoute><Ks2ProjectDetail /></ProtectedRoute>} />
                   <Route path="/ks/admin" element={<ProtectedRoute><Ks2Admin /></ProtectedRoute>} />
                   <Route path="/ks/befaring" element={<ProtectedRoute><Ks2Befaring /></ProtectedRoute>} />
+                  
+                  {/* IK/KS Grunnlag routes */}
+                  <Route path="/ks/ik-ks/rutiner" element={<ProtectedRoute><IkKsRutiner /></ProtectedRoute>} />
+                  <Route path="/ks/ik-ks/maal" element={<ProtectedRoute><IkKsMaal /></ProtectedRoute>} />
+                  <Route path="/ks/ik-ks/dokumenter" element={<ProtectedRoute><IkKsDokumenter /></ProtectedRoute>} />
+                  <Route path="/ks/ik-ks/sjekklister" element={<ProtectedRoute><IkKsSjekklister /></ProtectedRoute>} />
                   
                   {/* Småprosjekter routes */}
                   <Route path="/ks/smaaprosjekter" element={<ProtectedRoute><MineProsjekterDashboard /></ProtectedRoute>} />
