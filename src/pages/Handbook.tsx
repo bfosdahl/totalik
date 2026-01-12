@@ -1008,10 +1008,15 @@ const Handbook = () => {
       yPos += 15;
       // (entries are rendered later by renderToc())
 
+      // Track section number dynamically
+      let sectionNumber = 0;
+
       // SECTION 1: GOALS
       doc.addPage();
+      sectionNumber++;
+      addTocEntry(`${sectionNumber}. Mål for internkontroll`);
       yPos = margin;
-      addSectionHeader("1. Mål for internkontroll");
+      addSectionHeader(`${sectionNumber}. Mål for internkontroll`);
       doc.setFontSize(11);
       doc.setFont("helvetica", "normal");
       doc.text("Bedriften har fastsatt følgende mål for sitt systematiske HMS-arbeid:", margin, yPos);
@@ -1036,8 +1041,10 @@ const Handbook = () => {
 
       // SECTION 2: ORGANIZATION
       doc.addPage();
+      sectionNumber++;
+      addTocEntry(`${sectionNumber}. Organisering og ansvar`);
       yPos = margin;
-      addSectionHeader("2. Organisering og ansvar");
+      addSectionHeader(`${sectionNumber}. Organisering og ansvar`);
       
       // organization is now in new format with roles array directly
       const orgData = organization;
@@ -1157,8 +1164,10 @@ const Handbook = () => {
 
       // SECTION 3: RISK ASSESSMENT
       doc.addPage();
+      sectionNumber++;
+      addTocEntry(`${sectionNumber}. Risikovurdering`);
       yPos = margin;
-      addSectionHeader("3. Risikovurdering");
+      addSectionHeader(`${sectionNumber}. Risikovurdering`);
       doc.setFontSize(11);
       doc.text("Risiko = Sannsynlighet × Konsekvens (Arbeidstilsynets metodikk)", margin, yPos);
       yPos += 10;
@@ -1207,8 +1216,10 @@ const Handbook = () => {
 
       // SECTION 4: ACTION PLAN
       doc.addPage();
+      sectionNumber++;
+      addTocEntry(`${sectionNumber}. Handlingsplan`);
       yPos = margin;
-      addSectionHeader("4. Handlingsplan");
+      addSectionHeader(`${sectionNumber}. Handlingsplan`);
       // Use sanitized action data to prevent undefined errors
       const sanitizedActions = sanitizeActions(actionPlan);
       if (sanitizedActions.length > 0) {
@@ -1236,8 +1247,11 @@ const Handbook = () => {
 
       // SECTION 5: ROUTINES
       doc.addPage();
+      sectionNumber++;
+      const routinesSectionNum = sectionNumber;
+      addTocEntry(`${sectionNumber}. Rutiner og prosedyrer`);
       yPos = margin;
-      addSectionHeader("5. Rutiner og prosedyrer");
+      addSectionHeader(`${sectionNumber}. Rutiner og prosedyrer`);
       // Use sanitized routines data to prevent undefined errors
       const sanitizedRoutinesList = sanitizeRoutines(routines);
       if (sanitizedRoutinesList.length > 0) {
@@ -1247,7 +1261,7 @@ const Handbook = () => {
           doc.roundedRect(margin, yPos, contentWidth, 25, 2, 2, "F");
           doc.setFontSize(11);
           doc.setFont("helvetica", "bold");
-          doc.text(`5.${index + 1} ${routine.routine_number}: ${routine.routine_name}`, margin + 5, yPos + 7);
+          doc.text(`${routinesSectionNum}.${index + 1} ${routine.routine_number}: ${routine.routine_name}`, margin + 5, yPos + 7);
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9);
           const purposeLines = doc.splitTextToSize(`Formål: ${routine.purpose || "Ikke spesifisert"}`, contentWidth - 10);
@@ -1262,8 +1276,10 @@ const Handbook = () => {
 
       // SECTION 6: LAWS AND REGULATIONS
       doc.addPage();
+      sectionNumber++;
+      addTocEntry(`${sectionNumber}. Lover og forskrifter`);
       yPos = margin;
-      addSectionHeader("6. Lover og forskrifter");
+      addSectionHeader(`${sectionNumber}. Lover og forskrifter`);
       doc.setFontSize(11);
       doc.text("Oversikt over lover og forskrifter som gjelder for virksomheten:", margin, yPos);
       yPos += 10;
@@ -1295,11 +1311,13 @@ const Handbook = () => {
         yPos += 10;
       }
 
-      // OPTIONAL SECTION 7: DEVIATIONS
+      // OPTIONAL SECTION: DEVIATIONS
       if (includeDeviationsInPdf && deviations.length > 0) {
         doc.addPage();
+        sectionNumber++;
+        addTocEntry(`${sectionNumber}. Avviksbehandling`);
         yPos = margin;
-        addSectionHeader("7. Avviksbehandling");
+        addSectionHeader(`${sectionNumber}. Avviksbehandling`);
         doc.setFontSize(11);
         doc.text(`Totalt ${deviations.length} avvik registrert. ${openDeviationsCount} åpne, ${deviations.length - openDeviationsCount} lukkede.`, margin, yPos);
         yPos += 10;
@@ -1324,11 +1342,13 @@ const Handbook = () => {
         yPos = (doc as any).lastAutoTable.finalY + 10;
       }
 
-      // OPTIONAL SECTION 8: AUDITS
+      // OPTIONAL SECTION: AUDITS
       if (includeAuditsInPdf && audits.length > 0) {
         doc.addPage();
+        sectionNumber++;
+        addTocEntry(`${sectionNumber}. Revisjoner og evaluering`);
         yPos = margin;
-        addSectionHeader("8. Revisjoner og evaluering");
+        addSectionHeader(`${sectionNumber}. Revisjoner og evaluering`);
         doc.setFontSize(11);
         doc.text(`${completedAuditsCount} gjennomførte revisjoner, ${pendingAuditsCount} planlagte/pågående.`, margin, yPos);
         yPos += 10;
@@ -1353,12 +1373,12 @@ const Handbook = () => {
         yPos = (doc as any).lastAutoTable.finalY + 10;
       }
 
-      // OPTIONAL: AUDIT FORM SECTIONS (9-12)
+      // OPTIONAL: AUDIT FORM SECTIONS
       const auditFormOptions = [
-        { include: includeAnnualHmsInPdf, formType: "annual_hms" as FormType, title: "9. Årlig HMS-revisjon" },
-        { include: includeElkontrollInPdf, formType: "elkontroll" as FormType, title: "10. El-Kontroll" },
-        { include: includeFysiskeForholdInPdf, formType: "fysiske_forhold" as FormType, title: "11. Fysiske arbeidsforhold" },
-        { include: includeDagligDriftInPdf, formType: "daglig_drift" as FormType, title: "12. Daglig drift" },
+        { include: includeAnnualHmsInPdf, formType: "annual_hms" as FormType, label: "Årlig HMS-revisjon" },
+        { include: includeElkontrollInPdf, formType: "elkontroll" as FormType, label: "El-Kontroll" },
+        { include: includeFysiskeForholdInPdf, formType: "fysiske_forhold" as FormType, label: "Fysiske arbeidsforhold" },
+        { include: includeDagligDriftInPdf, formType: "daglig_drift" as FormType, label: "Daglig drift" },
       ];
 
       for (const option of auditFormOptions) {
@@ -1366,8 +1386,11 @@ const Handbook = () => {
           const latestForm = getLatestByFormType(option.formType);
           if (latestForm) {
             doc.addPage();
+            sectionNumber++;
+            const sectionTitle = `${sectionNumber}. ${option.label}`;
+            addTocEntry(sectionTitle);
             yPos = margin;
-            addSectionHeader(option.title);
+            addSectionHeader(sectionTitle);
             doc.setFontSize(11);
             doc.text(`Sist gjennomført: ${latestForm.completed_at ? format(new Date(latestForm.completed_at), "d. MMMM yyyy", { locale: nb }) : "Ukjent"}`, margin, yPos);
             yPos += 7;
@@ -1579,14 +1602,20 @@ const Handbook = () => {
             }
           } else {
             doc.addPage();
+            sectionNumber++;
+            const sectionTitle = `${sectionNumber}. ${option.label}`;
+            addTocEntry(sectionTitle);
             yPos = margin;
-            addSectionHeader(option.title);
+            addSectionHeader(sectionTitle);
             doc.setTextColor(150, 150, 150);
             doc.text("Ikke gjennomført ennå.", margin, yPos);
             doc.setTextColor(0, 0, 0);
           }
         }
       }
+
+      // Render table of contents with correct page numbers and links
+      renderToc();
 
       // Save PDF
       const fileName = `IK-Handbok_${companyName.replace(/[^a-zA-Z0-9æøåÆØÅ]/g, "_")}_${format(new Date(), "yyyy-MM-dd")}.pdf`;
