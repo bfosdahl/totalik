@@ -64,7 +64,7 @@ export default function Auth() {
 
   const handleSignUp = async () => {
     const redirectUrl = `${window.location.origin}/`;
-    
+
     // Create user in auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
@@ -81,8 +81,22 @@ export default function Auth() {
     if (authError) throw authError;
     if (!authData.user) throw new Error("Bruker ble ikke opprettet");
 
+    // Ensure we have an active session (session can be null if email confirmation is required)
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (signInError) {
+        throw new Error(
+          "Konto opprettet, men du må bekrefte e-post/eller logge inn før bedrift kan opprettes."
+        );
+      }
+    }
+
     // Wait a moment for the profile trigger to create the profile
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Create the company
     const { data: newCompany, error: companyError } = await supabase
@@ -92,19 +106,21 @@ export default function Auth() {
         org_number: orgNumber.trim(),
       })
       .select()
-      .single();
+      .maybeSingle();
 
-    if (companyError) {
+    if (companyError || !newCompany) {
       console.error("Error creating company:", companyError);
-      throw new Error("Kunne ikke opprette bedrift");
+      throw new Error(
+        companyError?.message || "Kunne ikke opprette bedrift (mangler tilgang/innlogging)"
+      );
     }
 
     // Update user profile with company_id
     const { error: profileError } = await supabase
       .from("profiles")
-      .update({ 
+      .update({
         company_id: newCompany.id,
-        status: "active"
+        status: "active",
       })
       .eq("user_id", authData.user.id);
 
@@ -117,7 +133,7 @@ export default function Auth() {
       .from("user_roles")
       .insert({
         user_id: authData.user.id,
-        role: "company_admin"
+        role: "company_admin",
       });
 
     if (roleError && !roleError.message.includes("duplicate")) {
@@ -201,6 +217,7 @@ export default function Auth() {
 
         await handleSignUp();
         toast.success("Konto og bedrift opprettet! Velkommen!");
+        navigate("/setup/ai");
       }
     } catch (error: any) {
       if (error.message?.includes("already registered")) {
