@@ -1330,22 +1330,170 @@ const Handbook = () => {
             }
             yPos += 5;
             
-            // Add form data summary if available
+            // Parse and render form data properly
             if (latestForm.form_data && typeof latestForm.form_data === "object") {
-              const formData = latestForm.form_data as Record<string, any>;
-              const entries = Object.entries(formData).slice(0, 20);
-              if (entries.length > 0) {
+              const formData = latestForm.form_data as Record<string, unknown>;
+              const sectionQuestions = formData.sectionQuestions as Record<string, Array<{ id: string; question: string }>> | undefined;
+              const checklistAnswers = formData.checklistAnswers as Record<string, Record<string, { answer?: string; comment?: string }>> | undefined;
+              
+              // Section title mapping
+              const sectionTitles: Record<string, string> = {
+                informasjon: "1. Informasjon og kommunikasjon",
+                samarbeid: "2. Samarbeid og beslutninger",
+                produktivitet: "3. Produktivitet og effektivitet",
+                arbeidsavtaler: "4. Arbeidsavtaler og arbeidsreglement",
+                arbeidstid: "5. Arbeidstidsbestemmelser",
+                hms: "6. HMS-arbeid",
+                vernetjeneste: "7. Vernetjeneste",
+                registrering: "8. Registrering og oppfølging",
+                forsikringer: "9. Forsikringer",
+                kompetanse: "10. Kompetanse og opplæring",
+                annet: "Annet",
+              };
+
+              if (sectionQuestions && checklistAnswers) {
+                const sectionOrder = Object.keys(sectionQuestions).filter(
+                  key => sectionQuestions[key] && sectionQuestions[key].length > 0
+                );
+
+                sectionOrder.forEach((sectionId) => {
+                  const questions = sectionQuestions[sectionId];
+                  const answers = checklistAnswers[sectionId] || {};
+                  
+                  if (!questions || questions.length === 0) return;
+
+                  // Section header
+                  checkPageBreak(30);
+                  doc.setFillColor(240, 249, 255);
+                  doc.roundedRect(margin, yPos, contentWidth, 8, 1, 1, "F");
+                  doc.setFontSize(10);
+                  doc.setFont("helvetica", "bold");
+                  doc.setTextColor(59, 130, 246);
+                  doc.text(sectionTitles[sectionId] || sectionId, margin + 3, yPos + 5.5);
+                  doc.setTextColor(0, 0, 0);
+                  yPos += 12;
+
+                  // Build table data for this section
+                  const tableData: string[][] = [];
+                  questions.forEach((q) => {
+                    const answer = answers[q.id];
+                    let answerText = "-";
+                    if (answer?.answer === "yes") answerText = "Ja";
+                    else if (answer?.answer === "no") answerText = "Nei";
+                    else if (answer?.answer === "na") answerText = "N/A";
+                    else if (answer?.answer) answerText = answer.answer;
+
+                    const row = [
+                      q.question.length > 70 ? q.question.substring(0, 67) + "..." : q.question,
+                      answerText,
+                      answer?.comment || ""
+                    ];
+                    tableData.push(row);
+                  });
+
+                  // Draw table
+                  autoTable(doc, {
+                    startY: yPos,
+                    head: [["Sjekkpunkt", "Svar", "Kommentar"]],
+                    body: tableData,
+                    theme: "striped",
+                    headStyles: { 
+                      fillColor: [59, 130, 246],
+                      fontSize: 8,
+                      fontStyle: "bold"
+                    },
+                    bodyStyles: { fontSize: 8 },
+                    columnStyles: {
+                      0: { cellWidth: 95 },
+                      1: { cellWidth: 20, halign: "center" },
+                      2: { cellWidth: 50 }
+                    },
+                    margin: { left: margin, right: margin },
+                    didParseCell: (data) => {
+                      // Color code answers
+                      if (data.section === "body" && data.column.index === 1) {
+                        const answer = data.cell.raw as string;
+                        if (answer === "Ja") {
+                          data.cell.styles.textColor = [34, 197, 94];
+                          data.cell.styles.fontStyle = "bold";
+                        } else if (answer === "Nei") {
+                          data.cell.styles.textColor = [239, 68, 68];
+                          data.cell.styles.fontStyle = "bold";
+                        }
+                      }
+                    }
+                  });
+
+                  yPos = (doc as any).lastAutoTable.finalY + 10;
+                });
+
+                // Summary statistics
+                checkPageBreak(40);
+                yPos += 5;
                 doc.setFontSize(10);
                 doc.setFont("helvetica", "bold");
-                doc.text("Kartleggingsdata:", margin, yPos);
-                yPos += 7;
+                doc.text("Oppsummering:", margin, yPos);
+                yPos += 8;
+
+                let totalYes = 0, totalNo = 0, totalNa = 0;
+                Object.values(checklistAnswers).forEach((sectionAnswers) => {
+                  Object.values(sectionAnswers).forEach((answer) => {
+                    if (answer.answer === "yes") totalYes++;
+                    else if (answer.answer === "no") totalNo++;
+                    else if (answer.answer === "na") totalNa++;
+                  });
+                });
+
+                const completionPercent = (totalYes + totalNo) > 0 ? Math.round((totalYes / (totalYes + totalNo)) * 100) : 0;
+
                 doc.setFont("helvetica", "normal");
-                entries.forEach(([key, value]) => {
-                  checkPageBreak(8);
-                  const displayValue = typeof value === "boolean" ? (value ? "Ja" : "Nei") : String(value || "-").substring(0, 60);
-                  const keyDisplay = key.replace(/_/g, " ").substring(0, 30);
-                  doc.text(`• ${keyDisplay}: ${displayValue}`, margin + 5, yPos);
-                  yPos += 6;
+                doc.setFillColor(34, 197, 94);
+                doc.rect(margin, yPos - 3, 4, 4, "F");
+                doc.text(`Ja: ${totalYes}`, margin + 7, yPos);
+                
+                doc.setFillColor(239, 68, 68);
+                doc.rect(margin + 35, yPos - 3, 4, 4, "F");
+                doc.text(`Nei: ${totalNo}`, margin + 42, yPos);
+                
+                doc.setFillColor(150, 150, 150);
+                doc.rect(margin + 70, yPos - 3, 4, 4, "F");
+                doc.text(`N/A: ${totalNa}`, margin + 77, yPos);
+                
+                doc.text(`Oppfyllelse: ${completionPercent}%`, margin + 110, yPos);
+                yPos += 10;
+              }
+
+              // Signatures
+              if (formData.auditorSignature || formData.managerSignature) {
+                checkPageBreak(25);
+                yPos += 5;
+                doc.setFont("helvetica", "bold");
+                doc.text("Signaturer:", margin, yPos);
+                yPos += 6;
+                doc.setFont("helvetica", "normal");
+                if (formData.auditorSignature) {
+                  doc.text(`Revisjonsleder: ${formData.auditorSignature}`, margin + 5, yPos);
+                  yPos += 5;
+                }
+                if (formData.managerSignature) {
+                  doc.text(`Daglig leder: ${formData.managerSignature}`, margin + 5, yPos);
+                  yPos += 5;
+                }
+              }
+
+              // Other comments
+              if (formData.otherComments && typeof formData.otherComments === 'string' && formData.otherComments.trim()) {
+                checkPageBreak(20);
+                yPos += 5;
+                doc.setFont("helvetica", "bold");
+                doc.text("Andre kommentarer:", margin, yPos);
+                yPos += 6;
+                doc.setFont("helvetica", "normal");
+                const commentLines = doc.splitTextToSize(formData.otherComments, contentWidth);
+                commentLines.forEach((line: string) => {
+                  checkPageBreak(5);
+                  doc.text(line, margin, yPos);
+                  yPos += 5;
                 });
               }
             }
