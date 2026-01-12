@@ -576,17 +576,25 @@ const Handbook = () => {
       stepIndex: 4,
       icon: FileCheck,
       content: (routines?.routines?.length ?? 0) > 0 ? (
-        <div className="space-y-2">
-          {routines?.routines.slice(0, 8).map((routine, index) => (
-            <div key={routine.id} className="flex items-center gap-2 text-sm">
-              <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded">{sectionOffset + 6}.{index + 1}</span>
-              <span className="font-mono text-xs text-muted-foreground">{routine.routine_number}</span>
-              <span className="text-muted-foreground truncate">{routine.routine_name}</span>
+        <div className="space-y-3">
+          {routines?.routines.map((routine, index) => (
+            <div key={routine.id} className="bg-background/50 rounded-lg p-3 border border-border/50">
+              <div className="flex items-start gap-2">
+                <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded shrink-0">{sectionOffset + 6}.{index + 1}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono text-xs text-muted-foreground">{routine.routine_number}:</span>
+                    <span className="font-medium text-sm">{routine.routine_name}</span>
+                  </div>
+                  {routine.purpose && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      <span className="font-medium">Formål:</span> {routine.purpose}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           ))}
-          {(routines?.routines?.length ?? 0) > 8 && (
-            <p className="text-xs text-muted-foreground">+ {(routines?.routines?.length ?? 0) - 8} flere rutiner</p>
-          )}
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">Ingen rutiner er lagt til ennå.</p>
