@@ -503,6 +503,17 @@ export function VerneombudExemptionDialog({
               <Button variant="outline" onClick={() => setStep("info")}>
                 Tilbake
               </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  // Skip signing (useful when setting up on behalf of a customer)
+                  sessionStorage.removeItem(SESSION_STORAGE_KEY);
+                  onComplete();
+                  onOpenChange(false);
+                }}
+              >
+                Hopp over
+              </Button>
               <Button onClick={handleSaveEmployerSig} disabled={!employerName.trim()}>
                 Neste: Ansatte signerer
               </Button>
