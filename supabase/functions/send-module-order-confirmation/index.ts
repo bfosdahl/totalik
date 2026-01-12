@@ -105,7 +105,10 @@ const handler = async (req: Request): Promise<Response> => {
                 
                 <p>Faktura sendes til bedriftens registrerte e-postadresse innen de første dagene av neste måned.</p>
                 
-                <p>Har du spørsmål? Kontakt oss på support@athenahms.no</p>
+                <p>Har du spørsmål om kjøpet? Kontakt vår salgssjef:<br>
+                <strong>Gard Fosdahl</strong><br>
+                📞 <a href="tel:+4748404274" style="color: #5B6BFF;">48 40 42 74</a><br>
+                ✉️ <a href="mailto:gard@athenahms.no" style="color: #5B6BFF;">gard@athenahms.no</a></p>
                 
                 <p>Med vennlig hilsen,<br><strong>Total-IK teamet</strong></p>
               </div>
