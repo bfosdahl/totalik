@@ -133,13 +133,10 @@ const tools = [
             type: "string",
             description: "Beskrivelse av risikoen/farekilen"
           },
-          probability: {
-            type: "number",
-            description: "Sannsynlighet (1-5)"
-          },
-          consequence: {
-            type: "number",
-            description: "Konsekvens (1-5)"
+          importance: {
+            type: "string",
+            enum: ["lav", "middels", "høy", "kritisk"],
+            description: "Hvor viktig/alvorlig risikoen er (lav, middels, høy, kritisk)"
           },
           action_description: {
             type: "string",
@@ -154,7 +151,7 @@ const tools = [
             description: "Antall dager til frist (standard: 30)"
           }
         },
-        required: ["risk_description", "probability", "consequence", "action_description"]
+        required: ["risk_description", "action_description"]
       }
     }
   },
@@ -413,6 +410,17 @@ async function executeToolCall(
       }
 
       case "add_risk_with_action": {
+        // Map importance to probability/consequence values
+        const importanceMap: Record<string, { probability: number; consequence: number; riskLevel: number }> = {
+          "lav": { probability: 1, consequence: 2, riskLevel: 2 },
+          "middels": { probability: 2, consequence: 3, riskLevel: 6 },
+          "høy": { probability: 3, consequence: 4, riskLevel: 12 },
+          "kritisk": { probability: 4, consequence: 5, riskLevel: 20 }
+        };
+        
+        const importance = (args.importance || "middels").toLowerCase();
+        const riskValues = importanceMap[importance] || importanceMap["middels"];
+        
         // First get existing risks
         const { data: existingData } = await supabase
           .from("company_risk_assessments")
@@ -421,14 +429,13 @@ async function executeToolCall(
           .maybeSingle();
 
         const existingRisks = existingData?.risks || [];
-        const riskLevel = args.probability * args.consequence;
         
         const newRisk = {
           id: crypto.randomUUID(),
           description: args.risk_description,
-          probability: args.probability,
-          consequence: args.consequence,
-          riskLevel: riskLevel,
+          probability: riskValues.probability,
+          consequence: riskValues.consequence,
+          riskLevel: riskValues.riskLevel,
           existingMeasures: "",
           suggestedMeasures: args.action_description,
           is_ai_generated: false
@@ -468,8 +475,8 @@ async function executeToolCall(
 
         if (actionError) throw actionError;
 
-        const riskColor = riskLevel <= 4 ? "grønn" : riskLevel <= 12 ? "gul" : "rød";
-        return `✅ Risiko "${args.risk_description}" er lagt til med risikonivå ${riskLevel} (${riskColor}). Tiltak "${args.action_description}" er opprettet med frist om ${deadlineDays} dager.`;
+        const riskColor = riskValues.riskLevel <= 4 ? "grønn" : riskValues.riskLevel <= 12 ? "gul" : "rød";
+        return `✅ Risiko "${args.risk_description}" er lagt til med viktighet: ${importance} (${riskColor}). Tiltak "${args.action_description}" er opprettet med frist om ${deadlineDays} dager.`;
       }
 
       case "add_routine": {
