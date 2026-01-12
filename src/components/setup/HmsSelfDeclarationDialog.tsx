@@ -32,43 +32,22 @@ export function HmsSelfDeclarationDialog({
   city,
   onComplete,
 }: HmsSelfDeclarationDialogProps) {
-  const [step, setStep] = useState<"info" | "manager" | "employee" | "complete">("info");
+  const [step, setStep] = useState<"info" | "manager" | "complete">("info");
   const [managerName, setManagerName] = useState("");
-  const [managerSignature, setManagerSignature] = useState("");
-  const [employeeRepName, setEmployeeRepName] = useState("");
-  const [employeeRepSignature, setEmployeeRepSignature] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   
   const managerSigRef = useRef<SignatureCanvas | null>(null);
-  const employeeSigRef = useRef<SignatureCanvas | null>(null);
 
   const handleClearManagerSig = () => {
     managerSigRef.current?.clear();
-    setManagerSignature("");
-  };
-
-  const handleSaveManagerSig = () => {
-    if (managerSigRef.current?.isEmpty()) {
-      toast.error("Vennligst signer før du går videre");
-      return;
-    }
-    const sig = managerSigRef.current?.toDataURL() || "";
-    setManagerSignature(sig);
-    setStep("employee");
-  };
-
-  const handleClearEmployeeSig = () => {
-    employeeSigRef.current?.clear();
   };
 
   const handleSubmit = async () => {
-    if (employeeSigRef.current?.isEmpty()) {
+    if (managerSigRef.current?.isEmpty()) {
       toast.error("Vennligst signer før du lagrer");
       return;
     }
-    
-    const sig = employeeSigRef.current?.toDataURL() || "";
-    setEmployeeRepSignature(sig);
+    const sig = managerSigRef.current?.toDataURL() || "";
 
     setIsSaving(true);
     try {
@@ -87,11 +66,12 @@ export function HmsSelfDeclarationDialog({
         country: "Norge",
         declaration_date: new Date().toISOString().split("T")[0],
         manager_name: managerName,
-        manager_signature: managerSignature,
+        manager_signature: sig,
         manager_signed_at: new Date().toISOString(),
-        employee_rep_name: employeeRepName,
-        employee_rep_signature: sig,
-        employee_rep_signed_at: new Date().toISOString(),
+        // Employee rep signature is optional - can be added later
+        employee_rep_name: null,
+        employee_rep_signature: null,
+        employee_rep_signed_at: null,
         status: "active" as const,
       };
 
@@ -129,9 +109,6 @@ export function HmsSelfDeclarationDialog({
     // Reset state
     setStep("info");
     setManagerName("");
-    setManagerSignature("");
-    setEmployeeRepName("");
-    setEmployeeRepSignature("");
   };
 
   const today = new Date().toLocaleDateString("nb-NO", {
@@ -139,8 +116,6 @@ export function HmsSelfDeclarationDialog({
     month: "long",
     year: "numeric",
   });
-
-  const fullAddress = [companyAddress, postalCode && city ? `${postalCode} ${city}` : postalCode || city].filter(Boolean).join(", ");
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -152,8 +127,7 @@ export function HmsSelfDeclarationDialog({
           </DialogTitle>
           <DialogDescription>
             {step === "info" && "Bekreftelse på systematisk HMS-arbeid"}
-            {step === "manager" && "Steg 1: Daglig leder signerer"}
-            {step === "employee" && "Steg 2: Representant for de ansatte signerer"}
+            {step === "manager" && "Daglig leder signerer på vegne av bedriften"}
             {step === "complete" && "Egenerklæringen er signert og lagret"}
           </DialogDescription>
         </DialogHeader>
@@ -214,12 +188,13 @@ export function HmsSelfDeclarationDialog({
             <div className="space-y-4">
               <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
                 <p className="text-sm text-muted-foreground">
-                  Daglig leder bekrefter at virksomheten arbeider systematisk med HMS.
+                  Daglig leder eller den som setter opp systemet på vegne av bedriften signerer denne erklæringen.
+                  Ansatt-signatur kan legges til senere om ønskelig.
                 </p>
               </div>
 
               <div>
-                <Label htmlFor="managerName">Daglig leder - Navn</Label>
+                <Label htmlFor="managerName">Daglig leder / Ansvarlig - Navn</Label>
                 <Input
                   id="managerName"
                   value={managerName}
@@ -242,50 +217,6 @@ export function HmsSelfDeclarationDialog({
                 </div>
                 <div className="flex gap-2 mt-2">
                   <Button variant="outline" size="sm" onClick={handleClearManagerSig}>
-                    Tøm signatur
-                  </Button>
-                </div>
-              </div>
-
-              <div className="text-sm text-muted-foreground">
-                Dato: {today}
-              </div>
-            </div>
-          )}
-
-          {step === "employee" && (
-            <div className="space-y-4">
-              <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
-                <p className="text-sm text-muted-foreground">
-                  Det bekreftes med dette at det er iverksatt systematiske tiltak for å oppfylle ovennevnte krav i helse-, miljø- 
-                  og sikkerhetslovgivningen.
-                </p>
-              </div>
-
-              <div>
-                <Label htmlFor="employeeRepName">Representant for de ansatte - Navn</Label>
-                <Input
-                  id="employeeRepName"
-                  value={employeeRepName}
-                  onChange={(e) => setEmployeeRepName(e.target.value)}
-                  placeholder="Skriv inn fullt navn"
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label>Signatur</Label>
-                <div className="mt-1 border rounded-lg bg-white">
-                  <SignatureCanvas
-                    ref={employeeSigRef}
-                    canvasProps={{
-                      className: "w-full h-32 touch-none",
-                    }}
-                    backgroundColor="white"
-                  />
-                </div>
-                <div className="flex gap-2 mt-2">
-                  <Button variant="outline" size="sm" onClick={handleClearEmployeeSig}>
                     Tøm signatur
                   </Button>
                 </div>
@@ -337,30 +268,7 @@ export function HmsSelfDeclarationDialog({
               >
                 Hopp over (signer senere)
               </Button>
-              <Button onClick={handleSaveManagerSig} disabled={!managerName.trim()}>
-                Neste: Ansattrepresentant signerer
-              </Button>
-            </>
-          )}
-
-          {step === "employee" && (
-            <>
-              <Button variant="outline" onClick={() => setStep("manager")}>
-                Tilbake
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  onComplete(true);
-                  onOpenChange(false);
-                }}
-              >
-                Hopp over (signer senere)
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={isSaving || !employeeRepName.trim()}
-              >
+              <Button onClick={handleSubmit} disabled={isSaving || !managerName.trim()}>
                 {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Fullfør og lagre egenerklæring
               </Button>

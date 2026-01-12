@@ -9,14 +9,8 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Trash2, FileText, CheckCircle2 } from "lucide-react";
+import { Loader2, FileText, CheckCircle2 } from "lucide-react";
 import SignatureCanvas from "react-signature-canvas";
-
-interface EmployeeSignature {
-  name: string;
-  signature: string;
-  signed_at: string;
-}
 
 interface VerneombudExemptionDialogProps {
   open: boolean;
@@ -32,10 +26,9 @@ interface VerneombudExemptionDialogProps {
 const SESSION_STORAGE_KEY = "verneombud_exemption_state";
 
 interface PersistedState {
-  step: "info" | "employer" | "employees" | "complete";
+  step: "info" | "employer" | "complete";
   employerName: string;
   employerSignature: string;
-  employees: { name: string; signature: string }[];
   companyId: string;
 }
 
@@ -68,19 +61,14 @@ export function VerneombudExemptionDialog({
 
   const initialState = getInitialState();
 
-  const [step, setStep] = useState<"info" | "employer" | "employees" | "complete">(
+  const [step, setStep] = useState<"info" | "employer" | "complete">(
     initialState?.step || "info"
   );
   const [employerName, setEmployerName] = useState(initialState?.employerName || "");
   const [employerSignature, setEmployerSignature] = useState(initialState?.employerSignature || "");
-  const [employees, setEmployees] = useState<{ name: string; signature: string }[]>(
-    initialState?.employees || [{ name: "", signature: "" }]
-  );
-  const [currentEmployeeIndex, setCurrentEmployeeIndex] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   
   const employerSigRef = useRef<SignatureCanvas | null>(null);
-  const employeeSigRef = useRef<SignatureCanvas | null>(null);
 
   // Persist state to sessionStorage whenever it changes
   useEffect(() => {
@@ -94,83 +82,26 @@ export function VerneombudExemptionDialog({
       step,
       employerName,
       employerSignature,
-      employees,
       companyId,
     };
     sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(stateToSave));
-  }, [step, employerName, employerSignature, employees, companyId]);
+  }, [step, employerName, employerSignature, companyId]);
 
   const handleClearEmployerSig = () => {
     employerSigRef.current?.clear();
     setEmployerSignature("");
   };
 
-  const handleSaveEmployerSig = () => {
+  const handleSubmit = async () => {
     if (employerSigRef.current?.isEmpty()) {
-      toast.error("Vennligst signer før du går videre");
+      toast.error("Vennligst signer før du lagrer");
       return;
     }
     const sig = employerSigRef.current?.toDataURL() || "";
     setEmployerSignature(sig);
-    setStep("employees");
-  };
-
-  const handleAddEmployee = () => {
-    setEmployees([...employees, { name: "", signature: "" }]);
-  };
-
-  const handleRemoveEmployee = (index: number) => {
-    if (employees.length <= 1) return;
-    setEmployees(employees.filter((_, i) => i !== index));
-  };
-
-  const handleEmployeeNameChange = (index: number, name: string) => {
-    const updated = [...employees];
-    updated[index].name = name;
-    setEmployees(updated);
-  };
-
-  const handleOpenEmployeeSignature = (index: number) => {
-    if (!employees[index].name.trim()) {
-      toast.error("Vennligst skriv inn navnet først");
-      return;
-    }
-    setCurrentEmployeeIndex(index);
-  };
-
-  const handleSaveEmployeeSignature = () => {
-    if (currentEmployeeIndex === null) return;
-    if (employeeSigRef.current?.isEmpty()) {
-      toast.error("Vennligst signer før du lagrer");
-      return;
-    }
-    const sig = employeeSigRef.current?.toDataURL() || "";
-    const updated = [...employees];
-    updated[currentEmployeeIndex].signature = sig;
-    setEmployees(updated);
-    setCurrentEmployeeIndex(null);
-  };
-
-  const handleClearEmployeeSig = () => {
-    employeeSigRef.current?.clear();
-  };
-
-  const handleSubmit = async () => {
-    // Validate all employees have names and signatures
-    const validEmployees = employees.filter(e => e.name.trim() && e.signature);
-    if (validEmployees.length === 0) {
-      toast.error("Minst én ansatt må signere avtalen");
-      return;
-    }
 
     setIsSaving(true);
     try {
-      const employeeSignatures = validEmployees.map(e => ({
-        name: e.name.trim(),
-        signature: e.signature,
-        signed_at: new Date().toISOString(),
-      }));
-
       // Check if agreement already exists
       const { data: existing } = await supabase
         .from("verneombud_exemption_agreements")
@@ -186,9 +117,10 @@ export function VerneombudExemptionDialog({
           .update({
             total_employees: totalEmployees,
             employer_name: employerName,
-            employer_signature: employerSignature,
+            employer_signature: sig,
             employer_signed_at: new Date().toISOString(),
-            employee_signatures: JSON.parse(JSON.stringify(employeeSignatures)),
+            // Employee signatures are optional - can be added later
+            employee_signatures: [],
             status: "active",
             agreement_date: new Date().toISOString().split("T")[0],
           })
@@ -202,9 +134,10 @@ export function VerneombudExemptionDialog({
             company_id: companyId,
             total_employees: totalEmployees,
             employer_name: employerName,
-            employer_signature: employerSignature,
+            employer_signature: sig,
             employer_signed_at: new Date().toISOString(),
-            employee_signatures: JSON.parse(JSON.stringify(employeeSignatures)),
+            // Employee signatures are optional - can be added later
+            employee_signatures: [],
             status: "active",
             agreement_date: new Date().toISOString().split("T")[0],
           }]);
@@ -235,8 +168,6 @@ export function VerneombudExemptionDialog({
       setStep("info");
       setEmployerName("");
       setEmployerSignature("");
-      setEmployees([{ name: "", signature: "" }]);
-      setCurrentEmployeeIndex(null);
       sessionStorage.removeItem(SESSION_STORAGE_KEY);
     }
   };
@@ -261,8 +192,7 @@ export function VerneombudExemptionDialog({
           </DialogTitle>
           <DialogDescription>
             {step === "info" && "Virksomheter med færre enn 5 ansatte kan avtale skriftlig fritak fra verneombud"}
-            {step === "employer" && "Steg 1: Arbeidsgiver signerer avtalen"}
-            {step === "employees" && "Steg 2: Ansatte signerer avtalen"}
+            {step === "employer" && "Arbeidsgiver signerer avtalen på vegne av bedriften"}
             {step === "complete" && "Avtalen er signert og lagret"}
           </DialogDescription>
         </DialogHeader>
@@ -353,6 +283,13 @@ export function VerneombudExemptionDialog({
 
           {step === "employer" && (
             <div className="space-y-4">
+              <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
+                <p className="text-sm text-muted-foreground">
+                  Daglig leder eller den som setter opp systemet på vegne av bedriften signerer denne avtalen.
+                  Ansatt-signaturer kan legges til senere om ønskelig.
+                </p>
+              </div>
+
               <div>
                 <Label htmlFor="employerName">Arbeidsgivers navn</Label>
                 <Input
@@ -381,93 +318,9 @@ export function VerneombudExemptionDialog({
                   </Button>
                 </div>
               </div>
-            </div>
-          )}
 
-          {step === "employees" && currentEmployeeIndex === null && (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Alle ansatte må signere avtalen. Legg til navn og signatur for hver ansatt.
-              </p>
-
-              {employees.map((employee, index) => (
-                <Card key={index} className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1 space-y-3">
-                      <div>
-                        <Label>Ansatt {index + 1}</Label>
-                        <Input
-                          value={employee.name}
-                          onChange={(e) => handleEmployeeNameChange(index, e.target.value)}
-                          placeholder="Skriv inn fullt navn"
-                          className="mt-1"
-                        />
-                      </div>
-                      
-                      {employee.signature ? (
-                        <div className="flex items-center gap-2 text-sm text-success">
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>Signert</span>
-                        </div>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleOpenEmployeeSignature(index)}
-                          disabled={!employee.name.trim()}
-                        >
-                          Signer
-                        </Button>
-                      )}
-                    </div>
-                    
-                    {employees.length > 1 && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveEmployee(index)}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </Card>
-              ))}
-
-              <Button variant="outline" onClick={handleAddEmployee} className="w-full">
-                <Plus className="w-4 h-4 mr-2" />
-                Legg til ansatt
-              </Button>
-            </div>
-          )}
-
-          {step === "employees" && currentEmployeeIndex !== null && (
-            <div className="space-y-4">
-              <p className="text-sm font-medium">
-                Signatur for: {employees[currentEmployeeIndex].name}
-              </p>
-              
-              <div className="border rounded-lg bg-white">
-                <SignatureCanvas
-                  ref={employeeSigRef}
-                  canvasProps={{
-                    className: "w-full h-32 touch-none",
-                  }}
-                  backgroundColor="white"
-                />
-              </div>
-              
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={handleClearEmployeeSig}>
-                  Tøm signatur
-                </Button>
-                <Button onClick={handleSaveEmployeeSignature}>
-                  Lagre signatur
-                </Button>
-                <Button variant="ghost" onClick={() => setCurrentEmployeeIndex(null)}>
-                  Avbryt
-                </Button>
+              <div className="text-sm text-muted-foreground">
+                Dato: {today}
               </div>
             </div>
           )}
@@ -513,31 +366,7 @@ export function VerneombudExemptionDialog({
               >
                 Hopp over (signer senere)
               </Button>
-              <Button onClick={handleSaveEmployerSig} disabled={!employerName.trim()}>
-                Neste: Ansatte signerer
-              </Button>
-            </>
-          )}
-
-          {step === "employees" && currentEmployeeIndex === null && (
-            <>
-              <Button variant="outline" onClick={() => setStep("employer")}>
-                Tilbake
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  sessionStorage.removeItem(SESSION_STORAGE_KEY);
-                  onComplete(true);
-                  onOpenChange(false);
-                }}
-              >
-                Hopp over (signer senere)
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={isSaving || !employees.some((e) => e.name.trim() && e.signature)}
-              >
+              <Button onClick={handleSubmit} disabled={isSaving || !employerName.trim()}>
                 {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Fullfør og lagre avtale
               </Button>
