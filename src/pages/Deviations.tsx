@@ -188,7 +188,8 @@ const Deviations = () => {
       due_date: input.dueDate,
       // Extended fields
       incident_location: input.incidentLocation,
-      incident_time: input.incidentDate,
+      incident_date: input.incidentDate, // Date when discovered (now uses correct field)
+      // incident_time is optional and would need a separate time picker
       reporter_contact: input.discoveredBy,
       additional_info: additionalInfo || undefined,
       consequences: input.consequenceFor,
