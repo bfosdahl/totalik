@@ -144,12 +144,21 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
     return initial;
   });
   
+  // IK/KS submenu expanded state (independent of main section toggle)
+  const [ikKsExpanded, setIkKsExpanded] = useState(() => {
+    return location.pathname.startsWith('/ks/ik-ks');
+  });
+  
   // Update expanded section when route changes
   useEffect(() => {
     if (activeSection !== 'none') {
       setExpandedSections(new Set([activeSection]));
     }
-  }, [activeSection]);
+    // Auto-expand IK/KS if navigating to an IK/KS route
+    if (location.pathname.startsWith('/ks/ik-ks')) {
+      setIkKsExpanded(true);
+    }
+  }, [activeSection, location.pathname]);
   
   // Toggle section helper
   const toggleSection = useCallback((section: SectionKey) => {
@@ -917,63 +926,87 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                   className="overflow-hidden"
                 >
                   <div className="pl-6 space-y-1 mt-1">
-                    {/* IK/KS Section Header */}
-                    <div className="py-1.5 px-3">
-                      <span className="text-xs font-medium text-sidebar-foreground/50 uppercase">
+                    {/* IK/KS Grunnlag - Collapsible submenu */}
+                    <button
+                      onClick={() => setIkKsExpanded(!ikKsExpanded)}
+                      className={cn(
+                        "flex items-center justify-between w-full px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname.startsWith("/ks/ik-ks")
+                          ? "bg-sidebar-accent text-sidebar-foreground font-medium"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
                         IK/KS Grunnlag
                       </span>
-                    </div>
-                    <NavLink
-                      to="/ks/ik-ks/rutiner"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ks/ik-ks/rutiner"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      {ikKsExpanded ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
                       )}
-                    >
-                      Rutiner
-                    </NavLink>
-                    <NavLink
-                      to="/ks/ik-ks/maal"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ks/ik-ks/maal"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Kvalitetsmål
-                    </NavLink>
-                    <NavLink
-                      to="/ks/ik-ks/dokumenter"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ks/ik-ks/dokumenter"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Dokumentsenter
-                    </NavLink>
-                    <NavLink
-                      to="/ks/ik-ks/sjekklister"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ks/ik-ks/sjekklister"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Sjekklistemaler
-                    </NavLink>
+                    </button>
                     
-                    {/* Prosjekter Section Header */}
-                    <div className="py-1.5 px-3 mt-2">
-                      <span className="text-xs font-medium text-sidebar-foreground/50 uppercase">
-                        Prosjekter
-                      </span>
-                    </div>
+                    {/* IK/KS submenu items */}
+                    <AnimatePresence>
+                      {ikKsExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pl-4 space-y-1">
+                            <NavLink
+                              to="/ks/ik-ks/rutiner"
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm",
+                                location.pathname === "/ks/ik-ks/rutiner"
+                                  ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                              )}
+                            >
+                              Rutiner
+                            </NavLink>
+                            <NavLink
+                              to="/ks/ik-ks/maal"
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm",
+                                location.pathname === "/ks/ik-ks/maal"
+                                  ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                              )}
+                            >
+                              Kvalitetsmål
+                            </NavLink>
+                            <NavLink
+                              to="/ks/ik-ks/dokumenter"
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm",
+                                location.pathname === "/ks/ik-ks/dokumenter"
+                                  ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                              )}
+                            >
+                              Dokumentsenter
+                            </NavLink>
+                            <NavLink
+                              to="/ks/ik-ks/sjekklister"
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm",
+                                location.pathname === "/ks/ik-ks/sjekklister"
+                                  ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                              )}
+                            >
+                              Sjekklistemaler
+                            </NavLink>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    
+                    {/* Prosjekter - always visible */}
                     <NavLink
                       to="/ks"
                       className={cn(
