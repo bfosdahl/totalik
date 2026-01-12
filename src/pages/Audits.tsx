@@ -16,7 +16,8 @@ import {
   Settings,
   Scale,
   Shield,
-  CalendarDays
+  CalendarDays,
+  FileSignature
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ import DagligDriftForm from "@/components/audits/DagligDriftForm";
 import LoverOgForskrifterCalculator from "@/components/audits/LoverOgForskrifterCalculator";
 import VernerundeForm from "@/components/audits/VernerundeForm";
 import HmsAarshjul from "@/components/audits/HmsAarshjul";
+import HmsEgenerklaeringSeksjon from "@/components/audits/HmsEgenerklaeringSeksjon";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -82,6 +84,7 @@ const Audits = () => {
         "el-kontroll": "elkontroll",
         "fysiske-arbeidsforhold": "fysiske",
         "brannvern": "drift",
+        "egenerklaring": "egenerklaring",
       };
       const tab = tabMapping[formType];
       if (tab) {
@@ -182,6 +185,13 @@ const Audits = () => {
                 <CalendarDays className="w-4 h-4" />
                 <span>Årshjul</span>
               </TabsTrigger>
+              <TabsTrigger 
+                value="egenerklaring" 
+                className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
+              >
+                <FileSignature className="w-4 h-4" />
+                <span>Egenerklæring</span>
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -250,6 +260,14 @@ const Audits = () => {
                 >
                   <CalendarDays className="w-6 h-6 text-purple-500" />
                   <span className="text-xs text-center">Årshjul</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 flex flex-col gap-2 items-center justify-center"
+                  onClick={() => setActiveTab("egenerklaring")}
+                >
+                  <FileSignature className="w-6 h-6 text-rose-500" />
+                  <span className="text-xs text-center">Egenerklæring</span>
                 </Button>
               </div>
             </motion.div>
@@ -419,6 +437,11 @@ const Audits = () => {
           {/* Årshjul Tab */}
           <TabsContent value="aarshjul">
             <HmsAarshjul />
+          </TabsContent>
+
+          {/* Egenerklæring Tab */}
+          <TabsContent value="egenerklaring">
+            <HmsEgenerklaeringSeksjon />
           </TabsContent>
         </Tabs>
       </div>
