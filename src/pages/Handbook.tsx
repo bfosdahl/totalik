@@ -914,6 +914,41 @@ const Handbook = () => {
         yPos += 15;
       };
 
+      // Table of contents (rendered after content is generated so page numbers are correct)
+      type TocEntry = { title: string; page: number };
+      const tocEntries: TocEntry[] = [];
+      let tocPageNumber = 0;
+
+      const addTocEntry = (title: string) => {
+        tocEntries.push({ title, page: doc.getNumberOfPages() });
+      };
+
+      const renderToc = () => {
+        if (!tocPageNumber) return;
+
+        doc.setPage(tocPageNumber);
+
+        // Clear content area (keep heading)
+        doc.setFillColor(255, 255, 255);
+        doc.rect(margin, margin + 15, contentWidth, pageHeight - (margin + 15) - margin, "F");
+
+        let tocY = margin + 20;
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "normal");
+
+        tocEntries.forEach((item) => {
+          if (tocY > pageHeight - margin - 10) return;
+          doc.text(item.title, margin, tocY);
+          doc.text(String(item.page), pageWidth - margin, tocY, { align: "right" });
+
+          // Make the whole row clickable
+          doc.link(margin, tocY - 5, contentWidth, 7, { pageNumber: item.page });
+
+          tocY += 8;
+        });
+      };
+
       // COVER PAGE
       doc.setFillColor(30, 64, 175);
       doc.rect(0, 0, pageWidth, 80, "F");
@@ -962,29 +997,16 @@ const Handbook = () => {
       doc.setTextColor(100, 100, 100);
       doc.text("Utarbeidet i henhold til forskrift om systematisk helse-, miljø- og sikkerhetsarbeid", pageWidth / 2, pageHeight - 25, { align: "center" });
 
-      // TABLE OF CONTENTS
+      // TABLE OF CONTENTS (filled in at the end so page numbers and links are correct)
       doc.addPage();
+      tocPageNumber = doc.getNumberOfPages();
       yPos = margin;
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(20);
       doc.setFont("helvetica", "bold");
       doc.text("Innholdsfortegnelse", margin, yPos);
       yPos += 15;
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "normal");
-      const tocItems = [
-        { title: "1. Mål for internkontroll", page: 3 },
-        { title: "2. Organisering og ansvar", page: 4 },
-        { title: "3. Risikovurdering", page: 5 },
-        { title: "4. Handlingsplan", page: 6 },
-        { title: "5. Rutiner og prosedyrer", page: 7 },
-        { title: "6. Lover og forskrifter", page: 8 },
-      ];
-      tocItems.forEach((item) => {
-        doc.text(item.title, margin, yPos);
-        doc.text(item.page.toString(), pageWidth - margin, yPos, { align: "right" });
-        yPos += 8;
-      });
+      // (entries are rendered later by renderToc())
 
       // SECTION 1: GOALS
       doc.addPage();
