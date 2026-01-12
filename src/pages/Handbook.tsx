@@ -343,7 +343,7 @@ const Handbook = () => {
           }
           return (
             <p className="text-sm text-muted-foreground">
-              Virksomheter med 5 eller flere ansatte skal ha verneombud. Gå til Organisering i Oppsett for å registrere valgt verneombud.
+              Virksomheter med 5 eller flere ansatte skal ha verneombud. Gå til Organisering for å registrere valgt verneombud.
             </p>
           );
         })(),
@@ -355,7 +355,7 @@ const Handbook = () => {
             ? `${verneombudRole.personName} valgt` 
             : "Ikke registrert";
         })(),
-        linkTo: "/setup",
+        linkTo: "/hms-organisering",
       }
     ] : [
       // Companies with less than 5 employees can have exemption agreement
