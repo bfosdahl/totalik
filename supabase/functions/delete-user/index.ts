@@ -181,6 +181,16 @@ Deno.serve(async (req) => {
       console.error("Error updating action plan followups:", followupsError);
     }
 
+    // Update ks_module2_checklists where user is responsible
+    const { error: checklistsError } = await supabaseAdmin
+      .from("ks_module2_checklists")
+      .update({ responsible_user_id: null })
+      .eq("responsible_user_id", userProfile.id);
+
+    if (checklistsError) {
+      console.error("Error updating ks_module2_checklists:", checklistsError);
+    }
+
     // Now delete the profile (this will cascade to related tables if configured)
     const { error: profileDeleteError } = await supabaseAdmin
       .from("profiles")
