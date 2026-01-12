@@ -294,6 +294,10 @@ HUSK:
 - START ALLTID med bransjevalg - dette er viktig for å tilpasse hele oppsettet!
 - Generer ALLE rutinene som ble diskutert - ikke bare én!
 
+VIKTIG - STOFFKARTOTEK:
+Når bedriften bruker eller har kjemikalier på arbeidsplassen, SKAL du ALLTID inkludere rutinen "Stoffkartotek og Kjemikaliehåndtering" (routine_number: 1290).
+Dette gjelder for: Verksted, Industri, Bygg, Renhold, Bilpleie, Frisør, og alle andre som bruker rengjøringsmidler, maling, løsemidler, smøremidler, sveisegasser osv.
+
 KRITISK - ANSVARLIGE ROLLER:
 Når du genererer handlingsplan/tiltak, bruk KUN disse rollene som "responsible":
 - "Daglig leder" (overordnet ansvar)
