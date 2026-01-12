@@ -49,6 +49,7 @@ import { useAuditFormResponses, formTypeLabels, type FormType } from "@/hooks/us
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useCompanyLawsRegulations } from "@/hooks/useCompanyLawsRegulations";
 import { useHmsDeclarations } from "@/hooks/useHmsDeclarations";
+import { useEmployees } from "@/hooks/useEmployees";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
@@ -115,6 +116,11 @@ const Handbook = () => {
   const { users: companyUsers } = useCompanyUsers();
   const { savedLaws } = useCompanyLawsRegulations();
   const { selfDeclaration, verneombudExemption, hasSelfDeclaration, hasVerneombudExemption } = useHmsDeclarations();
+  const { employees } = useEmployees();
+  
+  // For verneombud: Companies with 10+ employees MUST have a verneombud, they cannot use exemption agreement
+  const employeeCount = employees?.length || 0;
+  const requiresVerneombud = employeeCount >= 10;
   
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [includeDeviations, setIncludeDeviations] = useState(false);
@@ -272,53 +278,112 @@ const Handbook = () => {
       summary: hasSelfDeclaration ? "Signert og gyldig" : "Ikke signert",
       linkTo: "/setup",
     },
-    // 2. Avtale om fritak fra verneombud
-    {
-      id: "verneombud-exemption",
-      title: "2. Avtale om fritak fra verneombud",
-      status: hasVerneombudExemption ? ("complete" as const) : ("incomplete" as const),
-      stepIndex: -1,
-      icon: UserCheck,
-      content: hasVerneombudExemption && verneombudExemption ? (
-        <div className="space-y-3 text-sm text-muted-foreground">
-          <p className="font-medium text-foreground">
-            Avtale om fritak fra kravet om verneombud iht. arbeidsmiljøloven § 6-1.
-          </p>
-          <div className="space-y-2 pt-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs">
-                {verneombudExemption.total_employees || 0} ansatte
-              </Badge>
-              {verneombudExemption.agreement_date && (
-                <span className="text-xs">
-                  Inngått: {format(new Date(verneombudExemption.agreement_date), "d. MMM yyyy", { locale: nb })}
-                </span>
+    // 2. Verneombud section - different display based on employee count
+    // Companies with 10+ employees MUST have verneombud, cannot use exemption agreement
+    ...(requiresVerneombud ? [
+      {
+        id: "verneombud-selected",
+        title: "2. Valgt verneombud",
+        status: (() => {
+          const verneombudRole = organization?.roles?.find(r => 
+            r.title?.toLowerCase().includes("verneombud")
+          );
+          return verneombudRole?.personName ? "complete" as const : "incomplete" as const;
+        })(),
+        stepIndex: -1,
+        icon: UserCheck,
+        content: (() => {
+          const verneombudRole = organization?.roles?.find(r => 
+            r.title?.toLowerCase().includes("verneombud")
+          );
+          if (verneombudRole?.personName) {
+            return (
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">
+                  Valgt verneombud iht. arbeidsmiljøloven § 6-1.
+                </p>
+                <div className="space-y-2 pt-2">
+                  <div className="space-y-1">
+                    <p className="font-medium text-xs text-muted-foreground">Verneombud</p>
+                    <p className="text-foreground">{verneombudRole.personName}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {employeeCount} ansatte
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      Valgperiode: 2 år
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          return (
+            <p className="text-sm text-muted-foreground">
+              Virksomheter med 10 eller flere ansatte skal ha verneombud. Gå til Organisering i Oppsett for å registrere valgt verneombud.
+            </p>
+          );
+        })(),
+        summary: (() => {
+          const verneombudRole = organization?.roles?.find(r => 
+            r.title?.toLowerCase().includes("verneombud")
+          );
+          return verneombudRole?.personName 
+            ? `${verneombudRole.personName} valgt` 
+            : "Ikke registrert";
+        })(),
+        linkTo: "/setup",
+      }
+    ] : [
+      // Companies with less than 10 employees can have exemption agreement
+      {
+        id: "verneombud-exemption",
+        title: "2. Avtale om fritak fra verneombud",
+        status: hasVerneombudExemption ? ("complete" as const) : ("incomplete" as const),
+        stepIndex: -1,
+        icon: UserCheck,
+        content: hasVerneombudExemption && verneombudExemption ? (
+          <div className="space-y-3 text-sm text-muted-foreground">
+            <p className="font-medium text-foreground">
+              Avtale om fritak fra kravet om verneombud iht. arbeidsmiljøloven § 6-1.
+            </p>
+            <div className="space-y-2 pt-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-xs">
+                  {verneombudExemption.total_employees || 0} ansatte
+                </Badge>
+                {verneombudExemption.agreement_date && (
+                  <span className="text-xs">
+                    Inngått: {format(new Date(verneombudExemption.agreement_date), "d. MMM yyyy", { locale: nb })}
+                  </span>
+                )}
+              </div>
+              <div className="space-y-1">
+                <p className="font-medium text-xs text-muted-foreground">Arbeidsgiver</p>
+                <p className="text-foreground">{verneombudExemption.employer_name}</p>
+              </div>
+              {verneombudExemption.employee_signatures && verneombudExemption.employee_signatures.length > 0 && (
+                <div className="space-y-1">
+                  <p className="font-medium text-xs text-muted-foreground">Ansatte som har signert</p>
+                  <p className="text-foreground">
+                    {verneombudExemption.employee_signatures.map((e) => e.name).join(", ")}
+                  </p>
+                </div>
               )}
             </div>
-            <div className="space-y-1">
-              <p className="font-medium text-xs text-muted-foreground">Arbeidsgiver</p>
-              <p className="text-foreground">{verneombudExemption.employer_name}</p>
-            </div>
-            {verneombudExemption.employee_signatures && verneombudExemption.employee_signatures.length > 0 && (
-              <div className="space-y-1">
-                <p className="font-medium text-xs text-muted-foreground">Ansatte som har signert</p>
-                <p className="text-foreground">
-                  {verneombudExemption.employee_signatures.map((e) => e.name).join(", ")}
-                </p>
-              </div>
-            )}
           </div>
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          Avtale om fritak fra verneombud er ikke signert. Gå til Oppsett for å signere.
-        </p>
-      ),
-      summary: hasVerneombudExemption
-        ? `Signert av ${verneombudExemption?.employee_signatures?.length || 0} ansatte`
-        : "Ikke signert",
-      linkTo: "/setup",
-    },
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Avtale om fritak fra verneombud er ikke signert. Gå til Oppsett for å signere.
+          </p>
+        ),
+        summary: hasVerneombudExemption
+          ? `Signert av ${verneombudExemption?.employee_signatures?.length || 0} ansatte`
+          : "Ikke signert",
+        linkTo: "/setup",
+      }
+    ]),
     // Goals
     {
       id: "goals",

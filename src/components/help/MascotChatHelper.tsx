@@ -14,7 +14,7 @@ interface Message {
 }
 
 const tips = [
-  "Visste du at du kan bruke Oppsett-hjelperen for å sette opp HMS-systemet automatisk basert på din bransje? ✨",
+  "Visste du at jeg kan hjelpe deg å sette opp HMS-systemet automatisk basert på din bransje? ✨",
   "Tips: Røde risikoer krever obligatorisk revurdering etter at tiltak er iverksatt. 🔴",
   "Du kan laste opp sikkerhetsdatablader i Stoffkartoteket, så fyller systemet ut informasjonen automatisk! 📄",
   "HMS-håndboken oppdateres automatisk når du gjør endringer i systemet. 📚",
@@ -37,7 +37,7 @@ export const MascotChatHelper = () => {
       setMessages([
         {
           id: "welcome",
-          content: "Hei! 👋 Jeg er HMS-hjelperen din. Spør meg om hva som helst om systemet, så skal jeg prøve å hjelpe deg!",
+          content: "Hei! 👋 Jeg er HMS Proffen. Spør meg om hva som helst om systemet, så skal jeg prøve å hjelpe deg!",
           isBot: true,
         },
       ]);
@@ -45,10 +45,14 @@ export const MascotChatHelper = () => {
   }, []);
 
   useEffect(() => {
+    // Auto-scroll to bottom when new messages arrive
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollElement) {
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+      }
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -122,7 +126,7 @@ export const MascotChatHelper = () => {
               </div>
               <img
                 src={mascotImage}
-                alt="HMS-hjelper"
+                alt="HMS Proffen"
                 className="w-20 h-20 rounded-full border-4 border-primary shadow-lg hover:scale-110 transition-transform cursor-pointer object-cover bg-white"
               />
             </button>
@@ -143,11 +147,11 @@ export const MascotChatHelper = () => {
             <div className="bg-primary text-primary-foreground p-4 flex items-center gap-3">
               <img
                 src={mascotImage}
-                alt="HMS-hjelper"
+                alt="HMS Proffen"
                 className="w-12 h-12 rounded-full border-2 border-white/30 object-cover bg-white"
               />
               <div className="flex-1">
-                <h3 className="font-semibold">HMS-hjelperen</h3>
+                <h3 className="font-semibold">HMS Proffen</h3>
                 <p className="text-xs opacity-80">Alltid klar til å hjelpe!</p>
               </div>
               <Button
