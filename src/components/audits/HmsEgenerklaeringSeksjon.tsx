@@ -34,7 +34,7 @@ export default function HmsEgenerklaeringSeksjon() {
   const { employees } = useEmployees();
   
   // Determine if company needs verneombud (5+ employees) or can use exemption (<5 employees)
-  const employeeCount = (company as { employee_count?: number })?.employee_count ?? employees?.length ?? 0;
+  const employeeCount = company?.employee_count ?? employees?.length ?? 0;
   const requiresVerneombud = employeeCount >= 5;
   
   const [showSelfDeclarationDialog, setShowSelfDeclarationDialog] = useState(false);
