@@ -25,6 +25,8 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { supabase } from "@/integrations/supabase/client";
 import { useCompanyLawsRegulations } from "@/hooks/useCompanyLawsRegulations";
+import { useHmsDeclarations, HmsSelfDeclaration, VerneombudExemptionAgreement } from "@/hooks/useHmsDeclarations";
+import { useAuditFormResponses } from "@/hooks/useAuditFormResponses";
 import {
   sanitizeGoals,
   sanitizeOrganization,
@@ -137,6 +139,8 @@ export function HandbookStep({
 }: HandbookStepProps) {
   const navigate = useNavigate();
   const { savedLaws } = useCompanyLawsRegulations();
+  const { selfDeclaration, verneombudExemption } = useHmsDeclarations();
+  const { completedForms } = useAuditFormResponses();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -144,7 +148,6 @@ export function HandbookStep({
   const [currentCompanyInfo, setCurrentCompanyInfo] = useState(companyInfo);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
-
 
   // Refresh company info to get latest logo
   const refreshCompanyInfo = async () => {
@@ -330,15 +333,59 @@ export function HandbookStep({
 
       doc.setFontSize(12);
       doc.setFont("helvetica", "normal");
-      // Table of contents with all 6 sections
-      const tocItems = [
-        { title: "1. Mål for internkontroll", page: 3 },
-        { title: "2. Organisering og ansvar", page: 4 },
-        { title: "3. Risikovurdering", page: 5 },
-        { title: "4. Handlingsplan", page: 6 },
-        { title: "5. Rutiner og prosedyrer", page: 7 },
-        { title: "6. Lover og forskrifter", page: 8 },
-      ];
+      
+      // Build dynamic TOC based on available content
+      let sectionNumber = 1;
+      let currentPage = 3;
+      const tocItems: { title: string; page: number }[] = [];
+      
+      // Required sections
+      tocItems.push({ title: `${sectionNumber}. Mål for internkontroll`, page: currentPage++ });
+      sectionNumber++;
+      
+      tocItems.push({ title: `${sectionNumber}. Organisering og ansvar`, page: currentPage++ });
+      sectionNumber++;
+      
+      // HMS Egenerklæring (if exists)
+      if (selfDeclaration) {
+        tocItems.push({ title: `${sectionNumber}. Egenerklæring om HMS`, page: currentPage++ });
+        sectionNumber++;
+      }
+      
+      // Verneombud (if exists)  
+      if (verneombudExemption) {
+        tocItems.push({ title: `${sectionNumber}. Fritak fra verneombud`, page: currentPage++ });
+        sectionNumber++;
+      }
+      
+      tocItems.push({ title: `${sectionNumber}. Risikovurdering`, page: currentPage++ });
+      sectionNumber++;
+      
+      tocItems.push({ title: `${sectionNumber}. Handlingsplan`, page: currentPage++ });
+      sectionNumber++;
+      
+      tocItems.push({ title: `${sectionNumber}. Rutiner og prosedyrer`, page: currentPage++ });
+      sectionNumber++;
+      
+      tocItems.push({ title: `${sectionNumber}. Lover og forskrifter`, page: currentPage++ });
+      sectionNumber++;
+      
+      // Completed audit forms
+      const formTypeLabels: Record<string, string> = {
+        annual_hms: "Årlig HMS-revisjon",
+        elkontroll: "El-Kontroll",
+        fysiske_forhold: "Fysiske arbeidsforhold",
+        daglig_drift: "Daglig drift",
+        vernerunde: "Vernerunde",
+      };
+      
+      completedForms.forEach((form) => {
+        tocItems.push({ 
+          title: `${sectionNumber}. ${formTypeLabels[form.form_type] || form.form_type}`, 
+          page: currentPage++ 
+        });
+        sectionNumber++;
+      });
 
       tocItems.forEach(item => {
         doc.text(item.title, margin, yPos);
@@ -502,11 +549,157 @@ export function HandbookStep({
         doc.setTextColor(0, 0, 0);
       }
 
-      // ============= SECTION 3: RISK ASSESSMENT =============
+      // Track current section number for dynamic headers
+      let pdfSectionNumber = 2;
+
+      // ============= SECTION: HMS SELF-DECLARATION =============
+      if (selfDeclaration) {
+        doc.addPage();
+        yPos = margin;
+        pdfSectionNumber++;
+
+        addSectionHeader(`${pdfSectionNumber}. Egenerklæring om HMS`);
+
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        doc.text("Egenerklæring om helse, miljø og sikkerhet i henhold til internkontrollforskriften.", margin, yPos);
+        yPos += 12;
+
+        // Declaration details
+        if (selfDeclaration.declaration_date) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Dato for erklæring:", margin, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(formatDateForPdf(new Date(selfDeclaration.declaration_date)), margin + 45, yPos);
+          yPos += 8;
+        }
+
+        if (selfDeclaration.company_name) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Bedrift:", margin, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(selfDeclaration.company_name, margin + 45, yPos);
+          yPos += 8;
+        }
+
+        if (selfDeclaration.company_address) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Adresse:", margin, yPos);
+          doc.setFont("helvetica", "normal");
+          const address = `${selfDeclaration.company_address}${selfDeclaration.postal_code ? `, ${selfDeclaration.postal_code}` : ''}${selfDeclaration.city ? ` ${selfDeclaration.city}` : ''}`;
+          doc.text(address, margin + 45, yPos);
+          yPos += 12;
+        }
+
+        // Signatures
+        yPos += 5;
+        doc.setFont("helvetica", "bold");
+        doc.text("Signaturer:", margin, yPos);
+        yPos += 8;
+
+        if (selfDeclaration.manager_name) {
+          doc.setFont("helvetica", "normal");
+          doc.text(`Daglig leder: ${selfDeclaration.manager_name}`, margin + 5, yPos);
+          if (selfDeclaration.manager_signed_at) {
+            doc.text(`(signert ${formatDateForPdf(new Date(selfDeclaration.manager_signed_at))})`, margin + 100, yPos);
+          }
+          yPos += 7;
+        }
+
+        if (selfDeclaration.employee_rep_name) {
+          doc.text(`Ansatterepresentant: ${selfDeclaration.employee_rep_name}`, margin + 5, yPos);
+          if (selfDeclaration.employee_rep_signed_at) {
+            doc.text(`(signert ${formatDateForPdf(new Date(selfDeclaration.employee_rep_signed_at))})`, margin + 100, yPos);
+          }
+          yPos += 7;
+        }
+      }
+
+      // ============= SECTION: VERNEOMBUD EXEMPTION =============
+      if (verneombudExemption) {
+        doc.addPage();
+        yPos = margin;
+        pdfSectionNumber++;
+
+        addSectionHeader(`${pdfSectionNumber}. Fritak fra verneombud`);
+
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        doc.text("Avtale om fritak fra kravet om verneombud i henhold til arbeidsmiljøloven.", margin, yPos);
+        yPos += 12;
+
+        if (verneombudExemption.total_employees) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Antall ansatte:", margin, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(verneombudExemption.total_employees.toString(), margin + 40, yPos);
+          yPos += 8;
+        }
+
+        if (verneombudExemption.agreement_date) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Avtaledato:", margin, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(formatDateForPdf(new Date(verneombudExemption.agreement_date)), margin + 40, yPos);
+          yPos += 8;
+        }
+
+        if (verneombudExemption.valid_until) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Gyldig til:", margin, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(formatDateForPdf(new Date(verneombudExemption.valid_until)), margin + 40, yPos);
+          yPos += 12;
+        }
+
+        // Signatures
+        yPos += 5;
+        doc.setFont("helvetica", "bold");
+        doc.text("Signaturer:", margin, yPos);
+        yPos += 8;
+
+        if (verneombudExemption.employer_name) {
+          doc.setFont("helvetica", "normal");
+          doc.text(`Arbeidsgiver: ${verneombudExemption.employer_name}`, margin + 5, yPos);
+          if (verneombudExemption.employer_signed_at) {
+            doc.text(`(signert ${formatDateForPdf(new Date(verneombudExemption.employer_signed_at))})`, margin + 100, yPos);
+          }
+          yPos += 7;
+        }
+
+        if (verneombudExemption.employee_signatures && verneombudExemption.employee_signatures.length > 0) {
+          doc.text("Ansatte:", margin + 5, yPos);
+          yPos += 6;
+          verneombudExemption.employee_signatures.forEach((sig) => {
+            doc.text(`• ${sig.name}`, margin + 10, yPos);
+            if (sig.signed_at) {
+              doc.text(`(signert ${formatDateForPdf(new Date(sig.signed_at))})`, margin + 100, yPos);
+            }
+            yPos += 6;
+          });
+        }
+
+        if (verneombudExemption.notes) {
+          yPos += 5;
+          doc.setFont("helvetica", "bold");
+          doc.text("Merknad:", margin, yPos);
+          yPos += 6;
+          doc.setFont("helvetica", "normal");
+          const noteLines = doc.splitTextToSize(verneombudExemption.notes, contentWidth);
+          noteLines.forEach((line: string) => {
+            checkPageBreak(6);
+            doc.text(line, margin, yPos);
+            yPos += 5;
+          });
+        }
+      }
+
+      // ============= SECTION: RISK ASSESSMENT =============
       doc.addPage();
       yPos = margin;
+      pdfSectionNumber++;
 
-      addSectionHeader("3. Risikovurdering");
+      addSectionHeader(`${pdfSectionNumber}. Risikovurdering`);
 
       doc.setFontSize(11);
       doc.text("Risiko = Sannsynlighet × Konsekvens (Arbeidstilsynets metodikk)", margin, yPos);
@@ -586,11 +779,12 @@ export function HandbookStep({
         doc.setTextColor(0, 0, 0);
       }
 
-      // ============= SECTION 4: ACTION PLAN =============
+      // ============= SECTION: ACTION PLAN =============
       doc.addPage();
       yPos = margin;
+      pdfSectionNumber++;
 
-      addSectionHeader("4. Handlingsplan");
+      addSectionHeader(`${pdfSectionNumber}. Handlingsplan`);
 
       doc.setFontSize(11);
       doc.text("Handlingsplanen viser tiltak som skal gjennomføres for å redusere identifiserte risikoer.", margin, yPos);
@@ -683,11 +877,12 @@ export function HandbookStep({
         doc.setTextColor(0, 0, 0);
       }
 
-      // ============= SECTION 5: ROUTINES =============
+      // ============= SECTION: ROUTINES =============
       doc.addPage();
       yPos = margin;
+      pdfSectionNumber++;
 
-      addSectionHeader("5. Rutiner og prosedyrer");
+      addSectionHeader(`${pdfSectionNumber}. Rutiner og prosedyrer`);
 
       // Use sanitized routines data to prevent undefined errors
       const sanitizedRoutinesList = sanitizeRoutines(routines);
@@ -758,11 +953,12 @@ export function HandbookStep({
         doc.setTextColor(0, 0, 0);
       }
 
-      // ============= SECTION 6: LAWS AND REGULATIONS =============
+      // ============= SECTION: LAWS AND REGULATIONS =============
       doc.addPage();
       yPos = margin;
+      pdfSectionNumber++;
 
-      addSectionHeader("6. Lover og forskrifter");
+      addSectionHeader(`${pdfSectionNumber}. Lover og forskrifter`);
 
       doc.setFontSize(11);
       doc.setFont("helvetica", "normal");
@@ -803,6 +999,137 @@ export function HandbookStep({
         doc.text("Ingen lover og forskrifter er registrert.", margin, yPos);
         doc.setTextColor(0, 0, 0);
         yPos += 10;
+      }
+
+      // ============= SECTIONS: COMPLETED AUDIT FORMS =============
+      const formTypeLabelsPdf: Record<string, string> = {
+        annual_hms: "Årlig HMS-revisjon",
+        elkontroll: "El-Kontroll",
+        fysiske_forhold: "Fysiske arbeidsforhold",
+        daglig_drift: "Daglig drift",
+        vernerunde: "Vernerunde",
+      };
+
+      for (const form of completedForms) {
+        doc.addPage();
+        yPos = margin;
+        pdfSectionNumber++;
+
+        const formTitle = formTypeLabelsPdf[form.form_type] || form.form_type;
+        addSectionHeader(`${pdfSectionNumber}. ${formTitle}`);
+
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+
+        // Form metadata
+        if (form.completed_at) {
+          doc.text(`Gjennomført: ${formatDateForPdf(new Date(form.completed_at))}`, margin, yPos);
+          yPos += 6;
+        }
+        if (form.completed_by_name) {
+          doc.text(`Utført av: ${form.completed_by_name}`, margin, yPos);
+          yPos += 6;
+        }
+        if (form.participants) {
+          doc.text(`Deltakere: ${form.participants}`, margin, yPos);
+          yPos += 6;
+        }
+        yPos += 8;
+
+        // Parse and render form data
+        const formData = form.form_data as Record<string, unknown>;
+        if (formData) {
+          // Handle checklist answers
+          if (formData.checklistAnswers && typeof formData.checklistAnswers === 'object') {
+            const answers = formData.checklistAnswers as Record<string, { answer?: string; comment?: string }>;
+            const sectionQuestions = formData.sectionQuestions as Record<string, { title: string; questions: Array<{ id: string; question: string }> }> | undefined;
+            
+            doc.setFont("helvetica", "bold");
+            doc.text("Sjekkpunkter:", margin, yPos);
+            yPos += 8;
+            doc.setFont("helvetica", "normal");
+
+            // Group by section if available
+            if (sectionQuestions) {
+              Object.entries(sectionQuestions).forEach(([sectionId, section]) => {
+                checkPageBreak(20);
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(10);
+                doc.text(section.title, margin, yPos);
+                yPos += 6;
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+
+                section.questions.forEach((q) => {
+                  const answer = answers[q.id];
+                  if (answer) {
+                    checkPageBreak(15);
+                    const answerText = answer.answer === 'yes' ? '✓ Ja' : answer.answer === 'no' ? '✗ Nei' : answer.answer === 'na' ? '- N/A' : answer.answer || '-';
+                    const questionLines = doc.splitTextToSize(`${q.question}: ${answerText}`, contentWidth - 5);
+                    questionLines.forEach((line: string) => {
+                      doc.text(line, margin + 5, yPos);
+                      yPos += 5;
+                    });
+                    if (answer.comment) {
+                      doc.setTextColor(100, 100, 100);
+                      const commentLines = doc.splitTextToSize(`Kommentar: ${answer.comment}`, contentWidth - 10);
+                      commentLines.forEach((line: string) => {
+                        checkPageBreak(5);
+                        doc.text(line, margin + 10, yPos);
+                        yPos += 5;
+                      });
+                      doc.setTextColor(0, 0, 0);
+                    }
+                  }
+                });
+                yPos += 5;
+              });
+            } else {
+              // Render without section grouping
+              Object.entries(answers).forEach(([questionId, answer]) => {
+                checkPageBreak(12);
+                const answerText = answer.answer === 'yes' ? '✓ Ja' : answer.answer === 'no' ? '✗ Nei' : answer.answer === 'na' ? '- N/A' : answer.answer || '-';
+                doc.text(`${questionId}: ${answerText}`, margin + 5, yPos);
+                yPos += 5;
+                if (answer.comment) {
+                  doc.setTextColor(100, 100, 100);
+                  doc.text(`Kommentar: ${answer.comment}`, margin + 10, yPos);
+                  doc.setTextColor(0, 0, 0);
+                  yPos += 5;
+                }
+              });
+            }
+          }
+
+          // Handle other form data fields
+          if (formData.summary && typeof formData.summary === 'string') {
+            checkPageBreak(20);
+            doc.setFont("helvetica", "bold");
+            doc.text("Oppsummering:", margin, yPos);
+            yPos += 6;
+            doc.setFont("helvetica", "normal");
+            const summaryLines = doc.splitTextToSize(formData.summary, contentWidth);
+            summaryLines.forEach((line: string) => {
+              checkPageBreak(5);
+              doc.text(line, margin, yPos);
+              yPos += 5;
+            });
+          }
+
+          if (formData.notes && typeof formData.notes === 'string') {
+            checkPageBreak(20);
+            doc.setFont("helvetica", "bold");
+            doc.text("Notater:", margin, yPos);
+            yPos += 6;
+            doc.setFont("helvetica", "normal");
+            const notesLines = doc.splitTextToSize(formData.notes, contentWidth);
+            notesLines.forEach((line: string) => {
+              checkPageBreak(5);
+              doc.text(line, margin, yPos);
+              yPos += 5;
+            });
+          }
+        }
       }
 
       // ============= FOOTER ON ALL PAGES =============
@@ -1017,9 +1344,26 @@ export function HandbookStep({
               <li>• Innholdsfortegnelse</li>
               <li>• Mål for internkontroll</li>
               <li>• Organisering og ansvarsfordeling</li>
+              {selfDeclaration && <li>• Egenerklæring om HMS</li>}
+              {verneombudExemption && <li>• Fritak fra verneombud</li>}
               <li>• Risikovurdering med tiltak</li>
               <li>• Handlingsplan med status og frister</li>
               <li>• Rutiner og prosedyrer</li>
+              <li>• Lover og forskrifter</li>
+              {completedForms.length > 0 && (
+                <>
+                  {completedForms.map(form => {
+                    const formLabels: Record<string, string> = {
+                      annual_hms: "Årlig HMS-revisjon",
+                      elkontroll: "El-Kontroll",
+                      fysiske_forhold: "Fysiske arbeidsforhold",
+                      daglig_drift: "Daglig drift",
+                      vernerunde: "Vernerunde",
+                    };
+                    return <li key={form.id}>• {formLabels[form.form_type] || form.form_type}</li>;
+                  })}
+                </>
+              )}
             </ul>
           </div>
 
