@@ -118,9 +118,10 @@ const Handbook = () => {
   const { selfDeclaration, verneombudExemption, hasSelfDeclaration, hasVerneombudExemption } = useHmsDeclarations();
   const { employees } = useEmployees();
   
-  // For verneombud: Companies with 10+ employees MUST have a verneombud, they cannot use exemption agreement
+  // For verneombud: Companies with 5+ employees MUST have a verneombud, they cannot use exemption agreement
+  // Exemption agreement is ONLY for companies with fewer than 5 employees
   const employeeCount = employees?.length || 0;
-  const requiresVerneombud = employeeCount >= 10;
+  const requiresVerneombud = employeeCount >= 5;
   
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [includeDeviations, setIncludeDeviations] = useState(false);
@@ -279,11 +280,11 @@ const Handbook = () => {
       linkTo: "/setup",
     },
     // 2. Verneombud section - different display based on employee count
-    // Companies with 10+ employees MUST have verneombud, cannot use exemption agreement
+    // Companies with 5+ employees MUST have verneombud (elected), exemption only for <5 employees
     ...(requiresVerneombud ? [
       {
         id: "verneombud-selected",
-        title: "2. Valgt verneombud",
+        title: "2. Valg av verneombud",
         status: (() => {
           const verneombudRole = organization?.roles?.find(r => 
             r.title?.toLowerCase().includes("verneombud")
@@ -297,6 +298,10 @@ const Handbook = () => {
             r.title?.toLowerCase().includes("verneombud")
           );
           if (verneombudRole?.personName) {
+            // Calculate election date and expiry (2 years from election)
+            const electionDate = verneombudRole.electionDate ? new Date(verneombudRole.electionDate) : null;
+            const expiryDate = electionDate ? new Date(electionDate.getTime() + (2 * 365 * 24 * 60 * 60 * 1000)) : null;
+            
             return (
               <div className="space-y-3 text-sm text-muted-foreground">
                 <p className="font-medium text-foreground">
@@ -307,21 +312,37 @@ const Handbook = () => {
                     <p className="font-medium text-xs text-muted-foreground">Verneombud</p>
                     <p className="text-foreground">{verneombudRole.personName}</p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  {verneombudRole.electedBy && (
+                    <div className="space-y-1">
+                      <p className="font-medium text-xs text-muted-foreground">Valgt av</p>
+                      <p className="text-foreground">{verneombudRole.electedBy}</p>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="secondary" className="text-xs">
                       {employeeCount} ansatte
                     </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Valgperiode: 2 år
-                    </span>
+                    {electionDate && (
+                      <span className="text-xs">
+                        Valgt: {format(electionDate, "d. MMM yyyy", { locale: nb })}
+                      </span>
+                    )}
+                    {expiryDate && (
+                      <span className="text-xs text-muted-foreground">
+                        • Valgperiode utløper: {format(expiryDate, "d. MMM yyyy", { locale: nb })}
+                      </span>
+                    )}
                   </div>
+                  <p className="text-xs text-muted-foreground italic">
+                    Valgperioden er 2 år fra valgdato.
+                  </p>
                 </div>
               </div>
             );
           }
           return (
             <p className="text-sm text-muted-foreground">
-              Virksomheter med 10 eller flere ansatte skal ha verneombud. Gå til Organisering i Oppsett for å registrere valgt verneombud.
+              Virksomheter med 5 eller flere ansatte skal ha verneombud. Gå til Organisering i Oppsett for å registrere valgt verneombud.
             </p>
           );
         })(),
@@ -336,7 +357,7 @@ const Handbook = () => {
         linkTo: "/setup",
       }
     ] : [
-      // Companies with less than 10 employees can have exemption agreement
+      // Companies with less than 5 employees can have exemption agreement
       {
         id: "verneombud-exemption",
         title: "2. Avtale om fritak fra verneombud",
@@ -347,6 +368,9 @@ const Handbook = () => {
           <div className="space-y-3 text-sm text-muted-foreground">
             <p className="font-medium text-foreground">
               Avtale om fritak fra kravet om verneombud iht. arbeidsmiljøloven § 6-1.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Gjelder kun for virksomheter med færre enn 5 ansatte.
             </p>
             <div className="space-y-2 pt-2">
               <div className="flex items-center gap-2">
@@ -375,7 +399,7 @@ const Handbook = () => {
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Avtale om fritak fra verneombud er ikke signert. Gå til Oppsett for å signere.
+            Avtale om fritak fra verneombud er ikke signert. Gå til Oppsett for å signere. Dette gjelder kun for virksomheter med færre enn 5 ansatte.
           </p>
         ),
         summary: hasVerneombudExemption
@@ -467,10 +491,41 @@ const Handbook = () => {
       ),
       summary: `${riskAssessment?.risks?.length ?? 0} risikoer identifisert`,
     },
-    // Laws (position 6 - before Handlingsplan for logical flow per user request)
+    // Action plan (position 6)
+    {
+      id: "actions",
+      title: `${sectionOffset + 4}. Handlingsplan`,
+      status: (actionPlan?.actions?.length ?? 0) > 0 ? "complete" : "incomplete",
+      stepIndex: 3,
+      icon: ClipboardList,
+      content: (actionPlan?.actions?.length ?? 0) > 0 ? (
+        <div className="space-y-2">
+          {actionPlan?.actions.slice(0, 5).map((action) => (
+            <div key={action.id} className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground truncate flex-1">{action.action_description}</span>
+              <Badge variant="outline" className={cn(
+                "ml-2",
+                action.status === "fullført" ? "border-success text-success" :
+                action.status === "pågår" ? "border-warning text-warning" :
+                "border-muted-foreground text-muted-foreground"
+              )}>
+                {action.status === "fullført" ? "Fullført" : action.status === "pågår" ? "Pågår" : "Ikke startet"}
+              </Badge>
+            </div>
+          ))}
+          {(actionPlan?.actions?.length ?? 0) > 5 && (
+            <p className="text-xs text-muted-foreground">+ {(actionPlan?.actions?.length ?? 0) - 5} flere tiltak</p>
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">Ingen handlingsplan er opprettet ennå.</p>
+      ),
+      summary: `${actionPlan?.actions?.length ?? 0} tiltak`,
+    },
+    // Laws (position 7 - after Handlingsplan)
     {
       id: "laws",
-      title: `${sectionOffset + 4}. Lover og forskrifter`,
+      title: `${sectionOffset + 5}. Lover og forskrifter`,
       status: savedLaws.length > 0 ? "complete" as const : "incomplete" as const,
       stepIndex: -1,
       icon: Scale,
@@ -512,38 +567,7 @@ const Handbook = () => {
       summary: savedLaws.length > 0 ? `${savedLaws.length} lover og forskrifter` : "Ingen lagret",
       linkTo: "/lover-og-forskrifter",
     },
-    // Action plan
-    {
-      id: "actions",
-      title: `${sectionOffset + 5}. Handlingsplan`,
-      status: (actionPlan?.actions?.length ?? 0) > 0 ? "complete" : "incomplete",
-      stepIndex: 3,
-      icon: ClipboardList,
-      content: (actionPlan?.actions?.length ?? 0) > 0 ? (
-        <div className="space-y-2">
-          {actionPlan?.actions.slice(0, 5).map((action) => (
-            <div key={action.id} className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground truncate flex-1">{action.action_description}</span>
-              <Badge variant="outline" className={cn(
-                "ml-2",
-                action.status === "fullført" ? "border-success text-success" :
-                action.status === "pågår" ? "border-warning text-warning" :
-                "border-muted-foreground text-muted-foreground"
-              )}>
-                {action.status === "fullført" ? "Fullført" : action.status === "pågår" ? "Pågår" : "Ikke startet"}
-              </Badge>
-            </div>
-          ))}
-          {(actionPlan?.actions?.length ?? 0) > 5 && (
-            <p className="text-xs text-muted-foreground">+ {(actionPlan?.actions?.length ?? 0) - 5} flere tiltak</p>
-          )}
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground">Ingen handlingsplan er opprettet ennå.</p>
-      ),
-      summary: `${actionPlan?.actions?.length ?? 0} tiltak`,
-    },
-    // Routines
+    // Routines (position 8)
     {
       id: "routines",
       title: `${sectionOffset + 6}. Rutiner og prosedyrer`,

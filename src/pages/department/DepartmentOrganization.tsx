@@ -32,6 +32,8 @@ interface OrganizationRole {
   personName: string;
   description: string;
   sortOrder: number;
+  electionDate?: string;
+  electedBy?: string;
 }
 
 interface OrganizationData {
