@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCallback } from "react";
 
 export interface HmsSelfDeclaration {
   id: string;
@@ -45,6 +46,7 @@ export interface VerneombudExemptionAgreement {
 export function useHmsDeclarations() {
   const { profile } = useAuth();
   const companyId = profile?.company_id;
+  const queryClient = useQueryClient();
 
   const { data: selfDeclaration, isLoading: isLoadingSelfDeclaration } = useQuery({
     queryKey: ["hms-self-declaration", companyId],
@@ -94,11 +96,18 @@ export function useHmsDeclarations() {
     enabled: !!companyId,
   });
 
+  // Function to refresh data after saving
+  const refetch = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["hms-self-declaration", companyId] });
+    queryClient.invalidateQueries({ queryKey: ["verneombud-exemption", companyId] });
+  }, [queryClient, companyId]);
+
   return {
     selfDeclaration,
     verneombudExemption,
     isLoading: isLoadingSelfDeclaration || isLoadingExemption,
     hasSelfDeclaration: !!selfDeclaration,
     hasVerneombudExemption: !!verneombudExemption,
+    refetch,
   };
 }
