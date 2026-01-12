@@ -13,6 +13,7 @@ export default function PendingApproval() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const [companyName, setCompanyName] = useState("");
+  const [orgNumber, setOrgNumber] = useState("");
 
   const needsCompanySetup = useMemo(() => {
     return Boolean(profile && !profile.company_id);
@@ -34,8 +35,15 @@ export default function PendingApproval() {
     if (!user) return;
 
     const trimmed = companyName.trim();
+    const trimmedOrg = orgNumber.trim();
+    
     if (trimmed.length < 2) {
       toast.error("Skriv inn et gyldig bedriftsnavn");
+      return;
+    }
+    
+    if (!/^\d{9}$/.test(trimmedOrg)) {
+      toast.error("Organisasjonsnummer må være 9 siffer");
       return;
     }
 
@@ -43,7 +51,7 @@ export default function PendingApproval() {
     try {
       const { data: newCompany, error: companyError } = await supabase
         .from("companies")
-        .insert({ name: trimmed })
+        .insert({ name: trimmed, org_number: trimmedOrg })
         .select("id")
         .single();
 
@@ -136,6 +144,21 @@ export default function PendingApproval() {
                     className="pl-10"
                     placeholder="Din bedrift AS"
                     autoComplete="organization"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2 text-left">
+                <Label htmlFor="orgNumber">Organisasjonsnummer</Label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="orgNumber"
+                    value={orgNumber}
+                    onChange={(e) => setOrgNumber(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                    className="pl-10"
+                    placeholder="123456789"
+                    maxLength={9}
                   />
                 </div>
               </div>
