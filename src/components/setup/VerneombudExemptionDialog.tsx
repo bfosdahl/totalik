@@ -27,11 +27,6 @@ interface VerneombudExemptionDialogProps {
   orgNumber?: string;
   totalEmployees: number;
   onComplete: (wasSkipped?: boolean) => void;
-  /**
-   * When false, the user cannot skip signing and must complete the agreement.
-   * Defaults to true.
-   */
-  allowSkip?: boolean;
 }
 
 const SESSION_STORAGE_KEY = "verneombud_exemption_state";
@@ -53,7 +48,6 @@ export function VerneombudExemptionDialog({
   orgNumber,
   totalEmployees,
   onComplete,
-  allowSkip = true,
 }: VerneombudExemptionDialogProps) {
   // Load initial state from sessionStorage
   const getInitialState = useCallback((): PersistedState | null => {
@@ -506,23 +500,19 @@ export function VerneombudExemptionDialog({
 
           {step === "employer" && (
             <>
-              <Button variant="outline" onClick={() => setStep("info")}
-              >
+              <Button variant="outline" onClick={() => setStep("info")}>
                 Tilbake
               </Button>
-              {allowSkip && (
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    // Skip signing (useful when setting up on behalf of a customer)
-                    sessionStorage.removeItem(SESSION_STORAGE_KEY);
-                    onComplete(true);
-                    onOpenChange(false);
-                  }}
-                >
-                  Hopp over
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  sessionStorage.removeItem(SESSION_STORAGE_KEY);
+                  onComplete(true);
+                  onOpenChange(false);
+                }}
+              >
+                Hopp over (signer senere)
+              </Button>
               <Button onClick={handleSaveEmployerSig} disabled={!employerName.trim()}>
                 Neste: Ansatte signerer
               </Button>
@@ -531,23 +521,19 @@ export function VerneombudExemptionDialog({
 
           {step === "employees" && currentEmployeeIndex === null && (
             <>
-              <Button variant="outline" onClick={() => setStep("employer")}
-              >
+              <Button variant="outline" onClick={() => setStep("employer")}>
                 Tilbake
               </Button>
-              {allowSkip && (
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    // Skip without signatures - just close and complete
-                    sessionStorage.removeItem(SESSION_STORAGE_KEY);
-                    onComplete(true);
-                    onOpenChange(false);
-                  }}
-                >
-                  Hopp over
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  sessionStorage.removeItem(SESSION_STORAGE_KEY);
+                  onComplete(true);
+                  onOpenChange(false);
+                }}
+              >
+                Hopp over (signer senere)
+              </Button>
               <Button
                 onClick={handleSubmit}
                 disabled={isSaving || !employees.some((e) => e.name.trim() && e.signature)}
