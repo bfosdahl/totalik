@@ -687,6 +687,7 @@ const Setup = () => {
               companyAddress={company.address || undefined}
               orgNumber={company.org_number || undefined}
               totalEmployees={4}
+              allowSkip={false}
               onComplete={() => setShowVerneombudExemption(false)}
             />
           </>

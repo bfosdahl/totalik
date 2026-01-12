@@ -196,8 +196,11 @@ const Handbook = () => {
   // Laws are now fetched from database via useCompanyLawsRegulations hook
 
 
-  // Base section number offset - 1 for Egenerklæring, +1 if verneombud exemption exists
-  const sectionOffset = hasVerneombudExemption ? 2 : 1;
+  // Base section number offset:
+  // 1) Egenerklæring om HMS
+  // 2) Avtale om fritak fra verneombud
+  // Then: goals starts at 3.
+  const sectionOffset = 2;
 
   // Generate sections for completed audit forms - these are ongoing activities
   // These come after: Egenerklæring(1), [Verneombud(2)], Mål, Org, Risk, Actions, Routines, Laws, Deviations, Audits = offset+9
@@ -269,14 +272,14 @@ const Handbook = () => {
       summary: hasSelfDeclaration ? "Signert og gyldig" : "Ikke signert",
       linkTo: "/setup",
     },
-    // 2. Avtale om fritak fra verneombud (bare hvis signert)
-    ...(hasVerneombudExemption && verneombudExemption ? [{
+    // 2. Avtale om fritak fra verneombud
+    {
       id: "verneombud-exemption",
       title: "2. Avtale om fritak fra verneombud",
-      status: "complete" as const,
+      status: hasVerneombudExemption ? ("complete" as const) : ("incomplete" as const),
       stepIndex: -1,
       icon: UserCheck,
-      content: (
+      content: hasVerneombudExemption && verneombudExemption ? (
         <div className="space-y-3 text-sm text-muted-foreground">
           <p className="font-medium text-foreground">
             Avtale om fritak fra kravet om verneombud iht. arbeidsmiljøloven § 6-1.
@@ -300,16 +303,22 @@ const Handbook = () => {
               <div className="space-y-1">
                 <p className="font-medium text-xs text-muted-foreground">Ansatte som har signert</p>
                 <p className="text-foreground">
-                  {verneombudExemption.employee_signatures.map(e => e.name).join(", ")}
+                  {verneombudExemption.employee_signatures.map((e) => e.name).join(", ")}
                 </p>
               </div>
             )}
           </div>
         </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          Avtale om fritak fra verneombud er ikke signert. Gå til Oppsett for å signere.
+        </p>
       ),
-      summary: `Signert av ${verneombudExemption.employee_signatures?.length || 0} ansatte`,
+      summary: hasVerneombudExemption
+        ? `Signert av ${verneombudExemption?.employee_signatures?.length || 0} ansatte`
+        : "Ikke signert",
       linkTo: "/setup",
-    }] : []),
+    },
     // Goals
     {
       id: "goals",
