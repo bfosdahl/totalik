@@ -19,6 +19,7 @@ const signupSchema = loginSchema.extend({
   firstName: z.string().min(1, "Fornavn er påkrevd").max(50),
   lastName: z.string().min(1, "Etternavn er påkrevd").max(50),
   companyName: z.string().min(2, "Bedriftsnavn må være minst 2 tegn").max(100),
+  orgNumber: z.string().regex(/^\d{9}$/, "Org.nr må være 9 siffer"),
 });
 
 export default function Auth() {
@@ -29,6 +30,7 @@ export default function Auth() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [orgNumber, setOrgNumber] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { signIn, user } = useAuth();
@@ -87,6 +89,7 @@ export default function Auth() {
       .from("companies")
       .insert({
         name: companyName.trim(),
+        org_number: orgNumber.trim(),
       })
       .select()
       .single();
@@ -183,7 +186,7 @@ export default function Auth() {
           );
         }
       } else {
-        const validation = signupSchema.safeParse({ email, password, firstName, lastName, companyName });
+        const validation = signupSchema.safeParse({ email, password, firstName, lastName, companyName, orgNumber });
         if (!validation.success) {
           const fieldErrors: Record<string, string> = {};
           validation.error.errors.forEach((err) => {
@@ -251,6 +254,25 @@ export default function Auth() {
                   </div>
                   {errors.companyName && (
                     <p className="text-xs text-destructive">{errors.companyName}</p>
+                  )}
+                </div>
+
+                {/* Organization number */}
+                <div className="space-y-2">
+                  <Label htmlFor="orgNumber">Organisasjonsnummer</Label>
+                  <div className="relative">
+                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="orgNumber"
+                      value={orgNumber}
+                      onChange={(e) => setOrgNumber(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                      className="pl-10"
+                      placeholder="123456789"
+                      maxLength={9}
+                    />
+                  </div>
+                  {errors.orgNumber && (
+                    <p className="text-xs text-destructive">{errors.orgNumber}</p>
                   )}
                 </div>
 
