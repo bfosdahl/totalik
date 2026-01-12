@@ -243,25 +243,35 @@ const Handbook = () => {
     {
       id: "organization",
       title: "2. Organisering og ansvar",
-      status: (organization?.roles?.length ?? 0) > 0 ? "complete" : "incomplete",
+      status: ((organization?.roles?.length ?? 0) > 0 || (organization?.description && organization.description.trim().length > 0)) ? "complete" : "incomplete",
       stepIndex: 1,
       icon: Users,
-      content: (organization?.roles?.length ?? 0) > 0 ? (
+      content: ((organization?.roles?.length ?? 0) > 0 || (organization?.description && organization.description.trim().length > 0)) ? (
         <div className="text-sm text-muted-foreground space-y-1 max-h-48 overflow-y-auto">
-          {organization?.roles?.slice(0, 5).map((role, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <span className="font-medium">{role.title}</span>
-              {role.personName && <span className="text-xs">({role.personName})</span>}
-            </div>
-          ))}
-          {(organization?.roles?.length ?? 0) > 5 && (
-            <p className="text-xs">+ {(organization?.roles?.length ?? 0) - 5} flere roller</p>
-          )}
+          {(organization?.roles?.length ?? 0) > 0 ? (
+            <>
+              {organization?.roles?.slice(0, 5).map((role, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <span className="font-medium">{role.title}</span>
+                  {role.personName && <span className="text-xs">({role.personName})</span>}
+                </div>
+              ))}
+              {(organization?.roles?.length ?? 0) > 5 && (
+                <p className="text-xs">+ {(organization?.roles?.length ?? 0) - 5} flere roller</p>
+              )}
+            </>
+          ) : organization?.description ? (
+            <div className="whitespace-pre-wrap">{organization.description.slice(0, 500)}{organization.description.length > 500 ? "..." : ""}</div>
+          ) : null}
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">Organisering er ikke definert ennå.</p>
       ),
-      summary: (organization?.roles?.length ?? 0) > 0 ? `${organization?.roles?.length} roller definert` : "Ikke definert",
+      summary: (organization?.roles?.length ?? 0) > 0 
+        ? `${organization?.roles?.length} roller definert` 
+        : (organization?.description && organization.description.trim().length > 0)
+          ? "Organisering definert"
+          : "Ikke definert",
     },
     {
       id: "risk",

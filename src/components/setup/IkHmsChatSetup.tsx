@@ -974,6 +974,35 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
               routines: [...userRoutines, ...transformedRoutines],
             });
           }
+
+          // Add default laws/regulations based on industry
+          const defaultLaws = [
+            { law_name: "Arbeidsmiljøloven", category: "Arbeidsmiljø", description: "Lov om arbeidsmiljø, arbeidstid og stillingsvern", link: "https://lovdata.no/dokument/NL/lov/2005-06-17-62" },
+            { law_name: "Forskrift om systematisk HMS-arbeid (Internkontrollforskriften)", category: "HMS", description: "Forskrift om systematisk helse-, miljø- og sikkerhetsarbeid i virksomheter", link: "https://lovdata.no/dokument/SF/forskrift/1996-12-06-1127" },
+            { law_name: "Forskrift om organisering, ledelse og medvirkning", category: "HMS", description: "Krav til organisering av arbeid og medvirkning", link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1355" },
+            { law_name: "Forskrift om utførelse av arbeid", category: "HMS", description: "Krav til sikker utførelse av arbeid", link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1357" },
+          ];
+          
+          // Check if laws already exist
+          const { data: existingLaws } = await supabase
+            .from("company_laws_regulations")
+            .select("id")
+            .eq("company_id", companyId)
+            .limit(1);
+
+          if (!existingLaws || existingLaws.length === 0) {
+            // Insert default laws
+            await supabase.from("company_laws_regulations").insert(
+              defaultLaws.map(law => ({
+                company_id: companyId,
+                law_name: law.law_name,
+                category: law.category,
+                description: law.description,
+                link: law.link,
+                is_manually_added: false,
+              }))
+            );
+          }
         } catch (tableError) {
           console.warn("Warning: Could not save to standard tables:", tableError);
         }
@@ -984,6 +1013,7 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
         queryClient.invalidateQueries({ queryKey: ["company-action-plans"] });
         queryClient.invalidateQueries({ queryKey: ["company-routines"] });
         queryClient.invalidateQueries({ queryKey: ["company-modules"] });
+        queryClient.invalidateQueries({ queryKey: ["company-laws-regulations"] });
 
         toast.success("HMS-oppsett fullført!");
         setIsSaving(false);
