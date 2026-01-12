@@ -284,6 +284,7 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
           address: mainAddress,
           postal_code: postalCode,
           city: city,
+          employee_count: brregInfo.employees,
         })
         .eq("id", companyId);
 

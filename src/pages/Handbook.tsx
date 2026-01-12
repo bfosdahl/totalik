@@ -120,7 +120,8 @@ const Handbook = () => {
   
   // For verneombud: Companies with 5+ employees MUST have a verneombud, they cannot use exemption agreement
   // Exemption agreement is ONLY for companies with fewer than 5 employees
-  const employeeCount = employees?.length || 0;
+  // Use company.employee_count from setup if available, otherwise fall back to profiles count
+  const employeeCount = companyInfo?.employee_count ?? employees?.length ?? 0;
   const requiresVerneombud = employeeCount >= 5;
   
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
