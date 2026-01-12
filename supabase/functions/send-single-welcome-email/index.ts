@@ -91,7 +91,7 @@ const handler = async (req: Request): Promise<Response> => {
               <strong>Brukernavn:</strong> ${profile.email}
             </p>
             <p style="color: #555; margin: 0;">
-              <strong>Passord:</strong> Abc_1234
+              Klikk på knappen nedenfor for å sette ditt passord.
             </p>
           </div>
           

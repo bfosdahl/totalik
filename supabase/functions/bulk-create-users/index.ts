@@ -21,21 +21,33 @@ interface CreateResult {
   emailSent?: boolean;
 }
 
-// Function to send welcome email
+// Function to send welcome email with password reset link
 async function sendWelcomeEmail(
   resend: Resend,
+  supabaseAdmin: any,
   email: string,
   firstName: string | null,
-  companyName: string,
-  tempPassword: string
+  companyName: string
 ): Promise<boolean> {
   try {
+    // Generate password recovery link
+    const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
+      type: "recovery",
+      email,
+    });
+
+    if (resetError || !resetData?.properties?.action_link) {
+      console.error(`Error generating recovery link for ${email}:`, resetError);
+      return false;
+    }
+
     const displayName = firstName || email.split("@")[0];
+    const resetLink = resetData.properties.action_link;
     
     const emailResponse = await resend.emails.send({
       from: "HMS Nova <noreply@hmsnova.no>",
       to: [email],
-      subject: "Velkommen til HMS Nova - Din brukerkonto er opprettet",
+      subject: "Velkommen til HMS Nova - Sett ditt passord",
       html: `
         <!DOCTYPE html>
         <html>
@@ -55,15 +67,13 @@ async function sendWelcomeEmail(
             <p>Din brukerkonto hos <strong>${companyName}</strong> er nå opprettet i HMS Nova.</p>
             
             <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #374151;">Påloggingsinformasjon:</h3>
+              <h3 style="margin-top: 0; color: #374151;">Din påloggingsinformasjon:</h3>
               <p style="margin: 5px 0;"><strong>E-post:</strong> ${email}</p>
-              <p style="margin: 5px 0;"><strong>Midlertidig passord:</strong> ${tempPassword}</p>
+              <p style="margin: 5px 0;">Klikk på knappen nedenfor for å sette ditt passord.</p>
             </div>
             
-            <p style="color: #dc2626; font-weight: 500;">⚠️ Viktig: Endre passordet ditt etter første innlogging!</p>
-            
             <div style="text-align: center; margin: 30px 0;">
-              <a href="https://hmsnova.no" 
+              <a href="${resetLink}" 
                  style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); 
                         color: white; 
                         padding: 14px 30px; 
@@ -71,9 +81,12 @@ async function sendWelcomeEmail(
                         border-radius: 8px; 
                         font-weight: bold;
                         display: inline-block;">
-                Logg inn på HMS Nova
+                Sett passord og logg inn
               </a>
             </div>
+            
+            <p style="color: #666; font-size: 14px;">Hvis knappen ikke fungerer, kopier og lim inn denne lenken i nettleseren din:</p>
+            <p style="color: #6366f1; font-size: 12px; word-break: break-all;">${resetLink}</p>
             
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             
@@ -186,7 +199,6 @@ Deno.serve(async (req) => {
     const companyMap = new Map(companiesData?.map(c => [c.id, c.name]) || []);
 
     const results: CreateResult[] = [];
-    const tempPassword = "Abc_1234";
 
     for (const user of users) {
       try {
@@ -201,6 +213,9 @@ Deno.serve(async (req) => {
           results.push({ email: user.email, success: false, error: "Bedrift er påkrevd" });
           continue;
         }
+
+        // Generate a unique random password for each user
+        const tempPassword = crypto.randomUUID().slice(0, 16);
 
         const { data: authData, error: createError } = await supabaseAdmin.auth.admin.createUser({
           email: user.email,
@@ -248,16 +263,16 @@ Deno.serve(async (req) => {
           console.error(`Error adding role for ${user.email}:`, roleError);
         }
 
-        // Send welcome email
+        // Send welcome email with password reset link
         let emailSent = false;
         if (resend) {
           const companyName = companyMap.get(user.companyId) || "din bedrift";
           emailSent = await sendWelcomeEmail(
             resend,
+            supabaseAdmin,
             user.email,
             user.firstName || null,
-            companyName,
-            tempPassword
+            companyName
           );
         }
 
