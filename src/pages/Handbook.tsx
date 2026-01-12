@@ -53,6 +53,8 @@ import { useEmployees } from "@/hooks/useEmployees";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
+import { HmsSelfDeclarationDialog } from "@/components/setup/HmsSelfDeclarationDialog";
+import { VerneombudExemptionDialog } from "@/components/setup/VerneombudExemptionDialog";
 import {
   sanitizeHandbookData,
   sanitizeRisks,
@@ -131,6 +133,8 @@ const Handbook = () => {
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [showExportOptions, setShowExportOptions] = useState(false);
+  const [showHmsDeclaration, setShowHmsDeclaration] = useState(false);
+  const [showVerneombudExemption, setShowVerneombudExemption] = useState(false);
   
   // Optional sections for PDF export (6-11)
   const [includeDeviationsInPdf, setIncludeDeviationsInPdf] = useState(false);
@@ -1241,6 +1245,17 @@ const Handbook = () => {
 
   const handleEditSection = (section: typeof handbookSections[0], e: React.MouseEvent) => {
     e.stopPropagation();
+
+    // Open signature dialogs directly instead of sending users to the manual setup wizard
+    if (section.id === "self-declaration") {
+      setShowHmsDeclaration(true);
+      return;
+    }
+    if (section.id === "verneombud-exemption") {
+      setShowVerneombudExemption(true);
+      return;
+    }
+
     if (section.stepIndex >= 0) {
       navigate(`/setup?step=${section.stepIndex}&from=handbook&section=${encodeURIComponent(section.title)}`);
     } else if (section.linkTo) {
@@ -1603,6 +1618,32 @@ const Handbook = () => {
           </div>
         </motion.div>
       </div>
+
+      {companyId && companyInfo?.name && (
+        <>
+          <HmsSelfDeclarationDialog
+            open={showHmsDeclaration}
+            onOpenChange={setShowHmsDeclaration}
+            companyId={companyId}
+            companyName={companyInfo.name}
+            companyAddress={companyInfo.address || undefined}
+            postalCode={companyInfo.postal_code || undefined}
+            city={companyInfo.city || undefined}
+            onComplete={() => setShowHmsDeclaration(false)}
+          />
+
+          <VerneombudExemptionDialog
+            open={showVerneombudExemption}
+            onOpenChange={setShowVerneombudExemption}
+            companyId={companyId}
+            companyName={companyInfo.name}
+            companyAddress={companyInfo.address || undefined}
+            orgNumber={companyInfo.org_number || undefined}
+            totalEmployees={employeeCount}
+            onComplete={() => setShowVerneombudExemption(false)}
+          />
+        </>
+      )}
 
       <EmailSendDialog
         open={emailDialogOpen}
