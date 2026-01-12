@@ -17,6 +17,9 @@ export interface OrganizationRole {
   personName: string;
   description: string;
   sortOrder: number;
+  // For verneombud election tracking
+  electionDate?: string;
+  electedBy?: string;
 }
 
 export interface OrganizationData {
