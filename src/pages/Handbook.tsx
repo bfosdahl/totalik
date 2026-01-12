@@ -214,29 +214,123 @@ const Handbook = () => {
   // Then: goals starts at 3.
   const sectionOffset = 2;
 
-  // Generate sections for completed audit forms - these are ongoing activities
+  // Generate sections for completed audit forms - status based on completion
   // These come after: Egenerklæring(1), [Verneombud(2)], Mål, Org, Risk, Actions, Routines, Laws, Deviations, Audits = offset+9
   const auditFormSections = (["annual_hms", "elkontroll", "fysiske_forhold", "daglig_drift"] as FormType[])
     .map((formType, index) => {
       const latestForm = getLatestByFormType(formType);
       const Icon = formTypeIcons[formType];
+      
+      // Render form data content properly
+      const renderFormContent = () => {
+        if (!latestForm) {
+          return (
+            <p className="text-sm text-muted-foreground">
+              Ingen {formTypeLabels[formType].toLowerCase()} er gjennomført ennå. Gå til Revisjoner for å fylle ut skjemaet.
+            </p>
+          );
+        }
+
+        const formData = latestForm.form_data as Record<string, unknown>;
+        
+        return (
+          <div className="space-y-4 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-muted-foreground">
+                  Sist fullført: {latestForm.completed_at ? format(new Date(latestForm.completed_at), "d. MMMM yyyy", { locale: nb }) : "Ukjent"}
+                </p>
+                {latestForm.auditor_name && <p className="text-muted-foreground">Revisor: {latestForm.auditor_name}</p>}
+                {latestForm.participants && <p className="text-muted-foreground">Deltakere: {latestForm.participants}</p>}
+              </div>
+              {(formData.auditorSignature || formData.managerSignature) && (
+                <div className="text-muted-foreground">
+                  {formData.auditorSignature && <p>Revisor signert: {String(formData.auditorSignature)}</p>}
+                  {formData.managerSignature && <p>Leder signert: {String(formData.managerSignature)}</p>}
+                </div>
+              )}
+            </div>
+            
+            {/* Render checklist answers if available */}
+            {formData.checklistAnswers && typeof formData.checklistAnswers === 'object' && (
+              <div className="space-y-3 pt-3 border-t border-border">
+                <p className="font-medium text-foreground">Resultater fra kartlegging:</p>
+                {Object.entries(formData.checklistAnswers as Record<string, Record<string, { answer?: string; comment?: string }>>).map(([sectionKey, questions]) => {
+                  if (!questions || typeof questions !== 'object' || Object.keys(questions).length === 0) return null;
+                  
+                  // Get section label from sectionQuestions if available
+                  const sectionLabels: Record<string, string> = {
+                    hms: "HMS-system",
+                    arbeidsavtaler: "Arbeidsavtaler",
+                    arbeidstid: "Arbeidstid",
+                    forsikringer: "Forsikringer",
+                    informasjon: "Informasjon og kommunikasjon",
+                    kompetanse: "Kompetanse",
+                    produktivitet: "Produktivitet",
+                    registrering: "Registrering og oppfølging",
+                    samarbeid: "Samarbeid",
+                    vernetjeneste: "Vernetjeneste",
+                    annet: "Annet",
+                  };
+                  
+                  const yesCount = Object.values(questions).filter(q => q?.answer === 'yes').length;
+                  const noCount = Object.values(questions).filter(q => q?.answer === 'no').length;
+                  const total = Object.keys(questions).length;
+                  
+                  if (total === 0) return null;
+                  
+                  return (
+                    <div key={sectionKey} className="bg-background/50 rounded-lg p-3 border border-border/50">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm">{sectionLabels[sectionKey] || sectionKey}</span>
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-success">{yesCount} ja</span>
+                          {noCount > 0 && <span className="text-warning">{noCount} nei</span>}
+                          <span className="text-muted-foreground">({total} spørsmål)</span>
+                        </div>
+                      </div>
+                      {/* Show questions with "no" answers or comments */}
+                      {Object.entries(questions).map(([qKey, qData]) => {
+                        if (qData?.answer === 'no' || (qData?.comment && qData.comment.trim())) {
+                          // Try to find the question text from sectionQuestions
+                          const sectionQuestions = formData.sectionQuestions as Record<string, Array<{ id: string; question: string }>> | undefined;
+                          const questionList = sectionQuestions?.[sectionKey];
+                          const questionObj = questionList?.find(q => q.id === qKey);
+                          const questionText = questionObj?.question || qKey;
+                          
+                          return (
+                            <div key={qKey} className="mt-2 text-xs text-muted-foreground border-l-2 border-warning/50 pl-2">
+                              <p className="font-medium">{questionText}</p>
+                              <p>Svar: <span className={qData.answer === 'no' ? 'text-warning' : 'text-success'}>{qData.answer === 'yes' ? 'Ja' : 'Nei'}</span></p>
+                              {qData.comment && <p>Kommentar: {qData.comment}</p>}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            
+            {formData.otherComments && (
+              <div className="pt-3 border-t border-border">
+                <p className="font-medium text-foreground">Andre kommentarer:</p>
+                <p className="text-muted-foreground">{String(formData.otherComments)}</p>
+              </div>
+            )}
+          </div>
+        );
+      };
+
       return {
         id: `audit_form_${formType}`,
         title: `${sectionOffset + 9 + index}. ${formTypeLabels[formType]}`,
-        status: "ongoing" as const, // Always ongoing - these are periodic activities
+        status: latestForm ? ("complete" as const) : ("incomplete" as const),
         stepIndex: -1,
         icon: Icon,
-        content: latestForm ? (
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>Sist fullført: {latestForm.completed_at ? format(new Date(latestForm.completed_at), "d. MMMM yyyy", { locale: nb }) : "Ukjent"}</p>
-            {latestForm.auditor_name && <p>Revisor: {latestForm.auditor_name}</p>}
-            {latestForm.participants && <p>Deltakere: {latestForm.participants}</p>}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            Ingen {formTypeLabels[formType].toLowerCase()} er gjennomført ennå. Gå til Revisjoner for å fylle ut skjemaet.
-          </p>
-        ),
+        content: renderFormContent(),
         summary: latestForm 
           ? `Fullført ${latestForm.completed_at ? format(new Date(latestForm.completed_at), "d. MMM yyyy", { locale: nb }) : ""}`
           : "Ikke utført",
@@ -580,20 +674,61 @@ const Handbook = () => {
       stepIndex: 4,
       icon: FileCheck,
       content: (routines?.routines?.length ?? 0) > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {routines?.routines.map((routine, index) => (
-            <div key={routine.id} className="bg-background/50 rounded-lg p-3 border border-border/50">
-              <div className="flex items-start gap-2">
+            <div key={routine.id} className="bg-background/50 rounded-lg p-4 border border-border/50">
+              <div className="flex items-start gap-3">
                 <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded shrink-0">{sectionOffset + 6}.{index + 1}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-mono text-xs text-muted-foreground">{routine.routine_number}:</span>
-                    <span className="font-medium text-sm">{routine.routine_name}</span>
+                <div className="flex-1 min-w-0 space-y-3">
+                  {/* Header */}
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-mono text-xs text-muted-foreground">{routine.routine_number}:</span>
+                      <span className="font-medium">{routine.routine_name}</span>
+                      {routine.category && (
+                        <Badge variant="secondary" className="text-xs">{routine.category}</Badge>
+                      )}
+                    </div>
                   </div>
+                  
+                  {/* Purpose */}
                   {routine.purpose && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      <span className="font-medium">Formål:</span> {routine.purpose}
-                    </p>
+                    <div>
+                      <p className="text-xs font-medium text-foreground mb-1">Formål:</p>
+                      <p className="text-sm text-muted-foreground">{routine.purpose}</p>
+                    </div>
+                  )}
+                  
+                  {/* Responsibility */}
+                  {routine.responsibility && (
+                    <div>
+                      <p className="text-xs font-medium text-foreground mb-1">Ansvar:</p>
+                      <p className="text-sm text-muted-foreground">{routine.responsibility}</p>
+                    </div>
+                  )}
+                  
+                  {/* Procedure */}
+                  {routine.procedure && (
+                    <div>
+                      <p className="text-xs font-medium text-foreground mb-1">Fremgangsmåte:</p>
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{routine.procedure}</p>
+                    </div>
+                  )}
+                  
+                  {/* Examples */}
+                  {routine.examples && (
+                    <div>
+                      <p className="text-xs font-medium text-foreground mb-1">Eksempler:</p>
+                      <p className="text-sm text-muted-foreground">{routine.examples}</p>
+                    </div>
+                  )}
+                  
+                  {/* Remember */}
+                  {routine.remember && (
+                    <div className="bg-warning/10 border border-warning/20 rounded p-2">
+                      <p className="text-xs font-medium text-warning mb-1">Husk:</p>
+                      <p className="text-sm text-muted-foreground">{routine.remember}</p>
+                    </div>
                   )}
                 </div>
               </div>
