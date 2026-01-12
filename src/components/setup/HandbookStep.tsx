@@ -1010,19 +1010,48 @@ export function HandbookStep({
         vernerunde: "Vernerunde",
       };
 
-      // Section title mapping
+      // Comprehensive section title mapping for all audit forms
       const sectionTitles: Record<string, string> = {
+        // Daglig drift sections
         informasjon: "1. Informasjon og kommunikasjon",
         samarbeid: "2. Samarbeid og beslutninger",
         produktivitet: "3. Produktivitet og effektivitet",
         arbeidsavtaler: "4. Arbeidsavtaler og arbeidsreglement",
         arbeidstid: "5. Arbeidstidsbestemmelser",
         hms: "6. HMS-arbeid",
-        vernetjeneste: "7. Vernetjeneste",
+        kompetanse: "7. Kompetanse og opplæring",
         registrering: "8. Registrering og oppfølging",
-        forsikringer: "9. Forsikringer",
-        kompetanse: "10. Kompetanse og opplæring",
-        annet: "Annet",
+        vernetjeneste: "9. Vernetjeneste",
+        forsikringer: "10. Forsikringer",
+        // Fysiske arbeidsforhold sections
+        arbeidslokaler: "1. Arbeidslokaler",
+        elektrisk: "2. Elektriske anlegg og utstyr",
+        inneklima: "3. Inneklima - lokaler",
+        romningsveier: "4. Rømningsveier / Nødutganger",
+        brannsikkerhet: "5. Brannsikkerhet - lokaler",
+        brannfarlig: "6. Oppbevaring av brann- og eksplosjonsfarlige varer",
+        varehandtering: "7. Varehåndtering / lager",
+        orden: "8. Orden og renhold",
+        avfall: "9. Avfallshåndtering",
+        dataskjerm: "10. Arbeid foran dataskjermen",
+        asbest: "11. Arbeid med asbestholdig materiale",
+        eksterne: "12. Eksterne arbeidsforhold",
+        ergonomi: "13. Ergonomi – belastninger",
+        verneutstyr: "14. Bruk av personlig verneutstyr",
+        stoy: "15. Støyeksponering",
+        arbeidsutstyr: "16. Bruk av arbeidsutstyr og maskiner",
+        hoyden: "17. Arbeid i høyden",
+        kjemisk: "18. Kjemiske stoffer og gasser",
+        forstehjelp: "19. Førstehjelp og brannsikkerhet",
+        sikring: "20. Sikring av last",
+        lasting: "21. Lasting og lossing",
+        graving: "22. Gravearbeider",
+        sprengning: "23. Sprengningsarbeider",
+        adr: "24. ADR-transport",
+        adr_uhell: "25. Uhell ved ADR-transport",
+        ergonomi_kjoretoy: "26. Ergonomi i kjøretøy",
+        hviletid: "27. Kjøre- og hviletid",
+        annet: "Andre forhold",
       };
 
       for (const form of completedForms) {
