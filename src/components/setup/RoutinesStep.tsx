@@ -730,6 +730,54 @@ Konfidensialitet og beskyttelse
 • Brudd på lover og regler`,
     remember: "Anonymt varsling er en viktig del av HMS-arbeidet og bidrar til å avdekke forhold som ellers kunne forblitt skjult. Alle varsler skal behandles seriøst og konfidensielt.",
     is_predefined: true
+  },
+  {
+    routine_number: "1290",
+    routine_name: "Stoffkartotek og Kjemikaliehåndtering",
+    category: "Helse, Miljø og Sikkerhet",
+    purpose: "Sikre trygg håndtering, lagring og bruk av kjemikalier på arbeidsplassen, og at alle ansatte har tilgang til oppdatert informasjon om farlige stoffer gjennom stoffkartoteket.",
+    responsibility: "Daglig leder har overordnet ansvar for at stoffkartoteket er oppdatert og tilgjengelig.\n\nHMS-ansvarlig skal vedlikeholde stoffkartoteket og sørge for at nye kjemikalier registreres.\n\nAlle ansatte som håndterer kjemikalier skal kjenne til stoffkartoteket og bruke det aktivt.",
+    procedure: `Vedlikehold av stoffkartotek
+• Alle kjemikalier som brukes i virksomheten skal registreres i stoffkartoteket.
+• Sikkerhetsdatablad (SDS) skal lastes opp for hvert produkt.
+• Stoffkartoteket skal oppdateres ved innkjøp av nye produkter eller utfasing av gamle.
+• Gjennomfør årlig gjennomgang av stoffkartoteket for å sikre at det er komplett og oppdatert.
+
+Tilgjengelighet
+• Stoffkartoteket skal være lett tilgjengelig for alle ansatte, enten digitalt eller fysisk.
+• Ansatte skal vite hvor de finner stoffkartoteket og hvordan de bruker det.
+• Sikkerhetsdatablad skal være tilgjengelig på norsk eller språk den ansatte forstår.
+
+Opplæring i kjemikaliehåndtering
+• Alle ansatte som håndterer kjemikalier skal få opplæring i sikker bruk.
+• Opplæringen skal dekke: faremerking, verneutstyr, førstehjelpstiltak og avfallshåndtering.
+• Gjennomfør oppfriskningskurs ved innføring av nye produkter.
+
+Sikker lagring
+• Kjemikalier skal lagres i henhold til sikkerhetsdatabladets anvisninger.
+• Oppbevar kjemikalier adskilt fra matvarer, ventilasjon og brannfarlige kilder.
+• Sørg for at kjemikalier er tydelig merket og i originalemballasje.
+
+Bruk av verneutstyr
+• Bruk alltid anbefalt verneutstyr iht. sikkerhetsdatabladet (hansker, vernebriller, åndedrettsvern).
+• Verneutstyr skal være tilgjengelig i umiddelbar nærhet av arbeidsområdet.
+
+Håndtering av søl og uhell
+• Ved søl eller uhell, følg anvisninger i sikkerhetsdatabladet.
+• Sørg for tilgjengelig absorberende materialer og førstehjelpsutstyr.
+• Rapporter alle uhell via avvikssystemet.
+
+Avfallshåndtering
+• Kjemisk avfall skal håndteres og deponeres i henhold til gjeldende forskrifter.
+• Tøm aldri kjemikalier i vanlig avløp eller søppel uten godkjenning.`,
+    examples: `• Rengjøringsmidler og løsemidler
+• Maling, lakk og lim
+• Smøremidler og oljer
+• Sveisegasser og røykutvikling
+• Desinfeksjonsmidler
+• Industrielle kjemikalier`,
+    remember: "Stoffkartoteket er lovpålagt for alle virksomheter som bruker farlige kjemikalier. Oppdatert informasjon kan redde liv ved uhell.",
+    is_predefined: true
   }
 ];
 
