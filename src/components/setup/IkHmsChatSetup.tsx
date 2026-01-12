@@ -975,14 +975,82 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
             });
           }
 
-          // Add default laws/regulations based on industry
-          const defaultLaws = [
-            { law_name: "Arbeidsmiljøloven", category: "Arbeidsmiljø", description: "Lov om arbeidsmiljø, arbeidstid og stillingsvern", link: "https://lovdata.no/dokument/NL/lov/2005-06-17-62" },
-            { law_name: "Forskrift om systematisk HMS-arbeid (Internkontrollforskriften)", category: "HMS", description: "Forskrift om systematisk helse-, miljø- og sikkerhetsarbeid i virksomheter", link: "https://lovdata.no/dokument/SF/forskrift/1996-12-06-1127" },
-            { law_name: "Forskrift om organisering, ledelse og medvirkning", category: "HMS", description: "Krav til organisering av arbeid og medvirkning", link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1355" },
-            { law_name: "Forskrift om utførelse av arbeid", category: "HMS", description: "Krav til sikker utførelse av arbeid", link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1357" },
-          ];
+          // Add laws/regulations based on industry and employee count
+          const employeeCount = confirmedEmployeeCount || pendingBrregInfo?.employees || 0;
+          const industryName = selectedIndustry || pendingBrregInfo?.industry || "";
+          const industryCode = pendingBrregInfo?.industryCode || "";
           
+          // Base laws that apply to all businesses
+          const allLaws: Array<{ law_name: string; category: string; description: string; link: string; is_employee_based?: boolean; employee_threshold?: number }> = [
+            { law_name: "Arbeidsmiljøloven", category: "Arbeidsmiljø", description: "Lov om arbeidsmiljø, arbeidstid og stillingsvern", link: "https://lovdata.no/dokument/NL/lov/2005-06-17-62" },
+            { law_name: "Internkontrollforskriften", category: "HMS", description: "Krav til systematisk HMS-arbeid i alle virksomheter", link: "https://lovdata.no/dokument/SF/forskrift/1996-12-06-1127" },
+            { law_name: "Forskrift om organisering, ledelse og medvirkning", category: "Organisering", description: "Krav til organisering av arbeidet og arbeidstakers medvirkning", link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1355" },
+            { law_name: "Arbeidsplassforskriften", category: "Arbeidsplass", description: "Krav til utforming og innretning av arbeidsplasser", link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1356" },
+            { law_name: "Forskrift om utførelse av arbeid", category: "Arbeid", description: "Krav til sikker utførelse av ulike typer arbeid", link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1357" },
+            { law_name: "Forskrift om tiltaks- og grenseverdier", category: "Grenseverdier", description: "Grenseverdier for forurensninger i arbeidsatmosfæren", link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1358" },
+            { law_name: "Brann- og eksplosjonsvernloven", category: "Brannvern", description: "Krav til forebygging av brann og eksplosjon", link: "https://lovdata.no/dokument/NL/lov/2002-06-14-20" },
+          ];
+
+          // Employee-based requirements
+          if (employeeCount >= 5) {
+            allLaws.push({ 
+              law_name: "Krav om verneombud", 
+              category: "Organisering", 
+              description: "Virksomheter med 5+ ansatte må ha verneombud", 
+              link: "https://lovdata.no/dokument/NL/lov/2005-06-17-62/KAPITTEL_7",
+              is_employee_based: true,
+              employee_threshold: 5
+            });
+          }
+          if (employeeCount >= 30) {
+            allLaws.push({ 
+              law_name: "Krav om arbeidsmiljøutvalg (AMU)", 
+              category: "Organisering", 
+              description: "Virksomheter med 30+ ansatte skal ha AMU", 
+              link: "https://lovdata.no/dokument/NL/lov/2005-06-17-62/KAPITTEL_7#§7-1",
+              is_employee_based: true,
+              employee_threshold: 30
+            });
+          }
+
+          // Industry-specific laws
+          const lowerIndustry = industryName.toLowerCase();
+          const isConstruction = lowerIndustry.includes("bygg") || lowerIndustry.includes("anlegg") || industryCode.startsWith("41") || industryCode.startsWith("42") || industryCode.startsWith("43");
+          const isFood = lowerIndustry.includes("restaurant") || lowerIndustry.includes("mat") || lowerIndustry.includes("spisested") || industryCode.startsWith("56") || industryCode.startsWith("10");
+          const isBeauty = lowerIndustry.includes("frisør") || lowerIndustry.includes("skjønnhet") || industryCode.startsWith("96");
+          const isTransport = lowerIndustry.includes("transport") || industryCode.startsWith("49") || industryCode.startsWith("50");
+          const isIndustry = lowerIndustry.includes("industri") || lowerIndustry.includes("produksjon") || industryCode.startsWith("10") || industryCode.startsWith("25");
+
+          if (isConstruction) {
+            allLaws.push(
+              { law_name: "Byggherreforskriften", category: "Bygg og anlegg", description: "Krav til sikkerhet, helse og arbeidsmiljø på bygge- eller anleggsplasser", link: "https://lovdata.no/dokument/SF/forskrift/2009-08-03-1028" },
+              { law_name: "Forskrift om sikkerhet ved arbeid i og drift av elektriske anlegg", category: "Elektrisitet", description: "Sikkerhetskrav ved elektrisk arbeid", link: "https://lovdata.no/dokument/SF/forskrift/2006-04-28-458" }
+            );
+          }
+          if (isFood) {
+            allLaws.push(
+              { law_name: "Matloven", category: "Mattrygghet", description: "Krav til trygg mat og produksjon", link: "https://lovdata.no/dokument/NL/lov/2003-12-19-124" },
+              { law_name: "Næringsmiddelhygieneforskriften", category: "Mattrygghet", description: "Krav til hygiene i næringsmiddelvirksomheter", link: "https://lovdata.no/dokument/SF/forskrift/2008-12-22-1623" }
+            );
+          }
+          if (isBeauty) {
+            allLaws.push(
+              { law_name: "Forskrift om hygienekrav for frisør- og hudpleievirksomhet", category: "Hygiene", description: "Hygienekrav for frisør, hudpleie og lignende", link: "https://lovdata.no/dokument/SF/forskrift/1998-06-06-581" }
+            );
+          }
+          if (isTransport) {
+            allLaws.push(
+              { law_name: "Vegtrafikkloven", category: "Transport", description: "Regler for trafikk og kjøretøy", link: "https://lovdata.no/dokument/NL/lov/1965-06-18-4" },
+              { law_name: "Yrkestransportforskriften", category: "Transport", description: "Krav til yrkestransport", link: "https://lovdata.no/dokument/SF/forskrift/2003-03-26-401" }
+            );
+          }
+          if (isIndustry) {
+            allLaws.push(
+              { law_name: "Maskinforskriften", category: "Maskiner", description: "Krav til maskiner og sikkerhetsutstyr", link: "https://lovdata.no/dokument/SF/forskrift/2009-05-20-544" },
+              { law_name: "Forskrift om stillaser, stiger og arbeid på tak m.m.", category: "Arbeidsutstyr", description: "Sikkerhetskrav for arbeid i høyden", link: "https://lovdata.no/dokument/SF/forskrift/2005-10-14-1229" }
+            );
+          }
+
           // Check if laws already exist
           const { data: existingLaws } = await supabase
             .from("company_laws_regulations")
@@ -991,14 +1059,16 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
             .limit(1);
 
           if (!existingLaws || existingLaws.length === 0) {
-            // Insert default laws
+            // Insert laws
             await supabase.from("company_laws_regulations").insert(
-              defaultLaws.map(law => ({
+              allLaws.map(law => ({
                 company_id: companyId,
                 law_name: law.law_name,
                 category: law.category,
                 description: law.description,
                 link: law.link,
+                is_employee_based: law.is_employee_based || false,
+                employee_threshold: law.employee_threshold || null,
                 is_manually_added: false,
               }))
             );
