@@ -53,20 +53,25 @@ export function useEmployeeAbsence() {
         .from("employee_absence")
         .select(`
           *,
-          employee:profiles!employee_absence_employee_id_fkey(full_name),
-          registered_by_profile:profiles!employee_absence_registered_by_fkey(full_name),
-          approved_by_profile:profiles!employee_absence_approved_by_fkey(full_name)
+          employee:profiles!employee_absence_employee_id_fkey(first_name, last_name),
+          registered_by_profile:profiles!employee_absence_registered_by_fkey(first_name, last_name),
+          approved_by_profile:profiles!employee_absence_approved_by_fkey(first_name, last_name)
         `)
         .eq("company_id", company.id)
         .order("start_date", { ascending: false });
 
       if (error) throw error;
 
+      const getFullName = (profile: { first_name: string | null; last_name: string | null } | null): string => {
+        if (!profile) return "Ukjent";
+        return `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || "Ukjent";
+      };
+
       const formattedAbsences: EmployeeAbsence[] = (data || []).map((absence: any) => ({
         ...absence,
-        employee_name: absence.employee?.full_name || "Ukjent",
-        registered_by_name: absence.registered_by_profile?.full_name || null,
-        approved_by_name: absence.approved_by_profile?.full_name || null,
+        employee_name: getFullName(absence.employee),
+        registered_by_name: absence.registered_by_profile ? getFullName(absence.registered_by_profile) : null,
+        approved_by_name: absence.approved_by_profile ? getFullName(absence.approved_by_profile) : null,
       }));
 
       setAbsences(formattedAbsences);
