@@ -188,6 +188,62 @@ const IkHmsOrganisering = () => {
 
       if (error) throw error;
 
+      // Sync verneombud status to profiles
+      // Find if there's a verneombud role with a person assigned
+      const verneombudRole = data.roles.find(r => 
+        r.title.toLowerCase().includes('verneombud') && r.personName?.trim()
+      );
+      
+      if (verneombudRole?.personName) {
+        // Try to find and update the matching profile
+        const nameParts = verneombudRole.personName.trim().split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.slice(1).join(' ');
+        
+        // First, reset all verneombud flags for this company
+        await supabase
+          .from("profiles")
+          .update({ is_verneombud: false })
+          .eq("company_id", profile.company_id)
+          .eq("is_verneombud", true);
+        
+        // Then find and set the new verneombud
+        if (firstName) {
+          let query = supabase
+            .from("profiles")
+            .select("user_id")
+            .eq("company_id", profile.company_id)
+            .ilike("first_name", firstName);
+          
+          if (lastName) {
+            query = query.ilike("last_name", lastName);
+          }
+          
+          const { data: matchingProfile } = await query.maybeSingle();
+          
+          if (matchingProfile?.user_id) {
+            await supabase
+              .from("profiles")
+              .update({ is_verneombud: true })
+              .eq("user_id", matchingProfile.user_id);
+          }
+        }
+      } else {
+        // No verneombud in organization - check if we should clear the flag
+        const hasVerneombudRole = data.roles.some(r => 
+          r.title.toLowerCase().includes('verneombud')
+        );
+        
+        // Only clear if there's no verneombud role at all
+        if (!hasVerneombudRole) {
+          await supabase
+            .from("profiles")
+            .update({ is_verneombud: false })
+            .eq("company_id", profile.company_id)
+            .eq("is_verneombud", true);
+        }
+      }
+
       toast.success("Organisering lagret");
       setHasChanges(false);
     } catch (error) {
