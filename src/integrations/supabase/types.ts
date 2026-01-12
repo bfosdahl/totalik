@@ -735,6 +735,7 @@ export type Database = {
           city: string | null
           created_at: string
           email: string | null
+          employee_count: number | null
           has_departments: boolean
           id: string
           logo_url: string | null
@@ -755,6 +756,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           email?: string | null
+          employee_count?: number | null
           has_departments?: boolean
           id?: string
           logo_url?: string | null
@@ -775,6 +777,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           email?: string | null
+          employee_count?: number | null
           has_departments?: boolean
           id?: string
           logo_url?: string | null
