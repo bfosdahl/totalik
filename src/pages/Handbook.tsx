@@ -467,66 +467,10 @@ const Handbook = () => {
       ),
       summary: `${riskAssessment?.risks?.length ?? 0} risikoer identifisert`,
     },
-    // Action plan
-    {
-      id: "actions",
-      title: `${sectionOffset + 4}. Handlingsplan`,
-      status: (actionPlan?.actions?.length ?? 0) > 0 ? "complete" : "incomplete",
-      stepIndex: 3,
-      icon: ClipboardList,
-      content: (actionPlan?.actions?.length ?? 0) > 0 ? (
-        <div className="space-y-2">
-          {actionPlan?.actions.slice(0, 5).map((action) => (
-            <div key={action.id} className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground truncate flex-1">{action.action_description}</span>
-              <Badge variant="outline" className={cn(
-                "ml-2",
-                action.status === "fullført" ? "border-success text-success" :
-                action.status === "pågår" ? "border-warning text-warning" :
-                "border-muted-foreground text-muted-foreground"
-              )}>
-                {action.status === "fullført" ? "Fullført" : action.status === "pågår" ? "Pågår" : "Ikke startet"}
-              </Badge>
-            </div>
-          ))}
-          {(actionPlan?.actions?.length ?? 0) > 5 && (
-            <p className="text-xs text-muted-foreground">+ {(actionPlan?.actions?.length ?? 0) - 5} flere tiltak</p>
-          )}
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground">Ingen handlingsplan er opprettet ennå.</p>
-      ),
-      summary: `${actionPlan?.actions?.length ?? 0} tiltak`,
-    },
-    // Routines
-    {
-      id: "routines",
-      title: `${sectionOffset + 5}. Rutiner og prosedyrer`,
-      status: (routines?.routines?.length ?? 0) > 0 ? "complete" : "incomplete",
-      stepIndex: 4,
-      icon: FileCheck,
-      content: (routines?.routines?.length ?? 0) > 0 ? (
-        <div className="space-y-2">
-          {routines?.routines.slice(0, 8).map((routine, index) => (
-            <div key={routine.id} className="flex items-center gap-2 text-sm">
-              <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded">{sectionOffset + 5}.{index + 1}</span>
-              <span className="font-mono text-xs text-muted-foreground">{routine.routine_number}</span>
-              <span className="text-muted-foreground truncate">{routine.routine_name}</span>
-            </div>
-          ))}
-          {(routines?.routines?.length ?? 0) > 8 && (
-            <p className="text-xs text-muted-foreground">+ {(routines?.routines?.length ?? 0) - 8} flere rutiner</p>
-          )}
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground">Ingen rutiner er lagt til ennå.</p>
-      ),
-      summary: `${routines?.routines?.length ?? 0} rutiner`,
-    },
-    // Laws
+    // Laws (position 6 - before Handlingsplan for logical flow per user request)
     {
       id: "laws",
-      title: `${sectionOffset + 6}. Lover og forskrifter`,
+      title: `${sectionOffset + 4}. Lover og forskrifter`,
       status: savedLaws.length > 0 ? "complete" as const : "incomplete" as const,
       stepIndex: -1,
       icon: Scale,
@@ -567,6 +511,62 @@ const Handbook = () => {
       ),
       summary: savedLaws.length > 0 ? `${savedLaws.length} lover og forskrifter` : "Ingen lagret",
       linkTo: "/lover-og-forskrifter",
+    },
+    // Action plan
+    {
+      id: "actions",
+      title: `${sectionOffset + 5}. Handlingsplan`,
+      status: (actionPlan?.actions?.length ?? 0) > 0 ? "complete" : "incomplete",
+      stepIndex: 3,
+      icon: ClipboardList,
+      content: (actionPlan?.actions?.length ?? 0) > 0 ? (
+        <div className="space-y-2">
+          {actionPlan?.actions.slice(0, 5).map((action) => (
+            <div key={action.id} className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground truncate flex-1">{action.action_description}</span>
+              <Badge variant="outline" className={cn(
+                "ml-2",
+                action.status === "fullført" ? "border-success text-success" :
+                action.status === "pågår" ? "border-warning text-warning" :
+                "border-muted-foreground text-muted-foreground"
+              )}>
+                {action.status === "fullført" ? "Fullført" : action.status === "pågår" ? "Pågår" : "Ikke startet"}
+              </Badge>
+            </div>
+          ))}
+          {(actionPlan?.actions?.length ?? 0) > 5 && (
+            <p className="text-xs text-muted-foreground">+ {(actionPlan?.actions?.length ?? 0) - 5} flere tiltak</p>
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">Ingen handlingsplan er opprettet ennå.</p>
+      ),
+      summary: `${actionPlan?.actions?.length ?? 0} tiltak`,
+    },
+    // Routines
+    {
+      id: "routines",
+      title: `${sectionOffset + 6}. Rutiner og prosedyrer`,
+      status: (routines?.routines?.length ?? 0) > 0 ? "complete" : "incomplete",
+      stepIndex: 4,
+      icon: FileCheck,
+      content: (routines?.routines?.length ?? 0) > 0 ? (
+        <div className="space-y-2">
+          {routines?.routines.slice(0, 8).map((routine, index) => (
+            <div key={routine.id} className="flex items-center gap-2 text-sm">
+              <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded">{sectionOffset + 6}.{index + 1}</span>
+              <span className="font-mono text-xs text-muted-foreground">{routine.routine_number}</span>
+              <span className="text-muted-foreground truncate">{routine.routine_name}</span>
+            </div>
+          ))}
+          {(routines?.routines?.length ?? 0) > 8 && (
+            <p className="text-xs text-muted-foreground">+ {(routines?.routines?.length ?? 0) - 8} flere rutiner</p>
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">Ingen rutiner er lagt til ennå.</p>
+      ),
+      summary: `${routines?.routines?.length ?? 0} rutiner`,
     },
     // Deviations
     {
