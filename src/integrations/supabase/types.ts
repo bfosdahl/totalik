@@ -10122,6 +10122,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_company_admin_role: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
       check_rate_limit: {
         Args: {
           p_function_name: string
