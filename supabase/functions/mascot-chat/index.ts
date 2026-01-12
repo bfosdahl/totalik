@@ -205,13 +205,13 @@ const tools = [
           },
           category: {
             type: "string",
-            enum: ["sikkerhet", "kvalitet", "miljø", "annet"],
-            description: "Kategori for avviket"
+            enum: ["sikkerhet", "kvalitet", "miljø", "dokumentasjon", "prosess", "utstyr", "personell", "annet"],
+            description: "Kategori for avviket (sikkerhet, kvalitet, miljø, dokumentasjon, prosess, utstyr, personell, annet)"
           },
           priority: {
             type: "string",
             enum: ["lav", "medium", "høy", "kritisk"],
-            description: "Prioritet"
+            description: "Prioritet (lav, medium, høy, kritisk)"
           },
           immediate_actions: {
             type: "string",
@@ -507,6 +507,26 @@ async function executeToolCall(
       }
 
       case "create_deviation": {
+        // Map Norwegian categories to English database values
+        const categoryMap: Record<string, string> = {
+          "sikkerhet": "safety",
+          "kvalitet": "quality",
+          "miljø": "environment",
+          "dokumentasjon": "documentation",
+          "prosess": "process",
+          "utstyr": "equipment",
+          "personell": "personnel",
+          "annet": "other"
+        };
+        
+        // Map Norwegian priorities to English database values
+        const priorityMap: Record<string, string> = {
+          "lav": "low",
+          "medium": "medium",
+          "høy": "high",
+          "kritisk": "critical"
+        };
+
         // Generate deviation number
         const { count } = await supabase
           .from("deviations")
@@ -525,6 +545,10 @@ async function executeToolCall(
         const dueDate = new Date();
         dueDate.setDate(dueDate.getDate() + 14);
 
+        // Map category and priority from Norwegian to English
+        const dbCategory = categoryMap[args.category?.toLowerCase()] || "other";
+        const dbPriority = priorityMap[args.priority?.toLowerCase()] || "medium";
+
         const { error } = await supabase
           .from("deviations")
           .insert({
@@ -532,8 +556,8 @@ async function executeToolCall(
             deviation_number: deviationNumber,
             title: args.title,
             description: args.description,
-            category: args.category,
-            priority: args.priority || "medium",
+            category: dbCategory,
+            priority: dbPriority,
             immediate_actions: args.immediate_actions || "",
             reporter_id: userId,
             reporter_name: profile?.full_name || "Ukjent",
