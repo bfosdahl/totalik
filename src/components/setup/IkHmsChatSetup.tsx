@@ -381,12 +381,24 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
     }
   };
 
-  const handleExemptionComplete = () => {
+  const handleExemptionComplete = (wasSkipped = false) => {
     setShowExemptionDialog(false);
+    setIsLoading(true); // Set loading state before AI chat call
+    
     // Get industry from state or fall back to a generic description
     const industryToUse = selectedIndustry || company?.name || 'den valgte bransjen';
-    setMessages((prev) => [...prev, { role: "assistant", content: "Flott! Avtalen om fritak fra verneombud er nå signert og lagret. ✅\n\nLa oss fortsette med HMS-oppsettet..." }]);
-    continueWithAIChat(`Brukeren har valgt bransje: ${industryToUse}. Bedriften har færre enn 5 ansatte og har signert fritak fra verneombud. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`);
+    
+    const message = wasSkipped 
+      ? "Greit! Du kan alltid signere avtalen senere under Innstillinger.\n\nLa oss fortsette med HMS-oppsettet..."
+      : "Flott! Avtalen om fritak fra verneombud er nå signert og lagret. ✅\n\nLa oss fortsette med HMS-oppsettet...";
+    
+    setMessages((prev) => [...prev, { role: "assistant", content: message }]);
+    
+    const context = wasSkipped
+      ? `Brukeren har valgt bransje: ${industryToUse}. Bedriften har færre enn 5 ansatte og ønsket ikke å signere fritak fra verneombud nå. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`
+      : `Brukeren har valgt bransje: ${industryToUse}. Bedriften har færre enn 5 ansatte og har signert fritak fra verneombud. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`;
+    
+    continueWithAIChat(context);
   };
 
   const handleSend = async () => {
