@@ -824,9 +824,15 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
           is_ai_generated: true,
         })) || [];
 
+        // Extract verneombud info from AI response
+        const verneombudNavn = data.verneombudNavn || '';
+        const hasVerneombudFritak = data.hasVerneombudFritak === true;
+        
         const newSettings = {
           setupCompletedAt: new Date().toISOString(),
           industry: data.industry || selectedIndustry || null,
+          verneombudNavn: verneombudNavn,
+          hasVerneombudFritak: hasVerneombudFritak,
           generatedContent: {
             goals: data.goals || [],
             organization: data.organization || null,
@@ -1085,6 +1091,48 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
               custom_content: orgContent,
               is_custom: true,
             });
+          }
+
+          // Handle verneombud registration if a name was provided
+          if (verneombudNavn && verneombudNavn.trim() !== '') {
+            // Find existing profile with matching name
+            const nameParts = verneombudNavn.trim().split(' ');
+            const firstName = nameParts[0];
+            const lastName = nameParts.slice(1).join(' ');
+            
+            if (firstName) {
+              // Try to find by first name match (case insensitive)
+              let query = supabase
+                .from("profiles")
+                .select("id, user_id, first_name, last_name")
+                .eq("company_id", companyId)
+                .ilike("first_name", firstName);
+              
+              // If we have a last name, add it to the filter
+              if (lastName) {
+                query = query.ilike("last_name", lastName);
+              }
+              
+              const { data: matchingProfile } = await query.maybeSingle();
+              
+              if (matchingProfile?.user_id) {
+                // First, reset any existing verneombud for this company
+                await supabase
+                  .from("profiles")
+                  .update({ is_verneombud: false })
+                  .eq("company_id", companyId)
+                  .eq("is_verneombud", true);
+                
+                // Update the matching profile to set as verneombud
+                await supabase
+                  .from("profiles")
+                  .update({ is_verneombud: true })
+                  .eq("user_id", matchingProfile.user_id);
+                console.log("Registered verneombud:", verneombudNavn, "for user:", matchingProfile.user_id);
+              } else {
+                console.log("Verneombud name provided but no matching profile found:", verneombudNavn);
+              }
+            }
           }
 
           if (data.risks?.length > 0) {
