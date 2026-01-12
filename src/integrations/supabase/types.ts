@@ -943,6 +943,339 @@ export type Database = {
           },
         ]
       }
+      company_ks_checklist_templates: {
+        Row: {
+          category: string
+          checkpoints: Json
+          company_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          template_name: string
+          trade: string | null
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          category?: string
+          checkpoints?: Json
+          company_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          template_name: string
+          trade?: string | null
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          category?: string
+          checkpoints?: Json
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          template_name?: string
+          trade?: string | null
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_ks_checklist_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_ks_document_folders: {
+        Row: {
+          color: string | null
+          company_id: string
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          parent_folder_id: string | null
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          company_id: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          parent_folder_id?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          parent_folder_id?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_ks_document_folders_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_ks_document_folders_parent_folder_id_fkey"
+            columns: ["parent_folder_id"]
+            isOneToOne: false
+            referencedRelation: "company_ks_document_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_ks_documents: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          document_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          folder_id: string | null
+          id: string
+          is_template: boolean | null
+          project_id: string | null
+          updated_at: string
+          uploaded_by_id: string | null
+          uploaded_by_name: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          document_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          folder_id?: string | null
+          id?: string
+          is_template?: boolean | null
+          project_id?: string | null
+          updated_at?: string
+          uploaded_by_id?: string | null
+          uploaded_by_name: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          document_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          folder_id?: string | null
+          id?: string
+          is_template?: boolean | null
+          project_id?: string | null
+          updated_at?: string
+          uploaded_by_id?: string | null
+          uploaded_by_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_ks_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_ks_documents_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "company_ks_document_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_ks_documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_ks_documents_uploaded_by_id_fkey"
+            columns: ["uploaded_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_ks_goals: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          goal_text: string
+          id: string
+          sort_order: number | null
+          status: string | null
+          target_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          goal_text: string
+          id?: string
+          sort_order?: number | null
+          status?: string | null
+          target_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          goal_text?: string
+          id?: string
+          sort_order?: number | null
+          status?: string | null
+          target_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_ks_goals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_ks_routines: {
+        Row: {
+          admin_template_id: string | null
+          category: string
+          company_id: string
+          content: string
+          created_at: string
+          description: string | null
+          file_path: string | null
+          id: string
+          is_active: boolean | null
+          routine_name: string
+          sort_order: number | null
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          admin_template_id?: string | null
+          category?: string
+          company_id: string
+          content?: string
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          is_active?: boolean | null
+          routine_name: string
+          sort_order?: number | null
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          admin_template_id?: string | null
+          category?: string
+          company_id?: string
+          content?: string
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          is_active?: boolean | null
+          routine_name?: string
+          sort_order?: number | null
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_ks_routines_admin_template_id_fkey"
+            columns: ["admin_template_id"]
+            isOneToOne: false
+            referencedRelation: "admin_routine_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_ks_routines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_ks_selected_templates: {
+        Row: {
+          admin_template_id: string
+          company_id: string
+          id: string
+          selected_at: string
+          selected_by_id: string | null
+          template_type: string
+        }
+        Insert: {
+          admin_template_id: string
+          company_id: string
+          id?: string
+          selected_at?: string
+          selected_by_id?: string | null
+          template_type: string
+        }
+        Update: {
+          admin_template_id?: string
+          company_id?: string
+          id?: string
+          selected_at?: string
+          selected_by_id?: string | null
+          template_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_ks_selected_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_ks_selected_templates_selected_by_id_fkey"
+            columns: ["selected_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_laws_regulations: {
         Row: {
           category: string | null
