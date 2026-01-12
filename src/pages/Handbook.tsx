@@ -1011,7 +1011,208 @@ const Handbook = () => {
       // Track section number dynamically
       let sectionNumber = 0;
 
-      // SECTION 1: GOALS
+      // SECTION: HMS EGENERKLÆRING
+      if (hasSelfDeclaration && selfDeclaration) {
+        doc.addPage();
+        sectionNumber++;
+        addTocEntry(`${sectionNumber}. Egenerklæring om HMS`);
+        yPos = margin;
+        addSectionHeader(`${sectionNumber}. Egenerklæring om HMS`);
+        
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        doc.text("Virksomheten erklærer at det er etablert systematisk HMS-arbeid.", margin, yPos);
+        yPos += 12;
+        
+        // Company info
+        doc.setFont("helvetica", "bold");
+        doc.text("Bedrift:", margin, yPos);
+        doc.setFont("helvetica", "normal");
+        doc.text(selfDeclaration.company_name || companyName, margin + 25, yPos);
+        yPos += 7;
+        
+        if (selfDeclaration.company_address) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Adresse:", margin, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(selfDeclaration.company_address, margin + 25, yPos);
+          yPos += 7;
+        }
+        
+        if (selfDeclaration.postal_code && selfDeclaration.city) {
+          doc.text(`${selfDeclaration.postal_code} ${selfDeclaration.city}`, margin + 25, yPos);
+          yPos += 7;
+        }
+        
+        yPos += 10;
+        
+        // Manager signature
+        if (selfDeclaration.manager_name || selfDeclaration.manager_signature) {
+          checkPageBreak(50);
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(margin, yPos, contentWidth, 40, 2, 2, "F");
+          
+          doc.setFont("helvetica", "bold");
+          doc.text("Daglig leder:", margin + 5, yPos + 8);
+          doc.setFont("helvetica", "normal");
+          if (selfDeclaration.manager_name) {
+            doc.text(selfDeclaration.manager_name, margin + 35, yPos + 8);
+          }
+          
+          if (selfDeclaration.manager_signature) {
+            try {
+              doc.addImage(selfDeclaration.manager_signature, "PNG", margin + 5, yPos + 12, 50, 20);
+            } catch (e) {
+              console.warn("Could not add manager signature:", e);
+            }
+          }
+          
+          if (selfDeclaration.manager_signed_at) {
+            doc.setFontSize(9);
+            doc.text(`Signert: ${formatDateForPdf(new Date(selfDeclaration.manager_signed_at))}`, margin + 5, yPos + 36);
+            doc.setFontSize(11);
+          }
+          
+          yPos += 45;
+        }
+        
+        // Employee representative signature
+        if (selfDeclaration.employee_rep_name || selfDeclaration.employee_rep_signature) {
+          checkPageBreak(50);
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(margin, yPos, contentWidth, 40, 2, 2, "F");
+          
+          doc.setFont("helvetica", "bold");
+          doc.text("Ansattrepresentant:", margin + 5, yPos + 8);
+          doc.setFont("helvetica", "normal");
+          if (selfDeclaration.employee_rep_name) {
+            doc.text(selfDeclaration.employee_rep_name, margin + 50, yPos + 8);
+          }
+          
+          if (selfDeclaration.employee_rep_signature) {
+            try {
+              doc.addImage(selfDeclaration.employee_rep_signature, "PNG", margin + 5, yPos + 12, 50, 20);
+            } catch (e) {
+              console.warn("Could not add employee rep signature:", e);
+            }
+          }
+          
+          if (selfDeclaration.employee_rep_signed_at) {
+            doc.setFontSize(9);
+            doc.text(`Signert: ${formatDateForPdf(new Date(selfDeclaration.employee_rep_signed_at))}`, margin + 5, yPos + 36);
+            doc.setFontSize(11);
+          }
+          
+          yPos += 45;
+        }
+      }
+
+      // SECTION: VERNEOMBUD FRITAK
+      if (hasVerneombudExemption && verneombudExemption && !requiresVerneombud) {
+        doc.addPage();
+        sectionNumber++;
+        addTocEntry(`${sectionNumber}. Avtale om fritak fra verneombud`);
+        yPos = margin;
+        addSectionHeader(`${sectionNumber}. Avtale om fritak fra verneombud`);
+        
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        doc.text("Virksomheten har inngått avtale om fritak fra kravet om verneombud.", margin, yPos);
+        yPos += 12;
+        
+        // Agreement info
+        if (verneombudExemption.total_employees) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Antall ansatte:", margin, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(String(verneombudExemption.total_employees), margin + 40, yPos);
+          yPos += 7;
+        }
+        
+        if (verneombudExemption.agreement_date) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Avtaledato:", margin, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(formatDateForPdf(new Date(verneombudExemption.agreement_date)), margin + 40, yPos);
+          yPos += 7;
+        }
+        
+        if (verneombudExemption.valid_until) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Gyldig til:", margin, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(formatDateForPdf(new Date(verneombudExemption.valid_until)), margin + 40, yPos);
+          yPos += 7;
+        }
+        
+        yPos += 10;
+        
+        // Employer signature
+        if (verneombudExemption.employer_name || verneombudExemption.employer_signature) {
+          checkPageBreak(50);
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(margin, yPos, contentWidth, 40, 2, 2, "F");
+          
+          doc.setFont("helvetica", "bold");
+          doc.text("Arbeidsgiver:", margin + 5, yPos + 8);
+          doc.setFont("helvetica", "normal");
+          if (verneombudExemption.employer_name) {
+            doc.text(verneombudExemption.employer_name, margin + 35, yPos + 8);
+          }
+          
+          if (verneombudExemption.employer_signature) {
+            try {
+              doc.addImage(verneombudExemption.employer_signature, "PNG", margin + 5, yPos + 12, 50, 20);
+            } catch (e) {
+              console.warn("Could not add employer signature:", e);
+            }
+          }
+          
+          if (verneombudExemption.employer_signed_at) {
+            doc.setFontSize(9);
+            doc.text(`Signert: ${formatDateForPdf(new Date(verneombudExemption.employer_signed_at))}`, margin + 5, yPos + 36);
+            doc.setFontSize(11);
+          }
+          
+          yPos += 45;
+        }
+        
+        // Employee signatures
+        if (verneombudExemption.employee_signatures && verneombudExemption.employee_signatures.length > 0) {
+          checkPageBreak(20);
+          doc.setFont("helvetica", "bold");
+          doc.text("Ansatte som har signert avtalen:", margin, yPos);
+          yPos += 10;
+          
+          verneombudExemption.employee_signatures.forEach((emp, index) => {
+            checkPageBreak(45);
+            doc.setFillColor(248, 250, 252);
+            doc.roundedRect(margin, yPos, contentWidth / 2 - 5, 35, 2, 2, "F");
+            
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            doc.text(`${index + 1}. ${emp.name}`, margin + 5, yPos + 8);
+            
+            if (emp.signature) {
+              try {
+                doc.addImage(emp.signature, "PNG", margin + 5, yPos + 12, 40, 18);
+              } catch (e) {
+                console.warn("Could not add employee signature:", e);
+              }
+            }
+            
+            if (emp.signed_at) {
+              doc.setFontSize(8);
+              doc.text(`Signert: ${formatDateForPdf(new Date(emp.signed_at))}`, margin + 5, yPos + 32);
+            }
+            
+            doc.setFontSize(11);
+            yPos += 40;
+          });
+        }
+      }
+
+      // SECTION: GOALS
       doc.addPage();
       sectionNumber++;
       addTocEntry(`${sectionNumber}. Mål for internkontroll`);
