@@ -1830,6 +1830,7 @@ export type Database = {
           due_date: string
           id: string
           immediate_actions: string | null
+          incident_date: string | null
           incident_location: string | null
           incident_time: string | null
           incident_type: string | null
@@ -1867,6 +1868,7 @@ export type Database = {
           due_date: string
           id?: string
           immediate_actions?: string | null
+          incident_date?: string | null
           incident_location?: string | null
           incident_time?: string | null
           incident_type?: string | null
@@ -1904,6 +1906,7 @@ export type Database = {
           due_date?: string
           id?: string
           immediate_actions?: string | null
+          incident_date?: string | null
           incident_location?: string | null
           incident_time?: string | null
           incident_type?: string | null

@@ -7,7 +7,8 @@ import {
   safeStringOrNull, 
   safeCategory, 
   safePriority, 
-  safeTimeFormat, 
+  safeTimeFormat,
+  safeDateFormat,
   safeBoolean 
 } from "@/utils/deviationSanitizer";
 
@@ -58,7 +59,8 @@ export interface NewDeviationInput {
   due_date: string;
   // Extended fields
   incident_location?: string;
-  incident_time?: string;
+  incident_date?: string | Date; // Date when incident was discovered
+  incident_time?: string; // Time of incident (HH:MM format)
   incident_type?: string;
   severity?: string;
   reporter_contact?: string;
@@ -168,6 +170,7 @@ export function useDeviations() {
         due_date: input.due_date,
         // Extended fields - all sanitized
         incident_location: safeStringOrNull(input.incident_location),
+        incident_date: safeDateFormat(input.incident_date),
         incident_time: safeTimeFormat(input.incident_time),
         incident_type: safeStringOrNull(input.incident_type),
         severity: safeStringOrNull(input.severity),
