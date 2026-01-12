@@ -19,7 +19,7 @@ interface HmsSelfDeclarationDialogProps {
   companyAddress?: string;
   postalCode?: string;
   city?: string;
-  onComplete: () => void;
+  onComplete: (wasSkipped?: boolean) => void;
 }
 
 export function HmsSelfDeclarationDialog({
@@ -328,6 +328,15 @@ export function HmsSelfDeclarationDialog({
               <Button variant="outline" onClick={() => setStep("info")}>
                 Tilbake
               </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  onComplete(true);
+                  onOpenChange(false);
+                }}
+              >
+                Hopp over (signer senere)
+              </Button>
               <Button onClick={handleSaveManagerSig} disabled={!managerName.trim()}>
                 Neste: Ansattrepresentant signerer
               </Button>
@@ -339,8 +348,17 @@ export function HmsSelfDeclarationDialog({
               <Button variant="outline" onClick={() => setStep("manager")}>
                 Tilbake
               </Button>
-              <Button 
-                onClick={handleSubmit} 
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  onComplete(true);
+                  onOpenChange(false);
+                }}
+              >
+                Hopp over (signer senere)
+              </Button>
+              <Button
+                onClick={handleSubmit}
                 disabled={isSaving || !employeeRepName.trim()}
               >
                 {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}

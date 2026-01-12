@@ -438,45 +438,65 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
     await continueAfterRequiredSignatures(industry, employeeCount);
   };
 
-  const handleSelfDeclarationComplete = async () => {
+  const handleSelfDeclarationComplete = async (wasSkipped = false) => {
     setShowSelfDeclarationDialog(false);
 
     const industry = pendingPostSignature?.industry || selectedIndustry || company?.name || "den valgte bransjen";
     const employeeCount = pendingPostSignature?.employeeCount ?? confirmedEmployeeCount ?? 5;
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "assistant",
-        content:
-          "Flott! Egenerklæring om HMS er nå signert og lagret. ✅\n\nNeste steg: avtale om verneombud.",
-      },
-    ]);
-
-    if (employeeCount < 5) {
-      setShowExemptionDialog(true);
-      return;
+    if (wasSkipped) {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "OK! Du kan signere Egenerklæring om HMS senere under Oppsett.\n\nLa oss gå videre..." },
+      ]);
+    } else {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Flott! Egenerklæring om HMS er nå signert og lagret. ✅" },
+      ]);
     }
 
+    // Check if exemption is also needed for <5 employees
+    if (employeeCount < 5) {
+      const { data: existingExemption } = await supabase
+        .from("verneombud_exemption_agreements")
+        .select("id")
+        .eq("company_id", companyId)
+        .maybeSingle();
+
+      if (!existingExemption) {
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: "Neste steg: Avtale om fritak fra verneombud." },
+        ]);
+        setShowExemptionDialog(true);
+        return;
+      }
+    }
+
+    // Continue with AI
     setPendingPostSignature(null);
     setIsLoading(true);
     await continueAfterRequiredSignatures(industry, employeeCount);
   };
 
-  const handleExemptionComplete = async () => {
+  const handleExemptionComplete = async (wasSkipped = false) => {
     setShowExemptionDialog(false);
 
     const industry = pendingPostSignature?.industry || selectedIndustry || company?.name || "den valgte bransjen";
     const employeeCount = pendingPostSignature?.employeeCount ?? confirmedEmployeeCount ?? 4;
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "assistant",
-        content:
-          "Flott! Avtalen om fritak fra verneombud er nå signert og lagret. ✅\n\nLa oss fortsette med HMS-oppsettet...",
-      },
-    ]);
+    if (wasSkipped) {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "OK! Du kan signere Avtale om verneombud senere under Oppsett.\n\nLa oss fortsette med HMS-oppsettet..." },
+      ]);
+    } else {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Flott! Avtalen om fritak fra verneombud er nå signert og lagret. ✅\n\nLa oss fortsette med HMS-oppsettet..." },
+      ]);
+    }
 
     setPendingPostSignature(null);
     setIsLoading(true);
@@ -1309,11 +1329,7 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
 
       <HmsSelfDeclarationDialog
         open={showSelfDeclarationDialog}
-        onOpenChange={(open) => {
-          // This dialog is mandatory in the setup flow; prevent closing by backdrop/ESC.
-          if (!open) return;
-          setShowSelfDeclarationDialog(open);
-        }}
+        onOpenChange={setShowSelfDeclarationDialog}
         companyId={companyId}
         companyName={company?.name || ""}
         companyAddress={company?.address || undefined}
@@ -1324,17 +1340,12 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
 
       <VerneombudExemptionDialog
         open={showExemptionDialog}
-        onOpenChange={(open) => {
-          // Mandatory in flow when shown
-          if (!open) return;
-          setShowExemptionDialog(open);
-        }}
+        onOpenChange={setShowExemptionDialog}
         companyId={companyId}
         companyName={company?.name || ""}
         companyAddress={company?.address ? `${company.address}, ${company.postal_code || ""} ${company.city || ""}` : undefined}
         orgNumber={company?.org_number || undefined}
         totalEmployees={confirmedEmployeeCount || 4}
-        allowSkip={false}
         onComplete={handleExemptionComplete}
       />
     </div>
