@@ -49,6 +49,7 @@ import { useAuditFormResponses, formTypeLabels, type FormType } from "@/hooks/us
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useCompanyLawsRegulations } from "@/hooks/useCompanyLawsRegulations";
 import { useHmsDeclarations } from "@/hooks/useHmsDeclarations";
+import { useVerneombudAgreement } from "@/hooks/useVerneombudAgreement";
 import { useEmployees } from "@/hooks/useEmployees";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -118,6 +119,7 @@ const Handbook = () => {
   const { users: companyUsers } = useCompanyUsers();
   const { savedLaws } = useCompanyLawsRegulations();
   const { selfDeclaration, verneombudExemption, hasSelfDeclaration, hasVerneombudExemption } = useHmsDeclarations();
+  const { verneombudAgreement, hasVerneombudAgreement } = useVerneombudAgreement();
   const { employees } = useEmployees();
   
   // For verneombud: Companies with 5+ employees MUST have a verneombud, they cannot use exemption agreement
@@ -1209,6 +1211,156 @@ const Handbook = () => {
             doc.setFontSize(11);
             yPos += 40;
           });
+        }
+      }
+
+      // SECTION: VALG AV VERNEOMBUD (for companies with 5+ employees)
+      if (hasVerneombudAgreement && verneombudAgreement && requiresVerneombud) {
+        doc.addPage();
+        sectionNumber++;
+        addTocEntry(`${sectionNumber}. Valg av verneombud`);
+        yPos = margin;
+        addSectionHeader(`${sectionNumber}. Valg av verneombud`);
+        
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        doc.text("Virksomheten har valgt verneombud i henhold til arbeidsmiljøloven.", margin, yPos);
+        yPos += 12;
+        
+        // Verneombud info
+        doc.setFont("helvetica", "bold");
+        doc.text("Verneombud:", margin, yPos);
+        doc.setFont("helvetica", "normal");
+        doc.text(verneombudAgreement.verneombud_name, margin + 35, yPos);
+        yPos += 7;
+        
+        if (verneombudAgreement.verneombud_email) {
+          doc.setFont("helvetica", "bold");
+          doc.text("E-post:", margin, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(verneombudAgreement.verneombud_email, margin + 35, yPos);
+          yPos += 7;
+        }
+        
+        if (verneombudAgreement.verneombud_phone) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Telefon:", margin, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(verneombudAgreement.verneombud_phone, margin + 35, yPos);
+          yPos += 7;
+        }
+        
+        if (verneombudAgreement.election_method) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Valgmetode:", margin, yPos);
+          doc.setFont("helvetica", "normal");
+          const methodText = verneombudAgreement.election_method === "election" ? "Valg blant ansatte" :
+                            verneombudAgreement.election_method === "appointment" ? "Utpekt av arbeidsgiver" :
+                            verneombudAgreement.election_method === "volunteer" ? "Frivillig" : 
+                            verneombudAgreement.election_method;
+          doc.text(methodText, margin + 35, yPos);
+          yPos += 7;
+        }
+        
+        if (verneombudAgreement.term_start) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Periode fra:", margin, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(formatDateForPdf(new Date(verneombudAgreement.term_start)), margin + 35, yPos);
+          yPos += 7;
+        }
+        
+        if (verneombudAgreement.term_end) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Periode til:", margin, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(formatDateForPdf(new Date(verneombudAgreement.term_end)), margin + 35, yPos);
+          yPos += 7;
+        }
+        
+        if (verneombudAgreement.training_completed) {
+          yPos += 5;
+          doc.setFillColor(220, 252, 231);
+          doc.roundedRect(margin, yPos, contentWidth, 12, 2, 2, "F");
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(22, 101, 52);
+          doc.text("✓ Verneombudet har gjennomført påkrevd opplæring (40 timer)", margin + 5, yPos + 8);
+          doc.setTextColor(0, 0, 0);
+          yPos += 17;
+          
+          if (verneombudAgreement.training_date) {
+            doc.setFont("helvetica", "normal");
+            doc.text(`Opplæring gjennomført: ${formatDateForPdf(new Date(verneombudAgreement.training_date))}`, margin, yPos);
+            yPos += 10;
+          }
+        }
+        
+        yPos += 5;
+        
+        // Verneombud signature
+        if (verneombudAgreement.verneombud_signature) {
+          checkPageBreak(50);
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(margin, yPos, contentWidth, 40, 2, 2, "F");
+          
+          doc.setFont("helvetica", "bold");
+          doc.text("Verneombudets signatur:", margin + 5, yPos + 8);
+          
+          try {
+            doc.addImage(verneombudAgreement.verneombud_signature, "PNG", margin + 5, yPos + 12, 50, 20);
+          } catch (e) {
+            console.warn("Could not add verneombud signature:", e);
+          }
+          
+          if (verneombudAgreement.verneombud_signed_at) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            doc.text(`Signert: ${formatDateForPdf(new Date(verneombudAgreement.verneombud_signed_at))}`, margin + 5, yPos + 36);
+            doc.setFontSize(11);
+          }
+          
+          yPos += 45;
+        }
+        
+        // Employer signature
+        if (verneombudAgreement.employer_name || verneombudAgreement.employer_signature) {
+          checkPageBreak(50);
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(margin, yPos, contentWidth, 40, 2, 2, "F");
+          
+          doc.setFont("helvetica", "bold");
+          doc.text("Arbeidsgiver:", margin + 5, yPos + 8);
+          doc.setFont("helvetica", "normal");
+          if (verneombudAgreement.employer_name) {
+            doc.text(verneombudAgreement.employer_name, margin + 35, yPos + 8);
+          }
+          
+          if (verneombudAgreement.employer_signature) {
+            try {
+              doc.addImage(verneombudAgreement.employer_signature, "PNG", margin + 5, yPos + 12, 50, 20);
+            } catch (e) {
+              console.warn("Could not add employer signature:", e);
+            }
+          }
+          
+          if (verneombudAgreement.employer_signed_at) {
+            doc.setFontSize(9);
+            doc.text(`Signert: ${formatDateForPdf(new Date(verneombudAgreement.employer_signed_at))}`, margin + 5, yPos + 36);
+            doc.setFontSize(11);
+          }
+          
+          yPos += 45;
+        }
+        
+        if (verneombudAgreement.notes) {
+          checkPageBreak(30);
+          doc.setFont("helvetica", "bold");
+          doc.text("Merknader:", margin, yPos);
+          yPos += 7;
+          doc.setFont("helvetica", "normal");
+          const noteLines = doc.splitTextToSize(verneombudAgreement.notes, contentWidth);
+          doc.text(noteLines, margin, yPos);
+          yPos += noteLines.length * 5 + 5;
         }
       }
 
