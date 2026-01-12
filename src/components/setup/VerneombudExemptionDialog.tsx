@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,16 @@ interface VerneombudExemptionDialogProps {
   onComplete: () => void;
 }
 
+const SESSION_STORAGE_KEY = "verneombud_exemption_state";
+
+interface PersistedState {
+  step: "info" | "employer" | "employees" | "complete";
+  employerName: string;
+  employerSignature: string;
+  employees: { name: string; signature: string }[];
+  companyId: string;
+}
+
 export function VerneombudExemptionDialog({
   open,
   onOpenChange,
@@ -39,17 +49,56 @@ export function VerneombudExemptionDialog({
   totalEmployees,
   onComplete,
 }: VerneombudExemptionDialogProps) {
-  const [step, setStep] = useState<"info" | "employer" | "employees" | "complete">("info");
-  const [employerName, setEmployerName] = useState("");
-  const [employerSignature, setEmployerSignature] = useState("");
-  const [employees, setEmployees] = useState<{ name: string; signature: string }[]>([
-    { name: "", signature: "" },
-  ]);
+  // Load initial state from sessionStorage
+  const getInitialState = useCallback((): PersistedState | null => {
+    try {
+      const saved = sessionStorage.getItem(SESSION_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as PersistedState;
+        // Only restore if it's for the same company
+        if (parsed.companyId === companyId) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error("Error loading persisted state:", e);
+    }
+    return null;
+  }, [companyId]);
+
+  const initialState = getInitialState();
+
+  const [step, setStep] = useState<"info" | "employer" | "employees" | "complete">(
+    initialState?.step || "info"
+  );
+  const [employerName, setEmployerName] = useState(initialState?.employerName || "");
+  const [employerSignature, setEmployerSignature] = useState(initialState?.employerSignature || "");
+  const [employees, setEmployees] = useState<{ name: string; signature: string }[]>(
+    initialState?.employees || [{ name: "", signature: "" }]
+  );
   const [currentEmployeeIndex, setCurrentEmployeeIndex] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   
   const employerSigRef = useRef<SignatureCanvas | null>(null);
   const employeeSigRef = useRef<SignatureCanvas | null>(null);
+
+  // Persist state to sessionStorage whenever it changes
+  useEffect(() => {
+    if (step === "complete") {
+      // Clear persisted state when complete
+      sessionStorage.removeItem(SESSION_STORAGE_KEY);
+      return;
+    }
+    
+    const stateToSave: PersistedState = {
+      step,
+      employerName,
+      employerSignature,
+      employees,
+      companyId,
+    };
+    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(stateToSave));
+  }, [step, employerName, employerSignature, employees, companyId]);
 
   const handleClearEmployerSig = () => {
     employerSigRef.current?.clear();
@@ -174,17 +223,26 @@ export function VerneombudExemptionDialog({
     }
   };
 
-  const handleClose = () => {
+  const handleClose = (clearState = false) => {
     if (step === "complete") {
       onComplete();
+      clearState = true;
     }
     onOpenChange(false);
-    // Reset state
-    setStep("info");
-    setEmployerName("");
-    setEmployerSignature("");
-    setEmployees([{ name: "", signature: "" }]);
-    setCurrentEmployeeIndex(null);
+    
+    // Only reset state if explicitly requested or complete
+    if (clearState) {
+      setStep("info");
+      setEmployerName("");
+      setEmployerSignature("");
+      setEmployees([{ name: "", signature: "" }]);
+      setCurrentEmployeeIndex(null);
+      sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    }
+  };
+
+  const handleCancel = () => {
+    handleClose(true); // Clear state when user explicitly cancels
   };
 
   const today = new Date().toLocaleDateString("nb-NO", {
@@ -431,7 +489,7 @@ export function VerneombudExemptionDialog({
         <DialogFooter>
           {step === "info" && (
             <>
-              <Button variant="outline" onClick={handleClose}>
+              <Button variant="outline" onClick={handleCancel}>
                 Avbryt
               </Button>
               <Button onClick={() => setStep("employer")}>
@@ -467,7 +525,7 @@ export function VerneombudExemptionDialog({
           )}
 
           {step === "complete" && (
-            <Button onClick={handleClose}>
+            <Button onClick={() => handleClose(true)}>
               Lukk
             </Button>
           )}
