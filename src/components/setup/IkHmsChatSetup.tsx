@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { VerneombudExemptionDialog } from "./VerneombudExemptionDialog";
+import { HmsSelfDeclarationDialog } from "./HmsSelfDeclarationDialog";
 
 interface Message {
   role: "user" | "assistant";
@@ -145,10 +146,12 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
   const [isSaving, setIsSaving] = useState(false);
   const [pendingBrregInfo, setPendingBrregInfo] = useState<BrregInfo | null>(initialState?.pendingBrregInfo ?? null);
   const [awaitingIndustrySelection, setAwaitingIndustrySelection] = useState(initialState?.awaitingIndustrySelection ?? false);
+  const [showSelfDeclarationDialog, setShowSelfDeclarationDialog] = useState(false);
   const [showExemptionDialog, setShowExemptionDialog] = useState(false);
   const [confirmedEmployeeCount, setConfirmedEmployeeCount] = useState<number | null>(initialState?.confirmedEmployeeCount ?? null);
   const [awaitingEmployeeCount, setAwaitingEmployeeCount] = useState(initialState?.awaitingEmployeeCount ?? false);
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(initialState?.selectedIndustry ?? null);
+  const [pendingPostSignature, setPendingPostSignature] = useState<{ industry: string; employeeCount: number } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -381,24 +384,103 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
     }
   };
 
-  const handleExemptionComplete = (wasSkipped = false) => {
+  const continueAfterRequiredSignatures = async (industry: string, employeeCount: number) => {
+    // Always continue with the same “next step” after signatures: ask about goals.
+    if (employeeCount < 5) {
+      await continueWithAIChat(
+        `Brukeren har valgt bransje: ${industry}. Bedriften har færre enn 5 ansatte og har signert fritak fra verneombud. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`
+      );
+      return;
+    }
+
+    await continueWithAIChat(
+      `Brukeren har valgt bransje: ${industry}. Bedriften har 5 eller flere ansatte. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`
+    );
+  };
+
+  const startRequiredSignatures = async (industry: string, employeeCount: number) => {
+    // Department setup: signatures are company-level documents, so we skip gating here.
+    if (isDepartmentSetup) {
+      setIsLoading(true);
+      await continueAfterRequiredSignatures(industry, employeeCount);
+      return;
+    }
+
+    // Check if already signed
+    const [{ data: existingDeclaration }, { data: existingExemption }] = await Promise.all([
+      supabase
+        .from("hms_self_declarations")
+        .select("id")
+        .eq("company_id", companyId)
+        .maybeSingle(),
+      supabase
+        .from("verneombud_exemption_agreements")
+        .select("id")
+        .eq("company_id", companyId)
+        .maybeSingle(),
+    ]);
+
+    if (!existingDeclaration) {
+      setPendingPostSignature({ industry, employeeCount });
+      setShowSelfDeclarationDialog(true);
+      setIsLoading(false);
+      return;
+    }
+
+    if (employeeCount < 5 && !existingExemption) {
+      setPendingPostSignature({ industry, employeeCount });
+      setShowExemptionDialog(true);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    await continueAfterRequiredSignatures(industry, employeeCount);
+  };
+
+  const handleSelfDeclarationComplete = async () => {
+    setShowSelfDeclarationDialog(false);
+
+    const industry = pendingPostSignature?.industry || selectedIndustry || company?.name || "den valgte bransjen";
+    const employeeCount = pendingPostSignature?.employeeCount ?? confirmedEmployeeCount ?? 5;
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        content:
+          "Flott! Egenerklæring om HMS er nå signert og lagret. ✅\n\nNeste steg: avtale om verneombud.",
+      },
+    ]);
+
+    if (employeeCount < 5) {
+      setShowExemptionDialog(true);
+      return;
+    }
+
+    setPendingPostSignature(null);
+    setIsLoading(true);
+    await continueAfterRequiredSignatures(industry, employeeCount);
+  };
+
+  const handleExemptionComplete = async () => {
     setShowExemptionDialog(false);
-    setIsLoading(true); // Set loading state before AI chat call
-    
-    // Get industry from state or fall back to a generic description
-    const industryToUse = selectedIndustry || company?.name || 'den valgte bransjen';
-    
-    const message = wasSkipped 
-      ? "Greit! Du kan alltid signere avtalen senere under Innstillinger.\n\nLa oss fortsette med HMS-oppsettet..."
-      : "Flott! Avtalen om fritak fra verneombud er nå signert og lagret. ✅\n\nLa oss fortsette med HMS-oppsettet...";
-    
-    setMessages((prev) => [...prev, { role: "assistant", content: message }]);
-    
-    const context = wasSkipped
-      ? `Brukeren har valgt bransje: ${industryToUse}. Bedriften har færre enn 5 ansatte og ønsket ikke å signere fritak fra verneombud nå. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`
-      : `Brukeren har valgt bransje: ${industryToUse}. Bedriften har færre enn 5 ansatte og har signert fritak fra verneombud. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`;
-    
-    continueWithAIChat(context);
+
+    const industry = pendingPostSignature?.industry || selectedIndustry || company?.name || "den valgte bransjen";
+    const employeeCount = pendingPostSignature?.employeeCount ?? confirmedEmployeeCount ?? 4;
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        content:
+          "Flott! Avtalen om fritak fra verneombud er nå signert og lagret. ✅\n\nLa oss fortsette med HMS-oppsettet...",
+      },
+    ]);
+
+    setPendingPostSignature(null);
+    setIsLoading(true);
+    await continueAfterRequiredSignatures(industry, employeeCount);
   };
 
   const handleSend = async () => {
@@ -430,21 +512,22 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
       const brregEmployees = pendingBrregInfo.employees;
       
       if (brregEmployees >= 5) {
-        // 5+ employees, continue directly with AI chat
+        // 5+ employees: proceed, but require HMS signatures first
         setConfirmedEmployeeCount(brregEmployees);
-        setMessages((prev) => [...prev, { 
-          role: "assistant", 
-          content: `Flott! Bedriftsinformasjonen er lagret. 🎉\n\nJeg ser at dere har ${brregEmployees} ansatte og tilhører bransjen "${brregIndustry}". La oss tilpasse HMS-oppsettet for dere...` 
+        setMessages((prev) => [...prev, {
+          role: "assistant",
+          content: `Flott! Bedriftsinformasjonen er lagret. 🎉\n\nFør vi fortsetter med målsetting og oppsett, må to lovpålagte dokumenter signeres: (1) Egenerklæring om HMS og (2) Verneombud-avtale (hvis aktuelt).`,
         }]);
-        await continueWithAIChat(`Bedriften heter ${pendingBrregInfo.name}, bransje: ${brregIndustry}, og har ${brregEmployees} ansatte (5 eller flere). Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`);
+        await startRequiredSignatures(brregIndustry, brregEmployees);
         return;
       } else {
-        // Less than 5 employees - ask about verneombud exemption
-        const employeeCountMessage = `Flott! Bedriftsinformasjonen er lagret. 🎉\n\nJeg ser at dere tilhører bransjen "${brregIndustry}" og har ${brregEmployees} registrerte ansatte.\n\nSiden dere har færre enn 5 ansatte, har dere mulighet til å inngå en skriftlig avtale om fritak fra verneombud i henhold til arbeidsmiljøloven § 6-1.\n\n✅ **Fritak fra verneombud:**\nDere kan signere en avtale digitalt her i systemet som dokumenterer at arbeidsgiver og ansatte er enige om at det ikke er nødvendig med verneombud.\n\n**Ønsker du å signere en slik avtale nå?**\n\n1. Ja, signer avtale om fritak\n2. Nei, fortsett uten avtale\n\n(Velg 1 eller 2)`;
-        
+        // <5 employees: require signatures in fixed order (self declaration first, then exemption)
         setConfirmedEmployeeCount(brregEmployees);
-        setMessages((prev) => [...prev, { role: "assistant", content: employeeCountMessage }]);
-        setIsLoading(false);
+        setMessages((prev) => [...prev, {
+          role: "assistant",
+          content: `Flott! Bedriftsinformasjonen er lagret. 🎉\n\nFør vi starter med målsetting, må dere signere:\n1) Egenerklæring om HMS\n2) Avtale om fritak fra verneombud (færre enn 5 ansatte)\n\nVi tar dem i riktig rekkefølge nå.`,
+        }]);
+        await startRequiredSignatures(brregIndustry, brregEmployees);
         return;
       }
     }
@@ -503,19 +586,13 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
       }
     }
     
-    // Check if user wants to sign exemption agreement
+    // If we have <5 employees, we no longer offer skipping the agreement here.
+    // The flow is: Self-declaration first, then (if <5) the exemption agreement.
     if (confirmedEmployeeCount !== null && confirmedEmployeeCount < 5) {
-      if (userInput.trim() === '1') {
-        // Open exemption dialog
-        setShowExemptionDialog(true);
-        setIsLoading(false);
-        return;
-      } else if (userInput.trim() === '2') {
-        // Continue without exemption
-        setMessages((prev) => [...prev, { role: "assistant", content: "Greit! Du kan alltid signere avtalen senere under Innstillinger hvis du ombestemmer deg.\n\nLa oss fortsette med HMS-oppsettet..." }]);
-        await continueWithAIChat(`Brukeren har valgt bransje: ${selectedIndustry}. Bedriften har færre enn 5 ansatte og ønsker ikke å signere fritak fra verneombud nå. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`);
-        return;
-      }
+      // Any input at this stage just triggers the mandatory signing flow.
+      const industry = selectedIndustry || company?.name || "den valgte bransjen";
+      await startRequiredSignatures(industry, confirmedEmployeeCount);
+      return;
     }
 
     // Check if user is declining Brreg info
@@ -1230,14 +1307,34 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
         </div>
       )}
 
+      <HmsSelfDeclarationDialog
+        open={showSelfDeclarationDialog}
+        onOpenChange={(open) => {
+          // This dialog is mandatory in the setup flow; prevent closing by backdrop/ESC.
+          if (!open) return;
+          setShowSelfDeclarationDialog(open);
+        }}
+        companyId={companyId}
+        companyName={company?.name || ""}
+        companyAddress={company?.address || undefined}
+        postalCode={company?.postal_code || undefined}
+        city={company?.city || undefined}
+        onComplete={handleSelfDeclarationComplete}
+      />
+
       <VerneombudExemptionDialog
         open={showExemptionDialog}
-        onOpenChange={setShowExemptionDialog}
+        onOpenChange={(open) => {
+          // Mandatory in flow when shown
+          if (!open) return;
+          setShowExemptionDialog(open);
+        }}
         companyId={companyId}
         companyName={company?.name || ""}
         companyAddress={company?.address ? `${company.address}, ${company.postal_code || ""} ${company.city || ""}` : undefined}
         orgNumber={company?.org_number || undefined}
         totalEmployees={confirmedEmployeeCount || 4}
+        allowSkip={false}
         onComplete={handleExemptionComplete}
       />
     </div>
