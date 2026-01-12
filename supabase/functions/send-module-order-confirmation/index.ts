@@ -101,6 +101,23 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                 </div>
 
+                <div class="order-box" style="background: #eff6ff; border: 1px solid #93c5fd;">
+                  <h3 style="margin-top: 0; color: #1d4ed8;">🔐 Din innloggingsinformasjon</h3>
+                  <div class="order-row" style="border-color: #bfdbfe;">
+                    <span>Lenke:</span>
+                    <span><a href="https://totalik.no" style="color: #5B6BFF;">https://totalik.no</a></span>
+                  </div>
+                  <div class="order-row" style="border-color: #bfdbfe;">
+                    <span>Brukernavn:</span>
+                    <span><strong>${recipientEmail}</strong></span>
+                  </div>
+                  <div class="order-row" style="border-color: #bfdbfe;">
+                    <span>Passord:</span>
+                    <span><strong>Abc_1234</strong></span>
+                  </div>
+                  <p style="font-size: 13px; color: #6b7280; margin-bottom: 0;">Vi anbefaler at du endrer passordet ditt etter første innlogging.</p>
+                </div>
+
                 <p>Du kan nå begynne å bruke ${moduleName} ved å logge inn i Total-IK.</p>
                 
                 <p>Faktura sendes til bedriftens registrerte e-postadresse innen de første dagene av neste måned.</p>
