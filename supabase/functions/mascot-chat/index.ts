@@ -538,9 +538,13 @@ async function executeToolCall(
         // Get user profile for reporter name (userId is now profile.id)
         const { data: reporterProfile } = await supabase
           .from("profiles")
-          .select("full_name")
+          .select("first_name, last_name")
           .eq("id", userId)
           .single();
+        
+        const reporterFullName = reporterProfile 
+          ? `${reporterProfile.first_name || ''} ${reporterProfile.last_name || ''}`.trim() || 'Ukjent'
+          : 'Ukjent';
 
         const dueDate = new Date();
         dueDate.setDate(dueDate.getDate() + 14);
@@ -560,7 +564,7 @@ async function executeToolCall(
             priority: dbPriority,
             immediate_actions: args.immediate_actions || "",
             reporter_id: userId, // Now correctly using profile.id
-            reporter_name: reporterProfile?.full_name || "Ukjent",
+            reporter_name: reporterFullName,
             due_date: dueDate.toISOString().split('T')[0],
             status: "open"
           });
@@ -583,18 +587,26 @@ async function executeToolCall(
       }
 
       case "add_employee_course": {
-        // Find employee by name
+        // Find employee by name - search in first_name and last_name
         const { data: employees } = await supabase
           .from("profiles")
-          .select("id, full_name")
+          .select("id, first_name, last_name")
           .eq("company_id", companyId)
-          .ilike("full_name", `%${args.employee_name}%`);
+          .eq("is_active", true);
 
-        if (!employees || employees.length === 0) {
+        // Filter employees by name match
+        const searchName = args.employee_name.toLowerCase();
+        const matchingEmployees = (employees || []).filter((e: any) => {
+          const fullName = `${e.first_name || ''} ${e.last_name || ''}`.toLowerCase().trim();
+          return fullName.includes(searchName) || searchName.includes(fullName);
+        });
+
+        if (matchingEmployees.length === 0) {
           return `❌ Fant ingen ansatt med navn "${args.employee_name}". Sjekk at navnet er riktig.`;
         }
 
-        const employee = employees[0];
+        const employee = matchingEmployees[0];
+        const employeeFullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
         const completedDate = args.completed_date || new Date().toISOString().split('T')[0];
         
         let expiryDate = null;
@@ -618,22 +630,24 @@ async function executeToolCall(
           });
 
         if (error) throw error;
-        return `✅ Kurs "${args.course_name}" er registrert for ${employee.full_name}${expiryDate ? ` (gyldig til ${new Date(expiryDate).toLocaleDateString("nb-NO")})` : ""}.`;
+        return `✅ Kurs "${args.course_name}" er registrert for ${employeeFullName}${expiryDate ? ` (gyldig til ${new Date(expiryDate).toLocaleDateString("nb-NO")})` : ""}.`;
       }
 
       case "list_employees": {
         const { data: employees } = await supabase
           .from("profiles")
-          .select("full_name, position")
+          .select("first_name, last_name")
           .eq("company_id", companyId)
           .eq("is_active", true)
-          .order("full_name");
+          .order("first_name");
 
         if (!employees || employees.length === 0) {
           return "Ingen ansatte funnet i systemet.";
         }
 
-        const list = employees.map((e: { full_name: string; position: string | null }) => `- ${e.full_name}${e.position ? ` (${e.position})` : ""}`).join("\n");
+        const list = employees.map((e: { first_name: string | null; last_name: string | null }) => 
+          `- ${e.first_name || ''} ${e.last_name || ''}`.trim()
+        ).join("\n");
         return `📋 Ansatte i bedriften:\n${list}`;
       }
 
