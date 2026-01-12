@@ -204,6 +204,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (rolesData && rolesData.length > 0) {
         setRoles(rolesData.map((r) => r.role as AppRole));
+        // Mark guest check as complete for users with roles
+        setGuestCheckComplete(true);
       } else {
         // If no roles, check if this is a guest user
         await fetchGuestAccess(userId);
