@@ -515,6 +515,17 @@ export function VerneombudExemptionDialog({
                 Tilbake
               </Button>
               <Button 
+                variant="ghost"
+                onClick={() => {
+                  // Skip without signatures - just close and complete
+                  sessionStorage.removeItem(SESSION_STORAGE_KEY);
+                  onComplete();
+                  onOpenChange(false);
+                }}
+              >
+                Hopp over
+              </Button>
+              <Button 
                 onClick={handleSubmit} 
                 disabled={isSaving || !employees.some(e => e.name.trim() && e.signature)}
               >
