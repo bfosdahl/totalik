@@ -484,7 +484,7 @@ const Handbook = () => {
             ? `${verneombudRole.personName} valgt` 
             : "Ikke registrert";
         })(),
-        linkTo: "/organisering",
+        linkTo: "/audits",
       }
     ] : [
       // Companies with less than 5 employees can have exemption agreement
