@@ -1010,6 +1010,21 @@ export function HandbookStep({
         vernerunde: "Vernerunde",
       };
 
+      // Section title mapping
+      const sectionTitles: Record<string, string> = {
+        informasjon: "1. Informasjon og kommunikasjon",
+        samarbeid: "2. Samarbeid og beslutninger",
+        produktivitet: "3. Produktivitet og effektivitet",
+        arbeidsavtaler: "4. Arbeidsavtaler og arbeidsreglement",
+        arbeidstid: "5. Arbeidstidsbestemmelser",
+        hms: "6. HMS-arbeid",
+        vernetjeneste: "7. Vernetjeneste",
+        registrering: "8. Registrering og oppfølging",
+        forsikringer: "9. Forsikringer",
+        kompetanse: "10. Kompetanse og opplæring",
+        annet: "Annet",
+      };
+
       for (const form of completedForms) {
         doc.addPage();
         yPos = margin;
@@ -1039,91 +1054,152 @@ export function HandbookStep({
         // Parse and render form data
         const formData = form.form_data as Record<string, unknown>;
         if (formData) {
-          // Handle checklist answers
-          if (formData.checklistAnswers && typeof formData.checklistAnswers === 'object') {
-            const answers = formData.checklistAnswers as Record<string, { answer?: string; comment?: string }>;
-            const sectionQuestions = formData.sectionQuestions as Record<string, { title: string; questions: Array<{ id: string; question: string }> }> | undefined;
-            
-            doc.setFont("helvetica", "bold");
-            doc.text("Sjekkpunkter:", margin, yPos);
-            yPos += 8;
-            doc.setFont("helvetica", "normal");
+          // Get section questions and answers
+          const sectionQuestions = formData.sectionQuestions as Record<string, Array<{ id: string; question: string }>> | undefined;
+          const checklistAnswers = formData.checklistAnswers as Record<string, Record<string, { answer?: string; comment?: string }>> | undefined;
+          
+          if (sectionQuestions && checklistAnswers) {
+            // Get section order from the keys
+            const sectionOrder = Object.keys(sectionQuestions).filter(
+              key => sectionQuestions[key] && sectionQuestions[key].length > 0
+            );
 
-            // Group by section if available
-            if (sectionQuestions) {
-              Object.entries(sectionQuestions).forEach(([sectionId, section]) => {
-                checkPageBreak(20);
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(10);
-                doc.text(section.title, margin, yPos);
-                yPos += 6;
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(9);
+            sectionOrder.forEach((sectionId) => {
+              const questions = sectionQuestions[sectionId];
+              const answers = checklistAnswers[sectionId] || {};
+              
+              if (!questions || questions.length === 0) return;
 
-                section.questions.forEach((q) => {
-                  const answer = answers[q.id];
-                  if (answer) {
-                    checkPageBreak(15);
-                    const answerText = answer.answer === 'yes' ? '✓ Ja' : answer.answer === 'no' ? '✗ Nei' : answer.answer === 'na' ? '- N/A' : answer.answer || '-';
-                    const questionLines = doc.splitTextToSize(`${q.question}: ${answerText}`, contentWidth - 5);
-                    questionLines.forEach((line: string) => {
-                      doc.text(line, margin + 5, yPos);
-                      yPos += 5;
-                    });
-                    if (answer.comment) {
-                      doc.setTextColor(100, 100, 100);
-                      const commentLines = doc.splitTextToSize(`Kommentar: ${answer.comment}`, contentWidth - 10);
-                      commentLines.forEach((line: string) => {
-                        checkPageBreak(5);
-                        doc.text(line, margin + 10, yPos);
-                        yPos += 5;
-                      });
-                      doc.setTextColor(0, 0, 0);
+              // Section header
+              checkPageBreak(30);
+              doc.setFillColor(240, 249, 255);
+              doc.roundedRect(margin, yPos, contentWidth, 8, 1, 1, "F");
+              doc.setFontSize(10);
+              doc.setFont("helvetica", "bold");
+              doc.setTextColor(59, 130, 246);
+              doc.text(sectionTitles[sectionId] || sectionId, margin + 3, yPos + 5.5);
+              doc.setTextColor(0, 0, 0);
+              yPos += 12;
+
+              // Build table data for this section
+              const tableData: string[][] = [];
+              questions.forEach((q) => {
+                const answer = answers[q.id];
+                let answerText = "-";
+                if (answer?.answer === "yes") answerText = "Ja";
+                else if (answer?.answer === "no") answerText = "Nei";
+                else if (answer?.answer === "na") answerText = "N/A";
+                else if (answer?.answer) answerText = answer.answer;
+
+                const row = [
+                  q.question.length > 70 ? q.question.substring(0, 67) + "..." : q.question,
+                  answerText,
+                  answer?.comment || ""
+                ];
+                tableData.push(row);
+              });
+
+              // Draw table
+              autoTable(doc, {
+                startY: yPos,
+                head: [["Sjekkpunkt", "Svar", "Kommentar"]],
+                body: tableData,
+                theme: "striped",
+                headStyles: { 
+                  fillColor: [59, 130, 246],
+                  fontSize: 8,
+                  fontStyle: "bold"
+                },
+                bodyStyles: { fontSize: 8 },
+                columnStyles: {
+                  0: { cellWidth: 95 },
+                  1: { cellWidth: 20, halign: "center" },
+                  2: { cellWidth: 50 }
+                },
+                margin: { left: margin, right: margin },
+                didParseCell: (data) => {
+                  // Color code answers
+                  if (data.section === "body" && data.column.index === 1) {
+                    const answer = data.cell.raw as string;
+                    if (answer === "Ja") {
+                      data.cell.styles.textColor = [34, 197, 94];
+                      data.cell.styles.fontStyle = "bold";
+                    } else if (answer === "Nei") {
+                      data.cell.styles.textColor = [239, 68, 68];
+                      data.cell.styles.fontStyle = "bold";
                     }
                   }
-                });
-                yPos += 5;
-              });
-            } else {
-              // Render without section grouping
-              Object.entries(answers).forEach(([questionId, answer]) => {
-                checkPageBreak(12);
-                const answerText = answer.answer === 'yes' ? '✓ Ja' : answer.answer === 'no' ? '✗ Nei' : answer.answer === 'na' ? '- N/A' : answer.answer || '-';
-                doc.text(`${questionId}: ${answerText}`, margin + 5, yPos);
-                yPos += 5;
-                if (answer.comment) {
-                  doc.setTextColor(100, 100, 100);
-                  doc.text(`Kommentar: ${answer.comment}`, margin + 10, yPos);
-                  doc.setTextColor(0, 0, 0);
-                  yPos += 5;
                 }
               });
+
+              yPos = (doc as any).lastAutoTable.finalY + 10;
+            });
+
+            // Summary statistics
+            checkPageBreak(40);
+            yPos += 5;
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text("Oppsummering:", margin, yPos);
+            yPos += 8;
+
+            let totalYes = 0, totalNo = 0, totalNa = 0;
+            Object.values(checklistAnswers).forEach((sectionAnswers) => {
+              Object.values(sectionAnswers).forEach((answer) => {
+                if (answer.answer === "yes") totalYes++;
+                else if (answer.answer === "no") totalNo++;
+                else if (answer.answer === "na") totalNa++;
+              });
+            });
+
+            const total = totalYes + totalNo + totalNa;
+            const completionPercent = total > 0 ? Math.round((totalYes / (totalYes + totalNo)) * 100) : 0;
+
+            doc.setFont("helvetica", "normal");
+            doc.setFillColor(34, 197, 94);
+            doc.rect(margin, yPos - 3, 4, 4, "F");
+            doc.text(`Ja: ${totalYes}`, margin + 7, yPos);
+            
+            doc.setFillColor(239, 68, 68);
+            doc.rect(margin + 35, yPos - 3, 4, 4, "F");
+            doc.text(`Nei: ${totalNo}`, margin + 42, yPos);
+            
+            doc.setFillColor(150, 150, 150);
+            doc.rect(margin + 70, yPos - 3, 4, 4, "F");
+            doc.text(`N/A: ${totalNa}`, margin + 77, yPos);
+            
+            doc.text(`Oppfyllelse: ${completionPercent}%`, margin + 110, yPos);
+            yPos += 10;
+          }
+
+          // Signatures
+          if (formData.auditorSignature || formData.managerSignature) {
+            checkPageBreak(25);
+            yPos += 5;
+            doc.setFont("helvetica", "bold");
+            doc.text("Signaturer:", margin, yPos);
+            yPos += 6;
+            doc.setFont("helvetica", "normal");
+            if (formData.auditorSignature) {
+              doc.text(`Revisjonsleder: ${formData.auditorSignature}`, margin + 5, yPos);
+              yPos += 5;
+            }
+            if (formData.managerSignature) {
+              doc.text(`Daglig leder: ${formData.managerSignature}`, margin + 5, yPos);
+              yPos += 5;
             }
           }
 
-          // Handle other form data fields
-          if (formData.summary && typeof formData.summary === 'string') {
+          // Other comments
+          if (formData.otherComments && typeof formData.otherComments === 'string' && formData.otherComments.trim()) {
             checkPageBreak(20);
+            yPos += 5;
             doc.setFont("helvetica", "bold");
-            doc.text("Oppsummering:", margin, yPos);
+            doc.text("Andre kommentarer:", margin, yPos);
             yPos += 6;
             doc.setFont("helvetica", "normal");
-            const summaryLines = doc.splitTextToSize(formData.summary, contentWidth);
-            summaryLines.forEach((line: string) => {
-              checkPageBreak(5);
-              doc.text(line, margin, yPos);
-              yPos += 5;
-            });
-          }
-
-          if (formData.notes && typeof formData.notes === 'string') {
-            checkPageBreak(20);
-            doc.setFont("helvetica", "bold");
-            doc.text("Notater:", margin, yPos);
-            yPos += 6;
-            doc.setFont("helvetica", "normal");
-            const notesLines = doc.splitTextToSize(formData.notes, contentWidth);
-            notesLines.forEach((line: string) => {
+            const commentLines = doc.splitTextToSize(formData.otherComments, contentWidth);
+            commentLines.forEach((line: string) => {
               checkPageBreak(5);
               doc.text(line, margin, yPos);
               yPos += 5;
