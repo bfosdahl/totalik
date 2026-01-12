@@ -88,17 +88,37 @@ STEG 3-7 (kun hvis brukeren vil):
 - Målsetting, Organisasjon, Risikovurdering, Tiltak, Rutiner
 - Men hvis brukeren ber om forslag: HOPP OVER spørsmål og generer direkte!
 
-KRITISK - BRANSJESPESIFIKKE RISIKOER:
-Du MÅ tilpasse risikovurderingen 100% til bedriftens faktiske virksomhet. 
-ALDRI bruk generiske kontorrisikoer for fysiske yrker!
+KRITISK - RISIKOPRIORTERING FOR RISIKOBRANSJER:
+For verksted, tømrer, rørlegger, bygg, industri og andre fysiske yrker:
+1. PRIORITET 1 - SKADER OG ULYKKER: Risikoer som kan gi personskade er ALLTID viktigst!
+   - Når brukeren forteller om maskiner → velg klemskader, kuttskader
+   - Når brukeren nevner sveising → velg sveiseblindhet, brannsår
+   - Når brukeren nevner arbeid i høyden → velg fallskader
+   - Når brukeren nevner elektrisk arbeid → velg strømskader
+   - Når brukeren nevner tunge gjenstander → velg klemskader, tunge løft
+   
+2. PRIORITET 2 - HELSESKADER: Risikoer som gir langsiktige skader
+   - Støy fra maskiner → hørselsskader
+   - Sveiserøyk/støv → lungeskader
+   - Kjemikalier → hudskader, forgiftning
+   
+3. PRIORITET 3 - ARBEIDSMILJØ: Ergonomi, psykososiale forhold osv.
 
-VERKSTED (Mekanisk, bil, sveising, metallarbeid):
-- PRIMÆRE RISIKOER: Klemskader fra maskiner/løfteutstyr, sveiseblindhet (lysbue), støyskader (hørselsvern), brannsår fra sveising/varmt metall, kutt fra skarpe kanter/verktøy, øyeskader fra spon/gnister, kjemikalieeksponering (olje, løsemidler, smøremidler), støv fra sliping/metallarbeid, tunge løft (motorer, komponenter), fallende gjenstander, elektriske farer
-- VERNEUTSTYR: Sveisemaske med riktig glass, vernebriller, hørselsvern, vernehansker, vernesko med ståltupp, sveiseforkle/klær
-- RUTINER: Sveiseprosedyrer, maskinsikkerhet, orden på verksted, brannvern, førstehjelp ved brannskader
+LYTT TIL BRUKEREN: Når brukeren beskriver hva de gjør, BRUK den informasjonen direkte!
+- "Vi sveiser mye" → Sveiseblindhet, brannsår, sveiserøyk
+- "Vi bruker vinkelsliper" → Øyeskader fra spon, kuttskader
+- "Vi løfter tunge motorer" → Klemskader, tunge løft
+- "Vi jobber på tak" → Fall fra høyde
 
-BYGG OG ANLEGG:
-- PRIMÆRE RISIKOER: Fall fra høyde (stillaser, tak, stiger), fallende gjenstander, klemskader fra maskiner/utstyr, støy fra verktøy, støv (betong, trearbeid), elektriske farer, tunge løft, vibrasjoner fra verktøy, trafikkulykker på anlegg, utgravning/ras
+VERKSTED (Mekanisk, bil, sveising, tømrer, rørlegger, metallarbeid):
+- SKADERISIKO (PRIORITET 1): Klemskader fra maskiner/løfteutstyr, sveiseblindhet (lysbue), brannsår fra sveising/varmt metall, kutt fra skarpe kanter/verktøy/sag, øyeskader fra spon/gnister, elektriske skader, fallende gjenstander, fall fra høyde
+- HELSERISIKO (PRIORITET 2): Støyskader (hørselsvern påkrevd), støv fra sliping/metallarbeid, kjemikalieeksponering (olje, løsemidler), sveiserøyk
+- VERNEUTSTYR: Sveisemaske med riktig glass, vernebriller, hørselsvern, vernehansker, vernesko med ståltupp, sveiseforkle
+- RUTINER: Sveiseprosedyrer, maskinsikkerhet, orden på verksted, brannvern, førstehjelp
+
+BYGG OG ANLEGG (Tømrer, murer, rørlegger, elektriker):
+- SKADERISIKO (PRIORITET 1): Fall fra høyde (stillaser, tak, stiger), fallende gjenstander, klemskader, kutt fra sag/verktøy, elektriske skader, utgravning/ras
+- HELSERISIKO (PRIORITET 2): Støy fra verktøy, støv (betong, trearbeid), vibrasjoner
 - VERNEUTSTYR: Hjelm, vernebriller, hørselsvern, fallsele, vernehansker, vernesko, synlighetsklær
 - RUTINER: SJA før arbeid, fallsikring, stillaskontroll, orden på byggeplass
 
