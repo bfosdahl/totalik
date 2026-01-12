@@ -24,11 +24,24 @@ export interface IkHmsChatSetupProps {
 
 // Helper to strip JSON from display content
 function getDisplayContent(content: string): string {
-  // Remove JSON blocks marked with our special markers
+  // Remove complete JSON blocks marked with our special markers
   let cleaned = content.replace(/\|\|\|JSON_START\|\|\|[\s\S]*?\|\|\|JSON_END\|\|\|/g, '');
+  
+  // IMPORTANT: Also remove incomplete JSON blocks that are still streaming
+  // If we see JSON_START without JSON_END, remove everything from JSON_START onwards
+  const jsonStartIndex = cleaned.indexOf('|||JSON_START|||');
+  if (jsonStartIndex !== -1) {
+    cleaned = cleaned.slice(0, jsonStartIndex);
+  }
   
   // Also remove any raw JSON that might slip through
   cleaned = cleaned.replace(/```json[\s\S]*?```/g, '');
+  
+  // Remove incomplete markdown code blocks (streaming)
+  const incompleteCodeBlock = cleaned.indexOf('```json');
+  if (incompleteCodeBlock !== -1 && cleaned.indexOf('```', incompleteCodeBlock + 7) === -1) {
+    cleaned = cleaned.slice(0, incompleteCodeBlock);
+  }
   
   // Remove standalone JSON objects that look like our data structure
   if (cleaned.includes('"goals"') && cleaned.includes('"organization"') && cleaned.includes('"risks"')) {
@@ -36,6 +49,14 @@ function getDisplayContent(content: string): string {
     const jsonEnd = cleaned.lastIndexOf('}');
     if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
       cleaned = cleaned.slice(0, jsonStart) + cleaned.slice(jsonEnd + 1);
+    }
+  }
+  
+  // Also catch partial JSON that starts with { and contains typical keys
+  if (cleaned.includes('"id":') && cleaned.includes('"routine_')) {
+    const jsonStart = cleaned.indexOf('{');
+    if (jsonStart !== -1) {
+      cleaned = cleaned.slice(0, jsonStart);
     }
   }
   
