@@ -71,6 +71,19 @@ export default function PendingApproval() {
         console.error("Error adding company_admin role from PendingApproval:", roleError);
       }
 
+      // Notify admin (Gard) about new company registration
+      try {
+        await supabase.functions.invoke("notify-new-company", {
+          body: {
+            companyName: trimmed,
+            contactPerson: `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || user.email,
+            contactEmail: user.email,
+          },
+        });
+      } catch (notifyError) {
+        console.error("Error sending admin notification:", notifyError);
+      }
+
       await Promise.all([refreshProfile(), refreshCompany()]);
       toast.success("Bedrift opprettet og konto aktivert");
       window.location.href = "/";

@@ -138,6 +138,19 @@ export default function Auth() {
       console.error("Error sending welcome email:", emailError);
     }
 
+    // Notify admin (Gard) about new company registration
+    try {
+      await supabase.functions.invoke("notify-new-company", {
+        body: {
+          companyName: companyName.trim(),
+          contactPerson: `${firstName} ${lastName}`,
+          contactEmail: email,
+        },
+      });
+    } catch (notifyError) {
+      console.error("Error sending admin notification:", notifyError);
+    }
+
     return { error: null };
   };
 
