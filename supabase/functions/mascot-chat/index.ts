@@ -535,8 +535,8 @@ async function executeToolCall(
 
         const deviationNumber = `AVV-${String((count || 0) + 1).padStart(4, "0")}`;
         
-        // Get user profile for reporter name
-        const { data: profile } = await supabase
+        // Get user profile for reporter name (userId is now profile.id)
+        const { data: reporterProfile } = await supabase
           .from("profiles")
           .select("full_name")
           .eq("id", userId)
@@ -559,8 +559,8 @@ async function executeToolCall(
             category: dbCategory,
             priority: dbPriority,
             immediate_actions: args.immediate_actions || "",
-            reporter_id: userId,
-            reporter_name: profile?.full_name || "Ukjent",
+            reporter_id: userId, // Now correctly using profile.id
+            reporter_name: reporterProfile?.full_name || "Ukjent",
             due_date: dueDate.toISOString().split('T')[0],
             status: "open"
           });
@@ -802,7 +802,7 @@ serve(async (req) => {
         const toolName = toolCall.function.name;
         const toolArgs = JSON.parse(toolCall.function.arguments);
         
-        const result = await executeToolCall(supabase, companyId, userId, toolName, toolArgs);
+        const result = await executeToolCall(supabase, companyId, profile.id, toolName, toolArgs);
         toolResults.push(result);
       }
 
