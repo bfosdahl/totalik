@@ -17,7 +17,8 @@ import {
   Scale,
   Shield,
   CalendarDays,
-  FileSignature
+  FileSignature,
+  ShieldCheck
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ import LoverOgForskrifterCalculator from "@/components/audits/LoverOgForskrifter
 import VernerundeForm from "@/components/audits/VernerundeForm";
 import HmsAarshjul from "@/components/audits/HmsAarshjul";
 import HmsEgenerklaeringSeksjon from "@/components/audits/HmsEgenerklaeringSeksjon";
+import ForsvarlighetsvurderingForm from "@/components/audits/ForsvarlighetsvurderingForm";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -191,6 +193,13 @@ const Audits = () => {
               >
                 <FileSignature className="w-4 h-4" />
                 <span>Egenerklæring</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="forsvarlig" 
+                className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Forsvarlighetsvurdering</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -442,6 +451,11 @@ const Audits = () => {
           {/* Egenerklæring Tab */}
           <TabsContent value="egenerklaring">
             <HmsEgenerklaeringSeksjon />
+          </TabsContent>
+
+          {/* Forsvarlighetsvurdering Tab */}
+          <TabsContent value="forsvarlig">
+            <ForsvarlighetsvurderingForm />
           </TabsContent>
         </Tabs>
       </div>

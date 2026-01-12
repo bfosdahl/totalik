@@ -2587,6 +2587,151 @@ export type Database = {
           },
         ]
       }
+      hms_forsvarlighetsvurderinger: {
+        Row: {
+          assessment_date: string
+          assessment_number: string
+          assessment_type: string
+          company_id: string
+          conclusion: string
+          conclusion_justification: string | null
+          created_at: string
+          created_by_id: string | null
+          created_by_name: string | null
+          department_id: string | null
+          description: string | null
+          employer_name: string
+          employer_signature: string | null
+          employer_signed_at: string | null
+          employer_title: string | null
+          fatigue_assessment: string | null
+          id: string
+          next_review_date: string | null
+          other_participants: string | null
+          proposed_training_hours: number | null
+          required_measures: Json | null
+          review_frequency: string | null
+          risk_factors: Json | null
+          risk_justification: string | null
+          risk_level: string | null
+          status: string
+          tillitsvalgt_name: string | null
+          tillitsvalgt_signature: string | null
+          tillitsvalgt_signed_at: string | null
+          title: string
+          training_justification: string | null
+          training_topics: Json | null
+          updated_at: string
+          verneombud_name: string | null
+          verneombud_signature: string | null
+          verneombud_signed_at: string | null
+          work_life_balance_assessment: string | null
+          work_schedule_description: string | null
+        }
+        Insert: {
+          assessment_date?: string
+          assessment_number: string
+          assessment_type: string
+          company_id: string
+          conclusion: string
+          conclusion_justification?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string | null
+          department_id?: string | null
+          description?: string | null
+          employer_name: string
+          employer_signature?: string | null
+          employer_signed_at?: string | null
+          employer_title?: string | null
+          fatigue_assessment?: string | null
+          id?: string
+          next_review_date?: string | null
+          other_participants?: string | null
+          proposed_training_hours?: number | null
+          required_measures?: Json | null
+          review_frequency?: string | null
+          risk_factors?: Json | null
+          risk_justification?: string | null
+          risk_level?: string | null
+          status?: string
+          tillitsvalgt_name?: string | null
+          tillitsvalgt_signature?: string | null
+          tillitsvalgt_signed_at?: string | null
+          title: string
+          training_justification?: string | null
+          training_topics?: Json | null
+          updated_at?: string
+          verneombud_name?: string | null
+          verneombud_signature?: string | null
+          verneombud_signed_at?: string | null
+          work_life_balance_assessment?: string | null
+          work_schedule_description?: string | null
+        }
+        Update: {
+          assessment_date?: string
+          assessment_number?: string
+          assessment_type?: string
+          company_id?: string
+          conclusion?: string
+          conclusion_justification?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string | null
+          department_id?: string | null
+          description?: string | null
+          employer_name?: string
+          employer_signature?: string | null
+          employer_signed_at?: string | null
+          employer_title?: string | null
+          fatigue_assessment?: string | null
+          id?: string
+          next_review_date?: string | null
+          other_participants?: string | null
+          proposed_training_hours?: number | null
+          required_measures?: Json | null
+          review_frequency?: string | null
+          risk_factors?: Json | null
+          risk_justification?: string | null
+          risk_level?: string | null
+          status?: string
+          tillitsvalgt_name?: string | null
+          tillitsvalgt_signature?: string | null
+          tillitsvalgt_signed_at?: string | null
+          title?: string
+          training_justification?: string | null
+          training_topics?: Json | null
+          updated_at?: string
+          verneombud_name?: string | null
+          verneombud_signature?: string | null
+          verneombud_signed_at?: string | null
+          work_life_balance_assessment?: string | null
+          work_schedule_description?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hms_forsvarlighetsvurderinger_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hms_forsvarlighetsvurderinger_created_by_id_fkey"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hms_forsvarlighetsvurderinger_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hms_self_declarations: {
         Row: {
           city: string | null
@@ -10144,6 +10289,7 @@ export type Database = {
         Args: { p_company_id: string }
         Returns: string
       }
+      generate_forsvarlighetsvurdering_number: { Args: never; Returns: string }
       generate_hms_sja_number: { Args: never; Returns: string }
       generate_inspection_number: {
         Args: { p_company_id: string }
