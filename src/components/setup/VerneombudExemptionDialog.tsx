@@ -26,7 +26,7 @@ interface VerneombudExemptionDialogProps {
   companyAddress?: string;
   orgNumber?: string;
   totalEmployees: number;
-  onComplete: () => void;
+  onComplete: (wasSkipped?: boolean) => void;
 }
 
 const SESSION_STORAGE_KEY = "verneombud_exemption_state";
@@ -225,7 +225,7 @@ export function VerneombudExemptionDialog({
 
   const handleClose = (clearState = false) => {
     if (step === "complete") {
-      onComplete();
+      onComplete(false); // Was not skipped - properly completed
       clearState = true;
     }
     onOpenChange(false);
@@ -508,7 +508,7 @@ export function VerneombudExemptionDialog({
                 onClick={() => {
                   // Skip signing (useful when setting up on behalf of a customer)
                   sessionStorage.removeItem(SESSION_STORAGE_KEY);
-                  onComplete();
+                  onComplete(true); // Pass wasSkipped=true
                   onOpenChange(false);
                 }}
               >
@@ -530,7 +530,7 @@ export function VerneombudExemptionDialog({
                 onClick={() => {
                   // Skip without signatures - just close and complete
                   sessionStorage.removeItem(SESSION_STORAGE_KEY);
-                  onComplete();
+                  onComplete(true); // Pass wasSkipped=true
                   onOpenChange(false);
                 }}
               >
