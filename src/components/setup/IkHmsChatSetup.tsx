@@ -155,6 +155,21 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
   // Forward declaration for lookupBrreg (used in auto-lookup effect)
   const lookupBrregRef = useRef<((orgNumber: string) => Promise<BrregInfo | null>) | null>(null);
 
+  // Persist chat state to sessionStorage whenever relevant state changes
+  useEffect(() => {
+    // Don't persist if we haven't started yet (only loading message)
+    if (messages.length === 0) return;
+    
+    saveChatState(companyId, departmentId, {
+      messages,
+      pendingBrregInfo,
+      awaitingIndustrySelection,
+      confirmedEmployeeCount,
+      awaitingEmployeeCount,
+      selectedIndustry,
+    });
+  }, [messages, pendingBrregInfo, awaitingIndustrySelection, confirmedEmployeeCount, awaitingEmployeeCount, selectedIndustry, companyId, departmentId]);
+
   // Initialize chat based on whether company has org_number (skip Brreg for departments)
   useEffect(() => {
     // Skip if loaded from session or already initialized
@@ -368,8 +383,10 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
 
   const handleExemptionComplete = () => {
     setShowExemptionDialog(false);
+    // Get industry from state or fall back to a generic description
+    const industryToUse = selectedIndustry || company?.name || 'den valgte bransjen';
     setMessages((prev) => [...prev, { role: "assistant", content: "Flott! Avtalen om fritak fra verneombud er nå signert og lagret. ✅\n\nLa oss fortsette med HMS-oppsettet..." }]);
-    continueWithAIChat(`Brukeren har valgt bransje: ${selectedIndustry}. Bedriften har færre enn 5 ansatte og har signert fritak fra verneombud. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`);
+    continueWithAIChat(`Brukeren har valgt bransje: ${industryToUse}. Bedriften har færre enn 5 ansatte og har signert fritak fra verneombud. Start nå med å samle informasjon for HMS-oppsettet tilpasset denne bransjen. Spør om mål for HMS-arbeidet.`);
   };
 
   const handleSend = async () => {
