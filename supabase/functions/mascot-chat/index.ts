@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const systemPrompt = `Du er HMS-hjelperen, en vennlig og hjelpsom maskot for et norsk internkontrollsystem (IK/HMS). 
+const systemPrompt = `Du er HMS Proffen, en vennlig og hjelpsom maskot for et norsk internkontrollsystem (IK/HMS). 
 Du snakker alltid på norsk og er ekspert på HMS-systemer.
 
 **DU KAN UTFØRE HANDLINGER I SYSTEMET!**
@@ -20,6 +20,69 @@ Eksempler på hva du kan gjøre:
 - "Registrer kurs for en ansatt" → Bruk add_employee_course verktøyet
 
 Når du bruker et verktøy, forklar kort hva du gjør og bekreft når det er utført.
+
+**DU KAN HJELPE MED NAVIGASJON!**
+Når brukeren spør hvor de finner noe, bruk get_navigation_help verktøyet for å gi presis veiledning.
+
+**SYSTEMETS NAVIGASJON OG SIDER:**
+
+📊 DASHBORD (/)
+- Hovedoversikt med statistikk, snarveier og varsler
+- Viser åpne avvik, kommende frister, kursutløp
+
+📋 HMS-MODULER:
+- Håndbok (/handbook) - HMS-håndboken, oversikt over hele HMS-systemet
+- Målsetting (/ik-hms/maal) - HMS-mål for bedriften
+- Risikoanalyse (/risikoanalyse) - Risikovurderinger, SJA, handlingsplan, rutiner
+- Organisering (/ik-hms/organisering) - Organisasjonskart, roller, ansvar
+- Rutiner (/ik-hms/rutiner) - HMS-rutiner og prosedyrer
+- Dokumentsenter (/ik-hms/dokumenter) - Opplastede dokumenter
+- Stoffkartotek (/ik-hms/stoffkartotek) - Kjemikalier og sikkerhetsdatablader
+- Lover og forskrifter (/lover-og-forskrifter) - Relevante lover
+
+👥 ANSATTE OG HR:
+- Ansatte (/employees) - Ansattoversikt, kurs, HMS-kort, dokumenter
+- Timeregistrering (/time-registration) - Timeføring for ansatte
+- Stemplingsur (/time-clock) - QR-kode stempling inn/ut
+- Fravær (/hr/absence) - Fraværsregistrering, sykefravær
+- Ferie og fri (/time-off) - Feriesøknader og godkjenning
+- Arbeidsplan (/work-schedule) - Vaktplaner og arbeidstid
+- Møter (/hr/meetings) - Møteplanlegging og referater
+
+⚠️ AVVIK OG REVISJONER:
+- Avvik (/deviations) - Kvalitetsavvik og RUH (Rapport Uønsket Hendelse)
+- Revisjoner (/audits) - HMS-aktiviteter, vernerunder, internrevisjoner, el-kontroll
+
+🔧 KS-MODUL (Kvalitetssystem for bygg/anlegg):
+- KS Dashboard (/ks2) - Prosjektoversikt
+- Prosjekter - Byggeprosjekter med sjekklister, underleverandører, SHA-plan
+- Sjekklister (/ks2/sjekklister) - KS-sjekklister for egenkontroll
+- Underleverandører (/ks2/underleverandorer) - UE-register og dokumentasjon
+- Avvik i prosjekt (/ks2/avvik) - Prosjektspesifikke avvik
+- Møtereferater (/ks2/motereferater) - Byggemøter
+- SHA-plan (/ks2/sha-plan) - Sikkerhet, helse og arbeidsmiljø
+- SJA (/ks2/sja) - Sikker jobb analyse
+- Økonomi (/ks2/okonomi) - Prosjektøkonomi, endringsmeldinger
+- Byggesak (/ks2/byggesak) - Byggesøknader og blanketter
+
+🍽️ IK-MAT (Næringsmiddelbedrifter):
+- Mat Dashboard - Oversikt for næringsmiddelbedrifter
+- HACCP (/ik-mat/haccp) - Farepunkter og kritiske kontrollpunkter
+- Sporbarhet (/ik-mat/sporbarhet) - Sporbarhet av råvarer
+- Renholdsplan (/ik-mat/renholdsplan) - Renholdsrutiner
+- Allergener (/ik-mat/allergener) - Allergenoversikt
+
+⚙️ INNSTILLINGER (/settings):
+- Bedriftsinformasjon - Logo, kontaktinfo
+- Brukeradministrasjon - Legge til/fjerne brukere
+- Avdelinger - Opprette avdelinger
+- Varsler - E-postvarsler for frister
+- Sikkerhet - Passord og 2FA
+
+📱 ANDRE FUNKSJONER:
+- Anonyme meldinger (/anonymous-messages) - Varsling uten avsender
+- Mitt kursbevis (/my-course-card) - Personlig kursoversikt
+- Installer app (/install-app) - PWA-installasjon
 
 **IK/HMS-systemet inkluderer:**
 - Målsetting: HMS-mål for bedriften
@@ -37,10 +100,27 @@ Når du bruker et verktøy, forklar kort hva du gjør og bekreft når det er utf
 - Gul (5-12): Tiltak bør vurderes
 - Rød (13-25): Kritisk - tiltak påkrevet
 
-Svar kort og konsist. Vær vennlig og bruk gjerne emojis.`;
+Svar kort og konsist. Vær vennlig og bruk gjerne emojis. Når du gir navigasjonshjelp, vær presis om hvor brukeren skal gå.`;
 
 // Define tools for the AI to use
 const tools = [
+  {
+    type: "function",
+    function: {
+      name: "get_navigation_help",
+      description: "Gir brukeren veiledning om hvor de finner en bestemt funksjon eller side i systemet",
+      parameters: {
+        type: "object",
+        properties: {
+          search_term: {
+            type: "string",
+            description: "Hva brukeren leter etter (f.eks. 'risikovurdering', 'legge til ansatt', 'HMS-kort')"
+          }
+        },
+        required: ["search_term"]
+      }
+    }
+  },
   {
     type: "function",
     function: {
@@ -270,6 +350,68 @@ async function executeToolCall(
   
   try {
     switch (toolName) {
+      case "get_navigation_help": {
+        const searchTerm = args.search_term.toLowerCase();
+        
+        // Navigation map with keywords
+        const navigationMap = [
+          { keywords: ["dashbord", "hjem", "oversikt", "start", "forside"], path: "/", name: "Dashbord", description: "Hovedoversikten med statistikk, snarveier og varsler" },
+          { keywords: ["håndbok", "handbok", "hms-håndbok", "hms handbok"], path: "/handbook", name: "HMS-håndboken", description: "Oversikt over hele HMS-systemet ditt" },
+          { keywords: ["mål", "målsetting", "hms-mål", "hms mål"], path: "/ik-hms/maal", name: "Målsetting", description: "HMS-mål for bedriften" },
+          { keywords: ["risiko", "risikovurdering", "risikoanalyse", "farekilder", "sja", "handlingsplan"], path: "/risikoanalyse", name: "Risikoanalyse", description: "Risikovurderinger, SJA, handlingsplan og rutiner" },
+          { keywords: ["organisering", "organisasjon", "organisasjonskart", "roller", "ansvar", "verneombud"], path: "/ik-hms/organisering", name: "Organisering", description: "Organisasjonskart, roller og ansvar" },
+          { keywords: ["rutine", "rutiner", "prosedyre", "prosedyrer"], path: "/ik-hms/rutiner", name: "Rutiner", description: "HMS-rutiner og prosedyrer" },
+          { keywords: ["dokument", "dokumenter", "dokumentsenter", "filer", "opplasting"], path: "/ik-hms/dokumenter", name: "Dokumentsenter", description: "Opplastede dokumenter og maler" },
+          { keywords: ["stoff", "stoffkartotek", "kjemikalie", "kjemikalier", "sikkerhetsdatablad", "sds"], path: "/ik-hms/stoffkartotek", name: "Stoffkartotek", description: "Kjemikalier og sikkerhetsdatablader" },
+          { keywords: ["lov", "lover", "forskrift", "forskrifter", "regelverk"], path: "/lover-og-forskrifter", name: "Lover og forskrifter", description: "Relevante lover og forskrifter for din bedrift" },
+          { keywords: ["ansatt", "ansatte", "medarbeider", "personale", "kurs", "hms-kort", "sertifikat"], path: "/employees", name: "Ansatte", description: "Ansattoversikt med kurs, HMS-kort og dokumenter" },
+          { keywords: ["time", "timer", "timeregistrering", "timeføring", "timeliste"], path: "/time-registration", name: "Timeregistrering", description: "Timeføring for ansatte" },
+          { keywords: ["stempl", "stemplingsur", "qr", "inn/ut", "innsjekk"], path: "/time-clock", name: "Stemplingsur", description: "QR-kode stempling inn/ut" },
+          { keywords: ["fravær", "sykefravær", "sykdom", "sykemelding"], path: "/hr/absence", name: "Fravær", description: "Fraværsregistrering og sykefravær" },
+          { keywords: ["ferie", "fri", "permisjon", "feriesøknad"], path: "/time-off", name: "Ferie og fri", description: "Feriesøknader og godkjenning" },
+          { keywords: ["arbeidsplan", "vaktplan", "turnus", "arbeidstid"], path: "/work-schedule", name: "Arbeidsplan", description: "Vaktplaner og arbeidstid" },
+          { keywords: ["møte", "møter", "møtereferat"], path: "/hr/meetings", name: "Møter", description: "Møteplanlegging og referater" },
+          { keywords: ["avvik", "ruh", "uønsket hendelse", "kvalitetsavvik", "melding"], path: "/deviations", name: "Avvik", description: "Kvalitetsavvik og RUH (Rapport Uønsket Hendelse)" },
+          { keywords: ["revisjon", "internrevisjon", "vernerunde", "hms-aktivitet", "el-kontroll", "elektro"], path: "/audits", name: "Revisjoner", description: "HMS-aktiviteter, vernerunder, internrevisjoner" },
+          { keywords: ["ks", "kvalitetssystem", "bygg", "prosjekt", "byggeprosjekt"], path: "/ks2", name: "KS-modul", description: "Kvalitetssystem for bygg og anlegg" },
+          { keywords: ["sjekkliste", "egenkontroll", "kontrollpunkt"], path: "/ks2/sjekklister", name: "Sjekklister", description: "KS-sjekklister for egenkontroll" },
+          { keywords: ["underleverandør", "ue", "underentreprenør"], path: "/ks2/underleverandorer", name: "Underleverandører", description: "UE-register og dokumentasjon" },
+          { keywords: ["sha", "sha-plan", "sikkerhet helse arbeidsmiljø"], path: "/ks2/sha-plan", name: "SHA-plan", description: "Sikkerhet, helse og arbeidsmiljø på byggeplass" },
+          { keywords: ["økonomi", "budsjett", "faktura", "endringsmelding"], path: "/ks2/okonomi", name: "Økonomi", description: "Prosjektøkonomi og endringsmeldinger" },
+          { keywords: ["byggesak", "byggesøknad", "blankett", "skjema"], path: "/ks2/byggesak", name: "Byggesak", description: "Byggesøknader og blanketter" },
+          { keywords: ["mat", "ik-mat", "næringsmiddel", "restaurant", "kjøkken"], path: "/ik-mat/dashboard", name: "IK-Mat", description: "Internkontroll for næringsmiddelbedrifter" },
+          { keywords: ["haccp", "farepunkt", "kritisk kontrollpunkt"], path: "/ik-mat/haccp", name: "HACCP", description: "Farepunkter og kritiske kontrollpunkter" },
+          { keywords: ["sporbarhet", "råvare", "ingrediens"], path: "/ik-mat/sporbarhet", name: "Sporbarhet", description: "Sporbarhet av råvarer" },
+          { keywords: ["renhold", "renholdsplan", "hygiene"], path: "/ik-mat/renholdsplan", name: "Renholdsplan", description: "Renholdsrutiner" },
+          { keywords: ["allergen", "allergener", "allergi"], path: "/ik-mat/allergener", name: "Allergener", description: "Allergenoversikt" },
+          { keywords: ["innstilling", "innstillinger", "oppsett", "konfigurasjon", "bedriftsinfo"], path: "/settings", name: "Innstillinger", description: "Bedriftsinformasjon, brukere, varsler" },
+          { keywords: ["bruker", "brukere", "brukeradministrasjon", "tilgang", "rettigheter"], path: "/settings?tab=users", name: "Brukeradministrasjon", description: "Legge til og fjerne brukere" },
+          { keywords: ["avdeling", "avdelinger", "filial"], path: "/settings?tab=departments", name: "Avdelinger", description: "Opprette og administrere avdelinger" },
+          { keywords: ["varsel", "varsler", "e-post", "påminnelse", "notifikasjon"], path: "/settings?tab=notifications", name: "Varsler", description: "E-postvarsler for frister og påminnelser" },
+          { keywords: ["anonym", "varsling", "si fra", "melde fra"], path: "/anonymous-messages", name: "Anonyme meldinger", description: "Varsling uten avsender" },
+          { keywords: ["kursbevis", "mitt kurs", "mine kurs"], path: "/my-course-card", name: "Mitt kursbevis", description: "Din personlige kursoversikt" },
+          { keywords: ["installer", "app", "pwa", "mobil"], path: "/install-app", name: "Installer app", description: "Installer appen på telefonen" },
+        ];
+
+        // Find matching pages
+        const matches = navigationMap.filter(page => 
+          page.keywords.some(keyword => searchTerm.includes(keyword) || keyword.includes(searchTerm))
+        );
+
+        if (matches.length === 0) {
+          return `🔍 Jeg fant ikke noe som matcher "${args.search_term}". Prøv å beskrive hva du vil gjøre, så hjelper jeg deg å finne riktig sted!`;
+        }
+
+        if (matches.length === 1) {
+          const match = matches[0];
+          return `📍 **${match.name}**\n\nDu finner dette under: **${match.path}**\n\n${match.description}\n\nKlikk på "${match.name}" i menyen til venstre for å komme dit!`;
+        }
+
+        // Multiple matches
+        const list = matches.slice(0, 4).map(m => `• **${m.name}** (${m.path}) - ${m.description}`).join("\n");
+        return `🔍 Jeg fant flere relevante steder:\n\n${list}\n\nHvilken av disse leter du etter?`;
+      }
+
       case "add_risk_with_action": {
         // First get existing risks
         const { data: existingData } = await supabase
