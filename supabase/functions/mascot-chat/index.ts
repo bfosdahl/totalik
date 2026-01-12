@@ -460,7 +460,7 @@ async function executeToolCall(
             action_description: args.action_description,
             risk_description: args.risk_description,
             followup_date: followupDate.toISOString().split('T')[0],
-            followup_type: "tiltak",
+            followup_type: "verification",
             status: "pending",
             reminder_enabled: true,
             reminder_days_before: 7
