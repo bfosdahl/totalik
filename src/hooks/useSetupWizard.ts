@@ -454,17 +454,36 @@ export function useSetupWizard() {
     }
   }, [companyId, toast]);
 
-  // Save risk assessment
+  // Save risk assessment - converts flat format to nested format for RisikovurderingOgHandlingsplan
   const saveRiskAssessment = useCallback(async (data: RiskAssessmentData) => {
     if (!companyId) return;
 
     setIsSaving(true);
     try {
+      // Convert flat RiskItem format to nested format with hazard_source and events
+      const nestedRisks = data.risks.map((risk) => ({
+        id: risk.id,
+        hazard_source: 'annet',
+        hazard_source_custom: risk.description,
+        events: [{
+          id: crypto.randomUUID(),
+          description: risk.description,
+          consequence: risk.consequence,
+          probability: risk.probability,
+          measures: [risk.existing_measures, risk.planned_measures].filter(Boolean).join('. '),
+          responsible: '',
+          deadline: '',
+          status: 'planlagt' as const,
+        }],
+        created_at: new Date().toISOString(),
+        created_by: 'Manuelt oppsett',
+      }));
+
       const { error } = await supabase
         .from("company_risk_assessments")
         .upsert({
           company_id: companyId,
-          risks: JSON.parse(JSON.stringify(data.risks)),
+          risks: JSON.parse(JSON.stringify(nestedRisks)),
         }, { onConflict: "company_id" });
 
       if (error) throw error;

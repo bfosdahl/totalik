@@ -781,12 +781,40 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
           is_ai_generated: true,
         })) || [];
 
-        // Transform risks to ensure they have AI marker
-        const transformedRisks = data.risks?.map((risk: Record<string, unknown>, index: number) => ({
-          ...risk,
-          id: risk.id || `ai-risk-${index + 1}`,
-          is_ai_generated: true,
-        })) || [];
+        // Transform risks to nested format compatible with RisikovurderingOgHandlingsplan
+        // Format: { id, hazard_source, hazard_source_custom, events: [{ id, description, consequence, probability, measures, ... }], ... }
+        const transformedRisks = data.risks?.map((risk: Record<string, unknown>, index: number) => {
+          const riskId = (risk.id as string) || `ai-risk-${index + 1}`;
+          const description = (risk.description as string) || '';
+          const consequence = typeof risk.consequence === 'number' && risk.consequence >= 1 && risk.consequence <= 5 
+            ? risk.consequence 
+            : 3;
+          const probability = typeof risk.probability === 'number' && risk.probability >= 1 && risk.probability <= 5 
+            ? risk.probability 
+            : 3;
+          const existingMeasures = (risk.existing_measures as string) || (risk.existingMeasures as string) || '';
+          const plannedMeasures = (risk.planned_measures as string) || (risk.suggestedMeasures as string) || '';
+          const measures = [existingMeasures, plannedMeasures].filter(Boolean).join('. ');
+          
+          return {
+            id: riskId,
+            hazard_source: 'annet',
+            hazard_source_custom: description,
+            events: [{
+              id: crypto.randomUUID(),
+              description: description,
+              consequence: consequence,
+              probability: probability,
+              measures: measures,
+              responsible: '',
+              deadline: '',
+              status: 'planlagt' as const,
+            }],
+            created_at: new Date().toISOString(),
+            created_by: 'Oppsett-hjelperen',
+            is_ai_generated: true,
+          };
+        }) || [];
 
         // Transform actions to ensure they have AI marker
         const transformedActions = data.actions?.map((action: Record<string, unknown>, index: number) => ({

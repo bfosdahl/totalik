@@ -62,6 +62,7 @@ export async function applyDefaultHmsSetup(companyId: string): Promise<{ success
     }
 
     // 3. Insert default risks (unique constraint on company_id)
+    // Convert flat format to nested format compatible with RisikovurderingOgHandlingsplan
     const { data: existingRisks } = await supabase
       .from("company_risk_assessments")
       .select("id")
@@ -69,11 +70,31 @@ export async function applyDefaultHmsSetup(companyId: string): Promise<{ success
       .limit(1);
 
     if (!existingRisks || existingRisks.length === 0) {
+      // Transform flat risks to nested format with hazard_source and events
+      const nestedRisks = defaultRisks.map((risk) => ({
+        id: risk.id,
+        hazard_source: 'annet',
+        hazard_source_custom: risk.description,
+        events: [{
+          id: crypto.randomUUID(),
+          description: risk.description,
+          consequence: risk.consequence,
+          probability: risk.probability,
+          measures: [risk.existing_measures, risk.planned_measures].filter(Boolean).join('. '),
+          responsible: '',
+          deadline: '',
+          status: 'planlagt' as const,
+        }],
+        created_at: new Date().toISOString(),
+        created_by: 'Standard oppsett',
+        is_predefined: true,
+      }));
+
       const { error: risksError } = await supabase
         .from("company_risk_assessments")
         .insert({
           company_id: companyId,
-          risks: JSON.parse(JSON.stringify(defaultRisks)),
+          risks: JSON.parse(JSON.stringify(nestedRisks)),
         });
 
       if (risksError) {
