@@ -25,7 +25,7 @@ import { nb } from "date-fns/locale";
 
 export default function HmsEgenerklaeringSeksjon() {
   const { profile, company } = useAuth();
-  const { selfDeclaration, verneombudExemption, isLoading, hasSelfDeclaration, hasVerneombudExemption } = useHmsDeclarations();
+  const { selfDeclaration, verneombudExemption, isLoading, hasSelfDeclaration, hasVerneombudExemption, refetch } = useHmsDeclarations();
   
   const [showSelfDeclarationDialog, setShowSelfDeclarationDialog] = useState(false);
   const [showVerneombudDialog, setShowVerneombudDialog] = useState(false);
@@ -270,8 +270,7 @@ export default function HmsEgenerklaeringSeksjon() {
           city={company.city || undefined}
           onComplete={() => {
             setShowSelfDeclarationDialog(false);
-            // Refresh data - the hook will auto-refetch
-            window.location.reload();
+            refetch(); // Use React Query refetch instead of page reload
           }}
         />
       )}
@@ -286,7 +285,7 @@ export default function HmsEgenerklaeringSeksjon() {
           totalEmployees={0} // Will be entered in dialog
           onComplete={() => {
             setShowVerneombudDialog(false);
-            window.location.reload();
+            refetch(); // Use React Query refetch instead of page reload
           }}
         />
       )}
