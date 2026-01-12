@@ -150,6 +150,31 @@ const Setup = () => {
     completeStep
   } = useSetupWizard();
 
+  const getUiStateKey = (cid?: string | null) => (cid ? `setup_wizard_ui_state:${cid}` : null);
+
+  const loadUiState = (cid?: string | null): { currentStep?: number; showSetupChoice?: boolean } | null => {
+    const key = getUiStateKey(cid);
+    if (!key) return null;
+    try {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  };
+
+  const saveUiState = (cid: string | null | undefined, next: { currentStep?: number; showSetupChoice?: boolean }) => {
+    const key = getUiStateKey(cid);
+    if (!key) return;
+    try {
+      const prev = loadUiState(cid) || {};
+      sessionStorage.setItem(key, JSON.stringify({ ...prev, ...next }));
+    } catch {
+      // ignore
+    }
+  };
+
   const [currentStep, setCurrentStep] = useState(0);
   const [hasInitializedStep, setHasInitializedStep] = useState(false);
   const [showSetupChoice, setShowSetupChoice] = useState(true);
@@ -175,6 +200,11 @@ const Setup = () => {
   // Sync current step with URL param or saved progress on initial load
   useEffect(() => {
     if (!isLoading && !hasInitializedStep) {
+      const uiState = loadUiState(companyId) || {};
+      if (uiState.showSetupChoice === false) {
+        setShowSetupChoice(false);
+      }
+
       const stepParam = searchParams.get("step");
       if (stepParam !== null) {
         const stepIndex = parseInt(stepParam, 10);
@@ -183,12 +213,16 @@ const Setup = () => {
         } else {
           setCurrentStep(progress.current_step);
         }
+      } else if (typeof uiState.currentStep === "number" && uiState.currentStep >= 0 && uiState.currentStep < steps.length) {
+        // If the tab/app was suspended and reloaded, continue where the user left off
+        setCurrentStep(uiState.currentStep);
       } else {
         setCurrentStep(progress.current_step);
       }
+
       setHasInitializedStep(true);
     }
-  }, [progress.current_step, isLoading, hasInitializedStep, searchParams]);
+  }, [progress.current_step, isLoading, hasInitializedStep, searchParams, companyId]);
 
   // Get the current step's ref based on step id
   const getCurrentStepRef = () => {
@@ -222,12 +256,15 @@ const Setup = () => {
 
       const newStep = currentStep + 1;
       setCurrentStep(newStep);
+      saveUiState(companyId, { currentStep: newStep, showSetupChoice: false });
       await saveProgress({ current_step: newStep });
       await completeStep(steps[currentStep].id);
     } else {
       // Last step - mark as completed and navigate to dashboard or handbook
       await completeStep(steps[currentStep].id);
       await saveProgress({ is_completed: true });
+      // Clear UI state when completed
+      saveUiState(companyId, { currentStep: 0, showSetupChoice: true });
       navigate("/handbook");
     }
   };
@@ -236,12 +273,14 @@ const Setup = () => {
     if (currentStep > 0) {
       const newStep = currentStep - 1;
       setCurrentStep(newStep);
+      saveUiState(companyId, { currentStep: newStep, showSetupChoice: false });
       await saveProgress({ current_step: newStep });
     }
   };
 
   const handleStepClick = async (index: number) => {
     setCurrentStep(index);
+    saveUiState(companyId, { currentStep: index, showSetupChoice: false });
     await saveProgress({ current_step: index });
   };
 
@@ -535,7 +574,10 @@ const Setup = () => {
             {/* Manual Setup Card */}
             <Card 
               className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50 group"
-              onClick={() => setShowSetupChoice(false)}
+              onClick={() => {
+                setShowSetupChoice(false);
+                saveUiState(companyId, { showSetupChoice: false, currentStep });
+              }}
             >
               <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-muted mx-auto group-hover:scale-110 transition-transform">
