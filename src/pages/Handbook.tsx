@@ -27,7 +27,9 @@ import {
   Paperclip,
   Mail,
   Scale,
-  ExternalLink
+  ExternalLink,
+  PenTool,
+  UserCheck
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -46,6 +48,7 @@ import { useAudits } from "@/hooks/useAudits";
 import { useAuditFormResponses, formTypeLabels, type FormType } from "@/hooks/useAuditFormResponses";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useCompanyLawsRegulations } from "@/hooks/useCompanyLawsRegulations";
+import { useHmsDeclarations } from "@/hooks/useHmsDeclarations";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
@@ -111,6 +114,7 @@ const Handbook = () => {
   const { completedForms, isLoading: isLoadingForms, getLatestByFormType } = useAuditFormResponses();
   const { users: companyUsers } = useCompanyUsers();
   const { savedLaws } = useCompanyLawsRegulations();
+  const { selfDeclaration, verneombudExemption, hasSelfDeclaration, hasVerneombudExemption } = useHmsDeclarations();
   
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [includeDeviations, setIncludeDeviations] = useState(false);
@@ -192,14 +196,18 @@ const Handbook = () => {
   // Laws are now fetched from database via useCompanyLawsRegulations hook
 
 
+  // Base section number offset - 1 for Egenerklæring, +1 if verneombud exemption exists
+  const sectionOffset = hasVerneombudExemption ? 2 : 1;
+
   // Generate sections for completed audit forms - these are ongoing activities
+  // These come after: Egenerklæring(1), [Verneombud(2)], Mål, Org, Risk, Actions, Routines, Laws, Deviations, Audits = offset+9
   const auditFormSections = (["annual_hms", "elkontroll", "fysiske_forhold", "daglig_drift"] as FormType[])
     .map((formType, index) => {
       const latestForm = getLatestByFormType(formType);
       const Icon = formTypeIcons[formType];
       return {
         id: `audit_form_${formType}`,
-        title: `${9 + index}. ${formTypeLabels[formType]}`,
+        title: `${sectionOffset + 9 + index}. ${formTypeLabels[formType]}`,
         status: "ongoing" as const, // Always ongoing - these are periodic activities
         stepIndex: -1,
         icon: Icon,
@@ -221,11 +229,91 @@ const Handbook = () => {
       };
     });
 
+  
   // Calculate section status based on actual data
   const handbookSections = [
+    // 1. Egenerklæring om HMS
+    {
+      id: "self-declaration",
+      title: "1. Egenerklæring om HMS",
+      status: hasSelfDeclaration ? "complete" as const : "incomplete" as const,
+      stepIndex: -1,
+      icon: PenTool,
+      content: hasSelfDeclaration && selfDeclaration ? (
+        <div className="space-y-3 text-sm text-muted-foreground">
+          <p className="font-medium text-foreground">
+            Virksomheten bekrefter at det arbeides systematisk med HMS i henhold til Internkontrollforskriften.
+          </p>
+          <div className="grid grid-cols-2 gap-4 pt-2">
+            <div className="space-y-1">
+              <p className="font-medium text-xs text-muted-foreground">Daglig leder</p>
+              <p className="text-foreground">{selfDeclaration.manager_name}</p>
+              {selfDeclaration.manager_signed_at && (
+                <p className="text-xs">Signert: {format(new Date(selfDeclaration.manager_signed_at), "d. MMM yyyy", { locale: nb })}</p>
+              )}
+            </div>
+            <div className="space-y-1">
+              <p className="font-medium text-xs text-muted-foreground">Representant for ansatte</p>
+              <p className="text-foreground">{selfDeclaration.employee_rep_name}</p>
+              {selfDeclaration.employee_rep_signed_at && (
+                <p className="text-xs">Signert: {format(new Date(selfDeclaration.employee_rep_signed_at), "d. MMM yyyy", { locale: nb })}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          Egenerklæring om HMS er ikke signert. Gå til Oppsett for å signere.
+        </p>
+      ),
+      summary: hasSelfDeclaration ? "Signert og gyldig" : "Ikke signert",
+      linkTo: "/setup",
+    },
+    // 2. Avtale om fritak fra verneombud (bare hvis signert)
+    ...(hasVerneombudExemption && verneombudExemption ? [{
+      id: "verneombud-exemption",
+      title: "2. Avtale om fritak fra verneombud",
+      status: "complete" as const,
+      stepIndex: -1,
+      icon: UserCheck,
+      content: (
+        <div className="space-y-3 text-sm text-muted-foreground">
+          <p className="font-medium text-foreground">
+            Avtale om fritak fra kravet om verneombud iht. arbeidsmiljøloven § 6-1.
+          </p>
+          <div className="space-y-2 pt-2">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs">
+                {verneombudExemption.total_employees || 0} ansatte
+              </Badge>
+              {verneombudExemption.agreement_date && (
+                <span className="text-xs">
+                  Inngått: {format(new Date(verneombudExemption.agreement_date), "d. MMM yyyy", { locale: nb })}
+                </span>
+              )}
+            </div>
+            <div className="space-y-1">
+              <p className="font-medium text-xs text-muted-foreground">Arbeidsgiver</p>
+              <p className="text-foreground">{verneombudExemption.employer_name}</p>
+            </div>
+            {verneombudExemption.employee_signatures && verneombudExemption.employee_signatures.length > 0 && (
+              <div className="space-y-1">
+                <p className="font-medium text-xs text-muted-foreground">Ansatte som har signert</p>
+                <p className="text-foreground">
+                  {verneombudExemption.employee_signatures.map(e => e.name).join(", ")}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      ),
+      summary: `Signert av ${verneombudExemption.employee_signatures?.length || 0} ansatte`,
+      linkTo: "/setup",
+    }] : []),
+    // Goals
     {
       id: "goals",
-      title: "1. Mål for internkontroll",
+      title: `${sectionOffset + 1}. Mål for internkontroll`,
       status: goals.length > 0 ? "complete" : "incomplete",
       stepIndex: 0,
       icon: Target,
@@ -240,9 +328,10 @@ const Handbook = () => {
       ),
       summary: `${goals.length} mål definert`,
     },
+    // Organization
     {
       id: "organization",
-      title: "2. Organisering og ansvar",
+      title: `${sectionOffset + 2}. Organisering og ansvar`,
       status: ((organization?.roles?.length ?? 0) > 0 || (organization?.description && organization.description.trim().length > 0)) ? "complete" : "incomplete",
       stepIndex: 1,
       icon: Users,
@@ -273,9 +362,10 @@ const Handbook = () => {
           ? "Organisering definert"
           : "Ikke definert",
     },
+    // Risk assessment
     {
       id: "risk",
-      title: "3. Risikovurderinger",
+      title: `${sectionOffset + 3}. Risikovurderinger`,
       status: (riskAssessment?.risks?.length ?? 0) > 0 ? "complete" : "incomplete",
       stepIndex: 2,
       icon: Shield,
@@ -303,9 +393,10 @@ const Handbook = () => {
       ),
       summary: `${riskAssessment?.risks?.length ?? 0} risikoer identifisert`,
     },
+    // Action plan
     {
       id: "actions",
-      title: "4. Handlingsplan",
+      title: `${sectionOffset + 4}. Handlingsplan`,
       status: (actionPlan?.actions?.length ?? 0) > 0 ? "complete" : "incomplete",
       stepIndex: 3,
       icon: ClipboardList,
@@ -333,9 +424,10 @@ const Handbook = () => {
       ),
       summary: `${actionPlan?.actions?.length ?? 0} tiltak`,
     },
+    // Routines
     {
       id: "routines",
-      title: "5. Rutiner og prosedyrer",
+      title: `${sectionOffset + 5}. Rutiner og prosedyrer`,
       status: (routines?.routines?.length ?? 0) > 0 ? "complete" : "incomplete",
       stepIndex: 4,
       icon: FileCheck,
@@ -343,7 +435,7 @@ const Handbook = () => {
         <div className="space-y-2">
           {routines?.routines.slice(0, 8).map((routine, index) => (
             <div key={routine.id} className="flex items-center gap-2 text-sm">
-              <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded">5.{index + 1}</span>
+              <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded">{sectionOffset + 5}.{index + 1}</span>
               <span className="font-mono text-xs text-muted-foreground">{routine.routine_number}</span>
               <span className="text-muted-foreground truncate">{routine.routine_name}</span>
             </div>
@@ -357,9 +449,10 @@ const Handbook = () => {
       ),
       summary: `${routines?.routines?.length ?? 0} rutiner`,
     },
+    // Laws
     {
       id: "laws",
-      title: "6. Lover og forskrifter",
+      title: `${sectionOffset + 6}. Lover og forskrifter`,
       status: savedLaws.length > 0 ? "complete" as const : "incomplete" as const,
       stepIndex: -1,
       icon: Scale,
@@ -401,9 +494,10 @@ const Handbook = () => {
       summary: savedLaws.length > 0 ? `${savedLaws.length} lover og forskrifter` : "Ingen lagret",
       linkTo: "/lover-og-forskrifter",
     },
+    // Deviations
     {
       id: "deviations",
-      title: "7. Avviksbehandling",
+      title: `${sectionOffset + 7}. Avviksbehandling`,
       status: "ongoing" as const, // Deviations are ongoing - new ones are added over time
       stepIndex: -1,
       icon: AlertCircle,
@@ -479,9 +573,10 @@ const Handbook = () => {
       summary: `${deviations.length} avvik totalt`,
       linkTo: "/deviations",
     },
+    // Audits
     {
       id: "audits",
-      title: "8. Revisjoner og evaluering",
+      title: `${sectionOffset + 8}. Revisjoner og evaluering`,
       status: "ongoing" as const, // Audits are ongoing - new ones are scheduled over time
       stepIndex: -1,
       icon: Search,
