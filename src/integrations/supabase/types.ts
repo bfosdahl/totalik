@@ -10142,6 +10142,83 @@ export type Database = {
         }
         Relationships: []
       }
+      verneombud_agreements: {
+        Row: {
+          company_id: string
+          created_at: string
+          election_date: string | null
+          election_method: string | null
+          employer_name: string | null
+          employer_signature: string | null
+          employer_signed_at: string | null
+          id: string
+          notes: string | null
+          status: string | null
+          term_end: string | null
+          term_start: string | null
+          training_completed: boolean | null
+          training_date: string | null
+          updated_at: string
+          verneombud_email: string | null
+          verneombud_name: string
+          verneombud_phone: string | null
+          verneombud_signature: string | null
+          verneombud_signed_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          election_date?: string | null
+          election_method?: string | null
+          employer_name?: string | null
+          employer_signature?: string | null
+          employer_signed_at?: string | null
+          id?: string
+          notes?: string | null
+          status?: string | null
+          term_end?: string | null
+          term_start?: string | null
+          training_completed?: boolean | null
+          training_date?: string | null
+          updated_at?: string
+          verneombud_email?: string | null
+          verneombud_name: string
+          verneombud_phone?: string | null
+          verneombud_signature?: string | null
+          verneombud_signed_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          election_date?: string | null
+          election_method?: string | null
+          employer_name?: string | null
+          employer_signature?: string | null
+          employer_signed_at?: string | null
+          id?: string
+          notes?: string | null
+          status?: string | null
+          term_end?: string | null
+          term_start?: string | null
+          training_completed?: boolean | null
+          training_date?: string | null
+          updated_at?: string
+          verneombud_email?: string | null
+          verneombud_name?: string
+          verneombud_phone?: string | null
+          verneombud_signature?: string | null
+          verneombud_signed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verneombud_agreements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       verneombud_exemption_agreements: {
         Row: {
           agreement_date: string
