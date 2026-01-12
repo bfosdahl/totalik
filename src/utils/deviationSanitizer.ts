@@ -146,12 +146,25 @@ export const safeStatus = (value: unknown): Status => {
 
 /**
  * Extracts time from various input formats and returns HH:MM:SS format
+ * Returns null if input is a date-only string (YYYY-MM-DD) without time component
  */
 export const safeTimeFormat = (value: unknown): string | null => {
   if (value === null || value === undefined || value === '') return null;
   
+  // Handle Date object
+  if (value instanceof Date) {
+    // If it's a Date object, we don't have a specific time - return null
+    // (Dates from calendar pickers typically represent just a date, not a specific time)
+    return null;
+  }
+  
   const strValue = safeString(value);
   if (!strValue) return null;
+  
+  // Check if it's a date-only format (YYYY-MM-DD) - return null as we can't extract time
+  if (/^\d{4}-\d{2}-\d{2}$/.test(strValue)) {
+    return null;
+  }
   
   // Handle datetime-local format (YYYY-MM-DDTHH:MM)
   if (strValue.includes('T')) {
