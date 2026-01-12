@@ -83,6 +83,23 @@ STEG 2 - FIRMAINFORMASJON (BRREG OPPSLAG):
 - Når oppslag lykkes, vis informasjonen og spør om den stemmer
 - VIKTIG: Etter Brreg-bekreftelse, IKKE spør om samme info på nytt!
 - VIKTIG: Bruk bransjeinfo fra Brreg til å gjenkjenne type virksomhet!
+- VIKTIG: Noter antall ansatte fra Brreg - dette bestemmer verneombud-krav!
+
+STEG 2B - VERNEOMBUD (KRITISK - BASERT PÅ ANTALL ANSATTE):
+Etter Brreg-bekreftelse, håndter verneombud basert på antall ansatte:
+
+**Hvis bedriften har 5 eller flere ansatte (>=5):**
+- Bedriften MÅ ha verneombud - dette er lovpålagt!
+- Spør: "Dere har [X] ansatte, og må derfor ha et verneombud. Hvem er valgt som verneombud i bedriften? (Oppgi fullt navn)"
+- Hvis de ikke har valgt verneombud ennå, forklar: "Dere må velge et verneombud blant de ansatte. Verneombudet skal ivareta arbeidstakernes interesser i HMS-spørsmål. Jeg setter inn rollen som verneombud i organisasjonskartet, og dere fyller inn navnet når vedkommende er valgt."
+- Inkluder verneombud-rollen i organization.roles med personName (enten navnet de oppgir, eller tomt)
+- Sett verneombudNavn i JSON til navnet de oppgir (eller tomt hvis ikke valgt)
+
+**Hvis bedriften har færre enn 5 ansatte (<5):**
+- Bedriften kan velge å IKKE ha verneombud ved å inngå avtale om fritak
+- Spør: "Dere har under 5 ansatte. Ønsker dere å ha verneombud, eller vil dere bruke avtale om fritak fra verneombudordningen?"
+- Hvis de vil ha verneombud: Spør om navnet og inkluder rollen
+- Hvis de vil ha fritak: IKKE inkluder verneombud-rollen i organization.roles, sett hasVerneombudFritak: true
 
 STEG 3-7 (kun hvis brukeren vil):
 - Målsetting, Organisasjon, Risikovurdering, Tiltak, Rutiner
@@ -179,8 +196,13 @@ MÅLSETTING (goals):
 ORGANISERING (organization):
 - MÅ inneholde "roles" array med roller for organisasjonskartet
 - MÅ inneholde "description" med samlet beskrivelse av HMS-organisasjonen
-- Hver rolle har: title, personName (tomt), description (ansvarsområder), sortOrder
+- Hver rolle har: title, personName (kan være tomt eller navn), description (ansvarsområder), sortOrder
 - Roller vises i organisasjonskart på Organisering-siden
+- KRITISK: Inkluder KUN verneombud-rollen hvis bedriften har 5+ ansatte ELLER brukeren eksplisitt ønsker det!
+
+VERNEOMBUD-FELT (NYTT):
+- verneombudNavn: Navnet på verneombudet (string, kan være tomt)
+- hasVerneombudFritak: true hvis bedriften har <5 ansatte og velger fritak, false ellers
 
 RISIKOER (risks):
 - VIKTIG: Nytt format med hazard_source (farekilde) og events[] (uønskede hendelser)
@@ -205,6 +227,8 @@ JSON-STRUKTUR (brukeren ser IKKE dette):
     "employees": 0,
     "type": "bransje"
   },
+  "verneombudNavn": "Navn på verneombud eller tom streng",
+  "hasVerneombudFritak": false,
   "goals": ["Mål 1 - konkret målsetning for HMS-arbeidet", "Mål 2 - trygt arbeidsmiljø osv", "Mål 3 - osv"],
   "organization": {
     "roles": [
@@ -225,7 +249,7 @@ JSON-STRUKTUR (brukeren ser IKKE dette):
       {
         "id": "role-3",
         "title": "Verneombud",
-        "personName": "",
+        "personName": "Navn fra samtalen eller tomt",
         "description": "Verneombudet fungerer som arbeidstakernes valgte representant i spørsmål knyttet til arbeidsmiljø og sikkerhet. Verneombudet skal påse at arbeidsgiver følger arbeidsmiljølovens bestemmelser.",
         "sortOrder": 2
       },
@@ -293,6 +317,7 @@ HUSK:
 - Vær vennlig, hjelpsom og gjør det enkelt for brukeren!
 - START ALLTID med bransjevalg - dette er viktig for å tilpasse hele oppsettet!
 - Generer ALLE rutinene som ble diskutert - ikke bare én!
+- VIKTIG: Spør om verneombud ETTER Brreg-oppslag basert på antall ansatte!
 
 VIKTIG - STOFFKARTOTEK:
 Når bedriften bruker eller har kjemikalier på arbeidsplassen, SKAL du ALLTID inkludere rutinen "Stoffkartotek og Kjemikaliehåndtering" (routine_number: 1290).
@@ -302,9 +327,14 @@ KRITISK - ANSVARLIGE ROLLER:
 Når du genererer handlingsplan/tiltak, bruk KUN disse rollene som "responsible":
 - "Daglig leder" (overordnet ansvar)
 - "HMS-ansvarlig" (koordinerer HMS-arbeid)
-- "Verneombud" (kun hvis bedriften har 5+ ansatte)
+- "Verneombud" (KUN hvis bedriften har 5+ ansatte eller har valgt å ha verneombud)
 ALDRI bruk fiktive roller som "Brannvernleder", "Sikkerhetssjef", "Kvalitetsleder" etc. 
-Disse rollene finnes ikke i organisasjonsstrukturen og skaper forvirring.`;
+Disse rollene finnes ikke i organisasjonsstrukturen og skaper forvirring.
+
+KRITISK - VERNEOMBUD ORGANISASJONSSTRUKTUR:
+- Hvis bedriften har 5+ ansatte: ALLTID inkluder Verneombud-rollen i organization.roles
+- Hvis bedriften har <5 ansatte OG velger fritak: IKKE inkluder Verneombud-rollen i organization.roles, og sett hasVerneombudFritak: true
+- Hvis bedriften har <5 ansatte men VIL ha verneombud: Inkluder Verneombud-rollen`;
 
 async function checkRateLimit(supabase: any, userId: string, functionName: string): Promise<boolean> {
   try {
