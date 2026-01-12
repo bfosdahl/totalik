@@ -46,7 +46,7 @@ import { useKsModule2TimelineEvents, TimelineEvent } from "@/hooks/useKsModule2T
 import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 
 const CATEGORIES = [
   { value: "oppstart", label: "Oppstart", color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },

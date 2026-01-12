@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import { ChecklistItem } from "@/hooks/useKsModule2Checklists";
 
 interface ChecklistPdfOptions {
