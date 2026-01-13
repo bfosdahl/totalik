@@ -9,6 +9,8 @@ import { Loader2, FileText, Download, AlertCircle, Thermometer, SprayCanIcon, Ch
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { generateIkMatHandbokPdf } from "@/utils/ikMatHandbokPdf";
 import { toast } from "sonner";
 import { format, subDays } from "date-fns";
@@ -122,6 +124,11 @@ const IkMatHandbok = () => {
   const [temperatureLogs, setTemperatureLogs] = useState<TemperatureLogEntry[]>([]);
   const [cleaningLogs, setCleaningLogs] = useState<CleaningLogEntry[]>([]);
   const [checklistResponses, setChecklistResponses] = useState<ChecklistResponseEntry[]>([]);
+  
+  // Toggle states for including logs in view
+  const [includeChecklists, setIncludeChecklists] = useState(true);
+  const [includeTemperatureLogs, setIncludeTemperatureLogs] = useState(true);
+  const [includeCleaningLogs, setIncludeCleaningLogs] = useState(true);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -383,6 +390,65 @@ const IkMatHandbok = () => {
           </Button>
         </div>
 
+        {/* Include options */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Velg hva som skal inkluderes</CardTitle>
+            <CardDescription>Slå av/på seksjoner for visning og PDF-eksport</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex items-center justify-between space-x-2 p-3 rounded-lg border">
+                <div className="flex-1">
+                  <Label htmlFor="include-checklists" className="text-sm font-medium cursor-pointer">
+                    Utfylte sjekklister
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    {checklistResponses.length} fra siste 30 dager
+                  </p>
+                </div>
+                <Switch
+                  id="include-checklists"
+                  checked={includeChecklists}
+                  onCheckedChange={setIncludeChecklists}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between space-x-2 p-3 rounded-lg border">
+                <div className="flex-1">
+                  <Label htmlFor="include-temperature" className="text-sm font-medium cursor-pointer">
+                    Temperaturlogg
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    {temperatureLogs.length} målinger fra siste 30 dager
+                  </p>
+                </div>
+                <Switch
+                  id="include-temperature"
+                  checked={includeTemperatureLogs}
+                  onCheckedChange={setIncludeTemperatureLogs}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between space-x-2 p-3 rounded-lg border">
+                <div className="flex-1">
+                  <Label htmlFor="include-cleaning" className="text-sm font-medium cursor-pointer">
+                    Renholdslogg
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    {cleaningLogs.length} fra siste 30 dager
+                  </p>
+                </div>
+                <Switch
+                  id="include-cleaning"
+                  checked={includeCleaningLogs}
+                  onCheckedChange={setIncludeCleaningLogs}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Company Info */}
         <Card>
           <CardHeader>
@@ -587,7 +653,7 @@ const IkMatHandbok = () => {
         </Card>
 
         {/* Completed Checklist Responses */}
-        {checklistResponses.length > 0 && (
+        {includeChecklists && checklistResponses.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -720,7 +786,7 @@ const IkMatHandbok = () => {
         </Card>
 
         {/* Temperature Logs - Actual Records */}
-        {temperatureLogs.length > 0 && (
+        {includeTemperatureLogs && temperatureLogs.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -781,7 +847,7 @@ const IkMatHandbok = () => {
         )}
 
         {/* Cleaning Logs - Actual Records */}
-        {cleaningLogs.length > 0 && (
+        {includeCleaningLogs && cleaningLogs.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
