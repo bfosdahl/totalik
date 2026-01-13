@@ -23,7 +23,7 @@ const IkAlkoholRutiner = () => {
   const { modules, isLoading: modulesLoading } = useCompanyModules();
   const { routines, isLoading, createRoutine, updateRoutine, deleteRoutine, initializeDefaultRoutines } = useIkAlkoholRoutines();
   
-  const [activeCategory, setActiveCategory] = useState('alderskontroll');
+  const [activeCategory, setActiveCategory] = useState('alle');
   const [showDialog, setShowDialog] = useState(false);
   const [editingRoutine, setEditingRoutine] = useState<any>(null);
   const [expandedRoutines, setExpandedRoutines] = useState<string[]>([]);
@@ -48,7 +48,7 @@ const IkAlkoholRutiner = () => {
     return null;
   }
 
-  const filteredRoutines = routines.filter(r => r.category === activeCategory);
+  const filteredRoutines = activeCategory === 'alle' ? routines : routines.filter(r => r.category === activeCategory);
 
   const handleSave = async () => {
     if (!formData.routine_name || !formData.content) return;
@@ -104,12 +104,99 @@ const IkAlkoholRutiner = () => {
 
         <Tabs value={activeCategory} onValueChange={setActiveCategory}>
           <TabsList className="flex flex-wrap h-auto gap-1 mb-6">
+            <TabsTrigger value="alle" className="text-xs sm:text-sm">
+              Alle
+            </TabsTrigger>
             {ROUTINE_CATEGORIES.map(cat => (
               <TabsTrigger key={cat.value} value={cat.value} className="text-xs sm:text-sm">
                 {cat.label}
               </TabsTrigger>
             ))}
           </TabsList>
+
+          <TabsContent value="alle">
+            {isLoading ? (
+              <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
+            ) : routines.length === 0 ? (
+              <Card>
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  Ingen rutiner ennå
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {routines.map(routine => (
+                  <Collapsible 
+                    key={routine.id}
+                    open={expandedRoutines.includes(routine.id)}
+                    onOpenChange={(open) => {
+                      setExpandedRoutines(open 
+                        ? [...expandedRoutines, routine.id]
+                        : expandedRoutines.filter(id => id !== routine.id)
+                      );
+                    }}
+                  >
+                    <Card>
+                      <CollapsibleTrigger className="w-full">
+                        <CardHeader className="flex flex-row items-center justify-between py-4">
+                          <div className="flex items-center gap-3">
+                            <FileText className="h-5 w-5 text-amber-600" />
+                            <div className="text-left">
+                              <CardTitle className="text-base">{routine.routine_name}</CardTitle>
+                              {routine.description && (
+                                <CardDescription className="text-sm">{routine.description}</CardDescription>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline">{ROUTINE_CATEGORIES.find(c => c.value === routine.category)?.label || routine.category}</Badge>
+                            {routine.is_mandatory && <Badge variant="secondary">Obligatorisk</Badge>}
+                            {routine.venue_type && <Badge variant="outline">{VENUE_TYPES.find(v => v.value === routine.venue_type)?.label}</Badge>}
+                            <ChevronDown className="h-4 w-4" />
+                          </div>
+                        </CardHeader>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <CardContent className="pt-0 pb-4">
+                          <div className="prose prose-sm max-w-none bg-muted/50 rounded-lg p-4 whitespace-pre-wrap">
+                            {routine.content}
+                          </div>
+                          <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                            <div className="text-xs text-muted-foreground">
+                              {routine.last_reviewed_at && routine.reviewed_by_name ? (
+                                <>Sist gjennomgått av {routine.reviewed_by_name}: {format(new Date(routine.last_reviewed_at), 'dd.MM.yyyy', { locale: nb })}</>
+                              ) : routine.last_reviewed_at ? (
+                                <>Sist gjennomgått: {format(new Date(routine.last_reviewed_at), 'dd.MM.yyyy', { locale: nb })}</>
+                              ) : (
+                                <>Opprettet: {format(new Date(routine.created_at), 'dd.MM.yyyy', { locale: nb })}</>
+                              )}
+                            </div>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" onClick={() => updateRoutine.mutate({ 
+                                id: routine.id, 
+                                last_reviewed_at: new Date().toISOString(), 
+                                reviewed_by_id: profile?.id,
+                                reviewed_by_name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || profile?.email || 'Ukjent'
+                              })}>
+                                <Check className="h-4 w-4 mr-1" />
+                                Marker gjennomgått
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => openEdit(routine)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => deleteRoutine.mutate(routine.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Card>
+                  </Collapsible>
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
           {ROUTINE_CATEGORIES.map(cat => (
             <TabsContent key={cat.value} value={cat.value}>
