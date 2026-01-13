@@ -38,6 +38,7 @@ import {
   ShoppingCart,
   FolderOpen,
   Target,
+  Wine,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -104,10 +105,11 @@ const personaladministrasjonItems = {
 };
 
 // Route detection helper
-type SectionKey = 'ks' | 'ikMat' | 'ikHms' | 'personal' | 'gdpr' | 'apenhetsloven' | 'none';
+type SectionKey = 'ks' | 'ikMat' | 'ikAlkohol' | 'ikHms' | 'personal' | 'gdpr' | 'apenhetsloven' | 'none';
 
 const detectActiveSection = (pathname: string): SectionKey => {
   if (pathname.startsWith('/ks')) return 'ks';
+  if (pathname.startsWith('/ik-alkohol')) return 'ikAlkohol';
   if (pathname.startsWith('/ik-mat')) return 'ikMat';
   if (pathname.startsWith('/gdpr')) return 'gdpr';
   if (pathname.startsWith('/apenhetsloven')) return 'apenhetsloven';
@@ -172,6 +174,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   // Check if KS Bygg module is active for this company
   const hasKsBygg = hasModule("IK_BYGG");
   const hasIkMat = hasModule("IK_MAT");
+  const hasIkAlkohol = hasModule("IK_ALKOHOL");
   const hasGdpr = hasModule("GDPR");
   const hasApenhetsloven = hasModule("APENHETSLOVEN");
   
@@ -838,6 +841,126 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                       )}
                     >
                       Dokumentsenter
+                    </NavLink>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* IK Alkohol collapsible section - visible but locked if module not active */}
+          <div className={cn(!hasIkAlkohol && "opacity-60")}>
+            <button
+              onClick={() => hasIkAlkohol ? toggleSection('ikAlkohol') : handleLockedModuleClick('IK_ALKOHOL')}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
+                collapsed && "justify-center",
+                hasIkAlkohol && location.pathname.startsWith("/ik-alkohol")
+                  ? "text-sidebar-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              )}
+              title={!hasIkAlkohol ? "Klikk for å bestille denne modulen" : undefined}
+            >
+              <Wine className={cn(
+                "w-5 h-5 flex-shrink-0 transition-transform text-amber-500",
+                hasIkAlkohol && !location.pathname.startsWith("/ik-alkohol") && "group-hover:scale-110"
+              )} />
+              <AnimatePresence mode="wait">
+                {!collapsed && (
+                  <>
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      className="font-medium text-sm flex-1 text-left flex items-center gap-2"
+                    >
+                      <span className="w-2 h-2 rounded-full bg-amber-500" />
+                      IK/Alkohol
+                    </motion.span>
+                    {!hasIkAlkohol ? (
+                      <Lock className="w-4 h-4 text-muted-foreground" />
+                    ) : expandedSections.has('ikAlkohol') ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </>
+                )}
+              </AnimatePresence>
+            </button>
+            
+            {/* Locked module message with order button - only shown when clicked */}
+            <AnimatePresence>
+              {!hasIkAlkohol && !collapsed && selectedLockedModule === 'IK_ALKOHOL' && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-6 pr-3 py-2 space-y-2">
+                    {canOrderModules ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOrderModule("IK_ALKOHOL")}
+                        className="w-full justify-start text-xs h-auto py-1.5 text-primary hover:text-primary"
+                      >
+                        <ShoppingCart className="w-3 h-3 mr-2" />
+                        Bestill modul
+                      </Button>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Kontakt bedriftsadmin for å aktivere
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+              
+            {/* IK Alkohol submenu */}
+            <AnimatePresence>
+              {hasIkAlkohol && expandedSections.has('ikAlkohol') && !collapsed && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-6 space-y-1 mt-1">
+                    <NavLink
+                      to="/ik-alkohol"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-alkohol"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Dashboard
+                    </NavLink>
+                    <NavLink
+                      to="/ik-alkohol/internkontroll"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-alkohol/internkontroll"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Internkontroll
+                    </NavLink>
+                    <NavLink
+                      to="/ik-alkohol/hendelser"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-alkohol/hendelser"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Hendelser
                     </NavLink>
                   </div>
                 </motion.div>
