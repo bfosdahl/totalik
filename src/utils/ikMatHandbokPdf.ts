@@ -3,6 +3,14 @@ import autoTable from 'jspdf-autotable';
 
 interface HandbokPdfData {
   companyName: string;
+  companyInfo?: {
+    name?: string;
+    org_number?: string;
+    address?: string;
+    postal_code?: string;
+    city?: string;
+    logo_url?: string;
+  };
   businessType?: string;
   numberOfEmployees?: string;
   hasCleanZone?: boolean;
@@ -53,14 +61,41 @@ interface HandbokPdfData {
   }>;
 }
 
+// Helper to load image as base64
+const loadImageAsBase64 = async (url: string): Promise<string | null> => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+};
+
+// Format date for PDF
+const formatDateForPdf = (date: Date): string => {
+  return date.toLocaleDateString('nb-NO', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+};
+
 export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<void> => {
   try {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.width;
-    const margin = 14;
-    let yPosition = 20;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const contentWidth = pageWidth - margin * 2;
+    let yPos = margin;
 
-    // Ensure all arrays exist with defaults and are actually arrays
+    // Ensure all arrays exist with defaults
     const ensureArray = <T>(value: T[] | undefined | null): T[] => {
       if (Array.isArray(value)) return value;
       return [];
@@ -68,7 +103,7 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
 
     const safeData = {
       ...data,
-      companyName: data.companyName || 'Bedrift',
+      companyName: data.companyName || data.companyInfo?.name || 'Bedrift',
       goals: ensureArray(data.goals),
       haccp: ensureArray(data.haccp),
       risks: ensureArray(data.risks),
@@ -79,254 +114,417 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
       contracts: ensureArray(data.contracts),
     };
 
-  // Helper function to add new page if needed
-  const checkPageBreak = (neededSpace: number = 30) => {
-    if (yPosition + neededSpace > 280) {
-      doc.addPage();
-      yPosition = 20;
+    // Load logo if available
+    let logoBase64: string | null = null;
+    if (data.companyInfo?.logo_url) {
+      logoBase64 = await loadImageAsBase64(data.companyInfo.logo_url);
     }
-  };
 
-  // Helper to add section header
-  const addSectionHeader = (title: string) => {
-    checkPageBreak(20);
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text(title, margin, yPosition);
-    yPosition += 10;
-  };
+    // Table of contents
+    type TocEntry = { title: string; page: number };
+    const tocEntries: TocEntry[] = [];
+    let tocPageNumber = 0;
 
-  // Title
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.text('IK-MAT Håndbok', pageWidth / 2, yPosition, { align: 'center' });
-  yPosition += 10;
+    const addTocEntry = (title: string) => {
+      tocEntries.push({ title, page: doc.getNumberOfPages() });
+    };
 
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Internkontroll Matsikkerhet', pageWidth / 2, yPosition, { align: 'center' });
-  yPosition += 15;
+    const renderToc = () => {
+      if (!tocPageNumber) return;
+      doc.setPage(tocPageNumber);
+      
+      // Clear content area
+      doc.setFillColor(255, 255, 255);
+      doc.rect(margin, margin + 15, contentWidth, pageHeight - (margin + 15) - margin, 'F');
 
-  // Company Info
-  addSectionHeader('Bedriftsinformasjon');
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Bedriftsnavn: ${safeData.companyName || 'Ikke oppgitt'}`, margin, yPosition);
-  yPosition += 7;
-  if (safeData.businessType) {
-    doc.text(`Virksomhetstype: ${safeData.businessType}`, margin, yPosition);
-    yPosition += 7;
-  }
-  if (safeData.numberOfEmployees) {
-    doc.text(`Antall ansatte: ${safeData.numberOfEmployees}`, margin, yPosition);
-    yPosition += 7;
-  }
-  doc.text(`Ren/uren sone: ${safeData.hasCleanZone ? 'Ja' : 'Nei'}`, margin, yPosition);
-  yPosition += 12;
-
-  // Goals
-  if (safeData.goals.length > 0) {
-    addSectionHeader('Målsettinger');
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    safeData.goals.forEach((goal, index) => {
-      checkPageBreak(10);
-      const goalText = goal || '';
-      const lines = doc.splitTextToSize(`${index + 1}. ${goalText}`, pageWidth - margin * 2);
-      doc.text(lines, margin, yPosition);
-      yPosition += lines.length * 5 + 3;
-    });
-    yPosition += 5;
-  }
-
-  // HACCP
-  if (safeData.haccp.length > 0) {
-    addSectionHeader('HACCP - Kritiske Kontrollpunkter (KKP)');
-    safeData.haccp.forEach((item) => {
-      checkPageBreak(50);
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text(item.step || '', margin, yPosition);
-      yPosition += 7;
-
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Fare:', margin, yPosition);
+      let tocY = margin + 20;
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'normal');
-      const hazardLines = doc.splitTextToSize(item.hazard || '', pageWidth - margin * 2 - 30);
-      doc.text(hazardLines, margin + 30, yPosition);
-      yPosition += hazardLines.length * 5 + 2;
 
-      doc.setFont('helvetica', 'bold');
-      doc.text('Kritisk grense:', margin, yPosition);
-      doc.setFont('helvetica', 'normal');
-      const limitLines = doc.splitTextToSize(item.criticalLimit || '', pageWidth - margin * 2 - 30);
-      doc.text(limitLines, margin + 30, yPosition);
-      yPosition += limitLines.length * 5 + 2;
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('Overvåking:', margin, yPosition);
-      doc.setFont('helvetica', 'normal');
-      const monitorLines = doc.splitTextToSize(item.monitoring || '', pageWidth - margin * 2 - 30);
-      doc.text(monitorLines, margin + 30, yPosition);
-      yPosition += monitorLines.length * 5 + 2;
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('Korrigerende tiltak:', margin, yPosition);
-      doc.setFont('helvetica', 'normal');
-      const actionLines = doc.splitTextToSize(item.correctiveAction || '', pageWidth - margin * 2 - 30);
-      doc.text(actionLines, margin + 30, yPosition);
-      yPosition += actionLines.length * 5 + 2;
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('Verifisering:', margin, yPosition);
-      doc.setFont('helvetica', 'normal');
-      const verifyLines = doc.splitTextToSize(item.verification || '', pageWidth - margin * 2 - 30);
-      doc.text(verifyLines, margin + 30, yPosition);
-      yPosition += verifyLines.length * 5 + 7;
-    });
-  }
-
-  // Risks
-  if (safeData.risks.length > 0) {
-    addSectionHeader('Generell Risikovurdering');
-    
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Fare', 'Konsekvens', 'Sannsynlighet', 'Risikonivå', 'Tiltak']],
-      body: safeData.risks.map(risk => [
-        risk.hazard || '',
-        risk.consequence || '',
-        risk.probability || '',
-        risk.riskLevel || '',
-        risk.measures || ''
-      ]),
-      margin: { left: margin, right: margin },
-      styles: { fontSize: 8, cellPadding: 3 },
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
-    });
-    yPosition = (doc as any).lastAutoTable.finalY + 10;
-  }
-
-  // Routines
-  if (safeData.routines.length > 0) {
-    checkPageBreak(30);
-    addSectionHeader('Rutiner og Prosedyrer');
-    safeData.routines.forEach((routine) => {
-      checkPageBreak(35);
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text(routine.name || '', margin, yPosition);
-      yPosition += 7;
-
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      const descLines = doc.splitTextToSize(routine.description || '', pageWidth - margin * 2);
-      doc.text(descLines, margin, yPosition);
-      yPosition += descLines.length * 5 + 3;
-
-      doc.text(`Frekvens: ${routine.frequency || 'Ikke oppgitt'}`, margin, yPosition);
-      yPosition += 5;
-      doc.text(`Ansvarlig: ${routine.responsible || 'Ikke oppgitt'}`, margin, yPosition);
-      yPosition += 10;
-    });
-  }
-
-  // Checklists
-  if (safeData.checklists.length > 0) {
-    checkPageBreak(30);
-    addSectionHeader('Sjekklister');
-    safeData.checklists.forEach((checklist) => {
-      checkPageBreak(30);
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text(checklist.name || '', margin, yPosition);
-      yPosition += 5;
-
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'italic');
-      doc.text(checklist.description || '', margin, yPosition);
-      yPosition += 7;
-
-      doc.setFont('helvetica', 'normal');
-      const checkpoints = checklist.checkpoints || [];
-      checkpoints.forEach((point) => {
-        checkPageBreak(10);
-        const pointLines = doc.splitTextToSize(`• ${point || ''}`, pageWidth - margin * 2 - 5);
-        doc.text(pointLines, margin + 5, yPosition);
-        yPosition += pointLines.length * 5 + 2;
+      tocEntries.forEach((item) => {
+        if (tocY > pageHeight - margin - 10) return;
+        doc.text(item.title, margin, tocY);
+        doc.text(String(item.page), pageWidth - margin, tocY, { align: 'right' });
+        doc.link(margin, tocY - 5, contentWidth, 7, { pageNumber: item.page });
+        tocY += 8;
       });
-      yPosition += 5;
-    });
-  }
+    };
 
-  // Cleaning Plan
-  if (safeData.cleaningPlan.length > 0) {
-    checkPageBreak(50);
-    addSectionHeader('Renholdsplan');
-    
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Område', 'Frekvens', 'Metode', 'Ansvarlig']],
-      body: safeData.cleaningPlan.map(task => [
-        task.area || '',
-        task.frequency || '',
-        task.method || '',
-        task.responsible || ''
-      ]),
-      margin: { left: margin, right: margin },
-      styles: { fontSize: 8, cellPadding: 3 },
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
-    });
-    yPosition = (doc as any).lastAutoTable.finalY + 10;
-  }
+    const checkPageBreak = (requiredSpace: number) => {
+      if (yPos + requiredSpace > pageHeight - margin) {
+        doc.addPage();
+        yPos = margin;
+        return true;
+      }
+      return false;
+    };
 
-  // Allergens
-  if (safeData.allergens.length > 0) {
-    checkPageBreak(50);
-    addSectionHeader('Allergener');
-    
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Allergen', 'Status', 'Kontrolltiltak']],
-      body: safeData.allergens.map(allergen => [
-        allergen.name || '',
-        allergen.present ? 'Tilstede' : 'Ikke i bruk',
-        allergen.controlMeasures || 'Ingen spesifikke tiltak nødvendig'
-      ]),
-      margin: { left: margin, right: margin },
-      styles: { fontSize: 8, cellPadding: 3 },
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
-    });
-    yPosition = (doc as any).lastAutoTable.finalY + 10;
-  }
+    const addSectionHeader = (title: string) => {
+      checkPageBreak(20);
+      doc.setFillColor(34, 139, 34); // Forest green for IK-MAT
+      doc.rect(margin, yPos, contentWidth, 10, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text(title, margin + 5, yPos + 7);
+      doc.setTextColor(0, 0, 0);
+      yPos += 15;
+    };
 
-  // Contracts
-  if (safeData.contracts.length > 0) {
-    checkPageBreak(50);
-    addSectionHeader('Faste Avtaler');
+    // ==================== COVER PAGE ====================
+    // Green header bar
+    doc.setFillColor(34, 139, 34); // Forest green
+    doc.rect(0, 0, pageWidth, 80, 'F');
+
+    // Logo if available
+    if (logoBase64) {
+      try {
+        doc.addImage(logoBase64, 'PNG', pageWidth / 2 - 15, 85, 30, 30);
+      } catch (e) {
+        console.warn('Could not add logo to PDF:', e);
+      }
+    }
+
+    // Title on header
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(28);
+    doc.setFont('helvetica', 'bold');
+    doc.text('INTERNKONTROLL', pageWidth / 2, 35, { align: 'center' });
+    doc.setFontSize(20);
+    doc.text('MATSIKKERHET', pageWidth / 2, 50, { align: 'center' });
+    doc.setFontSize(14);
+    doc.text('IK-MAT HÅNDBOK', pageWidth / 2, 65, { align: 'center' });
+
+    // Company name below header
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    const companyName = safeData.companyName;
+    const nameY = logoBase64 ? 130 : 110;
+    doc.text(companyName, pageWidth / 2, nameY, { align: 'center' });
+
+    // Company details
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    let detailsY = logoBase64 ? 145 : 125;
     
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Leverandør', 'Type', 'Frekvens', 'Neste revisjon']],
-      body: safeData.contracts.map(contract => [
-        contract.supplier || '',
-        contract.type || '',
-        contract.frequency || '',
-        contract.nextReview || '-'
-      ]),
-      margin: { left: margin, right: margin },
-      styles: { fontSize: 8, cellPadding: 3 },
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
-    });
-  }
+    const companyInfo = data.companyInfo;
+    if (companyInfo?.org_number) {
+      doc.text(`Org.nr: ${companyInfo.org_number}`, pageWidth / 2, detailsY, { align: 'center' });
+      detailsY += 7;
+    }
+    if (companyInfo?.address) {
+      doc.text(companyInfo.address, pageWidth / 2, detailsY, { align: 'center' });
+      detailsY += 7;
+    }
+    if (companyInfo?.postal_code && companyInfo?.city) {
+      doc.text(`${companyInfo.postal_code} ${companyInfo.city}`, pageWidth / 2, detailsY, { align: 'center' });
+    }
+
+    // Business type and employees
+    detailsY += 15;
+    if (safeData.businessType) {
+      doc.text(`Virksomhetstype: ${safeData.businessType}`, pageWidth / 2, detailsY, { align: 'center' });
+      detailsY += 7;
+    }
+    if (safeData.numberOfEmployees) {
+      doc.text(`Antall ansatte: ${safeData.numberOfEmployees}`, pageWidth / 2, detailsY, { align: 'center' });
+    }
+
+    // Date at bottom
+    doc.setFontSize(12);
+    doc.text(`Dato: ${formatDateForPdf(new Date())}`, pageWidth / 2, pageHeight - 40, { align: 'center' });
+
+    // Footer text
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text('Utarbeidet i henhold til forskrift om internkontroll', pageWidth / 2, pageHeight - 25, { align: 'center' });
+    doc.text('for å oppfylle næringsmiddellovgivningen (IK-MAT)', pageWidth / 2, pageHeight - 18, { align: 'center' });
+
+    // ==================== TABLE OF CONTENTS ====================
+    doc.addPage();
+    tocPageNumber = doc.getNumberOfPages();
+    yPos = margin;
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Innhold', margin, yPos);
+    yPos += 15;
+
+    // ==================== CONTENT PAGES ====================
+    doc.addPage();
+    yPos = margin;
+
+    // Goals Section
+    if (safeData.goals.length > 0) {
+      addTocEntry('1. Målsettinger for matsikkerhet');
+      addSectionHeader('1. Målsettinger for matsikkerhet');
+      
+      safeData.goals.forEach((goal, index) => {
+        checkPageBreak(20);
+        doc.setFillColor(240, 255, 240); // Light green background
+        const goalText = typeof goal === 'string' ? goal : '';
+        const lines = doc.splitTextToSize(goalText, contentWidth - 15);
+        const boxHeight = lines.length * 6 + 6;
+        doc.roundedRect(margin, yPos, contentWidth, boxHeight, 2, 2, 'F');
+        
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(0, 0, 0);
+        doc.text(`${index + 1}. ${goalText}`, margin + 5, yPos + 5, { maxWidth: contentWidth - 10 });
+        yPos += boxHeight + 3;
+      });
+      yPos += 10;
+    }
+
+    // HACCP Section
+    if (safeData.haccp.length > 0) {
+      checkPageBreak(30);
+      addTocEntry('2. HACCP - Kritiske Kontrollpunkter');
+      addSectionHeader('2. HACCP - Kritiske Kontrollpunkter');
+      
+      safeData.haccp.forEach((item, index) => {
+        checkPageBreak(60);
+        
+        // Card header
+        doc.setFillColor(248, 250, 252);
+        doc.roundedRect(margin, yPos, contentWidth, 14, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(34, 139, 34);
+        doc.text(`KKP ${index + 1}: ${item.step || 'Kontrollpunkt'}`, margin + 5, yPos + 9);
+        yPos += 18;
+
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(9);
+
+        const fields = [
+          { label: 'Fare:', value: item.hazard },
+          { label: 'Kritisk grense:', value: item.criticalLimit },
+          { label: 'Overvåking:', value: item.monitoring },
+          { label: 'Korrigerende tiltak:', value: item.correctiveAction },
+          { label: 'Verifisering:', value: item.verification },
+        ];
+
+        fields.forEach(field => {
+          if (field.value) {
+            checkPageBreak(15);
+            doc.setFont('helvetica', 'bold');
+            doc.text(field.label, margin + 3, yPos);
+            doc.setFont('helvetica', 'normal');
+            const lines = doc.splitTextToSize(field.value, contentWidth - 40);
+            doc.text(lines, margin + 35, yPos);
+            yPos += lines.length * 5 + 3;
+          }
+        });
+        yPos += 8;
+      });
+    }
+
+    // Risks Section
+    if (safeData.risks.length > 0) {
+      checkPageBreak(50);
+      addTocEntry('3. Risikovurdering');
+      addSectionHeader('3. Risikovurdering');
+      
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Fare', 'Konsekvens', 'Sannsynlighet', 'Risikonivå', 'Tiltak']],
+        body: safeData.risks.map(risk => [
+          risk.hazard || '',
+          risk.consequence || '',
+          risk.probability || '',
+          risk.riskLevel || '',
+          risk.measures || ''
+        ]),
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 8, cellPadding: 3 },
+        headStyles: { fillColor: [34, 139, 34], textColor: 255 },
+        alternateRowStyles: { fillColor: [240, 255, 240] },
+      });
+      yPos = (doc as any).lastAutoTable.finalY + 15;
+    }
+
+    // Routines Section
+    if (safeData.routines.length > 0) {
+      checkPageBreak(30);
+      addTocEntry('4. Rutiner og Prosedyrer');
+      addSectionHeader('4. Rutiner og Prosedyrer');
+      
+      safeData.routines.forEach((routine) => {
+        checkPageBreak(40);
+        
+        // Routine header card
+        doc.setFillColor(248, 250, 252);
+        doc.roundedRect(margin, yPos, contentWidth, 14, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(34, 139, 34);
+        doc.text(routine.name || 'Rutine', margin + 5, yPos + 9);
+        yPos += 18;
+
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        
+        if (routine.description) {
+          const descLines = doc.splitTextToSize(routine.description, contentWidth - 10);
+          doc.text(descLines, margin + 3, yPos);
+          yPos += descLines.length * 5 + 5;
+        }
+
+        doc.setFont('helvetica', 'bold');
+        doc.text('Frekvens: ', margin + 3, yPos);
+        doc.setFont('helvetica', 'normal');
+        doc.text(routine.frequency || 'Ikke oppgitt', margin + 25, yPos);
+        yPos += 6;
+
+        doc.setFont('helvetica', 'bold');
+        doc.text('Ansvarlig: ', margin + 3, yPos);
+        doc.setFont('helvetica', 'normal');
+        doc.text(routine.responsible || 'Ikke oppgitt', margin + 25, yPos);
+        yPos += 12;
+      });
+    }
+
+    // Checklists Section
+    if (safeData.checklists.length > 0) {
+      checkPageBreak(30);
+      addTocEntry('5. Sjekklister');
+      addSectionHeader('5. Sjekklister');
+      
+      safeData.checklists.forEach((checklist) => {
+        checkPageBreak(35);
+        
+        doc.setFillColor(248, 250, 252);
+        doc.roundedRect(margin, yPos, contentWidth, 14, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(34, 139, 34);
+        doc.text(checklist.name || 'Sjekkliste', margin + 5, yPos + 9);
+        yPos += 18;
+
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(9);
+        
+        if (checklist.description) {
+          doc.setFont('helvetica', 'italic');
+          doc.text(checklist.description, margin + 3, yPos);
+          yPos += 7;
+        }
+
+        doc.setFont('helvetica', 'normal');
+        const checkpoints = checklist.checkpoints || [];
+        checkpoints.forEach((point) => {
+          checkPageBreak(12);
+          // Checkbox style
+          doc.setFillColor(34, 139, 34);
+          doc.rect(margin + 3, yPos - 3, 3, 3, 'F');
+          const pointLines = doc.splitTextToSize(point || '', contentWidth - 15);
+          doc.text(pointLines, margin + 10, yPos);
+          yPos += pointLines.length * 5 + 2;
+        });
+        yPos += 8;
+      });
+    }
+
+    // Cleaning Plan Section
+    if (safeData.cleaningPlan.length > 0) {
+      checkPageBreak(50);
+      addTocEntry('6. Renholdsplan');
+      addSectionHeader('6. Renholdsplan');
+      
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Område', 'Frekvens', 'Metode', 'Ansvarlig']],
+        body: safeData.cleaningPlan.map(task => [
+          task.area || '',
+          task.frequency || '',
+          task.method || '',
+          task.responsible || ''
+        ]),
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 8, cellPadding: 3 },
+        headStyles: { fillColor: [34, 139, 34], textColor: 255 },
+        alternateRowStyles: { fillColor: [240, 255, 240] },
+      });
+      yPos = (doc as any).lastAutoTable.finalY + 15;
+    }
+
+    // Allergens Section
+    if (safeData.allergens.length > 0) {
+      checkPageBreak(50);
+      addTocEntry('7. Allergenhåndtering');
+      addSectionHeader('7. Allergenhåndtering');
+      
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Allergen', 'Status', 'Kontrolltiltak']],
+        body: safeData.allergens.map(allergen => [
+          allergen.name || '',
+          allergen.present ? '✓ Tilstede' : '✗ Ikke i bruk',
+          allergen.controlMeasures || 'Ingen spesifikke tiltak'
+        ]),
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 8, cellPadding: 3 },
+        headStyles: { fillColor: [34, 139, 34], textColor: 255 },
+        alternateRowStyles: { fillColor: [240, 255, 240] },
+        didParseCell: function(data) {
+          if (data.section === 'body' && data.column.index === 1) {
+            const text = data.cell.raw as string;
+            if (text.startsWith('✓')) {
+              data.cell.styles.textColor = [34, 139, 34];
+              data.cell.styles.fontStyle = 'bold';
+            } else if (text.startsWith('✗')) {
+              data.cell.styles.textColor = [150, 150, 150];
+            }
+          }
+        }
+      });
+      yPos = (doc as any).lastAutoTable.finalY + 15;
+    }
+
+    // Contracts Section
+    if (safeData.contracts.length > 0) {
+      checkPageBreak(50);
+      addTocEntry('8. Faste Avtaler og Leverandører');
+      addSectionHeader('8. Faste Avtaler og Leverandører');
+      
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Leverandør', 'Type', 'Frekvens', 'Kontakt', 'Neste revisjon']],
+        body: safeData.contracts.map(contract => [
+          contract.supplier || '',
+          contract.type || '',
+          contract.frequency || '',
+          contract.contact || '-',
+          contract.nextReview || '-'
+        ]),
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 8, cellPadding: 3 },
+        headStyles: { fillColor: [34, 139, 34], textColor: 255 },
+        alternateRowStyles: { fillColor: [240, 255, 240] },
+      });
+    }
+
+    // Render table of contents
+    renderToc();
+
+    // Add page numbers
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 2; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(9);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Side ${i} av ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+      doc.text('IK-MAT Håndbok', margin, pageHeight - 10);
+      doc.text(companyName, pageWidth - margin, pageHeight - 10, { align: 'right' });
+    }
 
     // Save PDF
-    const companyNameSafe = (safeData.companyName || 'Bedrift').replace(/[^a-zA-Z0-9æøåÆØÅ\s-]/g, '').replace(/\s+/g, '-');
+    const companyNameSafe = companyName.replace(/[^a-zA-Z0-9æøåÆØÅ\s-]/g, '').replace(/\s+/g, '-');
     const fileName = `IK-MAT-Handbok-${companyNameSafe}-${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(fileName);
   } catch (error) {
