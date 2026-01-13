@@ -3016,6 +3016,81 @@ export type Database = {
           },
         ]
       }
+      ik_alkohol_goals: {
+        Row: {
+          actions: string[] | null
+          company_id: string
+          created_at: string
+          deadline: string | null
+          description: string | null
+          goal_text: string
+          id: string
+          is_predefined: boolean | null
+          kpi_current: string | null
+          kpi_metric: string | null
+          kpi_target: string | null
+          period: string | null
+          responsible_id: string | null
+          responsible_name: string | null
+          sort_order: number | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          actions?: string[] | null
+          company_id: string
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          goal_text: string
+          id?: string
+          is_predefined?: boolean | null
+          kpi_current?: string | null
+          kpi_metric?: string | null
+          kpi_target?: string | null
+          period?: string | null
+          responsible_id?: string | null
+          responsible_name?: string | null
+          sort_order?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actions?: string[] | null
+          company_id?: string
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          goal_text?: string
+          id?: string
+          is_predefined?: boolean | null
+          kpi_current?: string | null
+          kpi_metric?: string | null
+          kpi_target?: string | null
+          period?: string | null
+          responsible_id?: string | null
+          responsible_name?: string | null
+          sort_order?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_goals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_goals_responsible_id_fkey"
+            columns: ["responsible_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_alkohol_incidents: {
         Row: {
           company_id: string
@@ -3172,6 +3247,79 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_alkohol_organization: {
+        Row: {
+          company_id: string
+          confirmed_at: string | null
+          confirmed_signature: string | null
+          created_at: string
+          email: string | null
+          employee_name: string
+          id: string
+          is_active: boolean | null
+          license_id: string | null
+          phone: string | null
+          responsibilities: string[] | null
+          role_type: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          company_id: string
+          confirmed_at?: string | null
+          confirmed_signature?: string | null
+          created_at?: string
+          email?: string | null
+          employee_name: string
+          id?: string
+          is_active?: boolean | null
+          license_id?: string | null
+          phone?: string | null
+          responsibilities?: string[] | null
+          role_type: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          company_id?: string
+          confirmed_at?: string | null
+          confirmed_signature?: string | null
+          created_at?: string
+          email?: string | null
+          employee_name?: string
+          id?: string
+          is_active?: boolean | null
+          license_id?: string | null
+          phone?: string | null
+          responsibilities?: string[] | null
+          role_type?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_organization_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_organization_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "ik_alkohol_licenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_organization_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -3353,6 +3501,229 @@ export type Database = {
             columns: ["license_id"]
             isOneToOne: false
             referencedRelation: "ik_alkohol_licenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_alkohol_risks: {
+        Row: {
+          company_id: string
+          consequence: number
+          created_at: string
+          existing_controls: string | null
+          id: string
+          is_risk_period: boolean | null
+          last_reviewed_at: string | null
+          measure_deadline: string | null
+          measure_responsible_id: string | null
+          measure_responsible_name: string | null
+          measure_status: string | null
+          penalty_points: number | null
+          planned_measures: string[] | null
+          probability: number
+          residual_consequence: number | null
+          residual_probability: number | null
+          risk_area: string
+          risk_description: string
+          risk_level: string | null
+          risk_period_days: string[] | null
+          risk_period_times: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          consequence: number
+          created_at?: string
+          existing_controls?: string | null
+          id?: string
+          is_risk_period?: boolean | null
+          last_reviewed_at?: string | null
+          measure_deadline?: string | null
+          measure_responsible_id?: string | null
+          measure_responsible_name?: string | null
+          measure_status?: string | null
+          penalty_points?: number | null
+          planned_measures?: string[] | null
+          probability: number
+          residual_consequence?: number | null
+          residual_probability?: number | null
+          risk_area: string
+          risk_description: string
+          risk_level?: string | null
+          risk_period_days?: string[] | null
+          risk_period_times?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          consequence?: number
+          created_at?: string
+          existing_controls?: string | null
+          id?: string
+          is_risk_period?: boolean | null
+          last_reviewed_at?: string | null
+          measure_deadline?: string | null
+          measure_responsible_id?: string | null
+          measure_responsible_name?: string | null
+          measure_status?: string | null
+          penalty_points?: number | null
+          planned_measures?: string[] | null
+          probability?: number
+          residual_consequence?: number | null
+          residual_probability?: number | null
+          risk_area?: string
+          risk_description?: string
+          risk_level?: string | null
+          risk_period_days?: string[] | null
+          risk_period_times?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_risks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_risks_measure_responsible_id_fkey"
+            columns: ["measure_responsible_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_alkohol_routines: {
+        Row: {
+          category: string
+          company_id: string
+          content: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_mandatory: boolean | null
+          last_reviewed_at: string | null
+          reviewed_by_id: string | null
+          reviewed_by_name: string | null
+          routine_name: string
+          sort_order: number | null
+          updated_at: string
+          venue_type: string | null
+        }
+        Insert: {
+          category: string
+          company_id: string
+          content: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_mandatory?: boolean | null
+          last_reviewed_at?: string | null
+          reviewed_by_id?: string | null
+          reviewed_by_name?: string | null
+          routine_name: string
+          sort_order?: number | null
+          updated_at?: string
+          venue_type?: string | null
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          content?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_mandatory?: boolean | null
+          last_reviewed_at?: string | null
+          reviewed_by_id?: string | null
+          reviewed_by_name?: string | null
+          routine_name?: string
+          sort_order?: number | null
+          updated_at?: string
+          venue_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_routines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_routines_reviewed_by_id_fkey"
+            columns: ["reviewed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_alkohol_shift_responsibilities: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          shift_date: string
+          shift_time: string | null
+          stedfortreder_id: string | null
+          stedfortreder_name: string | null
+          styrer_id: string | null
+          styrer_name: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          shift_date: string
+          shift_time?: string | null
+          stedfortreder_id?: string | null
+          stedfortreder_name?: string | null
+          styrer_id?: string | null
+          styrer_name: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          shift_date?: string
+          shift_time?: string | null
+          stedfortreder_id?: string | null
+          stedfortreder_name?: string | null
+          styrer_id?: string | null
+          styrer_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_shift_responsibilities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_shift_responsibilities_stedfortreder_id_fkey"
+            columns: ["stedfortreder_id"]
+            isOneToOne: false
+            referencedRelation: "ik_alkohol_organization"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_shift_responsibilities_styrer_id_fkey"
+            columns: ["styrer_id"]
+            isOneToOne: false
+            referencedRelation: "ik_alkohol_organization"
             referencedColumns: ["id"]
           },
         ]
