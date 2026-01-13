@@ -2909,6 +2909,510 @@ export type Database = {
           },
         ]
       }
+      ik_alkohol_attachments: {
+        Row: {
+          category: string
+          company_id: string
+          created_at: string
+          document_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          uploaded_by_id: string | null
+          uploaded_by_name: string | null
+        }
+        Insert: {
+          category: string
+          company_id: string
+          created_at?: string
+          document_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          uploaded_by_id?: string | null
+          uploaded_by_name?: string | null
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          created_at?: string
+          document_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          uploaded_by_id?: string | null
+          uploaded_by_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_attachments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_attachments_uploaded_by_id_fkey"
+            columns: ["uploaded_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_alkohol_compliance_items: {
+        Row: {
+          category: string | null
+          company_id: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          is_template: boolean | null
+          points: number
+          recommended_focus: string | null
+          rule_reference: string
+          sort_order: number | null
+          updated_at: string
+          violation_description: string
+        }
+        Insert: {
+          category?: string | null
+          company_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          is_template?: boolean | null
+          points?: number
+          recommended_focus?: string | null
+          rule_reference: string
+          sort_order?: number | null
+          updated_at?: string
+          violation_description: string
+        }
+        Update: {
+          category?: string | null
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          is_template?: boolean | null
+          points?: number
+          recommended_focus?: string | null
+          rule_reference?: string
+          sort_order?: number | null
+          updated_at?: string
+          violation_description?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_compliance_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_alkohol_incidents: {
+        Row: {
+          company_id: string
+          compliance_item_id: string | null
+          created_at: string
+          description: string
+          handling: string | null
+          id: string
+          incident_date: string
+          incident_number: string
+          incident_time: string | null
+          incident_type: string
+          involved_parties: string | null
+          learning_improvement: string | null
+          license_id: string | null
+          reported_by_id: string | null
+          reported_by_name: string | null
+          severity: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          compliance_item_id?: string | null
+          created_at?: string
+          description: string
+          handling?: string | null
+          id?: string
+          incident_date: string
+          incident_number: string
+          incident_time?: string | null
+          incident_type: string
+          involved_parties?: string | null
+          learning_improvement?: string | null
+          license_id?: string | null
+          reported_by_id?: string | null
+          reported_by_name?: string | null
+          severity?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          compliance_item_id?: string | null
+          created_at?: string
+          description?: string
+          handling?: string | null
+          id?: string
+          incident_date?: string
+          incident_number?: string
+          incident_time?: string | null
+          incident_type?: string
+          involved_parties?: string | null
+          learning_improvement?: string | null
+          license_id?: string | null
+          reported_by_id?: string | null
+          reported_by_name?: string | null
+          severity?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_incidents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_incidents_compliance_item_id_fkey"
+            columns: ["compliance_item_id"]
+            isOneToOne: false
+            referencedRelation: "ik_alkohol_compliance_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_incidents_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "ik_alkohol_licenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_incidents_reported_by_id_fkey"
+            columns: ["reported_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_alkohol_licenses: {
+        Row: {
+          company_id: string
+          concept_category: string | null
+          created_at: string
+          deputy_email: string | null
+          deputy_name: string | null
+          deputy_phone: string | null
+          id: string
+          is_active: boolean | null
+          license_number: string | null
+          license_type: string
+          manager_email: string | null
+          manager_name: string | null
+          manager_phone: string | null
+          municipality: string
+          updated_at: string
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Insert: {
+          company_id: string
+          concept_category?: string | null
+          created_at?: string
+          deputy_email?: string | null
+          deputy_name?: string | null
+          deputy_phone?: string | null
+          id?: string
+          is_active?: boolean | null
+          license_number?: string | null
+          license_type?: string
+          manager_email?: string | null
+          manager_name?: string | null
+          manager_phone?: string | null
+          municipality: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Update: {
+          company_id?: string
+          concept_category?: string | null
+          created_at?: string
+          deputy_email?: string | null
+          deputy_name?: string | null
+          deputy_phone?: string | null
+          id?: string
+          is_active?: boolean | null
+          license_number?: string | null
+          license_type?: string
+          manager_email?: string | null
+          manager_name?: string | null
+          manager_phone?: string | null
+          municipality?: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_licenses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_alkohol_reviews: {
+        Row: {
+          agenda_points: Json | null
+          company_id: string
+          completed_date: string | null
+          created_at: string
+          id: string
+          license_id: string | null
+          participants: string | null
+          planned_date: string
+          reminder_sent: boolean | null
+          review_type: string
+          status: string | null
+          summary: string | null
+          tasks: Json | null
+          updated_at: string
+        }
+        Insert: {
+          agenda_points?: Json | null
+          company_id: string
+          completed_date?: string | null
+          created_at?: string
+          id?: string
+          license_id?: string | null
+          participants?: string | null
+          planned_date: string
+          reminder_sent?: boolean | null
+          review_type: string
+          status?: string | null
+          summary?: string | null
+          tasks?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          agenda_points?: Json | null
+          company_id?: string
+          completed_date?: string | null
+          created_at?: string
+          id?: string
+          license_id?: string | null
+          participants?: string | null
+          planned_date?: string
+          reminder_sent?: boolean | null
+          review_type?: string
+          status?: string | null
+          summary?: string | null
+          tasks?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_reviews_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_reviews_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "ik_alkohol_licenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_alkohol_risk_control_history: {
+        Row: {
+          change_type: string
+          changed_by_id: string | null
+          changed_by_name: string | null
+          created_at: string
+          id: string
+          new_values: Json | null
+          old_values: Json | null
+          risk_control_id: string
+        }
+        Insert: {
+          change_type: string
+          changed_by_id?: string | null
+          changed_by_name?: string | null
+          created_at?: string
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          risk_control_id: string
+        }
+        Update: {
+          change_type?: string
+          changed_by_id?: string | null
+          changed_by_name?: string | null
+          created_at?: string
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          risk_control_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_risk_control_history_changed_by_id_fkey"
+            columns: ["changed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_risk_control_history_risk_control_id_fkey"
+            columns: ["risk_control_id"]
+            isOneToOne: false
+            referencedRelation: "ik_alkohol_risk_controls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_alkohol_risk_controls: {
+        Row: {
+          challenges: string | null
+          company_id: string
+          compliance_item_id: string | null
+          created_at: string
+          deadline_period: string | null
+          id: string
+          license_id: string | null
+          preventive_measures: string | null
+          responsible_role: string | null
+          status: string | null
+          updated_at: string
+          version: number | null
+        }
+        Insert: {
+          challenges?: string | null
+          company_id: string
+          compliance_item_id?: string | null
+          created_at?: string
+          deadline_period?: string | null
+          id?: string
+          license_id?: string | null
+          preventive_measures?: string | null
+          responsible_role?: string | null
+          status?: string | null
+          updated_at?: string
+          version?: number | null
+        }
+        Update: {
+          challenges?: string | null
+          company_id?: string
+          compliance_item_id?: string | null
+          created_at?: string
+          deadline_period?: string | null
+          id?: string
+          license_id?: string | null
+          preventive_measures?: string | null
+          responsible_role?: string | null
+          status?: string | null
+          updated_at?: string
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_risk_controls_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_risk_controls_compliance_item_id_fkey"
+            columns: ["compliance_item_id"]
+            isOneToOne: false
+            referencedRelation: "ik_alkohol_compliance_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_risk_controls_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "ik_alkohol_licenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_alkohol_training: {
+        Row: {
+          company_id: string
+          completed_date: string | null
+          created_at: string
+          documentation_path: string | null
+          employee_name: string
+          expires_date: string | null
+          id: string
+          is_completed: boolean | null
+          notes: string | null
+          required_by: string | null
+          role: string
+          training_type: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          completed_date?: string | null
+          created_at?: string
+          documentation_path?: string | null
+          employee_name: string
+          expires_date?: string | null
+          id?: string
+          is_completed?: boolean | null
+          notes?: string | null
+          required_by?: string | null
+          role: string
+          training_type: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          completed_date?: string | null
+          created_at?: string
+          documentation_path?: string | null
+          employee_name?: string
+          expires_date?: string | null
+          id?: string
+          is_completed?: boolean | null
+          notes?: string | null
+          required_by?: string | null
+          role?: string
+          training_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_training_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_hms_company_documents: {
         Row: {
           category: string | null
