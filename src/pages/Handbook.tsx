@@ -1605,21 +1605,59 @@ const Handbook = () => {
       addTocEntry(`${sectionNumber}. Rutiner og prosedyrer`);
       yPos = margin;
       addSectionHeader(`${sectionNumber}. Rutiner og prosedyrer`);
+
       // Use sanitized routines data to prevent undefined errors
       const sanitizedRoutinesList = sanitizeRoutines(routines);
+
+      const renderLabeledBlock = (label: string, value: string) => {
+        const clean = (value || "").trim();
+        if (!clean) return;
+
+        // Label
+        checkPageBreak(12);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.text(`${label}:`, margin + 6, yPos);
+        yPos += 4.5;
+
+        // Text
+        doc.setFont("helvetica", "normal");
+        const lines = doc.splitTextToSize(clean, contentWidth - 12);
+
+        // Render line-by-line to ensure page breaks work reliably
+        const lineHeight = 4.2;
+        for (const line of lines) {
+          checkPageBreak(lineHeight + 2);
+          doc.text(String(line), margin + 6, yPos);
+          yPos += lineHeight;
+        }
+
+        yPos += 3; // spacing after block
+      };
+
       if (sanitizedRoutinesList.length > 0) {
         sanitizedRoutinesList.forEach((routine, index) => {
-          checkPageBreak(40);
+          // Routine header card
+          checkPageBreak(22);
           doc.setFillColor(248, 250, 252);
-          doc.roundedRect(margin, yPos, contentWidth, 25, 2, 2, "F");
-          doc.setFontSize(11);
+          doc.roundedRect(margin, yPos, contentWidth, 14, 2, 2, "F");
           doc.setFont("helvetica", "bold");
-          doc.text(`${routinesSectionNum}.${index + 1} ${routine.routine_number}: ${routine.routine_name}`, margin + 5, yPos + 7);
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(9);
-          const purposeLines = doc.splitTextToSize(`Formål: ${routine.purpose || "Ikke spesifisert"}`, contentWidth - 10);
-          doc.text(purposeLines.slice(0, 2), margin + 5, yPos + 14);
-          yPos += 30;
+          doc.setFontSize(11);
+          doc.text(
+            `${routinesSectionNum}.${index + 1} ${routine.routine_number}: ${routine.routine_name}`,
+            margin + 5,
+            yPos + 9
+          );
+          yPos += 18;
+
+          // Full routine content
+          renderLabeledBlock("Formål", routine.purpose || "Ikke spesifisert");
+          renderLabeledBlock("Ansvar", routine.responsibility);
+          renderLabeledBlock("Fremgangsmåte", routine.procedure);
+          renderLabeledBlock("Eksempler", routine.examples);
+          renderLabeledBlock("Husk", routine.remember);
+
+          yPos += 4; // spacing between routines
         });
       } else {
         doc.setTextColor(150, 150, 150);
