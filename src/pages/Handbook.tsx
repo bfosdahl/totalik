@@ -1803,6 +1803,11 @@ const Handbook = () => {
               
               // Comprehensive section title mapping for all audit forms
               const sectionTitles: Record<string, string> = {
+                // El-kontroll sections
+                sikringsskap: "1. Sikringsskap / Fordelingstavle",
+                fastInstallasjon: "2. Fast installasjon / kabler",
+                elektriskUtstyr: "3. Elektrisk utstyr / stikk / skjøteledninger",
+                dokumentasjon: "4. Dokumentasjon og ansvar",
                 // Daglig drift sections
                 informasjon: "1. Informasjon og kommunikasjon",
                 samarbeid: "2. Samarbeid og beslutninger",
