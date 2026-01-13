@@ -5,12 +5,44 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, FileText, Download, AlertCircle } from "lucide-react";
+import { Loader2, FileText, Download, AlertCircle, Thermometer, SprayCanIcon, CheckCircle2, XCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { generateIkMatHandbokPdf } from "@/utils/ikMatHandbokPdf";
 import { toast } from "sonner";
+import { format, subDays } from "date-fns";
+import { nb } from "date-fns/locale";
+
+interface TemperatureLogEntry {
+  id: string;
+  temperature: number;
+  is_acceptable: boolean;
+  measured_by_name: string;
+  measured_at: string;
+  notes: string | null;
+  corrective_action: string | null;
+  equipment: {
+    name: string;
+    equipment_type: string;
+    min_temp: number | null;
+    max_temp: number | null;
+  } | null;
+}
+
+interface CleaningLogEntry {
+  id: string;
+  completed_by_name: string;
+  completed_at: string | null;
+  status: string;
+  cleaning_records: Array<{
+    area: string;
+    completed: boolean;
+    notes?: string;
+  }>;
+  notes: string | null;
+  created_at: string;
+}
 
 interface HandbokData {
   goals: string[];
@@ -70,9 +102,11 @@ const IkMatHandbok = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [handbokData, setHandbokData] = useState<HandbokData | null>(null);
+  const [temperatureLogs, setTemperatureLogs] = useState<TemperatureLogEntry[]>([]);
+  const [cleaningLogs, setCleaningLogs] = useState<CleaningLogEntry[]>([]);
 
   useEffect(() => {
-    const fetchHandbokData = async () => {
+    const fetchAllData = async () => {
       if (!company?.id) return;
 
       try {
@@ -110,6 +144,33 @@ const IkMatHandbok = () => {
           contracts: pickArray<HandbokData['contracts'][number]>('contracts', 'avtaler'),
           setupAnswers: (settings?.setupAnswers || {}) as HandbokData['setupAnswers'],
         });
+
+        // Fetch temperature logs (last 30 days)
+        const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
+        const { data: tempLogs, error: tempError } = await supabase
+          .from('ik_mat_temperature_logs')
+          .select('*, equipment:ik_mat_temperature_equipment(*)')
+          .eq('company_id', company.id)
+          .gte('measured_at', thirtyDaysAgo)
+          .order('measured_at', { ascending: false })
+          .limit(100);
+
+        if (!tempError && tempLogs) {
+          setTemperatureLogs(tempLogs as unknown as TemperatureLogEntry[]);
+        }
+
+        // Fetch cleaning logs (last 30 days)
+        const { data: cleanLogs, error: cleanError } = await supabase
+          .from('ik_mat_cleaning_plan_responses')
+          .select('*')
+          .eq('company_id', company.id)
+          .gte('created_at', thirtyDaysAgo)
+          .order('created_at', { ascending: false })
+          .limit(50);
+
+        if (!cleanError && cleanLogs) {
+          setCleaningLogs(cleanLogs as unknown as CleaningLogEntry[]);
+        }
       } catch (error) {
         console.error('Error fetching håndbok data:', error);
       } finally {
@@ -117,7 +178,7 @@ const IkMatHandbok = () => {
       }
     };
 
-    fetchHandbokData();
+    fetchAllData();
   }, [company?.id]);
 
   const handleExportPdf = async () => {
@@ -509,6 +570,125 @@ const IkMatHandbok = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Temperature Logs - Actual Records */}
+        {temperatureLogs.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Thermometer className="h-5 w-5" />
+                Temperaturlogg (siste 30 dager)
+              </CardTitle>
+              <CardDescription>Dokumenterte temperaturmålinger</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="text-left p-2 font-semibold">Dato</th>
+                      <th className="text-left p-2 font-semibold">Utstyr</th>
+                      <th className="text-left p-2 font-semibold">Temperatur</th>
+                      <th className="text-left p-2 font-semibold">Status</th>
+                      <th className="text-left p-2 font-semibold">Målt av</th>
+                      <th className="text-left p-2 font-semibold">Notater</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {temperatureLogs.map((log) => (
+                      <tr key={log.id} className="border-b">
+                        <td className="p-2">
+                          {format(new Date(log.measured_at), 'dd.MM.yyyy HH:mm', { locale: nb })}
+                        </td>
+                        <td className="p-2">{log.equipment?.name || 'Ukjent'}</td>
+                        <td className="p-2">
+                          <span className={log.is_acceptable ? 'text-green-600' : 'text-red-600 font-bold'}>
+                            {log.temperature}°C
+                          </span>
+                        </td>
+                        <td className="p-2">
+                          {log.is_acceptable ? (
+                            <Badge variant="secondary" className="gap-1">
+                              <CheckCircle2 className="h-3 w-3" />
+                              OK
+                            </Badge>
+                          ) : (
+                            <Badge variant="destructive" className="gap-1">
+                              <XCircle className="h-3 w-3" />
+                              Avvik
+                            </Badge>
+                          )}
+                        </td>
+                        <td className="p-2">{log.measured_by_name}</td>
+                        <td className="p-2 text-muted-foreground">
+                          {log.corrective_action || log.notes || '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Cleaning Logs - Actual Records */}
+        {cleaningLogs.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <SprayCanIcon className="h-5 w-5" />
+                Renholdslogg (siste 30 dager)
+              </CardTitle>
+              <CardDescription>Dokumenterte renholdsgjennomføringer</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {cleaningLogs.map((log) => (
+                  <div key={log.id} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="font-semibold">
+                          {format(new Date(log.completed_at || log.created_at), 'EEEE dd. MMMM yyyy', { locale: nb })}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Utført av: {log.completed_by_name}
+                        </p>
+                      </div>
+                      <Badge variant={log.status === 'completed' ? 'secondary' : 'default'}>
+                        {log.status === 'completed' ? 'Fullført' : 'Pågår'}
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {log.cleaning_records?.map((record, idx) => (
+                        <div 
+                          key={idx} 
+                          className={`flex items-center gap-2 text-sm p-2 rounded ${
+                            record.completed ? 'bg-green-50 dark:bg-green-950/30' : 'bg-muted'
+                          }`}
+                        >
+                          {record.completed ? (
+                            <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          )}
+                          <span className={!record.completed ? 'text-muted-foreground' : ''}>
+                            {record.area}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    {log.notes && (
+                      <p className="mt-3 text-sm text-muted-foreground italic">
+                        Notater: {log.notes}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Allergens */}
         <Card>
