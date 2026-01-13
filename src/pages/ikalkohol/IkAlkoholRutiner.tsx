@@ -304,10 +304,10 @@ const IkAlkoholRutiner = () => {
                 </div>
                 <div>
                   <label className="text-sm font-medium">Stedstype (valgfritt)</label>
-                  <Select value={formData.venue_type} onValueChange={(v) => setFormData({ ...formData, venue_type: v })}>
+                  <Select value={formData.venue_type || '_all'} onValueChange={(v) => setFormData({ ...formData, venue_type: v === '_all' ? '' : v })}>
                     <SelectTrigger><SelectValue placeholder="Alle stedstyper" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Alle stedstyper</SelectItem>
+                      <SelectItem value="_all">Alle stedstyper</SelectItem>
                       {VENUE_TYPES.map(v => (
                         <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>
                       ))}
