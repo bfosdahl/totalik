@@ -163,7 +163,7 @@ export default function IkAlkoholInternkontroll() {
     if (editingTraining.id) {
       updateTraining.mutate(editingTraining as AlkoholTraining);
     } else {
-      createTraining.mutate(editingTraining);
+      createTraining.mutate(editingTraining as { employee_name: string; role: string; training_type: string });
     }
     setEditingTraining(null);
     setShowTrainingDialog(false);
@@ -175,7 +175,7 @@ export default function IkAlkoholInternkontroll() {
     if (editingReview.id) {
       updateReview.mutate(editingReview as AlkoholReview);
     } else {
-      createReview.mutate(editingReview);
+      createReview.mutate(editingReview as { planned_date: string; review_type: string });
     }
     setEditingReview(null);
     setShowReviewDialog(false);
