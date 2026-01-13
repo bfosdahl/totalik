@@ -69,18 +69,11 @@ serve(async (req) => {
       });
     }
 
-    const { email, password, firstName, lastName, role } = await req.json();
+    const { email, firstName, lastName, role } = await req.json();
 
     // Validate input
     if (!email || !email.includes("@")) {
       return new Response(JSON.stringify({ error: "Gyldig e-post er påkrevd" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (!password || password.length < 6) {
-      return new Response(JSON.stringify({ error: "Passord må være minst 6 tegn" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -111,10 +104,9 @@ serve(async (req) => {
       });
     }
 
-    // Create the new user with specified password
+    // Create the new user WITHOUT a password - they will set it via the reset link
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
-      password,
       email_confirm: true,
       user_metadata: {
         first_name: firstName || "",
@@ -168,9 +160,27 @@ serve(async (req) => {
       }
     }
 
-    // Send welcome email with password
+    // Generate a secure password reset link
+    const loginUrl = req.headers.get("origin") || "https://athena-kurs-og-internkontroll.lovable.app";
+    const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'recovery',
+      email: email,
+      options: {
+        redirectTo: `${loginUrl}/auth`
+      }
+    });
+
+    if (resetError) {
+      console.error("Error generating reset link:", resetError);
+      // User was created but we couldn't generate a reset link - still return success
+      // but log the error
+    }
+
+    const resetLink = resetData?.properties?.action_link;
+
+    // Send welcome email with password reset link (NOT plaintext password)
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (resendApiKey) {
+    if (resendApiKey && resetLink) {
       try {
         const resend = new Resend(resendApiKey);
         
@@ -182,25 +192,26 @@ serve(async (req) => {
           .single();
 
         const companyName = company?.name || "Athena HMS";
-        const loginUrl = req.headers.get("origin") || "https://athena-kurs-og-internkontroll.lovable.app";
         
         await resend.emails.send({
           from: `${companyName} <noreply@totalik.no>`,
           to: [email],
-          subject: `Velkommen til ${companyName} - Din brukerkonto er opprettet`,
+          subject: `Velkommen til ${companyName} - Sett ditt passord`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <h1 style="color: #333;">Velkommen til ${companyName}!</h1>
               <p>Hei ${firstName || ""},</p>
-              <p>Din brukerkonto har blitt opprettet. Her er innloggingsinformasjonen din:</p>
-              <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <p><strong>E-post:</strong> ${email}</p>
-                <p><strong>Passord:</strong> ${password}</p>
-              </div>
-              <p>Du kan logge inn her:</p>
-              <p><a href="${loginUrl}/auth" style="background-color: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Logg inn</a></p>
-              <p style="color: #666; font-size: 14px; margin-top: 30px;">
-                Vi anbefaler at du bytter passord etter første innlogging under Innstillinger → Sikkerhet.
+              <p>Din brukerkonto har blitt opprettet.</p>
+              <p>Klikk på knappen nedenfor for å sette ditt passord:</p>
+              <p style="margin: 30px 0;">
+                <a href="${resetLink}" style="background-color: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Sett passord</a>
+              </p>
+              <p style="color: #666; font-size: 14px;">
+                Lenken utløper om 24 timer.
+              </p>
+              <p style="color: #666; font-size: 14px;">
+                Hvis du ikke kan klikke på knappen, kopier og lim inn denne lenken i nettleseren:<br>
+                <span style="word-break: break-all; color: #0066cc;">${resetLink}</span>
               </p>
               <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
               <p style="color: #999; font-size: 12px;">
@@ -209,14 +220,16 @@ serve(async (req) => {
             </div>
           `,
         });
-        console.log(`Welcome email sent to ${email}`);
+        console.log(`Welcome email with password reset link sent to ${email}`);
       } catch (emailError) {
         console.error("Error sending welcome email:", emailError);
         // Don't fail the request if email fails
       }
+    } else if (!resetLink) {
+      console.warn(`Could not send welcome email to ${email} - reset link generation failed`);
     }
 
-    console.log(`User ${email} created directly with password for company ${requestingProfile.company_id}`);
+    console.log(`User ${email} created for company ${requestingProfile.company_id}`);
 
     return new Response(
       JSON.stringify({ 
