@@ -60,6 +60,7 @@ interface BulkCompanyImportDialogProps {
 const MODULE_OPTIONS = [
   { type: "IK_HMS", name: "IK HMS" },
   { type: "IK_MAT", name: "IK MAT" },
+  { type: "IK_ALKOHOL", name: "IK Alkohol" },
   { type: "IK_BYGG", name: "KS Bygg" },
 ];
 
