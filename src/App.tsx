@@ -66,6 +66,10 @@ import IkMatDokumentsenter from "./pages/IkMatDokumentsenter";
 import IkAlkoholDashboard from "./pages/ikalkohol/IkAlkoholDashboard";
 import IkAlkoholInternkontroll from "./pages/ikalkohol/IkAlkoholInternkontroll";
 import IkAlkoholHendelser from "./pages/ikalkohol/IkAlkoholHendelser";
+import IkAlkoholRutiner from "./pages/ikalkohol/IkAlkoholRutiner";
+import IkAlkoholOrganisering from "./pages/ikalkohol/IkAlkoholOrganisering";
+import IkAlkoholMaal from "./pages/ikalkohol/IkAlkoholMaal";
+import IkAlkoholRisikoanalyse from "./pages/ikalkohol/IkAlkoholRisikoanalyse";
 import IkHmsOppsett from "./pages/IkHmsOppsett";
 import IkHmsMaal from "./pages/IkHmsMaal";
 import IkHmsOrganisering from "./pages/IkHmsOrganisering";
@@ -158,6 +162,10 @@ const App = () => (
                   <Route path="/ik-alkohol" element={<ProtectedRoute><IkAlkoholDashboard /></ProtectedRoute>} />
                   <Route path="/ik-alkohol/internkontroll" element={<ProtectedRoute><IkAlkoholInternkontroll /></ProtectedRoute>} />
                   <Route path="/ik-alkohol/hendelser" element={<ProtectedRoute><IkAlkoholHendelser /></ProtectedRoute>} />
+                  <Route path="/ik-alkohol/rutiner" element={<ProtectedRoute><IkAlkoholRutiner /></ProtectedRoute>} />
+                  <Route path="/ik-alkohol/organisering" element={<ProtectedRoute><IkAlkoholOrganisering /></ProtectedRoute>} />
+                  <Route path="/ik-alkohol/maal" element={<ProtectedRoute><IkAlkoholMaal /></ProtectedRoute>} />
+                  <Route path="/ik-alkohol/risikoanalyse" element={<ProtectedRoute><IkAlkoholRisikoanalyse /></ProtectedRoute>} />
                   
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="/brukerveiledning" element={<ProtectedRoute><Brukerveiledning /></ProtectedRoute>} />

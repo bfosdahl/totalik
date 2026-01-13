@@ -294,7 +294,17 @@ export const useIkAlkoholRoutines = () => {
   });
 
   const createRoutine = useMutation({
-    mutationFn: async (routine: Omit<AlkoholRoutine, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (routine: {
+      company_id: string;
+      category: string;
+      routine_name: string;
+      content: string;
+      description?: string;
+      venue_type?: string | null;
+      is_mandatory?: boolean;
+      is_active?: boolean;
+      sort_order?: number;
+    }) => {
       const { data, error } = await supabase
         .from('ik_alkohol_routines')
         .insert(routine as any)
