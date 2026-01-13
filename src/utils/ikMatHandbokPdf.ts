@@ -54,23 +54,30 @@ interface HandbokPdfData {
 }
 
 export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<void> => {
-  const doc = new jsPDF();
-  const pageWidth = doc.internal.pageSize.width;
-  const margin = 14;
-  let yPosition = 20;
+  try {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 14;
+    let yPosition = 20;
 
-  // Ensure all arrays exist with defaults
-  const safeData = {
-    ...data,
-    goals: data.goals || [],
-    haccp: data.haccp || [],
-    risks: data.risks || [],
-    routines: data.routines || [],
-    checklists: data.checklists || [],
-    cleaningPlan: data.cleaningPlan || [],
-    allergens: data.allergens || [],
-    contracts: data.contracts || [],
-  };
+    // Ensure all arrays exist with defaults and are actually arrays
+    const ensureArray = <T>(value: T[] | undefined | null): T[] => {
+      if (Array.isArray(value)) return value;
+      return [];
+    };
+
+    const safeData = {
+      ...data,
+      companyName: data.companyName || 'Bedrift',
+      goals: ensureArray(data.goals),
+      haccp: ensureArray(data.haccp),
+      risks: ensureArray(data.risks),
+      routines: ensureArray(data.routines),
+      checklists: ensureArray(data.checklists),
+      cleaningPlan: ensureArray(data.cleaningPlan),
+      allergens: ensureArray(data.allergens),
+      contracts: ensureArray(data.contracts),
+    };
 
   // Helper function to add new page if needed
   const checkPageBreak = (neededSpace: number = 30) => {
@@ -318,8 +325,12 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     });
   }
 
-  // Save PDF
-  const companyNameSafe = (safeData.companyName || 'Bedrift').replace(/\s+/g, '-');
-  const fileName = `IK-MAT-Handbok-${companyNameSafe}-${new Date().toISOString().split('T')[0]}.pdf`;
-  doc.save(fileName);
+    // Save PDF
+    const companyNameSafe = (safeData.companyName || 'Bedrift').replace(/[^a-zA-Z0-9æøåÆØÅ\s-]/g, '').replace(/\s+/g, '-');
+    const fileName = `IK-MAT-Handbok-${companyNameSafe}-${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    throw new Error(`Kunne ikke generere PDF: ${error instanceof Error ? error.message : 'Ukjent feil'}`);
+  }
 };
