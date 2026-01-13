@@ -88,22 +88,27 @@ const IkMatHandbok = () => {
 
         if (moduleError) throw moduleError;
 
-        const settings = moduleData?.settings as { 
-          generatedContent?: Partial<Omit<HandbokData, "setupAnswers">>;
-          setupAnswers?: HandbokData["setupAnswers"];
+        const settings = moduleData?.settings as any;
+        const generatedContent: any = settings?.generatedContent || {};
+
+        const pickArray = <T,>(...keys: string[]): T[] => {
+          for (const key of keys) {
+            const value = generatedContent?.[key];
+            if (Array.isArray(value)) return value as T[];
+          }
+          return [];
         };
-        const generatedContent = settings?.generatedContent || {};
 
         setHandbokData({
-          goals: generatedContent.goals || [],
-          haccp: generatedContent.haccp || [],
-          risks: generatedContent.risks || [],
-          routines: generatedContent.routines || [],
-          checklists: generatedContent.checklists || [],
-          cleaningPlan: generatedContent.cleaningPlan || [],
-          allergens: generatedContent.allergens || [],
-          contracts: generatedContent.contracts || [],
-          setupAnswers: settings?.setupAnswers || {} as HandbokData["setupAnswers"],
+          goals: pickArray<string>('goals', 'maal', 'målsettinger'),
+          haccp: pickArray<HandbokData['haccp'][number]>('haccp', 'haccpPlan', 'kkp'),
+          risks: pickArray<HandbokData['risks'][number]>('risks', 'riskAssessment', 'risikovurdering'),
+          routines: pickArray<HandbokData['routines'][number]>('routines', 'rutiner'),
+          checklists: pickArray<HandbokData['checklists'][number]>('checklists', 'sjekklister'),
+          cleaningPlan: pickArray<HandbokData['cleaningPlan'][number]>('cleaningPlan', 'renholdsplan'),
+          allergens: pickArray<HandbokData['allergens'][number]>('allergens', 'allergener'),
+          contracts: pickArray<HandbokData['contracts'][number]>('contracts', 'avtaler'),
+          setupAnswers: (settings?.setupAnswers || {}) as HandbokData['setupAnswers'],
         });
       } catch (error) {
         console.error('Error fetching håndbok data:', error);
@@ -122,9 +127,21 @@ const IkMatHandbok = () => {
     }
 
     try {
-      // Ensure arrays are valid before passing to PDF generator
-      const ensureArray = (value: unknown): unknown[] => {
-        if (Array.isArray(value)) return value;
+      const safeString = (value: unknown): string => {
+        if (typeof value === 'string') return value;
+        if (value === null || value === undefined) return '';
+        return String(value);
+      };
+
+      const safeStringArray = (value: unknown): string[] => {
+        if (Array.isArray(value)) return value.map(safeString).filter(Boolean);
+        if (typeof value === 'string') {
+          // Support both newline and comma separated inputs
+          return value
+            .split(/\r?\n|\s*,\s*/g)
+            .map(s => s.trim())
+            .filter(Boolean);
+        }
         return [];
       };
 
@@ -133,15 +150,53 @@ const IkMatHandbok = () => {
         businessType: handbokData.setupAnswers?.businessType,
         numberOfEmployees: handbokData.setupAnswers?.numberOfEmployees,
         hasCleanZone: handbokData.setupAnswers?.hasCleanZone,
-        goals: ensureArray(handbokData.goals) as string[],
-        haccp: ensureArray(handbokData.haccp) as HandbokData['haccp'],
-        risks: ensureArray(handbokData.risks) as HandbokData['risks'],
-        routines: ensureArray(handbokData.routines) as HandbokData['routines'],
-        checklists: ensureArray(handbokData.checklists) as HandbokData['checklists'],
-        cleaningPlan: ensureArray(handbokData.cleaningPlan) as HandbokData['cleaningPlan'],
-        allergens: ensureArray(handbokData.allergens) as HandbokData['allergens'],
-        contracts: ensureArray(handbokData.contracts) as HandbokData['contracts'],
+        goals: safeStringArray(handbokData.goals),
+        haccp: (Array.isArray(handbokData.haccp) ? handbokData.haccp : []).map((h) => ({
+          step: safeString((h as any)?.step),
+          hazard: safeString((h as any)?.hazard),
+          criticalLimit: safeString((h as any)?.criticalLimit),
+          monitoring: safeString((h as any)?.monitoring),
+          correctiveAction: safeString((h as any)?.correctiveAction),
+          verification: safeString((h as any)?.verification),
+        })),
+        risks: (Array.isArray(handbokData.risks) ? handbokData.risks : []).map((r) => ({
+          hazard: safeString((r as any)?.hazard),
+          consequence: safeString((r as any)?.consequence),
+          probability: safeString((r as any)?.probability),
+          riskLevel: safeString((r as any)?.riskLevel),
+          measures: safeString((r as any)?.measures),
+        })),
+        routines: (Array.isArray(handbokData.routines) ? handbokData.routines : []).map((rt) => ({
+          name: safeString((rt as any)?.name),
+          description: safeString((rt as any)?.description),
+          frequency: safeString((rt as any)?.frequency),
+          responsible: safeString((rt as any)?.responsible),
+        })),
+        checklists: (Array.isArray(handbokData.checklists) ? handbokData.checklists : []).map((c) => ({
+          name: safeString((c as any)?.name),
+          description: safeString((c as any)?.description),
+          checkpoints: safeStringArray((c as any)?.checkpoints),
+        })),
+        cleaningPlan: (Array.isArray(handbokData.cleaningPlan) ? handbokData.cleaningPlan : []).map((t) => ({
+          area: safeString((t as any)?.area),
+          frequency: safeString((t as any)?.frequency),
+          method: safeString((t as any)?.method),
+          responsible: safeString((t as any)?.responsible),
+        })),
+        allergens: (Array.isArray(handbokData.allergens) ? handbokData.allergens : []).map((a) => ({
+          name: safeString((a as any)?.name),
+          present: Boolean((a as any)?.present),
+          controlMeasures: safeString((a as any)?.controlMeasures),
+        })),
+        contracts: (Array.isArray(handbokData.contracts) ? handbokData.contracts : []).map((c) => ({
+          supplier: safeString((c as any)?.supplier),
+          type: safeString((c as any)?.type),
+          frequency: safeString((c as any)?.frequency),
+          contact: safeString((c as any)?.contact) || undefined,
+          nextReview: safeString((c as any)?.nextReview) || undefined,
+        })),
       });
+
       toast.success("IK-MAT håndbok lastet ned som PDF");
     } catch (error) {
       console.error("Error generating PDF:", error);
