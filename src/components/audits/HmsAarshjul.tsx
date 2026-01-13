@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +19,10 @@ import {
   BookOpen,
   ChevronRight,
   Check,
+  CheckCircle2,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 // Map activity IDs to their corresponding routes/form types
 const activityRoutes: Record<string, { route: string; formType?: string }> = {
@@ -190,11 +193,92 @@ interface HmsAarshjulProps {
   compact?: boolean;
 }
 
+// Map form_type from database to activity IDs
+const formTypeToActivityId: Record<string, string> = {
+  "annual-hms-revision": "annual-review",
+  "vernerunde": "vernerunde-q1", // Will check for Q1-Q4 based on month
+  "elkontroll": "el-kontroll",
+  "el-kontroll": "el-kontroll",
+  "brannvern": "brannvern",
+  "fysiske_forhold": "fysiske-forhold",
+  "fysiske-arbeidsforhold": "fysiske-forhold",
+  "daglig_drift": "daglig-drift",
+  "stoffkartotek": "stoffkartotek",
+  "risikovurdering": "risikovurdering",
+};
+
+interface CompletedActivity {
+  form_type: string;
+  completed_at: string;
+  month: number;
+  year: number;
+}
+
 const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   const navigate = useNavigate();
+  const { company } = useAuth();
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
+  const [completedActivities, setCompletedActivities] = useState<CompletedActivity[]>([]);
   const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
+
+  // Fetch completed activities from database
+  useEffect(() => {
+    const fetchCompletedActivities = async () => {
+      if (!company?.id) return;
+      
+      const { data, error } = await supabase
+        .from("audit_form_responses")
+        .select("form_type, completed_at")
+        .eq("company_id", company.id)
+        .eq("status", "completed")
+        .not("completed_at", "is", null);
+      
+      if (!error && data) {
+        const mapped = data.map((item) => {
+          const date = new Date(item.completed_at);
+          return {
+            form_type: item.form_type,
+            completed_at: item.completed_at,
+            month: date.getMonth() + 1,
+            year: date.getFullYear(),
+          };
+        });
+        setCompletedActivities(mapped);
+      }
+    };
+    
+    fetchCompletedActivities();
+  }, [company?.id]);
+
+  // Check if an activity is completed for current year
+  const isActivityCompleted = (activityId: string): boolean => {
+    // Find form types that match this activity
+    const matchingFormTypes = Object.entries(formTypeToActivityId)
+      .filter(([_, id]) => id === activityId || id.startsWith(activityId.split("-")[0]))
+      .map(([formType]) => formType);
+    
+    return completedActivities.some(
+      (ca) => matchingFormTypes.includes(ca.form_type) && ca.year === currentYear
+    );
+  };
+
+  // Get completion date for an activity
+  const getCompletionDate = (activityId: string): string | null => {
+    const matchingFormTypes = Object.entries(formTypeToActivityId)
+      .filter(([_, id]) => id === activityId || id.startsWith(activityId.split("-")[0]))
+      .map(([formType]) => formType);
+    
+    const completed = completedActivities.find(
+      (ca) => matchingFormTypes.includes(ca.form_type) && ca.year === currentYear
+    );
+    
+    if (completed) {
+      return new Date(completed.completed_at).toLocaleDateString("nb-NO");
+    }
+    return null;
+  };
 
   const handleActivityClick = (activityId: string) => {
     const routeInfo = activityRoutes[activityId];
@@ -356,22 +440,37 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                   {currentMonthActivities.length} aktiviteter
                 </Badge>
               </div>
-              {currentMonthActivities.slice(0, 2).map((activity) => (
-                <div 
-                  key={activity.id} 
-                  className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
-                  onClick={() => handleActivityClick(activity.id)}
-                >
-                  <div className={cn("p-1 rounded shrink-0", activity.color)}>
-                    {activity.icon}
+              {currentMonthActivities.slice(0, 2).map((activity) => {
+                const completed = isActivityCompleted(activity.id);
+                const completionDate = getCompletionDate(activity.id);
+                return (
+                  <div 
+                    key={activity.id} 
+                    className={cn(
+                      "flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors",
+                      completed ? "bg-success/10 border border-success/30" : "bg-muted/50 hover:bg-muted"
+                    )}
+                    onClick={() => handleActivityClick(activity.id)}
+                  >
+                    <div className={cn("p-1 rounded shrink-0", completed ? "bg-success text-success-foreground" : activity.color)}>
+                      {completed ? <CheckCircle2 className="w-4 h-4" /> : activity.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate">{activity.name}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {completed ? `Fullført ${completionDate}` : activity.responsible}
+                      </p>
+                    </div>
+                    {completed ? (
+                      <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-success/20 text-success border-0">
+                        Utført
+                      </Badge>
+                    ) : (
+                      <ChevronRight className="w-3 h-3 text-muted-foreground shrink-0" />
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate">{activity.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{activity.responsible}</p>
-                  </div>
-                  <ChevronRight className="w-3 h-3 text-muted-foreground shrink-0" />
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <Button variant="ghost" size="sm" className="mt-3 text-xs w-full" asChild>
@@ -542,34 +641,55 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                     </div>
                     {displayActivities.length > 0 ? (
                       <div className="space-y-3">
-                        {displayActivities.map((activity) => (
-                          <motion.div
-                            key={activity.id}
-                            initial={{ opacity: 0, x: 10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
-                            onClick={() => handleActivityClick(activity.id)}
-                          >
-                            <div className={cn("p-2 rounded-lg shrink-0", activity.color)}>
-                              {activity.icon}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-medium text-sm">{activity.name}</h4>
-                              <p className="text-xs text-muted-foreground">{activity.description}</p>
-                              <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                <Badge variant="secondary" className="text-xs">
-                                  {activity.frequency}
-                                </Badge>
-                                {activity.responsible && (
-                                  <span className="text-xs text-muted-foreground">
-                                    {activity.responsible}
-                                  </span>
-                                )}
+                        {displayActivities.map((activity) => {
+                          const completed = isActivityCompleted(activity.id);
+                          const completionDate = getCompletionDate(activity.id);
+                          return (
+                            <motion.div
+                              key={activity.id}
+                              initial={{ opacity: 0, x: 10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              className={cn(
+                                "flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors",
+                                completed ? "bg-success/10 border border-success/30" : "bg-muted/50 hover:bg-muted"
+                              )}
+                              onClick={() => handleActivityClick(activity.id)}
+                            >
+                              <div className={cn(
+                                "p-2 rounded-lg shrink-0", 
+                                completed ? "bg-success text-success-foreground" : activity.color
+                              )}>
+                                {completed ? <CheckCircle2 className="w-4 h-4" /> : activity.icon}
                               </div>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
-                          </motion.div>
-                        ))}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-medium text-sm">{activity.name}</h4>
+                                  {completed && (
+                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-success/20 text-success border-0">
+                                      Utført
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground">{activity.description}</p>
+                                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                  <Badge variant="secondary" className="text-xs">
+                                    {activity.frequency}
+                                  </Badge>
+                                  {completed ? (
+                                    <span className="text-xs text-success">
+                                      Fullført {completionDate}
+                                    </span>
+                                  ) : activity.responsible && (
+                                    <span className="text-xs text-muted-foreground">
+                                      {activity.responsible}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
+                            </motion.div>
+                          );
+                        })}
                       </div>
                     ) : (
                       <div className="text-center py-8 text-muted-foreground">
@@ -582,22 +702,43 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Alle aktiviteter</h3>
                     <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
-                      {defaultActivities.map((activity) => (
-                        <div
-                          key={activity.id}
-                          className="flex items-center gap-3 p-2 hover:bg-muted/50 rounded-lg transition-colors cursor-pointer"
-                          onClick={() => handleActivityClick(activity.id)}
-                        >
-                          <div className={cn("p-1.5 rounded shrink-0", activity.color)}>
-                            {activity.icon}
+                      {defaultActivities.map((activity) => {
+                        const completed = isActivityCompleted(activity.id);
+                        const completionDate = getCompletionDate(activity.id);
+                        return (
+                          <div
+                            key={activity.id}
+                            className={cn(
+                              "flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer",
+                              completed ? "bg-success/10 border border-success/30" : "hover:bg-muted/50"
+                            )}
+                            onClick={() => handleActivityClick(activity.id)}
+                          >
+                            <div className={cn(
+                              "p-1.5 rounded shrink-0", 
+                              completed ? "bg-success text-success-foreground" : activity.color
+                            )}>
+                              {completed ? <CheckCircle2 className="w-4 h-4" /> : activity.icon}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-medium truncate">{activity.name}</p>
+                                {completed && (
+                                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-success/20 text-success border-0">
+                                    Utført
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {completed ? `Fullført ${completionDate}` : activity.frequency}
+                              </p>
+                            </div>
+                            {!completed && (
+                              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                            )}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{activity.name}</p>
-                            <p className="text-xs text-muted-foreground">{activity.frequency}</p>
-                          </div>
-                          <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
