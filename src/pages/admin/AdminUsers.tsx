@@ -94,22 +94,30 @@ export default function AdminUsers() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: profiles, isLoading } = useQuery({
+  const { data: profiles, isLoading, error: profilesError } = useQuery({
     queryKey: ["admin-profiles", companyFilter],
     queryFn: async () => {
-      let query = supabase
-        .from("profiles")
-        .select("*, companies(name)")
-        .order("created_at", { ascending: false });
+      try {
+        let query = supabase
+          .from("profiles")
+          .select("*, companies(name)")
+          .order("created_at", { ascending: false })
+          .limit(500);
 
-      if (companyFilter) {
-        query = query.eq("company_id", companyFilter);
+        if (companyFilter) {
+          query = query.eq("company_id", companyFilter);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        return data;
+      } catch (err) {
+        console.error("Error fetching profiles:", err);
+        throw err;
       }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
     },
+    retry: 1,
+    staleTime: 30000,
   });
 
   const { data: companies } = useQuery({
@@ -125,13 +133,23 @@ export default function AdminUsers() {
     },
   });
 
-  const { data: userRoles } = useQuery({
+  const { data: userRoles, error: rolesError } = useQuery({
     queryKey: ["admin-user-roles"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("user_roles").select("*");
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from("user_roles")
+          .select("*")
+          .limit(1000);
+        if (error) throw error;
+        return data;
+      } catch (err) {
+        console.error("Error fetching user roles:", err);
+        throw err;
+      }
     },
+    retry: 1,
+    staleTime: 30000,
   });
 
   const assignCompanyMutation = useMutation({
@@ -460,6 +478,24 @@ export default function AdminUsers() {
     toast({ title: "Eksport fullført", description: `${dataToExport.length} brukere eksportert til CSV` });
   }, [profiles, filteredProfiles, getUserRoles, toast]);
 
+
+  // Error handling for profiles query
+  if (profilesError) {
+    return (
+      <AdminLayout>
+        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-4">
+          <h2 className="text-xl font-bold mb-2">Kunne ikke laste brukere</h2>
+          <p className="text-muted-foreground mb-4">
+            Det oppstod en feil under lasting av brukerlisten. Prøv å oppdatere siden.
+          </p>
+          <Button onClick={() => window.location.reload()}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Last på nytt
+          </Button>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
