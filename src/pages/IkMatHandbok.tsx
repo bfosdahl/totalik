@@ -147,6 +147,14 @@ const IkMatHandbok = () => {
 
       await generateIkMatHandbokPdf({
         companyName: company.name || 'Bedrift',
+        companyInfo: {
+          name: company.name,
+          org_number: company.org_number || undefined,
+          address: company.address || undefined,
+          postal_code: company.postal_code || undefined,
+          city: company.city || undefined,
+          logo_url: company.logo_url || undefined,
+        },
         businessType: handbokData.setupAnswers?.businessType,
         numberOfEmployees: handbokData.setupAnswers?.numberOfEmployees,
         hasCleanZone: handbokData.setupAnswers?.hasCleanZone,
