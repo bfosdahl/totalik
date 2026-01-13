@@ -133,6 +133,16 @@ const IkMatHandbok = () => {
         return String(value);
       };
 
+      // Pick first non-empty string from multiple possible field names
+      const pickString = (obj: any, ...keys: string[]): string => {
+        for (const key of keys) {
+          const value = obj?.[key];
+          if (typeof value === 'string' && value.trim()) return value;
+          if (typeof value === 'number') return String(value);
+        }
+        return '';
+      };
+
       const safeStringArray = (value: unknown): string[] => {
         if (Array.isArray(value)) return value.map(safeString).filter(Boolean);
         if (typeof value === 'string') {
@@ -160,48 +170,48 @@ const IkMatHandbok = () => {
         hasCleanZone: handbokData.setupAnswers?.hasCleanZone,
         goals: safeStringArray(handbokData.goals),
         haccp: (Array.isArray(handbokData.haccp) ? handbokData.haccp : []).map((h) => ({
-          step: safeString((h as any)?.step),
-          hazard: safeString((h as any)?.hazard),
-          criticalLimit: safeString((h as any)?.criticalLimit),
-          monitoring: safeString((h as any)?.monitoring),
-          correctiveAction: safeString((h as any)?.correctiveAction),
-          verification: safeString((h as any)?.verification),
+          step: pickString(h, 'step', 'trinn', 'prosess'),
+          hazard: pickString(h, 'hazard', 'fare'),
+          criticalLimit: pickString(h, 'criticalLimit', 'kritisk_grense', 'grense'),
+          monitoring: pickString(h, 'monitoring', 'overvåking', 'kontroll'),
+          correctiveAction: pickString(h, 'correctiveAction', 'korrigerende_tiltak', 'tiltak'),
+          verification: pickString(h, 'verification', 'verifisering', 'kontroll_av'),
         })),
         risks: (Array.isArray(handbokData.risks) ? handbokData.risks : []).map((r) => ({
-          hazard: safeString((r as any)?.hazard),
-          consequence: safeString((r as any)?.consequence),
-          probability: safeString((r as any)?.probability),
-          riskLevel: safeString((r as any)?.riskLevel),
-          measures: safeString((r as any)?.measures),
+          hazard: pickString(r, 'hazard', 'fare', 'risiko'),
+          consequence: pickString(r, 'consequence', 'konsekvens'),
+          probability: pickString(r, 'probability', 'sannsynlighet'),
+          riskLevel: pickString(r, 'riskLevel', 'risikonivå', 'nivå'),
+          measures: pickString(r, 'measures', 'tiltak', 'forebyggende_tiltak'),
         })),
         routines: (Array.isArray(handbokData.routines) ? handbokData.routines : []).map((rt) => ({
-          name: safeString((rt as any)?.name),
-          description: safeString((rt as any)?.description),
-          frequency: safeString((rt as any)?.frequency),
-          responsible: safeString((rt as any)?.responsible),
+          name: pickString(rt, 'name', 'routine_name', 'title', 'navn'),
+          description: pickString(rt, 'description', 'procedure', 'purpose', 'beskrivelse', 'prosedyre'),
+          frequency: pickString(rt, 'frequency', 'frekvens'),
+          responsible: pickString(rt, 'responsible', 'responsibility', 'ansvarlig'),
         })),
         checklists: (Array.isArray(handbokData.checklists) ? handbokData.checklists : []).map((c) => ({
-          name: safeString((c as any)?.name),
-          description: safeString((c as any)?.description),
-          checkpoints: safeStringArray((c as any)?.checkpoints),
+          name: pickString(c, 'name', 'checklist_name', 'title', 'navn'),
+          description: pickString(c, 'description', 'beskrivelse'),
+          checkpoints: safeStringArray((c as any)?.checkpoints || (c as any)?.items),
         })),
         cleaningPlan: (Array.isArray(handbokData.cleaningPlan) ? handbokData.cleaningPlan : []).map((t) => ({
-          area: safeString((t as any)?.area),
-          frequency: safeString((t as any)?.frequency),
-          method: safeString((t as any)?.method),
-          responsible: safeString((t as any)?.responsible),
+          area: pickString(t, 'area', 'område'),
+          frequency: pickString(t, 'frequency', 'frekvens'),
+          method: pickString(t, 'method', 'metode'),
+          responsible: pickString(t, 'responsible', 'ansvarlig'),
         })),
         allergens: (Array.isArray(handbokData.allergens) ? handbokData.allergens : []).map((a) => ({
-          name: safeString((a as any)?.name),
-          present: Boolean((a as any)?.present),
-          controlMeasures: safeString((a as any)?.controlMeasures),
+          name: pickString(a, 'name', 'allergen', 'navn'),
+          present: Boolean((a as any)?.present || (a as any)?.tilstede),
+          controlMeasures: pickString(a, 'controlMeasures', 'control_measures', 'tiltak'),
         })),
         contracts: (Array.isArray(handbokData.contracts) ? handbokData.contracts : []).map((c) => ({
-          supplier: safeString((c as any)?.supplier),
-          type: safeString((c as any)?.type),
-          frequency: safeString((c as any)?.frequency),
-          contact: safeString((c as any)?.contact) || undefined,
-          nextReview: safeString((c as any)?.nextReview) || undefined,
+          supplier: pickString(c, 'supplier', 'leverandør'),
+          type: pickString(c, 'type', 'tjeneste'),
+          frequency: pickString(c, 'frequency', 'frekvens'),
+          contact: pickString(c, 'contact', 'kontakt') || undefined,
+          nextReview: pickString(c, 'nextReview', 'neste_revisjon') || undefined,
         })),
       });
 
