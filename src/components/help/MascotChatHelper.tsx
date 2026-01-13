@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Sparkles, Lightbulb, Loader2 } from "lucide-react";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
+import { X, Send, Sparkles, Lightbulb, Loader2, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -31,6 +31,8 @@ export const MascotChatHelper = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentTip, setCurrentTip] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const dragControls = useDragControls();
+  const constraintsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (messages.length === 0) {
@@ -108,6 +110,12 @@ export const MascotChatHelper = () => {
 
   return (
     <>
+      {/* Drag constraints container - covers the full viewport */}
+      <div
+        ref={constraintsRef}
+        className="fixed inset-0 pointer-events-none z-40"
+      />
+
       {/* Floating mascot button */}
       <AnimatePresence>
         {!isOpen && (
@@ -134,17 +142,26 @@ export const MascotChatHelper = () => {
         )}
       </AnimatePresence>
 
-      {/* Chat window */}
+      {/* Chat window - draggable */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 100, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.8 }}
-            className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-3rem)] bg-background border rounded-2xl shadow-2xl overflow-hidden"
+            drag
+            dragControls={dragControls}
+            dragConstraints={constraintsRef}
+            dragElastic={0.1}
+            dragMomentum={false}
+            className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-3rem)] bg-background border rounded-2xl shadow-2xl overflow-hidden cursor-default"
           >
-            {/* Header */}
-            <div className="bg-primary text-primary-foreground p-4 flex items-center gap-3">
+            {/* Header - drag handle */}
+            <div 
+              className="bg-primary text-primary-foreground p-4 flex items-center gap-3 cursor-grab active:cursor-grabbing touch-none"
+              onPointerDown={(e) => dragControls.start(e)}
+            >
+              <GripVertical className="h-5 w-5 opacity-50 shrink-0" />
               <img
                 src={mascotImage}
                 alt="HMS Proffen"
@@ -152,7 +169,7 @@ export const MascotChatHelper = () => {
               />
               <div className="flex-1">
                 <h3 className="font-semibold">HMS Proffen</h3>
-                <p className="text-xs opacity-80">Alltid klar til å hjelpe!</p>
+                <p className="text-xs opacity-80">Dra for å flytte</p>
               </div>
               <Button
                 variant="ghost"
