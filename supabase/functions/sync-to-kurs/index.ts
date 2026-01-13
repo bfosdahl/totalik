@@ -22,10 +22,47 @@ Deno.serve(async (req) => {
       })
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    )
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('Missing or invalid authorization header')
+      return new Response(JSON.stringify({ error: 'Unauthorized - missing authentication' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Create user client for auth verification
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    })
+
+    // Verify the user's token
+    const token = authHeader.replace('Bearer ', '')
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token)
+    
+    if (claimsError || !claimsData?.claims) {
+      console.error('Invalid or expired token:', claimsError)
+      return new Response(JSON.stringify({ error: 'Unauthorized - invalid token' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    const userId = claimsData.claims.sub
+    if (!userId) {
+      return new Response(JSON.stringify({ error: 'Unauthorized - no user ID' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Create admin client for database operations
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const { company_id } = await req.json()
 
@@ -36,7 +73,53 @@ Deno.serve(async (req) => {
       })
     }
 
-    console.log(`Syncing company and employees for: ${company_id}`)
+    // Verify user belongs to this company
+    const { data: userProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('company_id')
+      .eq('user_id', userId)
+      .single()
+
+    if (profileError || !userProfile) {
+      console.error('Error fetching user profile:', profileError)
+      return new Response(JSON.stringify({ error: 'User profile not found' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    if (userProfile.company_id !== company_id) {
+      console.error('User attempted to sync a company they do not belong to')
+      return new Response(JSON.stringify({ error: 'Access denied - not authorized for this company' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Check if user is company_admin or system_admin
+    const { data: roles, error: rolesError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+
+    if (rolesError) {
+      console.error('Error fetching user roles:', rolesError)
+      return new Response(JSON.stringify({ error: 'Failed to verify permissions' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    const isAdmin = roles?.some(r => r.role === 'company_admin' || r.role === 'system_admin')
+    if (!isAdmin) {
+      console.error('User does not have admin privileges for sync operation')
+      return new Response(JSON.stringify({ error: 'Only company admins can trigger sync' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    console.log(`Authorized sync for company: ${company_id} by user: ${userId}`)
 
     // Hent bedriftsdata
     const { data: company, error: companyError } = await supabase
