@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Building2, Users, Shield, Activity } from "lucide-react";
+import { Link } from "react-router-dom";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -110,8 +111,8 @@ export default function AdminDashboard() {
         >
           <h2 className="font-semibold mb-4">Hurtighandlinger</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <a
-              href="/admin/companies"
+            <Link
+              to="/admin/companies"
               className="flex items-center gap-3 p-4 rounded-lg border border-border hover:bg-secondary/50 transition-colors"
             >
               <Building2 className="w-5 h-5 text-primary" />
@@ -119,9 +120,9 @@ export default function AdminDashboard() {
                 <p className="font-medium">Opprett ny bedrift</p>
                 <p className="text-xs text-muted-foreground">Legg til ny kunde</p>
               </div>
-            </a>
-            <a
-              href="/admin/users"
+            </Link>
+            <Link
+              to="/admin/users"
               className="flex items-center gap-3 p-4 rounded-lg border border-border hover:bg-secondary/50 transition-colors"
             >
               <Users className="w-5 h-5 text-accent" />
@@ -129,9 +130,9 @@ export default function AdminDashboard() {
                 <p className="font-medium">Administrer brukere</p>
                 <p className="text-xs text-muted-foreground">Se alle brukere</p>
               </div>
-            </a>
-            <a
-              href="/admin/companies"
+            </Link>
+            <Link
+              to="/admin/companies"
               className="flex items-center gap-3 p-4 rounded-lg border border-border hover:bg-secondary/50 transition-colors"
             >
               <Shield className="w-5 h-5 text-warning" />
@@ -139,7 +140,7 @@ export default function AdminDashboard() {
                 <p className="font-medium">Administrer bedrifter</p>
                 <p className="text-xs text-muted-foreground">Status og lisenser</p>
               </div>
-            </a>
+            </Link>
           </div>
         </motion.div>
       </div>
