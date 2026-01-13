@@ -4108,6 +4108,107 @@ export type Database = {
           },
         ]
       }
+      ik_mat_daily_task_completions: {
+        Row: {
+          company_id: string
+          completed_at: string
+          completed_by_id: string | null
+          completed_by_name: string
+          completed_date: string
+          id: string
+          notes: string | null
+          task_type: string
+        }
+        Insert: {
+          company_id: string
+          completed_at?: string
+          completed_by_id?: string | null
+          completed_by_name: string
+          completed_date?: string
+          id?: string
+          notes?: string | null
+          task_type: string
+        }
+        Update: {
+          company_id?: string
+          completed_at?: string
+          completed_by_id?: string | null
+          completed_by_name?: string
+          completed_date?: string
+          id?: string
+          notes?: string | null
+          task_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_daily_task_completions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_daily_task_completions_completed_by_id_fkey"
+            columns: ["completed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_mat_daily_task_settings: {
+        Row: {
+          company_id: string
+          created_at: string
+          frequency: string
+          id: string
+          is_active: boolean
+          notify_all_users: boolean
+          notify_user_ids: string[] | null
+          reminder_enabled: boolean
+          reminder_time: string
+          task_name: string
+          task_type: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          notify_all_users?: boolean
+          notify_user_ids?: string[] | null
+          reminder_enabled?: boolean
+          reminder_time?: string
+          task_name: string
+          task_type: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          notify_all_users?: boolean
+          notify_user_ids?: string[] | null
+          reminder_enabled?: boolean
+          reminder_time?: string
+          task_name?: string
+          task_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_daily_task_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_mat_suppliers: {
         Row: {
           company_id: string
@@ -4160,6 +4261,129 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_mat_temperature_equipment: {
+        Row: {
+          company_id: string
+          created_at: string
+          equipment_type: string
+          id: string
+          is_active: boolean
+          location: string | null
+          max_temp: number | null
+          measurement_frequency: string
+          min_temp: number | null
+          name: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          equipment_type?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          max_temp?: number | null
+          measurement_frequency?: string
+          min_temp?: number | null
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          equipment_type?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          max_temp?: number | null
+          measurement_frequency?: string
+          min_temp?: number | null
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_temperature_equipment_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_mat_temperature_logs: {
+        Row: {
+          company_id: string
+          corrective_action: string | null
+          corrective_action_by: string | null
+          created_at: string
+          equipment_id: string
+          id: string
+          is_acceptable: boolean
+          measured_at: string
+          measured_by_id: string | null
+          measured_by_name: string
+          measurement_time: string | null
+          notes: string | null
+          temperature: number
+        }
+        Insert: {
+          company_id: string
+          corrective_action?: string | null
+          corrective_action_by?: string | null
+          created_at?: string
+          equipment_id: string
+          id?: string
+          is_acceptable?: boolean
+          measured_at?: string
+          measured_by_id?: string | null
+          measured_by_name: string
+          measurement_time?: string | null
+          notes?: string | null
+          temperature: number
+        }
+        Update: {
+          company_id?: string
+          corrective_action?: string | null
+          corrective_action_by?: string | null
+          created_at?: string
+          equipment_id?: string
+          id?: string
+          is_acceptable?: boolean
+          measured_at?: string
+          measured_by_id?: string | null
+          measured_by_name?: string
+          measurement_time?: string | null
+          notes?: string | null
+          temperature?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_temperature_logs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_temperature_logs_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "ik_mat_temperature_equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_temperature_logs_measured_by_id_fkey"
+            columns: ["measured_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

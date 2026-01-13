@@ -1,0 +1,274 @@
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+
+export interface TemperatureEquipment {
+  id: string;
+  company_id: string;
+  name: string;
+  equipment_type: 'fridge' | 'freezer' | 'hot_display' | 'cold_display';
+  location: string | null;
+  min_temp: number | null;
+  max_temp: number | null;
+  measurement_frequency: string;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TemperatureLog {
+  id: string;
+  company_id: string;
+  equipment_id: string;
+  temperature: number;
+  is_acceptable: boolean;
+  measured_by_id: string | null;
+  measured_by_name: string;
+  measured_at: string;
+  measurement_time: string | null;
+  notes: string | null;
+  corrective_action: string | null;
+  corrective_action_by: string | null;
+  created_at: string;
+  equipment?: TemperatureEquipment;
+}
+
+const EQUIPMENT_TYPE_DEFAULTS = {
+  fridge: { min: 0, max: 4, label: 'Kjøleskap' },
+  freezer: { min: -25, max: -18, label: 'Fryser' },
+  hot_display: { min: 60, max: 100, label: 'Varmebuffet' },
+  cold_display: { min: 0, max: 8, label: 'Kjøledisk' },
+};
+
+export function useIkMatTemperature() {
+  const { company, profile } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Fetch equipment
+  const { data: equipment = [], isLoading: equipmentLoading } = useQuery({
+    queryKey: ['ik-mat-temperature-equipment', company?.id],
+    queryFn: async () => {
+      if (!company?.id) return [];
+      const { data, error } = await supabase
+        .from('ik_mat_temperature_equipment')
+        .select('*')
+        .eq('company_id', company.id)
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+      
+      if (error) throw error;
+      return data as TemperatureEquipment[];
+    },
+    enabled: !!company?.id,
+  });
+
+  // Fetch today's logs
+  const { data: todaysLogs = [], isLoading: logsLoading } = useQuery({
+    queryKey: ['ik-mat-temperature-logs-today', company?.id],
+    queryFn: async () => {
+      if (!company?.id) return [];
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase
+        .from('ik_mat_temperature_logs')
+        .select('*, equipment:ik_mat_temperature_equipment(*)')
+        .eq('company_id', company.id)
+        .gte('measured_at', `${today}T00:00:00`)
+        .lte('measured_at', `${today}T23:59:59`)
+        .order('measured_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as TemperatureLog[];
+    },
+    enabled: !!company?.id,
+  });
+
+  // Fetch all logs (for history)
+  const fetchLogs = async (startDate?: string, endDate?: string) => {
+    if (!company?.id) return [];
+    
+    let query = supabase
+      .from('ik_mat_temperature_logs')
+      .select('*, equipment:ik_mat_temperature_equipment(*)')
+      .eq('company_id', company.id)
+      .order('measured_at', { ascending: false });
+    
+    if (startDate) {
+      query = query.gte('measured_at', `${startDate}T00:00:00`);
+    }
+    if (endDate) {
+      query = query.lte('measured_at', `${endDate}T23:59:59`);
+    }
+    
+    const { data, error } = await query.limit(500);
+    if (error) throw error;
+    return data as TemperatureLog[];
+  };
+
+  // Add equipment
+  const addEquipment = useMutation({
+    mutationFn: async (data: {
+      name: string;
+      equipment_type: string;
+      location?: string;
+      min_temp?: number;
+      max_temp?: number;
+      measurement_frequency?: string;
+    }) => {
+      if (!company?.id) throw new Error('Ingen bedrift valgt');
+      
+      const defaults = EQUIPMENT_TYPE_DEFAULTS[data.equipment_type as keyof typeof EQUIPMENT_TYPE_DEFAULTS];
+      
+      const { data: result, error } = await supabase
+        .from('ik_mat_temperature_equipment')
+        .insert({
+          company_id: company.id,
+          name: data.name,
+          equipment_type: data.equipment_type,
+          location: data.location || null,
+          min_temp: data.min_temp ?? defaults?.min ?? null,
+          max_temp: data.max_temp ?? defaults?.max ?? null,
+          measurement_frequency: data.measurement_frequency || 'daily',
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-temperature-equipment'] });
+      toast.success('Utstyr lagt til');
+    },
+    onError: (error) => {
+      toast.error('Kunne ikke legge til utstyr: ' + error.message);
+    },
+  });
+
+  // Update equipment
+  const updateEquipment = useMutation({
+    mutationFn: async ({ id, ...data }: Partial<TemperatureEquipment> & { id: string }) => {
+      const { error } = await supabase
+        .from('ik_mat_temperature_equipment')
+        .update(data)
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-temperature-equipment'] });
+      toast.success('Utstyr oppdatert');
+    },
+    onError: (error) => {
+      toast.error('Kunne ikke oppdatere utstyr: ' + error.message);
+    },
+  });
+
+  // Delete equipment
+  const deleteEquipment = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('ik_mat_temperature_equipment')
+        .update({ is_active: false })
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-temperature-equipment'] });
+      toast.success('Utstyr fjernet');
+    },
+    onError: (error) => {
+      toast.error('Kunne ikke fjerne utstyr: ' + error.message);
+    },
+  });
+
+  // Log temperature
+  const logTemperature = useMutation({
+    mutationFn: async (data: {
+      equipment_id: string;
+      temperature: number;
+      measurement_time?: string;
+      notes?: string;
+      corrective_action?: string;
+    }) => {
+      if (!company?.id || !profile) throw new Error('Ikke logget inn');
+      
+      // Find equipment to check limits
+      const equip = equipment.find(e => e.id === data.equipment_id);
+      let isAcceptable = true;
+      
+      if (equip) {
+        if (equip.min_temp !== null && data.temperature < equip.min_temp) {
+          isAcceptable = false;
+        }
+        if (equip.max_temp !== null && data.temperature > equip.max_temp) {
+          isAcceptable = false;
+        }
+      }
+      
+      const { data: result, error } = await supabase
+        .from('ik_mat_temperature_logs')
+        .insert({
+          company_id: company.id,
+          equipment_id: data.equipment_id,
+          temperature: data.temperature,
+          is_acceptable: isAcceptable,
+          measured_by_id: profile.id,
+          measured_by_name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email || 'Ukjent',
+          measurement_time: data.measurement_time || null,
+          notes: data.notes || null,
+          corrective_action: data.corrective_action || null,
+          corrective_action_by: data.corrective_action ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : null,
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return { result, isAcceptable };
+    },
+    onSuccess: ({ isAcceptable }) => {
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-temperature-logs-today'] });
+      if (isAcceptable) {
+        toast.success('Temperatur registrert');
+      } else {
+        toast.warning('Temperatur registrert - AVVIK OPPDAGET!');
+      }
+    },
+    onError: (error) => {
+      toast.error('Kunne ikke registrere temperatur: ' + error.message);
+    },
+  });
+
+  // Check which equipment needs logging today
+  const getEquipmentNeedingLog = () => {
+    return equipment.filter(equip => {
+      const hasLogToday = todaysLogs.some(log => log.equipment_id === equip.id);
+      return !hasLogToday;
+    });
+  };
+
+  // Check if all daily logs are complete
+  const isDailyLogComplete = () => {
+    const dailyEquipment = equipment.filter(e => e.measurement_frequency === 'daily');
+    return dailyEquipment.every(equip => 
+      todaysLogs.some(log => log.equipment_id === equip.id)
+    );
+  };
+
+  return {
+    equipment,
+    todaysLogs,
+    isLoading: equipmentLoading || logsLoading,
+    addEquipment,
+    updateEquipment,
+    deleteEquipment,
+    logTemperature,
+    fetchLogs,
+    getEquipmentNeedingLog,
+    isDailyLogComplete,
+    EQUIPMENT_TYPE_DEFAULTS,
+  };
+}
