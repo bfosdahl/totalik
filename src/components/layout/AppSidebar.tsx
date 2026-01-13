@@ -39,6 +39,11 @@ import {
   FolderOpen,
   Target,
   Wine,
+  Thermometer,
+  SprayCan,
+  Wheat,
+  Handshake,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -80,6 +85,22 @@ const ikHmsItems = [
   { icon: BookOpen, label: "Handbok", path: "/handbook", color: "text-cyan-500" },
   { icon: FolderOpen, label: "Dokumentsenter", path: "/dokumentsenter", color: "text-amber-500" },
   { icon: MessageCircle, label: "HMS Assistent", path: "/hms-chat", color: "text-violet-500" },
+];
+
+// IK/MAT module items - shown in collapsible section
+const ikMatItems = [
+  { icon: BookOpen, label: "Håndbok", path: "/ik-mat/handbok", color: "text-cyan-500" },
+  { icon: Target, label: "Målsetting", path: "/ik-mat/maal", color: "text-yellow-500" },
+  { icon: Building2, label: "Organisasjonskart", path: "/ik-mat/organisasjon", color: "text-sky-500" },
+  { icon: AlertTriangle, label: "Risiko & tiltak", path: "/ik-mat/risiko-og-tiltak", color: "text-orange-500" },
+  { icon: ListChecks, label: "Rutiner", path: "/ik-mat/rutiner", color: "text-teal-500" },
+  { icon: ClipboardCheck, label: "Sjekklister", path: "/ik-mat/sjekklister", color: "text-emerald-500" },
+  { icon: SprayCan, label: "Renholdsplan", path: "/ik-mat/renholdsplan", color: "text-purple-500" },
+  { icon: Thermometer, label: "Temperaturlogg", path: "/ik-mat/temperaturlogg", color: "text-red-500" },
+  { icon: Wheat, label: "Allergener", path: "/ik-mat/allergener", color: "text-amber-500" },
+  { icon: Handshake, label: "Faste avtaler", path: "/ik-mat/faste-avtaler", color: "text-indigo-500" },
+  { icon: Search, label: "Sporbarhet", path: "/ik-mat/sporbarhet", color: "text-blue-500" },
+  { icon: FolderOpen, label: "Dokumentsenter", path: "/ik-mat/dokumentsenter", color: "text-slate-500" },
 ];
 
 // Personaladministrasjon items - standard for all companies
@@ -721,138 +742,24 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                   className="overflow-hidden"
                 >
                   <div className="pl-6 space-y-1 mt-1">
-                    <NavLink
-                      to="/ik-mat/handbok"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ik-mat/handbok"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Håndbok
-                    </NavLink>
-                    <NavLink
-                      to="/ik-mat/maal"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ik-mat/maal"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Målsetting
-                    </NavLink>
-                    <NavLink
-                      to="/ik-mat/organisasjon"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ik-mat/organisasjon"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Organisasjonskart
-                    </NavLink>
-                    <NavLink
-                      to="/ik-mat/risiko-og-tiltak"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ik-mat/risiko-og-tiltak"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Risiko & tiltak
-                    </NavLink>
-                    <NavLink
-                      to="/ik-mat/rutiner"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ik-mat/rutiner"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Rutiner
-                    </NavLink>
-                    <NavLink
-                      to="/ik-mat/sjekklister"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ik-mat/sjekklister"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Sjekklister
-                    </NavLink>
-                    <NavLink
-                      to="/ik-mat/renholdsplan"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ik-mat/renholdsplan"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Renholdsplan
-                    </NavLink>
-                    <NavLink
-                      to="/ik-mat/temperaturlogg"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ik-mat/temperaturlogg"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Temperaturlogg
-                    </NavLink>
-                    <NavLink
-                      to="/ik-mat/allergener"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ik-mat/allergener"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Allergener
-                    </NavLink>
-                    <NavLink
-                      to="/ik-mat/faste-avtaler"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ik-mat/faste-avtaler"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Faste avtaler
-                    </NavLink>
-                    <NavLink
-                      to="/ik-mat/sporbarhet"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ik-mat/sporbarhet"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Sporbarhet
-                    </NavLink>
-                    <NavLink
-                      to="/ik-mat/dokumentsenter"
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                        location.pathname === "/ik-mat/dokumentsenter"
-                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                    >
-                      Dokumentsenter
-                    </NavLink>
+                    {ikMatItems.map((item) => {
+                      const isActive = location.pathname === item.path;
+                      return (
+                        <NavLink
+                          key={item.path}
+                          to={item.path}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                            isActive
+                              ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                              : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                          )}
+                        >
+                          <item.icon className={cn("w-4 h-4 flex-shrink-0", !isActive && item.color)} />
+                          <span>{item.label}</span>
+                        </NavLink>
+                      );
+                    })}
                   </div>
                 </motion.div>
               )}
