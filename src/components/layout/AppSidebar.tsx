@@ -941,6 +941,50 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                       Dashboard
                     </NavLink>
                     <NavLink
+                      to="/ik-alkohol/rutiner"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-alkohol/rutiner"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Rutiner
+                    </NavLink>
+                    <NavLink
+                      to="/ik-alkohol/organisering"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-alkohol/organisering"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Organisering
+                    </NavLink>
+                    <NavLink
+                      to="/ik-alkohol/maal"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-alkohol/maal"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Målsetting
+                    </NavLink>
+                    <NavLink
+                      to="/ik-alkohol/risikoanalyse"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/ik-alkohol/risikoanalyse"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Risikoanalyse
+                    </NavLink>
+                    <NavLink
                       to="/ik-alkohol/internkontroll"
                       className={cn(
                         "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
