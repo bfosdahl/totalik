@@ -1798,8 +1798,6 @@ const Handbook = () => {
             // Parse and render form data properly
             if (latestForm.form_data && typeof latestForm.form_data === "object") {
               const formData = latestForm.form_data as Record<string, unknown>;
-              const sectionQuestions = formData.sectionQuestions as Record<string, Array<{ id: string; question: string }>> | undefined;
-              const checklistAnswers = formData.checklistAnswers as Record<string, Record<string, { answer?: string; comment?: string }>> | undefined;
               
               // Comprehensive section title mapping for all audit forms
               const sectionTitles: Record<string, string> = {
@@ -1850,14 +1848,44 @@ const Handbook = () => {
                 annet: "Andre forhold",
               };
 
-              if (sectionQuestions && checklistAnswers) {
-                const sectionOrder = Object.keys(sectionQuestions).filter(
-                  key => sectionQuestions[key] && sectionQuestions[key].length > 0
-                );
+              // Check for different form data structures
+              // Format 1: sectionQuestions + checklistAnswers (Fysiske arbeidsforhold, Daglig drift, Årlig HMS)
+              // Format 2: sections with nested questions/answers (El-kontroll)
+              const sectionQuestions = formData.sectionQuestions as Record<string, Array<{ id: string; question: string }>> | undefined;
+              const checklistAnswers = formData.checklistAnswers as Record<string, Record<string, { answer?: string; comment?: string }>> | undefined;
+              const sectionsData = formData.sections as Record<string, { title?: string; questions?: Array<{ id: string; question: string }>; answers?: Record<string, { answer?: string; comment?: string }> }> | undefined;
 
-                sectionOrder.forEach((sectionId) => {
-                  const questions = sectionQuestions[sectionId];
-                  const answers = checklistAnswers[sectionId] || {};
+              // Normalize data to a common format
+              let normalizedSections: Record<string, { title: string; questions: Array<{ id: string; question: string }>; answers: Record<string, { answer?: string; comment?: string }> }> = {};
+
+              if (sectionsData && Object.keys(sectionsData).length > 0) {
+                // Format 2: El-kontroll style with sections object
+                Object.entries(sectionsData).forEach(([sectionId, section]) => {
+                  if (section.questions && section.questions.length > 0) {
+                    normalizedSections[sectionId] = {
+                      title: section.title || sectionTitles[sectionId] || sectionId,
+                      questions: section.questions,
+                      answers: section.answers || {}
+                    };
+                  }
+                });
+              } else if (sectionQuestions && checklistAnswers) {
+                // Format 1: Standard sectionQuestions + checklistAnswers
+                Object.keys(sectionQuestions).forEach((sectionId) => {
+                  if (sectionQuestions[sectionId] && sectionQuestions[sectionId].length > 0) {
+                    normalizedSections[sectionId] = {
+                      title: sectionTitles[sectionId] || sectionId,
+                      questions: sectionQuestions[sectionId],
+                      answers: checklistAnswers[sectionId] || {}
+                    };
+                  }
+                });
+              }
+
+              if (Object.keys(normalizedSections).length > 0) {
+                Object.entries(normalizedSections).forEach(([sectionId, section]) => {
+                  const questions = section.questions;
+                  const answers = section.answers;
                   
                   if (!questions || questions.length === 0) return;
 
@@ -1868,7 +1896,7 @@ const Handbook = () => {
                   doc.setFontSize(10);
                   doc.setFont("helvetica", "bold");
                   doc.setTextColor(59, 130, 246);
-                  doc.text(sectionTitles[sectionId] || sectionId, margin + 3, yPos + 5.5);
+                  doc.text(sectionTitles[sectionId] || section.title || sectionId, margin + 3, yPos + 5.5);
                   doc.setTextColor(0, 0, 0);
                   yPos += 12;
 
@@ -1935,8 +1963,8 @@ const Handbook = () => {
                 yPos += 8;
 
                 let totalYes = 0, totalNo = 0, totalNa = 0;
-                Object.values(checklistAnswers).forEach((sectionAnswers) => {
-                  Object.values(sectionAnswers).forEach((answer) => {
+                Object.values(normalizedSections).forEach((section) => {
+                  Object.values(section.answers).forEach((answer) => {
                     if (answer.answer === "yes") totalYes++;
                     else if (answer.answer === "no") totalNo++;
                     else if (answer.answer === "na") totalNa++;
