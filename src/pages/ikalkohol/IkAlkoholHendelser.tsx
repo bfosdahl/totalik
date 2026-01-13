@@ -69,13 +69,16 @@ export default function IkAlkoholHendelser() {
   // Open new dialog from URL param
   useEffect(() => {
     if (searchParams.get("new") === "true") {
+      const fullName = profile?.first_name && profile?.last_name 
+        ? `${profile.first_name} ${profile.last_name}` 
+        : profile?.first_name || "";
       setEditingIncident({
         incident_date: format(new Date(), "yyyy-MM-dd"),
         incident_type: "",
         description: "",
         status: "Ny",
         severity: "Lav",
-        reported_by_name: profile?.name || "",
+        reported_by_name: fullName,
         reported_by_id: profile?.id,
       });
       setShowDialog(true);
@@ -88,7 +91,7 @@ export default function IkAlkoholHendelser() {
     if (editingIncident.id) {
       updateIncident.mutate(editingIncident as AlkoholIncident);
     } else {
-      createIncident.mutate(editingIncident);
+      createIncident.mutate(editingIncident as { incident_date: string; description: string; incident_type: string });
     }
     setEditingIncident(null);
     setShowDialog(false);
@@ -127,13 +130,16 @@ export default function IkAlkoholHendelser() {
             </p>
           </div>
           <Button onClick={() => {
+            const fullName = profile?.first_name && profile?.last_name 
+              ? `${profile.first_name} ${profile.last_name}` 
+              : profile?.first_name || "";
             setEditingIncident({
               incident_date: format(new Date(), "yyyy-MM-dd"),
               incident_type: "",
               description: "",
               status: "Ny",
               severity: "Lav",
-              reported_by_name: profile?.name || "",
+              reported_by_name: fullName,
               reported_by_id: profile?.id,
             });
             setShowDialog(true);

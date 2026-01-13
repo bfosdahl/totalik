@@ -249,11 +249,12 @@ export function useIkAlkohol() {
   });
 
   const createLicense = useMutation({
-    mutationFn: async (license: Partial<AlkoholLicense>) => {
+    mutationFn: async (license: Omit<Partial<AlkoholLicense>, 'id' | 'company_id' | 'created_at' | 'updated_at'> & { municipality: string }) => {
       if (!companyId) throw new Error("No company");
+      const insertData = { ...license, company_id: companyId, municipality: license.municipality };
       const { data, error } = await supabase
         .from("ik_alkohol_licenses")
-        .insert([{ ...license, company_id: companyId }])
+        .insert([insertData] as any)
         .select()
         .single();
       if (error) throw error;
@@ -390,11 +391,12 @@ export function useIkAlkohol() {
   });
 
   const createTraining = useMutation({
-    mutationFn: async (training: Partial<AlkoholTraining>) => {
+    mutationFn: async (training: Omit<Partial<AlkoholTraining>, 'id' | 'company_id' | 'created_at' | 'updated_at'> & { employee_name: string; role: string; training_type: string }) => {
       if (!companyId) throw new Error("No company");
+      const insertData = { ...training, company_id: companyId, employee_name: training.employee_name, role: training.role, training_type: training.training_type };
       const { data, error } = await supabase
         .from("ik_alkohol_training")
-        .insert([{ ...training, company_id: companyId }])
+        .insert([insertData] as any)
         .select()
         .single();
       if (error) throw error;
@@ -454,7 +456,7 @@ export function useIkAlkohol() {
   });
 
   const createIncident = useMutation({
-    mutationFn: async (incident: Partial<AlkoholIncident>) => {
+    mutationFn: async (incident: Omit<Partial<AlkoholIncident>, 'id' | 'company_id' | 'created_at' | 'updated_at' | 'incident_number'> & { incident_date: string; description: string; incident_type: string }) => {
       if (!companyId) throw new Error("No company");
       
       // Generate incident number
@@ -465,9 +467,18 @@ export function useIkAlkohol() {
       
       const incidentNumber = `ALK-${new Date().getFullYear()}-${String((count || 0) + 1).padStart(4, "0")}`;
       
+      const insertData = {
+        ...incident, 
+        company_id: companyId, 
+        incident_number: incidentNumber, 
+        incident_date: incident.incident_date, 
+        description: incident.description,
+        incident_type: incident.incident_type
+      };
+      
       const { data, error } = await supabase
         .from("ik_alkohol_incidents")
-        .insert([{ ...incident, company_id: companyId, incident_number: incidentNumber }])
+        .insert([insertData] as any)
         .select()
         .single();
       if (error) throw error;
@@ -513,11 +524,19 @@ export function useIkAlkohol() {
   });
 
   const createReview = useMutation({
-    mutationFn: async (review: Partial<AlkoholReview>) => {
+    mutationFn: async (review: Omit<Partial<AlkoholReview>, 'id' | 'company_id' | 'created_at' | 'updated_at'> & { planned_date: string; review_type: string }) => {
       if (!companyId) throw new Error("No company");
+      
+      const insertData = {
+        ...review, 
+        company_id: companyId, 
+        planned_date: review.planned_date,
+        review_type: review.review_type
+      };
+      
       const { data, error } = await supabase
         .from("ik_alkohol_reviews")
-        .insert([{ ...review, company_id: companyId }])
+        .insert([insertData] as any)
         .select()
         .single();
       if (error) throw error;
