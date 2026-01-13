@@ -8,27 +8,38 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Users, Calendar, Phone, Mail, Check, Trash2, Loader2 } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Plus, Users, Calendar, Phone, Mail, Check, Trash2, Loader2, ChevronsUpDown, UserPlus } from "lucide-react";
 import { useIkAlkoholOrganization, ROLE_TYPES } from "@/hooks/useIkAlkoholOrganization";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
+import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 const IkAlkoholOrganisering = () => {
   const navigate = useNavigate();
   const { modules, isLoading: modulesLoading } = useCompanyModules();
+  const { users: companyUsers, isLoading: usersLoading, getUserDisplayName } = useCompanyUsers();
   const { organization, shifts, isLoading, createRole, deleteRole, confirmRole, createShift, deleteShift } = useIkAlkoholOrganization();
   
   const [activeTab, setActiveTab] = useState('roles');
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [showShiftDialog, setShowShiftDialog] = useState(false);
+  const [employeePopoverOpen, setEmployeePopoverOpen] = useState(false);
+  const [styrerPopoverOpen, setStyrerPopoverOpen] = useState(false);
+  const [stedfortrederPopoverOpen, setStedfortrederPopoverOpen] = useState(false);
+  const [customNameMode, setCustomNameMode] = useState(false);
+  const [styrerCustomMode, setStyrerCustomMode] = useState(false);
+  const [stedfortrederCustomMode, setStedfortrederCustomMode] = useState(false);
   
-  const [roleForm, setRoleForm] = useState({ role_type: '', employee_name: '', phone: '', email: '' });
+  const [roleForm, setRoleForm] = useState({ role_type: '', employee_name: '', employee_id: '', phone: '', email: '' });
   const [shiftForm, setShiftForm] = useState({ shift_date: '', shift_time: '', styrer_name: '', stedfortreder_name: '' });
 
   const hasIkAlkohol = modules?.some(m => m.module_type === 'IK_ALKOHOL' && m.is_active);
   
-  if (modulesLoading || isLoading) {
+  if (modulesLoading || isLoading || usersLoading) {
     return <AppLayout><div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div></AppLayout>;
   }
 
@@ -41,7 +52,19 @@ const IkAlkoholOrganisering = () => {
     if (!roleForm.role_type || !roleForm.employee_name) return;
     await createRole.mutateAsync(roleForm);
     setShowRoleDialog(false);
-    setRoleForm({ role_type: '', employee_name: '', phone: '', email: '' });
+    setRoleForm({ role_type: '', employee_name: '', employee_id: '', phone: '', email: '' });
+    setCustomNameMode(false);
+  };
+
+  const selectEmployee = (user: typeof companyUsers[0]) => {
+    setRoleForm({
+      ...roleForm,
+      employee_name: getUserDisplayName(user),
+      employee_id: user.id,
+      email: user.email || '',
+      phone: roleForm.phone
+    });
+    setEmployeePopoverOpen(false);
   };
 
   const handleSaveShift = async () => {
@@ -180,8 +203,51 @@ const IkAlkoholOrganisering = () => {
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Navn *</label>
-                <Input value={roleForm.employee_name} onChange={(e) => setRoleForm({ ...roleForm, employee_name: e.target.value })} />
+                <label className="text-sm font-medium">Ansatt *</label>
+                {customNameMode ? (
+                  <div className="flex gap-2">
+                    <Input 
+                      value={roleForm.employee_name} 
+                      onChange={(e) => setRoleForm({ ...roleForm, employee_name: e.target.value, employee_id: '' })}
+                      placeholder="Skriv navn..."
+                    />
+                    <Button type="button" variant="outline" size="sm" onClick={() => setCustomNameMode(false)}>
+                      <Users className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Popover open={employeePopoverOpen} onOpenChange={setEmployeePopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" role="combobox" className="w-full justify-between">
+                        {roleForm.employee_name || "Velg ansatt..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0 bg-popover" align="start">
+                      <Command>
+                        <CommandInput placeholder="Søk etter ansatt..." />
+                        <CommandList>
+                          <CommandEmpty>Ingen ansatte funnet</CommandEmpty>
+                          <CommandGroup heading="Ansatte">
+                            {companyUsers.map((user) => (
+                              <CommandItem key={user.id} onSelect={() => selectEmployee(user)}>
+                                <Check className={cn("mr-2 h-4 w-4", roleForm.employee_id === user.id ? "opacity-100" : "opacity-0")} />
+                                {getUserDisplayName(user)}
+                                {user.email && <span className="ml-2 text-xs text-muted-foreground">{user.email}</span>}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                          <CommandGroup>
+                            <CommandItem onSelect={() => { setCustomNameMode(true); setEmployeePopoverOpen(false); }}>
+                              <UserPlus className="mr-2 h-4 w-4" />
+                              Skriv inn manuelt...
+                            </CommandItem>
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium">Telefon</label>
@@ -214,11 +280,93 @@ const IkAlkoholOrganisering = () => {
               </div>
               <div>
                 <label className="text-sm font-medium">Styrer *</label>
-                <Input value={shiftForm.styrer_name} onChange={(e) => setShiftForm({ ...shiftForm, styrer_name: e.target.value })} />
+                {styrerCustomMode ? (
+                  <div className="flex gap-2">
+                    <Input 
+                      value={shiftForm.styrer_name} 
+                      onChange={(e) => setShiftForm({ ...shiftForm, styrer_name: e.target.value })}
+                      placeholder="Skriv navn..."
+                    />
+                    <Button type="button" variant="outline" size="sm" onClick={() => setStyrerCustomMode(false)}>
+                      <Users className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Popover open={styrerPopoverOpen} onOpenChange={setStyrerPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" role="combobox" className="w-full justify-between">
+                        {shiftForm.styrer_name || "Velg styrer..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0 bg-popover" align="start">
+                      <Command>
+                        <CommandInput placeholder="Søk etter ansatt..." />
+                        <CommandList>
+                          <CommandEmpty>Ingen ansatte funnet</CommandEmpty>
+                          <CommandGroup heading="Ansatte">
+                            {companyUsers.map((user) => (
+                              <CommandItem key={user.id} onSelect={() => { setShiftForm({ ...shiftForm, styrer_name: getUserDisplayName(user) }); setStyrerPopoverOpen(false); }}>
+                                {getUserDisplayName(user)}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                          <CommandGroup>
+                            <CommandItem onSelect={() => { setStyrerCustomMode(true); setStyrerPopoverOpen(false); }}>
+                              <UserPlus className="mr-2 h-4 w-4" />
+                              Skriv inn manuelt...
+                            </CommandItem>
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium">Stedfortreder</label>
-                <Input value={shiftForm.stedfortreder_name} onChange={(e) => setShiftForm({ ...shiftForm, stedfortreder_name: e.target.value })} />
+                {stedfortrederCustomMode ? (
+                  <div className="flex gap-2">
+                    <Input 
+                      value={shiftForm.stedfortreder_name} 
+                      onChange={(e) => setShiftForm({ ...shiftForm, stedfortreder_name: e.target.value })}
+                      placeholder="Skriv navn..."
+                    />
+                    <Button type="button" variant="outline" size="sm" onClick={() => setStedfortrederCustomMode(false)}>
+                      <Users className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Popover open={stedfortrederPopoverOpen} onOpenChange={setStedfortrederPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" role="combobox" className="w-full justify-between">
+                        {shiftForm.stedfortreder_name || "Velg stedfortreder..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0 bg-popover" align="start">
+                      <Command>
+                        <CommandInput placeholder="Søk etter ansatt..." />
+                        <CommandList>
+                          <CommandEmpty>Ingen ansatte funnet</CommandEmpty>
+                          <CommandGroup heading="Ansatte">
+                            {companyUsers.map((user) => (
+                              <CommandItem key={user.id} onSelect={() => { setShiftForm({ ...shiftForm, stedfortreder_name: getUserDisplayName(user) }); setStedfortrederPopoverOpen(false); }}>
+                                {getUserDisplayName(user)}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                          <CommandGroup>
+                            <CommandItem onSelect={() => { setStedfortrederCustomMode(true); setStedfortrederPopoverOpen(false); }}>
+                              <UserPlus className="mr-2 h-4 w-4" />
+                              Skriv inn manuelt...
+                            </CommandItem>
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                )}
               </div>
             </div>
             <DialogFooter>
