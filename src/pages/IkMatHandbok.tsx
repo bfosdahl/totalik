@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, FileText, Download, AlertCircle, Thermometer, SprayCanIcon, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, FileText, Download, AlertCircle, Thermometer, SprayCanIcon, CheckCircle2, XCircle, ClipboardCheck, Check, X, Minus } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -13,6 +13,23 @@ import { generateIkMatHandbokPdf } from "@/utils/ikMatHandbokPdf";
 import { toast } from "sonner";
 import { format, subDays } from "date-fns";
 import { nb } from "date-fns/locale";
+
+import { generateChecklistPdf } from "@/utils/ikMatChecklistPdf";
+
+interface ChecklistResponseEntry {
+  id: string;
+  checklist_type: string;
+  checklist_name: string;
+  completed_by_name: string;
+  completed_at: string;
+  status: 'draft' | 'completed';
+  responses: Array<{
+    checkpoint: string;
+    status: 'ok' | 'not_ok' | 'na';
+    comment?: string;
+  }>;
+  notes: string | null;
+}
 
 interface TemperatureLogEntry {
   id: string;
@@ -104,6 +121,7 @@ const IkMatHandbok = () => {
   const [handbokData, setHandbokData] = useState<HandbokData | null>(null);
   const [temperatureLogs, setTemperatureLogs] = useState<TemperatureLogEntry[]>([]);
   const [cleaningLogs, setCleaningLogs] = useState<CleaningLogEntry[]>([]);
+  const [checklistResponses, setChecklistResponses] = useState<ChecklistResponseEntry[]>([]);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -170,6 +188,20 @@ const IkMatHandbok = () => {
 
         if (!cleanError && cleanLogs) {
           setCleaningLogs(cleanLogs as unknown as CleaningLogEntry[]);
+        }
+
+        // Fetch completed checklist responses (last 30 days)
+        const { data: checklistData, error: checklistError } = await supabase
+          .from('ik_mat_checklist_responses')
+          .select('*')
+          .eq('company_id', company.id)
+          .eq('status', 'completed')
+          .gte('completed_at', thirtyDaysAgo)
+          .order('completed_at', { ascending: false })
+          .limit(50);
+
+        if (!checklistError && checklistData) {
+          setChecklistResponses(checklistData as unknown as ChecklistResponseEntry[]);
         }
       } catch (error) {
         console.error('Error fetching håndbok data:', error);
@@ -281,6 +313,24 @@ const IkMatHandbok = () => {
       console.error("Error generating PDF:", error);
       const errorMessage = error instanceof Error ? error.message : 'Ukjent feil';
       toast.error(`Kunne ikke generere PDF: ${errorMessage}`);
+    }
+  };
+
+  const handleDownloadChecklistPdf = async (response: ChecklistResponseEntry) => {
+    try {
+      await generateChecklistPdf({
+        checklistName: response.checklist_name,
+        completedByName: response.completed_by_name,
+        completedAt: response.completed_at,
+        status: response.status,
+        responses: response.responses,
+        notes: response.notes,
+        companyName: company?.name
+      });
+      toast.success("Sjekkliste lastet ned som PDF");
+    } catch (error) {
+      console.error('Error generating checklist PDF:', error);
+      toast.error('Kunne ikke generere PDF');
     }
   };
 
@@ -535,6 +585,104 @@ const IkMatHandbok = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Completed Checklist Responses */}
+        {checklistResponses.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardCheck className="h-5 w-5" />
+                Utfylte Sjekklister (siste 30 dager)
+              </CardTitle>
+              <CardDescription>Dokumenterte sjekklistegjennomføringer</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {checklistResponses.map((response) => {
+                  const okCount = response.responses.filter(r => r.status === 'ok').length;
+                  const notOkCount = response.responses.filter(r => r.status === 'not_ok').length;
+                  const naCount = response.responses.filter(r => r.status === 'na').length;
+                  
+                  return (
+                    <div key={response.id} className="border rounded-lg p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <p className="font-semibold">{response.checklist_name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Utført av {response.completed_by_name} • {format(new Date(response.completed_at), 'dd.MM.yyyy HH:mm', { locale: nb })}
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownloadChecklistPdf(response)}
+                        >
+                          <Download className="h-4 w-4 mr-1" />
+                          PDF
+                        </Button>
+                      </div>
+                      
+                      <div className="flex gap-4 text-sm mb-3">
+                        <div className="flex items-center gap-1 text-green-600">
+                          <Check className="h-4 w-4" />
+                          <span>{okCount} OK</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-red-600">
+                          <X className="h-4 w-4" />
+                          <span>{notOkCount} Avvik</span>
+                        </div>
+                        {naCount > 0 && (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Minus className="h-4 w-4" />
+                            <span>{naCount} N/A</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Show checkpoint details */}
+                      <div className="grid gap-2">
+                        {response.responses.map((item, idx) => (
+                          <div 
+                            key={idx} 
+                            className={`flex items-start gap-2 text-sm p-2 rounded ${
+                              item.status === 'ok' ? 'bg-green-50 dark:bg-green-950/30' : 
+                              item.status === 'not_ok' ? 'bg-red-50 dark:bg-red-950/30' : 
+                              'bg-muted'
+                            }`}
+                          >
+                            {item.status === 'ok' ? (
+                              <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
+                            ) : item.status === 'not_ok' ? (
+                              <XCircle className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5" />
+                            ) : (
+                              <Minus className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                            )}
+                            <div className="flex-1">
+                              <span className={item.status === 'na' ? 'text-muted-foreground' : ''}>
+                                {item.checkpoint}
+                              </span>
+                              {item.comment && (
+                                <p className="text-xs text-muted-foreground mt-1 italic">
+                                  Kommentar: {item.comment}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {response.notes && (
+                        <p className="mt-3 text-sm text-muted-foreground italic border-t pt-2">
+                          Notater: {response.notes}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Cleaning Plan */}
         <Card>
