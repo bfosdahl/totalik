@@ -122,24 +122,31 @@ const IkMatHandbok = () => {
     }
 
     try {
+      // Ensure arrays are valid before passing to PDF generator
+      const ensureArray = (value: unknown): unknown[] => {
+        if (Array.isArray(value)) return value;
+        return [];
+      };
+
       await generateIkMatHandbokPdf({
-        companyName: company.name,
-        businessType: handbokData.setupAnswers.businessType,
-        numberOfEmployees: handbokData.setupAnswers.numberOfEmployees,
-        hasCleanZone: handbokData.setupAnswers.hasCleanZone,
-        goals: handbokData.goals,
-        haccp: handbokData.haccp,
-        risks: handbokData.risks,
-        routines: handbokData.routines,
-        checklists: handbokData.checklists,
-        cleaningPlan: handbokData.cleaningPlan,
-        allergens: handbokData.allergens,
-        contracts: handbokData.contracts,
+        companyName: company.name || 'Bedrift',
+        businessType: handbokData.setupAnswers?.businessType,
+        numberOfEmployees: handbokData.setupAnswers?.numberOfEmployees,
+        hasCleanZone: handbokData.setupAnswers?.hasCleanZone,
+        goals: ensureArray(handbokData.goals) as string[],
+        haccp: ensureArray(handbokData.haccp) as HandbokData['haccp'],
+        risks: ensureArray(handbokData.risks) as HandbokData['risks'],
+        routines: ensureArray(handbokData.routines) as HandbokData['routines'],
+        checklists: ensureArray(handbokData.checklists) as HandbokData['checklists'],
+        cleaningPlan: ensureArray(handbokData.cleaningPlan) as HandbokData['cleaningPlan'],
+        allergens: ensureArray(handbokData.allergens) as HandbokData['allergens'],
+        contracts: ensureArray(handbokData.contracts) as HandbokData['contracts'],
       });
       toast.success("IK-MAT håndbok lastet ned som PDF");
     } catch (error) {
       console.error("Error generating PDF:", error);
-      toast.error("Kunne ikke generere PDF");
+      const errorMessage = error instanceof Error ? error.message : 'Ukjent feil';
+      toast.error(`Kunne ikke generere PDF: ${errorMessage}`);
     }
   };
 
