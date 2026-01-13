@@ -160,14 +160,21 @@ const IkAlkoholRutiner = () => {
                             </div>
                             <div className="flex items-center justify-between mt-4 pt-4 border-t">
                               <div className="text-xs text-muted-foreground">
-                                {routine.last_reviewed_at ? (
+                                {routine.last_reviewed_at && routine.reviewed_by_name ? (
+                                  <>Sist gjennomgått av {routine.reviewed_by_name}: {format(new Date(routine.last_reviewed_at), 'dd.MM.yyyy', { locale: nb })}</>
+                                ) : routine.last_reviewed_at ? (
                                   <>Sist gjennomgått: {format(new Date(routine.last_reviewed_at), 'dd.MM.yyyy', { locale: nb })}</>
                                 ) : (
                                   <>Opprettet: {format(new Date(routine.created_at), 'dd.MM.yyyy', { locale: nb })}</>
                                 )}
                               </div>
                               <div className="flex gap-2">
-                                <Button size="sm" variant="outline" onClick={() => updateRoutine.mutate({ id: routine.id, last_reviewed_at: new Date().toISOString(), reviewed_by_name: `${profile?.first_name} ${profile?.last_name}` })}>
+                                <Button size="sm" variant="outline" onClick={() => updateRoutine.mutate({ 
+                                  id: routine.id, 
+                                  last_reviewed_at: new Date().toISOString(), 
+                                  reviewed_by_id: profile?.id,
+                                  reviewed_by_name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || profile?.email || 'Ukjent'
+                                })}>
                                   <Check className="h-4 w-4 mr-1" />
                                   Marker gjennomgått
                                 </Button>
