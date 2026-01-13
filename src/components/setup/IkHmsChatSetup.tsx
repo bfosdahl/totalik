@@ -805,8 +805,46 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
 
         // Transform risks to nested format compatible with RisikovurderingOgHandlingsplan
         // Format: { id, hazard_source, hazard_source_custom, events: [{ id, description, consequence, probability, measures, ... }], ... }
+        // SUPPORTS BOTH OLD AND NEW FORMATS:
+        // OLD: { description, consequence, probability, ... }
+        // NEW: { hazard_source, events: [{ description, consequence, probability, ... }] }
         const transformedRisks = data.risks?.map((risk: Record<string, unknown>, index: number) => {
           const riskId = (risk.id as string) || `ai-risk-${index + 1}`;
+          
+          // Check if this is the NEW format with hazard_source and events[]
+          const hasNewFormat = risk.hazard_source && Array.isArray(risk.events) && (risk.events as Array<Record<string, unknown>>).length > 0;
+          
+          if (hasNewFormat) {
+            // NEW FORMAT: Use data directly from AI
+            const hazardSource = (risk.hazard_source as string) || 'annet';
+            const hazardSourceCustom = (risk.hazard_source_custom as string) || '';
+            const events = (risk.events as Array<Record<string, unknown>>).map((event, eventIndex) => ({
+              id: (event.id as string) || crypto.randomUUID(),
+              description: (event.description as string) || '',
+              consequence: typeof event.consequence === 'number' && event.consequence >= 1 && event.consequence <= 5 
+                ? event.consequence 
+                : 3,
+              probability: typeof event.probability === 'number' && event.probability >= 1 && event.probability <= 5 
+                ? event.probability 
+                : 3,
+              measures: (event.measures as string) || '',
+              responsible: (event.responsible as string) || '',
+              deadline: (event.deadline as string) || '',
+              status: (event.status as string) || 'planlagt',
+            }));
+            
+            return {
+              id: riskId,
+              hazard_source: hazardSource,
+              hazard_source_custom: hazardSourceCustom,
+              events: events,
+              created_at: (risk.created_at as string) || new Date().toISOString(),
+              created_by: (risk.created_by as string) || 'Oppsett-hjelperen',
+              is_ai_generated: true,
+            };
+          }
+          
+          // OLD FORMAT: Transform flat structure to nested
           const description = (risk.description as string) || '';
           const consequence = typeof risk.consequence === 'number' && risk.consequence >= 1 && risk.consequence <= 5 
             ? risk.consequence 
@@ -1071,21 +1109,40 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
         }
 
         // Save to standard company tables
+        // CRITICAL: This must succeed or the user won't have the data they expect!
         try {
+          console.log("[saveSetupData] Starting save to standard tables...");
+          console.log("[saveSetupData] Data received:", {
+            goals: data.goals?.length || 0,
+            risks: data.risks?.length || 0,
+            actions: data.actions?.length || 0,
+            routines: data.routines?.length || 0,
+          });
+          
           if (data.goals?.length > 0) {
-            await supabase
+            console.log("[saveSetupData] Saving goals:", data.goals);
+            const { error: deleteGoalsError } = await supabase
               .from("company_goals")
               .delete()
               .eq("company_id", companyId)
               .eq("is_predefined", true);
             
+            if (deleteGoalsError) {
+              console.error("[saveSetupData] Error deleting old goals:", deleteGoalsError);
+            }
+            
             for (const goal of data.goals) {
-              await supabase.from("company_goals").insert({
+              const { error: insertGoalError } = await supabase.from("company_goals").insert({
                 company_id: companyId,
                 goal_text: goal,
                 is_predefined: true,
               });
+              if (insertGoalError) {
+                console.error("[saveSetupData] Error inserting goal:", insertGoalError);
+                throw new Error(`Kunne ikke lagre mål: ${insertGoalError.message}`);
+              }
             }
+            console.log("[saveSetupData] Goals saved successfully");
           }
 
           if (data.organization) {
@@ -1157,51 +1214,76 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
           }
 
           if (data.risks?.length > 0) {
+            console.log("[saveSetupData] Saving risks, transformedRisks count:", transformedRisks.length);
+            console.log("[saveSetupData] Sample transformed risk:", JSON.stringify(transformedRisks[0], null, 2));
+            
             const { data: existingRisks } = await supabase
               .from("company_risk_assessments")
               .select("risks")
               .eq("company_id", companyId)
-              .single();
+              .maybeSingle();
             
             const userRisks = (existingRisks?.risks as Array<Record<string, unknown>> || [])
               .filter((r) => !r.is_ai_generated);
             
-            await supabase.from("company_risk_assessments").upsert({
+            const { error: risksError } = await supabase.from("company_risk_assessments").upsert({
               company_id: companyId,
               risks: [...userRisks, ...transformedRisks],
             });
+            
+            if (risksError) {
+              console.error("[saveSetupData] Error saving risks:", risksError);
+              throw new Error(`Kunne ikke lagre risikoer: ${risksError.message}`);
+            }
+            console.log("[saveSetupData] Risks saved successfully");
           }
 
           if (data.actions?.length > 0) {
+            console.log("[saveSetupData] Saving actions:", transformedActions.length);
+            
             const { data: existingActions } = await supabase
               .from("company_action_plans")
               .select("actions")
               .eq("company_id", companyId)
-              .single();
+              .maybeSingle();
             
             const userActions = (existingActions?.actions as Array<Record<string, unknown>> || [])
               .filter((a) => !a.is_ai_generated);
             
-            await supabase.from("company_action_plans").upsert({
+            const { error: actionsError } = await supabase.from("company_action_plans").upsert({
               company_id: companyId,
               actions: [...userActions, ...transformedActions],
             });
+            
+            if (actionsError) {
+              console.error("[saveSetupData] Error saving actions:", actionsError);
+              throw new Error(`Kunne ikke lagre handlingsplan: ${actionsError.message}`);
+            }
+            console.log("[saveSetupData] Actions saved successfully");
           }
 
           if (data.routines?.length > 0) {
+            console.log("[saveSetupData] Saving routines:", transformedRoutines.length);
+            
             const { data: existingRoutines } = await supabase
               .from("company_routines")
               .select("routines")
               .eq("company_id", companyId)
-              .single();
+              .maybeSingle();
             
             const userRoutines = (existingRoutines?.routines as Array<Record<string, unknown>> || [])
               .filter((r) => !r.is_ai_generated);
             
-            await supabase.from("company_routines").upsert({
+            const { error: routinesError } = await supabase.from("company_routines").upsert({
               company_id: companyId,
               routines: [...userRoutines, ...transformedRoutines],
             });
+            
+            if (routinesError) {
+              console.error("[saveSetupData] Error saving routines:", routinesError);
+              throw new Error(`Kunne ikke lagre rutiner: ${routinesError.message}`);
+            }
+            console.log("[saveSetupData] Routines saved successfully");
           }
 
           // Add laws/regulations based on industry and employee count
@@ -1303,7 +1385,9 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
             );
           }
         } catch (tableError) {
-          console.warn("Warning: Could not save to standard tables:", tableError);
+          console.error("[saveSetupData] CRITICAL: Could not save to standard tables:", tableError);
+          // Re-throw the error so the retry mechanism can handle it
+          throw tableError;
         }
 
         queryClient.invalidateQueries({ queryKey: ["company-goals"] });
