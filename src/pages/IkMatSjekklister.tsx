@@ -273,8 +273,16 @@ const IkMatSjekklister = () => {
               ) : (
                 <div className="grid gap-4">
                   {responses.map((response) => {
-                    const checklist = checklists.find(c => c.id === response.checklist_type);
-                    if (!checklist) return null;
+                    // Sjekk i alle sjekklister (genererte + egendefinerte)
+                    const checklist = allChecklists.find(c => c.id === response.checklist_type);
+                    
+                    // Hvis sjekkliste ikke finnes, vis likevel med response-data
+                    const displayChecklist = checklist || {
+                      id: response.checklist_type,
+                      name: response.checklist_name,
+                      description: '',
+                      checkpoints: response.responses.map(r => r.checkpoint)
+                    };
 
                     const okCount = response.responses.filter(r => r.status === 'ok').length;
                     const notOkCount = response.responses.filter(r => r.status === 'not_ok').length;
@@ -321,7 +329,7 @@ const IkMatSjekklister = () => {
                             <Button 
                               variant="outline" 
                               className="flex-1 gap-2"
-                              onClick={() => handleEditResponse(response, checklist)}
+                              onClick={() => handleEditResponse(response, displayChecklist)}
                             >
                               <FileText className="h-4 w-4" />
                               Se detaljer
