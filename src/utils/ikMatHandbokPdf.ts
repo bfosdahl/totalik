@@ -79,11 +79,31 @@ const loadImageAsBase64 = async (url: string): Promise<string | null> => {
 
 // Format date for PDF
 const formatDateForPdf = (date: Date): string => {
-  return date.toLocaleDateString('nb-NO', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  return date.toLocaleDateString('nb-NO', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   });
+};
+
+const toText = (value: unknown): string => {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  // Prevent accidental "[object Object]" in PDFs
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return '';
+  }
+};
+
+const getImageFormatFromDataUrl = (dataUrl: string): 'PNG' | 'JPEG' | 'WEBP' => {
+  const match = /^data:image\/(png|jpeg|jpg|webp);/i.exec(dataUrl);
+  const fmt = (match?.[1] || 'png').toLowerCase();
+  if (fmt === 'jpeg' || fmt === 'jpg') return 'JPEG';
+  if (fmt === 'webp') return 'WEBP';
+  return 'PNG';
 };
 
 export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<void> => {
@@ -180,7 +200,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     // Logo if available
     if (logoBase64) {
       try {
-        doc.addImage(logoBase64, 'PNG', pageWidth / 2 - 15, 85, 30, 30);
+        const logoFormat = getImageFormatFromDataUrl(logoBase64);
+        doc.addImage(logoBase64, logoFormat, pageWidth / 2 - 15, 85, 30, 30);
       } catch (e) {
         console.warn('Could not add logo to PDF:', e);
       }
@@ -294,18 +315,18 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
         doc.setTextColor(34, 139, 34);
-        doc.text(`KKP ${index + 1}: ${item.step || 'Kontrollpunkt'}`, margin + 5, yPos + 9);
+        doc.text(`KKP ${index + 1}: ${toText(item.step) || 'Kontrollpunkt'}`, margin + 5, yPos + 9);
         yPos += 18;
 
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(9);
 
         const fields = [
-          { label: 'Fare:', value: item.hazard },
-          { label: 'Kritisk grense:', value: item.criticalLimit },
-          { label: 'Overvåking:', value: item.monitoring },
-          { label: 'Korrigerende tiltak:', value: item.correctiveAction },
-          { label: 'Verifisering:', value: item.verification },
+          { label: 'Fare:', value: toText(item.hazard) },
+          { label: 'Kritisk grense:', value: toText(item.criticalLimit) },
+          { label: 'Overvåking:', value: toText(item.monitoring) },
+          { label: 'Korrigerende tiltak:', value: toText(item.correctiveAction) },
+          { label: 'Verifisering:', value: toText(item.verification) },
         ];
 
         fields.forEach(field => {
@@ -332,12 +353,12 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
       autoTable(doc, {
         startY: yPos,
         head: [['Fare', 'Konsekvens', 'Sannsynlighet', 'Risikonivå', 'Tiltak']],
-        body: safeData.risks.map(risk => [
-          risk.hazard || '',
-          risk.consequence || '',
-          risk.probability || '',
-          risk.riskLevel || '',
-          risk.measures || ''
+        body: safeData.risks.map((risk) => [
+          toText((risk as any).hazard),
+          toText((risk as any).consequence),
+          toText((risk as any).probability),
+          toText((risk as any).riskLevel),
+          toText((risk as any).measures),
         ]),
         margin: { left: margin, right: margin },
         styles: { fontSize: 8, cellPadding: 3 },
@@ -362,15 +383,16 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
         doc.setTextColor(34, 139, 34);
-        doc.text(routine.name || 'Rutine', margin + 5, yPos + 9);
+        doc.text(toText(routine.name) || 'Rutine', margin + 5, yPos + 9);
         yPos += 18;
 
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
-        
-        if (routine.description) {
-          const descLines = doc.splitTextToSize(routine.description, contentWidth - 10);
+
+        const routineDesc = toText(routine.description);
+        if (routineDesc) {
+          const descLines = doc.splitTextToSize(routineDesc, contentWidth - 10);
           doc.text(descLines, margin + 3, yPos);
           yPos += descLines.length * 5 + 5;
         }
@@ -378,13 +400,13 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
         doc.setFont('helvetica', 'bold');
         doc.text('Frekvens: ', margin + 3, yPos);
         doc.setFont('helvetica', 'normal');
-        doc.text(routine.frequency || 'Ikke oppgitt', margin + 25, yPos);
+        doc.text(toText(routine.frequency) || 'Ikke oppgitt', margin + 25, yPos);
         yPos += 6;
 
         doc.setFont('helvetica', 'bold');
         doc.text('Ansvarlig: ', margin + 3, yPos);
         doc.setFont('helvetica', 'normal');
-        doc.text(routine.responsible || 'Ikke oppgitt', margin + 25, yPos);
+        doc.text(toText(routine.responsible) || 'Ikke oppgitt', margin + 25, yPos);
         yPos += 12;
       });
     }
@@ -422,7 +444,7 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
           // Checkbox style
           doc.setFillColor(34, 139, 34);
           doc.rect(margin + 3, yPos - 3, 3, 3, 'F');
-          const pointLines = doc.splitTextToSize(point || '', contentWidth - 15);
+          const pointLines = doc.splitTextToSize(toText(point), contentWidth - 15);
           doc.text(pointLines, margin + 10, yPos);
           yPos += pointLines.length * 5 + 2;
         });
@@ -439,11 +461,11 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
       autoTable(doc, {
         startY: yPos,
         head: [['Område', 'Frekvens', 'Metode', 'Ansvarlig']],
-        body: safeData.cleaningPlan.map(task => [
-          task.area || '',
-          task.frequency || '',
-          task.method || '',
-          task.responsible || ''
+        body: safeData.cleaningPlan.map((task) => [
+          toText((task as any).area),
+          toText((task as any).frequency),
+          toText((task as any).method),
+          toText((task as any).responsible),
         ]),
         margin: { left: margin, right: margin },
         styles: { fontSize: 8, cellPadding: 3 },
@@ -462,10 +484,10 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
       autoTable(doc, {
         startY: yPos,
         head: [['Allergen', 'Status', 'Kontrolltiltak']],
-        body: safeData.allergens.map(allergen => [
-          allergen.name || '',
-          allergen.present ? '✓ Tilstede' : '✗ Ikke i bruk',
-          allergen.controlMeasures || 'Ingen spesifikke tiltak'
+        body: safeData.allergens.map((allergen) => [
+          toText((allergen as any).name),
+          Boolean((allergen as any).present) ? '✓ Tilstede' : '✗ Ikke i bruk',
+          toText((allergen as any).controlMeasures) || 'Ingen spesifikke tiltak',
         ]),
         margin: { left: margin, right: margin },
         styles: { fontSize: 8, cellPadding: 3 },
@@ -495,12 +517,12 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
       autoTable(doc, {
         startY: yPos,
         head: [['Leverandør', 'Type', 'Frekvens', 'Kontakt', 'Neste revisjon']],
-        body: safeData.contracts.map(contract => [
-          contract.supplier || '',
-          contract.type || '',
-          contract.frequency || '',
-          contract.contact || '-',
-          contract.nextReview || '-'
+        body: safeData.contracts.map((contract) => [
+          toText((contract as any).supplier),
+          toText((contract as any).type),
+          toText((contract as any).frequency),
+          toText((contract as any).contact) || '-',
+          toText((contract as any).nextReview) || '-',
         ]),
         margin: { left: margin, right: margin },
         styles: { fontSize: 8, cellPadding: 3 },
