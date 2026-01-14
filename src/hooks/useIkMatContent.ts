@@ -31,6 +31,80 @@ export interface IkMatRisk {
   isHaccp: boolean; // HACCP kritisk kontrollpunkt
   controlDate?: string; // Dato for kontroll
   frequency?: string; // Hyppighet: daily, weekly, monthly, quarterly, yearly
+  // New fields for enhanced risk assessment
+  isAcceptable?: boolean; // Akseptabel risiko?
+  justification?: string; // Begrunnelse/vurdering
+  criticalLimit?: string; // Kritisk grense (for HACCP)
+  controlMethod?: string; // Kontrollmetode
+  // Residual risk (after measures)
+  residualProbability?: number;
+  residualConsequence?: number;
+  residualRiskLevel?: number;
+  // Status tracking
+  status?: 'open' | 'in_progress' | 'closed'; // Overall risk status
+  closedAt?: string;
+  closedBy?: string;
+}
+
+export interface IkMatActionItem {
+  id: string;
+  riskId?: string; // Link to risk that triggered this action
+  action: string;
+  responsible: string;
+  responsibleName?: string;
+  deadline: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'overdue';
+  completedDate?: string;
+  notes?: string;
+  // Enhanced action tracking
+  actionType: 'preventive' | 'corrective'; // Forebyggende eller korrigerende
+  effectOnProbability?: boolean; // Reduserer sannsynlighet
+  effectOnConsequence?: boolean; // Reduserer konsekvens
+}
+
+export interface IkMatHaccp {
+  id: string;
+  step: string;
+  hazard: string;
+  criticalLimit: string;
+  monitoring: string;
+  correctiveAction: string;
+  verification: string;
+}
+
+export interface IkMatRoutine {
+  id: string;
+  name: string;
+  description: string;
+  frequency: string;
+  responsible: string;
+}
+
+// HACCP Control log entry
+export interface IkMatControlLog {
+  id: string;
+  riskId: string;
+  controlDate: string;
+  controlTime?: string;
+  result: 'ok' | 'deviation';
+  value?: string; // e.g., temperature reading
+  comment?: string;
+  imagePath?: string;
+  performedBy: string;
+  performedByName?: string;
+  createdAt: string;
+  // If deviation, link to action created
+  deviationActionId?: string;
+}
+
+export interface IkMatContent {
+  goals: IkMatGoal[];
+  organization: IkMatOrganization;
+  risks: IkMatRisk[];
+  haccp: IkMatHaccp[];
+  routines: IkMatRoutine[];
+  actionPlan: IkMatActionItem[];
+  controlLogs: IkMatControlLog[];
 }
 
 // Helper function to calculate risk level
@@ -76,43 +150,33 @@ export const getRiskLevelVariant = (level: number): 'secondary' | 'default' | 'd
   return 'destructive';
 };
 
-export interface IkMatHaccp {
-  id: string;
-  step: string;
-  hazard: string;
-  criticalLimit: string;
-  monitoring: string;
-  correctiveAction: string;
-  verification: string;
-}
+// Get action plan status for a risk
+export type ActionPlanStatus = 'none' | 'in_progress' | 'overdue' | 'completed';
 
-export interface IkMatRoutine {
-  id: string;
-  name: string;
-  description: string;
-  frequency: string;
-  responsible: string;
-}
+export const getActionPlanStatus = (actions: IkMatActionItem[], riskId: string): ActionPlanStatus => {
+  const riskActions = actions.filter(a => a.riskId === riskId);
+  if (riskActions.length === 0) return 'none';
+  
+  const today = new Date().toISOString().split('T')[0];
+  const hasOverdue = riskActions.some(a => 
+    a.status !== 'completed' && a.deadline && a.deadline < today
+  );
+  if (hasOverdue) return 'overdue';
+  
+  const allCompleted = riskActions.every(a => a.status === 'completed');
+  if (allCompleted) return 'completed';
+  
+  return 'in_progress';
+};
 
-export interface IkMatActionItem {
-  id: string;
-  riskId?: string; // Link to risk that triggered this action
-  action: string;
-  responsible: string;
-  deadline: string;
-  status: 'pending' | 'in_progress' | 'completed';
-  completedDate?: string;
-  notes?: string;
-}
-
-export interface IkMatContent {
-  goals: IkMatGoal[];
-  organization: IkMatOrganization;
-  risks: IkMatRisk[];
-  haccp: IkMatHaccp[];
-  routines: IkMatRoutine[];
-  actionPlan: IkMatActionItem[];
-}
+export const getActionPlanStatusLabel = (status: ActionPlanStatus): string => {
+  switch (status) {
+    case 'none': return 'Ingen tiltak';
+    case 'in_progress': return 'Tiltak pågår';
+    case 'overdue': return 'Tiltak forfalt';
+    case 'completed': return 'Lukket';
+  }
+};
 
 export const useIkMatContent = () => {
   const { company } = useAuth();
@@ -123,6 +187,7 @@ export const useIkMatContent = () => {
     haccp: [],
     routines: [],
     actionPlan: [],
+    controlLogs: [],
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -154,13 +219,18 @@ export const useIkMatContent = () => {
           (generated.risks || []).map((r: any, i: number) => ({ 
             id: `gen-${i}`, 
             ...r, 
-            isHaccp: false 
+            isHaccp: false,
+            status: 'open',
           })),
         haccp: manual.haccp?.length > 0 ? manual.haccp :
           (generated.haccp || []).map((h: any, i: number) => ({ id: `gen-${i}`, ...h })),
         routines: manual.routines?.length > 0 ? manual.routines :
           (generated.routines || []).map((r: any, i: number) => ({ id: `gen-${i}`, ...r })),
-        actionPlan: manual.actionPlan || [],
+        actionPlan: (manual.actionPlan || []).map((a: any) => ({
+          ...a,
+          actionType: a.actionType || 'corrective',
+        })),
+        controlLogs: manual.controlLogs || [],
       });
     } catch (error) {
       console.error('Error fetching IK/MAT content:', error);
@@ -231,7 +301,7 @@ export const useIkMatContent = () => {
   };
 
   // Helper to add action item for a specific risk
-  const addActionForRisk = async (risk: IkMatRisk, actionText?: string) => {
+  const addActionForRisk = async (risk: IkMatRisk, actionText?: string, actionType: 'preventive' | 'corrective' = 'corrective') => {
     const newAction: IkMatActionItem = {
       id: `action-${Date.now()}`,
       riskId: risk.id,
@@ -239,11 +309,25 @@ export const useIkMatContent = () => {
       responsible: '',
       deadline: '',
       status: 'pending',
+      actionType,
     };
     
     const updatedActionPlan = [...content.actionPlan, newAction];
     await saveContent('actionPlan', updatedActionPlan);
     return newAction;
+  };
+
+  // Add control log entry
+  const addControlLog = async (log: Omit<IkMatControlLog, 'id' | 'createdAt'>) => {
+    const newLog: IkMatControlLog = {
+      ...log,
+      id: `log-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    
+    const updatedLogs = [...content.controlLogs, newLog];
+    await saveContent('controlLogs', updatedLogs);
+    return newLog;
   };
 
   return {
@@ -253,5 +337,6 @@ export const useIkMatContent = () => {
     saveContent,
     refetch: fetchContent,
     addActionForRisk,
+    addControlLog,
   };
 };

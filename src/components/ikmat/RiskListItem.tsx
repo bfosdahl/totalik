@@ -1,9 +1,10 @@
 import { Badge } from "@/components/ui/badge";
-import { IkMatRisk, getTrafficLight } from "@/hooks/useIkMatContent";
-import { ChevronRight, AlertTriangle } from "lucide-react";
+import { IkMatRisk, IkMatActionItem, getTrafficLight, getActionPlanStatus, getActionPlanStatusLabel } from "@/hooks/useIkMatContent";
+import { ChevronRight, AlertTriangle, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 
 interface RiskListItemProps {
   risk: IkMatRisk;
+  actions: IkMatActionItem[];
   onClick: () => void;
   hasDeviation?: boolean;
 }
@@ -17,8 +18,10 @@ const FREQUENCY_LABELS: Record<string, string> = {
   yearly: 'Årlig',
 };
 
-export const RiskListItem = ({ risk, onClick, hasDeviation }: RiskListItemProps) => {
+export const RiskListItem = ({ risk, actions, onClick, hasDeviation }: RiskListItemProps) => {
   const trafficLight = getTrafficLight(risk.riskLevel);
+  const actionStatus = getActionPlanStatus(actions, risk.id);
+  const riskActions = actions.filter(a => a.riskId === risk.id);
   
   const getRiskLevelBadge = () => {
     const baseClasses = "text-xs font-normal";
@@ -32,6 +35,44 @@ export const RiskListItem = ({ risk, onClick, hasDeviation }: RiskListItemProps)
     }
   };
 
+  const getActionStatusBadge = () => {
+    switch (actionStatus) {
+      case 'none':
+        return null; // Don't show badge if no actions
+      case 'in_progress':
+        return (
+          <Badge variant="outline" className="text-xs font-normal border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400 gap-1">
+            <Clock className="h-3 w-3" />
+            {riskActions.length} tiltak
+          </Badge>
+        );
+      case 'overdue':
+        return (
+          <Badge variant="outline" className="text-xs font-normal border-red-300 text-red-700 dark:border-red-800 dark:text-red-400 gap-1">
+            <AlertCircle className="h-3 w-3" />
+            Forfalt
+          </Badge>
+        );
+      case 'completed':
+        return (
+          <Badge variant="outline" className="text-xs font-normal border-green-200 text-green-700 dark:border-green-800 dark:text-green-400 gap-1">
+            <CheckCircle2 className="h-3 w-3" />
+            Lukket
+          </Badge>
+        );
+    }
+  };
+
+  const indicatorColor = () => {
+    if (hasDeviation || actionStatus === 'overdue') return 'bg-red-500';
+    if (risk.status === 'closed') return 'bg-green-500';
+    switch (trafficLight) {
+      case 'green': return 'bg-green-500';
+      case 'yellow': return 'bg-yellow-500';
+      case 'red': return 'bg-orange-500';
+    }
+  };
+
   return (
     <button
       onClick={onClick}
@@ -39,17 +80,13 @@ export const RiskListItem = ({ risk, onClick, hasDeviation }: RiskListItemProps)
     >
       <div className="flex items-center gap-3 min-w-0 flex-1">
         {/* Risk level indicator - small, discrete circle */}
-        <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${
-          hasDeviation ? 'bg-red-500' :
-          trafficLight === 'green' ? 'bg-green-500' :
-          trafficLight === 'yellow' ? 'bg-yellow-500' : 'bg-orange-500'
-        }`} />
+        <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${indicatorColor()}`} />
         
         {/* Hazard name */}
         <span className="font-medium truncate">{risk.hazard || 'Ikke navngitt'}</span>
         
         {/* Discrete badges */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
           {getRiskLevelBadge()}
           
           {risk.isHaccp && (
@@ -63,6 +100,8 @@ export const RiskListItem = ({ risk, onClick, hasDeviation }: RiskListItemProps)
               {FREQUENCY_LABELS[risk.frequency] || risk.frequency}
             </Badge>
           )}
+          
+          {getActionStatusBadge()}
           
           {hasDeviation && (
             <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
