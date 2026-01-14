@@ -1,16 +1,24 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
-import { useIkMatContent, getRiskLevelLabel } from "@/hooks/useIkMatContent";
-import { useNavigate } from "react-router-dom";
+import { useIkMatContent, getTrafficLight, getTrafficLightLabel } from "@/hooks/useIkMatContent";
+import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle, Edit } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Info, Edit, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { RiskSummaryCard } from "@/components/ikmat/RiskSummaryCard";
+
+const FREQUENCY_LABELS: Record<string, string> = {
+  daily: 'Daglig',
+  weekly: 'Ukentlig',
+  monthly: 'Månedlig',
+  quarterly: 'Kvartalsvis',
+  biannually: 'Halvårlig',
+  yearly: 'Årlig',
+};
 
 const IkMatRisikovurdering = () => {
   const { company } = useAuth();
@@ -23,13 +31,6 @@ const IkMatRisikovurdering = () => {
       navigate('/');
     }
   }, [hasModule, modulesLoading, navigate]);
-
-  const getRiskBadgeColor = (level: number) => {
-    if (level <= 4) return 'bg-green-500/20 text-green-700 border-green-500/30';
-    if (level <= 9) return 'bg-yellow-500/20 text-yellow-700 border-yellow-500/30';
-    if (level <= 15) return 'bg-orange-500/20 text-orange-700 border-orange-500/30';
-    return 'bg-destructive/20 text-destructive border-destructive/30';
-  };
 
   if (modulesLoading || contentLoading) {
     return (
@@ -46,18 +47,33 @@ const IkMatRisikovurdering = () => {
 
   const risks = content.risks || [];
 
+  const getRiskLevelBadge = (level: number) => {
+    const trafficLight = getTrafficLight(level);
+    switch (trafficLight) {
+      case 'green':
+        return <Badge variant="secondary" className="text-xs font-normal">Lav</Badge>;
+      case 'yellow':
+        return <Badge variant="secondary" className="text-xs font-normal bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">Middels</Badge>;
+      case 'red':
+        return <Badge variant="secondary" className="text-xs font-normal bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400">Høy</Badge>;
+    }
+  };
+
   return (
     <AppLayout>
-      <div className="container max-w-6xl mx-auto py-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="container max-w-3xl mx-auto py-8 space-y-6">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Risikovurdering - Mat og servering</h1>
-            <p className="text-muted-foreground">
-              5×5 risikomatrise: Sannsynlighet × Konsekvens = Risikonivå (1-25)
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+              Risikovurdering
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Oversikt over identifiserte farer og kontrollpunkter
             </p>
           </div>
-          <Button asChild>
-            <Link to="/ik-mat/risiko-haccp">
+          <Button asChild size="sm" variant="outline">
+            <Link to="/ik-mat/risiko-og-tiltak">
               <Edit className="h-4 w-4 mr-2" />
               Rediger
             </Link>
@@ -65,59 +81,70 @@ const IkMatRisikovurdering = () => {
         </div>
 
         {risks.length === 0 ? (
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              Ingen risikovurdering funnet. <Link to="/ik-mat/risiko-haccp" className="underline font-medium">Legg til risikoer</Link> eller kjør IK/MAT oppsettet.
-            </AlertDescription>
-          </Alert>
+          <div className="text-center py-12">
+            <ShieldCheck className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+            <h3 className="font-medium text-muted-foreground mb-2">
+              Ingen risikoer definert
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Legg til risikoer for å dokumentere fareanalysen
+            </p>
+            <Button asChild>
+              <Link to="/ik-mat/risiko-og-tiltak">Kom i gang</Link>
+            </Button>
+          </div>
         ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Risikovurdering for {company?.name}</CardTitle>
-              <CardDescription>
-                Identifiserte risikoer med 5×5 matrise (S × K = Risikonivå)
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fare/risiko</TableHead>
-                    <TableHead className="text-center w-24">S (1-5)</TableHead>
-                    <TableHead className="text-center w-24">K (1-5)</TableHead>
-                    <TableHead className="text-center w-32">Risiko (S×K)</TableHead>
-                    <TableHead className="text-center w-20">HACCP</TableHead>
-                    <TableHead>Tiltak</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {risks.map((risk, idx) => (
-                    <TableRow key={risk.id || idx}>
-                      <TableCell className="font-medium">{risk.hazard}</TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant="outline">{risk.probability}</Badge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant="outline">{risk.consequence}</Badge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge className={getRiskBadgeColor(risk.riskLevel)}>
-                          {risk.riskLevel} - {getRiskLevelLabel(risk.riskLevel)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {risk.isHaccp && <Badge variant="destructive">KKP</Badge>}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground max-w-md">
-                        {risk.measures}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <>
+            <RiskSummaryCard risks={risks} />
+            
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Risikoer for {company?.name}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {risks.map((risk) => {
+                  const trafficLight = getTrafficLight(risk.riskLevel);
+                  return (
+                    <div 
+                      key={risk.id}
+                      className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${
+                          trafficLight === 'green' ? 'bg-green-500' :
+                          trafficLight === 'yellow' ? 'bg-yellow-500' : 'bg-orange-500'
+                        }`} />
+                        <span className="font-medium truncate">{risk.hazard || 'Ikke navngitt'}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {getRiskLevelBadge(risk.riskLevel)}
+                        
+                        {risk.isHaccp && (
+                          <Badge variant="outline" className="text-xs font-normal border-destructive/50 text-destructive">
+                            KKP
+                          </Badge>
+                        )}
+                        
+                        {risk.frequency && (
+                          <Badge variant="outline" className="text-xs font-normal hidden sm:inline-flex">
+                            {FREQUENCY_LABELS[risk.frequency] || risk.frequency}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+
+            <Alert className="bg-muted/50 border-muted">
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-xs text-muted-foreground">
+                Trykk "Rediger" for å oppdatere risikoer, legge til tiltak eller endre kontrollhyppighet.
+              </AlertDescription>
+            </Alert>
+          </>
         )}
       </div>
     </AppLayout>
