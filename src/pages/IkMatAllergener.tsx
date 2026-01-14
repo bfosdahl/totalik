@@ -347,9 +347,10 @@ const IkMatAllergener = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {presentAllergens.length > 0 && (
+            {menuItems.length > 0 && (
               <AllergenPosterDialog 
-                allergens={allergens} 
+                allergens={allergens}
+                menuItems={menuItems}
                 companyName={company?.name || 'Bedrift'} 
               />
             )}
