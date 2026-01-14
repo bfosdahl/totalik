@@ -229,63 +229,11 @@ const IkMatOrganisasjon = () => {
           </div>
         </div>
 
-        {/* Quick add predefined roles */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Legg til rolle</CardTitle>
-            <CardDescription>Velg en forhåndsdefinert rolle eller lag en egendefinert</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {PREDEFINED_ROLES.slice(0, 6).map((role) => {
-                const isAlreadyAdded = organization.roles.some(r => r.title === role.title);
-                return (
-                  <Button
-                    key={role.title}
-                    variant={isAlreadyAdded ? "secondary" : "outline"}
-                    size="sm"
-                    onClick={() => handleAddRole(role.title)}
-                    disabled={isAlreadyAdded}
-                  >
-                    <Plus className="h-3 w-3 mr-1" />
-                    {role.title}
-                    {isAlreadyAdded && " ✓"}
-                  </Button>
-                );
-              })}
-              <Select
-                onValueChange={(val) => {
-                  if (val === "custom") {
-                    handleAddRole();
-                  } else {
-                    handleAddRole(val);
-                  }
-                }}
-              >
-                <SelectTrigger className="w-[180px] h-8">
-                  <SelectValue placeholder="Flere roller..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {PREDEFINED_ROLES.slice(6).map((role) => {
-                    const isAlreadyAdded = organization.roles.some(r => r.title === role.title);
-                    return (
-                      <SelectItem
-                        key={role.title}
-                        value={role.title}
-                        disabled={isAlreadyAdded}
-                      >
-                        {role.title} {isAlreadyAdded && "✓"}
-                      </SelectItem>
-                    );
-                  })}
-                  <SelectItem value="custom" className="text-primary font-medium">
-                    + Egendefinert rolle
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Add role button */}
+        <Button onClick={() => handleAddRole()} variant="outline">
+          <Plus className="h-4 w-4 mr-2" />
+          Legg til rolle
+        </Button>
 
         {organization.roles.length === 0 ? (
           <Card>
