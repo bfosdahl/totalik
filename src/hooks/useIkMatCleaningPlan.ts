@@ -56,14 +56,17 @@ export const useIkMatCleaningPlan = () => {
         throw new Error('Mangler bruker eller bedriftsinfo');
       }
 
+      // Get completed_by_name from user metadata
+      const completedByName = user.user_metadata?.first_name 
+        ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim()
+        : user.email || 'Ukjent bruker';
+
       const { data, error } = await supabase
         .from('ik_mat_cleaning_plan_responses')
         .insert({
           company_id: company.id,
-          completed_by_id: user.id,
-          completed_by_name: user.user_metadata?.first_name 
-            ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`
-            : user.email || 'Ukjent bruker',
+          completed_by_id: null, // Don't set FK to avoid constraint errors
+          completed_by_name: completedByName,
           cleaning_records: newResponse.cleaning_records as any,
           notes: newResponse.notes || null,
           status: newResponse.status,

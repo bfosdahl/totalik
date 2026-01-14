@@ -11,6 +11,21 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+const FREQUENCY_OPTIONS = [
+  { value: 'Daglig', label: 'Daglig' },
+  { value: 'Ukentlig', label: 'Ukentlig' },
+  { value: 'Månedlig', label: 'Månedlig' },
+  { value: 'Periodisk', label: 'Periodisk' },
+  { value: 'Ved behov', label: 'Annet/Ved behov' },
+];
 
 interface EditCleaningTaskDialogProps {
   open: boolean;
@@ -102,12 +117,18 @@ export const EditCleaningTaskDialog = ({
 
           <div className="space-y-2">
             <Label htmlFor="frequency">Frekvens *</Label>
-            <Input
-              id="frequency"
-              value={frequency}
-              onChange={(e) => setFrequency(e.target.value)}
-              placeholder="F.eks. Daglig, Ukentlig, Månedlig"
-            />
+            <Select value={frequency} onValueChange={setFrequency}>
+              <SelectTrigger>
+                <SelectValue placeholder="Velg frekvens" />
+              </SelectTrigger>
+              <SelectContent>
+                {FREQUENCY_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">

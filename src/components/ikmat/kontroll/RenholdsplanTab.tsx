@@ -24,18 +24,20 @@ interface CleaningTask {
   responsible: string;
 }
 
-type FrequencyType = 'daily' | 'weekly' | 'monthly';
+type FrequencyType = 'daily' | 'weekly' | 'monthly' | 'periodic';
 
 const FREQUENCY_LABELS: Record<FrequencyType, string> = {
   daily: 'Daglig',
   weekly: 'Ukentlig',
-  monthly: 'Månedlig/Periodisk',
+  monthly: 'Månedlig',
+  periodic: 'Periodisk/Ved behov',
 };
 
 const FREQUENCY_ICONS: Record<FrequencyType, typeof Calendar> = {
   daily: Calendar,
   weekly: CalendarDays,
   monthly: CalendarRange,
+  periodic: CalendarRange,
 };
 
 const normalizeFrequency = (freq: string): FrequencyType => {
@@ -46,7 +48,10 @@ const normalizeFrequency = (freq: string): FrequencyType => {
   if (lower.includes('ukentlig') || lower.includes('weekly') || lower.includes('hver uke')) {
     return 'weekly';
   }
-  return 'monthly'; // månedlig, periodisk, etc.
+  if (lower.includes('månedlig') || lower.includes('monthly') || lower.includes('hver måned')) {
+    return 'monthly';
+  }
+  return 'periodic'; // periodisk, ved behov, etc.
 };
 
 export const RenholdsplanTab = () => {
@@ -81,6 +86,7 @@ export const RenholdsplanTab = () => {
       daily: [],
       weekly: [],
       monthly: [],
+      periodic: [],
     };
 
     allTasks.forEach(task => {
@@ -322,6 +328,7 @@ export const RenholdsplanTab = () => {
             {renderTaskTable(tasksByFrequency.daily, 'daily')}
             {renderTaskTable(tasksByFrequency.weekly, 'weekly')}
             {renderTaskTable(tasksByFrequency.monthly, 'monthly')}
+            {renderTaskTable(tasksByFrequency.periodic, 'periodic')}
           </div>
         </TabsContent>
 
