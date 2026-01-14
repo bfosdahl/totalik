@@ -8,13 +8,17 @@ export interface IkMatGoal {
   text: string;
 }
 
+export interface IkMatOrganizationRole {
+  id: string;
+  title: string;
+  personName: string;
+  personId?: string;
+  description: string;
+  sortOrder: number;
+}
+
 export interface IkMatOrganization {
-  roles: Array<{
-    id: string;
-    title: string;
-    description: string;
-    sortOrder: number;
-  }>;
+  roles: IkMatOrganizationRole[];
 }
 
 export interface IkMatRisk {
