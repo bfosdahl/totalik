@@ -49,6 +49,7 @@ import HrSurveys from "./pages/hr/HrSurveys";
 import MyAbsence from "./pages/my/MyAbsence";
 import MySurveys from "./pages/my/MySurveys";
 import InstallApp from "./pages/InstallApp";
+import InstallAvvikApp from "./pages/InstallAvvikApp";
 import IkMatHandbok from "./pages/IkMatHandbok";
 import IkMatOppsett from "./pages/IkMatOppsett";
 import IkMatHaccp from "./pages/IkMatHaccp";
@@ -103,6 +104,7 @@ const App = () => (
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/setup-admin" element={<SetupSystemAdmin />} />
                   <Route path="/install" element={<InstallApp />} />
+                  <Route path="/install/avvik" element={<InstallAvvikApp />} />
                   <Route path="/stemple" element={<TimeClock />} />
                 
                   {/* Protected app routes */}
