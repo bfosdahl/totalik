@@ -60,6 +60,8 @@ export interface IkMatActionItem {
   actionType: 'preventive' | 'corrective'; // Forebyggende eller korrigerende
   effectOnProbability?: boolean; // Reduserer sannsynlighet
   effectOnConsequence?: boolean; // Reduserer konsekvens
+  newProbability?: number; // Ny sannsynlighet etter tiltak (1-5)
+  newConsequence?: number; // Ny konsekvens etter tiltak (1-5)
 }
 
 export interface IkMatHaccp {

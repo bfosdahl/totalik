@@ -637,25 +637,62 @@ const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: Actio
       </div>
       
       {showEffect && (
-        <div className="flex items-center gap-4 pt-2 border-t">
-          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <input
-              type="checkbox"
-              checked={action.effectOnProbability || false}
-              onChange={(e) => onUpdate(action.id, 'effectOnProbability', e.target.checked)}
-              className="h-3 w-3"
-            />
-            Reduserer S
-          </label>
-          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <input
-              type="checkbox"
-              checked={action.effectOnConsequence || false}
-              onChange={(e) => onUpdate(action.id, 'effectOnConsequence', e.target.checked)}
-              className="h-3 w-3"
-            />
-            Reduserer K
-          </label>
+        <div className="space-y-3 pt-2 border-t">
+          <p className="text-xs text-muted-foreground">Effekt på risiko:</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <label className="flex items-center gap-1.5 text-xs">
+                <input
+                  type="checkbox"
+                  checked={action.effectOnProbability || false}
+                  onChange={(e) => onUpdate(action.id, 'effectOnProbability', e.target.checked)}
+                  className="h-3 w-3"
+                />
+                Reduserer sannsynlighet
+              </label>
+              {action.effectOnProbability && (
+                <Select
+                  value={String(action.newProbability || '')}
+                  onValueChange={(value) => onUpdate(action.id, 'newProbability', Number(value))}
+                >
+                  <SelectTrigger className="h-7 text-xs">
+                    <SelectValue placeholder="Ny S" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5].map(v => (
+                      <SelectItem key={v} value={String(v)}>{v} - {v === 1 ? 'Svært lav' : v === 2 ? 'Lav' : v === 3 ? 'Middels' : v === 4 ? 'Høy' : 'Svært høy'}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center gap-1.5 text-xs">
+                <input
+                  type="checkbox"
+                  checked={action.effectOnConsequence || false}
+                  onChange={(e) => onUpdate(action.id, 'effectOnConsequence', e.target.checked)}
+                  className="h-3 w-3"
+                />
+                Reduserer konsekvens
+              </label>
+              {action.effectOnConsequence && (
+                <Select
+                  value={String(action.newConsequence || '')}
+                  onValueChange={(value) => onUpdate(action.id, 'newConsequence', Number(value))}
+                >
+                  <SelectTrigger className="h-7 text-xs">
+                    <SelectValue placeholder="Ny K" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5].map(v => (
+                      <SelectItem key={v} value={String(v)}>{v} - {v === 1 ? 'Ubetydelig' : v === 2 ? 'Mindre' : v === 3 ? 'Moderat' : v === 4 ? 'Alvorlig' : 'Katastrofal'}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
