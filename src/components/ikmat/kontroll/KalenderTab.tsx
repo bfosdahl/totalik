@@ -1,0 +1,367 @@
+import { useState, useMemo } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Calendar } from "@/components/ui/calendar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { 
+  CalendarDays, 
+  Plus, 
+  CheckCircle2, 
+  AlertTriangle, 
+  Clock, 
+  Thermometer, 
+  Package, 
+  SprayCan,
+  ListTodo,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useIkMatScheduledTasks, CalendarEvent } from "@/hooks/useIkMatScheduledTasks";
+import { CreateScheduledTaskDialog } from "./CreateScheduledTaskDialog";
+import { TaskListView } from "./TaskListView";
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, subMonths, isSameDay, isToday, isBefore, startOfDay, parseISO } from "date-fns";
+import { nb } from "date-fns/locale";
+
+export const KalenderTab = () => {
+  const { company } = useAuth();
+  const { tasks, tasksLoading, useCalendarEvents, generateTaskInstances, completeTask } = useIkMatScheduledTasks();
+  
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [activeView, setActiveView] = useState<'calendar' | 'list'>('calendar');
+
+  // Calculate date range for fetching events
+  const dateRange = useMemo(() => {
+    const start = startOfWeek(startOfMonth(currentMonth), { locale: nb });
+    const end = endOfWeek(endOfMonth(currentMonth), { locale: nb });
+    return { start, end };
+  }, [currentMonth]);
+
+  const { data: calendarEvents, isLoading: eventsLoading } = useCalendarEvents(dateRange.start, dateRange.end);
+
+  // Generate scheduled task instances and merge with actual events
+  const allEvents = useMemo(() => {
+    if (!tasks) return calendarEvents || [];
+
+    const scheduledInstances = generateTaskInstances(dateRange.start, dateRange.end, tasks);
+    
+    // Merge: actual completions override scheduled instances
+    const completedTaskDates = new Set(
+      (calendarEvents || [])
+        .filter(e => e.type === 'task' && e.status === 'completed')
+        .map(e => `${e.taskId}-${format(e.date, 'yyyy-MM-dd')}`)
+    );
+
+    const filteredInstances = scheduledInstances.filter(
+      inst => !completedTaskDates.has(`${inst.taskId}-${format(inst.date, 'yyyy-MM-dd')}`)
+    );
+
+    return [...(calendarEvents || []), ...filteredInstances];
+  }, [tasks, calendarEvents, dateRange, generateTaskInstances]);
+
+  // Get events for the selected date
+  const selectedDateEvents = useMemo(() => {
+    return allEvents.filter(event => isSameDay(event.date, selectedDate));
+  }, [allEvents, selectedDate]);
+
+  // Get today's pending tasks
+  const todaysPendingTasks = useMemo(() => {
+    return allEvents.filter(
+      event => isToday(event.date) && event.status !== 'completed'
+    );
+  }, [allEvents]);
+
+  // Get overdue tasks
+  const overdueTasks = useMemo(() => {
+    return allEvents.filter(
+      event => event.status === 'overdue' || 
+        (event.status === 'pending' && isBefore(startOfDay(event.date), startOfDay(new Date())))
+    );
+  }, [allEvents]);
+
+  const getEventIcon = (type: string) => {
+    switch (type) {
+      case 'temperature': return <Thermometer className="h-4 w-4" />;
+      case 'varemottak': return <Package className="h-4 w-4" />;
+      case 'cleaning': return <SprayCan className="h-4 w-4" />;
+      default: return <ListTodo className="h-4 w-4" />;
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <Badge variant="success" className="gap-1"><CheckCircle2 className="h-3 w-3" />Fullført</Badge>;
+      case 'overdue':
+        return <Badge variant="destructive" className="gap-1"><AlertTriangle className="h-3 w-3" />Avvik</Badge>;
+      default:
+        return <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" />Venter</Badge>;
+    }
+  };
+
+  // Custom day content renderer for calendar
+  const getDayContent = (day: Date) => {
+    const dayEvents = allEvents.filter(event => isSameDay(event.date, day));
+    const hasCompleted = dayEvents.some(e => e.status === 'completed');
+    const hasOverdue = dayEvents.some(e => e.status === 'overdue' || 
+      (e.status === 'pending' && isBefore(startOfDay(e.date), startOfDay(new Date()))));
+    const hasPending = dayEvents.some(e => e.status === 'pending' && !isBefore(startOfDay(e.date), startOfDay(new Date())));
+
+    if (dayEvents.length === 0) return null;
+
+    return (
+      <div className="flex gap-0.5 justify-center mt-1">
+        {hasCompleted && <div className="w-1.5 h-1.5 rounded-full bg-green-500" />}
+        {hasOverdue && <div className="w-1.5 h-1.5 rounded-full bg-red-500" />}
+        {hasPending && <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />}
+      </div>
+    );
+  };
+
+  const handleCompleteTask = async (event: CalendarEvent) => {
+    if (event.taskId) {
+      await completeTask.mutateAsync({
+        taskId: event.taskId,
+        scheduledDate: event.date,
+      });
+    }
+  };
+
+  if (tasksLoading || eventsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <p className="text-muted-foreground">
+            Oversikt over alle gjøremål, renhold, temperaturer og varemottak
+          </p>
+        </div>
+        <Button onClick={() => setCreateDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Ny oppgave
+        </Button>
+      </div>
+
+      {/* Quick stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className={todaysPendingTasks.length > 0 ? "border-orange-500" : "border-green-500"}>
+          <CardHeader className="py-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              I dag
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-2">
+            <p className="text-2xl font-bold">
+              {todaysPendingTasks.length} 
+              <span className="text-sm font-normal text-muted-foreground ml-2">
+                gjenstående oppgaver
+              </span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className={overdueTasks.length > 0 ? "border-red-500" : ""}>
+          <CardHeader className="py-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-red-500" />
+              Avvik / Uutført
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-2">
+            <p className="text-2xl font-bold text-red-600">
+              {overdueTasks.length}
+              <span className="text-sm font-normal text-muted-foreground ml-2">
+                oppgaver
+              </span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="py-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <ListTodo className="h-4 w-4" />
+              Planlagte oppgaver
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-2">
+            <p className="text-2xl font-bold">
+              {tasks?.length || 0}
+              <span className="text-sm font-normal text-muted-foreground ml-2">
+                aktive maler
+              </span>
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* View switcher */}
+      <Tabs value={activeView} onValueChange={(v) => setActiveView(v as 'calendar' | 'list')}>
+        <TabsList>
+          <TabsTrigger value="calendar" className="gap-2">
+            <CalendarDays className="h-4 w-4" />
+            Kalender
+          </TabsTrigger>
+          <TabsTrigger value="list" className="gap-2">
+            <ListTodo className="h-4 w-4" />
+            Oppgaveliste
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="calendar" className="mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Calendar */}
+            <Card className="lg:col-span-2">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">
+                    {format(currentMonth, 'MMMM yyyy', { locale: nb })}
+                  </CardTitle>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setCurrentMonth(new Date());
+                        setSelectedDate(new Date());
+                      }}
+                    >
+                      I dag
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => date && setSelectedDate(date)}
+                  month={currentMonth}
+                  onMonthChange={setCurrentMonth}
+                  locale={nb}
+                  className="rounded-md border w-full"
+                  components={{
+                    DayContent: ({ date }) => (
+                      <div className="flex flex-col items-center">
+                        <span>{date.getDate()}</span>
+                        {getDayContent(date)}
+                      </div>
+                    ),
+                  }}
+                />
+                <div className="flex gap-4 mt-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                    <span>Fullført</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <span>Avvik</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-orange-500" />
+                    <span>Venter</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Selected date events */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  {format(selectedDate, 'EEEE d. MMMM', { locale: nb })}
+                </CardTitle>
+                <CardDescription>
+                  {selectedDateEvents.length} hendelser
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[400px]">
+                  {selectedDateEvents.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-8">
+                      Ingen hendelser denne dagen
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {selectedDateEvents.map((event) => (
+                        <div 
+                          key={event.id}
+                          className="p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-2 flex-1 min-w-0">
+                              {getEventIcon(event.type)}
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm truncate">{event.title}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {format(event.date, 'HH:mm', { locale: nb })}
+                                </p>
+                              </div>
+                            </div>
+                            {getStatusBadge(event.status)}
+                          </div>
+                          {event.type === 'task' && event.status !== 'completed' && event.taskId && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="mt-2 w-full"
+                              onClick={() => handleCompleteTask(event)}
+                              disabled={completeTask.isPending}
+                            >
+                              <CheckCircle2 className="h-4 w-4 mr-2" />
+                              Marker som fullført
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="list" className="mt-4">
+          <TaskListView 
+            tasks={tasks || []} 
+            onCreateTask={() => setCreateDialogOpen(true)}
+          />
+        </TabsContent>
+      </Tabs>
+
+      <CreateScheduledTaskDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+      />
+    </div>
+  );
+};
