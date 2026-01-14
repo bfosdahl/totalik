@@ -6,9 +6,10 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Printer } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { AllergenPosterDialog } from "@/components/ikmat/AllergenPosterDialog";
 
 interface Allergen {
   name: string;
@@ -55,11 +56,19 @@ const IkMatAllergener = () => {
   return (
     <AppLayout>
       <div className="container max-w-6xl mx-auto py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Allergener</h1>
-          <p className="text-muted-foreground">
-            Oversikt over allergener og kontrolltiltak
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Allergener</h1>
+            <p className="text-muted-foreground">
+              Oversikt over allergener og kontrolltiltak
+            </p>
+          </div>
+          {allergens.length > 0 && (
+            <AllergenPosterDialog 
+              allergens={allergens} 
+              companyName={company?.name || 'Bedrift'} 
+            />
+          )}
         </div>
 
         {allergens.length === 0 ? (
