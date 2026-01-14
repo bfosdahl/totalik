@@ -46,6 +46,7 @@ const IkMatRisikovurdering = () => {
   }
 
   const risks = content.risks || [];
+  const actions = content.actionPlan || [];
 
   const getRiskLevelBadge = (level: number) => {
     const trafficLight = getTrafficLight(level);
@@ -95,7 +96,7 @@ const IkMatRisikovurdering = () => {
           </div>
         ) : (
           <>
-            <RiskSummaryCard risks={risks} />
+            <RiskSummaryCard risks={risks} actions={actions} />
             
             <Card>
               <CardHeader className="pb-3">
