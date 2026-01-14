@@ -273,6 +273,53 @@ const IkMatAllergener = () => {
     );
   };
 
+  // Add example menu
+  const addExampleMenu = () => {
+    const exampleItems = [
+      { name: "Pasta Carbonara", allergenNames: ["Gluten", "Egg", "Melk"] },
+      { name: "Grillet Laks", allergenNames: ["Fisk"] },
+      { name: "Caesar Salat", allergenNames: ["Gluten", "Egg", "Fisk", "Melk"] },
+      { name: "Sjokoladekake", allergenNames: ["Gluten", "Egg", "Melk", "Soya"] },
+      { name: "Thai Reker", allergenNames: ["Krepsdyr", "Soya", "Peanøtter", "Sesamfrø"] },
+      { name: "Vegetar Burger", allergenNames: ["Gluten", "Soya", "Selleri", "Sennep"] },
+      { name: "Hummus", allergenNames: ["Sesamfrø"] },
+      { name: "Blåskjell i Hvitvin", allergenNames: ["Bløtdyr", "Selleri", "Sulfitter"] },
+    ];
+
+    const newMenuItems: MenuItem[] = [];
+    const updatedAllergens = [...allergens];
+
+    exampleItems.forEach((item) => {
+      const allergenIds = item.allergenNames
+        .map(name => allergens.find(a => a.name === name)?.id)
+        .filter(Boolean) as string[];
+
+      const newItem: MenuItem = {
+        id: `menu-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: item.name,
+        allergenIds,
+      };
+      newMenuItems.push(newItem);
+
+      // Update allergens with menu item reference
+      allergenIds.forEach(allergenId => {
+        const idx = updatedAllergens.findIndex(a => a.id === allergenId);
+        if (idx !== -1) {
+          updatedAllergens[idx] = {
+            ...updatedAllergens[idx],
+            present: true,
+            menuItems: [...(updatedAllergens[idx].menuItems || []), item.name],
+          };
+        }
+      });
+    });
+
+    setMenuItems(prev => [...prev, ...newMenuItems]);
+    setAllergens(updatedAllergens);
+    setHasChanges(true);
+    toast.success(`${exampleItems.length} eksempelretter lagt til i menyen`);
+  };
+
   if (modulesLoading) {
     return (
       <AppLayout>
@@ -493,20 +540,27 @@ const IkMatAllergener = () => {
           <TabsContent value="menu" className="space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <CardTitle>Meny</CardTitle>
                     <CardDescription>
                       Legg til retter og marker hvilke allergener de inneholder
                     </CardDescription>
                   </div>
-                  <Dialog open={addMenuDialogOpen} onOpenChange={setAddMenuDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Legg til rett
+                  <div className="flex flex-wrap gap-2">
+                    {menuItems.length === 0 && (
+                      <Button variant="outline" onClick={addExampleMenu}>
+                        <UtensilsCrossed className="mr-2 h-4 w-4" />
+                        Legg til eksempel-meny
                       </Button>
-                    </DialogTrigger>
+                    )}
+                    <Dialog open={addMenuDialogOpen} onOpenChange={setAddMenuDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button>
+                          <Plus className="mr-2 h-4 w-4" />
+                          Legg til rett
+                        </Button>
+                      </DialogTrigger>
                     <DialogContent className="max-w-md">
                       <DialogHeader>
                         <DialogTitle>Legg til menyrett</DialogTitle>
@@ -562,6 +616,7 @@ const IkMatAllergener = () => {
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
