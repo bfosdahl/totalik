@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogPortal, DialogOverlay } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -653,44 +653,47 @@ const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: Actio
                     : 'Reduserer sannsynlighet'}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Ny sannsynlighet etter tiltak</DialogTitle>
-                  <DialogDescription>
-                    Velg ny sannsynlighetsverdi (1-5) etter at tiltaket er gjennomført
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid grid-cols-5 gap-2 py-4">
-                  {[1, 2, 3, 4, 5].map(v => (
-                    <Button
-                      key={v}
-                      variant={action.newProbability === v ? "default" : "outline"}
-                      className="flex flex-col h-auto py-3"
+              <DialogPortal>
+                <DialogOverlay className="z-[100]" />
+                <DialogContent className="sm:max-w-md z-[100]">
+                  <DialogHeader>
+                    <DialogTitle>Ny sannsynlighet etter tiltak</DialogTitle>
+                    <DialogDescription>
+                      Velg ny sannsynlighetsverdi (1-5) etter at tiltaket er gjennomført
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid grid-cols-5 gap-2 py-4">
+                    {[1, 2, 3, 4, 5].map(v => (
+                      <Button
+                        key={v}
+                        variant={action.newProbability === v ? "default" : "outline"}
+                        className="flex flex-col h-auto py-3"
+                        onClick={() => {
+                          onUpdate(action.id, 'effectOnProbability', true);
+                          onUpdate(action.id, 'newProbability', v);
+                        }}
+                      >
+                        <span className="text-lg font-bold">{v}</span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {v === 1 ? 'Svært lav' : v === 2 ? 'Lav' : v === 3 ? 'Middels' : v === 4 ? 'Høy' : 'Svært høy'}
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
+                  {action.effectOnProbability && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
                       onClick={() => {
-                        onUpdate(action.id, 'effectOnProbability', true);
-                        onUpdate(action.id, 'newProbability', v);
+                        onUpdate(action.id, 'effectOnProbability', false);
+                        onUpdate(action.id, 'newProbability', undefined);
                       }}
                     >
-                      <span className="text-lg font-bold">{v}</span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {v === 1 ? 'Svært lav' : v === 2 ? 'Lav' : v === 3 ? 'Middels' : v === 4 ? 'Høy' : 'Svært høy'}
-                      </span>
+                      Fjern effekt på sannsynlighet
                     </Button>
-                  ))}
-                </div>
-                {action.effectOnProbability && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => {
-                      onUpdate(action.id, 'effectOnProbability', false);
-                      onUpdate(action.id, 'newProbability', undefined);
-                    }}
-                  >
-                    Fjern effekt på sannsynlighet
-                  </Button>
-                )}
-              </DialogContent>
+                  )}
+                </DialogContent>
+              </DialogPortal>
             </Dialog>
 
             <Dialog>
@@ -705,44 +708,47 @@ const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: Actio
                     : 'Reduserer konsekvens'}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Ny konsekvens etter tiltak</DialogTitle>
-                  <DialogDescription>
-                    Velg ny konsekvensverdi (1-5) etter at tiltaket er gjennomført
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid grid-cols-5 gap-2 py-4">
-                  {[1, 2, 3, 4, 5].map(v => (
-                    <Button
-                      key={v}
-                      variant={action.newConsequence === v ? "default" : "outline"}
-                      className="flex flex-col h-auto py-3"
+              <DialogPortal>
+                <DialogOverlay className="z-[100]" />
+                <DialogContent className="sm:max-w-md z-[100]">
+                  <DialogHeader>
+                    <DialogTitle>Ny konsekvens etter tiltak</DialogTitle>
+                    <DialogDescription>
+                      Velg ny konsekvensverdi (1-5) etter at tiltaket er gjennomført
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid grid-cols-5 gap-2 py-4">
+                    {[1, 2, 3, 4, 5].map(v => (
+                      <Button
+                        key={v}
+                        variant={action.newConsequence === v ? "default" : "outline"}
+                        className="flex flex-col h-auto py-3"
+                        onClick={() => {
+                          onUpdate(action.id, 'effectOnConsequence', true);
+                          onUpdate(action.id, 'newConsequence', v);
+                        }}
+                      >
+                        <span className="text-lg font-bold">{v}</span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {v === 1 ? 'Ubetydelig' : v === 2 ? 'Mindre' : v === 3 ? 'Moderat' : v === 4 ? 'Alvorlig' : 'Katastrofal'}
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
+                  {action.effectOnConsequence && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
                       onClick={() => {
-                        onUpdate(action.id, 'effectOnConsequence', true);
-                        onUpdate(action.id, 'newConsequence', v);
+                        onUpdate(action.id, 'effectOnConsequence', false);
+                        onUpdate(action.id, 'newConsequence', undefined);
                       }}
                     >
-                      <span className="text-lg font-bold">{v}</span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {v === 1 ? 'Ubetydelig' : v === 2 ? 'Mindre' : v === 3 ? 'Moderat' : v === 4 ? 'Alvorlig' : 'Katastrofal'}
-                      </span>
+                      Fjern effekt på konsekvens
                     </Button>
-                  ))}
-                </div>
-                {action.effectOnConsequence && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => {
-                      onUpdate(action.id, 'effectOnConsequence', false);
-                      onUpdate(action.id, 'newConsequence', undefined);
-                    }}
-                  >
-                    Fjern effekt på konsekvens
-                  </Button>
-                )}
-              </DialogContent>
+                  )}
+                </DialogContent>
+              </DialogPortal>
             </Dialog>
           </div>
         </div>
