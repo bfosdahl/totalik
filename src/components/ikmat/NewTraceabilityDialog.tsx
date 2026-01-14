@@ -319,6 +319,83 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Label Image Upload with AI Scanning - MOVED TO TOP */}
+          <div className="space-y-2 p-4 border-2 border-dashed border-primary/30 rounded-lg bg-primary/5">
+            <Label className="flex items-center gap-2 text-base font-semibold">
+              <Camera className="h-5 w-5 text-primary" />
+              Skann fraktetikett
+              <span className="inline-flex items-center gap-1 text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                <Sparkles className="h-3 w-3" />
+                AI-skanning
+              </span>
+            </Label>
+            <p className="text-sm text-muted-foreground mb-2">
+              Ta bilde av frakteetiketten for automatisk utfylling av felt
+            </p>
+            <div className="flex flex-col gap-2">
+              <input
+                ref={labelInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleLabelImageChange}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant={labelImagePreview ? "outline" : "default"}
+                onClick={() => labelInputRef.current?.click()}
+                className="w-full justify-center gap-2"
+                disabled={isScanning}
+              >
+                {isScanning ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Skanner bilde...
+                  </>
+                ) : (
+                  <>
+                    <Camera className="h-4 w-4" />
+                    {labelImageFile ? "Velg nytt bilde" : "Ta bilde eller velg fil"}
+                  </>
+                )}
+              </Button>
+              {labelImagePreview && (
+                <div className="relative mt-2">
+                  <img 
+                    src={labelImagePreview} 
+                    alt="Fraktetikett" 
+                    className="w-full max-h-48 object-contain rounded-lg border bg-white"
+                  />
+                  <div className="absolute top-2 right-2 flex gap-2">
+                    {!isScanning && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => scanLabelImage(labelImagePreview)}
+                      >
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        Skann på nytt
+                      </Button>
+                    )}
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        setLabelImageFile(null);
+                        setLabelImagePreview(null);
+                      }}
+                    >
+                      Fjern
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Supplier Selection */}
           <div className="space-y-2">
             <Label>Leverandør *</Label>
@@ -511,82 +588,6 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                 </label>
               </div>
             </div>
-          </div>
-
-          {/* Label Image Upload with AI Scanning */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              Bilde av fraktetikett
-              <span className="inline-flex items-center gap-1 text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                <Sparkles className="h-3 w-3" />
-                AI-skanning
-              </span>
-            </Label>
-            <div className="flex flex-col gap-2">
-              <input
-                ref={labelInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleLabelImageChange}
-                className="hidden"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => labelInputRef.current?.click()}
-                className="w-full justify-start gap-2"
-                disabled={isScanning}
-              >
-                {isScanning ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Skanner bilde...
-                  </>
-                ) : (
-                  <>
-                    <Camera className="h-4 w-4" />
-                    {labelImageFile ? labelImageFile.name : "Ta bilde eller velg fil"}
-                  </>
-                )}
-              </Button>
-              {labelImagePreview && (
-                <div className="relative">
-                  <img 
-                    src={labelImagePreview} 
-                    alt="Fraktetikett" 
-                    className="w-full max-h-48 object-contain rounded-lg border"
-                  />
-                  <div className="absolute top-2 right-2 flex gap-2">
-                    {!isScanning && (
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => scanLabelImage(labelImagePreview)}
-                      >
-                        <Sparkles className="h-3 w-3 mr-1" />
-                        Skann på nytt
-                      </Button>
-                    )}
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => {
-                        setLabelImageFile(null);
-                        setLabelImagePreview(null);
-                      }}
-                    >
-                      Fjern
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Ta bilde av batch-nr/fraktetikett - AI fyller automatisk ut felt
-            </p>
           </div>
 
           <div className="space-y-2">
