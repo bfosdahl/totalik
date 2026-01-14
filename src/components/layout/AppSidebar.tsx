@@ -94,12 +94,9 @@ const ikMatItems = [
   { icon: Building2, label: "Organisasjonskart", path: "/ik-mat/organisasjon", color: "text-sky-500" },
   { icon: AlertTriangle, label: "Risiko & tiltak", path: "/ik-mat/risiko-og-tiltak", color: "text-orange-500" },
   { icon: ListChecks, label: "Rutiner", path: "/ik-mat/rutiner", color: "text-teal-500" },
-  { icon: ClipboardCheck, label: "Sjekklister", path: "/ik-mat/sjekklister", color: "text-emerald-500" },
-  { icon: SprayCan, label: "Renholdsplan", path: "/ik-mat/renholdsplan", color: "text-purple-500" },
-  { icon: Thermometer, label: "Temperaturlogg", path: "/ik-mat/temperaturlogg", color: "text-red-500" },
+  { icon: ClipboardCheck, label: "Kontroll", path: "/ik-mat/kontroll", color: "text-emerald-500" },
   { icon: Wheat, label: "Allergener", path: "/ik-mat/allergener", color: "text-amber-500" },
   { icon: Handshake, label: "Faste avtaler", path: "/ik-mat/faste-avtaler", color: "text-indigo-500" },
-  { icon: Search, label: "Sporbarhet", path: "/ik-mat/sporbarhet", color: "text-blue-500" },
   { icon: FolderOpen, label: "Dokumentsenter", path: "/ik-mat/dokumentsenter", color: "text-slate-500" },
 ];
 
