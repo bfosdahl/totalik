@@ -63,8 +63,18 @@ interface CleaningLogEntry {
   created_at: string;
 }
 
+interface OrganizationRole {
+  id: string;
+  title: string;
+  personName: string;
+  description?: string;
+}
+
 interface HandbokData {
   goals: string[];
+  organization: {
+    roles: OrganizationRole[];
+  };
   haccp: Array<{
     step: string;
     hazard: string;
@@ -149,6 +159,7 @@ const IkMatHandbok = () => {
 
         const settings = moduleData?.settings as any;
         const generatedContent: any = settings?.generatedContent || {};
+        const manualContent: any = settings?.manualContent || {};
 
         const pickArray = <T,>(...keys: string[]): T[] => {
           for (const key of keys) {
@@ -160,6 +171,7 @@ const IkMatHandbok = () => {
 
         setHandbokData({
           goals: pickArray<string>('goals', 'maal', 'målsettinger'),
+          organization: manualContent.organization || { roles: [] },
           haccp: pickArray<HandbokData['haccp'][number]>('haccp', 'haccpPlan', 'kkp'),
           risks: pickArray<HandbokData['risks'][number]>('risks', 'riskAssessment', 'risikovurdering'),
           routines: pickArray<HandbokData['routines'][number]>('routines', 'rutiner'),
@@ -269,6 +281,7 @@ const IkMatHandbok = () => {
         numberOfEmployees: handbokData.setupAnswers?.numberOfEmployees,
         hasCleanZone: handbokData.setupAnswers?.hasCleanZone,
         goals: safeStringArray(handbokData.goals),
+        organization: handbokData.organization,
         haccp: (Array.isArray(handbokData.haccp) ? handbokData.haccp : []).map((h) => ({
           step: pickString(h, 'step', 'trinn', 'prosess'),
           hazard: pickString(h, 'hazard', 'fare'),
