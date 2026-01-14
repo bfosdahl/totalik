@@ -4209,6 +4209,62 @@ export type Database = {
           },
         ]
       }
+      ik_mat_scheduled_tasks: {
+        Row: {
+          company_id: string
+          created_at: string
+          day_of_month: number[] | null
+          day_of_week: number[] | null
+          description: string | null
+          frequency: string
+          id: string
+          is_active: boolean
+          responsible: string | null
+          task_type: string
+          time_of_day: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          day_of_month?: number[] | null
+          day_of_week?: number[] | null
+          description?: string | null
+          frequency: string
+          id?: string
+          is_active?: boolean
+          responsible?: string | null
+          task_type?: string
+          time_of_day?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          day_of_month?: number[] | null
+          day_of_week?: number[] | null
+          description?: string | null
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          responsible?: string | null
+          task_type?: string
+          time_of_day?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_scheduled_tasks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_mat_suppliers: {
         Row: {
           company_id: string
@@ -4261,6 +4317,70 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_mat_task_completions: {
+        Row: {
+          company_id: string
+          completed_at: string | null
+          completed_by_id: string | null
+          completed_by_name: string
+          created_at: string
+          id: string
+          notes: string | null
+          scheduled_date: string
+          status: string
+          task_id: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          scheduled_date: string
+          status?: string
+          task_id: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          scheduled_date?: string
+          status?: string
+          task_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_task_completions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_task_completions_completed_by_id_fkey"
+            columns: ["completed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_task_completions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "ik_mat_scheduled_tasks"
             referencedColumns: ["id"]
           },
         ]

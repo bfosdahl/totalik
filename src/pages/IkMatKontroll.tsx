@@ -4,13 +4,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClipboardCheck, SprayCan, Thermometer, Package, ClipboardList } from "lucide-react";
+import { ClipboardCheck, SprayCan, Thermometer, Package, ClipboardList, CalendarDays } from "lucide-react";
 
 // Import existing tab contents as components
 import { SjekklisterTab } from "@/components/ikmat/kontroll/SjekklisterTab";
 import { RenholdsplanTab } from "@/components/ikmat/kontroll/RenholdsplanTab";
 import { TemperaturloggTab } from "@/components/ikmat/kontroll/TemperaturloggTab";
 import { SporbarhetTab } from "@/components/ikmat/kontroll/SporbarhetTab";
+import { KalenderTab } from "@/components/ikmat/kontroll/KalenderTab";
 
 const IkMatKontroll = () => {
   const { company } = useAuth();
@@ -18,8 +19,8 @@ const IkMatKontroll = () => {
   const { hasModule, isLoading } = useCompanyModules();
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // Get initial tab from URL or default to sjekklister
-  const initialTab = searchParams.get("tab") || "sjekklister";
+  // Get initial tab from URL or default to kalender
+  const initialTab = searchParams.get("tab") || "kalender";
   const [activeTab, setActiveTab] = useState(initialTab);
 
   useEffect(() => {
@@ -58,7 +59,11 @@ const IkMatKontroll = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
+          <TabsList className="grid w-full max-w-3xl grid-cols-5">
+            <TabsTrigger value="kalender" className="gap-2">
+              <CalendarDays className="h-4 w-4" />
+              <span className="hidden sm:inline">Kalender</span>
+            </TabsTrigger>
             <TabsTrigger value="sjekklister" className="gap-2">
               <ClipboardCheck className="h-4 w-4" />
               <span className="hidden sm:inline">Sjekklister</span>
@@ -76,6 +81,10 @@ const IkMatKontroll = () => {
               <span className="hidden sm:inline">Varemottak</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="kalender" className="mt-6">
+            <KalenderTab />
+          </TabsContent>
 
           <TabsContent value="sjekklister" className="mt-6">
             <SjekklisterTab />
