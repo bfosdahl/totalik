@@ -75,40 +75,68 @@ const statusConfig = {
 
 export function ComplianceProgress() {
   const navigate = useNavigate();
-  const { progress, goals, organization, riskAssessment, actionPlan, routines } = useSetupWizard();
+  const { progress, goals, organization, riskAssessment, actionPlan, routines, isLoading } = useSetupWizard();
   const { hasSelfDeclaration } = useHmsDeclarations();
 
-  // Calculate step status based on ACTUAL DATA PRESENCE
-  // This ensures AI-setup data is counted correctly
+  // Check if wizard is completed - this determines if we should count predefined data
+  const wizardCompleted = progress?.is_completed ?? false;
+  const completedStepsList = progress?.completed_steps ?? [];
+
+  // Helper function to check if a step was completed via wizard or has non-predefined data
+  const isStepCompleted = (stepId: string, hasData: boolean, hasNonPredefinedData: boolean): boolean => {
+    // If wizard is completed, trust the completed_steps list
+    if (wizardCompleted) {
+      return completedStepsList.includes(stepId) || hasData;
+    }
+    // Otherwise, only count steps with non-predefined data (user actually set it up)
+    // OR if the step is in completed_steps (user went through wizard manually)
+    return completedStepsList.includes(stepId) || hasNonPredefinedData;
+  };
+
+  // Calculate step status based on ACTUAL DATA PRESENCE and wizard completion
+  // Standard data from applyDefaultHmsSetup should NOT count unless wizard is completed
   const steps: ComplianceStep[] = baseSteps.map((step) => {
     let status: "completed" | "in-progress" | "pending";
     
     // Check if there's actual data present for this step
     let hasData = false;
+    let hasNonPredefinedData = false;
+    
     switch (step.id) {
       case "goals":
         hasData = !!(goals && goals.length > 0);
+        hasNonPredefinedData = goals?.some(g => !g.is_predefined) ?? false;
         break;
       case "organization":
         hasData = !!(organization && (organization.roles?.length > 0 || (organization.description && organization.description.trim().length > 0)));
+        // Organization doesn't have is_predefined on individual items, so check if user customized
+        hasNonPredefinedData = hasData; // Assume if organization has roles, user set it up
         break;
       case "risk":
         hasData = !!(riskAssessment && riskAssessment.risks && riskAssessment.risks.length > 0);
+        // RiskItem doesn't have is_predefined, but the risks array elements might
+        hasNonPredefinedData = false; // Will be checked via completed_steps
         break;
       case "actions":
         hasData = !!(actionPlan && actionPlan.actions && actionPlan.actions.length > 0);
+        // Check if any action has been modified (status changed from ikke_startet)
+        hasNonPredefinedData = actionPlan?.actions?.some(a => a.status && a.status !== 'ikke_startet') ?? false;
         break;
       case "routines":
         hasData = !!(routines && routines.routines && routines.routines.length > 0);
+        hasNonPredefinedData = routines?.routines?.some(r => !r.is_predefined) ?? false;
         break;
       case "handbook":
         // Handbook is considered complete if HMS self-declaration is signed
         hasData = hasSelfDeclaration;
+        hasNonPredefinedData = hasSelfDeclaration; // User action required
         break;
     }
     
-    // A step is "completed" if there is actual data
-    if (hasData) {
+    // Determine if step is completed based on wizard status and data
+    const stepCompleted = isStepCompleted(step.id, hasData, hasNonPredefinedData);
+    
+    if (stepCompleted) {
       status = "completed";
     } else if (step.stepIndex === (progress?.current_step || 0)) {
       // Current step is in-progress
