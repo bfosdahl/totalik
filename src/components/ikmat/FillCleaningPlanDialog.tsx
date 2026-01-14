@@ -22,12 +22,13 @@ interface CleaningTask {
   responsible: string;
 }
 
-type FrequencyType = 'daily' | 'weekly' | 'monthly';
+type FrequencyType = 'daily' | 'weekly' | 'monthly' | 'periodic';
 
 const FREQUENCY_LABELS: Record<FrequencyType, string> = {
   daily: 'Daglig',
   weekly: 'Ukentlig',
-  monthly: 'Månedlig/Periodisk',
+  monthly: 'Månedlig',
+  periodic: 'Periodisk/Ved behov',
 };
 
 interface FillCleaningPlanDialogProps {
