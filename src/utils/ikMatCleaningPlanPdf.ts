@@ -17,7 +17,14 @@ interface CleaningPlanPdfData {
   cleaningRecords: CleaningRecord[];
   notes?: string;
   companyName?: string;
+  frequencyType?: string | null;
 }
+
+const FREQUENCY_LABELS: Record<string, string> = {
+  daily: 'Daglig',
+  weekly: 'Ukentlig',
+  monthly: 'Månedlig/Periodisk',
+};
 
 export const generateCleaningPlanPdf = async (data: CleaningPlanPdfData): Promise<void> => {
   const doc = new jsPDF();
@@ -25,8 +32,12 @@ export const generateCleaningPlanPdf = async (data: CleaningPlanPdfData): Promis
   let yPos = 20;
 
   // Header
+  const frequencyLabel = data.frequencyType ? FREQUENCY_LABELS[data.frequencyType] : null;
+  const headerTitle = frequencyLabel 
+    ? `IK/MAT ${frequencyLabel} Renholdsplan`
+    : 'IK/MAT Renholdsplan';
   doc.setFontSize(20);
-  doc.text('IK/MAT Renholdsplan', pageWidth / 2, yPos, { align: 'center' });
+  doc.text(headerTitle, pageWidth / 2, yPos, { align: 'center' });
   yPos += 15;
 
   // Info section
@@ -123,7 +134,8 @@ export const generateCleaningPlanPdf = async (data: CleaningPlanPdfData): Promis
 
   // Generate filename
   const dateStr = format(new Date(data.completedAt), 'yyyy-MM-dd-HHmm');
-  const filename = `Renholdsplan_${dateStr}.pdf`;
+  const freqPrefix = data.frequencyType ? `${FREQUENCY_LABELS[data.frequencyType]}_` : '';
+  const filename = `Renholdsplan_${freqPrefix}${dateStr}.pdf`;
   
   doc.save(filename);
 };
