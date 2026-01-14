@@ -34,10 +34,100 @@ const IkMatRisikoOgTiltak = () => {
     }
   }, [hasModule, modulesLoading, navigate]);
 
+  // Example risks for demonstration
+  const exampleRisks: IkMatRisk[] = [
+    {
+      id: 'example-1',
+      hazard: 'Kylling ikke gjennomstekt',
+      consequence: 5,
+      probability: 3,
+      riskLevel: 15,
+      measures: 'Bruk steketermometer, sjekk at kjernetemperatur er minst 75°C',
+      isHaccp: true,
+      frequency: 'daily',
+      criticalLimit: '≥75°C kjernetemperatur',
+      controlMethod: 'Steketermometer ved hver tilberedning',
+      justification: 'Rå kylling kan inneholde Salmonella og Campylobacter som gir alvorlig matforgiftning',
+      status: 'open',
+    },
+    {
+      id: 'example-2',
+      hazard: 'Kjøletemperatur over 4°C',
+      consequence: 4,
+      probability: 2,
+      riskLevel: 8,
+      measures: 'Daglig temperaturlogging, alarm ved avvik',
+      isHaccp: true,
+      frequency: 'daily',
+      criticalLimit: '≤4°C',
+      controlMethod: 'Temperaturlogg morgen og kveld',
+      justification: 'For høy temperatur gir bakterievekst i lett bedervelige matvarer',
+      status: 'open',
+    },
+    {
+      id: 'example-3',
+      hazard: 'Allergenkryssforurensning',
+      consequence: 5,
+      probability: 2,
+      riskLevel: 10,
+      measures: 'Separate redskaper, merking, opplæring av ansatte',
+      isHaccp: false,
+      justification: 'Allergisk reaksjon kan være livstruende for sensitive gjester',
+      status: 'open',
+    },
+    {
+      id: 'example-4',
+      hazard: 'Varmholdt mat under 60°C',
+      consequence: 4,
+      probability: 3,
+      riskLevel: 12,
+      measures: 'Bruk av varmebad, temperaturkontroll hver time',
+      isHaccp: true,
+      frequency: 'daily',
+      criticalLimit: '≥60°C varmholding',
+      controlMethod: 'Temperaturmåling hver time under service',
+      justification: 'Farlig temperaturområde 4-60°C tillater rask bakterievekst',
+      status: 'open',
+    },
+  ];
+
+  const exampleActions: IkMatActionItem[] = [
+    {
+      id: 'example-action-1',
+      riskId: 'example-1',
+      action: 'Innkjøp av digitale steketermometre til alle arbeidsstasjoner',
+      responsible: '',
+      deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      status: 'pending',
+      actionType: 'preventive',
+    },
+    {
+      id: 'example-action-2',
+      riskId: 'example-2',
+      action: 'Installere temperaturalarm med varsling til mobil',
+      responsible: '',
+      deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      status: 'in_progress',
+      actionType: 'preventive',
+    },
+    {
+      id: 'example-action-3',
+      riskId: 'example-3',
+      action: 'Gjennomføre allergenopplæring for alle kjøkkenansatte',
+      responsible: '',
+      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      status: 'pending',
+      actionType: 'preventive',
+    },
+  ];
+
   useEffect(() => {
     if (!isLoading) {
-      setRisks(content.risks || []);
-      setActionPlan(content.actionPlan || []);
+      // If no risks exist, show examples
+      const risksToUse = (content.risks || []).length > 0 ? content.risks : exampleRisks;
+      const actionsToUse = (content.actionPlan || []).length > 0 ? content.actionPlan : exampleActions;
+      setRisks(risksToUse);
+      setActionPlan(actionsToUse);
     }
   }, [isLoading, content.risks, content.actionPlan]);
 
