@@ -32,9 +32,11 @@ export function useDashboardStats(): DashboardStats {
         const companyId = profile.company_id;
         const totalSteps = 6;
         
-        // Check actual data presence for each step (not just wizard progress)
-        // This ensures AI-setup data is also counted
+        // First check if setup wizard is completed - this is the primary indicator
+        // Standard data inserted by applyDefaultHmsSetup should NOT count as completed
+        // unless the user has actively completed the setup wizard
         const [
+          wizardProgressResult,
           goalsResult,
           orgResult,
           riskResult,
@@ -42,15 +44,21 @@ export function useDashboardStats(): DashboardStats {
           routinesResult,
           hmsDeclarationResult,
         ] = await Promise.all([
+          // Check wizard completion status
+          supabase
+            .from("setup_wizard_progress")
+            .select("is_completed, completed_steps")
+            .eq("company_id", companyId)
+            .maybeSingle(),
           // 1. Goals
           supabase
             .from("company_goals")
-            .select("id", { count: "exact", head: true })
+            .select("id, is_predefined", { count: "exact" })
             .eq("company_id", companyId),
           // 2. Organization
           supabase
             .from("company_organization")
-            .select("custom_content")
+            .select("custom_content, is_custom")
             .eq("company_id", companyId)
             .maybeSingle(),
           // 3. Risk assessment
@@ -79,54 +87,100 @@ export function useDashboardStats(): DashboardStats {
             .maybeSingle(),
         ]);
 
-        // Count completed steps based on actual data
+        // If the wizard is marked as completed, count based on completed_steps
+        const wizardCompleted = wizardProgressResult.data?.is_completed ?? false;
+        const completedStepsList: string[] = wizardProgressResult.data?.completed_steps ?? [];
+        
+        // Count completed steps based on actual data AND wizard completion
         let completedSteps = 0;
         
-        // 1. Goals - check if there are any goals
-        if ((goalsResult.count ?? 0) > 0) {
+        // Helper function to check if a step was completed via wizard or has non-predefined data
+        const isStepCompleted = (stepId: string, hasData: boolean, hasNonPredefinedData: boolean): boolean => {
+          // If wizard is completed, trust the completed_steps list
+          if (wizardCompleted) {
+            return completedStepsList.includes(stepId) || hasData;
+          }
+          // Otherwise, only count steps with non-predefined data (user actually set it up)
+          // OR if the step is in completed_steps (user went through wizard manually)
+          return completedStepsList.includes(stepId) || hasNonPredefinedData;
+        };
+        
+        // 1. Goals - check if there are non-predefined goals OR step completed in wizard
+        const hasGoals = (goalsResult.data?.length ?? 0) > 0;
+        const hasNonPredefinedGoals = goalsResult.data?.some(g => !g.is_predefined) ?? false;
+        if (isStepCompleted('goals', hasGoals, hasNonPredefinedGoals)) {
           completedSteps++;
         }
         
-        // 2. Organization - check if there's content
+        // 2. Organization - check if user customized it OR step completed in wizard
+        let hasOrgData = false;
+        let hasCustomOrg = false;
         if (orgResult.data?.custom_content) {
+          hasOrgData = true;
+          // is_custom indicates user has modified the content
+          hasCustomOrg = orgResult.data.is_custom ?? false;
+          // Also check content for non-template data
           try {
             const parsed = JSON.parse(orgResult.data.custom_content);
             if ((parsed.roles?.length > 0) || (parsed.description?.trim().length > 0)) {
-              completedSteps++;
+              hasOrgData = true;
             }
           } catch {
-            // Legacy format - if there's any content, count it
             if (orgResult.data.custom_content.trim().length > 0) {
-              completedSteps++;
+              hasOrgData = true;
             }
           }
         }
+        if (isStepCompleted('organization', hasOrgData, hasCustomOrg)) {
+          completedSteps++;
+        }
         
-        // 3. Risk assessment - check if there are any risks
+        // 3. Risk assessment - check for non-predefined risks OR step completed in wizard
+        let hasRisks = false;
+        let hasNonPredefinedRisks = false;
         if (riskResult.data?.risks) {
-          const risks = riskResult.data.risks as unknown[];
+          const risks = riskResult.data.risks as Array<{ is_predefined?: boolean }>;
           if (Array.isArray(risks) && risks.length > 0) {
-            completedSteps++;
+            hasRisks = true;
+            hasNonPredefinedRisks = risks.some(r => !r.is_predefined);
           }
         }
+        if (isStepCompleted('risk', hasRisks, hasNonPredefinedRisks)) {
+          completedSteps++;
+        }
         
-        // 4. Action plan - check if there are any actions
+        // 4. Action plan - check for non-predefined actions OR step completed in wizard
+        let hasActions = false;
+        let hasNonPredefinedActions = false;
         if (actionResult.data?.actions) {
-          const actions = actionResult.data.actions as unknown[];
+          const actions = actionResult.data.actions as Array<{ is_predefined?: boolean; status?: string }>;
           if (Array.isArray(actions) && actions.length > 0) {
-            completedSteps++;
+            hasActions = true;
+            // Actions typically don't have is_predefined flag, but check for user-modified status
+            hasNonPredefinedActions = actions.some(a => !a.is_predefined && a.is_predefined !== undefined) ||
+              // If actions don't have is_predefined, check if they were modified (have status changed)
+              actions.some(a => a.status && a.status !== 'ikke_startet');
           }
         }
+        if (isStepCompleted('actions', hasActions, hasNonPredefinedActions)) {
+          completedSteps++;
+        }
         
-        // 5. Routines - check if there are any routines
+        // 5. Routines - check for non-predefined routines OR step completed in wizard
+        let hasRoutines = false;
+        let hasNonPredefinedRoutines = false;
         if (routinesResult.data?.routines) {
-          const routines = routinesResult.data.routines as unknown[];
+          const routines = routinesResult.data.routines as Array<{ is_predefined?: boolean }>;
           if (Array.isArray(routines) && routines.length > 0) {
-            completedSteps++;
+            hasRoutines = true;
+            hasNonPredefinedRoutines = routines.some(r => !r.is_predefined);
           }
         }
+        if (isStepCompleted('routines', hasRoutines, hasNonPredefinedRoutines)) {
+          completedSteps++;
+        }
         
-        // 6. HMS declaration signed (handbook step requirement)
+        // 6. HMS declaration signed (handbook step requirement) - this is always user-action
         if (hmsDeclarationResult.data?.id) {
           completedSteps++;
         }
