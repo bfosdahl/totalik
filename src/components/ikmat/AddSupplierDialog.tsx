@@ -53,7 +53,17 @@ export function AddSupplierDialog({ open, onOpenChange, onSave, editingSupplier 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    // Convert empty date strings to undefined to avoid database errors
+    const dataToSave = {
+      ...formData,
+      contract_start_date: formData.contract_start_date || undefined,
+      contract_end_date: formData.contract_end_date || undefined,
+      contact_person: formData.contact_person || undefined,
+      phone: formData.phone || undefined,
+      email: formData.email || undefined,
+      notes: formData.notes || undefined,
+    };
+    onSave(dataToSave as Omit<IkMatSupplier, "id" | "company_id" | "created_at" | "updated_at">);
     onOpenChange(false);
   };
 
