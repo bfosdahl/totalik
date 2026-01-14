@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,8 +18,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useIkMatTemperature } from "@/hooks/useIkMatTemperature";
-import { Thermometer, AlertTriangle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Thermometer, AlertTriangle, CheckCircle2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  getTemperatureGuideline,
+  TrafficLightStatus,
+  getStatusBgClass,
+  getStatusTextClass,
+  EQUIPMENT_TYPE_DEFAULTS,
+} from "@/lib/temperatureGuidelines";
+import { cn } from "@/lib/utils";
 
 interface LogTemperatureDialogProps {
   open: boolean;
@@ -32,13 +40,12 @@ export function LogTemperatureDialog({
   onOpenChange,
   preSelectedEquipmentId,
 }: LogTemperatureDialogProps) {
-  const { equipment, logTemperature, EQUIPMENT_TYPE_DEFAULTS } = useIkMatTemperature();
+  const { equipment, logTemperature } = useIkMatTemperature();
   
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string>("");
   const [temperature, setTemperature] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [correctiveAction, setCorrectiveAction] = useState<string>("");
-  const [showCorrectiveAction, setShowCorrectiveAction] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -47,21 +54,17 @@ export function LogTemperatureDialog({
     }
   }, [open, preSelectedEquipmentId]);
 
-  useEffect(() => {
-    // Check if temperature is out of range
-    if (selectedEquipmentId && temperature) {
-      const equip = equipment.find(e => e.id === selectedEquipmentId);
-      if (equip) {
-        const temp = parseFloat(temperature);
-        const isOutOfRange = 
-          (equip.min_temp !== null && temp < equip.min_temp) ||
-          (equip.max_temp !== null && temp > equip.max_temp);
-        setShowCorrectiveAction(isOutOfRange);
-      }
-    } else {
-      setShowCorrectiveAction(false);
-    }
-  }, [selectedEquipmentId, temperature, equipment]);
+  const selectedEquip = equipment.find(e => e.id === selectedEquipmentId);
+
+  // Calculate traffic light status based on equipment type and temperature
+  const guideline = useMemo(() => {
+    if (!selectedEquip || !temperature) return null;
+    const temp = parseFloat(temperature);
+    if (isNaN(temp)) return null;
+    return getTemperatureGuideline(selectedEquip.equipment_type, temp);
+  }, [selectedEquip, temperature]);
+
+  const showCorrectiveAction = guideline && guideline.status !== 'green';
 
   const handleSubmit = async () => {
     if (!selectedEquipmentId || !temperature) return;
@@ -80,18 +83,26 @@ export function LogTemperatureDialog({
       setTemperature("");
       setNotes("");
       setCorrectiveAction("");
-      setShowCorrectiveAction(false);
       onOpenChange(false);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const selectedEquip = equipment.find(e => e.id === selectedEquipmentId);
+  const getStatusIcon = (status: TrafficLightStatus) => {
+    switch (status) {
+      case 'green':
+        return <CheckCircle2 className="h-5 w-5 text-green-600" />;
+      case 'yellow':
+        return <AlertCircle className="h-5 w-5 text-yellow-600" />;
+      case 'red':
+        return <AlertTriangle className="h-5 w-5 text-red-600" />;
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Thermometer className="h-5 w-5" />
@@ -104,7 +115,7 @@ export function LogTemperatureDialog({
             <Label htmlFor="equipment">Velg utstyr</Label>
             <Select value={selectedEquipmentId} onValueChange={setSelectedEquipmentId}>
               <SelectTrigger>
-                <SelectValue placeholder="Velg kjøleskap/fryser..." />
+                <SelectValue placeholder="Velg utstyr..." />
               </SelectTrigger>
               <SelectContent>
                 {equipment.map((equip) => (
@@ -118,6 +129,10 @@ export function LogTemperatureDialog({
 
           {selectedEquip && (
             <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+              <p>
+                <strong>Type:</strong>{" "}
+                {EQUIPMENT_TYPE_DEFAULTS[selectedEquip.equipment_type as keyof typeof EQUIPMENT_TYPE_DEFAULTS]?.label}
+              </p>
               <p>
                 <strong>Akseptabel temperatur:</strong>{" "}
                 {selectedEquip.min_temp}°C til {selectedEquip.max_temp}°C
@@ -141,11 +156,32 @@ export function LogTemperatureDialog({
             />
           </div>
 
+          {/* Traffic Light Indicator */}
+          {guideline && (
+            <div
+              className={cn(
+                "rounded-lg border p-4 space-y-2",
+                getStatusBgClass(guideline.status)
+              )}
+            >
+              <div className="flex items-center gap-2">
+                {getStatusIcon(guideline.status)}
+                <span className={cn("font-semibold", getStatusTextClass(guideline.status))}>
+                  {guideline.message}
+                </span>
+              </div>
+              <p className={cn("text-sm", getStatusTextClass(guideline.status))}>
+                <strong>Anbefalt tiltak:</strong> {guideline.action}
+              </p>
+            </div>
+          )}
+
           {showCorrectiveAction && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Avvik registrert!</AlertTitle>
               <AlertDescription>
-                Temperaturen er utenfor akseptable grenser! Beskriv korrigerende tiltak.
+                Temperaturen er utenfor akseptable grenser. Du må beskrive korrigerende tiltak.
               </AlertDescription>
             </Alert>
           )}

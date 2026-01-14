@@ -4,11 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
+import { EQUIPMENT_TYPE_DEFAULTS } from '@/lib/temperatureGuidelines';
+
 export interface TemperatureEquipment {
   id: string;
   company_id: string;
   name: string;
-  equipment_type: 'fridge' | 'freezer' | 'hot_display' | 'cold_display';
+  equipment_type: 'fridge' | 'freezer' | 'hot_display' | 'cold_display' | 'hot_holding' | 'heat_treatment';
   location: string | null;
   min_temp: number | null;
   max_temp: number | null;
@@ -35,13 +37,6 @@ export interface TemperatureLog {
   created_at: string;
   equipment?: TemperatureEquipment;
 }
-
-const EQUIPMENT_TYPE_DEFAULTS = {
-  fridge: { min: 0, max: 4, label: 'Kjøleskap' },
-  freezer: { min: -25, max: -18, label: 'Fryser' },
-  hot_display: { min: 60, max: 100, label: 'Varmebuffet' },
-  cold_display: { min: 0, max: 8, label: 'Kjøledisk' },
-};
 
 export function useIkMatTemperature() {
   const { company, profile } = useAuth();

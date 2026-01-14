@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useIkMatTemperature } from "@/hooks/useIkMatTemperature";
+import { EQUIPMENT_TYPE_DEFAULTS } from "@/lib/temperatureGuidelines";
 import { Plus, Trash2, Settings } from "lucide-react";
 import { toast } from "sonner";
 
@@ -36,7 +37,7 @@ export function ManageEquipmentDialog({
   open,
   onOpenChange,
 }: ManageEquipmentDialogProps) {
-  const { equipment, addEquipment, deleteEquipment, EQUIPMENT_TYPE_DEFAULTS } = useIkMatTemperature();
+  const { equipment, addEquipment, deleteEquipment } = useIkMatTemperature();
   
   const [showAddForm, setShowAddForm] = useState(false);
   const [newEquipment, setNewEquipment] = useState({
@@ -168,6 +169,8 @@ export function ManageEquipmentDialog({
                     <SelectContent>
                       <SelectItem value="fridge">Kjøleskap</SelectItem>
                       <SelectItem value="freezer">Fryser</SelectItem>
+                      <SelectItem value="hot_holding">Varmholding</SelectItem>
+                      <SelectItem value="heat_treatment">Varmebehandling</SelectItem>
                       <SelectItem value="hot_display">Varmebuffet</SelectItem>
                       <SelectItem value="cold_display">Kjøledisk</SelectItem>
                     </SelectContent>
