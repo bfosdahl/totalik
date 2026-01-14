@@ -6,15 +6,11 @@ import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Plus, Trash2, Save, Loader2, UtensilsCrossed, Check, X } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AlertTriangle, Plus, Trash2, Save, Loader2, UtensilsCrossed, Check, Edit2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AllergenPosterDialog } from "@/components/ikmat/AllergenPosterDialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -27,51 +23,43 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-interface Allergen {
-  id: string;
-  name: string;
-  present: boolean;
-  controlMeasures: string;
-  menuItems?: string[]; // Retter som inneholder dette allergenet
-}
-
 interface MenuItem {
   id: string;
   name: string;
   allergenIds: string[];
 }
 
-// Standard EU-allergener (14 hovedallergener)
+// De 14 merkepliktige allergenene i Norge (EU)
 const EU_ALLERGENS = [
-  "Gluten",
-  "Krepsdyr",
-  "Egg",
-  "Fisk",
-  "Peanøtter",
-  "Soya",
-  "Melk",
-  "Nøtter",
-  "Selleri",
-  "Sennep",
-  "Sesamfrø",
-  "Sulfitter",
-  "Lupin",
-  "Bløtdyr",
+  { id: "gluten", name: "Gluten", icon: "🌾" },
+  { id: "krepsdyr", name: "Krepsdyr", icon: "🦐" },
+  { id: "egg", name: "Egg", icon: "🥚" },
+  { id: "fisk", name: "Fisk", icon: "🐟" },
+  { id: "peanotter", name: "Peanøtter", icon: "🥜" },
+  { id: "soya", name: "Soya", icon: "🫘" },
+  { id: "melk", name: "Melk", icon: "🥛" },
+  { id: "notter", name: "Nøtter", icon: "🌰" },
+  { id: "selleri", name: "Selleri", icon: "🥬" },
+  { id: "sennep", name: "Sennep", icon: "🟡" },
+  { id: "sesamfro", name: "Sesamfrø", icon: "⚪" },
+  { id: "sulfitter", name: "Svoveldioksid/sulfitter", icon: "🍷" },
+  { id: "lupin", name: "Lupin", icon: "🌸" },
+  { id: "blotdyr", name: "Bløtdyr", icon: "🐚" },
 ];
 
 const IkMatAllergener = () => {
   const { company } = useAuth();
   const navigate = useNavigate();
   const { hasModule, modules, isLoading: modulesLoading } = useCompanyModules();
-  const [allergens, setAllergens] = useState<Allergen[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   
   // Dialog states
-  const [addMenuDialogOpen, setAddMenuDialogOpen] = useState(false);
-  const [newMenuItemName, setNewMenuItemName] = useState("");
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [newItemName, setNewItemName] = useState("");
   const [selectedAllergenIds, setSelectedAllergenIds] = useState<string[]>([]);
 
   // Load data from database
@@ -86,30 +74,6 @@ const IkMatAllergener = () => {
       if (ikMatModule?.settings) {
         const settings = ikMatModule.settings as any;
         const manual = settings.manualContent || {};
-        const generated = settings.generatedContent || {};
-        
-        // Load allergens - prioritize manual, fallback to generated
-        if (manual.allergens?.length > 0) {
-          setAllergens(manual.allergens);
-        } else if (generated.allergens?.length > 0) {
-          // Convert generated allergens to editable format
-          setAllergens(generated.allergens.map((a: any, idx: number) => ({
-            id: `allergen-${idx}`,
-            name: a.name,
-            present: a.present,
-            controlMeasures: a.controlMeasures || '',
-            menuItems: [],
-          })));
-        } else {
-          // Initialize with EU allergens if nothing exists
-          setAllergens(EU_ALLERGENS.map((name, idx) => ({
-            id: `allergen-${idx}`,
-            name,
-            present: false,
-            controlMeasures: '',
-            menuItems: [],
-          })));
-        }
         
         // Load menu items
         if (manual.menuItems) {
@@ -127,7 +91,6 @@ const IkMatAllergener = () => {
     try {
       setIsSaving(true);
 
-      // Get current settings
       const { data: current, error: fetchError } = await supabase
         .from('company_modules')
         .select('settings')
@@ -140,12 +103,10 @@ const IkMatAllergener = () => {
       const settings = current?.settings as any || {};
       const manualContent = settings.manualContent || {};
 
-      // Update allergens and menu items
       const updatedSettings = {
         ...settings,
         manualContent: {
           ...manualContent,
-          allergens,
           menuItems,
         },
       };
@@ -164,108 +125,15 @@ const IkMatAllergener = () => {
       setHasChanges(false);
       toast.success('Endringer lagret');
     } catch (error) {
-      console.error('Error saving allergens:', error);
+      console.error('Error saving menu:', error);
       toast.error('Kunne ikke lagre endringer');
     } finally {
       setIsSaving(false);
     }
-  }, [company?.id, allergens, menuItems]);
+  }, [company?.id, menuItems]);
 
-  // Toggle allergen presence
-  const toggleAllergenPresence = (id: string) => {
-    setAllergens(prev => prev.map(a => 
-      a.id === id ? { ...a, present: !a.present } : a
-    ));
-    setHasChanges(true);
-  };
-
-  // Update control measures
-  const updateControlMeasures = (id: string, measures: string) => {
-    setAllergens(prev => prev.map(a => 
-      a.id === id ? { ...a, controlMeasures: measures } : a
-    ));
-    setHasChanges(true);
-  };
-
-  // Add custom allergen
-  const addCustomAllergen = () => {
-    const newAllergen: Allergen = {
-      id: `custom-${Date.now()}`,
-      name: 'Nytt allergen',
-      present: false,
-      controlMeasures: '',
-      menuItems: [],
-    };
-    setAllergens(prev => [...prev, newAllergen]);
-    setHasChanges(true);
-  };
-
-  // Remove allergen
-  const removeAllergen = (id: string) => {
-    setAllergens(prev => prev.filter(a => a.id !== id));
-    setHasChanges(true);
-  };
-
-  // Update allergen name
-  const updateAllergenName = (id: string, name: string) => {
-    setAllergens(prev => prev.map(a => 
-      a.id === id ? { ...a, name } : a
-    ));
-    setHasChanges(true);
-  };
-
-  // Add menu item
-  const addMenuItem = () => {
-    if (!newMenuItemName.trim()) {
-      toast.error('Skriv inn navn på retten');
-      return;
-    }
-
-    const newItem: MenuItem = {
-      id: `menu-${Date.now()}`,
-      name: newMenuItemName.trim(),
-      allergenIds: selectedAllergenIds,
-    };
-
-    setMenuItems(prev => [...prev, newItem]);
-    
-    // Update allergens with menu item reference
-    setAllergens(prev => prev.map(a => {
-      if (selectedAllergenIds.includes(a.id)) {
-        return {
-          ...a,
-          present: true,
-          menuItems: [...(a.menuItems || []), newItem.name],
-        };
-      }
-      return a;
-    }));
-
-    setNewMenuItemName('');
-    setSelectedAllergenIds([]);
-    setAddMenuDialogOpen(false);
-    setHasChanges(true);
-    toast.success(`"${newItem.name}" lagt til i menyen`);
-  };
-
-  // Remove menu item
-  const removeMenuItem = (id: string) => {
-    const item = menuItems.find(m => m.id === id);
-    if (!item) return;
-
-    setMenuItems(prev => prev.filter(m => m.id !== id));
-    
-    // Update allergens - remove menu item reference
-    setAllergens(prev => prev.map(a => ({
-      ...a,
-      menuItems: (a.menuItems || []).filter(m => m !== item.name),
-    })));
-    
-    setHasChanges(true);
-  };
-
-  // Toggle allergen selection for new menu item
-  const toggleAllergenSelection = (id: string) => {
+  // Toggle allergen selection
+  const toggleAllergen = (id: string) => {
     setSelectedAllergenIds(prev => 
       prev.includes(id) 
         ? prev.filter(a => a !== id)
@@ -273,52 +141,84 @@ const IkMatAllergener = () => {
     );
   };
 
+  // Add or update menu item
+  const saveMenuItem = () => {
+    if (!newItemName.trim()) {
+      toast.error('Skriv inn navn på retten');
+      return;
+    }
+
+    if (editingItem) {
+      // Update existing
+      setMenuItems(prev => prev.map(item => 
+        item.id === editingItem.id 
+          ? { ...item, name: newItemName.trim(), allergenIds: selectedAllergenIds }
+          : item
+      ));
+      toast.success(`"${newItemName}" oppdatert`);
+    } else {
+      // Add new
+      const newItem: MenuItem = {
+        id: `menu-${Date.now()}`,
+        name: newItemName.trim(),
+        allergenIds: selectedAllergenIds,
+      };
+      setMenuItems(prev => [...prev, newItem]);
+      toast.success(`"${newItem.name}" lagt til`);
+    }
+
+    resetDialog();
+    setHasChanges(true);
+  };
+
+  // Remove menu item
+  const removeMenuItem = (id: string) => {
+    setMenuItems(prev => prev.filter(m => m.id !== id));
+    setHasChanges(true);
+  };
+
+  // Edit menu item
+  const startEditing = (item: MenuItem) => {
+    setEditingItem(item);
+    setNewItemName(item.name);
+    setSelectedAllergenIds(item.allergenIds);
+    setAddDialogOpen(true);
+  };
+
+  // Reset dialog state
+  const resetDialog = () => {
+    setNewItemName('');
+    setSelectedAllergenIds([]);
+    setEditingItem(null);
+    setAddDialogOpen(false);
+  };
+
   // Add example menu
   const addExampleMenu = () => {
     const exampleItems = [
-      { name: "Pasta Carbonara", allergenNames: ["Gluten", "Egg", "Melk"] },
-      { name: "Grillet Laks", allergenNames: ["Fisk"] },
-      { name: "Caesar Salat", allergenNames: ["Gluten", "Egg", "Fisk", "Melk"] },
-      { name: "Sjokoladekake", allergenNames: ["Gluten", "Egg", "Melk", "Soya"] },
-      { name: "Thai Reker", allergenNames: ["Krepsdyr", "Soya", "Peanøtter", "Sesamfrø"] },
-      { name: "Vegetar Burger", allergenNames: ["Gluten", "Soya", "Selleri", "Sennep"] },
-      { name: "Hummus", allergenNames: ["Sesamfrø"] },
-      { name: "Blåskjell i Hvitvin", allergenNames: ["Bløtdyr", "Selleri", "Sulfitter"] },
+      { name: "Pasta Carbonara", allergenIds: ["gluten", "egg", "melk"] },
+      { name: "Grillet Laks", allergenIds: ["fisk"] },
+      { name: "Caesar Salat", allergenIds: ["gluten", "egg", "fisk", "melk"] },
+      { name: "Sjokoladekake", allergenIds: ["gluten", "egg", "melk", "soya"] },
+      { name: "Thai Reker", allergenIds: ["krepsdyr", "soya", "peanotter", "sesamfro"] },
+      { name: "Vegetar Burger", allergenIds: ["gluten", "soya", "selleri", "sennep"] },
+      { name: "Hummus", allergenIds: ["sesamfro"] },
+      { name: "Blåskjell i Hvitvin", allergenIds: ["blotdyr", "selleri", "sulfitter"] },
     ];
 
-    const newMenuItems: MenuItem[] = [];
-    const updatedAllergens = [...allergens];
-
-    exampleItems.forEach((item) => {
-      const allergenIds = item.allergenNames
-        .map(name => allergens.find(a => a.name === name)?.id)
-        .filter(Boolean) as string[];
-
-      const newItem: MenuItem = {
-        id: `menu-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        name: item.name,
-        allergenIds,
-      };
-      newMenuItems.push(newItem);
-
-      // Update allergens with menu item reference
-      allergenIds.forEach(allergenId => {
-        const idx = updatedAllergens.findIndex(a => a.id === allergenId);
-        if (idx !== -1) {
-          updatedAllergens[idx] = {
-            ...updatedAllergens[idx],
-            present: true,
-            menuItems: [...(updatedAllergens[idx].menuItems || []), item.name],
-          };
-        }
-      });
-    });
+    const newMenuItems: MenuItem[] = exampleItems.map((item, idx) => ({
+      id: `menu-${Date.now()}-${idx}`,
+      name: item.name,
+      allergenIds: item.allergenIds,
+    }));
 
     setMenuItems(prev => [...prev, ...newMenuItems]);
-    setAllergens(updatedAllergens);
     setHasChanges(true);
-    toast.success(`${exampleItems.length} eksempelretter lagt til i menyen`);
+    toast.success(`${exampleItems.length} eksempelretter lagt til`);
   };
+
+  // Get allergen info by id
+  const getAllergenById = (id: string) => EU_ALLERGENS.find(a => a.id === id);
 
   if (modulesLoading) {
     return (
@@ -333,7 +233,13 @@ const IkMatAllergener = () => {
     );
   }
 
-  const presentAllergens = allergens.filter(a => a.present);
+  // Convert menu items to allergen format for poster dialog
+  const allergensForPoster = EU_ALLERGENS.map(a => ({
+    id: a.id,
+    name: a.name,
+    present: menuItems.some(m => m.allergenIds.includes(a.id)),
+    controlMeasures: '',
+  }));
 
   return (
     <AppLayout>
@@ -341,15 +247,15 @@ const IkMatAllergener = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Allergener</h1>
+            <h1 className="text-3xl font-bold mb-2">Meny & Allergener</h1>
             <p className="text-muted-foreground">
-              Administrer allergener og koble til menyretter
+              Legg til retter og marker hvilke av de 14 allergenene de inneholder
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             {menuItems.length > 0 && (
               <AllergenPosterDialog 
-                allergens={allergens}
+                allergens={allergensForPoster}
                 menuItems={menuItems}
                 companyName={company?.name || 'Bedrift'} 
               />
@@ -377,303 +283,239 @@ const IkMatAllergener = () => {
           </Alert>
         )}
 
-        <Tabs defaultValue="allergens" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="allergens">
-              <AlertTriangle className="mr-2 h-4 w-4" />
-              Allergentabell
-            </TabsTrigger>
-            <TabsTrigger value="menu">
-              <UtensilsCrossed className="mr-2 h-4 w-4" />
-              Meny ({menuItems.length})
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Allergen Table Tab */}
-          <TabsContent value="allergens" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Allergentabell</CardTitle>
-                    <CardDescription>
-                      Marker hvilke allergener som finnes i din virksomhet
-                    </CardDescription>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={addCustomAllergen}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Legg til allergen
-                  </Button>
+        {/* Info about allergens */}
+        <Card className="border-amber-200 bg-amber-50/50">
+          <CardContent className="pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 items-start">
+              <AlertTriangle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="space-y-2">
+                <p className="font-medium text-amber-900">14 merkepliktige allergener</p>
+                <p className="text-sm text-amber-800">
+                  Alle ferdigpakket mat og serveringssteder må merke tydelig de 14 mest utbredte allergenene 
+                  i henhold til EU-forordning 1169/2011. Opp mot 25% av befolkningen har en eller annen form 
+                  for allergisk reaksjon på enkelte matvarer.
+                </p>
+                <div className="flex flex-wrap gap-1.5 pt-2">
+                  {EU_ALLERGENS.map(allergen => (
+                    <Badge 
+                      key={allergen.id} 
+                      variant="outline" 
+                      className="bg-white border-amber-300 text-amber-900"
+                    >
+                      <span className="mr-1">{allergen.icon}</span>
+                      {allergen.name}
+                    </Badge>
+                  ))}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Desktop Table */}
-                  <div className="hidden md:block">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[200px]">Allergen</TableHead>
-                          <TableHead className="w-[120px]">Tilstede</TableHead>
-                          <TableHead>Kontrolltiltak</TableHead>
-                          <TableHead className="w-[150px]">Retter</TableHead>
-                          <TableHead className="w-[60px]"></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {allergens.map((allergen) => (
-                          <TableRow key={allergen.id}>
-                            <TableCell>
-                              <Input
-                                value={allergen.name}
-                                onChange={(e) => updateAllergenName(allergen.id, e.target.value)}
-                                className="font-medium"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Switch
-                                  checked={allergen.present}
-                                  onCheckedChange={() => toggleAllergenPresence(allergen.id)}
-                                />
-                                {allergen.present ? (
-                                  <Badge variant="destructive" className="text-xs">Ja</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Menu Card */}
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <UtensilsCrossed className="h-5 w-5" />
+                  Din meny
+                </CardTitle>
+                <CardDescription>
+                  Legg til retter og velg hvilke allergener de inneholder
+                </CardDescription>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {menuItems.length === 0 && (
+                  <Button variant="outline" onClick={addExampleMenu}>
+                    <UtensilsCrossed className="mr-2 h-4 w-4" />
+                    Last inn eksempel-meny
+                  </Button>
+                )}
+                <Dialog open={addDialogOpen} onOpenChange={(open) => {
+                  if (!open) resetDialog();
+                  else setAddDialogOpen(true);
+                }}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Legg til rett
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingItem ? 'Rediger rett' : 'Legg til ny rett'}
+                      </DialogTitle>
+                      <DialogDescription>
+                        Skriv inn navnet på retten og velg hvilke allergener den inneholder
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="itemName">Navn på rett</Label>
+                        <Input
+                          id="itemName"
+                          value={newItemName}
+                          onChange={(e) => setNewItemName(e.target.value)}
+                          placeholder="F.eks. Pasta Carbonara"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Velg allergener (14 merkepliktige)</Label>
+                        <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-1">
+                          {EU_ALLERGENS.map((allergen) => (
+                            <div
+                              key={allergen.id}
+                              className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                                selectedAllergenIds.includes(allergen.id)
+                                  ? 'border-red-500 bg-red-50'
+                                  : 'border-border hover:border-muted-foreground/50 hover:bg-muted/50'
+                              }`}
+                              onClick={() => toggleAllergen(allergen.id)}
+                            >
+                              <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${
+                                selectedAllergenIds.includes(allergen.id)
+                                  ? 'bg-red-500 text-white'
+                                  : 'bg-muted'
+                              }`}>
+                                {selectedAllergenIds.includes(allergen.id) ? (
+                                  <Check className="h-4 w-4" />
                                 ) : (
-                                  <Badge variant="outline" className="text-xs">Nei</Badge>
+                                  <span className="text-sm">{allergen.icon}</span>
                                 )}
                               </div>
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                value={allergen.controlMeasures}
-                                onChange={(e) => updateControlMeasures(allergen.id, e.target.value)}
-                                placeholder="F.eks. separate redskaper, merking..."
-                                className="text-sm"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              {allergen.menuItems && allergen.menuItems.length > 0 ? (
-                                <div className="flex flex-wrap gap-1">
-                                  {allergen.menuItems.slice(0, 2).map((item, idx) => (
-                                    <Badge key={idx} variant="secondary" className="text-xs">
-                                      {item}
-                                    </Badge>
-                                  ))}
-                                  {allergen.menuItems.length > 2 && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      +{allergen.menuItems.length - 2}
-                                    </Badge>
-                                  )}
-                                </div>
-                              ) : (
-                                <span className="text-xs text-muted-foreground">-</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {!EU_ALLERGENS.includes(allergen.name) && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => removeAllergen(allergen.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-
-                  {/* Mobile Cards */}
-                  <div className="md:hidden space-y-3">
-                    {allergens.map((allergen) => (
-                      <Card key={allergen.id} className={allergen.present ? 'border-red-200 bg-red-50/50' : ''}>
-                        <CardContent className="p-4 space-y-3">
-                          <div className="flex items-center justify-between">
-                            <Input
-                              value={allergen.name}
-                              onChange={(e) => updateAllergenName(allergen.id, e.target.value)}
-                              className="font-medium max-w-[180px]"
-                            />
-                            <div className="flex items-center gap-2">
-                              <Switch
-                                checked={allergen.present}
-                                onCheckedChange={() => toggleAllergenPresence(allergen.id)}
-                              />
-                              {!EU_ALLERGENS.includes(allergen.name) && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => removeAllergen(allergen.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              )}
+                              <span className="text-sm font-medium">{allergen.name}</span>
                             </div>
-                          </div>
-                          <Input
-                            value={allergen.controlMeasures}
-                            onChange={(e) => updateControlMeasures(allergen.id, e.target.value)}
-                            placeholder="Kontrolltiltak..."
-                            className="text-sm"
-                          />
-                          {allergen.menuItems && allergen.menuItems.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
-                              {allergen.menuItems.map((item, idx) => (
-                                <Badge key={idx} variant="secondary" className="text-xs">
-                                  {item}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Menu Tab */}
-          <TabsContent value="menu" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <CardTitle>Meny</CardTitle>
-                    <CardDescription>
-                      Legg til retter og marker hvilke allergener de inneholder
-                    </CardDescription>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {menuItems.length === 0 && (
-                      <Button variant="outline" onClick={addExampleMenu}>
-                        <UtensilsCrossed className="mr-2 h-4 w-4" />
-                        Legg til eksempel-meny
-                      </Button>
-                    )}
-                    <Dialog open={addMenuDialogOpen} onOpenChange={setAddMenuDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button>
-                          <Plus className="mr-2 h-4 w-4" />
-                          Legg til rett
-                        </Button>
-                      </DialogTrigger>
-                    <DialogContent className="max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>Legg til menyrett</DialogTitle>
-                        <DialogDescription>
-                          Skriv inn navnet på retten og velg hvilke allergener den inneholder
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="menuItemName">Navn på rett</Label>
-                          <Input
-                            id="menuItemName"
-                            value={newMenuItemName}
-                            onChange={(e) => setNewMenuItemName(e.target.value)}
-                            placeholder="F.eks. Pasta Carbonara"
-                          />
+                          ))}
                         </div>
-                        <div className="space-y-2">
-                          <Label>Allergener i retten</Label>
-                          <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
-                            {allergens.map((allergen) => (
-                              <div
-                                key={allergen.id}
-                                className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors ${
-                                  selectedAllergenIds.includes(allergen.id)
-                                    ? 'border-red-500 bg-red-50'
-                                    : 'border-gray-200 hover:bg-gray-50'
-                                }`}
-                                onClick={() => toggleAllergenSelection(allergen.id)}
+                        {selectedAllergenIds.length > 0 && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            {selectedAllergenIds.length} allergen{selectedAllergenIds.length !== 1 ? 'er' : ''} valgt
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={resetDialog}>
+                        Avbryt
+                      </Button>
+                      <Button onClick={saveMenuItem}>
+                        {editingItem ? 'Lagre endringer' : 'Legg til'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {menuItems.length === 0 ? (
+              <div className="text-center py-16 border-2 border-dashed rounded-lg">
+                <UtensilsCrossed className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">Ingen retter lagt til</h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  Start med å legge til retter fra menyen din og marker hvilke allergener de inneholder.
+                  Du kan også laste inn en eksempel-meny for å komme raskt i gang.
+                </p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <Button variant="outline" onClick={addExampleMenu}>
+                    <UtensilsCrossed className="mr-2 h-4 w-4" />
+                    Last inn eksempel-meny
+                  </Button>
+                  <Button onClick={() => setAddDialogOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Legg til rett
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {menuItems.map((item) => {
+                  const itemAllergens = item.allergenIds
+                    .map(id => getAllergenById(id))
+                    .filter(Boolean);
+                  
+                  return (
+                    <div 
+                      key={item.id} 
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg border bg-card hover:bg-muted/30 transition-colors"
+                    >
+                      <div className="space-y-2 flex-1">
+                        <h4 className="font-semibold text-lg">{item.name}</h4>
+                        {itemAllergens.length > 0 ? (
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm text-muted-foreground">Inneholder:</span>
+                            {itemAllergens.map((allergen) => (
+                              <Badge 
+                                key={allergen!.id} 
+                                variant="destructive" 
+                                className="text-sm"
                               >
-                                <div className={`w-5 h-5 rounded flex items-center justify-center ${
-                                  selectedAllergenIds.includes(allergen.id)
-                                    ? 'bg-red-500 text-white'
-                                    : 'bg-gray-100'
-                                }`}>
-                                  {selectedAllergenIds.includes(allergen.id) && (
-                                    <Check className="h-3 w-3" />
-                                  )}
-                                </div>
-                                <span className="text-sm">{allergen.name}</span>
-                              </div>
+                                <span className="mr-1">{allergen!.icon}</span>
+                                {allergen!.name}
+                              </Badge>
                             ))}
                           </div>
-                        </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            Ingen allergener registrert
+                          </p>
+                        )}
                       </div>
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => setAddMenuDialogOpen(false)}>
-                          Avbryt
+                      <div className="flex gap-1 sm:flex-shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => startEditing(item)}
+                        >
+                          <Edit2 className="h-4 w-4" />
                         </Button>
-                        <Button onClick={addMenuItem}>
-                          Legg til
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeMenuItem(item.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                  </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Summary */}
+        {menuItems.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Oppsummering</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="text-center p-4 bg-muted/50 rounded-lg">
+                  <p className="text-3xl font-bold">{menuItems.length}</p>
+                  <p className="text-sm text-muted-foreground">Retter i menyen</p>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {menuItems.length === 0 ? (
-                  <div className="text-center py-12">
-                    <UtensilsCrossed className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Ingen retter lagt til</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Legg til retter fra menyen din for å koble dem til allergener
-                    </p>
-                    <Button onClick={() => setAddMenuDialogOpen(true)}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Legg til første rett
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {menuItems.map((item) => {
-                      const itemAllergens = allergens.filter(a => item.allergenIds.includes(a.id));
-                      return (
-                        <Card key={item.id} className="relative">
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between mb-3">
-                              <h4 className="font-medium">{item.name}</h4>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                                onClick={() => removeMenuItem(item.id)}
-                              >
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </div>
-                            {itemAllergens.length > 0 ? (
-                              <div className="flex flex-wrap gap-1">
-                                {itemAllergens.map((allergen) => (
-                                  <Badge key={allergen.id} variant="destructive" className="text-xs">
-                                    {allergen.name}
-                                  </Badge>
-                                ))}
-                              </div>
-                            ) : (
-                              <Badge variant="secondary" className="text-xs">
-                                Ingen allergener
-                              </Badge>
-                            )}
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                <div className="text-center p-4 bg-muted/50 rounded-lg">
+                  <p className="text-3xl font-bold">
+                    {new Set(menuItems.flatMap(m => m.allergenIds)).size}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Unike allergener</p>
+                </div>
+                <div className="text-center p-4 bg-muted/50 rounded-lg sm:col-span-2 lg:col-span-1">
+                  <p className="text-3xl font-bold">
+                    {menuItems.filter(m => m.allergenIds.length === 0).length}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Allergenfrie retter</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </AppLayout>
   );
