@@ -1,6 +1,13 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+interface OrganizationRole {
+  id: string;
+  title: string;
+  personName: string;
+  description?: string;
+}
+
 interface HandbokPdfData {
   companyName: string;
   companyInfo?: {
@@ -15,6 +22,9 @@ interface HandbokPdfData {
   numberOfEmployees?: string;
   hasCleanZone?: boolean;
   goals: string[];
+  organization?: {
+    roles: OrganizationRole[];
+  };
   haccp: Array<{
     step: string;
     hazard: string;
@@ -125,6 +135,7 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
       ...data,
       companyName: data.companyName || data.companyInfo?.name || 'Bedrift',
       goals: ensureArray(data.goals),
+      organization: data.organization || { roles: [] },
       haccp: ensureArray(data.haccp),
       risks: ensureArray(data.risks),
       routines: ensureArray(data.routines),
@@ -300,11 +311,39 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
       yPos += 10;
     }
 
+    // Organization Section
+    const orgRoles = safeData.organization?.roles || [];
+    if (orgRoles.length > 0) {
+      checkPageBreak(50);
+      addTocEntry('2. Organisasjonskart');
+      addSectionHeader('2. Organisasjonskart');
+      
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Rolle', 'Ansvarlig', 'Beskrivelse']],
+        body: orgRoles.map((role) => [
+          toText(role.title),
+          toText(role.personName) || 'Ikke tildelt',
+          toText(role.description) || '-',
+        ]),
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 9, cellPadding: 4 },
+        headStyles: { fillColor: [34, 139, 34], textColor: 255 },
+        alternateRowStyles: { fillColor: [240, 255, 240] },
+        columnStyles: {
+          0: { fontStyle: 'bold', cellWidth: 45 },
+          1: { cellWidth: 45 },
+          2: { cellWidth: 'auto' },
+        },
+      });
+      yPos = (doc as any).lastAutoTable.finalY + 15;
+    }
+
     // HACCP Section
     if (safeData.haccp.length > 0) {
       checkPageBreak(30);
-      addTocEntry('2. HACCP - Kritiske Kontrollpunkter');
-      addSectionHeader('2. HACCP - Kritiske Kontrollpunkter');
+      addTocEntry('3. HACCP - Kritiske Kontrollpunkter');
+      addSectionHeader('3. HACCP - Kritiske Kontrollpunkter');
       
       safeData.haccp.forEach((item, index) => {
         checkPageBreak(60);
@@ -347,8 +386,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     // Risks Section
     if (safeData.risks.length > 0) {
       checkPageBreak(50);
-      addTocEntry('3. Risikovurdering');
-      addSectionHeader('3. Risikovurdering');
+      addTocEntry('4. Risikovurdering');
+      addSectionHeader('4. Risikovurdering');
       
       autoTable(doc, {
         startY: yPos,
@@ -371,8 +410,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     // Routines Section
     if (safeData.routines.length > 0) {
       checkPageBreak(30);
-      addTocEntry('4. Rutiner og Prosedyrer');
-      addSectionHeader('4. Rutiner og Prosedyrer');
+      addTocEntry('5. Rutiner og Prosedyrer');
+      addSectionHeader('5. Rutiner og Prosedyrer');
       
       safeData.routines.forEach((routine) => {
         checkPageBreak(40);
@@ -414,8 +453,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     // Checklists Section
     if (safeData.checklists.length > 0) {
       checkPageBreak(30);
-      addTocEntry('5. Sjekklister');
-      addSectionHeader('5. Sjekklister');
+      addTocEntry('6. Sjekklister');
+      addSectionHeader('6. Sjekklister');
       
       safeData.checklists.forEach((checklist) => {
         checkPageBreak(35);
@@ -455,8 +494,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     // Cleaning Plan Section
     if (safeData.cleaningPlan.length > 0) {
       checkPageBreak(50);
-      addTocEntry('6. Renholdsplan');
-      addSectionHeader('6. Renholdsplan');
+      addTocEntry('7. Renholdsplan');
+      addSectionHeader('7. Renholdsplan');
       
       autoTable(doc, {
         startY: yPos,
@@ -478,8 +517,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     // Allergens Section
     if (safeData.allergens.length > 0) {
       checkPageBreak(50);
-      addTocEntry('7. Allergenhåndtering');
-      addSectionHeader('7. Allergenhåndtering');
+      addTocEntry('8. Allergenhåndtering');
+      addSectionHeader('8. Allergenhåndtering');
       
       autoTable(doc, {
         startY: yPos,
@@ -511,8 +550,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     // Contracts Section
     if (safeData.contracts.length > 0) {
       checkPageBreak(50);
-      addTocEntry('8. Faste Avtaler og Leverandører');
-      addSectionHeader('8. Faste Avtaler og Leverandører');
+      addTocEntry('9. Faste Avtaler og Leverandører');
+      addSectionHeader('9. Faste Avtaler og Leverandører');
       
       autoTable(doc, {
         startY: yPos,
