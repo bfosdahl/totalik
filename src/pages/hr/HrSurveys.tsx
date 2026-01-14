@@ -1,10 +1,18 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, BarChart3, Users } from "lucide-react";
+import { NewSurveyDialog } from "@/components/hr/NewSurveyDialog";
 
 export default function HrSurveys() {
+  const [showNewDialog, setShowNewDialog] = useState(false);
+
+  const handleSurveyCreated = () => {
+    // TODO: Refresh surveys list
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -16,7 +24,7 @@ export default function HrSurveys() {
               Opprett og analyser medarbeiderundersøkelser og pulsmålinger
             </p>
           </div>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setShowNewDialog(true)}>
             <Plus className="w-4 h-4" />
             Ny undersøkelse
           </Button>
@@ -58,7 +66,7 @@ export default function HrSurveys() {
                 <p className="text-muted-foreground mb-4 max-w-sm">
                   Start med å opprette en medarbeiderundersøkelse for å samle inn tilbakemeldinger
                 </p>
-                <Button>
+                <Button onClick={() => setShowNewDialog(true)}>
                   <Users className="w-4 h-4 mr-2" />
                   Opprett undersøkelse
                 </Button>
@@ -67,6 +75,12 @@ export default function HrSurveys() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <NewSurveyDialog 
+        open={showNewDialog} 
+        onOpenChange={setShowNewDialog} 
+        onSuccess={handleSurveyCreated}
+      />
     </AppLayout>
   );
 }
