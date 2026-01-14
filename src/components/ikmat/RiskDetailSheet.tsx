@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -639,59 +640,110 @@ const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: Actio
       {showEffect && (
         <div className="space-y-3 pt-2 border-t">
           <p className="text-xs text-muted-foreground">Effekt på risiko:</p>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <label className="flex items-center gap-1.5 text-xs">
-                <input
-                  type="checkbox"
-                  checked={action.effectOnProbability || false}
-                  onChange={(e) => onUpdate(action.id, 'effectOnProbability', e.target.checked)}
-                  className="h-3 w-3"
-                />
-                Reduserer sannsynlighet
-              </label>
-              {action.effectOnProbability && (
-                <Select
-                  value={String(action.newProbability || '')}
-                  onValueChange={(value) => onUpdate(action.id, 'newProbability', Number(value))}
+          <div className="flex flex-wrap gap-3">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant={action.effectOnProbability ? "default" : "outline"}
+                  size="sm"
+                  className="text-xs h-7"
                 >
-                  <SelectTrigger className="h-7 text-xs">
-                    <SelectValue placeholder="Ny S" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4, 5].map(v => (
-                      <SelectItem key={v} value={String(v)}>{v} - {v === 1 ? 'Svært lav' : v === 2 ? 'Lav' : v === 3 ? 'Middels' : v === 4 ? 'Høy' : 'Svært høy'}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-            <div className="space-y-2">
-              <label className="flex items-center gap-1.5 text-xs">
-                <input
-                  type="checkbox"
-                  checked={action.effectOnConsequence || false}
-                  onChange={(e) => onUpdate(action.id, 'effectOnConsequence', e.target.checked)}
-                  className="h-3 w-3"
-                />
-                Reduserer konsekvens
-              </label>
-              {action.effectOnConsequence && (
-                <Select
-                  value={String(action.newConsequence || '')}
-                  onValueChange={(value) => onUpdate(action.id, 'newConsequence', Number(value))}
+                  {action.effectOnProbability 
+                    ? `Reduserer S → ${action.newProbability || '?'}` 
+                    : 'Reduserer sannsynlighet'}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Ny sannsynlighet etter tiltak</DialogTitle>
+                  <DialogDescription>
+                    Velg ny sannsynlighetsverdi (1-5) etter at tiltaket er gjennomført
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-5 gap-2 py-4">
+                  {[1, 2, 3, 4, 5].map(v => (
+                    <Button
+                      key={v}
+                      variant={action.newProbability === v ? "default" : "outline"}
+                      className="flex flex-col h-auto py-3"
+                      onClick={() => {
+                        onUpdate(action.id, 'effectOnProbability', true);
+                        onUpdate(action.id, 'newProbability', v);
+                      }}
+                    >
+                      <span className="text-lg font-bold">{v}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {v === 1 ? 'Svært lav' : v === 2 ? 'Lav' : v === 3 ? 'Middels' : v === 4 ? 'Høy' : 'Svært høy'}
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+                {action.effectOnProbability && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      onUpdate(action.id, 'effectOnProbability', false);
+                      onUpdate(action.id, 'newProbability', undefined);
+                    }}
+                  >
+                    Fjern effekt på sannsynlighet
+                  </Button>
+                )}
+              </DialogContent>
+            </Dialog>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant={action.effectOnConsequence ? "default" : "outline"}
+                  size="sm"
+                  className="text-xs h-7"
                 >
-                  <SelectTrigger className="h-7 text-xs">
-                    <SelectValue placeholder="Ny K" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4, 5].map(v => (
-                      <SelectItem key={v} value={String(v)}>{v} - {v === 1 ? 'Ubetydelig' : v === 2 ? 'Mindre' : v === 3 ? 'Moderat' : v === 4 ? 'Alvorlig' : 'Katastrofal'}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
+                  {action.effectOnConsequence 
+                    ? `Reduserer K → ${action.newConsequence || '?'}` 
+                    : 'Reduserer konsekvens'}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Ny konsekvens etter tiltak</DialogTitle>
+                  <DialogDescription>
+                    Velg ny konsekvensverdi (1-5) etter at tiltaket er gjennomført
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-5 gap-2 py-4">
+                  {[1, 2, 3, 4, 5].map(v => (
+                    <Button
+                      key={v}
+                      variant={action.newConsequence === v ? "default" : "outline"}
+                      className="flex flex-col h-auto py-3"
+                      onClick={() => {
+                        onUpdate(action.id, 'effectOnConsequence', true);
+                        onUpdate(action.id, 'newConsequence', v);
+                      }}
+                    >
+                      <span className="text-lg font-bold">{v}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {v === 1 ? 'Ubetydelig' : v === 2 ? 'Mindre' : v === 3 ? 'Moderat' : v === 4 ? 'Alvorlig' : 'Katastrofal'}
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+                {action.effectOnConsequence && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      onUpdate(action.id, 'effectOnConsequence', false);
+                      onUpdate(action.id, 'newConsequence', undefined);
+                    }}
+                  >
+                    Fjern effekt på konsekvens
+                  </Button>
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       )}
