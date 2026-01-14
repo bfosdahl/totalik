@@ -6,11 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Upload, Loader2, Camera, AlertTriangle, CheckCircle, XCircle, Building2 } from "lucide-react";
+import { Upload, Loader2, Camera, AlertTriangle, CheckCircle, XCircle, Building2, Sparkles } from "lucide-react";
 import { useIkMatTraceability } from "@/hooks/useIkMatTraceability";
 import { useIkMatSuppliers } from "@/hooks/useIkMatSuppliers";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface NewTraceabilityDialogProps {
   open: boolean;
@@ -25,34 +27,40 @@ interface TemperatureStatus {
   action: string;
 }
 
-function getTemperatureStatus(temp: number | null, productType: ProductType): TemperatureStatus | null {
+function getTemperatureStatus(temp: number | null, productTypes: ProductType[]): TemperatureStatus | null {
   if (temp === null) return null;
   
-  if (productType === "kjolevare") {
-    if (temp >= -1 && temp <= 4) {
-      return { status: "green", message: "Riktig temperatur", action: "AKSEPTER" };
-    } else if (temp > 4 && temp <= 7) {
-      return { status: "yellow", message: "Tillates ved transport kortere enn 2 t.", action: "Sett varene på kjølerom" };
-    } else if (temp > 7) {
-      return { status: "red", message: "Varene tas ikke imot", action: "RETUR" };
-    }
-  } else if (productType === "frysevare") {
+  // Check temperature for refrigerated items first, then frozen
+  const hasKjolevare = productTypes.includes("kjolevare");
+  const hasFrysevare = productTypes.includes("frysevare");
+  
+  // If both types, use the stricter requirements (frozen)
+  if (hasFrysevare) {
     if (temp <= -18) {
-      return { status: "green", message: "Riktig temperatur", action: "AKSEPTER" };
+      return { status: "green", message: "Riktig temperatur for frysevare", action: "AKSEPTER" };
     } else if (temp > -18 && temp <= -15) {
       return { status: "yellow", message: "Tillates ved transport kortere enn 2 t.", action: "Sett varer på fryserom til de er -18°C" };
     } else if (temp > -15) {
-      return { status: "red", message: "Varene tas ikke imot", action: "RETUR" };
+      return { status: "red", message: "Frysevarer for varme - tas ikke imot", action: "RETUR" };
+    }
+  } else if (hasKjolevare) {
+    if (temp >= -1 && temp <= 4) {
+      return { status: "green", message: "Riktig temperatur for kjølevare", action: "AKSEPTER" };
+    } else if (temp > 4 && temp <= 7) {
+      return { status: "yellow", message: "Tillates ved transport kortere enn 2 t.", action: "Sett varene på kjølerom" };
+    } else if (temp > 7) {
+      return { status: "red", message: "Kjølevarer for varme - tas ikke imot", action: "RETUR" };
     }
   }
   
   return null;
 }
 
-function TemperatureStatusIndicator({ temp, productType }: { temp: number | null; productType: ProductType }) {
-  const status = getTemperatureStatus(temp, productType);
+function TemperatureStatusIndicator({ temp, productTypes }: { temp: number | null; productTypes: ProductType[] }) {
+  const status = getTemperatureStatus(temp, productTypes);
   
-  if (!status || productType === "torrvar") return null;
+  // Don't show if only dry goods
+  if (!status || (productTypes.length === 1 && productTypes[0] === "torrvar")) return null;
   
   const colors = {
     green: "bg-green-500",
@@ -92,6 +100,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
   const { createRecord, uploadDocument } = useIkMatTraceability(profile?.company_id);
   const { suppliers } = useIkMatSuppliers();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [labelImageFile, setLabelImageFile] = useState<File | null>(null);
   const [labelImagePreview, setLabelImagePreview] = useState<string | null>(null);
@@ -107,19 +116,78 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
     receipt_date: new Date().toISOString().split('T')[0],
     expiry_date: "",
     receipt_temperature: "",
-    product_type: "kjolevare" as ProductType,
+    product_types: ["kjolevare"] as ProductType[],
     packaging_ok: true,
     temperature_ok: true,
     notes: "",
   });
 
-  const handleLabelImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProductTypeChange = (type: ProductType, checked: boolean) => {
+    setFormData(prev => {
+      const newTypes = checked
+        ? [...prev.product_types, type]
+        : prev.product_types.filter(t => t !== type);
+      
+      // Ensure at least one type is selected
+      if (newTypes.length === 0) {
+        return prev;
+      }
+      
+      return { ...prev, product_types: newTypes };
+    });
+  };
+
+  const scanLabelImage = async (imageBase64: string) => {
+    setIsScanning(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Du må være innlogget for å skanne bilder");
+        return;
+      }
+
+      const response = await supabase.functions.invoke('scan-shipping-label', {
+        body: { imageBase64 }
+      });
+
+      if (response.error) {
+        console.error("Scan error:", response.error);
+        toast.error("Kunne ikke skanne bildet");
+        return;
+      }
+
+      const extracted = response.data;
+      
+      if (extracted) {
+        setFormData(prev => ({
+          ...prev,
+          batch_number: extracted.batch_number || prev.batch_number,
+          gtin: extracted.gtin || prev.gtin,
+          product_name: extracted.product_name || prev.product_name,
+          expiry_date: extracted.expiry_date || prev.expiry_date,
+          production_date: extracted.production_date || prev.production_date,
+        }));
+        
+        toast.success("Informasjon hentet fra bildet!");
+      }
+    } catch (error) {
+      console.error("Error scanning label:", error);
+      toast.error("Feil ved skanning av bilde");
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
+  const handleLabelImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setLabelImageFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setLabelImagePreview(reader.result as string);
+      reader.onloadend = async () => {
+        const base64 = reader.result as string;
+        setLabelImagePreview(base64);
+        // Auto-scan the image
+        await scanLabelImage(base64);
       };
       reader.readAsDataURL(file);
     }
@@ -147,7 +215,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
     setIsSubmitting(true);
     try {
       const tempValue = formData.receipt_temperature ? parseFloat(formData.receipt_temperature) : null;
-      const tempStatus = getTemperatureStatus(tempValue, formData.product_type);
+      const tempStatus = getTemperatureStatus(tempValue, formData.product_types);
       
       // Build notes with quality checks and temperature status
       let fullNotes = formData.notes || "";
@@ -170,6 +238,12 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
       if (formData.gtin) {
         fullNotes = `GTIN: ${formData.gtin}. ${fullNotes}`.trim();
       }
+      
+      // Add product types to notes
+      const productTypeLabels = formData.product_types.map(t => 
+        t === "kjolevare" ? "Kjølevare" : t === "frysevare" ? "Frysevare" : "Tørrvare"
+      ).join(", ");
+      fullNotes = `Produkttyper: ${productTypeLabels}. ${fullNotes}`.trim();
 
       // Create record first
       const recordData = {
@@ -215,7 +289,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
         receipt_date: new Date().toISOString().split('T')[0],
         expiry_date: "",
         receipt_temperature: "",
-        product_type: "kjolevare",
+        product_types: ["kjolevare"],
         packaging_ok: true,
         temperature_ok: true,
         notes: "",
@@ -232,6 +306,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
   };
 
   const tempValue = formData.receipt_temperature ? parseFloat(formData.receipt_temperature) : null;
+  const hasTemperatureSensitive = formData.product_types.some(t => t === "kjolevare" || t === "frysevare");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -301,21 +376,41 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
               />
             </div>
             
+            {/* Product Types - Multi-select checkboxes */}
             <div className="space-y-2">
-              <Label htmlFor="product_type">Produkttype</Label>
-              <Select 
-                value={formData.product_type} 
-                onValueChange={(value: ProductType) => setFormData({ ...formData, product_type: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="kjolevare">Kjølevare</SelectItem>
-                  <SelectItem value="frysevare">Frysevare</SelectItem>
-                  <SelectItem value="torrvar">Tørrvare</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>Produkttype(r) *</Label>
+              <div className="flex flex-wrap gap-4 pt-1">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="type_kjolevare"
+                    checked={formData.product_types.includes("kjolevare")}
+                    onCheckedChange={(checked) => handleProductTypeChange("kjolevare", checked === true)}
+                  />
+                  <label htmlFor="type_kjolevare" className="text-sm cursor-pointer">
+                    Kjølevare
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="type_frysevare"
+                    checked={formData.product_types.includes("frysevare")}
+                    onCheckedChange={(checked) => handleProductTypeChange("frysevare", checked === true)}
+                  />
+                  <label htmlFor="type_frysevare" className="text-sm cursor-pointer">
+                    Frysevare
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="type_torrvar"
+                    checked={formData.product_types.includes("torrvar")}
+                    onCheckedChange={(checked) => handleProductTypeChange("torrvar", checked === true)}
+                  />
+                  <label htmlFor="type_torrvar" className="text-sm cursor-pointer">
+                    Tørrvare
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -383,8 +478,8 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
           </div>
 
           {/* Temperature Traffic Light */}
-          {formData.product_type !== "torrvar" && tempValue !== null && (
-            <TemperatureStatusIndicator temp={tempValue} productType={formData.product_type} />
+          {hasTemperatureSensitive && tempValue !== null && (
+            <TemperatureStatusIndicator temp={tempValue} productTypes={formData.product_types} />
           )}
 
           {/* Quality Checks */}
@@ -418,9 +513,15 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
             </div>
           </div>
 
-          {/* Label Image Upload */}
+          {/* Label Image Upload with AI Scanning */}
           <div className="space-y-2">
-            <Label>Bilde av fraktetikett</Label>
+            <Label className="flex items-center gap-2">
+              Bilde av fraktetikett
+              <span className="inline-flex items-center gap-1 text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                <Sparkles className="h-3 w-3" />
+                AI-skanning
+              </span>
+            </Label>
             <div className="flex flex-col gap-2">
               <input
                 ref={labelInputRef}
@@ -435,9 +536,19 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                 variant="outline"
                 onClick={() => labelInputRef.current?.click()}
                 className="w-full justify-start gap-2"
+                disabled={isScanning}
               >
-                <Camera className="h-4 w-4" />
-                {labelImageFile ? labelImageFile.name : "Ta bilde eller velg fil"}
+                {isScanning ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Skanner bilde...
+                  </>
+                ) : (
+                  <>
+                    <Camera className="h-4 w-4" />
+                    {labelImageFile ? labelImageFile.name : "Ta bilde eller velg fil"}
+                  </>
+                )}
               </Button>
               {labelImagePreview && (
                 <div className="relative">
@@ -446,23 +557,35 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                     alt="Fraktetikett" 
                     className="w-full max-h-48 object-contain rounded-lg border"
                   />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    className="absolute top-2 right-2"
-                    onClick={() => {
-                      setLabelImageFile(null);
-                      setLabelImagePreview(null);
-                    }}
-                  >
-                    Fjern
-                  </Button>
+                  <div className="absolute top-2 right-2 flex gap-2">
+                    {!isScanning && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => scanLabelImage(labelImagePreview)}
+                      >
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        Skann på nytt
+                      </Button>
+                    )}
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        setLabelImageFile(null);
+                        setLabelImagePreview(null);
+                      }}
+                    >
+                      Fjern
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              Ta bilde av batch-nr/fraktetikett for dokumentasjon
+              Ta bilde av batch-nr/fraktetikett - AI fyller automatisk ut felt
             </p>
           </div>
 
@@ -512,7 +635,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
             >
               Avbryt
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || isScanning}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
