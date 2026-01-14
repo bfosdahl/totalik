@@ -5,12 +5,15 @@ import { useIkMatContent, IkMatRisk, IkMatActionItem, calculateRiskLevel } from 
 import { useEmployees } from "@/hooks/useEmployees";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, Save, Loader2, ShieldCheck, Info } from "lucide-react";
+import { Plus, Save, Loader2, ShieldCheck, Info, ClipboardList, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { RiskListItem } from "@/components/ikmat/RiskListItem";
 import { RiskDetailSheet } from "@/components/ikmat/RiskDetailSheet";
 import { RiskSummaryCard } from "@/components/ikmat/RiskSummaryCard";
+import { ActionPlanOverview } from "@/components/ikmat/ActionPlanOverview";
+import { ControlPlanOverview } from "@/components/ikmat/ControlPlanOverview";
 
 const IkMatRisikoOgTiltak = () => {
   const navigate = useNavigate();
@@ -23,6 +26,7 @@ const IkMatRisikoOgTiltak = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [selectedRisk, setSelectedRisk] = useState<IkMatRisk | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("risks");
 
   useEffect(() => {
     if (!modulesLoading && !hasModule('IK_MAT')) {
@@ -46,6 +50,7 @@ const IkMatRisikoOgTiltak = () => {
       riskLevel: 9,
       measures: '',
       isHaccp: false,
+      status: 'open',
     };
     setRisks([...risks, newRisk]);
     setSelectedRisk(newRisk);
@@ -79,21 +84,22 @@ const IkMatRisikoOgTiltak = () => {
     setHasChanges(true);
   };
 
-  const handleAddAction = (riskId: string) => {
+  const handleAddAction = (riskId: string, actionType: 'preventive' | 'corrective' = 'corrective') => {
     const risk = risks.find(r => r.id === riskId);
     const newAction: IkMatActionItem = {
       id: `action-${Date.now()}`,
       riskId,
-      action: risk ? `Tiltak for: ${risk.hazard}` : '',
+      action: '',
       responsible: '',
       deadline: '',
       status: 'pending',
+      actionType,
     };
     setActionPlan([...actionPlan, newAction]);
     setHasChanges(true);
   };
 
-  const handleUpdateAction = (id: string, field: keyof IkMatActionItem, value: string) => {
+  const handleUpdateAction = (id: string, field: keyof IkMatActionItem, value: any) => {
     setActionPlan(prev => prev.map(a => 
       a.id === id ? { ...a, [field]: value } : a
     ));
@@ -108,6 +114,14 @@ const IkMatRisikoOgTiltak = () => {
   const handleOpenRisk = (risk: IkMatRisk) => {
     setSelectedRisk(risk);
     setSheetOpen(true);
+  };
+
+  const handleOpenRiskById = (riskId: string) => {
+    const risk = risks.find(r => r.id === riskId);
+    if (risk) {
+      setSelectedRisk(risk);
+      setSheetOpen(true);
+    }
   };
 
   const handleSave = async () => {
@@ -128,16 +142,16 @@ const IkMatRisikoOgTiltak = () => {
 
   return (
     <AppLayout>
-      <div className="container max-w-3xl mx-auto py-8 space-y-6">
+      <div className="container max-w-4xl mx-auto py-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <ShieldCheck className="h-6 w-6 text-primary" />
-              Risikovurdering
+              Risikovurdering & Tiltak
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              HACCP-basert fareanalyse og kontrollpunkter
+              HACCP-basert fareanalyse med handlingsplan
             </p>
           </div>
           <Button 
@@ -155,53 +169,94 @@ const IkMatRisikoOgTiltak = () => {
         </div>
 
         {/* Summary */}
-        {risks.length > 0 && <RiskSummaryCard risks={risks} />}
+        {risks.length > 0 && <RiskSummaryCard risks={risks} actions={actionPlan} />}
 
-        {/* Add button */}
-        <div className="flex justify-end">
-          <Button variant="outline" onClick={handleAddRisk}>
-            <Plus className="h-4 w-4 mr-2" />
-            Legg til risiko
-          </Button>
-        </div>
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="risks" className="gap-2">
+              <ShieldCheck className="h-4 w-4" />
+              Risikoer
+            </TabsTrigger>
+            <TabsTrigger value="actions" className="gap-2">
+              <ClipboardList className="h-4 w-4" />
+              Handlingsplan
+            </TabsTrigger>
+            <TabsTrigger value="controls" className="gap-2">
+              <Calendar className="h-4 w-4" />
+              Kontrollplan
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Risk list */}
-        {risks.length === 0 ? (
-          <div className="text-center py-12">
-            <ShieldCheck className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-            <h3 className="font-medium text-muted-foreground mb-2">
-              Ingen risikoer definert
-            </h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Start med å identifisere farer i din matproduksjon
-            </p>
-            <Button onClick={handleAddRisk}>
-              <Plus className="h-4 w-4 mr-2" />
-              Legg til første risiko
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {risks.map((risk) => (
-              <RiskListItem
-                key={risk.id}
-                risk={risk}
-                onClick={() => handleOpenRisk(risk)}
-              />
-            ))}
-          </div>
-        )}
+          {/* Tab 1: Risks */}
+          <TabsContent value="risks" className="space-y-4 mt-4">
+            {/* Add button */}
+            <div className="flex justify-end">
+              <Button variant="outline" onClick={handleAddRisk}>
+                <Plus className="h-4 w-4 mr-2" />
+                Legg til risiko
+              </Button>
+            </div>
 
-        {/* Info footer */}
-        {risks.length > 0 && (
-          <Alert className="bg-muted/50 border-muted">
-            <Info className="h-4 w-4" />
-            <AlertDescription className="text-xs text-muted-foreground">
-              Klikk på en risiko for å se detaljer, redigere og legge til tiltak. 
-              Risikoer merket som KKP krever systematisk overvåking etter HACCP-prinsippene.
-            </AlertDescription>
-          </Alert>
-        )}
+            {/* Risk list */}
+            {risks.length === 0 ? (
+              <div className="text-center py-12">
+                <ShieldCheck className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                <h3 className="font-medium text-muted-foreground mb-2">
+                  Ingen risikoer definert
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Start med å identifisere farer i din matproduksjon
+                </p>
+                <Button onClick={handleAddRisk}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Legg til første risiko
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {risks.map((risk) => (
+                  <RiskListItem
+                    key={risk.id}
+                    risk={risk}
+                    actions={actionPlan}
+                    onClick={() => handleOpenRisk(risk)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Info footer */}
+            {risks.length > 0 && (
+              <Alert className="bg-muted/50 border-muted">
+                <Info className="h-4 w-4" />
+                <AlertDescription className="text-xs text-muted-foreground">
+                  Klikk på en risiko for å se detaljer, redigere og legge til tiltak. 
+                  Risikoer merket som KKP krever systematisk overvåking etter HACCP-prinsippene.
+                </AlertDescription>
+              </Alert>
+            )}
+          </TabsContent>
+
+          {/* Tab 2: Action Plan */}
+          <TabsContent value="actions" className="mt-4">
+            <ActionPlanOverview
+              actions={actionPlan}
+              risks={risks}
+              employees={employees || []}
+              onUpdateAction={handleUpdateAction}
+              onOpenRisk={handleOpenRiskById}
+            />
+          </TabsContent>
+
+          {/* Tab 3: Control Plan */}
+          <TabsContent value="controls" className="mt-4">
+            <ControlPlanOverview
+              risks={risks.filter(r => r.isHaccp)}
+              onOpenRisk={handleOpenRiskById}
+            />
+          </TabsContent>
+        </Tabs>
 
         {/* Detail sheet */}
         <RiskDetailSheet
