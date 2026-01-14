@@ -19,6 +19,7 @@ export interface CleaningPlanResponse {
   status: string;
   cleaning_records: CleaningRecord[];
   notes: string | null;
+  frequency_type: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -49,6 +50,7 @@ export const useIkMatCleaningPlan = () => {
       cleaning_records: CleaningRecord[];
       notes?: string;
       status: string;
+      frequency_type?: string;
     }) => {
       if (!company?.id || !user) {
         throw new Error('Mangler bruker eller bedriftsinfo');
@@ -65,6 +67,7 @@ export const useIkMatCleaningPlan = () => {
           cleaning_records: newResponse.cleaning_records as any,
           notes: newResponse.notes || null,
           status: newResponse.status,
+          frequency_type: newResponse.frequency_type || null,
           completed_at: newResponse.status === 'completed' ? new Date().toISOString() : null,
         })
         .select()

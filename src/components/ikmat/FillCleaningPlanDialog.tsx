@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import { CleaningRecord } from '@/hooks/useIkMatCleaningPlan';
 
 interface CleaningTask {
@@ -20,6 +21,14 @@ interface CleaningTask {
   method: string;
   responsible: string;
 }
+
+type FrequencyType = 'daily' | 'weekly' | 'monthly';
+
+const FREQUENCY_LABELS: Record<FrequencyType, string> = {
+  daily: 'Daglig',
+  weekly: 'Ukentlig',
+  monthly: 'Månedlig/Periodisk',
+};
 
 interface FillCleaningPlanDialogProps {
   open: boolean;
@@ -30,12 +39,15 @@ interface FillCleaningPlanDialogProps {
     cleaning_records: CleaningRecord[];
     notes: string | null;
     status: string;
+    frequency_type?: string;
   };
   onSave: (data: {
     cleaning_records: CleaningRecord[];
     notes?: string;
     status: string;
+    frequency_type?: string;
   }) => Promise<void>;
+  frequencyType?: FrequencyType | null;
 }
 
 export const FillCleaningPlanDialog = ({
@@ -44,6 +56,7 @@ export const FillCleaningPlanDialog = ({
   cleaningTasks,
   existingResponse,
   onSave,
+  frequencyType,
 }: FillCleaningPlanDialogProps) => {
   const [cleaningRecords, setCleaningRecords] = useState<CleaningRecord[]>([]);
   const [notes, setNotes] = useState('');
@@ -93,6 +106,7 @@ export const FillCleaningPlanDialog = ({
         cleaning_records: cleaningRecords,
         notes,
         status,
+        frequency_type: frequencyType || existingResponse?.frequency_type,
       });
       onOpenChange(false);
     } catch (error) {
@@ -102,13 +116,29 @@ export const FillCleaningPlanDialog = ({
     }
   };
 
+  const getDialogTitle = () => {
+    if (existingResponse) {
+      const freqLabel = existingResponse.frequency_type 
+        ? FREQUENCY_LABELS[existingResponse.frequency_type as FrequencyType]
+        : null;
+      return freqLabel ? `Se ${freqLabel.toLowerCase()} renholdsplan` : 'Se renholdsplan';
+    }
+    if (frequencyType) {
+      return `Utfør ${FREQUENCY_LABELS[frequencyType].toLowerCase()} renhold`;
+    }
+    return 'Utfør renholdsplan';
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>
-            {existingResponse ? 'Se renholdsplan' : 'Utfør renholdsplan'}
-          </DialogTitle>
+          <div className="flex items-center gap-2">
+            <DialogTitle>{getDialogTitle()}</DialogTitle>
+            {frequencyType && !existingResponse && (
+              <Badge variant="outline">{FREQUENCY_LABELS[frequencyType]}</Badge>
+            )}
+          </div>
           <DialogDescription>
             Kryss av for oppgaver som er fullført og legg til notater ved behov
           </DialogDescription>

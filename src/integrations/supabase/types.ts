@@ -3977,6 +3977,7 @@ export type Database = {
           completed_by_id: string | null
           completed_by_name: string
           created_at: string | null
+          frequency_type: string | null
           id: string
           notes: string | null
           status: string
@@ -3989,6 +3990,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name: string
           created_at?: string | null
+          frequency_type?: string | null
           id?: string
           notes?: string | null
           status?: string
@@ -4001,6 +4003,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name?: string
           created_at?: string | null
+          frequency_type?: string | null
           id?: string
           notes?: string | null
           status?: string

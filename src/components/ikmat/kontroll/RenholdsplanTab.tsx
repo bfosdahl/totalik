@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Sparkles, ClipboardCheck, Download, FileText, Trash2, Plus, Pencil } from "lucide-react";
+import { Sparkles, ClipboardCheck, Download, FileText, Trash2, Plus, Pencil, Calendar, CalendarDays, CalendarRange } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,6 +24,31 @@ interface CleaningTask {
   responsible: string;
 }
 
+type FrequencyType = 'daily' | 'weekly' | 'monthly';
+
+const FREQUENCY_LABELS: Record<FrequencyType, string> = {
+  daily: 'Daglig',
+  weekly: 'Ukentlig',
+  monthly: 'Månedlig/Periodisk',
+};
+
+const FREQUENCY_ICONS: Record<FrequencyType, typeof Calendar> = {
+  daily: Calendar,
+  weekly: CalendarDays,
+  monthly: CalendarRange,
+};
+
+const normalizeFrequency = (freq: string): FrequencyType => {
+  const lower = freq.toLowerCase();
+  if (lower.includes('daglig') || lower.includes('daily') || lower.includes('hver dag')) {
+    return 'daily';
+  }
+  if (lower.includes('ukentlig') || lower.includes('weekly') || lower.includes('hver uke')) {
+    return 'weekly';
+  }
+  return 'monthly'; // månedlig, periodisk, etc.
+};
+
 export const RenholdsplanTab = () => {
   const { company } = useAuth();
   const { modules, isLoading } = useCompanyModules();
@@ -34,6 +59,7 @@ export const RenholdsplanTab = () => {
   const [editTaskDialogOpen, setEditTaskDialogOpen] = useState(false);
   const [editingResponse, setEditingResponse] = useState<any>(null);
   const [editingTask, setEditingTask] = useState<any>(null);
+  const [selectedFrequency, setSelectedFrequency] = useState<FrequencyType | null>(null);
 
   useEffect(() => {
     if (!isLoading && modules.length > 0) {
@@ -49,13 +75,31 @@ export const RenholdsplanTab = () => {
 
   const allTasks = [...cleaningPlan, ...(customTasks || [])];
 
-  const handleStartCleaning = () => {
+  // Group tasks by frequency
+  const tasksByFrequency = useMemo(() => {
+    const grouped: Record<FrequencyType, CleaningTask[]> = {
+      daily: [],
+      weekly: [],
+      monthly: [],
+    };
+
+    allTasks.forEach(task => {
+      const freq = normalizeFrequency(task.frequency);
+      grouped[freq].push(task);
+    });
+
+    return grouped;
+  }, [allTasks]);
+
+  const handleStartCleaning = (frequency: FrequencyType) => {
     setEditingResponse(null);
+    setSelectedFrequency(frequency);
     setFillDialogOpen(true);
   };
 
   const handleEditResponse = (response: any) => {
     setEditingResponse(response);
+    setSelectedFrequency(null); // Show all tasks when viewing existing response
     setFillDialogOpen(true);
   };
 
@@ -63,6 +107,7 @@ export const RenholdsplanTab = () => {
     cleaning_records: any[];
     notes?: string;
     status: string;
+    frequency_type?: string;
   }) => {
     if (editingResponse) {
       await updateResponse.mutateAsync({
@@ -70,7 +115,10 @@ export const RenholdsplanTab = () => {
         ...data,
       });
     } else {
-      await createResponse.mutateAsync(data);
+      await createResponse.mutateAsync({
+        ...data,
+        frequency_type: selectedFrequency || undefined,
+      });
     }
   };
 
@@ -112,6 +160,7 @@ export const RenholdsplanTab = () => {
         cleaningRecords: response.cleaning_records,
         notes: response.notes,
         companyName: company?.name,
+        frequencyType: response.frequency_type,
       });
       toast.success('PDF lastet ned');
     } catch (error) {
@@ -124,6 +173,22 @@ export const RenholdsplanTab = () => {
     if (confirm('Er du sikker på at du vil slette denne renholdsplanen?')) {
       await deleteResponse.mutateAsync(id);
     }
+  };
+
+  // Get tasks for the dialog based on selected frequency
+  const getTasksForDialog = () => {
+    if (editingResponse) {
+      return allTasks;
+    }
+    if (selectedFrequency) {
+      return tasksByFrequency[selectedFrequency];
+    }
+    return allTasks;
+  };
+
+  const getFrequencyLabel = (freqType: string | null | undefined): string => {
+    if (!freqType) return '';
+    return FREQUENCY_LABELS[freqType as FrequencyType] || freqType;
   };
 
   if (isLoading || isLoadingResponses) {
@@ -159,6 +224,82 @@ export const RenholdsplanTab = () => {
     );
   }
 
+  const renderTaskTable = (tasks: CleaningTask[], frequency: FrequencyType) => {
+    const Icon = FREQUENCY_ICONS[frequency];
+    
+    if (tasks.length === 0) {
+      return null;
+    }
+
+    return (
+      <Card key={frequency}>
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Icon className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">{FREQUENCY_LABELS[frequency]} renhold</CardTitle>
+                <CardDescription>{tasks.length} oppgave{tasks.length !== 1 ? 'r' : ''}</CardDescription>
+              </div>
+            </div>
+            <Button onClick={() => handleStartCleaning(frequency)}>
+              <ClipboardCheck className="h-4 w-4 mr-2" />
+              Utfør {FREQUENCY_LABELS[frequency].toLowerCase()} renhold
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Område</TableHead>
+                <TableHead>Metode</TableHead>
+                <TableHead>Ansvarlig</TableHead>
+                <TableHead className="w-[100px]"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tasks.map((task, idx) => {
+                const isCustom = 'id' in task;
+                return (
+                  <TableRow key={isCustom ? (task as any).id : `${frequency}-${idx}`}>
+                    <TableCell className="font-medium">{task.area}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground max-w-md truncate">
+                      {task.method}
+                    </TableCell>
+                    <TableCell>{task.responsible}</TableCell>
+                    <TableCell>
+                      {isCustom && (
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditTask(task)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteTask((task as any).id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="template">
@@ -170,78 +311,18 @@ export const RenholdsplanTab = () => {
         </TabsList>
 
         <TabsContent value="template" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle>Renholdsplan for {company?.name}</CardTitle>
-                  <CardDescription>
-                    Oversikt over alle renholdsoppgaver og ansvar
-                  </CardDescription>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={handleAddTask}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Legg til oppgave
-                  </Button>
-                  <Button onClick={handleStartCleaning}>
-                    <ClipboardCheck className="h-4 w-4 mr-2" />
-                    Utfør renhold
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Område</TableHead>
-                    <TableHead>Frekvens</TableHead>
-                    <TableHead>Metode</TableHead>
-                    <TableHead>Ansvarlig</TableHead>
-                    <TableHead className="w-[100px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {allTasks.map((task, idx) => {
-                    const isCustom = 'id' in task;
-                    return (
-                      <TableRow key={isCustom ? (task as any).id : idx}>
-                        <TableCell className="font-medium">{task.area}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{task.frequency}</Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground max-w-md truncate">
-                          {task.method}
-                        </TableCell>
-                        <TableCell>{task.responsible}</TableCell>
-                        <TableCell>
-                          {isCustom && (
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEditTask(task)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteTask((task as any).id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={handleAddTask}>
+              <Plus className="h-4 w-4 mr-2" />
+              Legg til oppgave
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            {renderTaskTable(tasksByFrequency.daily, 'daily')}
+            {renderTaskTable(tasksByFrequency.weekly, 'weekly')}
+            {renderTaskTable(tasksByFrequency.monthly, 'monthly')}
+          </div>
         </TabsContent>
 
         <TabsContent value="history" className="space-y-4">
@@ -267,7 +348,10 @@ export const RenholdsplanTab = () => {
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             <CardTitle className="text-lg">
-                              Renhold utført {format(new Date(response.completed_at || response.created_at), 'dd.MM.yyyy HH:mm', { locale: nb })}
+                              {response.frequency_type 
+                                ? `${getFrequencyLabel(response.frequency_type)} renhold`
+                                : 'Renhold'
+                              } - {format(new Date(response.completed_at || response.created_at), 'dd.MM.yyyy HH:mm', { locale: nb })}
                             </CardTitle>
                             <Badge
                               variant={
@@ -280,6 +364,11 @@ export const RenholdsplanTab = () => {
                                 ? 'Fullført'
                                 : 'Utkast'}
                             </Badge>
+                            {response.frequency_type && (
+                              <Badge variant="outline">
+                                {getFrequencyLabel(response.frequency_type)}
+                              </Badge>
+                            )}
                           </div>
                           <CardDescription>
                             Utført av {response.completed_by_name} • {completedCount} av {totalCount} oppgaver fullført
@@ -324,9 +413,10 @@ export const RenholdsplanTab = () => {
       <FillCleaningPlanDialog
         open={fillDialogOpen}
         onOpenChange={setFillDialogOpen}
-        cleaningTasks={allTasks}
+        cleaningTasks={getTasksForDialog()}
         existingResponse={editingResponse}
         onSave={handleSaveCleaningPlan}
+        frequencyType={selectedFrequency}
       />
 
       <EditCleaningTaskDialog
