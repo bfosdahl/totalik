@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { 
   AlertTriangle, 
   Plus, 
@@ -14,7 +15,8 @@ import {
   Download,
   FileText,
   FileSpreadsheet,
-  HeartPulse
+  HeartPulse,
+  Smartphone
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -322,6 +324,12 @@ const Deviations = () => {
                 <DropdownMenuItem onClick={() => exportDeviationsToExcel(filteredDeviations)}>
                   <FileSpreadsheet className="w-4 h-4 mr-2" />
                   Last ned som Excel
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/install/avvik" className="flex items-center">
+                    <Smartphone className="w-4 h-4 mr-2" />
+                    Last ned Avvik-appen
+                  </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
