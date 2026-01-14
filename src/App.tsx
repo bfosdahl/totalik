@@ -53,11 +53,9 @@ import IkMatHandbok from "./pages/IkMatHandbok";
 import IkMatOppsett from "./pages/IkMatOppsett";
 import IkMatHaccp from "./pages/IkMatHaccp";
 import IkMatRisikovurdering from "./pages/IkMatRisikovurdering";
-import IkMatSjekklister from "./pages/IkMatSjekklister";
-import IkMatRenholdsplan from "./pages/IkMatRenholdsplan";
 import IkMatAllergener from "./pages/IkMatAllergener";
 import IkMatFasteAvtaler from "./pages/IkMatFasteAvtaler";
-import IkMatSporbarhet from "./pages/IkMatSporbarhet";
+import IkMatKontroll from "./pages/IkMatKontroll";
 import IkMatMaal from "./pages/IkMatMaal";
 import IkMatOrganisasjon from "./pages/IkMatOrganisasjon";
 import IkMatRutiner from "./pages/IkMatRutiner";
@@ -152,14 +150,14 @@ const App = () => (
                   <Route path="/ik-mat/handlingsplan" element={<Navigate to="/ik-mat/risiko-og-tiltak" replace />} />
                   <Route path="/ik-mat/rutiner" element={<ProtectedRoute><IkMatRutiner /></ProtectedRoute>} />
                   <Route path="/ik-mat/haccp" element={<ProtectedRoute><IkMatHaccp /></ProtectedRoute>} />
-                  <Route path="/ik-mat/sjekklister" element={<ProtectedRoute><IkMatSjekklister /></ProtectedRoute>} />
-                  <Route path="/ik-mat/renholdsplan" element={<ProtectedRoute><IkMatRenholdsplan /></ProtectedRoute>} />
-                  <Route path="/ik-mat/temperaturlogg" element={<ProtectedRoute><IkMatTemperaturlogg /></ProtectedRoute>} />
+                  <Route path="/ik-mat/kontroll" element={<ProtectedRoute><IkMatKontroll /></ProtectedRoute>} />
+                  <Route path="/ik-mat/sjekklister" element={<Navigate to="/ik-mat/kontroll?tab=sjekklister" replace />} />
+                  <Route path="/ik-mat/renholdsplan" element={<Navigate to="/ik-mat/kontroll?tab=renholdsplan" replace />} />
+                  <Route path="/ik-mat/temperaturlogg" element={<Navigate to="/ik-mat/kontroll?tab=temperatur" replace />} />
+                  <Route path="/ik-mat/sporbarhet" element={<Navigate to="/ik-mat/kontroll?tab=sporbarhet" replace />} />
                   <Route path="/ik-mat/allergener" element={<ProtectedRoute><IkMatAllergener /></ProtectedRoute>} />
                   <Route path="/ik-mat/faste-avtaler" element={<ProtectedRoute><IkMatFasteAvtaler /></ProtectedRoute>} />
-                  <Route path="/ik-mat/sporbarhet" element={<ProtectedRoute><IkMatSporbarhet /></ProtectedRoute>} />
                   <Route path="/ik-mat/dokumentsenter" element={<ProtectedRoute><IkMatDokumentsenter /></ProtectedRoute>} />
-                  
                   {/* IK Alkohol routes */}
                   <Route path="/ik-alkohol" element={<ProtectedRoute><IkAlkoholDashboard /></ProtectedRoute>} />
                   <Route path="/ik-alkohol/internkontroll" element={<ProtectedRoute><IkAlkoholInternkontroll /></ProtectedRoute>} />
