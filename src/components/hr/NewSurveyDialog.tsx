@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
@@ -73,12 +74,13 @@ export function NewSurveyDialog({ open, onOpenChange, onSuccess }: NewSurveyDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Ny medarbeiderundersøkelse</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <ScrollArea className="flex-1 max-h-[60vh] pr-4">
+          <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="title">Tittel *</Label>
             <Input
@@ -166,8 +168,8 @@ export function NewSurveyDialog({ open, onOpenChange, onSuccess }: NewSurveyDial
             </div>
             <Switch checked={isAnonymous} onCheckedChange={setIsAnonymous} />
           </div>
-        </div>
-
+          </div>
+        </ScrollArea>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Avbryt
