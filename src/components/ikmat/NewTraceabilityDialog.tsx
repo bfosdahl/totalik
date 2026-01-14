@@ -1,34 +1,144 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Upload, Loader2, Camera, AlertTriangle, CheckCircle, XCircle, Building2 } from "lucide-react";
 import { useIkMatTraceability } from "@/hooks/useIkMatTraceability";
+import { useIkMatSuppliers } from "@/hooks/useIkMatSuppliers";
 import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
 
 interface NewTraceabilityDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+type ProductType = "kjolevare" | "frysevare" | "torrvar";
+
+interface TemperatureStatus {
+  status: "green" | "yellow" | "red";
+  message: string;
+  action: string;
+}
+
+function getTemperatureStatus(temp: number | null, productType: ProductType): TemperatureStatus | null {
+  if (temp === null) return null;
+  
+  if (productType === "kjolevare") {
+    if (temp >= -1 && temp <= 4) {
+      return { status: "green", message: "Riktig temperatur", action: "AKSEPTER" };
+    } else if (temp > 4 && temp <= 7) {
+      return { status: "yellow", message: "Tillates ved transport kortere enn 2 t.", action: "Sett varene på kjølerom" };
+    } else if (temp > 7) {
+      return { status: "red", message: "Varene tas ikke imot", action: "RETUR" };
+    }
+  } else if (productType === "frysevare") {
+    if (temp <= -18) {
+      return { status: "green", message: "Riktig temperatur", action: "AKSEPTER" };
+    } else if (temp > -18 && temp <= -15) {
+      return { status: "yellow", message: "Tillates ved transport kortere enn 2 t.", action: "Sett varer på fryserom til de er -18°C" };
+    } else if (temp > -15) {
+      return { status: "red", message: "Varene tas ikke imot", action: "RETUR" };
+    }
+  }
+  
+  return null;
+}
+
+function TemperatureStatusIndicator({ temp, productType }: { temp: number | null; productType: ProductType }) {
+  const status = getTemperatureStatus(temp, productType);
+  
+  if (!status || productType === "torrvar") return null;
+  
+  const colors = {
+    green: "bg-green-500",
+    yellow: "bg-yellow-500",
+    red: "bg-red-500",
+  };
+  
+  const bgColors = {
+    green: "bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800",
+    yellow: "bg-yellow-50 border-yellow-200 dark:bg-yellow-950 dark:border-yellow-800",
+    red: "bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800",
+  };
+  
+  const Icon = status.status === "green" ? CheckCircle : status.status === "yellow" ? AlertTriangle : XCircle;
+  
+  return (
+    <div className={cn("p-3 rounded-lg border", bgColors[status.status])}>
+      <div className="flex items-start gap-3">
+        <div className={cn("w-4 h-4 rounded-full mt-0.5", colors[status.status])} />
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <Icon className={cn("h-4 w-4", 
+              status.status === "green" ? "text-green-600" : 
+              status.status === "yellow" ? "text-yellow-600" : "text-red-600"
+            )} />
+            <span className="font-medium text-sm">{status.message}</span>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">{status.action}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDialogProps) => {
   const { profile } = useAuth();
   const { createRecord, uploadDocument } = useIkMatTraceability(profile?.company_id);
+  const { suppliers } = useIkMatSuppliers();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [labelImageFile, setLabelImageFile] = useState<File | null>(null);
+  const [labelImagePreview, setLabelImagePreview] = useState<string | null>(null);
+  const labelInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     supplier_name: "",
+    supplier_id: "",
     product_name: "",
     batch_number: "",
+    gtin: "",
     production_date: "",
     receipt_date: new Date().toISOString().split('T')[0],
     expiry_date: "",
     receipt_temperature: "",
+    product_type: "kjolevare" as ProductType,
+    packaging_ok: true,
+    temperature_ok: true,
     notes: "",
   });
+
+  const handleLabelImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLabelImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLabelImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSupplierChange = (value: string) => {
+    if (value === "custom") {
+      setFormData({ ...formData, supplier_id: "", supplier_name: "" });
+    } else {
+      const supplier = suppliers.find(s => s.id === value);
+      if (supplier) {
+        setFormData({ 
+          ...formData, 
+          supplier_id: supplier.id, 
+          supplier_name: supplier.supplier_name 
+        });
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +146,31 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
 
     setIsSubmitting(true);
     try {
+      const tempValue = formData.receipt_temperature ? parseFloat(formData.receipt_temperature) : null;
+      const tempStatus = getTemperatureStatus(tempValue, formData.product_type);
+      
+      // Build notes with quality checks and temperature status
+      let fullNotes = formData.notes || "";
+      const qualityIssues: string[] = [];
+      
+      if (!formData.packaging_ok) {
+        qualityIssues.push("Emballasje skadet");
+      }
+      if (!formData.temperature_ok) {
+        qualityIssues.push("Temperaturavvik ved mottak");
+      }
+      if (tempStatus && tempStatus.status !== "green") {
+        qualityIssues.push(`Trafikklys: ${tempStatus.action}`);
+      }
+      
+      if (qualityIssues.length > 0) {
+        fullNotes = `[AVVIK: ${qualityIssues.join(", ")}] ${fullNotes}`.trim();
+      }
+      
+      if (formData.gtin) {
+        fullNotes = `GTIN: ${formData.gtin}. ${fullNotes}`.trim();
+      }
+
       // Create record first
       const recordData = {
         company_id: profile.company_id,
@@ -45,8 +180,8 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
         production_date: formData.production_date || null,
         receipt_date: formData.receipt_date,
         expiry_date: formData.expiry_date || null,
-        receipt_temperature: formData.receipt_temperature ? parseFloat(formData.receipt_temperature) : null,
-        notes: formData.notes || null,
+        receipt_temperature: tempValue,
+        notes: fullNotes || null,
         document_path: null,
       };
 
@@ -56,21 +191,38 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
         const tempId = crypto.randomUUID();
         documentPath = await uploadDocument(selectedFile, profile.company_id, tempId);
       }
+      
+      // Upload label image if selected (as additional document)
+      if (labelImageFile && profile?.company_id) {
+        const labelId = crypto.randomUUID();
+        const labelPath = await uploadDocument(labelImageFile, profile.company_id, `label-${labelId}`);
+        // If no main document, use label as document
+        if (!documentPath) {
+          documentPath = labelPath;
+        }
+      }
 
       createRecord({ ...recordData, document_path: documentPath });
 
       // Reset form
       setFormData({
         supplier_name: "",
+        supplier_id: "",
         product_name: "",
         batch_number: "",
+        gtin: "",
         production_date: "",
         receipt_date: new Date().toISOString().split('T')[0],
         expiry_date: "",
         receipt_temperature: "",
+        product_type: "kjolevare",
+        packaging_ok: true,
+        temperature_ok: true,
         notes: "",
       });
       setSelectedFile(null);
+      setLabelImageFile(null);
+      setLabelImagePreview(null);
       onOpenChange(false);
     } catch (error) {
       console.error("Error submitting traceability record:", error);
@@ -78,6 +230,8 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
       setIsSubmitting(false);
     }
   };
+
+  const tempValue = formData.receipt_temperature ? parseFloat(formData.receipt_temperature) : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -90,18 +244,52 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="supplier">Leverandør *</Label>
+          {/* Supplier Selection */}
+          <div className="space-y-2">
+            <Label>Leverandør *</Label>
+            {suppliers.length > 0 ? (
+              <div className="space-y-2">
+                <Select 
+                  value={formData.supplier_id || "custom"} 
+                  onValueChange={handleSupplierChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg leverandør" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {suppliers.map((supplier) => (
+                      <SelectItem key={supplier.id} value={supplier.id}>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4 text-muted-foreground" />
+                          {supplier.supplier_name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">
+                      <span className="text-muted-foreground">+ Annen leverandør</span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {(!formData.supplier_id || formData.supplier_id === "") && (
+                  <Input
+                    value={formData.supplier_name}
+                    onChange={(e) => setFormData({ ...formData, supplier_name: e.target.value })}
+                    placeholder="Skriv inn leverandørnavn"
+                    required
+                  />
+                )}
+              </div>
+            ) : (
               <Input
-                id="supplier"
                 value={formData.supplier_name}
                 onChange={(e) => setFormData({ ...formData, supplier_name: e.target.value })}
                 required
                 placeholder="Navn på leverandør"
               />
-            </div>
+            )}
+          </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="product">Produktnavn *</Label>
               <Input
@@ -111,6 +299,23 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                 required
                 placeholder="Navn på varen"
               />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="product_type">Produkttype</Label>
+              <Select 
+                value={formData.product_type} 
+                onValueChange={(value: ProductType) => setFormData({ ...formData, product_type: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="kjolevare">Kjølevare</SelectItem>
+                  <SelectItem value="frysevare">Frysevare</SelectItem>
+                  <SelectItem value="torrvar">Tørrvare</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -122,14 +327,14 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                 placeholder="Eks: LOT-12345"
               />
             </div>
-
+            
             <div className="space-y-2">
-              <Label htmlFor="production_date">Produksjonsdato</Label>
+              <Label htmlFor="gtin">GTIN/Strekkode</Label>
               <Input
-                id="production_date"
-                type="date"
-                value={formData.production_date}
-                onChange={(e) => setFormData({ ...formData, production_date: e.target.value })}
+                id="gtin"
+                value={formData.gtin}
+                onChange={(e) => setFormData({ ...formData, gtin: e.target.value })}
+                placeholder="Eks: 07020009908407"
               />
             </div>
 
@@ -155,6 +360,16 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="production_date">Produksjonsdato</Label>
+              <Input
+                id="production_date"
+                type="date"
+                value={formData.production_date}
+                onChange={(e) => setFormData({ ...formData, production_date: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="temperature">Temperatur ved mottak (°C)</Label>
               <Input
                 id="temperature"
@@ -165,6 +380,90 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                 placeholder="Eks: 4.5"
               />
             </div>
+          </div>
+
+          {/* Temperature Traffic Light */}
+          {formData.product_type !== "torrvar" && tempValue !== null && (
+            <TemperatureStatusIndicator temp={tempValue} productType={formData.product_type} />
+          )}
+
+          {/* Quality Checks */}
+          <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
+            <Label className="text-sm font-medium">Kvalitetskontroll</Label>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="packaging_ok"
+                  checked={formData.packaging_ok}
+                  onCheckedChange={(checked) => 
+                    setFormData({ ...formData, packaging_ok: checked === true })
+                  }
+                />
+                <label htmlFor="packaging_ok" className="text-sm cursor-pointer">
+                  Emballasje er uskadet
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="temperature_ok"
+                  checked={formData.temperature_ok}
+                  onCheckedChange={(checked) => 
+                    setFormData({ ...formData, temperature_ok: checked === true })
+                  }
+                />
+                <label htmlFor="temperature_ok" className="text-sm cursor-pointer">
+                  Temperatur ved mottak er akseptabel
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Label Image Upload */}
+          <div className="space-y-2">
+            <Label>Bilde av fraktetikett</Label>
+            <div className="flex flex-col gap-2">
+              <input
+                ref={labelInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleLabelImageChange}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => labelInputRef.current?.click()}
+                className="w-full justify-start gap-2"
+              >
+                <Camera className="h-4 w-4" />
+                {labelImageFile ? labelImageFile.name : "Ta bilde eller velg fil"}
+              </Button>
+              {labelImagePreview && (
+                <div className="relative">
+                  <img 
+                    src={labelImagePreview} 
+                    alt="Fraktetikett" 
+                    className="w-full max-h-48 object-contain rounded-lg border"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={() => {
+                      setLabelImageFile(null);
+                      setLabelImagePreview(null);
+                    }}
+                  >
+                    Fjern
+                  </Button>
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Ta bilde av batch-nr/fraktetikett for dokumentasjon
+            </p>
           </div>
 
           <div className="space-y-2">
