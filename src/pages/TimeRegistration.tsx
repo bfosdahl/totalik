@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Plus, Download, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List, QrCode } from "lucide-react";
+import { Plus, Download, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List, QrCode, CalendarCheck } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +19,7 @@ import { NewTimeEntryDialog } from "@/components/timeregistration/NewTimeEntryDi
 import { TimeEntryList } from "@/components/timeregistration/TimeEntryList";
 import { WeeklyTimeView } from "@/components/timeregistration/WeeklyTimeView";
 import { TimeClockQrDialog } from "@/components/timeregistration/TimeClockQrDialog";
+import { MyShiftsPanel } from "@/components/work-schedule/MyShiftsPanel";
 import { exportTimeEntriesToExcel } from "@/utils/timeEntryExport";
 
 type DateFilter = "this-week" | "last-week" | "this-month" | "last-month" | "all";
@@ -32,12 +33,13 @@ export default function TimeRegistration() {
     approveEntry,
     rejectEntry,
     deleteEntry,
+    confirmScheduleEntry,
   } = useTimeEntries();
   
   const [dialogOpen, setDialogOpen] = useState(false);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilter>("this-week");
-  const [viewMode, setViewMode] = useState<"list" | "week">("week");
+  const [viewMode, setViewMode] = useState<"list" | "week" | "shifts">("week");
 
   const getDateRange = (filter: DateFilter) => {
     const now = new Date();
@@ -134,6 +136,14 @@ export default function TimeRegistration() {
               Uke
             </Button>
             <Button
+              variant={viewMode === "shifts" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("shifts")}
+            >
+              <CalendarCheck className="h-4 w-4 mr-1" />
+              Mine vakter
+            </Button>
+            <Button
               variant={viewMode === "list" ? "default" : "ghost"}
               size="sm"
               onClick={() => setViewMode("list")}
@@ -211,7 +221,9 @@ export default function TimeRegistration() {
         </div>
 
         {/* Content based on view mode */}
-        {viewMode === "week" ? (
+        {viewMode === "shifts" ? (
+          <MyShiftsPanel />
+        ) : viewMode === "week" ? (
           <Card>
             <CardHeader>
               <CardTitle>Ukevisning</CardTitle>
@@ -243,6 +255,7 @@ export default function TimeRegistration() {
                     onApprove={approveEntry}
                     onReject={rejectEntry}
                     onDelete={deleteEntry}
+                    onConfirmSchedule={confirmScheduleEntry}
                     showEmployee
                   />
                 </CardContent>

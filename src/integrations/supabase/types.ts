@@ -10774,6 +10774,120 @@ export type Database = {
           },
         ]
       }
+      shift_requests: {
+        Row: {
+          absence_reason: string | null
+          company_id: string
+          created_at: string
+          handled_at: string | null
+          handled_by_id: string | null
+          handled_by_name: string | null
+          id: string
+          is_open_request: boolean | null
+          proposed_date: string | null
+          proposed_end_time: string | null
+          proposed_location: string | null
+          proposed_role: string | null
+          proposed_start_time: string | null
+          request_notes: string | null
+          request_type: string
+          requester_id: string
+          requester_name: string
+          response_notes: string | null
+          schedule_id: string | null
+          status: string
+          target_employee_id: string | null
+          target_employee_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          absence_reason?: string | null
+          company_id: string
+          created_at?: string
+          handled_at?: string | null
+          handled_by_id?: string | null
+          handled_by_name?: string | null
+          id?: string
+          is_open_request?: boolean | null
+          proposed_date?: string | null
+          proposed_end_time?: string | null
+          proposed_location?: string | null
+          proposed_role?: string | null
+          proposed_start_time?: string | null
+          request_notes?: string | null
+          request_type: string
+          requester_id: string
+          requester_name: string
+          response_notes?: string | null
+          schedule_id?: string | null
+          status?: string
+          target_employee_id?: string | null
+          target_employee_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          absence_reason?: string | null
+          company_id?: string
+          created_at?: string
+          handled_at?: string | null
+          handled_by_id?: string | null
+          handled_by_name?: string | null
+          id?: string
+          is_open_request?: boolean | null
+          proposed_date?: string | null
+          proposed_end_time?: string | null
+          proposed_location?: string | null
+          proposed_role?: string | null
+          proposed_start_time?: string | null
+          request_notes?: string | null
+          request_type?: string
+          requester_id?: string
+          requester_name?: string
+          response_notes?: string | null
+          schedule_id?: string | null
+          status?: string
+          target_employee_id?: string | null
+          target_employee_name?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_requests_handled_by_id_fkey"
+            columns: ["handled_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_requests_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "work_schedules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_requests_target_employee_id_fkey"
+            columns: ["target_employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shift_tasks: {
         Row: {
           company_id: string
@@ -11696,6 +11810,7 @@ export type Database = {
       }
       work_schedules: {
         Row: {
+          break_minutes: number | null
           company_id: string
           created_at: string
           created_by_id: string | null
@@ -11704,9 +11819,11 @@ export type Database = {
           employee_name: string
           end_time: string
           id: string
+          is_overtime: boolean | null
           is_responsible: boolean | null
           location: string | null
           notes: string | null
+          overtime_reason: string | null
           schedule_date: string
           schedule_type: string
           shift_role: string | null
@@ -11714,6 +11831,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          break_minutes?: number | null
           company_id: string
           created_at?: string
           created_by_id?: string | null
@@ -11722,9 +11840,11 @@ export type Database = {
           employee_name: string
           end_time: string
           id?: string
+          is_overtime?: boolean | null
           is_responsible?: boolean | null
           location?: string | null
           notes?: string | null
+          overtime_reason?: string | null
           schedule_date: string
           schedule_type?: string
           shift_role?: string | null
@@ -11732,6 +11852,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          break_minutes?: number | null
           company_id?: string
           created_at?: string
           created_by_id?: string | null
@@ -11740,9 +11861,11 @@ export type Database = {
           employee_name?: string
           end_time?: string
           id?: string
+          is_overtime?: boolean | null
           is_responsible?: boolean | null
           location?: string | null
           notes?: string | null
+          overtime_reason?: string | null
           schedule_date?: string
           schedule_type?: string
           shift_role?: string | null
