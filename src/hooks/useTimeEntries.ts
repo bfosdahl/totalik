@@ -14,17 +14,21 @@ export interface TimeEntry {
   project_name: string | null;
   project_id: string | null;
   description: string | null;
-  status: "draft" | "submitted" | "approved" | "rejected";
+  status: "draft" | "submitted" | "approved" | "rejected" | "pending_confirmation";
   approved_by: string | null;
   approved_by_name: string | null;
   approved_at: string | null;
   created_at: string;
   updated_at: string;
   department_id?: string | null;
-  source?: "manual" | "qr_clock"; // Track where entry came from
+  source?: "manual" | "qr_clock" | "work_schedule";
   clock_in?: string | null;
   clock_out?: string | null;
   total_break_minutes?: number | null;
+  work_schedule_id?: string | null;
+  // For work_schedule entries - extra display info
+  schedule_location?: string | null;
+  schedule_role?: string | null;
 }
 
 export interface CreateTimeEntry {
@@ -132,11 +136,66 @@ export function useTimeEntries() {
       const manualEntries: TimeEntry[] = (timeData || []).map((entry: any) => ({
         ...entry,
         status: entry.status as "draft" | "submitted" | "approved" | "rejected",
-        source: "manual" as const,
+        source: entry.source || "manual" as const,
       }));
 
+      // Fetch planned work schedules for current user that are not yet confirmed
+      // Only show schedules that haven't been converted to time entries yet
+      const existingScheduleIds = manualEntries
+        .filter(e => e.work_schedule_id)
+        .map(e => e.work_schedule_id);
+
+      let schedulesQuery = supabase
+        .from("work_schedules")
+        .select("*")
+        .eq("company_id", profile.company_id)
+        .eq("schedule_type", "planned")
+        .order("schedule_date", { ascending: false });
+
+      // Regular users only see their own schedules
+      if (!isCompanyAdmin) {
+        schedulesQuery = schedulesQuery.eq("employee_id", user.id);
+      }
+
+      const { data: schedulesData, error: schedulesError } = await schedulesQuery;
+      if (schedulesError) throw schedulesError;
+
+      // Filter out schedules that are already linked to time entries
+      const unconfirmedSchedules = (schedulesData || []).filter(
+        (s: any) => !existingScheduleIds.includes(s.id)
+      );
+
+      // Convert planned schedules to TimeEntry format for display
+      const scheduleEntries: TimeEntry[] = unconfirmedSchedules.map((schedule: any) => {
+        const [startHour, startMin] = schedule.start_time.split(":").map(Number);
+        const [endHour, endMin] = schedule.end_time.split(":").map(Number);
+        const hours = endHour - startHour + (endMin - startMin) / 60;
+
+        return {
+          id: `schedule_${schedule.id}`,
+          company_id: schedule.company_id,
+          user_id: schedule.employee_id,
+          user_name: schedule.employee_name,
+          entry_date: schedule.schedule_date,
+          hours: Math.max(0, hours),
+          project_name: null,
+          project_id: null,
+          description: `Planlagt vakt: ${schedule.start_time.substring(0, 5)} - ${schedule.end_time.substring(0, 5)}${schedule.location ? ` (${schedule.location})` : ""}`,
+          status: "pending_confirmation" as const,
+          approved_by: null,
+          approved_by_name: null,
+          approved_at: null,
+          created_at: schedule.created_at,
+          updated_at: schedule.updated_at,
+          source: "work_schedule" as const,
+          work_schedule_id: schedule.id,
+          schedule_location: schedule.location,
+          schedule_role: schedule.shift_role,
+        };
+      });
+
       // Combine and sort by date
-      const allEntries = [...manualEntries, ...clockEntries].sort(
+      const allEntries = [...manualEntries, ...clockEntries, ...scheduleEntries].sort(
         (a, b) => new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime()
       );
 
@@ -327,6 +386,48 @@ export function useTimeEntries() {
     return filtered.reduce((sum, e) => sum + Number(e.hours), 0);
   };
 
+  // Confirm a planned work schedule as worked time
+  const confirmScheduleEntry = async (id: string, hours?: number): Promise<boolean> => {
+    if (!user || !profile?.company_id) {
+      toast.error("Du må være logget inn");
+      return false;
+    }
+
+    // Extract the real schedule ID from the prefixed ID
+    const scheduleId = id.replace("schedule_", "");
+    
+    // Find the schedule entry to get details
+    const scheduleEntry = entries.find(e => e.id === id);
+    if (!scheduleEntry) {
+      toast.error("Fant ikke vakten");
+      return false;
+    }
+
+    try {
+      // Create a time entry linked to the work schedule
+      const { error } = await supabase.from("time_entries").insert({
+        company_id: profile.company_id,
+        user_id: user.id,
+        user_name: scheduleEntry.user_name,
+        entry_date: scheduleEntry.entry_date,
+        hours: hours || scheduleEntry.hours,
+        description: scheduleEntry.description,
+        status: "submitted",
+        work_schedule_id: scheduleId,
+        source: "work_schedule",
+      });
+
+      if (error) throw error;
+      toast.success("Timer bekreftet fra vaktplan");
+      await fetchEntries();
+      return true;
+    } catch (error) {
+      console.error("Error confirming schedule entry:", error);
+      toast.error("Kunne ikke bekrefte timer");
+      return false;
+    }
+  };
+
   return {
     entries,
     isLoading,
@@ -337,6 +438,7 @@ export function useTimeEntries() {
     rejectEntry,
     getWeekEntries,
     getUserTotalHours,
+    confirmScheduleEntry,
     refetch: fetchEntries,
   };
 }

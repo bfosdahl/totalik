@@ -3,14 +3,13 @@ import { format, addDays, isSameDay } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { MapPin, Star, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { MapPin, Star, Clock } from "lucide-react";
 import { WorkSchedule } from "@/hooks/useWorkSchedules";
 
 interface ShiftCalendarProps {
   selectedWeek: Date;
   schedules: WorkSchedule[];
   onScheduleClick?: (schedule: WorkSchedule) => void;
-  tasksMap?: Record<string, { total: number; completed: number }>;
 }
 
 const LOCATIONS: Record<string, { label: string; color: string }> = {
@@ -30,7 +29,7 @@ const ROLES: Record<string, string> = {
   prep: "Forberedelse",
 };
 
-export function ShiftCalendar({ selectedWeek, schedules, onScheduleClick, tasksMap = {} }: ShiftCalendarProps) {
+export function ShiftCalendar({ selectedWeek, schedules, onScheduleClick }: ShiftCalendarProps) {
   const weekDays = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => addDays(selectedWeek, i));
   }, [selectedWeek]);
@@ -89,8 +88,6 @@ export function ShiftCalendar({ selectedWeek, schedules, onScheduleClick, tasksM
               )}
             >
               {daySchedules.map((schedule) => {
-                const taskInfo = tasksMap[schedule.id];
-                const hasOpenTasks = taskInfo && taskInfo.completed < taskInfo.total;
                 const location = schedule.location ? LOCATIONS[schedule.location] : null;
                 
                 return (
@@ -133,21 +130,11 @@ export function ShiftCalendar({ selectedWeek, schedules, onScheduleClick, tasksM
                     </div>
 
                     {/* Indicators */}
-                    <div className="flex items-center gap-1 mt-1">
-                      {schedule.is_responsible && (
+                    {schedule.is_responsible && (
+                      <div className="flex items-center gap-1 mt-1">
                         <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                      )}
-                      {taskInfo && (
-                        hasOpenTasks ? (
-                          <div className="flex items-center gap-0.5 text-orange-600">
-                            <AlertCircle className="w-3 h-3" />
-                            <span className="text-[9px]">{taskInfo.total - taskInfo.completed}</span>
-                          </div>
-                        ) : taskInfo.total > 0 && (
-                          <CheckCircle2 className="w-3 h-3 text-green-600" />
-                        )
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}

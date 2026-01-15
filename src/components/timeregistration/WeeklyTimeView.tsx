@@ -38,8 +38,8 @@ interface TimeEntry {
   project_name: string | null;
   project_id: string | null;
   description: string | null;
-  status: "draft" | "submitted" | "approved" | "rejected";
-  source?: "manual" | "qr_clock";
+  status: "draft" | "submitted" | "approved" | "rejected" | "pending_confirmation";
+  source?: "manual" | "qr_clock" | "work_schedule";
   clock_in?: string | null;
   clock_out?: string | null;
   total_break_minutes?: number | null;
@@ -63,6 +63,7 @@ const statusColors: Record<string, string> = {
   submitted: "bg-primary/20 text-primary",
   approved: "bg-green-500/20 text-green-700 dark:text-green-400",
   rejected: "bg-destructive/20 text-destructive",
+  pending_confirmation: "bg-blue-500/20 text-blue-700 dark:text-blue-400",
 };
 
 export function WeeklyTimeView({
