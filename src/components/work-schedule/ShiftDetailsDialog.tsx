@@ -26,16 +26,16 @@ import { cn } from "@/lib/utils";
 
 interface ShiftDetailsDialogProps {
   schedule: WorkSchedule | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
+  onUpdate?: () => void;
   onDelete?: (id: string) => void;
   isAdmin?: boolean;
 }
 
 export function ShiftDetailsDialog({ 
   schedule, 
-  open, 
-  onOpenChange, 
+  onClose, 
+  onUpdate,
   onDelete,
   isAdmin = false 
 }: ShiftDetailsDialogProps) {
@@ -60,7 +60,7 @@ export function ShiftDetailsDialog({
   const completedTasks = tasks.filter(t => t.is_completed).length;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={!!schedule} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -174,7 +174,7 @@ export function ShiftDetailsDialog({
                   size="sm"
                   onClick={() => {
                     onDelete(schedule.id);
-                    onOpenChange(false);
+                    onClose();
                   }}
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
