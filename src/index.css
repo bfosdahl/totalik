@@ -263,12 +263,49 @@
     --muted-foreground: 0 0% 30%;
     --border: 0 0% 70%;
   }
+
+  /* Hide scrollbar on mobile for cleaner look */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  
+  * {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Reduce motion for better performance */
+  .reduce-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Sticky bottom action bar for mobile */
 .mobile-action-bar {
-  @apply fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border p-4;
-  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  @apply fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border;
+  padding: 0.75rem 1rem;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+/* Mobile bottom navigation bar */
+.mobile-bottom-nav {
+  @apply fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.mobile-bottom-nav-item {
+  @apply flex flex-col items-center justify-center gap-0.5 py-2 px-3 rounded-lg transition-colors;
+  min-width: 64px;
+}
+
+.mobile-bottom-nav-item.active {
+  @apply text-primary bg-primary/10;
+}
+
+.mobile-bottom-nav-item:not(.active) {
+  @apply text-muted-foreground;
 }
 
 /* Safe area padding for notched devices */
@@ -284,8 +321,8 @@
 .fab-button {
   @apply fixed z-50 shadow-xl rounded-full p-4 transition-all duration-200;
   @apply active:scale-95 hover:shadow-2xl;
-  bottom: calc(1.5rem + env(safe-area-inset-bottom));
-  right: 1.5rem;
+  bottom: calc(5rem + env(safe-area-inset-bottom));
+  right: 1rem;
 }
 
 /* Swipe-friendly cards */
@@ -345,4 +382,98 @@
 /* Bottom sheet handle */
 .sheet-handle {
   @apply mx-auto mt-4 h-1.5 w-12 rounded-full bg-muted-foreground/20;
+}
+
+/* Mobile page container with bottom nav padding */
+.mobile-page-container {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+}
+
+/* Mobile card improvements */
+@media (max-width: 767px) {
+  .mobile-card {
+    @apply rounded-xl border border-border bg-card p-4 shadow-sm;
+  }
+
+  .mobile-card-header {
+    @apply flex items-center justify-between mb-3;
+  }
+
+  .mobile-card-title {
+    @apply text-base font-semibold;
+  }
+
+  .mobile-list-item {
+    @apply flex items-center gap-3 py-3 px-4 -mx-4 border-b border-border last:border-0;
+    @apply active:bg-muted/50 transition-colors;
+  }
+
+  /* Better touch spacing */
+  .mobile-touch-spacing {
+    @apply space-y-3;
+  }
+
+  .mobile-touch-spacing > * {
+    @apply min-h-[44px];
+  }
+
+  /* Mobile-optimized buttons */
+  .mobile-button {
+    @apply h-12 px-6 text-base font-medium rounded-xl;
+  }
+
+  /* Full-width action button for mobile */
+  .mobile-action-button {
+    @apply w-full h-14 text-base font-medium rounded-xl;
+  }
+
+  /* Mobile grid improvements */
+  .mobile-grid-2 {
+    @apply grid grid-cols-2 gap-3;
+  }
+
+  /* Horizontal scrolling container */
+  .mobile-scroll-x {
+    @apply flex gap-3 overflow-x-auto -mx-4 px-4 pb-2;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-scroll-x > * {
+    @apply flex-shrink-0;
+  }
+
+  /* Mobile stat card */
+  .mobile-stat-card {
+    @apply flex flex-col items-center justify-center p-3 rounded-xl border border-border bg-card min-w-[100px];
+  }
+
+  .mobile-stat-value {
+    @apply text-2xl font-bold;
+  }
+
+  .mobile-stat-label {
+    @apply text-xs text-muted-foreground text-center;
+  }
+}
+
+/* Pull to refresh indicator */
+.ptr-indicator {
+  @apply flex items-center justify-center h-16 text-muted-foreground;
+}
+
+/* Mobile empty state */
+.mobile-empty-state {
+  @apply flex flex-col items-center justify-center py-12 px-4 text-center;
+}
+
+.mobile-empty-state-icon {
+  @apply w-16 h-16 text-muted-foreground/50 mb-4;
+}
+
+.mobile-empty-state-title {
+  @apply text-lg font-semibold mb-1;
+}
+
+.mobile-empty-state-description {
+  @apply text-sm text-muted-foreground mb-4;
 }
