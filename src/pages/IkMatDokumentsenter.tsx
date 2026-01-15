@@ -6,10 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { MyDocumentsTab } from "@/components/documents/MyDocumentsTab";
 
 interface AdminDocument {
   id: string;
@@ -35,6 +37,7 @@ export default function IkMatDokumentsenter() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState("maler");
 
   // Fetch folders for IK-Mat module
   const { data: folders = [], isLoading: foldersLoading } = useQuery({
@@ -264,42 +267,55 @@ export default function IkMatDokumentsenter() {
           </Button>
           <h1 className="text-2xl sm:text-3xl font-bold">Dokumentsenter</h1>
           <p className="text-muted-foreground mt-1">
-            Last ned maler og dokumenter for IK-Mat
+            Maler og egne dokumenter for IK-Mat
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2 mb-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Søk i dokumenter..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="maler">Maler</TabsTrigger>
+            <TabsTrigger value="mine">Mine dokumenter</TabsTrigger>
+          </TabsList>
 
-        {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mx-auto mb-2" />
-            Laster dokumenter...
-          </div>
-        ) : folderTree.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-              <FolderOpen className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
-              <h3 className="font-medium text-lg">Ingen dokumenter tilgjengelig ennå</h3>
-              <p className="text-muted-foreground text-sm mt-1">
-                Dokumenter vil bli lagt til av systemadministrator
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {folderTree.map(folder => renderFolder(folder))}
-          </div>
-        )}
+          <TabsContent value="maler" className="mt-6">
+            <div className="flex flex-col sm:flex-row gap-2 mb-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Søk i dokumenter..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+
+            {isLoading ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mx-auto mb-2" />
+                Laster dokumenter...
+              </div>
+            ) : folderTree.length === 0 ? (
+              <Card className="border-dashed">
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <FolderOpen className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
+                  <h3 className="font-medium text-lg">Ingen maler tilgjengelig ennå</h3>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Dokumentmaler vil bli lagt til av systemadministrator
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {folderTree.map(folder => renderFolder(folder))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="mine" className="mt-6">
+            <MyDocumentsTab moduleType="ik-mat" accentColor="orange" />
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );
