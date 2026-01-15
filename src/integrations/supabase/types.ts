@@ -1329,6 +1329,69 @@ export type Database = {
           },
         ]
       }
+      company_module_documents: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          document_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          folder_name: string | null
+          id: string
+          module_type: string
+          updated_at: string
+          uploaded_by_id: string | null
+          uploaded_by_name: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          document_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          folder_name?: string | null
+          id?: string
+          module_type: string
+          updated_at?: string
+          uploaded_by_id?: string | null
+          uploaded_by_name: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          document_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          folder_name?: string | null
+          id?: string
+          module_type?: string
+          updated_at?: string
+          uploaded_by_id?: string | null
+          uploaded_by_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_module_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_module_documents_uploaded_by_id_fkey"
+            columns: ["uploaded_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_modules: {
         Row: {
           company_id: string
