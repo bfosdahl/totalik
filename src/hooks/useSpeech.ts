@@ -5,6 +5,7 @@ interface UseSpeechOptions {
   lang?: string;
   continuous?: boolean;
   onResult?: (transcript: string) => void;
+  onInterimResult?: (transcript: string) => void;
   onError?: (error: string) => void;
 }
 
@@ -21,7 +22,7 @@ interface UseSpeechReturn {
 }
 
 export function useSpeech(options: UseSpeechOptions = {}): UseSpeechReturn {
-  const { lang = 'nb-NO', continuous = false, onResult, onError } = options;
+  const { lang = 'nb-NO', continuous = false, onResult, onInterimResult, onError } = options;
   
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -83,8 +84,12 @@ export function useSpeech(options: UseSpeechOptions = {}): UseSpeechReturn {
         }
       }
 
-      const currentTranscript = finalTranscript || interimTranscript;
-      setTranscript(currentTranscript);
+      // Show interim results as visual feedback
+      if (interimTranscript && onInterimResult) {
+        onInterimResult(interimTranscript);
+      }
+
+      setTranscript(finalTranscript || interimTranscript);
       
       if (finalTranscript && onResult) {
         onResult(finalTranscript);
@@ -135,7 +140,7 @@ export function useSpeech(options: UseSpeechOptions = {}): UseSpeechReturn {
         recognitionRef.current.abort();
       }
     };
-  }, [lang, continuous, onResult, onError, isSupported]);
+  }, [lang, continuous, onResult, onInterimResult, onError, isSupported]);
 
   const startListening = useCallback(async () => {
     if (!recognitionRef.current || isListening) return;

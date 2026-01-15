@@ -24,15 +24,24 @@ export const MascotChatHelper = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentTip, setCurrentTip] = useState(0);
   const [autoSpeak, setAutoSpeak] = useState(false);
+  const [interimText, setInterimText] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const pendingTranscriptRef = useRef<string | null>(null);
   const dragControls = useDragControls();
   const constraintsRef = useRef<HTMLDivElement>(null);
 
-  // Speech hook
+  // Speech hook with auto-send on final result
   const speech = useSpeech({
     lang: 'nb-NO',
     onResult: (transcript) => {
+      // Store the final transcript and trigger send
+      pendingTranscriptRef.current = transcript;
       setInput(transcript);
+      setInterimText("");
+    },
+    onInterimResult: (transcript) => {
+      // Show interim results for visual feedback
+      setInterimText(transcript);
     },
   });
 
@@ -74,6 +83,18 @@ export const MascotChatHelper = () => {
       }
     }
   }, [messages, isLoading]);
+
+  // Auto-send when speech recognition completes with final result
+  useEffect(() => {
+    if (pendingTranscriptRef.current && input === pendingTranscriptRef.current && !isLoading) {
+      pendingTranscriptRef.current = null;
+      // Small delay to let the user see what was transcribed
+      const timer = setTimeout(() => {
+        handleSend();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [input]);
 
   // Speak new bot messages if autoSpeak is enabled
   const handleBotResponse = useCallback((response: string) => {
@@ -337,12 +358,12 @@ export const MascotChatHelper = () => {
                 </Button>
               )}
               <Input
-                value={input}
+                value={speech.isListening && interimText ? interimText : input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                placeholder={speech.isListening ? "Snakk nå..." : "Skriv eller snakk..."}
-                className="flex-1"
-                disabled={isLoading}
+                placeholder={speech.isListening ? "🎤 Lytter..." : "Skriv eller snakk..."}
+                className={`flex-1 ${speech.isListening ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : ''}`}
+                disabled={isLoading || speech.isListening}
               />
               <Button 
                 size="icon" 
