@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Star, StarOff, Building2, Calendar, Loader2, FolderOpen } from "lucide-react";
+import { Plus, Search, Star, StarOff, Building2, Calendar, Loader2, FolderOpen, CheckCircle2, Filter } from "lucide-react";
 import { useSimpleProjects, SimpleProject } from "@/hooks/useSimpleProjects";
 import { NewSimpleProjectDialog } from "@/components/mineprosjekter/NewSimpleProjectDialog";
 import { format } from "date-fns";
@@ -32,18 +32,34 @@ export default function MineProsjekterDashboard() {
   const { projects, isLoading, isSaving, createProject, toggleFavorite } = useSimpleProjects();
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [showCompleted, setShowCompleted] = useState(false);
 
   const filteredProjects = useMemo(() => {
-    if (!searchQuery.trim()) return projects;
-    const query = searchQuery.toLowerCase();
-    return projects.filter(
-      (p) =>
-        p.project_name.toLowerCase().includes(query) ||
-        p.project_number?.toLowerCase().includes(query) ||
-        p.client_name?.toLowerCase().includes(query) ||
-        p.address?.toLowerCase().includes(query)
-    );
-  }, [projects, searchQuery]);
+    let result = projects;
+    
+    // Filter out completed projects if not showing them
+    if (!showCompleted) {
+      result = result.filter((p) => p.status !== "completed");
+    }
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.project_name.toLowerCase().includes(query) ||
+          p.project_number?.toLowerCase().includes(query) ||
+          p.client_name?.toLowerCase().includes(query) ||
+          p.address?.toLowerCase().includes(query)
+      );
+    }
+    
+    return result;
+  }, [projects, searchQuery, showCompleted]);
+
+  const completedCount = useMemo(() => 
+    projects.filter((p) => p.status === "completed").length
+  , [projects]);
 
   const handleCreateProject = async (data: any) => {
     const result = await createProject(data);
@@ -74,15 +90,28 @@ export default function MineProsjekterDashboard() {
           </Button>
         </div>
 
-        {/* Search */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            placeholder="Søk etter prosjekt..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+        {/* Search and filter */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Søk etter prosjekt..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          {completedCount > 0 && (
+            <Button
+              variant={showCompleted ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowCompleted(!showCompleted)}
+              className="gap-2 whitespace-nowrap"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              {showCompleted ? `Skjul fullførte (${completedCount})` : `Vis fullførte (${completedCount})`}
+            </Button>
+          )}
         </div>
 
         {/* Loading */}
@@ -113,7 +142,9 @@ export default function MineProsjekterDashboard() {
             {filteredProjects.map((project) => (
               <Card
                 key={project.id}
-                className="cursor-pointer hover:shadow-md transition-shadow group"
+                className={`cursor-pointer hover:shadow-md transition-shadow group ${
+                  project.status === "completed" ? "opacity-75 border-green-200 dark:border-green-800" : ""
+                }`}
                 onClick={() => handleProjectClick(project)}
               >
                 <CardHeader className="pb-2">
