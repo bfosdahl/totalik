@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Check, X, Clock, Trash2, QrCode } from "lucide-react";
+import { Check, X, Clock, Trash2, QrCode, CalendarCheck, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,13 +27,16 @@ interface TimeEntry {
   project_name: string | null;
   project_id: string | null;
   description: string | null;
-  status: "draft" | "submitted" | "approved" | "rejected";
+  status: "draft" | "submitted" | "approved" | "rejected" | "pending_confirmation";
   approved_by_name: string | null;
   approved_at: string | null;
-  source?: "manual" | "qr_clock";
+  source?: "manual" | "qr_clock" | "work_schedule";
   clock_in?: string | null;
   clock_out?: string | null;
   total_break_minutes?: number | null;
+  work_schedule_id?: string | null;
+  schedule_location?: string | null;
+  schedule_role?: string | null;
 }
 
 interface TimeEntryListProps {
@@ -41,6 +44,7 @@ interface TimeEntryListProps {
   onApprove?: (id: string) => Promise<boolean>;
   onReject?: (id: string) => Promise<boolean>;
   onDelete?: (id: string) => Promise<boolean>;
+  onConfirmSchedule?: (id: string, hours?: number) => Promise<boolean>;
   showEmployee?: boolean;
 }
 
@@ -49,6 +53,7 @@ const statusConfig: Record<string, { label: string; variant: "secondary" | "defa
   submitted: { label: "Innsendt", variant: "default" },
   approved: { label: "Godkjent", variant: "default", className: "bg-green-500 hover:bg-green-600" },
   rejected: { label: "Avvist", variant: "destructive" },
+  pending_confirmation: { label: "Planlagt", variant: "secondary", className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
 };
 
 export function TimeEntryList({
@@ -56,6 +61,7 @@ export function TimeEntryList({
   onApprove,
   onReject,
   onDelete,
+  onConfirmSchedule,
   showEmployee = false,
 }: TimeEntryListProps) {
   const { user, isCompanyAdmin } = useAuth();
@@ -97,7 +103,7 @@ export function TimeEntryList({
             const canApprove = isCompanyAdmin && entry.status === "submitted";
 
             return (
-              <TableRow key={entry.id}>
+              <TableRow key={entry.id} className={entry.status === "pending_confirmation" ? "bg-blue-50/50 dark:bg-blue-950/30" : ""}>
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     {entry.source === "qr_clock" && (
@@ -111,6 +117,22 @@ export function TimeEntryList({
                             <p className="text-xs text-muted-foreground">
                               {format(new Date(entry.clock_in), "HH:mm")} - {format(new Date(entry.clock_out), "HH:mm")}
                               {entry.total_break_minutes ? ` (${entry.total_break_minutes} min pause)` : ""}
+                            </p>
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                    {entry.source === "work_schedule" && (
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <CalendarCheck className="h-4 w-4 text-blue-600" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Fra vaktplan</p>
+                          {entry.schedule_location && (
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {entry.schedule_location}
                             </p>
                           )}
                         </TooltipContent>
@@ -134,6 +156,23 @@ export function TimeEntryList({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1 justify-end">
+                    {/* Confirm schedule button for pending work schedules */}
+                    {entry.status === "pending_confirmation" && entry.source === "work_schedule" && onConfirmSchedule && entry.user_id === user?.id && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="h-8 text-xs"
+                            onClick={() => onConfirmSchedule(entry.id, entry.hours)}
+                          >
+                            <Check className="h-4 w-4 mr-1" />
+                            Bekreft timer
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Bekreft at du jobbet disse timene</TooltipContent>
+                      </Tooltip>
+                    )}
                     {/* Show direct action buttons for pending entries */}
                     {canApprove && onApprove && (
                       <Tooltip>

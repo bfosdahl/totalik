@@ -6,13 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useWorkSchedules } from "@/hooks/useWorkSchedules";
-import { useShiftTasks, DEFAULT_SHIFT_TASKS } from "@/hooks/useShiftTasks";
 import { LOCATIONS, ROLES } from "./ShiftCalendar";
-import { X } from "lucide-react";
 import { toast } from "sonner";
 
 interface CreateShiftDialogProps {
@@ -32,7 +29,6 @@ export interface ShiftFormData {
   shift_role?: string;
   is_responsible: boolean;
   notes: string;
-  tasks: { name: string; type: string }[];
 }
 
 export function CreateShiftDialog({ open, onOpenChange, onSuccess }: CreateShiftDialogProps) {
@@ -50,10 +46,8 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess }: CreateShift
     shift_role: undefined,
     is_responsible: false,
     notes: "",
-    tasks: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [createdScheduleId, setCreatedScheduleId] = useState<string | null>(null);
 
   const handleEmployeeChange = (userId: string) => {
     const user = users.find(u => u.id === userId);
@@ -62,21 +56,6 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess }: CreateShift
         ...formData,
         employee_id: userId,
         employee_name: `${user.first_name || ""} ${user.last_name || ""}`.trim() || user.email || "Ukjent",
-      });
-    }
-  };
-
-  const toggleTask = (task: { name: string; type: string }) => {
-    const exists = formData.tasks.some(t => t.name === task.name);
-    if (exists) {
-      setFormData({
-        ...formData,
-        tasks: formData.tasks.filter(t => t.name !== task.name),
-      });
-    } else {
-      setFormData({
-        ...formData,
-        tasks: [...formData.tasks, task],
       });
     }
   };
@@ -113,7 +92,6 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess }: CreateShift
         shift_role: undefined,
         is_responsible: false,
         notes: "",
-        tasks: [],
       });
       onOpenChange(false);
       onSuccess?.();
@@ -129,7 +107,7 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess }: CreateShift
           <DialogHeader>
             <DialogTitle>Ny vakt</DialogTitle>
             <DialogDescription>
-              Opprett en ny vakt med sted, rolle og oppgaver
+              Opprett en ny vakt med sted og rolle
             </DialogDescription>
           </DialogHeader>
 
@@ -270,29 +248,6 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess }: CreateShift
                 </Label>
               </div>
 
-              {/* Tasks */}
-              <div className="space-y-2">
-                <Label>Oppgaver på vakten</Label>
-                <div className="flex flex-wrap gap-2 p-3 border rounded-lg bg-muted/30">
-                  {DEFAULT_SHIFT_TASKS.map((task) => {
-                    const isSelected = formData.tasks.some(t => t.name === task.name);
-                    return (
-                      <Badge
-                        key={task.name}
-                        variant={isSelected ? "default" : "outline"}
-                        className="cursor-pointer transition-colors"
-                        onClick={() => toggleTask(task)}
-                      >
-                        {task.name}
-                        {isSelected && <X className="w-3 h-3 ml-1" />}
-                      </Badge>
-                    );
-                  })}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Klikk for å velge oppgaver som skal utføres på vakten
-                </p>
-              </div>
 
               {/* Notes */}
               <div className="space-y-2">

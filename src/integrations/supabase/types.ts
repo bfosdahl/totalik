@@ -11168,10 +11168,12 @@ export type Database = {
           id: string
           project_id: string | null
           project_name: string | null
+          source: string | null
           status: string
           updated_at: string
           user_id: string
           user_name: string
+          work_schedule_id: string | null
         }
         Insert: {
           approved_at?: string | null
@@ -11186,10 +11188,12 @@ export type Database = {
           id?: string
           project_id?: string | null
           project_name?: string | null
+          source?: string | null
           status?: string
           updated_at?: string
           user_id: string
           user_name: string
+          work_schedule_id?: string | null
         }
         Update: {
           approved_at?: string | null
@@ -11204,10 +11208,12 @@ export type Database = {
           id?: string
           project_id?: string | null
           project_name?: string | null
+          source?: string | null
           status?: string
           updated_at?: string
           user_id?: string
           user_name?: string
+          work_schedule_id?: string | null
         }
         Relationships: [
           {
@@ -11215,6 +11221,13 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entries_work_schedule_id_fkey"
+            columns: ["work_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "work_schedules"
             referencedColumns: ["id"]
           },
         ]
