@@ -114,7 +114,7 @@ export function RegisterAbsenceDialog({
                   <SelectValue placeholder="Velg ansatt" />
                 </SelectTrigger>
                 <SelectContent>
-                  {employees.map((emp) => (
+                  {(employees || []).map((emp) => (
                     <SelectItem key={emp.id} value={emp.id}>
                       {emp.first_name} {emp.last_name}
                     </SelectItem>
