@@ -294,80 +294,87 @@ const Deviations = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+          className="flex flex-col gap-3"
         >
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Avvikshåndtering</h1>
-            <p className="text-muted-foreground">
-              Registrer og følg opp avvik og hendelser
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <Download className="w-4 h-4" />
-                  Eksporter
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => exportDeviationsToPDF(filteredDeviations)}>
-                  <FileText className="w-4 h-4 mr-2" />
-                  Last ned som PDF
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => exportDeviationsToExcel(filteredDeviations)}>
-                  <FileSpreadsheet className="w-4 h-4 mr-2" />
-                  Last ned som Excel
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/install/avvik" className="flex items-center">
-                    <Smartphone className="w-4 h-4 mr-2" />
-                    Last ned Avvik-appen
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button 
-              variant="destructive" 
-              className="gap-2" 
-              onClick={() => setIsWorkAccidentOpen(true)}
-            >
-              <HeartPulse className="w-4 h-4" />
-              <span className="hidden sm:inline">Meld arbeidsulykke</span>
-              <span className="sm:hidden">Ulykke</span>
-            </Button>
-            <Button className="gap-2" onClick={() => setIsDialogOpen(true)}>
-              <Plus className="w-4 h-4" />
-              Nytt avvik
-            </Button>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold tracking-tight">Avvikshåndtering</h1>
+              <p className="text-sm text-muted-foreground">
+                Registrer og følg opp avvik og hendelser
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <Download className="w-4 h-4" />
+                    <span className="hidden sm:inline">Eksporter</span>
+                    <ChevronDown className="w-3 h-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => exportDeviationsToPDF(filteredDeviations)}>
+                    <FileText className="w-4 h-4 mr-2" />
+                    Last ned som PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => exportDeviationsToExcel(filteredDeviations)}>
+                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                    Last ned som Excel
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/install/avvik" className="flex items-center">
+                      <Smartphone className="w-4 h-4 mr-2" />
+                      Last ned Avvik-appen
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button 
+                variant="destructive" 
+                size="sm"
+                className="gap-1.5" 
+                onClick={() => setIsWorkAccidentOpen(true)}
+              >
+                <HeartPulse className="w-4 h-4" />
+                <span className="hidden sm:inline">Meld arbeidsulykke</span>
+                <span className="sm:hidden">Ulykke</span>
+              </Button>
+              <Button size="sm" className="gap-1.5" onClick={() => setIsDialogOpen(true)}>
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Nytt avvik</span>
+                <span className="sm:hidden">Ny</span>
+              </Button>
+            </div>
           </div>
         </motion.div>
 
-        {/* Stats */}
+        {/* Stats - horizontal scroll on mobile */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4"
+          className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4"
         >
           {[
-            { label: "Totalt", value: stats.total, color: "text-foreground" },
-            { label: "Åpne", value: stats.open, color: "text-destructive" },
-            { label: "Under arbeid", value: stats.inProgress, color: "text-warning" },
-            { label: "Løst", value: stats.resolved, color: "text-success" },
+            { label: "Totalt", value: stats.total, color: "text-foreground", bg: "bg-muted/50" },
+            { label: "Åpne", value: stats.open, color: "text-destructive", bg: "bg-destructive/5" },
+            { label: "Under arbeid", value: stats.inProgress, color: "text-warning", bg: "bg-warning/5" },
+            { label: "Løst", value: stats.resolved, color: "text-success", bg: "bg-success/5" },
           ].map((stat) => (
             <div
               key={stat.label}
-              className="bg-card rounded-xl border border-border p-4 shadow-card"
+              className={cn(
+                "flex-shrink-0 min-w-[100px] md:min-w-0 rounded-xl border border-border p-3 md:p-4 shadow-sm",
+                stat.bg
+              )}
             >
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
-              <p className={cn("text-2xl font-bold", stat.color)}>{stat.value}</p>
+              <p className="text-xs text-muted-foreground">{stat.label}</p>
+              <p className={cn("text-xl md:text-2xl font-bold", stat.color)}>{stat.value}</p>
             </div>
           ))}
         </motion.div>
@@ -377,50 +384,40 @@ const Deviations = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="flex flex-col sm:flex-row gap-3"
+          className="flex flex-col gap-3"
         >
-          <div className="relative flex-1">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Søk i avvik..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-11"
             />
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="gap-2">
-              <Filter className="w-4 h-4" />
-              Filter
-              <ChevronDown className="w-4 h-4" />
-            </Button>
-          </div>
-        </motion.div>
-
-        {/* Status filter tabs */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.25 }}
-          className="flex gap-2 overflow-x-auto pb-2"
-        >
-          <Button
-            variant={filterStatus === null ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilterStatus(null)}
-          >
-            Alle
-          </Button>
-          {Object.entries(statusConfig).map(([key, config]) => (
+          
+          {/* Status filter tabs - horizontal scroll on mobile */}
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0">
             <Button
-              key={key}
-              variant={filterStatus === key ? "default" : "outline"}
+              variant={filterStatus === null ? "default" : "outline"}
               size="sm"
-              onClick={() => setFilterStatus(key)}
+              className="flex-shrink-0"
+              onClick={() => setFilterStatus(null)}
             >
-              {config.label}
+              Alle
             </Button>
-          ))}
+            {Object.entries(statusConfig).map(([key, config]) => (
+              <Button
+                key={key}
+                variant={filterStatus === key ? "default" : "outline"}
+                size="sm"
+                className="flex-shrink-0"
+                onClick={() => setFilterStatus(key)}
+              >
+                {config.label}
+              </Button>
+            ))}
+          </div>
         </motion.div>
 
         {/* Deviations list */}
@@ -428,93 +425,87 @@ const Deviations = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-card rounded-xl border border-border shadow-card overflow-hidden"
+          className="space-y-3"
         >
-          <div className="divide-y divide-border">
-            {filteredDeviations.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
-                <AlertTriangle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Ingen avvik funnet</p>
-                {searchQuery ? (
-                  <p className="text-sm mt-1">Prøv å endre søkekriteriene</p>
-                ) : (
-                  <p className="text-sm mt-1">Klikk "Nytt avvik" for å registrere det første avviket</p>
-                )}
-              </div>
-            ) : (
-              filteredDeviations.map((deviation, index) => {
-                const statusBgColors: Record<string, string> = {
-                  open: "bg-destructive/5 border-l-4 border-l-destructive",
-                  "in-progress": "bg-warning/5 border-l-4 border-l-warning",
-                  resolved: "bg-success/5 border-l-4 border-l-success",
-                  closed: "bg-success/5 border-l-4 border-l-success",
-                };
-                return (
+          {filteredDeviations.length === 0 ? (
+            <div className="bg-card rounded-xl border border-border p-8 text-center text-muted-foreground">
+              <AlertTriangle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p className="font-medium">Ingen avvik funnet</p>
+              {searchQuery ? (
+                <p className="text-sm mt-1">Prøv å endre søkekriteriene</p>
+              ) : (
+                <p className="text-sm mt-1">Klikk "Nytt avvik" for å registrere det første avviket</p>
+              )}
+            </div>
+          ) : (
+            filteredDeviations.map((deviation, index) => {
+              const statusBgColors: Record<string, string> = {
+                open: "border-l-4 border-l-destructive",
+                "in-progress": "border-l-4 border-l-warning",
+                resolved: "border-l-4 border-l-success",
+                closed: "border-l-4 border-l-success",
+              };
+              return (
                 <motion.div
                   key={deviation.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.35 + index * 0.05 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + index * 0.03 }}
                   className={cn(
-                    "p-4 hover:bg-secondary/50 transition-colors cursor-pointer group",
+                    "bg-card rounded-xl border border-border p-3 md:p-4 shadow-sm active:scale-[0.99] transition-all cursor-pointer",
                     statusBgColors[deviation.status]
                   )}
                   onClick={() => handleDeviationClick(deviation)}
                 >
-                  <div className="flex items-start gap-4">
+                  {/* Mobile-optimized card layout */}
+                  <div className="flex items-start gap-3">
                     <div className="p-2 rounded-lg bg-destructive/10 flex-shrink-0">
-                      <AlertTriangle className="w-5 h-5 text-destructive" />
+                      <AlertTriangle className="w-4 h-4 md:w-5 md:h-5 text-destructive" />
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      {/* Header row with number and status */}
+                      <div className="flex items-center justify-between gap-2 mb-1">
                         <span className="text-xs font-mono text-muted-foreground">
                           {deviation.deviation_number}
                         </span>
-                        <Badge className={(categoryConfig[deviation.category] || { color: "bg-muted text-muted-foreground" }).color}>
-                          {deviation.category}
+                        <Badge className={cn("text-[10px] md:text-xs", statusConfig[deviation.status].color)}>
+                          {statusConfig[deviation.status].label}
                         </Badge>
-                        <Badge className={priorityConfig[deviation.priority].color}>
+                      </div>
+                      
+                      {/* Title */}
+                      <h3 className="font-semibold text-sm mb-1 line-clamp-2">
+                        {deviation.title}
+                      </h3>
+                      
+                      {/* Badges */}
+                      <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+                        <Badge className={cn("text-[10px]", (categoryConfig[deviation.category] || { color: "bg-muted text-muted-foreground" }).color)}>
+                          {(categoryConfig[deviation.category] || { label: deviation.category }).label}
+                        </Badge>
+                        <Badge className={cn("text-[10px]", priorityConfig[deviation.priority].color)}>
                           {priorityConfig[deviation.priority].label}
                         </Badge>
                       </div>
                       
-                      <h3 className="font-semibold text-sm group-hover:text-primary transition-colors mb-1">
-                        {deviation.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                        {deviation.description}
-                      </p>
-                      
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      {/* Meta info */}
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                         <span className="flex items-center gap-1">
                           <User className="w-3 h-3" />
-                          {deviation.assignee_name || "Ikke tildelt"}
+                          <span className="truncate max-w-[80px]">{deviation.assignee_name || "Ikke tildelt"}</span>
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          Frist: {deviation.due_date}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {deviation.created_at.split("T")[0]}
+                          {deviation.due_date}
                         </span>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      <Badge className={statusConfig[deviation.status].color}>
-                        {statusConfig[deviation.status].label}
-                      </Badge>
-                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
-                    </div>
                   </div>
                 </motion.div>
-              )})
-            )}
-          </div>
+              );
+            })
+          )}
         </motion.div>
       </div>
 
