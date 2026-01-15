@@ -9,8 +9,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useStandardWorkSchedules } from "@/hooks/useStandardWorkSchedules";
 import { LOCATIONS } from "./ShiftCalendar";
-import { Trash2, Plus, Loader2, CalendarPlus } from "lucide-react";
+import { Trash2, Plus, Loader2, CalendarPlus, Calendar } from "lucide-react";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
 
 interface StandardScheduleDialogProps {
   open: boolean;
@@ -33,7 +35,7 @@ const DAY_NAMES = ["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag"
 
 export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSchedulesGenerated }: StandardScheduleDialogProps) {
   const { users } = useCompanyUsers();
-  const { schedules, createSchedule, deleteSchedule, generateWeekSchedules, isLoading } = useStandardWorkSchedules();
+  const { schedules, createSchedule, deleteSchedule, generateWeekSchedules, generateMonthSchedules, isLoading } = useStandardWorkSchedules();
   const [selectedEmployee, setSelectedEmployee] = useState<string>("");
   const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5]); // Default: Mon-Fri
   const [newSchedule, setNewSchedule] = useState({
@@ -43,6 +45,7 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
   });
   const [isAdding, setIsAdding] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingMonth, setIsGeneratingMonth] = useState(false);
 
   const employeeSchedules = selectedEmployee 
     ? schedules.filter(s => s.employee_id === selectedEmployee)
@@ -123,7 +126,15 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
     setIsGenerating(false);
   };
 
+  const handleGenerateMonth = async () => {
+    setIsGeneratingMonth(true);
+    await generateMonthSchedules(selectedWeek);
+    onSchedulesGenerated?.();
+    setIsGeneratingMonth(false);
+  };
+
   const selectedUser = users.find(u => u.id === selectedEmployee);
+  const currentMonthName = format(selectedWeek, "MMMM yyyy", { locale: nb });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -309,19 +320,34 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
         </div>
 
         <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button 
-            variant="default" 
-            onClick={handleGenerateWeek}
-            disabled={isGenerating || schedules.length === 0}
-            className="w-full sm:w-auto"
-          >
-            {isGenerating ? (
-              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-            ) : (
-              <CalendarPlus className="w-4 h-4 mr-1" />
-            )}
-            Generer ukeplan
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button 
+              variant="default" 
+              onClick={handleGenerateWeek}
+              disabled={isGenerating || isGeneratingMonth || schedules.length === 0}
+              className="w-full sm:w-auto"
+            >
+              {isGenerating ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <CalendarPlus className="w-4 h-4 mr-1" />
+              )}
+              Generer ukeplan
+            </Button>
+            <Button 
+              variant="secondary" 
+              onClick={handleGenerateMonth}
+              disabled={isGenerating || isGeneratingMonth || schedules.length === 0}
+              className="w-full sm:w-auto"
+            >
+              {isGeneratingMonth ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <Calendar className="w-4 h-4 mr-1" />
+              )}
+              Generer {currentMonthName}
+            </Button>
+          </div>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Lukk
           </Button>

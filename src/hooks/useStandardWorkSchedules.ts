@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { addDays, format, startOfWeek } from "date-fns";
+import { addDays, format, startOfWeek, startOfMonth, endOfMonth, eachWeekOfInterval } from "date-fns";
 
 export interface StandardWorkSchedule {
   id: string;
@@ -223,6 +223,38 @@ export function useStandardWorkSchedules() {
     return { created, skipped };
   };
 
+  const generateMonthSchedules = async (
+    monthDate: Date,
+    employeeId?: string
+  ): Promise<{ created: number; skipped: number }> => {
+    const monthStart = startOfMonth(monthDate);
+    const monthEnd = endOfMonth(monthDate);
+    
+    // Get all weeks that overlap with this month
+    const weeks = eachWeekOfInterval(
+      { start: monthStart, end: monthEnd },
+      { weekStartsOn: 1 }
+    );
+
+    let totalCreated = 0;
+    let totalSkipped = 0;
+
+    for (const weekStart of weeks) {
+      const { created, skipped } = await generateWeekSchedules(weekStart, employeeId);
+      totalCreated += created;
+      totalSkipped += skipped;
+    }
+
+    if (totalCreated > 0) {
+      toast.success(`${totalCreated} vakter generert for måneden`);
+    }
+    if (totalSkipped > 0) {
+      toast.info(`${totalSkipped} vakter hoppet over (finnes allerede)`);
+    }
+
+    return { created: totalCreated, skipped: totalSkipped };
+  };
+
   return {
     schedules,
     isLoading,
@@ -231,6 +263,7 @@ export function useStandardWorkSchedules() {
     deleteSchedule,
     getSchedulesByEmployee,
     generateWeekSchedules,
+    generateMonthSchedules,
     refetch: fetchSchedules,
     DAY_NAMES,
   };
