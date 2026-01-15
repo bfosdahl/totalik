@@ -8,16 +8,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { CompanyUser } from "@/hooks/useCompanyUsers";
-import { DEFAULT_SHIFT_TASKS } from "@/hooks/useShiftTasks";
+import { useCompanyUsers } from "@/hooks/useCompanyUsers";
+import { useWorkSchedules } from "@/hooks/useWorkSchedules";
+import { useShiftTasks, DEFAULT_SHIFT_TASKS } from "@/hooks/useShiftTasks";
 import { LOCATIONS, ROLES } from "./ShiftCalendar";
 import { X } from "lucide-react";
+import { toast } from "sonner";
 
 interface CreateShiftDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  users: CompanyUser[];
-  onSubmit: (data: ShiftFormData) => Promise<boolean>;
+  onSuccess?: () => void;
 }
 
 export interface ShiftFormData {
@@ -34,7 +35,10 @@ export interface ShiftFormData {
   tasks: { name: string; type: string }[];
 }
 
-export function CreateShiftDialog({ open, onOpenChange, users, onSubmit }: CreateShiftDialogProps) {
+export function CreateShiftDialog({ open, onOpenChange, onSuccess }: CreateShiftDialogProps) {
+  const { users } = useCompanyUsers();
+  const { createSchedule } = useWorkSchedules();
+  
   const [formData, setFormData] = useState<ShiftFormData>({
     employee_id: "",
     employee_name: "",
@@ -49,6 +53,7 @@ export function CreateShiftDialog({ open, onOpenChange, users, onSubmit }: Creat
     tasks: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdScheduleId, setCreatedScheduleId] = useState<string | null>(null);
 
   const handleEmployeeChange = (userId: string) => {
     const user = users.find(u => u.id === userId);
@@ -80,9 +85,23 @@ export function CreateShiftDialog({ open, onOpenChange, users, onSubmit }: Creat
     e.preventDefault();
     setIsSubmitting(true);
     
-    const success = await onSubmit(formData);
+    const scheduleData = {
+      employee_id: formData.employee_id,
+      employee_name: formData.employee_name,
+      schedule_date: formData.schedule_date,
+      start_time: formData.start_time,
+      end_time: formData.end_time,
+      schedule_type: formData.schedule_type,
+      location: formData.location,
+      shift_role: formData.shift_role,
+      is_responsible: formData.is_responsible,
+      notes: formData.notes,
+    };
+
+    const result = await createSchedule(scheduleData);
     
-    if (success) {
+    if (result) {
+      toast.success("Vakt opprettet");
       setFormData({
         employee_id: "",
         employee_name: "",
@@ -97,6 +116,7 @@ export function CreateShiftDialog({ open, onOpenChange, users, onSubmit }: Creat
         tasks: [],
       });
       onOpenChange(false);
+      onSuccess?.();
     }
     
     setIsSubmitting(false);

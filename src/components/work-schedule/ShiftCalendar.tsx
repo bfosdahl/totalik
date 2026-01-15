@@ -7,9 +7,9 @@ import { MapPin, Star, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 import { WorkSchedule } from "@/hooks/useWorkSchedules";
 
 interface ShiftCalendarProps {
-  weekStart: Date;
+  selectedWeek: Date;
   schedules: WorkSchedule[];
-  onShiftClick?: (schedule: WorkSchedule) => void;
+  onScheduleClick?: (schedule: WorkSchedule) => void;
   tasksMap?: Record<string, { total: number; completed: number }>;
 }
 
@@ -30,10 +30,10 @@ const ROLES: Record<string, string> = {
   prep: "Forberedelse",
 };
 
-export function ShiftCalendar({ weekStart, schedules, onShiftClick, tasksMap = {} }: ShiftCalendarProps) {
+export function ShiftCalendar({ selectedWeek, schedules, onScheduleClick, tasksMap = {} }: ShiftCalendarProps) {
   const weekDays = useMemo(() => {
-    return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  }, [weekStart]);
+    return Array.from({ length: 7 }, (_, i) => addDays(selectedWeek, i));
+  }, [selectedWeek]);
 
   const schedulesByDay = useMemo(() => {
     const map: Record<string, WorkSchedule[]> = {};
@@ -96,7 +96,7 @@ export function ShiftCalendar({ weekStart, schedules, onShiftClick, tasksMap = {
                 return (
                   <div
                     key={schedule.id}
-                    onClick={() => onShiftClick?.(schedule)}
+                    onClick={() => onScheduleClick?.(schedule)}
                     className={cn(
                       "p-1.5 sm:p-2 rounded-md text-xs cursor-pointer transition-all hover:shadow-md",
                       schedule.schedule_type === "planned" 

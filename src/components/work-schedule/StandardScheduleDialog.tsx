@@ -5,22 +5,24 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { CompanyUser } from "@/hooks/useCompanyUsers";
-import { StandardWorkSchedule, useStandardWorkSchedules } from "@/hooks/useStandardWorkSchedules";
+import { useCompanyUsers } from "@/hooks/useCompanyUsers";
+import { useStandardWorkSchedules } from "@/hooks/useStandardWorkSchedules";
 import { LOCATIONS, ROLES } from "./ShiftCalendar";
-import { Trash2, Plus, Loader2 } from "lucide-react";
+import { Trash2, Plus, Loader2, CalendarPlus } from "lucide-react";
 import { toast } from "sonner";
 
 interface StandardScheduleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  users: CompanyUser[];
+  selectedWeek: Date;
+  onSchedulesGenerated?: () => void;
 }
 
 const DAY_NAMES = ["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"];
 
-export function StandardScheduleDialog({ open, onOpenChange, users }: StandardScheduleDialogProps) {
-  const { schedules, createSchedule, deleteSchedule, isLoading } = useStandardWorkSchedules();
+export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSchedulesGenerated }: StandardScheduleDialogProps) {
+  const { users } = useCompanyUsers();
+  const { schedules, createSchedule, deleteSchedule, generateWeekSchedules, isLoading } = useStandardWorkSchedules();
   const [selectedEmployee, setSelectedEmployee] = useState<string>("");
   const [newSchedule, setNewSchedule] = useState({
     day_of_week: 1,
@@ -30,6 +32,7 @@ export function StandardScheduleDialog({ open, onOpenChange, users }: StandardSc
     shift_role: "",
   });
   const [isAdding, setIsAdding] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const employeeSchedules = selectedEmployee 
     ? schedules.filter(s => s.employee_id === selectedEmployee)
@@ -51,6 +54,13 @@ export function StandardScheduleDialog({ open, onOpenChange, users }: StandardSc
       shift_role: newSchedule.shift_role || undefined,
     });
     setIsAdding(false);
+  };
+
+  const handleGenerateWeek = async () => {
+    setIsGenerating(true);
+    await generateWeekSchedules(selectedWeek);
+    onSchedulesGenerated?.();
+    setIsGenerating(false);
   };
 
   const selectedUser = users.find(u => u.id === selectedEmployee);
@@ -213,7 +223,20 @@ export function StandardScheduleDialog({ open, onOpenChange, users }: StandardSc
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button 
+            variant="default" 
+            onClick={handleGenerateWeek}
+            disabled={isGenerating || schedules.length === 0}
+            className="w-full sm:w-auto"
+          >
+            {isGenerating ? (
+              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+            ) : (
+              <CalendarPlus className="w-4 h-4 mr-1" />
+            )}
+            Generer ukeplan
+          </Button>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Lukk
           </Button>
