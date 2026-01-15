@@ -142,11 +142,11 @@ export const MascotChatHelper = () => {
     setCurrentTip((prev) => (prev + 1) % proffConfig.tips.length);
   };
 
-  const toggleListening = () => {
+  const toggleListening = async () => {
     if (speech.isListening) {
       speech.stopListening();
     } else {
-      speech.startListening();
+      await speech.startListening();
     }
   };
 
@@ -321,10 +321,17 @@ export const MascotChatHelper = () => {
               {speech.isSupported && (
                 <Button
                   size="icon"
-                  variant={speech.isListening ? "destructive" : "outline"}
+                  variant={speech.isListening ? "destructive" : speech.permissionStatus === 'denied' ? "secondary" : "outline"}
                   onClick={toggleListening}
                   disabled={isLoading}
-                  title={speech.isListening ? 'Stopp opptak' : 'Start taleopptak'}
+                  title={
+                    speech.permissionStatus === 'denied' 
+                      ? 'Mikrofontilgang nektet - klikk for å prøve igjen' 
+                      : speech.isListening 
+                        ? 'Stopp opptak' 
+                        : 'Start taleopptak'
+                  }
+                  className={speech.permissionStatus === 'denied' ? 'opacity-60' : ''}
                 >
                   {speech.isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                 </Button>

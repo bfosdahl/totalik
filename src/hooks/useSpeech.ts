@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { toast } from 'sonner';
 
 interface UseSpeechOptions {
   lang?: string;
@@ -16,6 +17,7 @@ interface UseSpeechReturn {
   stopSpeaking: () => void;
   transcript: string;
   isSupported: boolean;
+  permissionStatus: 'granted' | 'denied' | 'prompt' | 'unknown';
 }
 
 export function useSpeech(options: UseSpeechOptions = {}): UseSpeechReturn {
@@ -24,6 +26,7 @@ export function useSpeech(options: UseSpeechOptions = {}): UseSpeechReturn {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
@@ -33,6 +36,29 @@ export function useSpeech(options: UseSpeechOptions = {}): UseSpeechReturn {
   const isSupported = typeof window !== 'undefined' && 
     ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) &&
     'speechSynthesis' in window;
+
+  // Check microphone permission status
+  useEffect(() => {
+    if (!isSupported) return;
+    
+    const checkPermission = async () => {
+      try {
+        if (navigator.permissions && navigator.permissions.query) {
+          const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+          setPermissionStatus(result.state as 'granted' | 'denied' | 'prompt');
+          
+          result.onchange = () => {
+            setPermissionStatus(result.state as 'granted' | 'denied' | 'prompt');
+          };
+        }
+      } catch (error) {
+        // Some browsers don't support permissions API for microphone
+        console.log('Could not check microphone permission:', error);
+      }
+    };
+    
+    checkPermission();
+  }, [isSupported]);
 
   // Initialize speech recognition
   useEffect(() => {
@@ -44,7 +70,7 @@ export function useSpeech(options: UseSpeechOptions = {}): UseSpeechReturn {
     recognitionRef.current.continuous = continuous;
     recognitionRef.current.interimResults = true;
 
-    recognitionRef.current.onresult = (event) => {
+    recognitionRef.current.onresult = (event: WebSpeechRecognitionEvent) => {
       let finalTranscript = '';
       let interimTranscript = '';
 
@@ -65,9 +91,32 @@ export function useSpeech(options: UseSpeechOptions = {}): UseSpeechReturn {
       }
     };
 
-    recognitionRef.current.onerror = (event) => {
+    recognitionRef.current.onerror = (event: WebSpeechRecognitionErrorEvent) => {
       console.error('Speech recognition error:', event.error);
       setIsListening(false);
+      
+      // Provide user-friendly error messages
+      switch (event.error) {
+        case 'not-allowed':
+          toast.error('Mikrofontilgang ble nektet. Vennligst gi tilgang i nettleserens innstillinger.');
+          setPermissionStatus('denied');
+          break;
+        case 'no-speech':
+          toast.info('Ingen tale registrert. Prøv igjen.');
+          break;
+        case 'audio-capture':
+          toast.error('Ingen mikrofon funnet. Vennligst koble til en mikrofon.');
+          break;
+        case 'network':
+          toast.error('Nettverksfeil. Sjekk internettforbindelsen din.');
+          break;
+        case 'aborted':
+          // User cancelled, no need to show error
+          break;
+        default:
+          toast.error(`Talegjenkjenning feilet: ${event.error}`);
+      }
+      
       if (onError) {
         onError(event.error);
       }
@@ -77,6 +126,10 @@ export function useSpeech(options: UseSpeechOptions = {}): UseSpeechReturn {
       setIsListening(false);
     };
 
+    recognitionRef.current.onstart = () => {
+      setPermissionStatus('granted');
+    };
+
     return () => {
       if (recognitionRef.current) {
         recognitionRef.current.abort();
@@ -84,15 +137,35 @@ export function useSpeech(options: UseSpeechOptions = {}): UseSpeechReturn {
     };
   }, [lang, continuous, onResult, onError, isSupported]);
 
-  const startListening = useCallback(() => {
+  const startListening = useCallback(async () => {
     if (!recognitionRef.current || isListening) return;
+    
+    // First, try to get microphone permission explicitly
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Stop the stream immediately - we just needed permission
+      stream.getTracks().forEach(track => track.stop());
+      setPermissionStatus('granted');
+    } catch (error) {
+      console.error('Microphone permission error:', error);
+      if ((error as Error).name === 'NotAllowedError') {
+        toast.error('Mikrofontilgang ble nektet. Klikk på låseikonet i adressefeltet for å gi tilgang.');
+        setPermissionStatus('denied');
+        return;
+      } else if ((error as Error).name === 'NotFoundError') {
+        toast.error('Ingen mikrofon funnet på enheten.');
+        return;
+      }
+    }
     
     setTranscript('');
     try {
       recognitionRef.current.start();
       setIsListening(true);
+      toast.success('🎤 Lytter... Snakk nå!');
     } catch (error) {
       console.error('Failed to start speech recognition:', error);
+      toast.error('Kunne ikke starte taleopptak. Prøv igjen.');
     }
   }, [isListening]);
 
@@ -145,6 +218,7 @@ export function useSpeech(options: UseSpeechOptions = {}): UseSpeechReturn {
     stopSpeaking,
     transcript,
     isSupported,
+    permissionStatus,
   };
 }
 
