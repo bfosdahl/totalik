@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format, startOfWeek, addDays, isSameDay } from "date-fns";
 import { nb } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Trash2, QrCode } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, QrCode, Calendar, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,10 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
+import { useWorkSchedules, WorkSchedule } from "@/hooks/useWorkSchedules";
+import { useTimeEntries } from "@/hooks/useTimeEntries";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface TimeEntry {
   id: string;
@@ -72,6 +76,7 @@ export function WeeklyTimeView({
   onDeleteEntry,
   userId,
 }: WeeklyTimeViewProps) {
+  const { profile } = useAuth();
   const [currentWeekStart, setCurrentWeekStart] = useState(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
@@ -81,13 +86,56 @@ export function WeeklyTimeView({
   const [customProject, setCustomProject] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmingScheduleId, setConfirmingScheduleId] = useState<string | null>(null);
 
   const { projects } = useKsModule2Projects();
   const { modules } = useCompanyModules();
+  const { schedules } = useWorkSchedules();
+  const { confirmScheduleEntry, refetch: refetchEntries } = useTimeEntries();
+  
   const hasByggModule = modules.some(
     (m) => m.module_type === "IK_BYGG" && m.is_active
   );
   const activeProjects = projects.filter((p) => p.status !== "completed" && p.status !== "handover");
+
+  // Get user's planned schedules for the current week
+  const getSchedulesForDay = (day: Date): WorkSchedule[] => {
+    return schedules.filter(s => 
+      s.employee_id === userId && 
+      s.schedule_type === "planned" &&
+      isSameDay(new Date(s.schedule_date), day)
+    );
+  };
+
+  // Check if a schedule is already confirmed (has a matching time entry)
+  const isScheduleConfirmed = (schedule: WorkSchedule): boolean => {
+    return entries.some(e => 
+      e.user_id === userId &&
+      e.entry_date === schedule.schedule_date &&
+      e.source === "work_schedule"
+    );
+  };
+
+  // Calculate hours from schedule
+  const calculateScheduleHours = (schedule: WorkSchedule): number => {
+    const [startHour, startMin] = schedule.start_time.split(":").map(Number);
+    const [endHour, endMin] = schedule.end_time.split(":").map(Number);
+    return endHour - startHour + (endMin - startMin) / 60;
+  };
+
+  // Confirm a schedule as time entry
+  const handleConfirmSchedule = async (schedule: WorkSchedule) => {
+    setConfirmingScheduleId(schedule.id);
+    
+    // Use the prefixed ID format that confirmScheduleEntry expects
+    const success = await confirmScheduleEntry(`schedule_${schedule.id}`);
+
+    if (success) {
+      await refetchEntries();
+    }
+    
+    setConfirmingScheduleId(null);
+  };
 
   const weekDays = Array.from({ length: 7 }, (_, i) =>
     addDays(currentWeekStart, i)
@@ -189,6 +237,7 @@ export function WeeklyTimeView({
       <div className="grid grid-cols-7 gap-2">
         {weekDays.map((day) => {
           const dayEntries = getEntriesForDay(day);
+          const daySchedules = getSchedulesForDay(day);
           const dayTotal = getDayTotal(day);
           const today = isToday(day);
 
@@ -227,8 +276,61 @@ export function WeeklyTimeView({
                   )}
                 </div>
 
-                <div className="space-y-1 mb-2 max-h-[80px] overflow-y-auto">
-                  {dayEntries.map((entry) => (
+                <div className="space-y-1 mb-2 max-h-[100px] overflow-y-auto">
+                  {/* Show planned schedules first */}
+                  {daySchedules.map((schedule) => {
+                    const confirmed = isScheduleConfirmed(schedule);
+                    const scheduleHours = calculateScheduleHours(schedule);
+                    
+                    return (
+                      <Tooltip key={`schedule-${schedule.id}`}>
+                        <TooltipTrigger asChild>
+                          <div
+                            className={cn(
+                              "text-xs p-1.5 rounded flex items-center justify-between group",
+                              confirmed 
+                                ? "bg-green-500/20 text-green-700 dark:text-green-400" 
+                                : "bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-dashed border-blue-400"
+                            )}
+                          >
+                            <span className="truncate flex-1 flex items-center gap-1">
+                              <Calendar className="h-3 w-3 flex-shrink-0" />
+                              {scheduleHours.toFixed(1)}t
+                              <span className="text-muted-foreground ml-1 truncate text-[10px]">
+                                {schedule.start_time.substring(0, 5)}-{schedule.end_time.substring(0, 5)}
+                              </span>
+                            </span>
+                            {!confirmed && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5 ml-1"
+                                onClick={() => handleConfirmSchedule(schedule)}
+                                disabled={confirmingScheduleId === schedule.id}
+                              >
+                                <CheckCircle className="h-3 w-3 text-green-600" />
+                              </Button>
+                            )}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <div>
+                            <p className="font-medium">
+                              {confirmed ? "✓ Bekreftet vakt" : "Planlagt vakt - klikk ✓ for å bekrefte"}
+                            </p>
+                            <p className="text-xs">
+                              {schedule.start_time.substring(0, 5)} - {schedule.end_time.substring(0, 5)}
+                              {schedule.location && ` • ${schedule.location}`}
+                              {schedule.shift_role && ` • ${schedule.shift_role}`}
+                            </p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
+                  
+                  {/* Show regular time entries */}
+                  {dayEntries.filter(e => e.source !== "work_schedule").map((entry) => (
                     <Tooltip key={entry.id}>
                       <TooltipTrigger asChild>
                         <div
