@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft, Save, Trash2, Loader2, Building2, User, Calendar, 
-  FileText, CheckSquare, Users, Receipt, BookOpen, Camera, StickyNote, Clock, ClipboardCheck
+  FileText, CheckSquare, Users, Receipt, BookOpen, Camera, StickyNote, Clock, ClipboardCheck, CheckCircle2, RotateCcw
 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -164,6 +164,48 @@ export default function SimpleProjectDetail() {
     }
   };
 
+  const handleCompleteProject = async () => {
+    if (!projectId) return;
+
+    try {
+      setIsSaving(true);
+      const { error } = await supabase
+        .from("ks_module2_projects")
+        .update({ status: "completed" })
+        .eq("id", projectId);
+
+      if (error) throw error;
+      setFormData((prev) => ({ ...prev, status: "completed" }));
+      toast.success("Prosjekt fullført! Det vil ikke lenger vises i timeregistrering.");
+    } catch (error) {
+      console.error("Error completing project:", error);
+      toast.error("Kunne ikke fullføre prosjekt");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleReopenProject = async () => {
+    if (!projectId) return;
+
+    try {
+      setIsSaving(true);
+      const { error } = await supabase
+        .from("ks_module2_projects")
+        .update({ status: "active" })
+        .eq("id", projectId);
+
+      if (error) throw error;
+      setFormData((prev) => ({ ...prev, status: "active" }));
+      toast.success("Prosjekt gjenåpnet");
+    } catch (error) {
+      console.error("Error reopening project:", error);
+      toast.error("Kunne ikke gjenåpne prosjekt");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleProjectLeaderChange = (userId: string) => {
     const user = users.find((u) => u.id === userId);
     setFormData((prev) => ({
@@ -199,7 +241,62 @@ export default function SimpleProjectDetail() {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {formData.status === "completed" ? (
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950/20 dark:text-green-400">
+                <CheckCircle2 className="w-3 h-3 mr-1" />
+                Fullført
+              </Badge>
+            ) : null}
+            
+            {formData.status === "completed" ? (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Gjenåpne
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Gjenåpne prosjekt?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Prosjektet vil bli satt til aktiv status og vises igjen i timeregistrering.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleReopenProject}>
+                      Gjenåpne
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ) : (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-green-700 hover:text-green-800 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950/20">
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Fullfør
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Fullfør prosjekt?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Prosjektet vil bli markert som fullført og vil ikke lenger vises som valg i timeregistrering.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleCompleteProject} className="bg-green-600 hover:bg-green-700">
+                      Fullfør prosjekt
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+            
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
