@@ -167,14 +167,14 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
                   <div className="space-y-1">
                     <Label className="text-xs">Sted</Label>
                     <Select
-                      value={newSchedule.location}
-                      onValueChange={(v) => setNewSchedule({ ...newSchedule, location: v })}
+                      value={newSchedule.location || "__none__"}
+                      onValueChange={(v) => setNewSchedule({ ...newSchedule, location: v === "__none__" ? "" : v })}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Valgfritt" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Ingen</SelectItem>
+                        <SelectItem value="__none__">Ingen</SelectItem>
                         {Object.entries(LOCATIONS).map(([key, loc]) => (
                           <SelectItem key={key} value={key}>
                             {loc.label}

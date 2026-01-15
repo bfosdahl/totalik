@@ -214,16 +214,16 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess }: CreateShift
               <div className="space-y-2">
                 <Label htmlFor="location">Sted/område</Label>
                 <Select
-                  value={formData.location || ""}
+                  value={formData.location || "__none__"}
                   onValueChange={(value) => 
-                    setFormData({ ...formData, location: value || undefined })
+                    setFormData({ ...formData, location: value === "__none__" ? undefined : value })
                   }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Velg sted" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Ingen valgt</SelectItem>
+                    <SelectItem value="__none__">Ingen valgt</SelectItem>
                     {Object.entries(LOCATIONS).map(([key, loc]) => (
                       <SelectItem key={key} value={key}>
                         {loc.label}
@@ -237,16 +237,16 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess }: CreateShift
               <div className="space-y-2">
                 <Label htmlFor="role">Rolle</Label>
                 <Select
-                  value={formData.shift_role || ""}
+                  value={formData.shift_role || "__none__"}
                   onValueChange={(value) => 
-                    setFormData({ ...formData, shift_role: value || undefined })
+                    setFormData({ ...formData, shift_role: value === "__none__" ? undefined : value })
                   }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Velg rolle" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Ingen valgt</SelectItem>
+                    <SelectItem value="__none__">Ingen valgt</SelectItem>
                     {Object.entries(ROLES).map(([key, label]) => (
                       <SelectItem key={key} value={key}>
                         {label}
