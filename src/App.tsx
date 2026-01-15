@@ -70,6 +70,7 @@ import IkAlkoholRutiner from "./pages/ikalkohol/IkAlkoholRutiner";
 import IkAlkoholOrganisering from "./pages/ikalkohol/IkAlkoholOrganisering";
 import IkAlkoholMaal from "./pages/ikalkohol/IkAlkoholMaal";
 import IkAlkoholRisikoanalyse from "./pages/ikalkohol/IkAlkoholRisikoanalyse";
+import IkAlkoholDokumentsenter from "./pages/ikalkohol/IkAlkoholDokumentsenter";
 import IkHmsOppsett from "./pages/IkHmsOppsett";
 import IkHmsMaal from "./pages/IkHmsMaal";
 import IkHmsOrganisering from "./pages/IkHmsOrganisering";
@@ -168,6 +169,7 @@ const App = () => (
                   <Route path="/ik-alkohol/organisering" element={<ProtectedRoute><IkAlkoholOrganisering /></ProtectedRoute>} />
                   <Route path="/ik-alkohol/maal" element={<ProtectedRoute><IkAlkoholMaal /></ProtectedRoute>} />
                   <Route path="/ik-alkohol/risikoanalyse" element={<ProtectedRoute><IkAlkoholRisikoanalyse /></ProtectedRoute>} />
+                  <Route path="/ik-alkohol/dokumentsenter" element={<ProtectedRoute><IkAlkoholDokumentsenter /></ProtectedRoute>} />
                   
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="/brukerveiledning" element={<ProtectedRoute><Brukerveiledning /></ProtectedRoute>} />

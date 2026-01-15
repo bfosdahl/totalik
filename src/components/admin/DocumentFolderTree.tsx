@@ -65,7 +65,7 @@ interface DocumentFolderTreeProps {
   selectedFolderId: string | null;
   onSelectFolder: (folderId: string | null) => void;
   documentCounts: Record<string, number>;
-  moduleType?: "ik-hms" | "ik-mat" | "ks-bygg";
+  moduleType?: "ik-hms" | "ik-mat" | "ik-alkohol" | "ks-bygg";
 }
 
 export function DocumentFolderTree({

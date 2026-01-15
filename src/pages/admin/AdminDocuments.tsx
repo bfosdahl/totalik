@@ -44,6 +44,7 @@ import {
   Leaf,
   HardHat,
   UtensilsCrossed,
+  Wine,
 } from "lucide-react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -73,6 +74,7 @@ interface AdminDocument {
 const MODULE_CONFIG: Record<ModuleType, { label: string; icon: any; color: string; bgColor: string }> = {
   "ik-hms": { label: "IK-HMS", icon: Shield, color: "text-emerald-500", bgColor: "bg-emerald-500/10" },
   "ik-mat": { label: "IK-Mat", icon: UtensilsCrossed, color: "text-orange-500", bgColor: "bg-orange-500/10" },
+  "ik-alkohol": { label: "IK-Alkohol", icon: Wine, color: "text-amber-500", bgColor: "bg-amber-500/10" },
   "ks-bygg": { label: "KS Bygg", icon: HardHat, color: "text-blue-500", bgColor: "bg-blue-500/10" },
 };
 
@@ -480,7 +482,7 @@ export default function AdminDocuments() {
         {/* Module Tabs */}
         <div className="border-b bg-background px-4 py-3">
           <Tabs value={activeModule} onValueChange={handleModuleChange}>
-            <TabsList className="grid w-full max-w-md grid-cols-3">
+            <TabsList className="grid w-full max-w-lg grid-cols-4">
               {(Object.entries(MODULE_CONFIG) as [ModuleType, typeof activeConfig][]).map(([key, config]) => {
                 const Icon = config.icon;
                 return (
