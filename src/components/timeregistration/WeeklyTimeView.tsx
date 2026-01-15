@@ -99,9 +99,11 @@ export function WeeklyTimeView({
   const activeProjects = projects.filter((p) => p.status !== "completed" && p.status !== "handover");
 
   // Get user's planned schedules for the current week
+  // Note: work_schedules uses profile.id as employee_id, not user_id
   const getSchedulesForDay = (day: Date): WorkSchedule[] => {
+    if (!profile?.id) return [];
     return schedules.filter(s => 
-      s.employee_id === userId && 
+      s.employee_id === profile.id && 
       s.schedule_type === "planned" &&
       isSameDay(new Date(s.schedule_date), day)
     );
