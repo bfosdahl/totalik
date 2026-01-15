@@ -13,6 +13,9 @@ export interface WorkSchedule {
   end_time: string;
   schedule_type: "planned" | "actual";
   notes: string | null;
+  location: string | null;
+  shift_role: string | null;
+  is_responsible: boolean;
   created_by_id: string | null;
   created_by_name: string | null;
   created_at: string;
@@ -27,6 +30,9 @@ export interface CreateWorkSchedule {
   end_time: string;
   schedule_type: "planned" | "actual";
   notes?: string;
+  location?: string;
+  shift_role?: string;
+  is_responsible?: boolean;
 }
 
 export function useWorkSchedules() {

@@ -10774,6 +10774,70 @@ export type Database = {
           },
         ]
       }
+      shift_tasks: {
+        Row: {
+          company_id: string
+          completed_at: string | null
+          completed_by_id: string | null
+          completed_by_name: string | null
+          created_at: string
+          id: string
+          is_completed: boolean | null
+          schedule_id: string
+          task_name: string
+          task_type: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean | null
+          schedule_id: string
+          task_name: string
+          task_type?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          completed_by_name?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean | null
+          schedule_id?: string
+          task_name?: string
+          task_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_tasks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_tasks_completed_by_id_fkey"
+            columns: ["completed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_tasks_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "work_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       simple_project_inspections: {
         Row: {
           company_id: string
@@ -10848,6 +10912,63 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      standard_work_schedules: {
+        Row: {
+          company_id: string
+          created_at: string
+          day_of_week: number
+          employee_id: string
+          end_time: string
+          id: string
+          is_active: boolean | null
+          location: string | null
+          shift_role: string | null
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          day_of_week: number
+          employee_id: string
+          end_time: string
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          shift_role?: string | null
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          day_of_week?: number
+          employee_id?: string
+          end_time?: string
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          shift_role?: string | null
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "standard_work_schedules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "standard_work_schedules_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -11570,9 +11691,12 @@ export type Database = {
           employee_name: string
           end_time: string
           id: string
+          is_responsible: boolean | null
+          location: string | null
           notes: string | null
           schedule_date: string
           schedule_type: string
+          shift_role: string | null
           start_time: string
           updated_at: string
         }
@@ -11585,9 +11709,12 @@ export type Database = {
           employee_name: string
           end_time: string
           id?: string
+          is_responsible?: boolean | null
+          location?: string | null
           notes?: string | null
           schedule_date: string
           schedule_type?: string
+          shift_role?: string | null
           start_time: string
           updated_at?: string
         }
@@ -11600,9 +11727,12 @@ export type Database = {
           employee_name?: string
           end_time?: string
           id?: string
+          is_responsible?: boolean | null
+          location?: string | null
           notes?: string | null
           schedule_date?: string
           schedule_type?: string
+          shift_role?: string | null
           start_time?: string
           updated_at?: string
         }
