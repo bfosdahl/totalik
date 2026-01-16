@@ -92,7 +92,7 @@ async function sendWelcomeEmail(
             
             <p style="color: #6b7280; font-size: 14px;">
               Ved å logge inn godtar du våre 
-              <a href="https://hmsnova.no/vilkar" style="color: #6366f1;">avtalevilkår</a>.
+              <a href="https://emagasin.no/katalog/mimir/mobile/" style="color: #6366f1;">avtalevilkår</a>.
             </p>
             
             <p style="color: #6b7280; font-size: 14px;">

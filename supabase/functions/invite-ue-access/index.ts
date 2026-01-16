@@ -212,6 +212,11 @@ const handler = async (req: Request): Promise<Response> => {
             
             ${actionButtonHtml}
             
+            <p style="color: #666; font-size: 14px; text-align: center;">
+              Ved å logge inn godtar du våre 
+              <a href="https://emagasin.no/katalog/mimir/mobile/" style="color: #5B6BFF;">avtalevilkår</a>.
+            </p>
+            
             <hr style="border: none; border-top: 1px solid #e9ecef; margin: 30px 0;">
             
             <p style="color: #999; font-size: 12px; text-align: center;">

@@ -100,7 +100,7 @@ const handler = async (req: Request): Promise<Response> => {
           </p>
 
           <p style="color: #333; font-size: 14px;">
-            Ved å logge inn godtar du våre <a href="https://totalik.no/avtalevilkar" style="color: #0066cc;">avtalevilkår</a>.
+            Ved å logge inn godtar du våre <a href="https://emagasin.no/katalog/mimir/mobile/" style="color: #0066cc;">avtalevilkår</a>.
           </p>
           
           <div style="text-align: center; margin: 30px 0;">
