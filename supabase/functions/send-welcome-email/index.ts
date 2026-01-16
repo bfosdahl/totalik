@@ -100,6 +100,10 @@ const handler = async (req: Request): Promise<Response> => {
           
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           
+          <p style="color: #333; font-size: 14px; text-align: center; margin-bottom: 20px;">
+            Ved å logge inn godtar du våre <a href="https://emagasin.no/katalog/mimir/mobile/" style="color: #0066cc;">avtalevilkår</a>.
+          </p>
+          
           <p style="color: #999; font-size: 12px; text-align: center;">
             Dette er en automatisk generert e-post fra Total-IK.<br>
             Hvis du ikke har opprettet denne kontoen, kan du ignorere denne e-posten.

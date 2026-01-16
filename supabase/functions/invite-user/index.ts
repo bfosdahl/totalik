@@ -228,6 +228,11 @@ serve(async (req) => {
                 <p style="color: #666; font-size: 14px;">Hvis knappen ikke fungerer, kopier og lim inn denne lenken i nettleseren din:</p>
                 <p style="color: #667eea; font-size: 12px; word-break: break-all;">${resetData.properties.action_link}</p>
                 
+                <p style="color: #666; font-size: 14px; text-align: center;">
+                  Ved å logge inn godtar du våre 
+                  <a href="https://emagasin.no/katalog/mimir/mobile/" style="color: #667eea;">avtalevilkår</a>.
+                </p>
+                
                 <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
                 
                 <p style="color: #888; font-size: 12px; text-align: center;">

@@ -213,6 +213,10 @@ serve(async (req) => {
                 Hvis du ikke kan klikke på knappen, kopier og lim inn denne lenken i nettleseren:<br>
                 <span style="word-break: break-all; color: #0066cc;">${resetLink}</span>
               </p>
+              <p style="color: #666; font-size: 14px;">
+                Ved å logge inn godtar du våre 
+                <a href="https://emagasin.no/katalog/mimir/mobile/" style="color: #0066cc;">avtalevilkår</a>.
+              </p>
               <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
               <p style="color: #999; font-size: 12px;">
                 Dette er en automatisk generert e-post fra ${companyName}.
