@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { format, addDays, isSameDay } from "date-fns";
+import { format, addDays, isSameDay, startOfWeek } from "date-fns";
 import { nb } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, Trash2, QrCode, Calendar, CheckCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,11 @@ import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useWorkSchedules, WorkSchedule } from "@/hooks/useWorkSchedules";
 import { useTimeEntries } from "@/hooks/useTimeEntries";
 import { useAuth } from "@/contexts/AuthContext";
+import { StartStopTimer } from "./StartStopTimer";
+import { OvertimeWarning } from "./OvertimeWarning";
+import { CopyPreviousDayButton } from "./CopyPreviousDayButton";
+import { WeeklySummaryChart } from "./WeeklySummaryChart";
+import { toast } from "sonner";
 
 interface TimeEntry {
   id: string;
@@ -101,6 +106,28 @@ export function DailyTimeView({
   const userEntries = entries.filter((e) => e.user_id === userId);
   const dayEntries = userEntries.filter((e) => isSameDay(new Date(e.entry_date), currentDate));
   const dayTotal = dayEntries.reduce((sum, e) => sum + Number(e.hours), 0);
+
+  // Calculate weekly hours for overtime warning
+  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+  const weeklyHours = userEntries
+    .filter((e) => {
+      const entryDate = new Date(e.entry_date);
+      const weekEnd = addDays(weekStart, 6);
+      return entryDate >= weekStart && entryDate <= weekEnd;
+    })
+    .reduce((sum, e) => sum + Number(e.hours), 0);
+
+  // Handle timer completion
+  const handleTimerComplete = async (hours: number) => {
+    const success = await onCreateEntry({
+      entry_date: format(currentDate, "yyyy-MM-dd"),
+      hours,
+      description: `Automatisk registrert (${format(new Date(), "HH:mm")})`,
+    });
+    if (success) {
+      toast.success(`${hours.toFixed(2)} timer registrert fra tidtaker`);
+    }
+  };
 
   // Get user's planned schedules for the current day
   const daySchedules = schedules.filter(s => 
@@ -181,6 +208,12 @@ export function DailyTimeView({
 
   return (
     <div className="space-y-4">
+      {/* Start/Stop Timer */}
+      <StartStopTimer 
+        onComplete={handleTimerComplete}
+        isDisabled={!isToday}
+      />
+
       {/* Date navigation */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
@@ -200,29 +233,43 @@ export function DailyTimeView({
           </Button>
         </div>
         
-        <div className="text-right">
-          <p className="text-lg font-bold">
-            {dayTotal.toFixed(1)} t
+        <CopyPreviousDayButton
+          entries={entries}
+          userId={userId}
+          currentDate={currentDate}
+          onCopy={onCreateEntry}
+        />
+      </div>
+
+      {/* Current date display with day total */}
+      <div className={cn(
+        "flex items-center justify-between py-3 px-4 rounded-lg",
+        isToday ? "bg-primary/10" : "bg-muted"
+      )}>
+        <div>
+          <p className={cn(
+            "text-xl font-bold",
+            isToday && "text-primary"
+          )}>
+            {format(currentDate, "EEEE", { locale: nb })}
           </p>
-          <p className="text-xs text-muted-foreground">totalt</p>
+          <p className="text-sm text-muted-foreground">
+            {format(currentDate, "d. MMMM yyyy", { locale: nb })}
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-2xl font-bold">{dayTotal.toFixed(1)}t</p>
+          <p className="text-xs text-muted-foreground">i dag</p>
         </div>
       </div>
 
-      {/* Current date display */}
-      <div className={cn(
-        "text-center py-3 rounded-lg",
-        isToday ? "bg-primary/10" : "bg-muted"
-      )}>
-        <p className={cn(
-          "text-2xl font-bold",
-          isToday && "text-primary"
-        )}>
-          {format(currentDate, "EEEE", { locale: nb })}
-        </p>
-        <p className="text-sm text-muted-foreground">
-          {format(currentDate, "d. MMMM yyyy", { locale: nb })}
-        </p>
-      </div>
+      {/* Overtime Warning */}
+      <OvertimeWarning
+        weeklyHours={weeklyHours}
+        weeklyLimit={40}
+        dailyHours={dayTotal}
+        dailyLimit={9}
+      />
 
       {/* Planned schedules */}
       {daySchedules.length > 0 && (
@@ -471,6 +518,14 @@ export function DailyTimeView({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Weekly Summary Chart */}
+      <WeeklySummaryChart
+        entries={entries}
+        userId={userId}
+        weekStart={weekStart}
+        dailyTarget={7.5}
+      />
     </div>
   );
 }
