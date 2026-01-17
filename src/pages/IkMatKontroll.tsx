@@ -59,28 +59,30 @@ const IkMatKontroll = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full max-w-3xl grid-cols-5">
-            <TabsTrigger value="kalender" className="gap-2">
-              <CalendarDays className="h-4 w-4" />
-              <span className="hidden sm:inline">Kalender</span>
-            </TabsTrigger>
-            <TabsTrigger value="sjekklister" className="gap-2">
-              <ClipboardCheck className="h-4 w-4" />
-              <span className="hidden sm:inline">Sjekklister</span>
-            </TabsTrigger>
-            <TabsTrigger value="renholdsplan" className="gap-2">
-              <SprayCan className="h-4 w-4" />
-              <span className="hidden sm:inline">Renhold</span>
-            </TabsTrigger>
-            <TabsTrigger value="temperatur" className="gap-2">
-              <Thermometer className="h-4 w-4" />
-              <span className="hidden sm:inline">Temperatur</span>
-            </TabsTrigger>
-            <TabsTrigger value="sporbarhet" className="gap-2">
-              <Package className="h-4 w-4" />
-              <span className="hidden sm:inline">Varemottak</span>
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:max-w-3xl sm:grid-cols-5 h-auto p-1">
+              <TabsTrigger value="kalender" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                <CalendarDays className="h-4 w-4" />
+                <span className="hidden xs:inline sm:inline">Kalender</span>
+              </TabsTrigger>
+              <TabsTrigger value="sjekklister" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                <ClipboardCheck className="h-4 w-4" />
+                <span className="hidden xs:inline sm:inline">Sjekklister</span>
+              </TabsTrigger>
+              <TabsTrigger value="renholdsplan" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                <SprayCan className="h-4 w-4" />
+                <span className="hidden xs:inline sm:inline">Renhold</span>
+              </TabsTrigger>
+              <TabsTrigger value="temperatur" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                <Thermometer className="h-4 w-4" />
+                <span className="hidden xs:inline sm:inline">Temp</span>
+              </TabsTrigger>
+              <TabsTrigger value="sporbarhet" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                <Package className="h-4 w-4" />
+                <span className="hidden xs:inline sm:inline">Mottak</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="kalender" className="mt-6">
             <KalenderTab />

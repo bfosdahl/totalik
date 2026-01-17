@@ -53,24 +53,22 @@ export const TemperaturloggTab = () => {
   return (
     <div className="space-y-6">
       {/* Header actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <p className="text-muted-foreground">
-            Daglig temperaturkontroll for Mattilsynet
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setHistoryDialogOpen(true)}>
-            <History className="h-4 w-4 mr-2" />
-            Historikk
+      <div className="flex flex-col gap-3">
+        <p className="text-muted-foreground text-sm sm:text-base">
+          Daglig temperaturkontroll for Mattilsynet
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => setHistoryDialogOpen(true)}>
+            <History className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Historikk</span>
           </Button>
-          <Button variant="outline" onClick={() => setEquipmentDialogOpen(true)}>
-            <Settings className="h-4 w-4 mr-2" />
-            Administrer utstyr
+          <Button variant="outline" size="sm" onClick={() => setEquipmentDialogOpen(true)}>
+            <Settings className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Utstyr</span>
           </Button>
-          <Button onClick={() => handleLogClick()}>
-            <Plus className="h-4 w-4 mr-2" />
-            Registrer temperatur
+          <Button size="sm" onClick={() => handleLogClick()} className="ml-auto sm:ml-0">
+            <Plus className="h-4 w-4 mr-1 sm:mr-2" />
+            Registrer
           </Button>
         </div>
       </div>
@@ -118,29 +116,28 @@ export const TemperaturloggTab = () => {
           <TabsContent value="today" className="space-y-4">
             {/* Quick log cards for equipment needing log */}
             {equipmentNeedingLog.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
                 {equipmentNeedingLog.map((equip) => (
                   <Card 
                     key={equip.id} 
-                    className="cursor-pointer hover:border-primary transition-colors"
+                    className="cursor-pointer hover:border-primary transition-colors active:scale-[0.98]"
                     onClick={() => handleLogClick(equip.id)}
                   >
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Thermometer className="h-4 w-4 text-orange-500" />
-                        {equip.name}
+                    <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-6">
+                      <CardTitle className="text-sm sm:text-base flex items-center gap-1.5 sm:gap-2">
+                        <Thermometer className="h-4 w-4 text-orange-500 flex-shrink-0" />
+                        <span className="truncate">{equip.name}</span>
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-xs sm:text-sm truncate">
                         {getEquipmentTypeLabel(equip.equipment_type)}
-                        {equip.location && ` • ${equip.location}`}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">
-                          Grense: {equip.min_temp}°C til {equip.max_temp}°C
+                    <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+                      <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+                        <span className="text-xs sm:text-sm text-muted-foreground">
+                          {equip.min_temp}°C - {equip.max_temp}°C
                         </span>
-                        <Badge variant="outline" className="text-orange-600 border-orange-500">
+                        <Badge variant="outline" className="text-orange-600 border-orange-500 text-xs w-fit">
                           <Clock className="h-3 w-3 mr-1" />
                           Venter
                         </Badge>
@@ -151,69 +148,104 @@ export const TemperaturloggTab = () => {
               </div>
             )}
 
-            {/* Today's logs table */}
+            {/* Today's logs - Cards on mobile, Table on desktop */}
             {todaysLogs.length > 0 && (
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Registrerte målinger i dag</CardTitle>
-                  <CardDescription>
+                <CardHeader className="py-3 sm:py-6">
+                  <CardTitle className="text-base sm:text-lg">Registrerte målinger i dag</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     {format(new Date(), 'EEEE d. MMMM yyyy', { locale: nb })}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Utstyr</TableHead>
-                        <TableHead>Temperatur</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Registrert av</TableHead>
-                        <TableHead>Tidspunkt</TableHead>
-                        <TableHead>Merknad</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {todaysLogs.map((log) => (
-                        <TableRow key={log.id}>
-                          <TableCell className="font-medium">
-                            {log.equipment?.name || 'Ukjent'}
-                          </TableCell>
-                          <TableCell>
-                            <span className={`font-mono text-lg ${
-                              log.is_acceptable ? 'text-green-600' : 'text-red-600 font-bold'
-                            }`}>
-                              {log.temperature}°C
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            {log.is_acceptable ? (
-                              <Badge variant="success">
-                                <CheckCircle2 className="h-3 w-3 mr-1" />
-                                OK
-                              </Badge>
-                            ) : (
-                              <Badge variant="destructive">
-                                <AlertTriangle className="h-3 w-3 mr-1" />
-                                Avvik
-                              </Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>{log.measured_by_name}</TableCell>
-                          <TableCell>
-                            {format(new Date(log.measured_at), 'HH:mm', { locale: nb })}
-                          </TableCell>
-                          <TableCell className="max-w-[200px] truncate">
-                            {log.corrective_action && (
-                              <span className="text-orange-600">
-                                Tiltak: {log.corrective_action}
-                              </span>
-                            )}
-                            {log.notes && !log.corrective_action && log.notes}
-                          </TableCell>
+                <CardContent className="px-3 sm:px-6">
+                  {/* Mobile view - cards */}
+                  <div className="sm:hidden space-y-2">
+                    {todaysLogs.map((log) => (
+                      <div key={log.id} className="p-3 rounded-lg border bg-card">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium text-sm">{log.equipment?.name || 'Ukjent'}</span>
+                          <span className={`font-mono text-lg ${
+                            log.is_acceptable ? 'text-green-600' : 'text-red-600 font-bold'
+                          }`}>
+                            {log.temperature}°C
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>{log.measured_by_name}</span>
+                          <span>{format(new Date(log.measured_at), 'HH:mm', { locale: nb })}</span>
+                        </div>
+                        {log.is_acceptable ? (
+                          <Badge variant="success" className="mt-2 text-xs">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />OK
+                          </Badge>
+                        ) : (
+                          <Badge variant="destructive" className="mt-2 text-xs">
+                            <AlertTriangle className="h-3 w-3 mr-1" />Avvik
+                          </Badge>
+                        )}
+                        {log.corrective_action && (
+                          <p className="mt-2 text-xs text-orange-600">Tiltak: {log.corrective_action}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Desktop view - table */}
+                  <div className="hidden sm:block overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Utstyr</TableHead>
+                          <TableHead>Temperatur</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Registrert av</TableHead>
+                          <TableHead>Tidspunkt</TableHead>
+                          <TableHead>Merknad</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {todaysLogs.map((log) => (
+                          <TableRow key={log.id}>
+                            <TableCell className="font-medium">
+                              {log.equipment?.name || 'Ukjent'}
+                            </TableCell>
+                            <TableCell>
+                              <span className={`font-mono text-lg ${
+                                log.is_acceptable ? 'text-green-600' : 'text-red-600 font-bold'
+                              }`}>
+                                {log.temperature}°C
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              {log.is_acceptable ? (
+                                <Badge variant="success">
+                                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                                  OK
+                                </Badge>
+                              ) : (
+                                <Badge variant="destructive">
+                                  <AlertTriangle className="h-3 w-3 mr-1" />
+                                  Avvik
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>{log.measured_by_name}</TableCell>
+                            <TableCell>
+                              {format(new Date(log.measured_at), 'HH:mm', { locale: nb })}
+                            </TableCell>
+                            <TableCell className="max-w-[200px] truncate">
+                              {log.corrective_action && (
+                                <span className="text-orange-600">
+                                  Tiltak: {log.corrective_action}
+                                </span>
+                              )}
+                              {log.notes && !log.corrective_action && log.notes}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </CardContent>
               </Card>
             )}
