@@ -97,70 +97,73 @@ export default function TimeRegistration() {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="space-y-4 sm:space-y-6">
+        {/* Header - Compact on mobile */}
+        <div className="flex flex-col gap-3">
           <div>
-            <h1 className="text-2xl font-bold">Timeregistrering</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-xl sm:text-2xl font-bold">Timeregistrering</h1>
+            <p className="text-sm text-muted-foreground">
               Registrer og administrer arbeidstimer
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          
+          {/* Action buttons - horizontal scroll on mobile */}
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
             {isCompanyAdmin && (
-              <Button variant="outline" onClick={() => setQrDialogOpen(true)}>
-                <QrCode className="mr-2 h-4 w-4" />
-                QR-stempling
+              <Button variant="outline" size="sm" onClick={() => setQrDialogOpen(true)} className="shrink-0">
+                <QrCode className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">QR-stempling</span>
               </Button>
             )}
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="mr-2 h-4 w-4" />
-              Eksporter Excel
+            <Button variant="outline" size="sm" onClick={handleExport} className="shrink-0">
+              <Download className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Eksporter</span>
             </Button>
-            <Button onClick={() => setDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Registrer timer
+            <Button size="sm" onClick={() => setDialogOpen(true)} className="shrink-0">
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="sm:hidden">Timer</span>
+              <span className="hidden sm:inline">Registrer timer</span>
             </Button>
           </div>
         </div>
 
-        {/* View mode toggle and filter */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
+        {/* View mode toggle - compact on mobile */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-1 p-1 bg-muted rounded-lg w-full sm:w-auto overflow-x-auto">
             <Button
               variant={viewMode === "week" ? "default" : "ghost"}
               size="sm"
               onClick={() => setViewMode("week")}
+              className="flex-1 sm:flex-none"
             >
-              <CalendarDays className="h-4 w-4 mr-1" />
-              Uke
+              <CalendarDays className="h-4 w-4 sm:mr-1" />
+              <span className="hidden xs:inline">Uke</span>
             </Button>
             <Button
               variant={viewMode === "shifts" ? "default" : "ghost"}
               size="sm"
               onClick={() => setViewMode("shifts")}
+              className="flex-1 sm:flex-none"
             >
-              <CalendarCheck className="h-4 w-4 mr-1" />
-              Mine vakter
+              <CalendarCheck className="h-4 w-4 sm:mr-1" />
+              <span className="hidden xs:inline">Mine vakter</span>
             </Button>
             <Button
               variant={viewMode === "list" ? "default" : "ghost"}
               size="sm"
               onClick={() => setViewMode("list")}
+              className="flex-1 sm:flex-none"
             >
-              <List className="h-4 w-4 mr-1" />
-              Liste
+              <List className="h-4 w-4 sm:mr-1" />
+              <span className="hidden xs:inline">Liste</span>
             </Button>
           </div>
 
           {viewMode === "list" && (
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Periode:</span>
-              </div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
               <Select value={dateFilter} onValueChange={(v) => setDateFilter(v as DateFilter)}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -172,7 +175,7 @@ export default function TimeRegistration() {
                 </SelectContent>
               </Select>
               {start && end && (
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs sm:text-sm text-muted-foreground">
                   {format(start, "d. MMM", { locale: nb })} - {format(end, "d. MMM yyyy", { locale: nb })}
                 </span>
               )}
@@ -180,40 +183,40 @@ export default function TimeRegistration() {
           )}
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Totalt timer</CardTitle>
+        {/* Stats - Horizontal scroll on mobile */}
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:mx-0 sm:px-0 scrollbar-hide">
+          <Card className="min-w-[140px] sm:min-w-0 shrink-0 sm:shrink">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Totalt timer</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalHours.toFixed(1)}</div>
-              <p className="text-xs text-muted-foreground">
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{totalHours.toFixed(1)}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
                 i valgt periode
               </p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Til godkjenning</CardTitle>
+          <Card className="min-w-[140px] sm:min-w-0 shrink-0 sm:shrink">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Til godkjenning</CardTitle>
               <AlertCircle className="h-4 w-4 text-orange-500" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{pendingCount}</div>
-              <p className="text-xs text-muted-foreground">
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{pendingCount}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
                 venter på godkjenning
               </p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Godkjent</CardTitle>
+          <Card className="min-w-[140px] sm:min-w-0 shrink-0 sm:shrink">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Godkjent</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-500" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{approvedCount}</div>
-              <p className="text-xs text-muted-foreground">
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{approvedCount}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
                 godkjente registreringer
               </p>
             </CardContent>
@@ -224,11 +227,11 @@ export default function TimeRegistration() {
         {viewMode === "shifts" ? (
           <MyShiftsPanel />
         ) : viewMode === "week" ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Ukevisning</CardTitle>
+          <Card className="overflow-hidden">
+            <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-4">
+              <CardTitle className="text-base sm:text-lg">Ukevisning</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-2 sm:p-6 pt-0">
               <WeeklyTimeView
                 entries={entries}
                 onCreateEntry={createEntry}
