@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Plus, Download, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List, QrCode, CalendarCheck } from "lucide-react";
+import { Plus, Download, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List, QrCode, CalendarCheck, Sun } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { NewTimeEntryDialog } from "@/components/timeregistration/NewTimeEntryDialog";
 import { TimeEntryList } from "@/components/timeregistration/TimeEntryList";
 import { WeeklyTimeView } from "@/components/timeregistration/WeeklyTimeView";
+import { DailyTimeView } from "@/components/timeregistration/DailyTimeView";
 import { TimeClockQrDialog } from "@/components/timeregistration/TimeClockQrDialog";
 import { MyShiftsPanel } from "@/components/work-schedule/MyShiftsPanel";
 import { exportTimeEntriesToExcel } from "@/utils/timeEntryExport";
@@ -39,7 +40,7 @@ export default function TimeRegistration() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilter>("this-week");
-  const [viewMode, setViewMode] = useState<"list" | "week" | "shifts">("week");
+  const [viewMode, setViewMode] = useState<"list" | "week" | "shifts" | "day">("day");
 
   const getDateRange = (filter: DateFilter) => {
     const now = new Date();
@@ -129,7 +130,16 @@ export default function TimeRegistration() {
 
         {/* View mode toggle - compact on mobile */}
         <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-1 p-1 bg-muted rounded-lg w-full sm:w-auto overflow-x-auto">
+          <div className="flex items-center gap-1 p-1 bg-muted rounded-lg w-full sm:w-auto overflow-x-auto scrollbar-hide">
+            <Button
+              variant={viewMode === "day" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("day")}
+              className="flex-1 sm:flex-none"
+            >
+              <Sun className="h-4 w-4 sm:mr-1" />
+              <span className="hidden xs:inline">Dag</span>
+            </Button>
             <Button
               variant={viewMode === "week" ? "default" : "ghost"}
               size="sm"
@@ -146,7 +156,7 @@ export default function TimeRegistration() {
               className="flex-1 sm:flex-none"
             >
               <CalendarCheck className="h-4 w-4 sm:mr-1" />
-              <span className="hidden xs:inline">Mine vakter</span>
+              <span className="hidden xs:inline">Vakter</span>
             </Button>
             <Button
               variant={viewMode === "list" ? "default" : "ghost"}
@@ -226,6 +236,20 @@ export default function TimeRegistration() {
         {/* Content based on view mode */}
         {viewMode === "shifts" ? (
           <MyShiftsPanel />
+        ) : viewMode === "day" ? (
+          <Card className="overflow-hidden">
+            <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-4">
+              <CardTitle className="text-base sm:text-lg">Dagsvisning</CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <DailyTimeView
+                entries={entries}
+                onCreateEntry={createEntry}
+                onDeleteEntry={deleteEntry}
+                userId={user?.id || ""}
+              />
+            </CardContent>
+          </Card>
         ) : viewMode === "week" ? (
           <Card className="overflow-hidden">
             <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-4">
