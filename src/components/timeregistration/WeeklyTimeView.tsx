@@ -205,21 +205,36 @@ export function WeeklyTimeView({
   const isToday = (day: Date) => isSameDay(day, new Date());
 
   return (
-    <div className="space-y-4">
-      {/* Week navigation */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={goToPreviousWeek}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" onClick={goToNextWeek}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={goToCurrentWeek}>
-            I dag
-          </Button>
+    <div className="space-y-3 sm:space-y-4">
+      {/* Week navigation - Compact on mobile */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+        {/* Navigation row */}
+        <div className="flex items-center justify-between sm:justify-start gap-2">
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={goToPreviousWeek}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={goToNextWeek}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={goToCurrentWeek} className="h-8 px-2 sm:px-3">
+              I dag
+            </Button>
+          </div>
+          
+          {/* Week info - inline on mobile */}
+          <div className="text-right sm:hidden">
+            <span className="text-sm font-semibold">
+              Uke {format(currentWeekStart, "w", { locale: nb })}
+            </span>
+            <span className="text-xs text-muted-foreground ml-1">
+              ({weekTotal.toFixed(1)}t)
+            </span>
+          </div>
         </div>
-        <div className="text-center">
+        
+        {/* Desktop week info */}
+        <div className="hidden sm:block text-center">
           <h3 className="font-semibold">
             Uke {format(currentWeekStart, "w", { locale: nb })},{" "}
             {format(currentWeekStart, "yyyy")}
@@ -229,14 +244,21 @@ export function WeeklyTimeView({
             {format(addDays(currentWeekStart, 6), "d. MMM", { locale: nb })}
           </p>
         </div>
-        <div className="text-right">
+        
+        {/* Desktop total */}
+        <div className="hidden sm:block text-right">
           <p className="text-sm text-muted-foreground">Totalt denne uken</p>
           <p className="text-2xl font-bold">{weekTotal.toFixed(1)} t</p>
         </div>
+        
+        {/* Mobile date range */}
+        <p className="text-xs text-muted-foreground text-center sm:hidden">
+          {format(currentWeekStart, "d. MMM", { locale: nb })} - {format(addDays(currentWeekStart, 6), "d. MMM", { locale: nb })}
+        </p>
       </div>
 
-      {/* Week grid */}
-      <div className="grid grid-cols-7 gap-2">
+      {/* Week grid - Horizontal scroll on mobile */}
+      <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 sm:grid sm:grid-cols-7 sm:gap-2 sm:overflow-visible sm:mx-0 sm:px-0 scrollbar-hide">
         {weekDays.map((day) => {
           const dayEntries = getEntriesForDay(day);
           const daySchedules = getSchedulesForDay(day);
@@ -247,16 +269,16 @@ export function WeeklyTimeView({
             <Card
               key={day.toISOString()}
               className={cn(
-                "min-h-[140px] transition-colors",
+                "min-w-[100px] sm:min-w-0 shrink-0 sm:shrink min-h-[120px] sm:min-h-[140px] transition-colors",
                 today && "ring-2 ring-primary"
               )}
             >
               <CardContent className="p-2">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-1 sm:mb-2">
                   <div>
                     <p
                       className={cn(
-                        "text-xs font-medium uppercase",
+                        "text-[10px] sm:text-xs font-medium uppercase",
                         today && "text-primary"
                       )}
                     >
@@ -264,7 +286,7 @@ export function WeeklyTimeView({
                     </p>
                     <p
                       className={cn(
-                        "text-lg font-bold",
+                        "text-base sm:text-lg font-bold",
                         today && "text-primary"
                       )}
                     >
@@ -272,13 +294,13 @@ export function WeeklyTimeView({
                     </p>
                   </div>
                   {dayTotal > 0 && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-[10px] sm:text-xs px-1 sm:px-2">
                       {dayTotal.toFixed(1)}t
                     </Badge>
                   )}
                 </div>
 
-                <div className="space-y-1 mb-2 max-h-[100px] overflow-y-auto">
+                <div className="space-y-1 mb-1 sm:mb-2 max-h-[60px] sm:max-h-[100px] overflow-y-auto">
                   {/* Show planned schedules first */}
                   {daySchedules.map((schedule) => {
                     const confirmed = isScheduleConfirmed(schedule);
@@ -289,16 +311,16 @@ export function WeeklyTimeView({
                         <TooltipTrigger asChild>
                           <div
                             className={cn(
-                              "text-xs p-1.5 rounded flex items-center justify-between group",
+                              "text-[10px] sm:text-xs p-1 sm:p-1.5 rounded flex items-center justify-between group",
                               confirmed 
                                 ? "bg-green-500/20 text-green-700 dark:text-green-400" 
                                 : "bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-dashed border-blue-400"
                             )}
                           >
-                            <span className="truncate flex-1 flex items-center gap-1">
-                              <Calendar className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate flex-1 flex items-center gap-0.5 sm:gap-1">
+                              <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
                               {scheduleHours.toFixed(1)}t
-                              <span className="text-muted-foreground ml-1 truncate text-[10px]">
+                              <span className="text-muted-foreground ml-0.5 sm:ml-1 truncate text-[8px] sm:text-[10px] hidden sm:inline">
                                 {schedule.start_time.substring(0, 5)}-{schedule.end_time.substring(0, 5)}
                               </span>
                             </span>
@@ -306,11 +328,11 @@ export function WeeklyTimeView({
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-5 w-5 ml-1"
+                                className="h-4 w-4 sm:h-5 sm:w-5 ml-0.5 sm:ml-1"
                                 onClick={() => handleConfirmSchedule(schedule)}
                                 disabled={confirmingScheduleId === schedule.id}
                               >
-                                <CheckCircle className="h-3 w-3 text-green-600" />
+                                <CheckCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-600" />
                               </Button>
                             )}
                           </div>
@@ -337,17 +359,17 @@ export function WeeklyTimeView({
                       <TooltipTrigger asChild>
                         <div
                           className={cn(
-                            "text-xs p-1 rounded flex items-center justify-between group",
+                            "text-[10px] sm:text-xs p-1 rounded flex items-center justify-between group",
                             statusColors[entry.status]
                           )}
                         >
-                          <span className="truncate flex-1 flex items-center gap-1">
+                          <span className="truncate flex-1 flex items-center gap-0.5 sm:gap-1">
                             {entry.source === "qr_clock" && (
-                              <QrCode className="h-3 w-3 flex-shrink-0" />
+                              <QrCode className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
                             )}
                             {Number(entry.hours).toFixed(1)}t
                             {entry.project_name && (
-                              <span className="text-muted-foreground ml-1 truncate">
+                              <span className="text-muted-foreground ml-0.5 sm:ml-1 truncate hidden sm:inline">
                                 - {entry.project_name.split(" - ")[0]}
                               </span>
                             )}
@@ -358,10 +380,10 @@ export function WeeklyTimeView({
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-4 w-4 opacity-0 group-hover:opacity-100"
+                              className="h-3.5 w-3.5 sm:h-4 sm:w-4 opacity-0 group-hover:opacity-100"
                               onClick={() => onDeleteEntry(entry.id)}
                             >
-                              <Trash2 className="h-3 w-3" />
+                              <Trash2 className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                             </Button>
                           )}
                         </div>
@@ -388,11 +410,12 @@ export function WeeklyTimeView({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full h-6 text-xs"
+                  className="w-full h-5 sm:h-6 text-[10px] sm:text-xs p-0"
                   onClick={() => openDayEditor(day)}
                 >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Legg til
+                  <Plus className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
+                  <span className="hidden sm:inline">Legg til</span>
+                  <span className="sm:hidden">+</span>
                 </Button>
               </CardContent>
             </Card>
