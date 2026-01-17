@@ -93,77 +93,111 @@ export function ManageEquipmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-[700px] max-h-[85vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Administrer utstyr for temperaturlogging
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="truncate">Administrer utstyr</span>
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Equipment list */}
+          {/* Equipment list - Mobile card view */}
           {equipment.length > 0 && (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Navn</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Plassering</TableHead>
-                  <TableHead>Grenser</TableHead>
-                  <TableHead>Frekvens</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile cards */}
+              <div className="sm:hidden space-y-2">
                 {equipment.map((equip) => (
-                  <TableRow key={equip.id}>
-                    <TableCell className="font-medium">{equip.name}</TableCell>
-                    <TableCell>
-                      {EQUIPMENT_TYPE_DEFAULTS[equip.equipment_type as keyof typeof EQUIPMENT_TYPE_DEFAULTS]?.label || equip.equipment_type}
-                    </TableCell>
-                    <TableCell>{equip.location || "-"}</TableCell>
-                    <TableCell>
-                      {equip.min_temp}°C - {equip.max_temp}°C
-                    </TableCell>
-                    <TableCell>
-                      {equip.measurement_frequency === 'daily' ? 'Daglig' :
-                       equip.measurement_frequency === 'twice_daily' ? '2x daglig' : 'Ukentlig'}
-                    </TableCell>
-                    <TableCell>
+                  <div key={equip.id} className="p-3 rounded-lg border bg-card">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{equip.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {EQUIPMENT_TYPE_DEFAULTS[equip.equipment_type as keyof typeof EQUIPMENT_TYPE_DEFAULTS]?.label || equip.equipment_type}
+                        </p>
+                      </div>
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-8 w-8 flex-shrink-0"
                         onClick={() => handleDelete(equip.id, equip.name)}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                      {equip.location && <span>📍 {equip.location}</span>}
+                      <span>🌡️ {equip.min_temp}°C – {equip.max_temp}°C</span>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+              
+              {/* Desktop table */}
+              <div className="hidden sm:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Navn</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Plassering</TableHead>
+                      <TableHead>Grenser</TableHead>
+                      <TableHead>Frekvens</TableHead>
+                      <TableHead></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {equipment.map((equip) => (
+                      <TableRow key={equip.id}>
+                        <TableCell className="font-medium">{equip.name}</TableCell>
+                        <TableCell>
+                          {EQUIPMENT_TYPE_DEFAULTS[equip.equipment_type as keyof typeof EQUIPMENT_TYPE_DEFAULTS]?.label || equip.equipment_type}
+                        </TableCell>
+                        <TableCell>{equip.location || "-"}</TableCell>
+                        <TableCell>
+                          {equip.min_temp}°C - {equip.max_temp}°C
+                        </TableCell>
+                        <TableCell>
+                          {equip.measurement_frequency === 'daily' ? 'Daglig' :
+                           equip.measurement_frequency === 'twice_daily' ? '2x daglig' : 'Ukentlig'}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(equip.id, equip.name)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
 
           {/* Add form */}
           {showAddForm ? (
-            <div className="border rounded-lg p-4 space-y-4">
-              <h4 className="font-medium">Legg til nytt utstyr</h4>
+            <div className="border rounded-lg p-3 sm:p-4 space-y-3 sm:space-y-4">
+              <h4 className="font-medium text-sm sm:text-base">Legg til nytt utstyr</h4>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Navn *</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs sm:text-sm">Navn *</Label>
                   <Input
                     placeholder="f.eks. Kjøleskap 1"
                     value={newEquipment.name}
                     onChange={(e) => setNewEquipment({ ...newEquipment, name: e.target.value })}
+                    className="h-9 sm:h-10"
                   />
                 </div>
                 
-                <div className="space-y-2">
-                  <Label>Type</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs sm:text-sm">Type</Label>
                   <Select value={newEquipment.equipment_type} onValueChange={handleTypeChange}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 sm:h-10">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -177,58 +211,61 @@ export function ManageEquipmentDialog({
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Plassering</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs sm:text-sm">Plassering</Label>
                   <Input
                     placeholder="f.eks. Kjøkken"
                     value={newEquipment.location}
                     onChange={(e) => setNewEquipment({ ...newEquipment, location: e.target.value })}
+                    className="h-9 sm:h-10"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Målefrekvens</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs sm:text-sm">Målefrekvens</Label>
                   <Select 
                     value={newEquipment.measurement_frequency} 
                     onValueChange={(val) => setNewEquipment({ ...newEquipment, measurement_frequency: val })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 sm:h-10">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="daily">Daglig</SelectItem>
-                      <SelectItem value="twice_daily">2 ganger daglig</SelectItem>
+                      <SelectItem value="twice_daily">2x daglig</SelectItem>
                       <SelectItem value="weekly">Ukentlig</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Min. temp (°C)</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs sm:text-sm">Min. temp (°C)</Label>
                   <Input
                     type="number"
                     step="0.1"
                     value={newEquipment.min_temp}
                     onChange={(e) => setNewEquipment({ ...newEquipment, min_temp: e.target.value })}
+                    className="h-9 sm:h-10"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Maks. temp (°C)</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs sm:text-sm">Maks. temp (°C)</Label>
                   <Input
                     type="number"
                     step="0.1"
                     value={newEquipment.max_temp}
                     onChange={(e) => setNewEquipment({ ...newEquipment, max_temp: e.target.value })}
+                    className="h-9 sm:h-10"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-2">
-                <Button onClick={handleAdd} disabled={addEquipment.isPending}>
+              <div className="flex gap-2 pt-2">
+                <Button size="sm" onClick={handleAdd} disabled={addEquipment.isPending}>
                   {addEquipment.isPending ? "Legger til..." : "Legg til"}
                 </Button>
-                <Button variant="outline" onClick={() => setShowAddForm(false)}>
+                <Button size="sm" variant="outline" onClick={() => setShowAddForm(false)}>
                   Avbryt
                 </Button>
               </div>
