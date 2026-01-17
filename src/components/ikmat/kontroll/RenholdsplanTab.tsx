@@ -239,68 +239,91 @@ export const RenholdsplanTab = () => {
 
     return (
       <Card key={frequency}>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Icon className="h-5 w-5 text-primary" />
+        <CardHeader className="p-3 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10">
+                <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-lg">{FREQUENCY_LABELS[frequency]} renhold</CardTitle>
-                <CardDescription>{tasks.length} oppgave{tasks.length !== 1 ? 'r' : ''}</CardDescription>
+                <CardTitle className="text-base sm:text-lg">{FREQUENCY_LABELS[frequency]}</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">{tasks.length} oppgave{tasks.length !== 1 ? 'r' : ''}</CardDescription>
               </div>
             </div>
-            <Button onClick={() => handleStartCleaning(frequency)}>
-              <ClipboardCheck className="h-4 w-4 mr-2" />
-              Utfør {FREQUENCY_LABELS[frequency].toLowerCase()} renhold
+            <Button size="sm" className="w-full sm:w-auto" onClick={() => handleStartCleaning(frequency)}>
+              <ClipboardCheck className="h-4 w-4 mr-1.5" />
+              Utfør
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Område</TableHead>
-                <TableHead>Metode</TableHead>
-                <TableHead>Ansvarlig</TableHead>
-                <TableHead className="w-[100px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tasks.map((task, idx) => {
-                const isCustom = 'id' in task;
-                return (
-                  <TableRow key={isCustom ? (task as any).id : `${frequency}-${idx}`}>
-                    <TableCell className="font-medium">{task.area}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground max-w-md truncate">
-                      {task.method}
-                    </TableCell>
-                    <TableCell>{task.responsible}</TableCell>
-                    <TableCell>
-                      {isCustom && (
-                        <div className="flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditTask(task)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteTask((task as any).id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+        <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+          {/* Mobile view - cards */}
+          <div className="sm:hidden space-y-2">
+            {tasks.map((task, idx) => {
+              const isCustom = 'id' in task;
+              return (
+                <div key={isCustom ? (task as any).id : `${frequency}-${idx}`} className="p-3 rounded-lg border bg-card">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{task.area}</p>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{task.method}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Ansvarlig: {task.responsible}</p>
+                    </div>
+                    {isCustom && (
+                      <div className="flex gap-1 flex-shrink-0">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditTask(task)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteTask((task as any).id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Desktop view - table */}
+          <div className="hidden sm:block overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Område</TableHead>
+                  <TableHead>Metode</TableHead>
+                  <TableHead>Ansvarlig</TableHead>
+                  <TableHead className="w-[100px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {tasks.map((task, idx) => {
+                  const isCustom = 'id' in task;
+                  return (
+                    <TableRow key={isCustom ? (task as any).id : `${frequency}-${idx}`}>
+                      <TableCell className="font-medium">{task.area}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground max-w-md truncate">
+                        {task.method}
+                      </TableCell>
+                      <TableCell>{task.responsible}</TableCell>
+                      <TableCell>
+                        {isCustom && (
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => handleEditTask(task)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteTask((task as any).id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     );

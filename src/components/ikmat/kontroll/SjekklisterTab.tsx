@@ -162,39 +162,40 @@ export const SjekklisterTab = () => {
         </TabsList>
 
         <TabsContent value="templates" className="space-y-4">
-          <div className="flex justify-end mb-4">
-            <Button onClick={() => setCreateDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Opprett sjekkliste
+          <div className="flex justify-end mb-3 sm:mb-4">
+            <Button size="sm" className="sm:size-default" onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-1.5 sm:mr-2" />
+              <span className="hidden xs:inline">Opprett</span> sjekkliste
             </Button>
           </div>
           
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {allChecklists.map((checklist) => {
               const checklistResponses = getResponsesForChecklist(checklist.id);
               const isCustom = customChecklists?.some(c => c.id === checklist.id);
               
               return (
-                <Card key={checklist.id}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <CardTitle className="text-lg">{checklist.name}</CardTitle>
+                <Card key={checklist.id} className="flex flex-col">
+                  <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                          <CardTitle className="text-base sm:text-lg truncate">{checklist.name}</CardTitle>
                           {isCustom && (
-                            <Badge variant="secondary" className="text-xs">Tilpasset</Badge>
+                            <Badge variant="secondary" className="text-xs flex-shrink-0">Tilpasset</Badge>
                           )}
                         </div>
-                        <CardDescription className="mt-2 text-sm">{checklist.description}</CardDescription>
+                        <CardDescription className="mt-1 sm:mt-2 text-xs sm:text-sm line-clamp-2">{checklist.description}</CardDescription>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="ml-2">
-                          {checklist.checkpoints?.length || 0} punkter
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <Badge variant="outline" className="text-xs">
+                          {checklist.checkpoints?.length || 0}
                         </Badge>
                         {isCustom && (
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon"
+                            className="h-8 w-8"
                             onClick={() => handleDeleteCustomChecklist(checklist.id)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -203,33 +204,34 @@ export const SjekklisterTab = () => {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      {checklist.checkpoints?.slice(0, 3).map((point, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-sm">
-                          <CheckCircle2 className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                          <span className="text-muted-foreground">{point}</span>
+                  <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 flex-1 flex flex-col">
+                    <div className="space-y-1.5 sm:space-y-2 flex-1">
+                      {checklist.checkpoints?.slice(0, 2).map((point, idx) => (
+                        <div key={idx} className="flex items-start gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                          <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <span className="text-muted-foreground line-clamp-1">{point}</span>
                         </div>
                       ))}
-                      {checklist.checkpoints?.length > 3 && (
-                        <p className="text-sm text-muted-foreground italic">
-                          ... og {checklist.checkpoints.length - 3} flere punkter
+                      {checklist.checkpoints?.length > 2 && (
+                        <p className="text-xs sm:text-sm text-muted-foreground italic">
+                          +{checklist.checkpoints.length - 2} flere
                         </p>
                       )}
                     </div>
 
                     {checklistResponses.length > 0 && (
-                      <div className="text-sm text-muted-foreground">
-                        Utfylt {checklistResponses.length} {checklistResponses.length === 1 ? 'gang' : 'ganger'}
+                      <div className="text-xs sm:text-sm text-muted-foreground mt-2 sm:mt-3">
+                        Utfylt {checklistResponses.length}x
                       </div>
                     )}
 
                     <Button 
-                      className="w-full gap-2" 
+                      className="w-full gap-1.5 mt-3 sm:mt-4" 
+                      size="sm"
                       onClick={() => handleStartChecklist(checklist)}
                     >
                       <PlayCircle className="h-4 w-4" />
-                      Start sjekkliste
+                      Start
                     </Button>
                   </CardContent>
                 </Card>

@@ -154,58 +154,60 @@ export const KalenderTab = () => {
         </Button>
       </div>
 
-      {/* Quick stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className={todaysPendingTasks.length > 0 ? "border-orange-500" : "border-green-500"}>
-          <CardHeader className="py-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              I dag
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="py-2">
-            <p className="text-2xl font-bold">
-              {todaysPendingTasks.length} 
-              <span className="text-sm font-normal text-muted-foreground ml-2">
-                gjenstående oppgaver
-              </span>
-            </p>
-          </CardContent>
-        </Card>
+      {/* Quick stats - horizontal scroll on mobile */}
+      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 pb-2">
+        <div className="flex gap-3 sm:grid sm:grid-cols-3 sm:gap-4 min-w-max sm:min-w-0">
+          <Card className={`min-w-[160px] sm:min-w-0 ${todaysPendingTasks.length > 0 ? "border-orange-500" : "border-green-500"}`}>
+            <CardHeader className="py-2 sm:py-3 px-3 sm:px-6">
+              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                I dag
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="py-2 px-3 sm:px-6">
+              <p className="text-xl sm:text-2xl font-bold">
+                {todaysPendingTasks.length} 
+                <span className="text-xs sm:text-sm font-normal text-muted-foreground ml-1 sm:ml-2">
+                  gjenstår
+                </span>
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card className={overdueTasks.length > 0 ? "border-red-500" : ""}>
-          <CardHeader className="py-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
-              Avvik / Uutført
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="py-2">
-            <p className="text-2xl font-bold text-red-600">
-              {overdueTasks.length}
-              <span className="text-sm font-normal text-muted-foreground ml-2">
-                oppgaver
-              </span>
-            </p>
-          </CardContent>
-        </Card>
+          <Card className={`min-w-[160px] sm:min-w-0 ${overdueTasks.length > 0 ? "border-red-500" : ""}`}>
+            <CardHeader className="py-2 sm:py-3 px-3 sm:px-6">
+              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                Avvik
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="py-2 px-3 sm:px-6">
+              <p className="text-xl sm:text-2xl font-bold text-red-600">
+                {overdueTasks.length}
+                <span className="text-xs sm:text-sm font-normal text-muted-foreground ml-1 sm:ml-2">
+                  oppgaver
+                </span>
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="py-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <ListTodo className="h-4 w-4" />
-              Planlagte oppgaver
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="py-2">
-            <p className="text-2xl font-bold">
-              {tasks?.length || 0}
-              <span className="text-sm font-normal text-muted-foreground ml-2">
-                aktive maler
-              </span>
-            </p>
-          </CardContent>
-        </Card>
+          <Card className="min-w-[160px] sm:min-w-0">
+            <CardHeader className="py-2 sm:py-3 px-3 sm:px-6">
+              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2">
+                <ListTodo className="h-4 w-4" />
+                Planlagt
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="py-2 px-3 sm:px-6">
+              <p className="text-xl sm:text-2xl font-bold">
+                {tasks?.length || 0}
+                <span className="text-xs sm:text-sm font-normal text-muted-foreground ml-1 sm:ml-2">
+                  maler
+                </span>
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* View switcher */}
@@ -222,99 +224,30 @@ export const KalenderTab = () => {
         </TabsList>
 
         <TabsContent value="calendar" className="mt-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Calendar */}
-            <Card className="lg:col-span-2">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">
-                    {format(currentMonth, 'MMMM yyyy', { locale: nb })}
-                  </CardTitle>
-                  <div className="flex gap-1">
-                    <Button 
-                      variant="outline" 
-                      size="icon"
-                      onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => {
-                        setCurrentMonth(new Date());
-                        setSelectedDate(new Date());
-                      }}
-                    >
-                      I dag
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="icon"
-                      onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => date && setSelectedDate(date)}
-                  month={currentMonth}
-                  onMonthChange={setCurrentMonth}
-                  locale={nb}
-                  className="rounded-md border w-full"
-                  components={{
-                    DayContent: ({ date }) => (
-                      <div className="flex flex-col items-center">
-                        <span>{date.getDate()}</span>
-                        {getDayContent(date)}
-                      </div>
-                    ),
-                  }}
-                />
-                <div className="flex gap-4 mt-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-green-500" />
-                    <span>Fullført</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500" />
-                    <span>Avvik</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-orange-500" />
-                    <span>Venter</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Selected date events */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">
+          {/* Mobile: Events first, then calendar. Desktop: side by side */}
+          <div className="flex flex-col-reverse lg:grid lg:grid-cols-3 gap-4 lg:gap-6">
+            {/* Selected date events - Shows first on mobile */}
+            <Card className="lg:order-2">
+              <CardHeader className="py-3 sm:py-6">
+                <CardTitle className="text-base sm:text-lg">
                   {format(selectedDate, 'EEEE d. MMMM', { locale: nb })}
                 </CardTitle>
                 <CardDescription>
                   {selectedDateEvents.length} hendelser
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[400px]">
+              <CardContent className="px-3 sm:px-6">
+                <ScrollArea className="h-[250px] sm:h-[400px]">
                   {selectedDateEvents.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-8">
+                    <p className="text-sm text-muted-foreground text-center py-6">
                       Ingen hendelser denne dagen
                     </p>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       {selectedDateEvents.map((event) => (
                         <div 
                           key={event.id}
-                          className="p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                          className="p-2.5 sm:p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-start gap-2 flex-1 min-w-0">
@@ -337,7 +270,7 @@ export const KalenderTab = () => {
                               disabled={completeTask.isPending}
                             >
                               <CheckCircle2 className="h-4 w-4 mr-2" />
-                              Marker som fullført
+                              Fullført
                             </Button>
                           )}
                         </div>
@@ -345,6 +278,79 @@ export const KalenderTab = () => {
                     </div>
                   )}
                 </ScrollArea>
+              </CardContent>
+            </Card>
+
+            {/* Calendar */}
+            <Card className="lg:col-span-2 lg:order-1">
+              <CardHeader className="pb-2 px-3 sm:px-6">
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-base sm:text-lg">
+                    {format(currentMonth, 'MMMM yyyy', { locale: nb })}
+                  </CardTitle>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      className="h-8 w-8 sm:h-9 sm:w-9"
+                      onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="h-8 px-2 sm:px-3 text-xs sm:text-sm"
+                      onClick={() => {
+                        setCurrentMonth(new Date());
+                        setSelectedDate(new Date());
+                      }}
+                    >
+                      I dag
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      className="h-8 w-8 sm:h-9 sm:w-9"
+                      onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="px-2 sm:px-6">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => date && setSelectedDate(date)}
+                  month={currentMonth}
+                  onMonthChange={setCurrentMonth}
+                  locale={nb}
+                  className="rounded-md border w-full [&_.rdp-cell]:p-0 [&_.rdp-button]:w-full [&_.rdp-button]:h-10 sm:[&_.rdp-button]:h-12"
+                  components={{
+                    DayContent: ({ date }) => (
+                      <div className="flex flex-col items-center">
+                        <span className="text-sm sm:text-base">{date.getDate()}</span>
+                        {getDayContent(date)}
+                      </div>
+                    ),
+                  }}
+                />
+                <div className="flex flex-wrap gap-3 sm:gap-4 mt-3 sm:mt-4 text-xs sm:text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500" />
+                    <span>Fullført</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500" />
+                    <span>Avvik</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-orange-500" />
+                    <span>Venter</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
