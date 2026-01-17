@@ -327,7 +327,8 @@ export const KalenderTab = () => {
                   month={currentMonth}
                   onMonthChange={setCurrentMonth}
                   locale={nb}
-                  className="rounded-md border w-full [&_.rdp-cell]:p-0 [&_.rdp-button]:w-full [&_.rdp-button]:h-10 sm:[&_.rdp-button]:h-12"
+                  captionLayout="buttons"
+                  className="rounded-md border w-full [&_.rdp-cell]:p-0 [&_.rdp-button]:w-full [&_.rdp-button]:h-10 sm:[&_.rdp-button]:h-12 [&_.rdp-caption]:hidden"
                   components={{
                     DayContent: ({ date }) => (
                       <div className="flex flex-col items-center">

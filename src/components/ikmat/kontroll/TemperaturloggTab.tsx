@@ -261,57 +261,94 @@ export const TemperaturloggTab = () => {
 
           <TabsContent value="equipment">
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Registrert utstyr</CardTitle>
-                <CardDescription>
+              <CardHeader className="py-3 sm:py-6">
+                <CardTitle className="text-base sm:text-lg">Registrert utstyr</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   Kjøleskap, frysere og annet utstyr som skal temperaturlogges
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Navn</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Plassering</TableHead>
-                      <TableHead>Temperaturgrenser</TableHead>
-                      <TableHead>Frekvens</TableHead>
-                      <TableHead>Status i dag</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {equipment.map((equip) => {
-                      const hasLogToday = todaysLogs.some(log => log.equipment_id === equip.id);
-                      const todayLog = todaysLogs.find(log => log.equipment_id === equip.id);
-                      
-                      return (
-                        <TableRow key={equip.id}>
-                          <TableCell className="font-medium">{equip.name}</TableCell>
-                          <TableCell>{getEquipmentTypeLabel(equip.equipment_type)}</TableCell>
-                          <TableCell>{equip.location || '-'}</TableCell>
-                          <TableCell>
-                            {equip.min_temp}°C til {equip.max_temp}°C
-                          </TableCell>
-                          <TableCell>
-                            {equip.measurement_frequency === 'daily' ? 'Daglig' :
-                             equip.measurement_frequency === 'twice_daily' ? '2x daglig' : 'Ukentlig'}
-                          </TableCell>
-                          <TableCell>
-                            {hasLogToday ? (
-                              <Badge variant={todayLog?.is_acceptable ? "success" : "destructive"}>
-                                {todayLog?.temperature}°C
-                              </Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-orange-600">
-                                Ikke registrert
-                              </Badge>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+              <CardContent className="px-3 sm:px-6">
+                {/* Mobile card view */}
+                <div className="sm:hidden space-y-2">
+                  {equipment.map((equip) => {
+                    const hasLogToday = todaysLogs.some(log => log.equipment_id === equip.id);
+                    const todayLog = todaysLogs.find(log => log.equipment_id === equip.id);
+                    
+                    return (
+                      <div key={equip.id} className="p-3 rounded-lg border bg-card">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm">{equip.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {getEquipmentTypeLabel(equip.equipment_type)}
+                            </p>
+                          </div>
+                          {hasLogToday ? (
+                            <Badge variant={todayLog?.is_acceptable ? "success" : "destructive"} className="text-xs">
+                              {todayLog?.temperature}°C
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-orange-600 text-xs">
+                              Venter
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                          {equip.location && <span>📍 {equip.location}</span>}
+                          <span>🌡️ {equip.min_temp}°C – {equip.max_temp}°C</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {/* Desktop table view */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Navn</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Plassering</TableHead>
+                        <TableHead>Temperaturgrenser</TableHead>
+                        <TableHead>Frekvens</TableHead>
+                        <TableHead>Status i dag</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {equipment.map((equip) => {
+                        const hasLogToday = todaysLogs.some(log => log.equipment_id === equip.id);
+                        const todayLog = todaysLogs.find(log => log.equipment_id === equip.id);
+                        
+                        return (
+                          <TableRow key={equip.id}>
+                            <TableCell className="font-medium">{equip.name}</TableCell>
+                            <TableCell>{getEquipmentTypeLabel(equip.equipment_type)}</TableCell>
+                            <TableCell>{equip.location || '-'}</TableCell>
+                            <TableCell>
+                              {equip.min_temp}°C til {equip.max_temp}°C
+                            </TableCell>
+                            <TableCell>
+                              {equip.measurement_frequency === 'daily' ? 'Daglig' :
+                               equip.measurement_frequency === 'twice_daily' ? '2x daglig' : 'Ukentlig'}
+                            </TableCell>
+                            <TableCell>
+                              {hasLogToday ? (
+                                <Badge variant={todayLog?.is_acceptable ? "success" : "destructive"}>
+                                  {todayLog?.temperature}°C
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-orange-600">
+                                  Ikke registrert
+                                </Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
