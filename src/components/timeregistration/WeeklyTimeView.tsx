@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format, startOfWeek, addDays, isSameDay } from "date-fns";
 import { nb } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Trash2, QrCode, Calendar, CheckCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,11 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
@@ -32,7 +27,6 @@ import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useWorkSchedules, WorkSchedule } from "@/hooks/useWorkSchedules";
 import { useTimeEntries } from "@/hooks/useTimeEntries";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
 
 interface TimeEntry {
   id: string;
@@ -257,166 +251,112 @@ export function WeeklyTimeView({
         </p>
       </div>
 
-      {/* Week grid - Horizontal scroll on mobile */}
-      <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 sm:grid sm:grid-cols-7 sm:gap-2 sm:overflow-visible sm:mx-0 sm:px-0 scrollbar-hide">
+      {/* Week grid - Improved layout */}
+      <div className="grid grid-cols-7 gap-1 sm:gap-2">
         {weekDays.map((day) => {
           const dayEntries = getEntriesForDay(day);
           const daySchedules = getSchedulesForDay(day);
           const dayTotal = getDayTotal(day);
           const today = isToday(day);
+          const hasEntries = dayEntries.length > 0 || daySchedules.length > 0;
 
           return (
             <Card
               key={day.toISOString()}
               className={cn(
-                "min-w-[100px] sm:min-w-0 shrink-0 sm:shrink min-h-[120px] sm:min-h-[140px] transition-colors",
-                today && "ring-2 ring-primary"
+                "min-h-[100px] sm:min-h-[140px] transition-colors cursor-pointer hover:bg-accent/50",
+                today && "ring-2 ring-primary",
+                hasEntries && "bg-muted/30"
               )}
+              onClick={() => openDayEditor(day)}
             >
-              <CardContent className="p-2">
-                <div className="flex items-center justify-between mb-1 sm:mb-2">
-                  <div>
-                    <p
-                      className={cn(
-                        "text-[10px] sm:text-xs font-medium uppercase",
-                        today && "text-primary"
-                      )}
-                    >
-                      {format(day, "EEE", { locale: nb })}
-                    </p>
-                    <p
-                      className={cn(
-                        "text-base sm:text-lg font-bold",
-                        today && "text-primary"
-                      )}
-                    >
-                      {format(day, "d")}
-                    </p>
-                  </div>
-                  {dayTotal > 0 && (
-                    <Badge variant="secondary" className="text-[10px] sm:text-xs px-1 sm:px-2">
-                      {dayTotal.toFixed(1)}t
-                    </Badge>
-                  )}
+              <CardContent className="p-1.5 sm:p-2 h-full flex flex-col">
+                {/* Day header */}
+                <div className="text-center mb-1">
+                  <p
+                    className={cn(
+                      "text-[9px] sm:text-xs font-medium uppercase",
+                      today && "text-primary"
+                    )}
+                  >
+                    {format(day, "EEEEE", { locale: nb })}
+                  </p>
+                  <p
+                    className={cn(
+                      "text-sm sm:text-lg font-bold leading-none",
+                      today && "text-primary"
+                    )}
+                  >
+                    {format(day, "d")}
+                  </p>
                 </div>
 
-                <div className="space-y-1 mb-1 sm:mb-2 max-h-[60px] sm:max-h-[100px] overflow-y-auto">
-                  {/* Show planned schedules first */}
-                  {daySchedules.map((schedule) => {
+                {/* Hours badge */}
+                {dayTotal > 0 && (
+                  <div className="flex justify-center mb-1">
+                    <Badge variant="secondary" className="text-[9px] sm:text-xs px-1 py-0">
+                      {dayTotal.toFixed(1)}t
+                    </Badge>
+                  </div>
+                )}
+
+                {/* Entry indicators */}
+                <div className="flex-1 flex flex-col items-center justify-center gap-0.5 overflow-hidden">
+                  {/* Show schedule indicators */}
+                  {daySchedules.slice(0, 2).map((schedule) => {
                     const confirmed = isScheduleConfirmed(schedule);
-                    const scheduleHours = calculateScheduleHours(schedule);
-                    
                     return (
-                      <Tooltip key={`schedule-${schedule.id}`}>
-                        <TooltipTrigger asChild>
-                          <div
-                            className={cn(
-                              "text-[10px] sm:text-xs p-1 sm:p-1.5 rounded flex items-center justify-between group",
-                              confirmed 
-                                ? "bg-green-500/20 text-green-700 dark:text-green-400" 
-                                : "bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-dashed border-blue-400"
-                            )}
-                          >
-                            <span className="truncate flex-1 flex items-center gap-0.5 sm:gap-1">
-                              <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
-                              {scheduleHours.toFixed(1)}t
-                              <span className="text-muted-foreground ml-0.5 sm:ml-1 truncate text-[8px] sm:text-[10px] hidden sm:inline">
-                                {schedule.start_time.substring(0, 5)}-{schedule.end_time.substring(0, 5)}
-                              </span>
-                            </span>
-                            {!confirmed && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-4 w-4 sm:h-5 sm:w-5 ml-0.5 sm:ml-1"
-                                onClick={() => handleConfirmSchedule(schedule)}
-                                disabled={confirmingScheduleId === schedule.id}
-                              >
-                                <CheckCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-600" />
-                              </Button>
-                            )}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <div>
-                            <p className="font-medium">
-                              {confirmed ? "✓ Bekreftet vakt" : "Planlagt vakt - klikk ✓ for å bekrefte"}
-                            </p>
-                            <p className="text-xs">
-                              {schedule.start_time.substring(0, 5)} - {schedule.end_time.substring(0, 5)}
-                              {schedule.location && ` • ${schedule.location}`}
-                              {schedule.shift_role && ` • ${schedule.shift_role}`}
-                            </p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
+                      <div
+                        key={`schedule-${schedule.id}`}
+                        className={cn(
+                          "w-full h-1.5 sm:h-2 rounded-full",
+                          confirmed ? "bg-green-500" : "bg-blue-400"
+                        )}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!confirmed) handleConfirmSchedule(schedule);
+                        }}
+                      />
                     );
                   })}
                   
-                  {/* Show regular time entries */}
-                  {dayEntries.filter(e => e.source !== "work_schedule").map((entry) => (
-                    <Tooltip key={entry.id}>
-                      <TooltipTrigger asChild>
-                        <div
-                          className={cn(
-                            "text-[10px] sm:text-xs p-1 rounded flex items-center justify-between group",
-                            statusColors[entry.status]
-                          )}
-                        >
-                          <span className="truncate flex-1 flex items-center gap-0.5 sm:gap-1">
-                            {entry.source === "qr_clock" && (
-                              <QrCode className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
-                            )}
-                            {Number(entry.hours).toFixed(1)}t
-                            {entry.project_name && (
-                              <span className="text-muted-foreground ml-0.5 sm:ml-1 truncate hidden sm:inline">
-                                - {entry.project_name.split(" - ")[0]}
-                              </span>
-                            )}
-                          </span>
-                          {entry.source !== "qr_clock" && (entry.status === "draft" ||
-                            entry.status === "submitted" ||
-                            entry.status === "rejected") && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-3.5 w-3.5 sm:h-4 sm:w-4 opacity-0 group-hover:opacity-100"
-                              onClick={() => onDeleteEntry(entry.id)}
-                            >
-                              <Trash2 className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                            </Button>
-                          )}
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {entry.source === "qr_clock" ? (
-                          <div>
-                            <p className="font-medium">QR-stempling</p>
-                            {entry.clock_in && entry.clock_out && (
-                              <p className="text-xs">
-                                {format(new Date(entry.clock_in), "HH:mm")} - {format(new Date(entry.clock_out), "HH:mm")}
-                                {entry.total_break_minutes ? ` (${entry.total_break_minutes} min pause)` : ""}
-                              </p>
-                            )}
-                          </div>
-                        ) : (
-                          <p>{entry.description || entry.project_name || "Manuell registrering"}</p>
-                        )}
-                      </TooltipContent>
-                    </Tooltip>
+                  {/* Show entry indicators */}
+                  {dayEntries.filter(e => e.source !== "work_schedule").slice(0, 2).map((entry) => (
+                    <div
+                      key={entry.id}
+                      className={cn(
+                        "w-full h-1.5 sm:h-2 rounded-full",
+                        entry.status === "approved" ? "bg-green-500" :
+                        entry.status === "submitted" ? "bg-primary" :
+                        entry.status === "rejected" ? "bg-destructive" :
+                        entry.source === "qr_clock" ? "bg-purple-500" :
+                        "bg-muted-foreground"
+                      )}
+                    />
                   ))}
+                  
+                  {/* Show +N if more entries */}
+                  {(daySchedules.length + dayEntries.length) > 2 && (
+                    <span className="text-[8px] text-muted-foreground">
+                      +{daySchedules.length + dayEntries.length - 2}
+                    </span>
+                  )}
                 </div>
 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full h-5 sm:h-6 text-[10px] sm:text-xs p-0"
-                  onClick={() => openDayEditor(day)}
-                >
-                  <Plus className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
-                  <span className="hidden sm:inline">Legg til</span>
-                  <span className="sm:hidden">+</span>
-                </Button>
+                {/* Add button - only visible on larger screens */}
+                <div className="hidden sm:block mt-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full h-5 text-[10px] p-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openDayEditor(day);
+                    }}
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           );
