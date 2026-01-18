@@ -462,10 +462,11 @@ export const KalenderTab = () => {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
+                          const url = event.actionUrl!;
                           setShowTodayTasksDialog(false);
-                          // Use setTimeout to ensure dialog closes before navigation
+                          // Use window.location for same-page navigation with query params
                           setTimeout(() => {
-                            navigate(event.actionUrl!);
+                            window.location.href = url;
                           }, 100);
                         }}
                       >
