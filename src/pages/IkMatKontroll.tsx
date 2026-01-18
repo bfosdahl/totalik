@@ -20,7 +20,9 @@ const IkMatKontroll = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Get initial tab from URL or default to kalender
-  const initialTab = searchParams.get("tab") || "kalender";
+  // If action=log-temp is present, switch to temperatur tab
+  const action = searchParams.get("action");
+  const initialTab = action === "log-temp" ? "temperatur" : (searchParams.get("tab") || "kalender");
   const [activeTab, setActiveTab] = useState(initialTab);
 
   useEffect(() => {

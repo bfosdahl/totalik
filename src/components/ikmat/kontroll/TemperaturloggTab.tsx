@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const TemperaturloggTab = () => {
   const { company } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { 
     equipment, 
     todaysLogs, 
@@ -29,6 +31,27 @@ export const TemperaturloggTab = () => {
   const [equipmentDialogOpen, setEquipmentDialogOpen] = useState(false);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
+
+  // Handle QR code deep-link: open log dialog automatically if equipment param is present
+  useEffect(() => {
+    const action = searchParams.get('action');
+    const equipmentId = searchParams.get('equipment');
+    
+    if (action === 'log-temp' && equipmentId && equipment.length > 0) {
+      // Check if equipment exists
+      const foundEquipment = equipment.find(e => e.id === equipmentId);
+      if (foundEquipment) {
+        setSelectedEquipment(equipmentId);
+        setLogDialogOpen(true);
+        // Clear URL params after handling
+        setSearchParams(prev => {
+          prev.delete('action');
+          prev.delete('equipment');
+          return prev;
+        });
+      }
+    }
+  }, [searchParams, equipment, setSearchParams]);
 
   const equipmentNeedingLog = getEquipmentNeedingLog();
   const allComplete = isDailyLogComplete();
