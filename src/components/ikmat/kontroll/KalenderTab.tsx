@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +17,8 @@ import {
   SprayCan,
   ListTodo,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ExternalLink
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIkMatScheduledTasks, CalendarEvent } from "@/hooks/useIkMatScheduledTasks";
@@ -27,6 +29,7 @@ import { nb } from "date-fns/locale";
 
 export const KalenderTab = () => {
   const { company } = useAuth();
+  const navigate = useNavigate();
   const { tasks, tasksLoading, useCalendarEvents, generateTaskInstances, completeTask } = useIkMatScheduledTasks();
   
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -255,13 +258,26 @@ export const KalenderTab = () => {
                               <div className="flex-1 min-w-0">
                                 <p className="font-medium text-sm truncate">{event.title}</p>
                                 <p className="text-xs text-muted-foreground">
-                                  {format(event.date, 'HH:mm', { locale: nb })}
+                                  {event.status === 'completed' ? format(event.date, 'HH:mm', { locale: nb }) : 'Ikke utført'}
                                 </p>
                               </div>
                             </div>
                             {getStatusBadge(event.status)}
                           </div>
-                          {event.type === 'task' && event.status !== 'completed' && event.taskId && (
+                          {/* Action button for pending temperature/cleaning tasks */}
+                          {event.status !== 'completed' && event.actionUrl && (
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="mt-2 w-full"
+                              onClick={() => navigate(event.actionUrl!)}
+                            >
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Utfør oppgave
+                            </Button>
+                          )}
+                          {/* Complete button for scheduled tasks */}
+                          {event.type === 'task' && event.status !== 'completed' && event.taskId && !event.actionUrl && (
                             <Button
                               size="sm"
                               variant="outline"
