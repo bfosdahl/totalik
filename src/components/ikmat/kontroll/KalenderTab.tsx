@@ -107,11 +107,11 @@ export const KalenderTab = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge variant="success" className="gap-1"><CheckCircle2 className="h-3 w-3" />Fullført</Badge>;
+        return <Badge variant="success" className="gap-1 text-xs whitespace-nowrap"><CheckCircle2 className="h-3 w-3" />F</Badge>;
       case 'overdue':
-        return <Badge variant="destructive" className="gap-1"><AlertTriangle className="h-3 w-3" />Avvik</Badge>;
+        return <Badge variant="destructive" className="gap-1 text-xs whitespace-nowrap"><AlertTriangle className="h-3 w-3" />A</Badge>;
       default:
-        return <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" />Venter</Badge>;
+        return <Badge variant="outline" className="gap-1 text-xs whitespace-nowrap"><Clock className="h-3 w-3" />V</Badge>;
     }
   };
 
@@ -265,27 +265,36 @@ export const KalenderTab = () => {
                       {selectedDateEvents.map((event) => (
                         <div 
                           key={event.id}
-                          className="p-2.5 sm:p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                          className={`p-2.5 sm:p-3 rounded-lg border transition-colors ${
+                            event.status === 'pending' ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800' :
+                            event.status === 'overdue' ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800' :
+                            'bg-card hover:bg-accent/50'
+                          }`}
                         >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex items-start gap-2 flex-1 min-w-0">
-                              {getEventIcon(event.type)}
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-start gap-2">
+                              <div className="shrink-0 mt-0.5">{getEventIcon(event.type)}</div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm truncate">{event.title}</p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="font-medium text-sm leading-tight">{event.title}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">
                                   {event.status === 'completed' ? format(event.date, 'HH:mm', { locale: nb }) : 'Ikke utført'}
                                 </p>
                               </div>
+                              <div className="shrink-0">{getStatusBadge(event.status)}</div>
                             </div>
-                            {getStatusBadge(event.status)}
                           </div>
                           {/* Action button for pending temperature/cleaning tasks */}
                           {event.status !== 'completed' && event.actionUrl && (
                             <Button
                               size="sm"
                               variant="default"
-                              className="mt-2 w-full"
-                              onClick={() => navigate(event.actionUrl!)}
+                              className="mt-2 w-full h-10"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const fullUrl = `${window.location.origin}${event.actionUrl}`;
+                                window.location.href = fullUrl;
+                              }}
                             >
                               <ExternalLink className="h-4 w-4 mr-2" />
                               Utfør oppgave
@@ -296,7 +305,7 @@ export const KalenderTab = () => {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="mt-2 w-full"
+                              className="mt-2 w-full h-10"
                               onClick={() => handleCompleteTask(event)}
                               disabled={completeTask.isPending}
                             >
