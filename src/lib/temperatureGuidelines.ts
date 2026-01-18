@@ -65,10 +65,10 @@ export function getFreezerGuideline(temp: number): TemperatureGuideline {
       action: 'Produktene omplasseres til annen fryseenhet. Temperaturen måles hver time. Tilkall reparatør.',
     };
   }
-  if (temp >= -18) {
+  if (temp > -18) {
     return {
       status: 'yellow',
-      message: '-16 til -18°C - Avvik',
+      message: '-16 til -17°C - Avvik',
       action: 'Mål temperaturen hver time inntil temperaturen er -18°C. Tilkall reparatør hvis dette ikke skjer.',
     };
   }
