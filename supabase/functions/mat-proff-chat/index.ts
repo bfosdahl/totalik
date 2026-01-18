@@ -263,7 +263,6 @@ async function executeToolCall(
       }
 
       case "add_haccp_point": {
-        // This would normally save to database - for now just confirm
         return `✅ Jeg har notert farepunktet:\n\n**Fare:** ${args.hazard_description}\n**Type:** ${args.hazard_type}\n**Kontrolltiltak:** ${args.control_measure}${args.critical_limit ? `\n**Kritisk grense:** ${args.critical_limit}` : ''}\n\nGå til HACCP-modulen (/ik-mat/haccp) for å legge dette inn permanent i systemet.`;
       }
 
@@ -296,133 +295,182 @@ async function executeToolCall(
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { message, history = [] } = await req.json();
-
-    if (!message) {
-      throw new Error("No message provided");
+    // Authentication check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      console.log("Unauthorized: No valid auth header");
+      return new Response(
+        JSON.stringify({ reply: "Du må være logget inn for å bruke MAT-hjelperen. 🔐" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Get authorization header for Supabase client
-    const authHeader = req.headers.get("Authorization");
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader || "" } },
+    // Verify the user with Supabase
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      global: { headers: { Authorization: authHeader } }
     });
 
-    // Get user and company info
-    const { data: { user } } = await supabase.auth.getUser();
-    let companyId = "";
-    let userId = "";
-
-    if (user) {
-      userId = user.id;
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("company_id")
-        .eq("id", user.id)
-        .single();
-      
-      if (profile?.company_id) {
-        companyId = profile.company_id;
-      }
+    const token = authHeader.replace('Bearer ', '');
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    
+    if (userError || !userData?.user) {
+      console.log("Unauthorized: Invalid token", userError);
+      return new Response(
+        JSON.stringify({ reply: "Økten din har utløpt. Vennligst logg inn på nytt. 🔐" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Build messages for AI
+    const userId = userData.user.id;
+    console.log("Authenticated user for MAT proff chat:", userId);
+
+    // Get user's company_id
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id, company_id")
+      .eq("user_id", userId)
+      .single();
+
+    if (!profile?.company_id) {
+      return new Response(
+        JSON.stringify({ reply: "Du må være tilknyttet en bedrift for å bruke denne funksjonen. 🏢" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const companyId = profile.company_id;
+
+    const { message, history = [] } = await req.json();
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
     const messages = [
       { role: "system", content: systemPrompt },
-      ...history.slice(-10), // Keep last 10 messages for context
+      ...history.slice(-6),
       { role: "user", content: message }
     ];
 
-    // Call AI API
-    const response = await fetch("https://api.lovable.dev/ai/chat", {
+    // First API call with tools
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
         messages,
         tools,
-        model: "openai/gpt-5-mini",
+        tool_choice: "auto",
+        max_tokens: 1000,
       }),
     });
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ 
+            reply: "Beklager, jeg er litt opptatt akkurat nå. Prøv igjen om litt! 😅" 
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ 
+            reply: "Jeg trenger en liten pause. Sjekk brukerveiledningen over for svar! 📖" 
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       const errorText = await response.text();
-      console.error("AI API error:", errorText);
-      throw new Error(`AI API error: ${response.status}`);
+      console.error("AI gateway error:", response.status, errorText);
+      throw new Error("AI gateway error");
     }
 
     const data = await response.json();
-    let reply = "";
+    const assistantMessage = data.choices?.[0]?.message;
 
-    // Check if AI wants to use tools
-    if (data.tool_calls && data.tool_calls.length > 0) {
-      const toolResults = [];
+    // Check if the AI wants to call tools
+    if (assistantMessage?.tool_calls && assistantMessage.tool_calls.length > 0) {
+      console.log("Tool calls requested:", assistantMessage.tool_calls.length);
       
-      for (const toolCall of data.tool_calls) {
-        const result = await executeToolCall(
-          supabase,
-          companyId,
-          userId,
-          toolCall.function.name,
-          JSON.parse(toolCall.function.arguments)
-        );
+      const toolResults: string[] = [];
+      
+      for (const toolCall of assistantMessage.tool_calls) {
+        const toolName = toolCall.function.name;
+        const toolArgs = JSON.parse(toolCall.function.arguments);
+        
+        const result = await executeToolCall(supabase, companyId, profile.id, toolName, toolArgs);
         toolResults.push(result);
       }
 
-      // Get final response with tool results
-      const followUpMessages = [
-        ...messages,
-        { role: "assistant", content: data.content || "", tool_calls: data.tool_calls },
-        { role: "tool", content: toolResults.join("\n\n") }
+      // Combine results into a response
+      const combinedResult = toolResults.join("\n\n");
+      
+      // Get a friendly summary from the AI
+      const summaryMessages = [
+        { role: "system", content: "Du er MAT Proffen - mattrygghetsekspert. Gi en kort, vennlig oppsummering av handlingene som ble utført. Bruk emojis relatert til mat og hygiene." },
+        { role: "user", content: `Handlinger utført:\n${combinedResult}\n\nGi en kort oppsummering til brukeren.` }
       ];
 
-      const followUpResponse = await fetch("https://api.lovable.dev/ai/chat", {
+      const summaryResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: followUpMessages,
-          model: "openai/gpt-5-mini",
+          model: "google/gemini-2.5-flash",
+          messages: summaryMessages,
+          max_tokens: 300,
         }),
       });
 
-      if (followUpResponse.ok) {
-        const followUpData = await followUpResponse.json();
-        reply = followUpData.content || toolResults.join("\n\n");
-      } else {
-        reply = toolResults.join("\n\n");
+      if (summaryResponse.ok) {
+        const summaryData = await summaryResponse.json();
+        const summaryReply = summaryData.choices?.[0]?.message?.content;
+        if (summaryReply) {
+          return new Response(
+            JSON.stringify({ reply: summaryReply, actions: toolResults }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
       }
-    } else {
-      reply = data.content || "Beklager, jeg forstod ikke helt. Kan du prøve igjen?";
+
+      // Fallback to raw results
+      return new Response(
+        JSON.stringify({ reply: combinedResult, actions: toolResults }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    // No tool calls, return the regular response
+    const reply = assistantMessage?.content || "Beklager, jeg forstod ikke helt. Kan du prøve igjen?";
+
+    console.log("MAT Proff chat response sent to user:", userId);
 
     return new Response(
       JSON.stringify({ reply }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("MAT Proff chat error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
       JSON.stringify({ 
-        reply: "Beklager, noe gikk galt. Prøv igjen senere! 🍽️",
-        error: errorMessage 
+        reply: "Oops! Noe gikk galt. Prøv igjen senere! 🍽️" 
       }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
