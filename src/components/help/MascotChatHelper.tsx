@@ -87,14 +87,70 @@ export const MascotChatHelper = () => {
   // Auto-send when speech recognition completes with final result
   useEffect(() => {
     if (pendingTranscriptRef.current && input === pendingTranscriptRef.current && !isLoading) {
+      const transcriptToSend = pendingTranscriptRef.current;
       pendingTranscriptRef.current = null;
-      // Small delay to let the user see what was transcribed
-      const timer = setTimeout(() => {
-        handleSend();
+      // Small delay to let the user see what was transcribed, then send
+      const timer = setTimeout(async () => {
+        if (!transcriptToSend.trim()) return;
+        
+        // Stop listening if active
+        if (speech.isListening) {
+          speech.stopListening();
+        }
+
+        const userMessage: Message = {
+          id: Date.now().toString(),
+          content: transcriptToSend,
+          isBot: false,
+        };
+
+        setMessages((prev) => [...prev, userMessage]);
+        setInput("");
+        setIsLoading(true);
+
+        try {
+          // Prepare history for context
+          const historyForApi = messages
+            .filter(m => m.id !== "welcome")
+            .map(m => ({
+              role: m.isBot ? "assistant" : "user",
+              content: m.content
+            }));
+
+          const { data, error } = await supabase.functions.invoke(proffConfig.edgeFunction, {
+            body: { message: transcriptToSend, history: historyForApi }
+          });
+
+          if (error) throw error;
+
+          const responseText = data?.reply || "Beklager, jeg forstod ikke helt. Kan du prøve igjen?";
+          const botResponse: Message = {
+            id: (Date.now() + 1).toString(),
+            content: responseText,
+            isBot: true,
+          };
+          setMessages((prev) => [...prev, botResponse]);
+          
+          // Speak response if autoSpeak is enabled
+          if (autoSpeak && speech.isSupported) {
+            speech.speak(responseText);
+          }
+        } catch (error) {
+          console.error("Chat error:", error);
+          const errorText = "Oops! Noe gikk galt. Prøv igjen senere! 📖";
+          const errorResponse: Message = {
+            id: (Date.now() + 1).toString(),
+            content: errorText,
+            isBot: true,
+          };
+          setMessages((prev) => [...prev, errorResponse]);
+        } finally {
+          setIsLoading(false);
+        }
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [input]);
+  }, [input, isLoading, messages, proffConfig.edgeFunction, autoSpeak, speech]);
 
   // Speak new bot messages if autoSpeak is enabled
   const handleBotResponse = useCallback((response: string) => {
