@@ -455,20 +455,24 @@ export const KalenderTab = () => {
                         </p>
                       </div>
                     </div>
-                    {event.actionUrl && (
+                    {event.actionUrl ? (
                       <Button
                         size="sm"
                         className="mt-2 w-full"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           setShowTodayTasksDialog(false);
-                          navigate(event.actionUrl!);
+                          // Use setTimeout to ensure dialog closes before navigation
+                          setTimeout(() => {
+                            navigate(event.actionUrl!);
+                          }, 100);
                         }}
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
                         Utfør oppgave
                       </Button>
-                    )}
-                    {event.type === 'task' && event.taskId && !event.actionUrl && (
+                    ) : event.type === 'task' && event.taskId ? (
                       <Button
                         size="sm"
                         variant="outline"
@@ -482,7 +486,7 @@ export const KalenderTab = () => {
                         <CheckCircle2 className="h-4 w-4 mr-2" />
                         Marker som fullført
                       </Button>
-                    )}
+                    ) : null}
                   </div>
                 ))}
               </div>
