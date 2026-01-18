@@ -203,26 +203,31 @@ export const MascotChatHelper = () => {
         className="fixed inset-0 pointer-events-none z-40"
       />
 
-      {/* Floating mascot button */}
+      {/* Floating mascot button - draggable */}
       <AnimatePresence>
         {!isOpen && (
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-6 right-6 z-50"
+            drag
+            dragConstraints={constraintsRef}
+            dragElastic={0.1}
+            dragMomentum={false}
+            whileDrag={{ scale: 1.1 }}
+            className="fixed bottom-6 right-6 z-50 touch-none"
           >
             <button
               onClick={() => setIsOpen(true)}
-              className="relative group"
+              className="relative group cursor-grab active:cursor-grabbing"
             >
-              <div className={`absolute -top-2 -right-2 ${proffConfig.id === 'mat' ? 'bg-orange-500' : 'bg-primary'} text-white text-xs px-2 py-1 rounded-full animate-pulse`}>
+              <div className={`absolute -top-2 -right-2 ${proffConfig.id === 'mat' ? 'bg-orange-500' : 'bg-primary'} text-white text-xs px-2 py-1 rounded-full animate-pulse pointer-events-none`}>
                 Tips!
               </div>
               <img
                 src={proffConfig.mascotImage}
                 alt={proffConfig.name}
-                className={`w-20 h-20 rounded-full border-4 ${proffConfig.id === 'mat' ? 'border-orange-500' : 'border-primary'} shadow-lg hover:scale-110 transition-transform cursor-pointer object-cover bg-white`}
+                className={`w-20 h-20 rounded-full border-4 ${proffConfig.id === 'mat' ? 'border-orange-500' : 'border-primary'} shadow-lg hover:scale-110 transition-transform object-cover bg-white pointer-events-none`}
               />
             </button>
           </motion.div>
