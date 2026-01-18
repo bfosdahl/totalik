@@ -318,9 +318,18 @@ export const useIkMatScheduledTasks = () => {
 
               if (shouldShow) {
                 // Check if cleaning was logged for this frequency this day
+                // Need to normalize frequency comparison (daglig/daily, ukentlig/weekly, etc.)
+                const normalizeFreq = (f: string) => {
+                  const lower = (f || '').toLowerCase();
+                  if (lower === 'daglig' || lower === 'daily') return 'daily';
+                  if (lower === 'ukentlig' || lower === 'weekly') return 'weekly';
+                  if (lower === 'månedlig' || lower === 'monthly') return 'monthly';
+                  return lower;
+                };
+                
                 const alreadyLogged = cleaning.some((c: any) => 
                   isSameDay(new Date(c.created_at), currentDate) &&
-                  (c.frequency_type === frequency || !c.frequency_type)
+                  (normalizeFreq(c.frequency_type) === normalizeFreq(frequency as string) || !c.frequency_type)
                 );
 
                 if (!alreadyLogged) {
