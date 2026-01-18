@@ -6,11 +6,35 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Equipment type mappings Norwegian -> DB
+const EQUIPMENT_TYPE_MAP: Record<string, { type: string; min: number; max: number; label: string }> = {
+  'kjøleskap': { type: 'fridge', min: 0, max: 4, label: 'Kjøleskap' },
+  'fryser': { type: 'freezer', min: -25, max: -18, label: 'Fryser' },
+  'varmebuffet': { type: 'hot_display', min: 60, max: 100, label: 'Varmebuffet' },
+  'kjøledisk': { type: 'cold_display', min: 0, max: 8, label: 'Kjøledisk' },
+  'varmholding': { type: 'hot_holding', min: 60, max: 100, label: 'Varmholding' },
+  'varmebehandling': { type: 'heat_treatment', min: 75, max: 100, label: 'Varmebehandling' },
+};
+
 const systemPrompt = `Du er MAT Proffen, en vennlig og kunnskapsrik maskot for IK-Mat systemet - et internkontrollsystem for næringsmiddelbedrifter i Norge.
 Du snakker alltid på norsk og er ekspert på mattrygghet, HACCP, hygiene og næringsmiddellovgivning.
 
-**DU KAN UTFØRE HANDLINGER I SYSTEMET!**
-Når brukeren ber deg om å legge til, opprette eller endre noe, bruk de tilgjengelige verktøyene.
+**DU KAN UTFØRE EKTE HANDLINGER I SYSTEMET!**
+Når brukeren ber deg om å legge til, opprette eller endre noe, BRUK de tilgjengelige verktøyene - de lagrer faktisk data i databasen!
+
+**VIKTIGE EKSEMPLER PÅ HVA DU KAN GJØRE:**
+- "Legg til 3 kjøleskap" → Bruk add_temperature_equipment verktøyet 3 ganger
+- "Registrer temperatur på fryser" → Bruk log_temperature verktøyet
+- "Legg til en rengjøringsoppgave" → Bruk add_cleaning_task verktøyet
+- "Opprett en ny leverandør" → Bruk add_supplier verktøyet
+
+**UTSTYRSTYPER DU KAN LEGGE TIL:**
+- kjøleskap (0-4°C)
+- fryser (-25 til -18°C)
+- varmebuffet (60-100°C)
+- kjøledisk (0-8°C)
+- varmholding (60-100°C)
+- varmebehandling (75-100°C)
 
 **SYSTEMETS NAVIGASJON - IK-MAT MODUL:**
 
@@ -21,67 +45,162 @@ Når brukeren ber deg om å legge til, opprette eller endre noe, bruk de tilgjen
 📋 HACCP (/ik-mat/haccp)
 - Hazard Analysis Critical Control Points
 - Farepunkter og kritiske kontrollpunkter
-- CCP-overvåking og korrigerende tiltak
+
+🌡️ KONTROLL (/ik-mat/kontroll)
+- Temperaturkontroll og loggføring
+- Administrer utstyr (kjøleskap, frysere osv.)
 
 📦 SPORBARHET (/ik-mat/sporbarhet)
 - Sporbarhet av råvarer og ingredienser
-- Batch-nummerering og tilbakekallingsrutiner
 
 🧹 RENHOLDSPLAN (/ik-mat/renholdsplan)
-- Renholdsrutiner og -frekvenser
-- Dokumentasjon av utført renhold
+- Renholdsrutiner og dokumentasjon
 
 ⚠️ ALLERGENER (/ik-mat/allergener)
 - Allergenoversikt for alle produkter
-- De 14 hovedallergenene
-
-🌡️ TEMPERATURKONTROLL
-- Kjøleskap og frysere: Under 4°C / Under -18°C
-- Varmholding: Over 60°C
-- Mottakskontroll av varer
-
-**VIKTIGE LOVER OG FORSKRIFTER:**
-- Matloven (Lov om matproduksjon og mattrygghet)
-- Forskrift om næringsmiddelhygiene
-- Forskrift om internkontroll (IK-mat)
-- EU forordning 852/2004 om næringsmiddelhygiene
-
-**HACCP-PRINSIPPENE (7 stk):**
-1. Gjennomføre fareanalyse
-2. Identifisere kritiske kontrollpunkter (CCP)
-3. Fastsette kritiske grenser
-4. Etablere overvåkingsprosedyrer
-5. Fastsette korrigerende tiltak
-6. Etablere verifiseringsprosedyrer
-7. Føre dokumentasjon
-
-**DE 14 HOVEDALLERGENENE:**
-1. Glutenholdige kornslag (hvete, rug, bygg, havre, spelt)
-2. Krepsdyr
-3. Egg
-4. Fisk
-5. Peanøtter
-6. Soya
-7. Melk (inkludert laktose)
-8. Nøtter (mandler, hasselnøtter, valnøtter, etc.)
-9. Selleri
-10. Sennep
-11. Sesamfrø
-12. Svoveldioksid og sulfitter
-13. Lupin
-14. Bløtdyr
 
 **TEMPERATURKRAV:**
-- Kjølevarer: Maks 4°C
-- Frysevarer: Maks -18°C
+- Kjølevarer: 0-4°C
+- Frysevarer: -18°C eller kaldere
 - Varmholding: Min 60°C
 - Nedkjøling: Fra 60°C til 4°C innen 4 timer
 - Gjenoppvarming: Til min 75°C i kjernen
 
-Svar kort og konsist. Vær vennlig og bruk gjerne emojis relatert til mat og hygiene. Fokuser på mattrygghet og hjelp brukeren med IK-Mat systemet.`;
+Svar kort og konsist. Vær vennlig og bruk gjerne emojis relatert til mat og hygiene.
+VIKTIG: Når du utfører handlinger, fortell brukeren konkret hva du har gjort og gi bekreftelse!`;
 
-// Define tools for the MAT Proff
+// Define tools for the MAT Proff - with REAL database operations
 const tools = [
+  {
+    type: "function",
+    function: {
+      name: "add_temperature_equipment",
+      description: "Legger til nytt utstyr for temperaturkontroll (kjøleskap, fryser, varmebuffet osv.) i databasen. Bruk denne når brukeren vil registrere nytt utstyr.",
+      parameters: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            description: "Navn på utstyret (f.eks. 'Kjøleskap 1', 'Fryser kjøkken', 'Hovedfryser')"
+          },
+          equipment_type: {
+            type: "string",
+            enum: ["kjøleskap", "fryser", "varmebuffet", "kjøledisk", "varmholding", "varmebehandling"],
+            description: "Type utstyr"
+          },
+          location: {
+            type: "string",
+            description: "Plassering av utstyret (f.eks. 'Kjøkken', 'Lager', 'Serveringsområde')"
+          }
+        },
+        required: ["name", "equipment_type"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "log_temperature",
+      description: "Registrerer en temperaturmåling for et spesifikt utstyr. Bruk denne når brukeren vil logge temperaturer.",
+      parameters: {
+        type: "object",
+        properties: {
+          equipment_name: {
+            type: "string",
+            description: "Navn på utstyret som temperaturen måles på"
+          },
+          temperature: {
+            type: "number",
+            description: "Målt temperatur i Celsius (f.eks. 3.5, -20, 65)"
+          },
+          notes: {
+            type: "string",
+            description: "Eventuelle notater eller kommentarer"
+          }
+        },
+        required: ["equipment_name", "temperature"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "add_cleaning_task",
+      description: "Legger til en ny rengjøringsoppgave i renholdsplanen.",
+      parameters: {
+        type: "object",
+        properties: {
+          area: {
+            type: "string",
+            description: "Område som skal rengjøres (f.eks. 'Kjøkken', 'Toalett', 'Serveringsområde')"
+          },
+          task_description: {
+            type: "string",
+            description: "Beskrivelse av rengjøringsoppgaven"
+          },
+          frequency: {
+            type: "string",
+            enum: ["daily", "weekly", "monthly", "as_needed"],
+            description: "Hvor ofte oppgaven skal utføres (daily=daglig, weekly=ukentlig, monthly=månedlig, as_needed=ved behov)"
+          },
+          cleaning_method: {
+            type: "string",
+            description: "Hvordan rengjøringen skal utføres"
+          },
+          responsible: {
+            type: "string",
+            description: "Ansvarlig person eller stilling"
+          }
+        },
+        required: ["area", "task_description", "frequency"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "add_supplier",
+      description: "Legger til en ny leverandør i systemet.",
+      parameters: {
+        type: "object",
+        properties: {
+          supplier_name: {
+            type: "string",
+            description: "Navn på leverandøren"
+          },
+          contact_person: {
+            type: "string",
+            description: "Kontaktperson hos leverandøren"
+          },
+          phone: {
+            type: "string",
+            description: "Telefonnummer"
+          },
+          email: {
+            type: "string",
+            description: "E-postadresse"
+          },
+          products: {
+            type: "string",
+            description: "Produkter leverandøren leverer"
+          }
+        },
+        required: ["supplier_name"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_equipment_list",
+      description: "Henter en liste over alt registrert utstyr for temperaturkontroll.",
+      parameters: {
+        type: "object",
+        properties: {},
+        required: []
+      }
+    }
+  },
   {
     type: "function",
     function: {
@@ -92,162 +211,260 @@ const tools = [
         properties: {
           search_term: {
             type: "string",
-            description: "Hva brukeren leter etter (f.eks. 'HACCP', 'allergener', 'renhold')"
+            description: "Hva brukeren leter etter"
           }
         },
         required: ["search_term"]
       }
     }
-  },
-  {
-    type: "function",
-    function: {
-      name: "add_haccp_point",
-      description: "Legger til et nytt farepunkt/CCP i HACCP-planen",
-      parameters: {
-        type: "object",
-        properties: {
-          hazard_description: {
-            type: "string",
-            description: "Beskrivelse av faren"
-          },
-          hazard_type: {
-            type: "string",
-            enum: ["biologisk", "kjemisk", "fysisk", "allergen"],
-            description: "Type fare (biologisk, kjemisk, fysisk, allergen)"
-          },
-          control_measure: {
-            type: "string",
-            description: "Kontrolltiltak for å håndtere faren"
-          },
-          critical_limit: {
-            type: "string",
-            description: "Kritisk grense (f.eks. temperatur, tid)"
-          },
-          monitoring_procedure: {
-            type: "string",
-            description: "Overvåkingsprosedyre"
-          },
-          corrective_action: {
-            type: "string",
-            description: "Korrigerende tiltak ved avvik"
-          }
-        },
-        required: ["hazard_description", "hazard_type", "control_measure"]
-      }
-    }
-  },
-  {
-    type: "function",
-    function: {
-      name: "add_cleaning_task",
-      description: "Legger til en ny rengjøringsoppgave i renholdsplanen",
-      parameters: {
-        type: "object",
-        properties: {
-          area: {
-            type: "string",
-            description: "Område som skal rengjøres"
-          },
-          task_description: {
-            type: "string",
-            description: "Beskrivelse av rengjøringsoppgaven"
-          },
-          frequency: {
-            type: "string",
-            enum: ["daglig", "ukentlig", "månedlig", "ved_behov"],
-            description: "Hvor ofte oppgaven skal utføres"
-          },
-          cleaning_agent: {
-            type: "string",
-            description: "Rengjøringsmiddel som skal brukes"
-          },
-          responsible: {
-            type: "string",
-            description: "Ansvarlig person"
-          }
-        },
-        required: ["area", "task_description", "frequency"]
-      }
-    }
-  },
-  {
-    type: "function",
-    function: {
-      name: "register_temperature",
-      description: "Registrerer en temperaturmåling",
-      parameters: {
-        type: "object",
-        properties: {
-          location: {
-            type: "string",
-            description: "Sted for måling (f.eks. 'Kjøleskap 1', 'Fryser', 'Buffet')"
-          },
-          temperature: {
-            type: "number",
-            description: "Målt temperatur i Celsius"
-          },
-          equipment_type: {
-            type: "string",
-            enum: ["kjøleskap", "fryser", "varmholding", "mottakskontroll"],
-            description: "Type utstyr"
-          }
-        },
-        required: ["location", "temperature", "equipment_type"]
-      }
-    }
-  },
-  {
-    type: "function",
-    function: {
-      name: "add_allergen_info",
-      description: "Legger til allergeninformasjon for et produkt",
-      parameters: {
-        type: "object",
-        properties: {
-          product_name: {
-            type: "string",
-            description: "Navn på produktet"
-          },
-          allergens: {
-            type: "array",
-            items: { type: "string" },
-            description: "Liste over allergener i produktet"
-          },
-          may_contain: {
-            type: "array",
-            items: { type: "string" },
-            description: "Allergener produktet kan inneholde spor av"
-          }
-        },
-        required: ["product_name", "allergens"]
-      }
-    }
   }
 ];
 
-// Function to execute tool calls
+// Function to execute tool calls - with REAL database operations
 async function executeToolCall(
   supabase: any, 
   companyId: string, 
-  userId: string, 
+  profileId: string,
+  profileName: string,
   toolName: string, 
   args: any
-): Promise<string> {
-  console.log(`Executing MAT tool: ${toolName} with args:`, args);
+): Promise<{ success: boolean; message: string; data?: any }> {
+  console.log(`Executing MAT tool: ${toolName} with args:`, JSON.stringify(args));
   
   try {
     switch (toolName) {
+      case "add_temperature_equipment": {
+        const equipmentConfig = EQUIPMENT_TYPE_MAP[args.equipment_type.toLowerCase()];
+        if (!equipmentConfig) {
+          return { 
+            success: false, 
+            message: `Ukjent utstyrstype: ${args.equipment_type}. Gyldige typer: kjøleskap, fryser, varmebuffet, kjøledisk, varmholding, varmebehandling.` 
+          };
+        }
+
+        // Get current max sort_order
+        const { data: existingEquip } = await supabase
+          .from('ik_mat_temperature_equipment')
+          .select('sort_order')
+          .eq('company_id', companyId)
+          .order('sort_order', { ascending: false })
+          .limit(1);
+        
+        const nextSortOrder = (existingEquip?.[0]?.sort_order ?? 0) + 1;
+
+        const { data, error } = await supabase
+          .from('ik_mat_temperature_equipment')
+          .insert({
+            company_id: companyId,
+            name: args.name,
+            equipment_type: equipmentConfig.type,
+            location: args.location || null,
+            min_temp: equipmentConfig.min,
+            max_temp: equipmentConfig.max,
+            measurement_frequency: 'daily',
+            is_active: true,
+            sort_order: nextSortOrder,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error adding equipment:', error);
+          return { success: false, message: `Kunne ikke legge til utstyr: ${error.message}` };
+        }
+
+        return { 
+          success: true, 
+          message: `✅ La til "${args.name}" (${equipmentConfig.label})${args.location ? ` plassert i ${args.location}` : ''}. Temperaturkrav: ${equipmentConfig.min}°C til ${equipmentConfig.max}°C.`,
+          data 
+        };
+      }
+
+      case "log_temperature": {
+        // Find the equipment by name (fuzzy match)
+        const { data: equipmentList } = await supabase
+          .from('ik_mat_temperature_equipment')
+          .select('*')
+          .eq('company_id', companyId)
+          .eq('is_active', true);
+
+        if (!equipmentList || equipmentList.length === 0) {
+          return { 
+            success: false, 
+            message: 'Ingen utstyr registrert. Legg til utstyr først ved å si f.eks. "Legg til et kjøleskap".' 
+          };
+        }
+
+        // Try to find matching equipment
+        const searchName = args.equipment_name.toLowerCase();
+        let equipment = equipmentList.find((e: any) => 
+          e.name.toLowerCase() === searchName ||
+          e.name.toLowerCase().includes(searchName) ||
+          searchName.includes(e.name.toLowerCase())
+        );
+
+        // If not found by name, try to match by type
+        if (!equipment) {
+          const typeMatch = Object.entries(EQUIPMENT_TYPE_MAP).find(([key]) => 
+            searchName.includes(key)
+          );
+          if (typeMatch) {
+            equipment = equipmentList.find((e: any) => e.equipment_type === typeMatch[1].type);
+          }
+        }
+
+        if (!equipment) {
+          const equipNames = equipmentList.map((e: any) => e.name).join(', ');
+          return { 
+            success: false, 
+            message: `Fant ikke utstyr med navn "${args.equipment_name}". Tilgjengelig utstyr: ${equipNames}` 
+          };
+        }
+
+        // Determine if temperature is acceptable
+        const temp = args.temperature;
+        const isAcceptable = temp >= equipment.min_temp && temp <= equipment.max_temp;
+
+        const { data, error } = await supabase
+          .from('ik_mat_temperature_logs')
+          .insert({
+            company_id: companyId,
+            equipment_id: equipment.id,
+            temperature: temp,
+            is_acceptable: isAcceptable,
+            measured_by_id: profileId,
+            measured_by_name: profileName,
+            notes: args.notes || null,
+            corrective_action: isAcceptable ? null : 'Avvik registrert via MAT Proffen',
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error logging temperature:', error);
+          return { success: false, message: `Kunne ikke registrere temperatur: ${error.message}` };
+        }
+
+        const status = isAcceptable ? '✅ OK' : '⚠️ AVVIK';
+        const range = `${equipment.min_temp}°C - ${equipment.max_temp}°C`;
+        
+        return { 
+          success: true, 
+          message: `${status} Temperatur ${temp}°C registrert for "${equipment.name}" (akseptabel: ${range}).${!isAcceptable ? ' Temperaturen er utenfor akseptable grenser!' : ''}`,
+          data 
+        };
+      }
+
+      case "add_cleaning_task": {
+        const frequencyMap: Record<string, string> = {
+          'daily': 'Daglig',
+          'weekly': 'Ukentlig',
+          'monthly': 'Månedlig',
+          'as_needed': 'Ved behov'
+        };
+
+        const { data, error } = await supabase
+          .from('ik_mat_custom_cleaning_tasks')
+          .insert({
+            company_id: companyId,
+            area: args.area,
+            task_description: args.task_description,
+            frequency: args.frequency,
+            cleaning_method: args.cleaning_method || null,
+            responsible: args.responsible || null,
+            is_active: true,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error adding cleaning task:', error);
+          return { success: false, message: `Kunne ikke legge til rengjøringsoppgave: ${error.message}` };
+        }
+
+        return { 
+          success: true, 
+          message: `✅ La til rengjøringsoppgave: "${args.task_description}" for ${args.area} (${frequencyMap[args.frequency] || args.frequency}).`,
+          data 
+        };
+      }
+
+      case "add_supplier": {
+        const { data, error } = await supabase
+          .from('ik_mat_suppliers')
+          .insert({
+            company_id: companyId,
+            supplier_name: args.supplier_name,
+            contact_person: args.contact_person || null,
+            phone: args.phone || null,
+            email: args.email || null,
+            products: args.products || null,
+            is_active: true,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error adding supplier:', error);
+          return { success: false, message: `Kunne ikke legge til leverandør: ${error.message}` };
+        }
+
+        return { 
+          success: true, 
+          message: `✅ La til leverandør: "${args.supplier_name}"${args.products ? ` (produkter: ${args.products})` : ''}.`,
+          data 
+        };
+      }
+
+      case "get_equipment_list": {
+        const { data, error } = await supabase
+          .from('ik_mat_temperature_equipment')
+          .select('*')
+          .eq('company_id', companyId)
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true });
+
+        if (error) {
+          return { success: false, message: `Kunne ikke hente utstyrsliste: ${error.message}` };
+        }
+
+        if (!data || data.length === 0) {
+          return { 
+            success: true, 
+            message: '📋 Ingen utstyr registrert ennå. Si f.eks. "Legg til 2 kjøleskap og 1 fryser" for å komme i gang!' 
+          };
+        }
+
+        const typeLabels: Record<string, string> = {
+          'fridge': 'Kjøleskap',
+          'freezer': 'Fryser',
+          'hot_display': 'Varmebuffet',
+          'cold_display': 'Kjøledisk',
+          'hot_holding': 'Varmholding',
+          'heat_treatment': 'Varmebehandling'
+        };
+
+        const equipList = data.map((e: any) => 
+          `• ${e.name} (${typeLabels[e.equipment_type] || e.equipment_type})${e.location ? ` - ${e.location}` : ''}`
+        ).join('\n');
+
+        return { 
+          success: true, 
+          message: `📋 Registrert utstyr (${data.length} stk):\n${equipList}`,
+          data 
+        };
+      }
+
       case "get_navigation_help": {
         const searchTerm = args.search_term.toLowerCase();
         
         const navigationMap = [
-          { keywords: ["dashbord", "hjem", "oversikt", "start"], path: "/ik-mat/dashboard", name: "IK-Mat Dashboard", description: "Hovedoversikt for næringsmiddelbedriften" },
-          { keywords: ["haccp", "ccp", "farepunkt", "kritisk kontrollpunkt", "fareanalyse"], path: "/ik-mat/haccp", name: "HACCP", description: "Farepunkter og kritiske kontrollpunkter" },
-          { keywords: ["sporbarhet", "batch", "råvare", "ingrediens", "tilbakekalling"], path: "/ik-mat/sporbarhet", name: "Sporbarhet", description: "Sporbarhet av råvarer og produkter" },
-          { keywords: ["renhold", "rengjøring", "hygiene", "renholdsplan", "vask"], path: "/ik-mat/renholdsplan", name: "Renholdsplan", description: "Renholdsrutiner og dokumentasjon" },
-          { keywords: ["allergen", "allergi", "glutenfri", "laktosefri", "nøtter"], path: "/ik-mat/allergener", name: "Allergener", description: "Allergenoversikt for produkter" },
-          { keywords: ["temperatur", "kjøleskap", "fryser", "varmholding"], path: "/ik-mat/haccp", name: "Temperaturkontroll", description: "Registrer temperaturer under HACCP" },
+          { keywords: ["dashbord", "hjem", "oversikt", "start"], path: "/ik-mat/dashboard", name: "IK-Mat Dashboard", description: "Hovedoversikt" },
+          { keywords: ["haccp", "ccp", "farepunkt", "kritisk kontrollpunkt"], path: "/ik-mat/haccp", name: "HACCP", description: "Farepunkter og CCP" },
+          { keywords: ["kontroll", "temperatur", "kjøleskap", "fryser", "utstyr"], path: "/ik-mat/kontroll", name: "Kontroll", description: "Temperaturkontroll og utstyr" },
+          { keywords: ["sporbarhet", "batch", "råvare", "ingrediens"], path: "/ik-mat/sporbarhet", name: "Sporbarhet", description: "Sporbarhet av varer" },
+          { keywords: ["renhold", "rengjøring", "hygiene", "vask"], path: "/ik-mat/renholdsplan", name: "Renholdsplan", description: "Renholdsrutiner" },
+          { keywords: ["allergen", "allergi", "gluten", "laktose"], path: "/ik-mat/allergener", name: "Allergener", description: "Allergenoversikt" },
         ];
         
         const matches = navigationMap.filter(item => 
@@ -256,40 +473,27 @@ async function executeToolCall(
         
         if (matches.length > 0) {
           const match = matches[0];
-          return `For å finne ${match.name}, gå til: ${match.path}\n\n${match.description}`;
+          return { 
+            success: true, 
+            message: `📍 ${match.name}: Gå til ${match.path}\n${match.description}` 
+          };
         }
         
-        return `Jeg fant ikke en direkte match for "${args.search_term}". Prøv å søke etter: HACCP, sporbarhet, renhold, allergener, eller temperaturkontroll.`;
-      }
-
-      case "add_haccp_point": {
-        return `✅ Jeg har notert farepunktet:\n\n**Fare:** ${args.hazard_description}\n**Type:** ${args.hazard_type}\n**Kontrolltiltak:** ${args.control_measure}${args.critical_limit ? `\n**Kritisk grense:** ${args.critical_limit}` : ''}\n\nGå til HACCP-modulen (/ik-mat/haccp) for å legge dette inn permanent i systemet.`;
-      }
-
-      case "add_cleaning_task": {
-        return `✅ Rengjøringsoppgave notert:\n\n**Område:** ${args.area}\n**Oppgave:** ${args.task_description}\n**Frekvens:** ${args.frequency}${args.cleaning_agent ? `\n**Rengjøringsmiddel:** ${args.cleaning_agent}` : ''}\n\nGå til Renholdsplan (/ik-mat/renholdsplan) for å legge dette inn i systemet.`;
-      }
-
-      case "register_temperature": {
-        const isOk = (args.equipment_type === 'kjøleskap' && args.temperature <= 4) ||
-                     (args.equipment_type === 'fryser' && args.temperature <= -18) ||
-                     (args.equipment_type === 'varmholding' && args.temperature >= 60);
-        
-        const status = isOk ? '✅ OK' : '⚠️ AVVIK';
-        
-        return `${status} Temperatur registrert:\n\n**Sted:** ${args.location}\n**Temperatur:** ${args.temperature}°C\n**Type:** ${args.equipment_type}\n\n${!isOk ? '⚠️ Temperaturen er utenfor akseptable grenser! Iverksett korrigerende tiltak umiddelbart.' : ''}`;
-      }
-
-      case "add_allergen_info": {
-        return `✅ Allergeninformasjon notert for ${args.product_name}:\n\n**Inneholder:** ${args.allergens.join(', ')}${args.may_contain ? `\n**Kan inneholde spor av:** ${args.may_contain.join(', ')}` : ''}\n\nGå til Allergener (/ik-mat/allergener) for å legge dette inn i systemet.`;
+        return { 
+          success: true, 
+          message: `Fant ikke "${args.search_term}". Prøv: kontroll, haccp, renhold, allergener, sporbarhet` 
+        };
       }
 
       default:
-        return `Ukjent verktøy: ${toolName}`;
+        return { success: false, message: `Ukjent verktøy: ${toolName}` };
     }
   } catch (error) {
     console.error(`Error executing tool ${toolName}:`, error);
-    return `Beklager, det oppstod en feil ved utføring av handlingen. Prøv igjen eller gjør det manuelt i systemet.`;
+    return { 
+      success: false, 
+      message: `Det oppstod en feil. Prøv igjen eller gjør det manuelt i systemet.` 
+    };
   }
 }
 
@@ -313,9 +517,7 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const token = authHeader.replace('Bearer ', '');
     const { data: userData, error: userError } = await supabase.auth.getUser(token);
@@ -331,10 +533,10 @@ serve(async (req) => {
     const userId = userData.user.id;
     console.log("Authenticated user for MAT proff chat:", userId);
 
-    // Get user's company_id
+    // Get user's company_id and profile info
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id, company_id")
+      .select("id, company_id, first_name, last_name, email")
       .eq("user_id", userId)
       .single();
 
@@ -346,6 +548,7 @@ serve(async (req) => {
     }
 
     const companyId = profile.company_id;
+    const profileName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email || 'MAT Proffen';
 
     const { message, history = [] } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -356,7 +559,7 @@ serve(async (req) => {
 
     const messages = [
       { role: "system", content: systemPrompt },
-      ...history.slice(-6),
+      ...history.slice(-8),
       { role: "user", content: message }
     ];
 
@@ -372,7 +575,7 @@ serve(async (req) => {
         messages,
         tools,
         tool_choice: "auto",
-        max_tokens: 1000,
+        max_tokens: 1500,
       }),
     });
 
@@ -405,52 +608,49 @@ serve(async (req) => {
     if (assistantMessage?.tool_calls && assistantMessage.tool_calls.length > 0) {
       console.log("Tool calls requested:", assistantMessage.tool_calls.length);
       
-      const toolResults: string[] = [];
+      const toolResults: { tool: string; result: { success: boolean; message: string } }[] = [];
       
       for (const toolCall of assistantMessage.tool_calls) {
         const toolName = toolCall.function.name;
-        const toolArgs = JSON.parse(toolCall.function.arguments);
-        
-        const result = await executeToolCall(supabase, companyId, profile.id, toolName, toolArgs);
-        toolResults.push(result);
-      }
-
-      // Combine results into a response
-      const combinedResult = toolResults.join("\n\n");
-      
-      // Get a friendly summary from the AI
-      const summaryMessages = [
-        { role: "system", content: "Du er MAT Proffen - mattrygghetsekspert. Gi en kort, vennlig oppsummering av handlingene som ble utført. Bruk emojis relatert til mat og hygiene." },
-        { role: "user", content: `Handlinger utført:\n${combinedResult}\n\nGi en kort oppsummering til brukeren.` }
-      ];
-
-      const summaryResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: summaryMessages,
-          max_tokens: 300,
-        }),
-      });
-
-      if (summaryResponse.ok) {
-        const summaryData = await summaryResponse.json();
-        const summaryReply = summaryData.choices?.[0]?.message?.content;
-        if (summaryReply) {
-          return new Response(
-            JSON.stringify({ reply: summaryReply, actions: toolResults }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
+        let toolArgs;
+        try {
+          toolArgs = JSON.parse(toolCall.function.arguments);
+        } catch (e) {
+          console.error("Failed to parse tool arguments:", toolCall.function.arguments);
+          toolArgs = {};
         }
+        
+        const result = await executeToolCall(supabase, companyId, profile.id, profileName, toolName, toolArgs);
+        toolResults.push({ tool: toolName, result });
       }
 
-      // Fallback to raw results
+      // Build a summary of actions taken
+      const successActions = toolResults.filter(r => r.result.success);
+      const failedActions = toolResults.filter(r => !r.result.success);
+      
+      let responseMessage = '';
+      
+      if (successActions.length > 0) {
+        responseMessage += successActions.map(r => r.result.message).join('\n\n');
+      }
+      
+      if (failedActions.length > 0) {
+        responseMessage += '\n\n' + failedActions.map(r => `❌ ${r.result.message}`).join('\n');
+      }
+
+      // If we added equipment, suggest checking the control page
+      const addedEquipment = toolResults.filter(r => r.tool === 'add_temperature_equipment' && r.result.success);
+      if (addedEquipment.length > 0) {
+        responseMessage += `\n\n🌡️ Du kan nå registrere temperaturer under Kontroll (/ik-mat/kontroll)!`;
+      }
+
+      console.log("MAT Proff executed tools:", toolResults.length);
+
       return new Response(
-        JSON.stringify({ reply: combinedResult, actions: toolResults }),
+        JSON.stringify({ 
+          reply: responseMessage || "Handling utført!",
+          actions: toolResults.map(r => r.result.message)
+        }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
