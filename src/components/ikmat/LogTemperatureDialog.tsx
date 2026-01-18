@@ -54,6 +54,16 @@ export function LogTemperatureDialog({
     }
   }, [open, preSelectedEquipmentId]);
 
+  // Auto-add minus for freezer when equipment changes
+  useEffect(() => {
+    if (selectedEquipmentId && temperature === '') {
+      const equip = equipment.find(e => e.id === selectedEquipmentId);
+      if (equip?.equipment_type === 'freezer') {
+        setTemperature('-');
+      }
+    }
+  }, [selectedEquipmentId, equipment]);
+
   const selectedEquip = equipment.find(e => e.id === selectedEquipmentId);
 
   // Calculate traffic light status based on equipment type and temperature
