@@ -462,11 +462,13 @@ export const KalenderTab = () => {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          const url = event.actionUrl!;
+                          const actionPath = event.actionUrl!;
                           setShowTodayTasksDialog(false);
-                          // Use window.location for same-page navigation with query params
+                          // Navigate using full URL with window.location.origin
+                          const fullUrl = `${window.location.origin}${actionPath}`;
+                          console.log('Navigating to:', fullUrl);
                           setTimeout(() => {
-                            window.location.href = url;
+                            window.location.href = fullUrl;
                           }, 100);
                         }}
                       >
@@ -532,6 +534,25 @@ export const KalenderTab = () => {
                         </p>
                       </div>
                     </div>
+                    {event.actionUrl && (
+                      <Button
+                        size="sm"
+                        className="mt-2 w-full"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const actionPath = event.actionUrl!;
+                          setShowOverdueTasksDialog(false);
+                          const fullUrl = `${window.location.origin}${actionPath}`;
+                          setTimeout(() => {
+                            window.location.href = fullUrl;
+                          }, 100);
+                        }}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Utfør oppgave
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
