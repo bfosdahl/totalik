@@ -2,7 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { startOfDay, endOfDay, format, addDays, subDays, isToday, isBefore, parseISO } from 'date-fns';
+import { startOfDay, endOfDay, format, addDays, subDays, isToday, isBefore, parseISO, isSameDay } from 'date-fns';
+import { useCompanyModules } from './useCompanyModules';
 
 export interface ScheduledTask {
   id: string;
@@ -44,10 +45,12 @@ export interface CalendarEvent {
   taskId?: string;
   sourceId?: string;
   details?: any;
+  actionUrl?: string;
 }
 
 export const useIkMatScheduledTasks = () => {
   const { company, profile } = useAuth();
+  const { modules } = useCompanyModules();
   const queryClient = useQueryClient();
 
   // Fetch all scheduled tasks
@@ -68,6 +71,47 @@ export const useIkMatScheduledTasks = () => {
     },
     enabled: !!company?.id,
   });
+
+  // Fetch temperature equipment for generating pending tasks
+  const { data: temperatureEquipment } = useQuery({
+    queryKey: ['ik-mat-temperature-equipment-for-calendar', company?.id],
+    queryFn: async () => {
+      if (!company?.id) return [];
+      const { data, error } = await supabase
+        .from('ik_mat_temperature_equipment')
+        .select('*')
+        .eq('company_id', company.id)
+        .eq('is_active', true);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!company?.id,
+  });
+
+  // Fetch custom cleaning tasks
+  const { data: cleaningTasks } = useQuery({
+    queryKey: ['custom-cleaning-tasks-for-calendar', company?.id],
+    queryFn: async () => {
+      if (!company?.id) return [];
+      const { data, error } = await supabase
+        .from('ik_mat_custom_cleaning_tasks')
+        .select('*')
+        .eq('company_id', company.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!company?.id,
+  });
+
+  // Get generated cleaning plan from module settings
+  const generatedCleaningPlan = (() => {
+    const ikMatModule = modules?.find(m => m.module_type === 'IK_MAT');
+    if (ikMatModule?.settings) {
+      const settings = ikMatModule.settings as any;
+      return settings.generatedContent?.cleaningPlan || [];
+    }
+    return [];
+  })();
 
   // Fetch task completions for a date range
   const fetchCompletions = async (startDate: Date, endDate: Date) => {
@@ -132,7 +176,7 @@ export const useIkMatScheduledTasks = () => {
   // Get all calendar events for a date range
   const useCalendarEvents = (startDate: Date, endDate: Date) => {
     return useQuery({
-      queryKey: ['ik-mat-calendar-events', company?.id, format(startDate, 'yyyy-MM-dd'), format(endDate, 'yyyy-MM-dd')],
+      queryKey: ['ik-mat-calendar-events', company?.id, format(startDate, 'yyyy-MM-dd'), format(endDate, 'yyyy-MM-dd'), temperatureEquipment?.length, cleaningTasks?.length, generatedCleaningPlan?.length],
       queryFn: async (): Promise<CalendarEvent[]> => {
         if (!company?.id) return [];
 
@@ -161,7 +205,7 @@ export const useIkMatScheduledTasks = () => {
           });
         });
 
-        // Add temperature logs
+        // Add temperature logs (completed measurements)
         tempLogs.forEach((log: any) => {
           events.push({
             id: `temp-${log.id}`,
@@ -173,6 +217,53 @@ export const useIkMatScheduledTasks = () => {
             details: log,
           });
         });
+
+        // Generate pending temperature tasks for equipment that hasn't been logged
+        if (temperatureEquipment && temperatureEquipment.length > 0) {
+          let currentDate = startOfDay(startDate);
+          const end = startOfDay(endDate);
+
+          while (currentDate <= end) {
+            const dayOfWeek = currentDate.getDay();
+            const dateStr = format(currentDate, 'yyyy-MM-dd');
+
+            temperatureEquipment.forEach((equip: any) => {
+              let shouldShow = false;
+
+              // Check frequency
+              if (equip.measurement_frequency === 'daily' || equip.measurement_frequency === 'twice_daily') {
+                shouldShow = true;
+              } else if (equip.measurement_frequency === 'weekly') {
+                // Show on Mondays for weekly
+                shouldShow = dayOfWeek === 1;
+              }
+
+              if (shouldShow) {
+                // Check if already logged this day
+                const alreadyLogged = tempLogs.some((log: any) => 
+                  log.equipment_id === equip.id && 
+                  isSameDay(new Date(log.measured_at), currentDate)
+                );
+
+                if (!alreadyLogged) {
+                  const isPast = isBefore(startOfDay(currentDate), startOfDay(new Date()));
+                  events.push({
+                    id: `temp-pending-${equip.id}-${dateStr}`,
+                    title: `🌡️ ${equip.name}`,
+                    date: new Date(currentDate),
+                    type: 'temperature',
+                    status: isPast ? 'overdue' : 'pending',
+                    sourceId: equip.id,
+                    actionUrl: `/ik-mat/kontroll?tab=temperatur&action=log-temp&equipment=${equip.id}`,
+                    details: { equipment: equip },
+                  });
+                }
+              }
+            });
+
+            currentDate = addDays(currentDate, 1);
+          }
+        }
 
         // Add varemottak
         varemottak.forEach((record: any) => {
@@ -187,7 +278,7 @@ export const useIkMatScheduledTasks = () => {
           });
         });
 
-        // Add cleaning responses
+        // Add cleaning responses (completed)
         cleaning.forEach((response: any) => {
           events.push({
             id: `clean-${response.id}`,
@@ -199,6 +290,61 @@ export const useIkMatScheduledTasks = () => {
             details: response,
           });
         });
+
+        // Generate pending cleaning tasks
+        const allCleaningTasks = [...(cleaningTasks || []), ...generatedCleaningPlan];
+        if (allCleaningTasks.length > 0) {
+          let currentDate = startOfDay(startDate);
+          const end = startOfDay(endDate);
+
+          while (currentDate <= end) {
+            const dayOfWeek = currentDate.getDay();
+            const dateStr = format(currentDate, 'yyyy-MM-dd');
+
+            // Group by frequency - only show one "cleaning" task per frequency per day
+            const frequencies = new Set(allCleaningTasks.map((t: any) => t.frequency || 'daglig'));
+
+            frequencies.forEach((frequency) => {
+              let shouldShow = false;
+
+              const freqLower = (frequency as string).toLowerCase();
+              if (freqLower === 'daglig' || freqLower === 'daily') {
+                shouldShow = true;
+              } else if (freqLower === 'ukentlig' || freqLower === 'weekly') {
+                shouldShow = dayOfWeek === 1; // Mondays
+              } else if (freqLower === 'månedlig' || freqLower === 'monthly') {
+                shouldShow = currentDate.getDate() === 1; // 1st of month
+              }
+
+              if (shouldShow) {
+                // Check if cleaning was logged for this frequency this day
+                const alreadyLogged = cleaning.some((c: any) => 
+                  isSameDay(new Date(c.created_at), currentDate) &&
+                  (c.frequency_type === frequency || !c.frequency_type)
+                );
+
+                if (!alreadyLogged) {
+                  const isPast = isBefore(startOfDay(currentDate), startOfDay(new Date()));
+                  const taskCount = allCleaningTasks.filter((t: any) => 
+                    (t.frequency || 'daglig').toLowerCase() === freqLower
+                  ).length;
+
+                  events.push({
+                    id: `clean-pending-${frequency}-${dateStr}`,
+                    title: `🧹 Renhold (${taskCount} oppgaver)`,
+                    date: new Date(currentDate),
+                    type: 'cleaning',
+                    status: isPast ? 'overdue' : 'pending',
+                    actionUrl: `/ik-mat/kontroll?tab=renholdsplan`,
+                    details: { frequency, taskCount },
+                  });
+                }
+              }
+            });
+
+            currentDate = addDays(currentDate, 1);
+          }
+        }
 
         return events;
       },
