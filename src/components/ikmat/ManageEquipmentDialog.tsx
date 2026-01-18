@@ -23,10 +23,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useIkMatTemperature } from "@/hooks/useIkMatTemperature";
+import { useIkMatTemperature, type TemperatureEquipment } from "@/hooks/useIkMatTemperature";
 import { EQUIPMENT_TYPE_DEFAULTS } from "@/lib/temperatureGuidelines";
-import { Plus, Trash2, Settings } from "lucide-react";
+import { Plus, Trash2, Settings, QrCode } from "lucide-react";
 import { toast } from "sonner";
+import { EquipmentQRCodeDialog } from "./EquipmentQRCodeDialog";
 
 interface ManageEquipmentDialogProps {
   open: boolean;
@@ -40,6 +41,7 @@ export function ManageEquipmentDialog({
   const { equipment, addEquipment, deleteEquipment } = useIkMatTemperature();
   
   const [showAddForm, setShowAddForm] = useState(false);
+  const [qrEquipment, setQrEquipment] = useState<TemperatureEquipment | null>(null);
   const [newEquipment, setNewEquipment] = useState({
     name: "",
     equipment_type: "fridge",
@@ -116,14 +118,25 @@ export function ManageEquipmentDialog({
                           {EQUIPMENT_TYPE_DEFAULTS[equip.equipment_type as keyof typeof EQUIPMENT_TYPE_DEFAULTS]?.label || equip.equipment_type}
                         </p>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 flex-shrink-0"
-                        onClick={() => handleDelete(equip.id, equip.name)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className="flex gap-1 flex-shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => setQrEquipment(equip)}
+                          title="QR-kode"
+                        >
+                          <QrCode className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleDelete(equip.id, equip.name)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
                     <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
                       {equip.location && <span>📍 {equip.location}</span>}
@@ -162,13 +175,23 @@ export function ManageEquipmentDialog({
                            equip.measurement_frequency === 'twice_daily' ? '2x daglig' : 'Ukentlig'}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(equip.id, equip.name)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setQrEquipment(equip)}
+                              title="QR-kode"
+                            >
+                              <QrCode className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(equip.id, equip.name)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -277,6 +300,13 @@ export function ManageEquipmentDialog({
             </Button>
           )}
         </div>
+
+        {/* QR Code Dialog */}
+        <EquipmentQRCodeDialog
+          open={!!qrEquipment}
+          onOpenChange={(open) => !open && setQrEquipment(null)}
+          equipment={qrEquipment}
+        />
       </DialogContent>
     </Dialog>
   );
