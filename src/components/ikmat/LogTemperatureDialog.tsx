@@ -145,15 +145,39 @@ export function LogTemperatureDialog({
 
           <div className="space-y-2">
             <Label htmlFor="temperature">Målt temperatur (°C)</Label>
-            <Input
-              id="temperature"
-              type="number"
-              step="0.1"
-              placeholder="f.eks. 3.5"
-              value={temperature}
-              onChange={(e) => setTemperature(e.target.value)}
-              className="text-lg font-mono"
-            />
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="shrink-0 text-lg font-bold h-12 w-12"
+                onClick={() => {
+                  if (temperature.startsWith('-')) {
+                    setTemperature(temperature.slice(1));
+                  } else {
+                    setTemperature('-' + temperature);
+                  }
+                }}
+              >
+                ±
+              </Button>
+              <Input
+                id="temperature"
+                type="text"
+                inputMode="decimal"
+                pattern="-?[0-9]*\.?[0-9]*"
+                placeholder="f.eks. -20 eller 3.5"
+                value={temperature}
+                onChange={(e) => {
+                  // Allow negative numbers, digits, and decimal point
+                  const value = e.target.value;
+                  if (value === '' || value === '-' || /^-?\d*\.?\d*$/.test(value)) {
+                    setTemperature(value);
+                  }
+                }}
+                className="text-lg font-mono h-12"
+              />
+            </div>
           </div>
 
           {/* Traffic Light Indicator */}
