@@ -6,6 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { 
   CalendarDays, 
   Plus, 
@@ -36,6 +43,8 @@ export const KalenderTab = () => {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [activeView, setActiveView] = useState<'calendar' | 'list'>('calendar');
+  const [showTodayTasksDialog, setShowTodayTasksDialog] = useState(false);
+  const [showOverdueTasksDialog, setShowOverdueTasksDialog] = useState(false);
 
   // Calculate date range for fetching events
   const dateRange = useMemo(() => {
@@ -160,7 +169,10 @@ export const KalenderTab = () => {
       {/* Quick stats - horizontal scroll on mobile */}
       <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 pb-2">
         <div className="flex gap-3 sm:grid sm:grid-cols-3 sm:gap-4 min-w-max sm:min-w-0">
-          <Card className={`min-w-[160px] sm:min-w-0 ${todaysPendingTasks.length > 0 ? "border-orange-500" : "border-green-500"}`}>
+          <Card 
+            className={`min-w-[160px] sm:min-w-0 cursor-pointer hover:shadow-md transition-shadow ${todaysPendingTasks.length > 0 ? "border-orange-500" : "border-green-500"}`}
+            onClick={() => setShowTodayTasksDialog(true)}
+          >
             <CardHeader className="py-2 sm:py-3 px-3 sm:px-6">
               <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2">
                 <Clock className="h-4 w-4" />
@@ -177,7 +189,10 @@ export const KalenderTab = () => {
             </CardContent>
           </Card>
 
-          <Card className={`min-w-[160px] sm:min-w-0 ${overdueTasks.length > 0 ? "border-red-500" : ""}`}>
+          <Card 
+            className={`min-w-[160px] sm:min-w-0 cursor-pointer hover:shadow-md transition-shadow ${overdueTasks.length > 0 ? "border-red-500" : ""}`}
+            onClick={() => setShowOverdueTasksDialog(true)}
+          >
             <CardHeader className="py-2 sm:py-3 px-3 sm:px-6">
               <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-red-500" />
@@ -401,6 +416,124 @@ export const KalenderTab = () => {
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
       />
+
+      {/* Today's pending tasks dialog */}
+      <Dialog open={showTodayTasksDialog} onOpenChange={setShowTodayTasksDialog}>
+        <DialogContent className="max-w-md max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-orange-500" />
+              Dagens gjenstående oppgaver
+            </DialogTitle>
+            <DialogDescription>
+              {todaysPendingTasks.length === 0 
+                ? "Alle oppgaver for i dag er fullført!" 
+                : `${todaysPendingTasks.length} oppgave${todaysPendingTasks.length > 1 ? 'r' : ''} gjenstår`}
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[50vh] pr-4">
+            {todaysPendingTasks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <CheckCircle2 className="h-12 w-12 text-green-500 mb-3" />
+                <p className="text-muted-foreground">Ingen oppgaver gjenstår for i dag</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {todaysPendingTasks.map((event) => (
+                  <div 
+                    key={event.id}
+                    className="p-3 rounded-lg border bg-card"
+                  >
+                    <div className="flex items-start gap-3">
+                      {getEventIcon(event.type)}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm">{event.title}</p>
+                        <p className="text-xs text-muted-foreground capitalize mt-0.5">
+                          {event.type === 'temperature' ? 'Temperaturlogging' : 
+                           event.type === 'cleaning' ? 'Renhold' : 
+                           event.type === 'varemottak' ? 'Varemottak' : 'Oppgave'}
+                        </p>
+                      </div>
+                    </div>
+                    {event.actionUrl && (
+                      <Button
+                        size="sm"
+                        className="mt-2 w-full"
+                        onClick={() => {
+                          setShowTodayTasksDialog(false);
+                          navigate(event.actionUrl!);
+                        }}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Utfør oppgave
+                      </Button>
+                    )}
+                    {event.type === 'task' && event.taskId && !event.actionUrl && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="mt-2 w-full"
+                        onClick={() => {
+                          handleCompleteTask(event);
+                          setShowTodayTasksDialog(false);
+                        }}
+                        disabled={completeTask.isPending}
+                      >
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        Marker som fullført
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Overdue tasks dialog */}
+      <Dialog open={showOverdueTasksDialog} onOpenChange={setShowOverdueTasksDialog}>
+        <DialogContent className="max-w-md max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Avvik - Oppgaver ikke utført
+            </DialogTitle>
+            <DialogDescription>
+              {overdueTasks.length === 0 
+                ? "Ingen avvik registrert" 
+                : `${overdueTasks.length} oppgave${overdueTasks.length > 1 ? 'r' : ''} ikke utført i tide`}
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[50vh] pr-4">
+            {overdueTasks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <CheckCircle2 className="h-12 w-12 text-green-500 mb-3" />
+                <p className="text-muted-foreground">Ingen avvik</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {overdueTasks.map((event) => (
+                  <div 
+                    key={event.id}
+                    className="p-3 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-900"
+                  >
+                    <div className="flex items-start gap-3">
+                      {getEventIcon(event.type)}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm">{event.title}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Forfalt: {format(event.date, 'd. MMMM yyyy', { locale: nb })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
