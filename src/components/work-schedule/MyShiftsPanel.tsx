@@ -114,23 +114,23 @@ export function MyShiftsPanel() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="shifts">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="shifts">
-            Mine vakter ({myShifts.length})
+        <TabsList className="h-auto flex w-full overflow-x-auto gap-1 p-1">
+          <TabsTrigger value="shifts" className="flex-shrink-0 text-xs sm:text-sm px-3">
+            Vakter ({myShifts.length})
           </TabsTrigger>
-          <TabsTrigger value="pending" className="relative">
+          <TabsTrigger value="pending" className="flex-shrink-0 text-xs sm:text-sm px-3 relative">
             Til meg ({pendingForMe.length})
             {pendingForMe.length > 0 && (
-              <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive rounded-full text-[10px] text-destructive-foreground flex items-center justify-center">
                 {pendingForMe.length}
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="requests">
-            Mine forespørsler ({myRequests.length})
+          <TabsTrigger value="requests" className="flex-shrink-0 text-xs sm:text-sm px-3">
+            Forespørsler ({myRequests.length})
           </TabsTrigger>
-          <TabsTrigger value="open">
-            Ledige vakter ({openShifts.length})
+          <TabsTrigger value="open" className="flex-shrink-0 text-xs sm:text-sm px-3">
+            Ledige ({openShifts.length})
           </TabsTrigger>
         </TabsList>
 
