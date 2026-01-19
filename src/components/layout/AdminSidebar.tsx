@@ -16,6 +16,7 @@ import {
   FolderOpen,
   BookOpen,
   Leaf,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ const adminNavItems = [
   { icon: LayoutDashboard, label: "Oversikt", path: "/admin", color: undefined },
   { icon: Building2, label: "Bedrifter", path: "/admin/companies", color: undefined },
   { icon: Users, label: "Brukere", path: "/admin/users", color: undefined },
+  { icon: Sparkles, label: "AI Import", path: "/admin/customer-import", color: "text-primary" },
   { icon: CreditCard, label: "HMS-kort", path: "/admin/hms-requests", color: undefined },
   { icon: Award, label: "SG Register", path: "/admin/sg-register", color: undefined },
   { icon: FolderOpen, label: "Dokumentsenter", path: "/admin/documents", color: "text-primary" },
