@@ -34,14 +34,22 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    // Get the requesting user
-    const { data: { user: requestingUser }, error: userError } = await supabaseClient.auth.getUser();
+    // Get the requesting user - extract token from header
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user: requestingUser }, error: userError } = await supabaseClient.auth.getUser(token);
+    
     if (userError || !requestingUser) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      console.error("Auth error:", userError?.message || "No user found");
+      return new Response(JSON.stringify({ 
+        error: "Unauthorized", 
+        details: userError?.message || "Session expired. Please log in again." 
+      }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    
+    console.log("Authenticated user:", requestingUser.email);
 
     // Check if requesting user is a system admin
     const { data: roles } = await supabaseAdmin
