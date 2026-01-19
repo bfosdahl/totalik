@@ -86,18 +86,35 @@ export function UniversalOrderDialog({
         ...(cancellationNoticeMonths ? { cancellation_notice_months: cancellationNoticeMonths } : {}),
       };
 
-      const { error: moduleError } = await supabase
+      const { data: existingModule, error: existingError } = await supabase
         .from("company_modules")
-        .upsert([{
-          company_id: company.id,
-          module_type: moduleType,
-          is_active: true,
-          settings,
-        }], {
-          onConflict: "company_id,module_type"
-        });
+        .select("id, settings")
+        .eq("company_id", company.id)
+        .eq("module_type", moduleType)
+        .maybeSingle();
 
-      if (moduleError) throw moduleError;
+      if (existingError) throw existingError;
+
+      if (existingModule?.id) {
+        const { error: moduleError } = await supabase
+          .from("company_modules")
+          .update({
+            is_active: true,
+            settings: { ...existingModule.settings, ...settings },
+          })
+          .eq("id", existingModule.id);
+        if (moduleError) throw moduleError;
+      } else {
+        const { error: moduleError } = await supabase
+          .from("company_modules")
+          .insert({
+            company_id: company.id,
+            module_type: moduleType,
+            is_active: true,
+            settings: { ...getModuleDefaultSettings(moduleType), ...settings },
+          });
+        if (moduleError) throw moduleError;
+      }
 
       // 3. Send confirmation email
       try {

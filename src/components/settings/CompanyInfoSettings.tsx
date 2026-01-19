@@ -128,7 +128,8 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
         .insert({
           company_id: newCompany.id,
           module_type: "IK_HMS",
-          is_active: true
+          is_active: true,
+          settings: getModuleDefaultSettings("IK_HMS"),
         });
 
       if (moduleError) {

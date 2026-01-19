@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
 
 interface ValidationResult {
   isValid: boolean;
@@ -111,7 +112,7 @@ export function useAiSetupValidation(moduleType: "IK_HMS" | "IK_MAT" = "IK_HMS")
             company_id: targetCompanyId,
             module_type: moduleType,
             is_active: true,
-            settings: {},
+            settings: getModuleDefaultSettings(moduleType),
           })
           .select()
           .single();

@@ -23,6 +23,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { applyDefaultHmsSetup } from "@/lib/applyDefaultHmsSetup";
+import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
 import * as XLSX from "xlsx";
 
 interface ParsedCompany {
@@ -274,7 +275,7 @@ export function BulkCompanyImportDialog({
             company_id: newCompany.id,
             module_type: moduleType,
             is_active: true,
-            settings: {},
+            settings: getModuleDefaultSettings(moduleType),
           });
 
           // Create seed projects for KS Bygg
