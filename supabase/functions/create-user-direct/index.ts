@@ -104,9 +104,11 @@ serve(async (req) => {
       });
     }
 
-    // Create the new user WITHOUT a password - they will set it via the reset link
+    // Create the new user with standard default password
+    const tempPassword = "Abc_1234";
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
+      password: tempPassword,
       email_confirm: true,
       user_metadata: {
         first_name: firstName || "",

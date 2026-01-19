@@ -214,8 +214,8 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Generate a unique random password for each user
-        const tempPassword = crypto.randomUUID().slice(0, 16);
+        // Use standard default password for all new users
+        const tempPassword = "Abc_1234";
 
         const { data: authData, error: createError } = await supabaseAdmin.auth.admin.createUser({
           email: user.email,
