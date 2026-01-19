@@ -569,6 +569,7 @@ export default function AdminCompanies() {
                         >
                           <Checkbox
                             checked={selectedModules.includes(module.type)}
+                            onClick={(e) => e.stopPropagation()}
                             onCheckedChange={() => toggleModuleSelection(module.type)}
                           />
                           <div className="min-w-0">
