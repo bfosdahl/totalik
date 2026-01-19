@@ -71,3 +71,6 @@ verify_jwt = true
 
 [functions.send-welcome-email]
 verify_jwt = false
+
+[functions.parse-customer-pdf]
+verify_jwt = true
