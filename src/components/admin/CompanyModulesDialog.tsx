@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { createSeedProjects } from "@/utils/ksModule2SeedProjects";
+import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
 
 interface Module {
   id: string;
@@ -151,10 +152,12 @@ export function CompanyModulesDialog({
           if (error) throw error;
         } else if (module.isActive) {
           // Create new module only if it's being activated
+          // Use safe default settings to prevent crashes before AI setup runs
           const { error } = await supabase.from("company_modules").insert({
             company_id: company.id,
             module_type: module.type,
             is_active: true,
+            settings: getModuleDefaultSettings(module.type),
           });
 
           if (error) throw error;

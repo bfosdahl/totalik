@@ -45,6 +45,8 @@ import { CompanyModulesDialog } from "@/components/admin/CompanyModulesDialog";
 import { BulkCompanyImportDialog } from "@/components/admin/BulkCompanyImportDialog";
 import { CompanyDepartmentsDialog } from "@/components/admin/CompanyDepartmentsDialog";
 import { applyDefaultHmsSetup } from "@/lib/applyDefaultHmsSetup";
+import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
+import { SelectableCard } from "@/components/ui/selectable-card";
 const companySchema = z.object({
   name: z.string().min(1, "Bedriftsnavn er påkrevd").max(100),
   org_number: z.string().optional(),
@@ -149,7 +151,7 @@ export default function AdminCompanies() {
           company_id: newCompany.id,
           module_type: moduleType,
           is_active: true,
-          settings: {},
+          settings: getModuleDefaultSettings(moduleType),
         });
         
         if (moduleError) {
@@ -558,25 +560,16 @@ export default function AdminCompanies() {
                     <Label className="text-sm font-medium mb-3 block">Velg moduler</Label>
                     <div className="grid grid-cols-2 gap-2">
                       {MODULE_OPTIONS.map((module) => (
-                        <div
+                        <SelectableCard
                           key={module.type}
-                          className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-colors ${
-                            selectedModules.includes(module.type)
-                              ? "border-primary bg-primary/5"
-                              : "border-border hover:bg-secondary/30"
-                          }`}
-                          onClick={() => toggleModuleSelection(module.type)}
+                          selected={selectedModules.includes(module.type)}
+                          onSelectedChange={() => toggleModuleSelection(module.type)}
                         >
-                          <Checkbox
-                            checked={selectedModules.includes(module.type)}
-                            onClick={(e) => e.stopPropagation()}
-                            onCheckedChange={() => toggleModuleSelection(module.type)}
-                          />
                           <div className="min-w-0">
                             <p className="text-sm font-medium">{module.name}</p>
                             <p className="text-xs text-muted-foreground truncate">{module.description}</p>
                           </div>
-                        </div>
+                        </SelectableCard>
                       ))}
                     </div>
                   </div>
