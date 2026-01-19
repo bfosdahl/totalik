@@ -258,7 +258,7 @@ export default function AdminUsers() {
               company_id: newUserCompanyId,
               module_type: moduleType,
               is_active: true,
-              settings: {},
+              settings: getModuleDefaultSettings(moduleType),
             });
 
             // If KS Bygg module, create seed projects

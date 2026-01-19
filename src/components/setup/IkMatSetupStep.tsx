@@ -170,15 +170,30 @@ export const IkMatSetupStep = ({ companyId, onComplete }: IkMatSetupStepProps) =
         }
       }
 
-      // 4. Save setup answers and generated content in company_modules settings
+      // 4. Save setup answers and generated content in company_modules settings (merge to preserve manualContent)
+      const { data: existingModule, error: existingError } = await supabase
+        .from('company_modules')
+        .select('settings')
+        .eq('company_id', companyId)
+        .eq('module_type', 'IK_MAT')
+        .maybeSingle();
+
+      if (existingError) {
+        console.error("Error fetching existing module settings:", existingError);
+        throw existingError;
+      }
+
+      const safe = getSafeModuleSettings('IK_MAT', existingModule?.settings);
+
       const { error: moduleError } = await supabase
         .from('company_modules')
         .update({
           settings: {
+            ...safe,
             setupAnswers: JSON.parse(JSON.stringify(setupAnswers)),
             generatedContent: JSON.parse(JSON.stringify(generatedContent)),
             setupCompletedAt: new Date().toISOString(),
-          }
+          },
         })
         .eq('company_id', companyId)
         .eq('module_type', 'IK_MAT');
