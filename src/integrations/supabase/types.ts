@@ -11284,6 +11284,8 @@ export type Database = {
           project_name: string | null
           source: string | null
           status: string
+          tripletex_synced: boolean | null
+          tripletex_synced_at: string | null
           updated_at: string
           user_id: string
           user_name: string
@@ -11304,6 +11306,8 @@ export type Database = {
           project_name?: string | null
           source?: string | null
           status?: string
+          tripletex_synced?: boolean | null
+          tripletex_synced_at?: string | null
           updated_at?: string
           user_id: string
           user_name: string
@@ -11324,6 +11328,8 @@ export type Database = {
           project_name?: string | null
           source?: string | null
           status?: string
+          tripletex_synced?: boolean | null
+          tripletex_synced_at?: string | null
           updated_at?: string
           user_id?: string
           user_name?: string
