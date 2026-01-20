@@ -14,6 +14,9 @@ const EQUIPMENT_TYPE_MAP: Record<string, { type: string; min: number; max: numbe
   'kjøledisk': { type: 'cold_display', min: 0, max: 8, label: 'Kjøledisk' },
   'varmholding': { type: 'hot_holding', min: 60, max: 100, label: 'Varmholding' },
   'varmebehandling': { type: 'heat_treatment', min: 75, max: 100, label: 'Varmebehandling' },
+  'oppvaskmaskin husholdning': { type: 'dishwasher_home', min: 65, max: 100, label: 'Oppvaskmaskin (husholdning)' },
+  'oppvaskmaskin profesjonell': { type: 'dishwasher_pro', min: 80, max: 100, label: 'Oppvaskmaskin (profesjonell)' },
+  'oppvaskmaskin': { type: 'dishwasher_home', min: 65, max: 100, label: 'Oppvaskmaskin (husholdning)' },
 };
 
 const systemPrompt = `Du er MAT Proffen, en vennlig og kunnskapsrik maskot for IK-Mat systemet - et internkontrollsystem for næringsmiddelbedrifter i Norge.
@@ -35,6 +38,8 @@ Når brukeren ber deg om å legge til, opprette eller endre noe, BRUK de tilgjen
 - kjøledisk (0-8°C)
 - varmholding (60-100°C)
 - varmebehandling (75-100°C)
+- oppvaskmaskin husholdning (min 65°C skylletemperatur)
+- oppvaskmaskin profesjonell (min 80°C for hurtigprogrammer)
 
 **SYSTEMETS NAVIGASJON - IK-MAT MODUL:**
 
@@ -85,7 +90,7 @@ const tools = [
           },
           equipment_type: {
             type: "string",
-            enum: ["kjøleskap", "fryser", "varmebuffet", "kjøledisk", "varmholding", "varmebehandling"],
+            enum: ["kjøleskap", "fryser", "varmebuffet", "kjøledisk", "varmholding", "varmebehandling", "oppvaskmaskin husholdning", "oppvaskmaskin profesjonell", "oppvaskmaskin"],
             description: "Type utstyr"
           },
           location: {
@@ -238,7 +243,7 @@ async function executeToolCall(
         if (!equipmentConfig) {
           return { 
             success: false, 
-            message: `Ukjent utstyrstype: ${args.equipment_type}. Gyldige typer: kjøleskap, fryser, varmebuffet, kjøledisk, varmholding, varmebehandling.` 
+            message: `Ukjent utstyrstype: ${args.equipment_type}. Gyldige typer: kjøleskap, fryser, varmebuffet, kjøledisk, varmholding, varmebehandling, oppvaskmaskin husholdning, oppvaskmaskin profesjonell.`
           };
         }
 
@@ -441,7 +446,9 @@ async function executeToolCall(
           'hot_display': 'Varmebuffet',
           'cold_display': 'Kjøledisk',
           'hot_holding': 'Varmholding',
-          'heat_treatment': 'Varmebehandling'
+          'heat_treatment': 'Varmebehandling',
+          'dishwasher_home': 'Oppvaskmaskin (husholdning)',
+          'dishwasher_pro': 'Oppvaskmaskin (profesjonell)'
         };
 
         const equipList = data.map((e: any) => 
