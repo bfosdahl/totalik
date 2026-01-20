@@ -76,8 +76,8 @@ export const SjekklisterTab = () => {
     status: 'draft' | 'completed',
     notes?: string
   ) => {
-    if (!editingResponse) return false;
-    return await updateResponse(editingResponse.id, checkpointResponses, status, notes);
+    if (!editingResponse || !selectedChecklist) return false;
+    return await updateResponse(editingResponse.id, checkpointResponses, status, notes, selectedChecklist.name);
   };
 
   const handleCreateChecklist = async (data: {

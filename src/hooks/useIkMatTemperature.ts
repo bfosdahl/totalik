@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 import { EQUIPMENT_TYPE_DEFAULTS } from '@/lib/temperatureGuidelines';
+import { useIkMatDeviation } from './useIkMatDeviation';
 
 export interface TemperatureEquipment {
   id: string;
@@ -41,6 +42,7 @@ export interface TemperatureLog {
 export function useIkMatTemperature() {
   const { company, profile } = useAuth();
   const queryClient = useQueryClient();
+  const { createTemperatureDeviation } = useIkMatDeviation();
 
   // Fetch equipment
   const { data: equipment = [], isLoading: equipmentLoading } = useQuery({
@@ -222,6 +224,18 @@ export function useIkMatTemperature() {
         .single();
       
       if (error) throw error;
+      
+      // Auto-create deviation if temperature is outside acceptable range
+      if (!isAcceptable && equip) {
+        await createTemperatureDeviation(
+          equip.name,
+          data.temperature,
+          equip.min_temp,
+          equip.max_temp,
+          data.corrective_action
+        );
+      }
+      
       return { result, isAcceptable };
     },
     onSuccess: ({ isAcceptable }) => {
@@ -229,7 +243,7 @@ export function useIkMatTemperature() {
       if (isAcceptable) {
         toast.success('Temperatur registrert');
       } else {
-        toast.warning('Temperatur registrert - AVVIK OPPDAGET!');
+        toast.warning('Temperatur registrert - Avvik opprettet automatisk');
       }
     },
     onError: (error) => {

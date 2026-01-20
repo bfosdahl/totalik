@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useIkMatDeviation } from './useIkMatDeviation';
 
 export interface CleaningRecord {
   area: string;
@@ -27,6 +28,7 @@ export interface CleaningPlanResponse {
 export const useIkMatCleaningPlan = () => {
   const { company, user } = useAuth();
   const queryClient = useQueryClient();
+  const { createCleaningDeviation } = useIkMatDeviation();
 
   const { data: responses, isLoading } = useQuery({
     queryKey: ['ik-mat-cleaning-plan-responses', company?.id],
@@ -77,6 +79,19 @@ export const useIkMatCleaningPlan = () => {
         .single();
 
       if (error) throw error;
+
+      // Auto-create deviations for uncompleted cleaning tasks when completing
+      if (newResponse.status === 'completed') {
+        const uncompletedTasks = newResponse.cleaning_records.filter(r => !r.completed);
+        for (const task of uncompletedTasks) {
+          await createCleaningDeviation(
+            task.area,
+            newResponse.frequency_type || 'Ikke angitt',
+            task.notes
+          );
+        }
+      }
+
       return data;
     },
     onSuccess: () => {
@@ -95,11 +110,13 @@ export const useIkMatCleaningPlan = () => {
       cleaning_records,
       notes,
       status,
+      frequency_type,
     }: {
       id: string;
       cleaning_records: CleaningRecord[];
       notes?: string;
       status: string;
+      frequency_type?: string;
     }) => {
       const { data, error } = await supabase
         .from('ik_mat_cleaning_plan_responses')
@@ -115,6 +132,19 @@ export const useIkMatCleaningPlan = () => {
         .single();
 
       if (error) throw error;
+
+      // Auto-create deviations for uncompleted cleaning tasks when completing
+      if (status === 'completed') {
+        const uncompletedTasks = cleaning_records.filter(r => !r.completed);
+        for (const task of uncompletedTasks) {
+          await createCleaningDeviation(
+            task.area,
+            frequency_type || 'Ikke angitt',
+            task.notes
+          );
+        }
+      }
+
       return data;
     },
     onSuccess: () => {
