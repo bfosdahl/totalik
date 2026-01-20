@@ -38,6 +38,9 @@ export function ProtectedRoute({
   }
 
   if (!user) {
+    console.warn("[ProtectedRoute] No user - redirecting to /auth", {
+      from: location.pathname,
+    });
     return <Navigate to="/auth" replace />;
   }
 
