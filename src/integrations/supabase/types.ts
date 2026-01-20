@@ -1174,6 +1174,41 @@ export type Database = {
           },
         ]
       }
+      company_ks_organization: {
+        Row: {
+          company_id: string
+          created_at: string
+          custom_content: string
+          id: string
+          is_custom: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          custom_content?: string
+          id?: string
+          is_custom?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          custom_content?: string
+          id?: string
+          is_custom?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_ks_organization_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_ks_routines: {
         Row: {
           admin_template_id: string | null
@@ -1275,6 +1310,47 @@ export type Database = {
             columns: ["selected_by_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_ks_system_goals: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          goal_text: string
+          goal_type: string
+          id: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          goal_text: string
+          goal_type?: string
+          id?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          goal_text?: string
+          goal_type?: string
+          id?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_ks_system_goals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
