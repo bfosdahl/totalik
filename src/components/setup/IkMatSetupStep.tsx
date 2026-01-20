@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, Loader2, Snowflake, Refrigerator } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { getSafeModuleSettings } from "@/lib/moduleDefaults";
 
 interface Equipment {
   name: string;
@@ -183,7 +184,10 @@ export const IkMatSetupStep = ({ companyId, onComplete }: IkMatSetupStepProps) =
         throw existingError;
       }
 
-      const safe = getSafeModuleSettings('IK_MAT', existingModule?.settings);
+      const existingSettings = (existingModule?.settings && typeof existingModule.settings === 'object' && !Array.isArray(existingModule.settings)) 
+        ? existingModule.settings as Record<string, any>
+        : {};
+      const safe = getSafeModuleSettings('IK_MAT', existingSettings);
 
       const { error: moduleError } = await supabase
         .from('company_modules')

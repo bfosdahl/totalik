@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { LogoUpload } from "@/components/setup/LogoUpload";
 import { useNavigate } from "react-router-dom";
+import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
 
 interface CompanyInfoSettingsProps {
   onBack: () => void;

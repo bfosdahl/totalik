@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Loader2, ShieldCheck, Check } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
 
 interface ModulePricing {
   module_type: string;
