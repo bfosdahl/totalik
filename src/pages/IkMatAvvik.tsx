@@ -49,22 +49,37 @@ const statusConfig = {
   closed: { label: "Lukket", color: "bg-success/10 text-success" },
 };
 
-// Food safety specific categories - use existing database categories
-const foodSafetyCategories = ["quality", "safety", "environment", "equipment", "process"];
+// IK-MAT specific categories - completely separate from HMS
+const ikMatCategories = [
+  "temperature",      // Temperaturavvik
+  "cleaning",         // Renhold ikke utført
+  "pests",           // Skadedyr
+  "allergen",        // Allergenhåndtering
+  "storage",         // Feil lagring
+  "expiry",          // Utgått holdbarhet
+  "hygiene",         // Personlig hygiene
+  "contamination",   // Krysskontaminering
+  "receiving",       // Varemottak
+  "other_food",      // Annet matsikkerhet
+] as const;
 
-// Use the same category type as the main deviations
-type DeviationCategory = "quality" | "safety" | "environment" | "documentation" | "other" | "process" | "equipment" | "personnel";
+type IkMatCategory = typeof ikMatCategories[number];
 
-const categoryConfig: Record<DeviationCategory, { label: string; color: string }> = {
-  safety: { label: "Sikkerhet", color: "bg-primary/10 text-primary" },
-  quality: { label: "Kvalitet", color: "bg-blue-500/10 text-blue-600" },
-  environment: { label: "Miljø", color: "bg-green-500/10 text-green-600" },
-  process: { label: "Prosess", color: "bg-purple-500/10 text-purple-600" },
-  equipment: { label: "Utstyr", color: "bg-orange-500/10 text-orange-600" },
-  personnel: { label: "Personell", color: "bg-pink-500/10 text-pink-600" },
-  documentation: { label: "Dokumentasjon", color: "bg-slate-500/10 text-slate-600" },
-  other: { label: "Annet", color: "bg-muted text-muted-foreground" },
+const ikMatCategoryConfig: Record<IkMatCategory, { label: string; color: string; icon?: string }> = {
+  temperature: { label: "Temperaturavvik", color: "bg-red-500/10 text-red-600" },
+  cleaning: { label: "Renhold ikke utført", color: "bg-yellow-500/10 text-yellow-600" },
+  pests: { label: "Skadedyr", color: "bg-orange-500/10 text-orange-600" },
+  allergen: { label: "Allergenhåndtering", color: "bg-purple-500/10 text-purple-600" },
+  storage: { label: "Feil lagring", color: "bg-blue-500/10 text-blue-600" },
+  expiry: { label: "Utgått holdbarhet", color: "bg-amber-500/10 text-amber-600" },
+  hygiene: { label: "Personlig hygiene", color: "bg-pink-500/10 text-pink-600" },
+  contamination: { label: "Krysskontaminering", color: "bg-rose-500/10 text-rose-600" },
+  receiving: { label: "Varemottak", color: "bg-teal-500/10 text-teal-600" },
+  other_food: { label: "Annet", color: "bg-muted text-muted-foreground" },
 };
+
+// Keep original for compatibility with dialog
+type DeviationCategory = "quality" | "safety" | "environment" | "documentation" | "other" | "process" | "equipment" | "personnel";
 
 interface DeviationForDialog {
   id: string;
@@ -116,17 +131,9 @@ const IkMatAvvik = () => {
     }
   }, [modulesLoading, hasModule, navigate]);
 
-  // Filter to only food safety related deviations
+  // Filter to only IK-MAT deviations (type = 'ik_mat')
   const foodSafetyDeviations = deviations.filter(dev => 
-    foodSafetyCategories.includes(dev.category) || 
-    dev.category === "quality" || // Include quality as it often relates to food
-    (dev.description && (
-      dev.description.toLowerCase().includes("mat") ||
-      dev.description.toLowerCase().includes("temperatur") ||
-      dev.description.toLowerCase().includes("hygiene") ||
-      dev.description.toLowerCase().includes("allergen") ||
-      dev.description.toLowerCase().includes("renhold")
-    ))
+    dev.type === "ik_mat"
   );
 
   const uploadFilesForDeviation = async (deviationId: string, files: File[]) => {
@@ -417,7 +424,7 @@ const IkMatAvvik = () => {
             ))}
           </div>
 
-          {/* Category filter for food safety */}
+          {/* Category filter for IK-MAT specific categories */}
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0">
             <Button
               variant={filterCategory === null ? "secondary" : "ghost"}
@@ -427,7 +434,7 @@ const IkMatAvvik = () => {
             >
               Alle kategorier
             </Button>
-            {foodSafetyCategories.map((cat) => (
+            {ikMatCategories.map((cat) => (
               <Button
                 key={cat}
                 variant={filterCategory === cat ? "secondary" : "ghost"}
@@ -435,7 +442,7 @@ const IkMatAvvik = () => {
                 className="flex-shrink-0"
                 onClick={() => setFilterCategory(cat)}
               >
-                {categoryConfig[cat]?.label || cat}
+                {ikMatCategoryConfig[cat].label}
               </Button>
             ))}
           </div>
@@ -488,8 +495,8 @@ const IkMatAvvik = () => {
                         <Badge className={cn("text-xs", priorityConfig[deviation.priority]?.color || "")}>
                           {priorityConfig[deviation.priority]?.label || deviation.priority}
                         </Badge>
-                        <Badge className={cn("text-xs", categoryConfig[deviation.category]?.color || "bg-muted")}>
-                          {categoryConfig[deviation.category]?.label || deviation.category}
+                        <Badge className={cn("text-xs", ikMatCategoryConfig[deviation.category as IkMatCategory]?.color || "bg-muted")}>
+                          {ikMatCategoryConfig[deviation.category as IkMatCategory]?.label || deviation.category}
                         </Badge>
                       </div>
                       <h4 className="font-medium text-sm md:text-base truncate">
