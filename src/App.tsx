@@ -66,6 +66,7 @@ import IkMatOrganisasjon from "./pages/IkMatOrganisasjon";
 import IkMatRutiner from "./pages/IkMatRutiner";
 import IkMatRisikoOgTiltak from "./pages/IkMatRisikoOgTiltak";
 import IkMatDokumentsenter from "./pages/IkMatDokumentsenter";
+import IkMatAvvik from "./pages/IkMatAvvik";
 import IkMatTemperaturlogg from "./pages/IkMatTemperaturlogg";
 import IkAlkoholDashboard from "./pages/ikalkohol/IkAlkoholDashboard";
 import IkAlkoholInternkontroll from "./pages/ikalkohol/IkAlkoholInternkontroll";
@@ -166,6 +167,7 @@ const App = () => (
                   <Route path="/ik-mat/allergener" element={<ProtectedRoute><IkMatAllergener /></ProtectedRoute>} />
                   <Route path="/ik-mat/faste-avtaler" element={<ProtectedRoute><IkMatFasteAvtaler /></ProtectedRoute>} />
                   <Route path="/ik-mat/dokumentsenter" element={<ProtectedRoute><IkMatDokumentsenter /></ProtectedRoute>} />
+                  <Route path="/ik-mat/avvik" element={<ProtectedRoute><IkMatAvvik /></ProtectedRoute>} />
                   {/* IK Alkohol routes */}
                   <Route path="/ik-alkohol" element={<ProtectedRoute><IkAlkoholDashboard /></ProtectedRoute>} />
                   <Route path="/ik-alkohol/internkontroll" element={<ProtectedRoute><IkAlkoholInternkontroll /></ProtectedRoute>} />

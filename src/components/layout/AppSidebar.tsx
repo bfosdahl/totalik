@@ -95,6 +95,7 @@ const ikMatItems = [
   { icon: AlertTriangle, label: "Risiko & tiltak", path: "/ik-mat/risiko-og-tiltak", color: "text-orange-500" },
   { icon: ListChecks, label: "Rutiner", path: "/ik-mat/rutiner", color: "text-teal-500" },
   { icon: ClipboardCheck, label: "Kontroll", path: "/ik-mat/kontroll", color: "text-emerald-500" },
+  { icon: AlertTriangle, label: "Avvik", path: "/ik-mat/avvik", color: "text-red-500" },
   { icon: Wheat, label: "Allergener", path: "/ik-mat/allergener", color: "text-amber-500" },
   { icon: Handshake, label: "Faste avtaler", path: "/ik-mat/faste-avtaler", color: "text-indigo-500" },
   { icon: FolderOpen, label: "Dokumentsenter", path: "/ik-mat/dokumentsenter", color: "text-slate-500" },
