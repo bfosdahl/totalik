@@ -223,6 +223,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        // Debugging: track auth state changes that may cause unexpected redirects
+        console.info("[Auth] onAuthStateChange", {
+          event,
+          hasSession: !!session,
+          userId: session?.user?.id ?? null,
+          expiresAt: session?.expires_at ?? null,
+        });
+
         setSession(session);
         setUser(session?.user ?? null);
 
@@ -232,6 +240,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             fetchUserData(session.user.id);
           }, 0);
         } else {
+          // If session disappears, clear app state.
+          console.warn("[Auth] Session missing - clearing local auth state", { event });
           setProfile(null);
           setRoles([]);
           setIsGuestUser(false);
@@ -244,9 +254,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.info("[Auth] getSession initial", {
+        hasSession: !!session,
+        userId: session?.user?.id ?? null,
+        expiresAt: session?.expires_at ?? null,
+      });
+
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
         fetchUserData(session.user.id).finally(() => {
           setIsLoading(false);
