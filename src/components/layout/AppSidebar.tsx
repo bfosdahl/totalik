@@ -1051,6 +1051,28 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                         >
                           <div className="pl-4 space-y-1">
                             <NavLink
+                              to="/ks/ik-ks/maalsetting"
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm",
+                                location.pathname === "/ks/ik-ks/maalsetting"
+                                  ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                              )}
+                            >
+                              Målsetting
+                            </NavLink>
+                            <NavLink
+                              to="/ks/ik-ks/organisering"
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm",
+                                location.pathname === "/ks/ik-ks/organisering"
+                                  ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                              )}
+                            >
+                              Organisasjonsplan
+                            </NavLink>
+                            <NavLink
                               to="/ks/ik-ks/rutiner"
                               className={cn(
                                 "flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm",

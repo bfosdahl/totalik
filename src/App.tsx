@@ -36,6 +36,8 @@ import IkKsRutiner from "./pages/ks2/IkKsRutiner";
 import IkKsMaal from "./pages/ks2/IkKsMaal";
 import IkKsDokumenter from "./pages/ks2/IkKsDokumenter";
 import IkKsSjekklister from "./pages/ks2/IkKsSjekklister";
+import IkKsMaalsetting from "./pages/ks2/IkKsMaalsetting";
+import IkKsOrganisering from "./pages/ks2/IkKsOrganisering";
 import MineProsjekterDashboard from "./pages/mineprosjekter/MineProsjekterDashboard";
 import SimpleProjectDetail from "./pages/mineprosjekter/SimpleProjectDetail";
 import HmsChat from "./pages/HmsChat";
@@ -186,6 +188,8 @@ const App = () => (
                   <Route path="/ks/befaring" element={<ProtectedRoute><Ks2Befaring /></ProtectedRoute>} />
                   
                   {/* IK/KS Grunnlag routes */}
+                  <Route path="/ks/ik-ks/maalsetting" element={<ProtectedRoute><IkKsMaalsetting /></ProtectedRoute>} />
+                  <Route path="/ks/ik-ks/organisering" element={<ProtectedRoute><IkKsOrganisering /></ProtectedRoute>} />
                   <Route path="/ks/ik-ks/rutiner" element={<ProtectedRoute><IkKsRutiner /></ProtectedRoute>} />
                   <Route path="/ks/ik-ks/maal" element={<ProtectedRoute><IkKsMaal /></ProtectedRoute>} />
                   <Route path="/ks/ik-ks/dokumenter" element={<ProtectedRoute><IkKsDokumenter /></ProtectedRoute>} />
