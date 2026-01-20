@@ -230,6 +230,8 @@ export function ManageEquipmentDialog({
                       <SelectItem value="heat_treatment">Varmebehandling</SelectItem>
                       <SelectItem value="hot_display">Varmebuffet</SelectItem>
                       <SelectItem value="cold_display">Kjøledisk</SelectItem>
+                      <SelectItem value="dishwasher_home">Oppvaskmaskin (husholdning)</SelectItem>
+                      <SelectItem value="dishwasher_pro">Oppvaskmaskin (profesjonell)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

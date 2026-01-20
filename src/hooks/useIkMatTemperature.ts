@@ -10,7 +10,7 @@ export interface TemperatureEquipment {
   id: string;
   company_id: string;
   name: string;
-  equipment_type: 'fridge' | 'freezer' | 'hot_display' | 'cold_display' | 'hot_holding' | 'heat_treatment';
+  equipment_type: 'fridge' | 'freezer' | 'hot_display' | 'cold_display' | 'hot_holding' | 'heat_treatment' | 'dishwasher_home' | 'dishwasher_pro';
   location: string | null;
   min_temp: number | null;
   max_temp: number | null;

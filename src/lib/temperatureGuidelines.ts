@@ -17,6 +17,8 @@ export const EQUIPMENT_TYPE_DEFAULTS = {
   cold_display: { min: 0, max: 8, label: 'Kjøledisk' },
   hot_holding: { min: 60, max: 100, label: 'Varmholding' },
   heat_treatment: { min: 75, max: 100, label: 'Varmebehandling' },
+  dishwasher_home: { min: 65, max: 100, label: 'Oppvaskmaskin (husholdning)' },
+  dishwasher_pro: { min: 80, max: 100, label: 'Oppvaskmaskin (profesjonell)' },
 };
 
 // Refrigeration unit (Kjøleenheter) guidelines
@@ -169,6 +171,54 @@ export function getColdDisplayGuideline(temp: number): TemperatureGuideline {
   };
 }
 
+// Dishwasher household (Oppvaskmaskin husholdning) guidelines
+// Based on Mattilsynet: minimum 65°C skylletemperatur for husholdningsmaskiner
+export function getDishwasherHomeGuideline(temp: number): TemperatureGuideline {
+  if (temp < 55) {
+    return {
+      status: 'red',
+      message: 'Under 55°C - Kritisk!',
+      action: 'Oppvasken er ikke hygienisk ren. Kjør på nytt med høyere temperatur, eller bruk kjemisk desinfeksjon. Kontroller maskin.',
+    };
+  }
+  if (temp < 65) {
+    return {
+      status: 'yellow',
+      message: '55-64°C - Under anbefalt',
+      action: 'Temperaturen bør være minst 65°C for god termisk desinfeksjon. Vurder lengre skylletid eller bruk av desinfiserende midler.',
+    };
+  }
+  return {
+    status: 'green',
+    message: '65°C eller høyere - Riktig temperatur',
+    action: 'Aksepter. God termisk desinfeksjonseffekt oppnådd.',
+  };
+}
+
+// Dishwasher professional (Oppvaskmaskin profesjonell/storkjøkken) guidelines
+// Based on Mattilsynet: hurtigprogrammer krever høyere temperatur, ofte 80°C+
+export function getDishwasherProGuideline(temp: number): TemperatureGuideline {
+  if (temp < 70) {
+    return {
+      status: 'red',
+      message: 'Under 70°C - Kritisk!',
+      action: 'For lav temperatur for hurtigprogram. Oppvasken er trolig ikke hygienisk ren. Kjør på nytt eller bruk kjemisk desinfeksjon.',
+    };
+  }
+  if (temp < 80) {
+    return {
+      status: 'yellow',
+      message: '70-79°C - Under anbefalt',
+      action: 'For hurtigprogrammer bør skylletemperaturen være 80°C eller høyere. Verifiser at kjemiske midler kompenserer, eller øk temperaturen.',
+    };
+  }
+  return {
+    status: 'green',
+    message: '80°C eller høyere - Riktig temperatur',
+    action: 'Aksepter. God termisk desinfeksjonseffekt for profesjonell oppvaskmaskin.',
+  };
+}
+
 // Main function to get guideline based on equipment type
 export function getTemperatureGuideline(
   equipmentType: string,
@@ -187,6 +237,10 @@ export function getTemperatureGuideline(
       return getHotDisplayGuideline(temperature);
     case 'cold_display':
       return getColdDisplayGuideline(temperature);
+    case 'dishwasher_home':
+      return getDishwasherHomeGuideline(temperature);
+    case 'dishwasher_pro':
+      return getDishwasherProGuideline(temperature);
     default:
       // Generic check based on min/max
       return {
