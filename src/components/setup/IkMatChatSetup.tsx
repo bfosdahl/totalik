@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Send, Bot, User, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { getSafeModuleSettings } from "@/lib/moduleDefaults";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -102,7 +103,10 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
         throw existingError;
       }
 
-      const safe = getSafeModuleSettings('IK_MAT', existingModule?.settings);
+      const existingSettings = (existingModule?.settings && typeof existingModule.settings === 'object' && !Array.isArray(existingModule.settings)) 
+        ? existingModule.settings as Record<string, any>
+        : {};
+      const safe = getSafeModuleSettings('IK_MAT', existingSettings);
 
       // Save all content in company_modules settings
       const { error: moduleError } = await supabase

@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Loader2, ShieldCheck, Check, CalendarCheck, Clock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
 
 export interface ModuleOrderConfig {
   moduleType: string;
@@ -96,11 +97,14 @@ export function UniversalOrderDialog({
       if (existingError) throw existingError;
 
       if (existingModule?.id) {
+        const existingSettings = (existingModule.settings && typeof existingModule.settings === 'object' && !Array.isArray(existingModule.settings)) 
+          ? existingModule.settings as Record<string, any>
+          : {};
         const { error: moduleError } = await supabase
           .from("company_modules")
           .update({
             is_active: true,
-            settings: { ...existingModule.settings, ...settings },
+            settings: { ...existingSettings, ...settings },
           })
           .eq("id", existingModule.id);
         if (moduleError) throw moduleError;

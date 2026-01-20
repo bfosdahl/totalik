@@ -20,6 +20,7 @@ import {
   Download,
   Boxes,
 } from "lucide-react";
+import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
