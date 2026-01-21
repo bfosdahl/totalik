@@ -33,14 +33,16 @@ export default function Auth() {
   const [orgNumber, setOrgNumber] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const { signIn, user } = useAuth();
+  const { signIn, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      navigate("/");
+    // Avoid redirect loops during the brief period where auth is settled but
+    // profile/roles are still being fetched.
+    if (!authLoading && user) {
+      navigate("/", { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const handleForgotPassword = async () => {
     const validation = z.string().email("Skriv inn en gyldig e-post").safeParse(email);
