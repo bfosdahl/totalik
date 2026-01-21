@@ -1316,10 +1316,13 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
             const userRisks = (existingRisks?.risks as Array<Record<string, unknown>> || [])
               .filter((r) => !r.is_ai_generated);
             
-            const { error: risksError } = await supabase.from("company_risk_assessments").upsert({
-              company_id: companyId,
-              risks: [...userRisks, ...transformedRisks],
-            });
+            const { error: risksError } = await supabase.from("company_risk_assessments").upsert(
+              {
+                company_id: companyId,
+                risks: [...userRisks, ...transformedRisks],
+              },
+              { onConflict: "company_id" }
+            );
             
             if (risksError) {
               console.error("[saveSetupData] Error saving risks:", risksError);
@@ -1340,10 +1343,13 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
             const userActions = (existingActions?.actions as Array<Record<string, unknown>> || [])
               .filter((a) => !a.is_ai_generated);
             
-            const { error: actionsError } = await supabase.from("company_action_plans").upsert({
-              company_id: companyId,
-              actions: [...userActions, ...transformedActions],
-            });
+            const { error: actionsError } = await supabase.from("company_action_plans").upsert(
+              {
+                company_id: companyId,
+                actions: [...userActions, ...transformedActions],
+              },
+              { onConflict: "company_id" }
+            );
             
             if (actionsError) {
               console.error("[saveSetupData] Error saving actions:", actionsError);
