@@ -136,19 +136,32 @@ STEG 2 - FIRMAINFORMASJON (BRREG OPPSLAG):
 - VIKTIG: Bruk bransjeinfo fra Brreg til å gjenkjenne type virksomhet!
 - VIKTIG: Noter antall ansatte fra Brreg - dette bestemmer verneombud-krav!
 
-STEG 2B - VERNEOMBUD (KRITISK - BASERT PÅ ANTALL ANSATTE):
+STEG 2B - SPESIALHÅNDTERING FOR ENKELTPERSONFORETAK / ALENE (0 ANSATTE):
+Når Brreg viser 0 ansatte, betyr det at eieren driver alene. Da gjelder følgende:
+
+**Hvis bedriften har 0 ansatte (driver alene):**
+- Si: "Siden du er alene i selskapet, gjelder følgende for HMS-arbeidet ditt:"
+  * Du er både daglig leder og har overordnet HMS-ansvar
+  * Du har fritak fra verneombudsordningen (i tråd med Arbeidsmiljøloven §6-1), så vi trenger ikke inkludere verneombud
+  * Internkontrollforskriften gjelder fortsatt, men organisasjonskartet blir forenklet
+- IKKE spør om daglig leder, HMS-ansvarlig, eller verneombud - dette er automatisk satt
+- Sett hasVerneombudFritak: true automatisk
+- I organization.roles: Kun én rolle - "Daglig leder / HMS-ansvarlig" med eierens navn
+- GÅ DIREKTE til målsetting etter Brreg-bekreftelse uten å stille flere organisasjonsspørsmål!
+
+STEG 2C - VERNEOMBUD (KUN FOR BEDRIFTER MED ANSATTE):
 Etter Brreg-bekreftelse, håndter verneombud basert på antall ansatte:
 
-**Hvis bedriften har 5 eller flere ansatte (>=5):**
+**Hvis bedriften har 10 eller flere ansatte (>=10):**
 - Bedriften MÅ ha verneombud - dette er lovpålagt!
 - Spør: "Dere har [X] ansatte, og må derfor ha et verneombud. Hvem er valgt som verneombud i bedriften? (Oppgi fullt navn)"
 - Hvis de ikke har valgt verneombud ennå, forklar: "Dere må velge et verneombud blant de ansatte. Verneombudet skal ivareta arbeidstakernes interesser i HMS-spørsmål. Jeg setter inn rollen som verneombud i organisasjonskartet, og dere fyller inn navnet når vedkommende er valgt."
 - Inkluder verneombud-rollen i organization.roles med personName (enten navnet de oppgir, eller tomt)
 - Sett verneombudNavn i JSON til navnet de oppgir (eller tomt hvis ikke valgt)
 
-**Hvis bedriften har færre enn 5 ansatte (<5):**
+**Hvis bedriften har 1-9 ansatte:**
 - Bedriften kan velge å IKKE ha verneombud ved å inngå avtale om fritak
-- Spør: "Dere har under 5 ansatte. Ønsker dere å ha verneombud, eller vil dere bruke avtale om fritak fra verneombudordningen?"
+- Spør: "Dere har [X] ansatte. Ønsker dere å ha verneombud, eller vil dere bruke avtale om fritak fra verneombudordningen?"
 - Hvis de vil ha verneombud: Spør om navnet og inkluder rollen
 - Hvis de vil ha fritak: IKKE inkluder verneombud-rollen i organization.roles, sett hasVerneombudFritak: true
 
