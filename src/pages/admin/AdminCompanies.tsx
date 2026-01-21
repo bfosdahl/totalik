@@ -144,8 +144,10 @@ export default function AdminCompanies() {
       }).select().single();
       if (error) throw error;
       
-      // 2. Create all selected modules for the new company
+      // 2. Create all selected modules for the new company (modules first, seeding after)
       const moduleErrors: string[] = [];
+      const createdModules: string[] = [];
+      
       for (const moduleType of selectedModules) {
         const { error: moduleError } = await supabase.from("company_modules").insert({
           company_id: newCompany.id,
@@ -158,11 +160,7 @@ export default function AdminCompanies() {
           console.error(`Error creating ${moduleType} module:`, moduleError);
           moduleErrors.push(`${moduleType}: ${moduleError.message}`);
         } else {
-          // If KS Bygg module is selected, create seed projects
-          if (moduleType === "IK_BYGG") {
-            const { createSeedProjects } = await import("@/utils/ksModule2SeedProjects");
-            await createSeedProjects(newCompany.id);
-          }
+          createdModules.push(moduleType);
         }
       }
       
@@ -170,13 +168,35 @@ export default function AdminCompanies() {
         throw new Error(`Kunne ikke opprette moduler: ${moduleErrors.join(", ")}`);
       }
       
-      // 3. Apply default HMS setup if IK_HMS is selected
-      if (selectedModules.includes("IK_HMS")) {
-        const setupResult = await applyDefaultHmsSetup(newCompany.id);
-        if (!setupResult.success) {
-          console.error("Error applying default HMS setup:", setupResult.error);
-        }
+      // 3. Run post-module setup (seeding, HMS setup) AFTER all modules are created
+      // This prevents race conditions and ensures modules exist before seeding
+      const postSetupPromises: Promise<void>[] = [];
+      
+      // KS Bygg seed projects (run in background, don't block)
+      if (createdModules.includes("IK_BYGG")) {
+        postSetupPromises.push(
+          import("@/utils/ksModule2SeedProjects")
+            .then(({ createSeedProjects }) => createSeedProjects(newCompany.id))
+            .then(() => { /* success */ })
+            .catch((err) => console.error("Error creating seed projects:", err))
+        );
       }
+      
+      // HMS default setup
+      if (createdModules.includes("IK_HMS")) {
+        postSetupPromises.push(
+          applyDefaultHmsSetup(newCompany.id)
+            .then((result) => {
+              if (!result.success) {
+                console.error("Error applying default HMS setup:", result.error);
+              }
+            })
+            .catch((err) => console.error("Error in HMS setup:", err))
+        );
+      }
+      
+      // Wait for all post-setup tasks to complete (but they won't throw)
+      await Promise.all(postSetupPromises);
       
       return newCompany;
     },
