@@ -6721,7 +6721,6 @@ export type Database = {
           role_in_project: string
           status: string
           subcontractor_id: string | null
-          temp_password: string | null
           updated_at: string
           user_id: string | null
         }
@@ -6742,7 +6741,6 @@ export type Database = {
           role_in_project?: string
           status?: string
           subcontractor_id?: string | null
-          temp_password?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -6763,7 +6761,6 @@ export type Database = {
           role_in_project?: string
           status?: string
           subcontractor_id?: string | null
-          temp_password?: string | null
           updated_at?: string
           user_id?: string | null
         }
