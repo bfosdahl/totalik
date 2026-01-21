@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Bot, User, Sparkles } from "lucide-react";
+import { Loader2, Send, Bot, User, Sparkles, RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -116,6 +116,8 @@ interface ChatState {
   confirmedEmployeeCount: number | null;
   awaitingEmployeeCount: boolean;
   selectedIndustry: string | null;
+  lastUserMessage?: string;
+  wasStreaming?: boolean;
 }
 
 function loadChatState(companyId: string, departmentId?: string): ChatState | null {
@@ -173,7 +175,11 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
   const [awaitingEmployeeCount, setAwaitingEmployeeCount] = useState(initialState?.awaitingEmployeeCount ?? false);
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(initialState?.selectedIndustry ?? null);
   const [pendingPostSignature, setPendingPostSignature] = useState<{ industry: string; employeeCount: number } | null>(null);
+  const [wasInterrupted, setWasInterrupted] = useState(initialState?.wasStreaming ?? false);
+  const [lastUserMessage, setLastUserMessage] = useState<string | undefined>(initialState?.lastUserMessage);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const isStreamingRef = useRef(false);
   const queryClient = useQueryClient();
 
   // Forward declaration for lookupBrreg (used in auto-lookup effect)
@@ -191,8 +197,43 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
       confirmedEmployeeCount,
       awaitingEmployeeCount,
       selectedIndustry,
+      lastUserMessage,
+      wasStreaming: isStreamingRef.current,
     });
-  }, [messages, pendingBrregInfo, awaitingIndustrySelection, confirmedEmployeeCount, awaitingEmployeeCount, selectedIndustry, companyId, departmentId]);
+  }, [messages, pendingBrregInfo, awaitingIndustrySelection, confirmedEmployeeCount, awaitingEmployeeCount, selectedIndustry, lastUserMessage, companyId, departmentId]);
+
+  // Handle visibility change (tab switching)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && isStreamingRef.current) {
+        // User switched away while streaming - mark as interrupted
+        saveChatState(companyId, departmentId, {
+          messages,
+          pendingBrregInfo,
+          awaitingIndustrySelection,
+          confirmedEmployeeCount,
+          awaitingEmployeeCount,
+          selectedIndustry,
+          lastUserMessage,
+          wasStreaming: true,
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [companyId, departmentId, messages, pendingBrregInfo, awaitingIndustrySelection, confirmedEmployeeCount, awaitingEmployeeCount, selectedIndustry, lastUserMessage]);
+
+  // Cleanup abort controller on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   // Initialize chat based on whether company has org_number (skip Brreg for departments)
   useEffect(() => {
@@ -525,6 +566,31 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
     await continueAfterRequiredSignatures(industry, employeeCount);
   };
 
+  // Retry function for interrupted messages
+  const retryLastMessage = useCallback(async () => {
+    if (!lastUserMessage) return;
+    
+    setWasInterrupted(false);
+    
+    // Remove any incomplete assistant message
+    setMessages((prev) => {
+      const newMessages = [...prev];
+      const lastMsg = newMessages[newMessages.length - 1];
+      if (lastMsg?.role === 'assistant' && (lastMsg.content === '' || lastMsg.content.endsWith('...'))) {
+        newMessages.pop();
+      }
+      return newMessages;
+    });
+    
+    // Re-send the last user message by simulating the send
+    setInput(lastUserMessage);
+    // Trigger send on next tick
+    setTimeout(() => {
+      const syntheticEvent = { key: 'Enter', shiftKey: false, preventDefault: () => {} } as React.KeyboardEvent;
+      handleSend();
+    }, 0);
+  }, [lastUserMessage]);
+
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
@@ -533,6 +599,9 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
+    setLastUserMessage(userInput);
+    setWasInterrupted(false);
+    isStreamingRef.current = false;
 
     // Check if user is confirming Brreg info (said "ja" or similar)
     const isConfirmingBrreg = pendingBrregInfo && 
@@ -680,6 +749,9 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
       const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ik-hms-chat`;
       const { data: { session } } = await supabase.auth.getSession();
 
+      // Create abort controller for this request
+      abortControllerRef.current = new AbortController();
+
       const response = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
@@ -687,6 +759,7 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
           Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({ messages: [...messages, userMessage] }),
+        signal: abortControllerRef.current.signal,
       });
 
       if (response.status === 429) {
@@ -711,7 +784,8 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
       let assistantMessage = "";
       let streamDone = false;
 
-      // Add placeholder for assistant message
+      // Add placeholder for assistant message and mark streaming
+      isStreamingRef.current = true;
       setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
       while (!streamDone) {
@@ -758,10 +832,15 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
         }
       }
 
+      // Stream completed successfully
+      isStreamingRef.current = false;
+      setWasInterrupted(false);
+
       // Check if the message contains JSON (setup complete)
       const jsonContent = extractJsonFromContent(assistantMessage);
       if (jsonContent) {
         console.log("JSON found in response, saving setup data...");
+        clearChatState(companyId, departmentId); // Clear on success
         await saveSetupData(jsonContent);
       } else {
         // Log for debugging if we expected JSON but didn't find it
@@ -770,10 +849,17 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
         }
       }
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("Noe gikk galt. Vennligst prøv igjen.");
+      if (error instanceof Error && error.name === 'AbortError') {
+        // Request was aborted
+        console.log('Request aborted');
+        setWasInterrupted(true);
+      } else {
+        console.error("Error:", error);
+        toast.error("Noe gikk galt. Vennligst prøv igjen.");
+      }
     } finally {
       setIsLoading(false);
+      isStreamingRef.current = false;
     }
   };
 
@@ -1466,6 +1552,22 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
               <div className="flex items-center justify-center gap-2 p-3 sm:p-4 bg-success/10 rounded-lg border border-success/20">
                 <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-success animate-pulse" />
                 <p className="text-xs sm:text-sm text-success font-medium">Setter opp HMS-systemet ditt...</p>
+              </div>
+            )}
+            {wasInterrupted && !isLoading && (
+              <div className="flex flex-col items-center justify-center gap-2 p-3 sm:p-4 bg-muted rounded-lg border border-border">
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium text-center">
+                  Det ser ut som svaret ble avbrutt. Vil du prøve på nytt?
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={retryLastMessage}
+                  className="gap-2"
+                >
+                  <RefreshCcw className="h-4 w-4" />
+                  Prøv igjen
+                </Button>
               </div>
             )}
             {/* Auto-scroll anchor */}

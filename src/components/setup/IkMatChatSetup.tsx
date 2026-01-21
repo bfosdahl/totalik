@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Bot, User, Sparkles } from "lucide-react";
+import { Loader2, Send, Bot, User, Sparkles, RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getSafeModuleSettings } from "@/lib/moduleDefaults";
@@ -16,6 +16,47 @@ interface Message {
 interface IkMatChatSetupProps {
   companyId: string;
   onComplete: () => void;
+}
+
+// Session storage key for persisting chat state
+const CHAT_STATE_KEY = 'ik-mat-chat-setup-state';
+
+function getStorageKey(companyId: string): string {
+  return `${CHAT_STATE_KEY}-${companyId}`;
+}
+
+interface ChatState {
+  messages: Message[];
+  lastUserMessage?: string;
+  wasStreaming?: boolean;
+}
+
+function loadChatState(companyId: string): ChatState | null {
+  try {
+    const stored = sessionStorage.getItem(getStorageKey(companyId));
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error('Failed to load chat state:', e);
+  }
+  return null;
+}
+
+function saveChatState(companyId: string, state: ChatState) {
+  try {
+    sessionStorage.setItem(getStorageKey(companyId), JSON.stringify(state));
+  } catch (e) {
+    console.error('Failed to save chat state:', e);
+  }
+}
+
+function clearChatState(companyId: string) {
+  try {
+    sessionStorage.removeItem(getStorageKey(companyId));
+  } catch (e) {
+    console.error('Failed to clear chat state:', e);
+  }
 }
 
 // Helper to strip JSON from display content
@@ -65,17 +106,64 @@ function extractJsonFromContent(content: string): string | null {
 }
 
 export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) => {
-  const [messages, setMessages] = useState<Message[]>([
-    { 
-      role: 'assistant', 
-      content: 'Hei! Jeg skal hjelpe deg med å sette opp et komplett IK-MAT system tilpasset din virksomhet. La oss starte med noen spørsmål.\n\nHva slags type matvirksomhet driver dere? (For eksempel: restaurant, kafé, catering, bakeri, butikk, barnehage, produksjon, etc.)' 
-    }
-  ]);
+  const initialState = loadChatState(companyId);
+  
+  const [messages, setMessages] = useState<Message[]>(
+    initialState?.messages ?? [
+      { 
+        role: 'assistant', 
+        content: 'Hei! Jeg skal hjelpe deg med å sette opp et komplett IK-MAT system tilpasset din virksomhet. La oss starte med noen spørsmål.\n\nHva slags type matvirksomhet driver dere? (For eksempel: restaurant, kafé, catering, bakeri, butikk, barnehage, produksjon, etc.)' 
+      }
+    ]
+  );
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [wasInterrupted, setWasInterrupted] = useState(initialState?.wasStreaming ?? false);
+  const [lastUserMessage, setLastUserMessage] = useState<string | undefined>(initialState?.lastUserMessage);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const isStreamingRef = useRef(false);
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ik-mat-chat`;
+
+  // Persist chat state to sessionStorage whenever relevant state changes
+  useEffect(() => {
+    if (messages.length === 0) return;
+    
+    saveChatState(companyId, {
+      messages,
+      lastUserMessage,
+      wasStreaming: isStreamingRef.current,
+    });
+  }, [messages, lastUserMessage, companyId]);
+
+  // Handle visibility change (tab switching)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && isStreamingRef.current) {
+        // User switched away while streaming - mark as interrupted
+        saveChatState(companyId, {
+          messages,
+          lastUserMessage,
+          wasStreaming: true,
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [companyId, messages, lastUserMessage]);
+
+  // Cleanup abort controller on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -136,16 +224,48 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
     }
   };
 
-  const sendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return;
+  const retryLastMessage = useCallback(async () => {
+    if (!lastUserMessage) return;
+    
+    setWasInterrupted(false);
+    
+    // Remove any incomplete assistant message
+    setMessages((prev) => {
+      const newMessages = [...prev];
+      const lastMsg = newMessages[newMessages.length - 1];
+      if (lastMsg?.role === 'assistant' && (lastMsg.content === '' || lastMsg.content.endsWith('...'))) {
+        newMessages.pop();
+      }
+      return newMessages;
+    });
+    
+    // Re-send the last user message
+    await sendMessageInternal(lastUserMessage);
+  }, [lastUserMessage]);
 
-    const userMessage: Message = { role: 'user', content: inputValue.trim() };
-    setMessages((prev) => [...prev, userMessage]);
-    setInputValue("");
+  const sendMessageInternal = async (messageText: string) => {
+    const userMessageObj: Message = { role: 'user', content: messageText };
+    
+    // Check if this message is already in messages (retry scenario)
+    const messageExists = messages.some(m => m.role === 'user' && m.content === messageText);
+    
+    if (!messageExists) {
+      setMessages((prev) => [...prev, userMessageObj]);
+    }
+    
+    setLastUserMessage(messageText);
     setIsLoading(true);
+    isStreamingRef.current = true;
+    
+    // Create new abort controller for this request
+    abortControllerRef.current = new AbortController();
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      
+      const currentMessages = messageExists 
+        ? messages 
+        : [...messages, userMessageObj];
       
       const response = await fetch(CHAT_URL, {
         method: "POST",
@@ -153,18 +273,21 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
           "Content-Type": "application/json",
           Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: [...messages, userMessage] }),
+        body: JSON.stringify({ messages: currentMessages }),
+        signal: abortControllerRef.current.signal,
       });
 
       if (response.status === 429) {
         toast.error("For mange forespørsler. Vennligst vent litt og prøv igjen.");
         setIsLoading(false);
+        isStreamingRef.current = false;
         return;
       }
 
       if (response.status === 402) {
         toast.error("Kreditter oppbrukt. Kontakt administrator.");
         setIsLoading(false);
+        isStreamingRef.current = false;
         return;
       }
 
@@ -225,17 +348,44 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
         }
       }
 
+      // Stream completed successfully - clear the wasStreaming flag
+      isStreamingRef.current = false;
+      setWasInterrupted(false);
+      
+      // Update storage to reflect completed state
+      saveChatState(companyId, {
+        messages: messages,
+        lastUserMessage,
+        wasStreaming: false,
+      });
+
       // Check if the message contains JSON (setup complete)
       const jsonContent = extractJsonFromContent(assistantMessage);
       if (jsonContent) {
+        clearChatState(companyId); // Clear state on successful completion
         await saveGeneratedContent(jsonContent);
       }
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("Noe gikk galt. Vennligst prøv igjen.");
+      if (error instanceof Error && error.name === 'AbortError') {
+        // Request was aborted (e.g., component unmounted or tab switch)
+        console.log('Request aborted');
+        setWasInterrupted(true);
+      } else {
+        console.error("Error:", error);
+        toast.error("Noe gikk galt. Vennligst prøv igjen.");
+      }
     } finally {
       setIsLoading(false);
+      isStreamingRef.current = false;
     }
+  };
+
+  const sendMessage = async () => {
+    if (!inputValue.trim() || isLoading) return;
+    const messageText = inputValue.trim();
+    setInputValue("");
+    setWasInterrupted(false);
+    await sendMessageInternal(messageText);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -301,6 +451,22 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
               <div className="flex items-center justify-center gap-2 p-3 sm:p-4 bg-success/10 rounded-lg border border-success/20">
                 <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-success animate-pulse" />
                 <p className="text-xs sm:text-sm text-success font-medium">Setter opp IK-MAT systemet ditt...</p>
+              </div>
+            )}
+            {wasInterrupted && !isLoading && (
+              <div className="flex flex-col items-center justify-center gap-2 p-3 sm:p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-400 font-medium text-center">
+                  Det ser ut som svaret ble avbrutt. Vil du prøve på nytt?
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={retryLastMessage}
+                  className="gap-2"
+                >
+                  <RefreshCcw className="h-4 w-4" />
+                  Prøv igjen
+                </Button>
               </div>
             )}
             {/* Auto-scroll anchor */}
