@@ -50,19 +50,12 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Parse request body - userId is the auth user ID, newPassword is the new password to set
-    const { userId, newPassword, sendEmail } = await req.json();
+    // Parse request body - userId is the auth user ID
+    const { userId, sendEmail } = await req.json();
 
     if (!userId) {
       return new Response(
         JSON.stringify({ error: "Bruker-ID er påkrevd" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (!newPassword || newPassword.length < 6) {
-      return new Response(
-        JSON.stringify({ error: "Passord må være minst 6 tegn langt" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -136,30 +129,38 @@ Deno.serve(async (req) => {
       );
     }
 
-    // DIRECTLY UPDATE THE USER'S PASSWORD using Supabase Admin API
-    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-      password: newPassword,
-    });
-
-    if (updateError) {
-      console.error("Password update error:", updateError);
+    if (!targetUser.user.email) {
       return new Response(
-        JSON.stringify({ error: updateError.message }),
+        JSON.stringify({ error: "Brukeren har ingen e-postadresse" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`Password directly updated for user ${userId} by admin ${requestingUserId}`);
+    // Generate a secure password reset link instead of setting password directly
+    const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'recovery',
+      email: targetUser.user.email,
+    });
 
-    // Send email if requested (with the actual password, not a reset link)
+    if (resetError || !resetData?.properties?.action_link) {
+      console.error("Password reset link generation error:", resetError);
+      return new Response(
+        JSON.stringify({ error: "Kunne ikke generere tilbakestillingslenke" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`Password reset link generated for user ${userId} by admin ${requestingUserId}`);
+
+    // Send email with reset link if requested
     let emailSent = false;
-    if (sendEmail && targetUser.user.email) {
+    if (sendEmail) {
       const resendApiKey = Deno.env.get("RESEND_API_KEY");
       if (resendApiKey) {
         try {
           const resend = new Resend(resendApiKey);
           
-          // Get user's profile for name (use profileId which is the profile table ID)
+          // Get user's profile for name
           const { data: profile } = await supabaseAdmin
             .from("profiles")
             .select("first_name, last_name")
@@ -173,7 +174,7 @@ Deno.serve(async (req) => {
           const emailResponse = await resend.emails.send({
             from: "Internkontroll <noreply@totalik.no>",
             to: [targetUser.user.email],
-            subject: "Ditt passord er endret",
+            subject: "Tilbakestill passord",
             html: `
               <!DOCTYPE html>
               <html>
@@ -184,8 +185,8 @@ Deno.serve(async (req) => {
                   .container { max-width: 600px; margin: 0 auto; padding: 20px; }
                   .header { background: linear-gradient(135deg, #1a365d 0%, #2563eb 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }
                   .content { background: #f8fafc; padding: 30px; border: 1px solid #e2e8f0; border-top: none; }
-                  .password-box { background: #fff; border: 2px dashed #e2e8f0; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px; }
-                  .password { font-family: monospace; font-size: 24px; color: #1a365d; font-weight: bold; letter-spacing: 2px; }
+                  .button { display: inline-block; background: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+                  .button:hover { background: #1d4ed8; }
                   .footer { text-align: center; padding: 20px; color: #64748b; font-size: 12px; }
                   .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0; }
                 </style>
@@ -194,18 +195,19 @@ Deno.serve(async (req) => {
                 <div class="container">
                   <div class="header">
                     <h1 style="margin: 0;">Internkontroll</h1>
-                    <p style="margin: 10px 0 0 0; opacity: 0.9;">Passord endret</p>
+                    <p style="margin: 10px 0 0 0; opacity: 0.9;">Tilbakestill passord</p>
                   </div>
                   <div class="content">
                     <p>Hei ${userName},</p>
-                    <p>En administrator har endret passordet ditt. Her er ditt nye passord:</p>
-                    <div class="password-box">
-                      <div class="password">${newPassword}</div>
-                    </div>
+                    <p>En administrator har bedt om at du tilbakestiller passordet ditt. Klikk på knappen nedenfor for å velge et nytt passord:</p>
+                    <p style="text-align: center;">
+                      <a href="${resetData.properties.action_link}" class="button" style="color: white;">
+                        Sett nytt passord
+                      </a>
+                    </p>
                     <div class="warning">
-                      <strong>Viktig:</strong> Vi anbefaler at du endrer dette passordet til noe du selv husker etter første innlogging.
+                      <strong>Viktig:</strong> Denne lenken utløper om 24 timer. Hvis du ikke ba om denne tilbakestillingen, kan du ignorere denne e-posten.
                     </div>
-                    <p>Du kan logge inn på <a href="https://totalik.no/auth">totalik.no</a></p>
                     <p>Med vennlig hilsen,<br>Internkontroll Team</p>
                   </div>
                   <div class="footer">
@@ -217,10 +219,10 @@ Deno.serve(async (req) => {
             `,
           });
 
-          console.log("Password change email sent:", emailResponse);
+          console.log("Password reset email sent:", emailResponse);
           emailSent = !emailResponse.error;
         } catch (emailError) {
-          console.error("Error sending password email:", emailError);
+          console.error("Error sending password reset email:", emailError);
           // Don't fail the whole operation if email fails
         }
       } else {
@@ -231,7 +233,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Passord oppdatert",
+        message: "Tilbakestillingslenke sendt",
         emailSent 
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

@@ -16,7 +16,6 @@ export interface KsModule2ProjectAccess {
   invited_by: string | null;
   invited_by_name: string | null;
   invited_at: string;
-  temp_password: string | null;
   expires_at: string | null;
   last_login: string | null;
   login_count: number;
@@ -36,14 +35,7 @@ export interface InviteSubcontractorInput {
   expires_at?: string;
 }
 
-function generateTempPassword(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  let password = '';
-  for (let i = 0; i < 10; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
-}
+// Temp password generation removed for security - now uses secure reset links
 
 export function useKsModule2ProjectAccess(projectId: string | null) {
   const { user, profile } = useAuth();
@@ -68,8 +60,6 @@ export function useKsModule2ProjectAccess(projectId: string | null) {
 
   const inviteAccess = useMutation({
     mutationFn: async (input: InviteSubcontractorInput) => {
-      const tempPassword = input.access_level !== 'none' ? generateTempPassword() : null;
-      
       const { data, error } = await supabase
         .from("ks_module2_project_access")
         .insert({
@@ -82,7 +72,6 @@ export function useKsModule2ProjectAccess(projectId: string | null) {
           access_level: input.access_level,
           invited_by: user?.id,
           invited_by_name: profile ? `${profile.first_name} ${profile.last_name}` : 'System',
-          temp_password: tempPassword,
           expires_at: input.expires_at || null,
           status: input.access_level !== 'none' ? 'invited' : 'active',
         })
@@ -91,15 +80,14 @@ export function useKsModule2ProjectAccess(projectId: string | null) {
 
       if (error) throw error;
       
-      // If access is granted, send invitation email
-      if (input.access_level !== 'none' && tempPassword) {
+      // If access is granted, send invitation email with secure reset link
+      if (input.access_level !== 'none') {
         try {
           await supabase.functions.invoke('invite-ue-access', {
             body: {
               email: input.email,
               name: input.name,
               company_name: input.company_name,
-              temp_password: tempPassword,
               project_id: input.project_id,
               access_level: input.access_level,
             }
@@ -110,7 +98,7 @@ export function useKsModule2ProjectAccess(projectId: string | null) {
         }
       }
       
-      return { ...data, temp_password: tempPassword };
+      return data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["ks-module2-project-access"] });
@@ -169,14 +157,11 @@ export function useKsModule2ProjectAccess(projectId: string | null) {
 
   const renewAccess = useMutation({
     mutationFn: async ({ id, newExpiryDate }: { id: string; newExpiryDate?: string }) => {
-      const tempPassword = generateTempPassword();
-      
       const { data, error } = await supabase
         .from("ks_module2_project_access")
         .update({ 
           status: 'invited',
           access_level: 'guest',
-          temp_password: tempPassword,
           expires_at: newExpiryDate || null,
         })
         .eq("id", id)
@@ -184,7 +169,7 @@ export function useKsModule2ProjectAccess(projectId: string | null) {
         .single();
 
       if (error) throw error;
-      return { ...data, temp_password: tempPassword };
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ks-module2-project-access"] });
