@@ -1254,11 +1254,19 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
               orgContent = JSON.stringify(data.organization);
             }
             
-            await supabase.from("company_organization").upsert({
-              company_id: companyId,
-              custom_content: orgContent,
-              is_custom: true,
-            });
+            const { error: orgError } = await supabase.from("company_organization").upsert(
+              {
+                company_id: companyId,
+                custom_content: orgContent,
+                is_custom: true,
+              },
+              { onConflict: "company_id" }
+            );
+
+            if (orgError) {
+              console.error("[saveSetupData] Error saving organization:", orgError);
+              throw new Error(`Kunne ikke lagre organisering: ${orgError.message}`);
+            }
           }
 
           // Handle verneombud registration if a name was provided
@@ -1370,10 +1378,13 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
             const userRoutines = (existingRoutines?.routines as Array<Record<string, unknown>> || [])
               .filter((r) => !r.is_ai_generated);
             
-            const { error: routinesError } = await supabase.from("company_routines").upsert({
-              company_id: companyId,
-              routines: [...userRoutines, ...transformedRoutines],
-            });
+            const { error: routinesError } = await supabase.from("company_routines").upsert(
+              {
+                company_id: companyId,
+                routines: [...userRoutines, ...transformedRoutines],
+              },
+              { onConflict: "company_id" }
+            );
             
             if (routinesError) {
               console.error("[saveSetupData] Error saving routines:", routinesError);
