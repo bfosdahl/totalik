@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Building2, Key, Mail, Calendar, Copy, Check, UserPlus } from "lucide-react";
+import { Building2, Mail, Calendar, Check, UserPlus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -71,8 +71,7 @@ export function NewSubcontractorDialog({
   const [roleInProject, setRoleInProject] = useState<string>("");
   const [expiryDate, setExpiryDate] = useState<string>("");
   const [showSuccess, setShowSuccess] = useState(false);
-  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
-  const [copiedPassword, setCopiedPassword] = useState(false);
+  const [invitedName, setInvitedName] = useState<string>("");
 
   const { register, handleSubmit, reset, formState: { errors }, watch, getValues } = useForm<NewSubcontractorInput>();
 
@@ -87,8 +86,7 @@ export function NewSubcontractorDialog({
     setRoleInProject("");
     setExpiryDate("");
     setShowSuccess(false);
-    setGeneratedPassword(null);
-    setCopiedPassword(false);
+    setInvitedName("");
   };
 
   const onSubmit = async (data: NewSubcontractorInput) => {
@@ -99,7 +97,7 @@ export function NewSubcontractorDialog({
         onSuccess: async (newSubcontractor) => {
           // If access is granted, create the access record
           if (grantAccess && data.contact_email && data.contact_person) {
-            const result = await inviteAccess.mutateAsync({
+            await inviteAccess.mutateAsync({
               project_id: projectId,
               subcontractor_id: newSubcontractor.id,
               email: data.contact_email,
@@ -110,13 +108,9 @@ export function NewSubcontractorDialog({
               expires_at: expiryDate || undefined,
             });
             
-            if (result.temp_password) {
-              setGeneratedPassword(result.temp_password);
-              setShowSuccess(true);
-            } else {
-              resetForm();
-              onOpenChange(false);
-            }
+            // Show success message - secure reset link is sent via email
+            setInvitedName(data.contact_person);
+            setShowSuccess(true);
           } else {
             resetForm();
             onOpenChange(false);
@@ -126,21 +120,12 @@ export function NewSubcontractorDialog({
     );
   };
 
-  const copyPassword = () => {
-    if (generatedPassword) {
-      navigator.clipboard.writeText(generatedPassword);
-      setCopiedPassword(true);
-      toast.success("Passord kopiert!");
-      setTimeout(() => setCopiedPassword(false), 2000);
-    }
-  };
-
   const handleClose = () => {
     resetForm();
     onOpenChange(false);
   };
 
-  if (showSuccess && generatedPassword) {
+  if (showSuccess) {
     return (
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="max-w-md">
@@ -154,7 +139,7 @@ export function NewSubcontractorDialog({
           <div className="space-y-4 py-4">
             <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-4 space-y-3">
               <p className="text-sm">
-                <strong>{getValues("contact_person")}</strong> fra <strong>{getValues("firm_name")}</strong> har fått tilgang til prosjektet.
+                <strong>{invitedName || getValues("contact_person")}</strong> fra <strong>{getValues("firm_name")}</strong> har fått tilgang til prosjektet.
               </p>
               
               <div className="space-y-2">
@@ -164,23 +149,10 @@ export function NewSubcontractorDialog({
                   <span className="text-sm font-mono">{getValues("contact_email")}</span>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Midlertidig passord</Label>
-                <div className="flex items-center gap-2">
-                  <Key className="h-4 w-4 text-muted-foreground" />
-                  <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded text-sm font-mono flex-1">
-                    {generatedPassword}
-                  </code>
-                  <Button size="sm" variant="outline" onClick={copyPassword}>
-                    {copiedPassword ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
             </div>
 
             <p className="text-xs text-muted-foreground">
-              En e-post med innloggingsdetaljer er sendt til underleverandøren. De kan logge inn med e-post og det midlertidige passordet.
+              En e-post med innloggingslenke er sendt til underleverandøren. De kan opprette passord ved å klikke på lenken i e-posten.
             </p>
           </div>
 

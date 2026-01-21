@@ -45,26 +45,18 @@ export default function Ks2UnderleverandorDetail({ subcontractorId }: Props) {
     
     setResending(true);
     try {
-      // Generate new temp password
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-      let newPassword = '';
-      for (let i = 0; i < 10; i++) {
-        newPassword += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-
-      // Update the access record with new password
+      // Update the access record status
       await supabase
         .from("ks_module2_project_access")
-        .update({ temp_password: newPassword, status: 'invited' })
+        .update({ status: 'invited' })
         .eq("id", access.id);
 
-      // Call edge function to create/update user and send email
+      // Call edge function to send secure reset link email
       const { error } = await supabase.functions.invoke('invite-ue-access', {
         body: {
           email: access.email,
           name: access.name,
           company_name: access.company_name,
-          temp_password: newPassword,
           project_id: projectId,
           access_level: access.access_level,
         }
@@ -73,8 +65,7 @@ export default function Ks2UnderleverandorDetail({ subcontractorId }: Props) {
       if (error) throw error;
 
       toast.success("Invitasjon sendt på nytt!", {
-        description: `Nytt passord: ${newPassword}`,
-        duration: 10000,
+        description: "En e-post med innloggingslenke er sendt.",
       });
     } catch (error) {
       console.error("Error resending invitation:", error);
