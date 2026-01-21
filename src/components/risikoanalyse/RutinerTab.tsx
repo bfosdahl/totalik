@@ -238,6 +238,78 @@ Dokumentasjon og oppfølging
 • Gi støtte og ro til skadet person`,
     remember: "Rask førstehjelp kan redde liv og redusere skadeomfang. Alle ansatte skal vite hvor utstyret er og ha grunnleggende ferdigheter.",
     is_predefined: true
+  },
+  {
+    routine_number: "1270",
+    routine_name: "EL-kontroll",
+    category: "Helse, Miljø og Sikkerhet",
+    purpose: "Sikre at elektriske anlegg og elektrisk utstyr kontrolleres regelmessig for å forebygge brann, personskader og driftsavbrudd, samt sikre etterlevelse av gjeldende lover og forskrifter.",
+    responsibility: `Daglig leder / virksomhetsleder
+Overordnet ansvar for at EL-kontroll gjennomføres.
+
+IK-/HMS-ansvarlig
+Planlegging, oppfølging og dokumentasjon av EL-kontroll.
+
+Sertifisert elektrovirksomhet / kontrollør
+Utfører EL-kontroll i henhold til gjeldende krav.`,
+    procedure: `Omfang
+Rutinen gjelder for:
+• Alle faste elektriske installasjoner i virksomheten
+• Elektrisk utstyr og maskiner tilkoblet anlegget
+• Midlertidige installasjoner der dette er relevant
+
+Grunnlag og regelverk
+EL-kontroll utføres i henhold til:
+• Internkontrollforskriften
+• Forskrift om elektriske lavspenningsanlegg (FEL)
+• NEK 405
+• Krav fra myndigheter og forsikringsselskap
+
+Frekvens
+EL-kontroll gjennomføres minimum hvert 3.–5. år, eller oftere ved:
+• Endringer i det elektriske anlegget
+• Registrerte avvik eller hendelser
+• Krav fra forsikringsselskap eller myndigheter
+
+Gjennomføring
+• EL-kontroll planlegges og avtales med kvalifisert elektrovirksomhet
+• Nødvendig tilgang til anlegget sikres
+• Kontrollør gjennomfører visuell kontroll, målinger og tester
+
+Nettbasert EL-kontrollskjema
+Internkontrollsystemet Total-IK inneholder et nettbasert skjema for EL-kontroll, tilgjengelig under «HMS-Aktiviteter».
+Skjemaet benyttes til å:
+• Dokumentere tilstanden på det elektriske anlegget i lokalet eller området kontrollen gjelder
+• Registrere dato, kontrollør og kontrollomfang
+• Beskrive avvik, mangler og risikoforhold
+• Legge ved bilder og kommentarer
+• Følge opp tiltak med ansvarlig person og frist
+
+Det nettbaserte skjemaet kan:
+• Lastes ned og arkiveres lokalt
+• Legges inn som vedlegg i virksomhetens HMS-/IK-håndbok
+
+Dette sikrer helhetlig dokumentasjon, sporbarhet og tilgjengelighet ved revisjon, tilsyn eller forsikringskontroll.
+
+Avvik og tiltak
+• Avvik registreres og følges opp i internkontrollsystemet
+• Tiltak tildeles ansvarlig person med frist
+• Avvik lukkes og dokumenteres før kontrollen anses som fullført
+
+Dokumentasjon
+Følgende dokumentasjon lagres i internkontrollsystemet:
+• Utfylt nettbasert EL-kontrollskjema
+• Kontrollrapporter
+• Avviks- og tiltaksoversikt
+• Dokumentasjon på utbedringer og samsvarserklæringer
+Dokumentasjon oppbevares i minimum 5 år.`,
+    examples: `• Kontroll av sikringsskap og tavler
+• Kontroll av faste installasjoner (stikkontakter, brytere, kabler)
+• Kontroll av elektrisk utstyr og maskiner
+• Kontroll av dokumentasjon og samsvarserklæringer
+• Termografering av elektriske anlegg`,
+    remember: "EL-kontroll er lovpålagt og kritisk for brannsikkerhet. Rutinen gjennomgås årlig og oppdateres ved endringer i regelverk eller risikoforhold.",
+    is_predefined: true
   }
 ];
 
