@@ -51,7 +51,8 @@ Deno.serve(async (req) => {
     );
 
     // Parse request body - userId is the auth user ID
-    const { userId, sendEmail } = await req.json();
+    // newPassword is optional - if provided, set password directly; otherwise send recovery link
+    const { userId, sendEmail, newPassword } = await req.json();
 
     if (!userId) {
       return new Response(
@@ -136,7 +137,42 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Generate a secure password reset link instead of setting password directly
+    // If newPassword is provided, set it directly (admin password reset)
+    if (newPassword) {
+      // Validate password length
+      if (newPassword.length < 6) {
+        return new Response(
+          JSON.stringify({ error: "Passordet må være minst 6 tegn" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Update the user's password directly
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+        password: newPassword,
+      });
+
+      if (updateError) {
+        console.error("Password update error:", updateError);
+        return new Response(
+          JSON.stringify({ error: "Kunne ikke oppdatere passord: " + updateError.message }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log(`Password set directly for user ${userId} by admin ${requestingUserId}`);
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: "Passordet er oppdatert",
+          passwordSet: true
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Otherwise, generate a secure password reset link
     const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'recovery',
       email: targetUser.user.email,
