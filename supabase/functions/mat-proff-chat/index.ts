@@ -30,6 +30,21 @@ Når brukeren ber deg om å legge til, opprette eller endre noe, BRUK de tilgjen
 - "Registrer temperatur på fryser" → Bruk log_temperature verktøyet
 - "Legg til en rengjøringsoppgave" → Bruk add_cleaning_task verktøyet
 - "Opprett en ny leverandør" → Bruk add_supplier verktøyet
+- "Legg til risiko for dårlig hygiene" → Bruk add_risk verktøyet
+- "Legg til fare for krysskontaminasjon" → Bruk add_risk verktøyet
+
+**RISIKOER DU KAN LEGGE TIL:**
+Bruk add_risk verktøyet for å legge til farekilder i risikoanalysen. Vanlige farekilder inkluderer:
+- Renhold og hygiene – dårlig vask av benker, redskap eller hender
+- Kjøler-temperatur – feil temperatur kan gi bakterievekst
+- Fryser-temperatur – avvik kan føre til helserisiko og svinn
+- Varemottak – mottak av varer med feil temperatur eller skadet emballasje
+- Skadedyr – forekomst kan forurense varer og lokaler
+- Krysskontaminasjon – råvarer og ferdigvarer blandes
+- Nedkjøling av varm mat – for treg nedkjøling
+- Oppvarming av mat – utilstrekkelig oppvarming
+- Allergenhåndtering – feilmerking eller krysskontaminasjon
+- Smilefjes-ordningen – manglende etterlevelse
 
 **UTSTYRSTYPER DU KAN LEGGE TIL:**
 - kjøleskap (0-4°C)
@@ -55,6 +70,10 @@ Når brukeren ber deg om å legge til, opprette eller endre noe, BRUK de tilgjen
 - Temperaturkontroll og loggføring
 - Administrer utstyr (kjøleskap, frysere osv.)
 
+⚠️ RISIKO OG TILTAK (/ik-mat/risiko-tiltak)
+- Risikoanalyse og handlingsplaner
+- Her lagres alle farekilder og tiltak
+
 📦 SPORBARHET (/ik-mat/sporbarhet)
 - Sporbarhet av råvarer og ingredienser
 
@@ -72,7 +91,8 @@ Når brukeren ber deg om å legge til, opprette eller endre noe, BRUK de tilgjen
 - Gjenoppvarming: Til min 75°C i kjernen
 
 Svar kort og konsist. Vær vennlig og bruk gjerne emojis relatert til mat og hygiene.
-VIKTIG: Når du utfører handlinger, fortell brukeren konkret hva du har gjort og gi bekreftelse!`;
+VIKTIG: Når du utfører handlinger, fortell brukeren konkret hva du har gjort og gi bekreftelse!
+VIKTIG: Når brukeren ber deg legge til flere risikoer, kall add_risk verktøyet for HVER risiko!`;
 
 // Define tools for the MAT Proff - with REAL database operations
 const tools = [
@@ -220,6 +240,39 @@ const tools = [
           }
         },
         required: ["search_term"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "add_risk",
+      description: "Legger til en ny risiko/farekilde i IK-MAT risikoanalysen. Bruk denne når brukeren vil legge til en fare, risiko eller trussel relatert til mattrygghet. Kall dette verktøyet EN gang per risiko. Eksempler: krysskontaminasjon, temperaturavvik, allergenhåndtering, skadedyr.",
+      parameters: {
+        type: "object",
+        properties: {
+          hazard: {
+            type: "string",
+            description: "Beskrivelse av farekilden/risikoen (f.eks. 'Renhold og hygiene – dårlig vask av benker, redskap eller hender kan gi forurensning')"
+          },
+          consequence: {
+            type: "number",
+            description: "Konsekvensgrad fra 1 (liten) til 5 (katastrofal). Standard: 3"
+          },
+          probability: {
+            type: "number",
+            description: "Sannsynlighetsgrad fra 1 (svært lav) til 5 (svært høy). Standard: 2"
+          },
+          measures: {
+            type: "string",
+            description: "Foreslåtte tiltak for å håndtere risikoen (valgfritt)"
+          },
+          isHaccp: {
+            type: "boolean",
+            description: "Er dette et kritisk kontrollpunkt (CCP) for HACCP? Standard: false"
+          }
+        },
+        required: ["hazard"]
       }
     }
   }
@@ -469,6 +522,7 @@ async function executeToolCall(
           { keywords: ["dashbord", "hjem", "oversikt", "start"], path: "/ik-mat/dashboard", name: "IK-Mat Dashboard", description: "Hovedoversikt" },
           { keywords: ["haccp", "ccp", "farepunkt", "kritisk kontrollpunkt"], path: "/ik-mat/haccp", name: "HACCP", description: "Farepunkter og CCP" },
           { keywords: ["kontroll", "temperatur", "kjøleskap", "fryser", "utstyr"], path: "/ik-mat/kontroll", name: "Kontroll", description: "Temperaturkontroll og utstyr" },
+          { keywords: ["risiko", "fare", "tiltak", "handlingsplan"], path: "/ik-mat/risiko-tiltak", name: "Risiko og tiltak", description: "Risikoanalyse og handlingsplaner" },
           { keywords: ["sporbarhet", "batch", "råvare", "ingrediens"], path: "/ik-mat/sporbarhet", name: "Sporbarhet", description: "Sporbarhet av varer" },
           { keywords: ["renhold", "rengjøring", "hygiene", "vask"], path: "/ik-mat/renholdsplan", name: "Renholdsplan", description: "Renholdsrutiner" },
           { keywords: ["allergen", "allergi", "gluten", "laktose"], path: "/ik-mat/allergener", name: "Allergener", description: "Allergenoversikt" },
@@ -488,7 +542,83 @@ async function executeToolCall(
         
         return { 
           success: true, 
-          message: `Fant ikke "${args.search_term}". Prøv: kontroll, haccp, renhold, allergener, sporbarhet` 
+          message: `Fant ikke "${args.search_term}". Prøv: kontroll, haccp, renhold, allergener, sporbarhet, risiko` 
+        };
+      }
+
+      case "add_risk": {
+        // Get current IK_MAT module settings
+        const { data: moduleData, error: fetchError } = await supabase
+          .from('company_modules')
+          .select('settings')
+          .eq('company_id', companyId)
+          .eq('module_type', 'IK_MAT')
+          .single();
+
+        if (fetchError) {
+          console.error('Error fetching module settings:', fetchError);
+          return { success: false, message: `Kunne ikke hente modulinnstillinger: ${fetchError.message}` };
+        }
+
+        const settings = moduleData?.settings as any || {};
+        const manualContent = settings.manualContent || {};
+        const existingRisks = manualContent.risks || [];
+
+        // Calculate risk level
+        const probability = args.probability || 2;
+        const consequence = args.consequence || 3;
+        const riskLevel = probability * consequence;
+
+        // Create new risk
+        const newRisk = {
+          id: `risk-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          hazard: args.hazard,
+          consequence: consequence,
+          probability: probability,
+          riskLevel: riskLevel,
+          measures: args.measures || '',
+          isHaccp: args.isHaccp || false,
+          status: 'open',
+        };
+
+        const updatedRisks = [...existingRisks, newRisk];
+
+        // Save updated risks
+        const { error: saveError } = await supabase
+          .from('company_modules')
+          .update({
+            settings: {
+              ...settings,
+              manualContent: {
+                ...manualContent,
+                risks: updatedRisks,
+              },
+            },
+            updated_at: new Date().toISOString(),
+          })
+          .eq('company_id', companyId)
+          .eq('module_type', 'IK_MAT');
+
+        if (saveError) {
+          console.error('Error saving risk:', saveError);
+          return { success: false, message: `Kunne ikke lagre risiko: ${saveError.message}` };
+        }
+
+        // Determine traffic light
+        let trafficLight = '🟢';
+        let riskLabel = 'Akseptabel';
+        if (riskLevel > 9) {
+          trafficLight = '🔴';
+          riskLabel = 'Umiddelbar handling';
+        } else if (riskLevel > 4) {
+          trafficLight = '🟡';
+          riskLabel = 'Tiltak nødvendig';
+        }
+
+        return { 
+          success: true, 
+          message: `✅ La til risiko: "${args.hazard}"\n${trafficLight} Risikonivå: ${riskLevel} (${riskLabel})${args.isHaccp ? '\n🎯 Markert som HACCP-kontrollpunkt' : ''}${args.measures ? `\n📋 Tiltak: ${args.measures}` : ''}`,
+          data: newRisk 
         };
       }
 
@@ -649,6 +779,12 @@ serve(async (req) => {
       const addedEquipment = toolResults.filter(r => r.tool === 'add_temperature_equipment' && r.result.success);
       if (addedEquipment.length > 0) {
         responseMessage += `\n\n🌡️ Du kan nå registrere temperaturer under Kontroll (/ik-mat/kontroll)!`;
+      }
+
+      // If we added risks, suggest checking the risk page
+      const addedRisks = toolResults.filter(r => r.tool === 'add_risk' && r.result.success);
+      if (addedRisks.length > 0) {
+        responseMessage += `\n\n⚠️ Se alle risikoer under Risiko og tiltak (/ik-mat/risiko-tiltak)!`;
       }
 
       console.log("MAT Proff executed tools:", toolResults.length);
