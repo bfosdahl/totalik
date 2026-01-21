@@ -2505,6 +2505,8 @@ export type Database = {
           contract_type: string
           created_at: string
           employee_id: string
+          employee_signature: string | null
+          employer_signature: string | null
           employment_percentage: number
           end_date: string | null
           id: string
@@ -2524,6 +2526,8 @@ export type Database = {
           contract_type: string
           created_at?: string
           employee_id: string
+          employee_signature?: string | null
+          employer_signature?: string | null
           employment_percentage?: number
           end_date?: string | null
           id?: string
@@ -2543,6 +2547,8 @@ export type Database = {
           contract_type?: string
           created_at?: string
           employee_id?: string
+          employee_signature?: string | null
+          employer_signature?: string | null
           employment_percentage?: number
           end_date?: string | null
           id?: string
