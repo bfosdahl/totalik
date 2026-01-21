@@ -141,12 +141,16 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && isStreamingRef.current) {
-        // User switched away while streaming - mark as interrupted
+        // User switched away while streaming - save state and abort
         saveChatState(companyId, {
           messages,
           lastUserMessage,
           wasStreaming: true,
         });
+        // Abort the ongoing request so user can retry when they return
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
       }
     };
 
