@@ -475,6 +475,114 @@ async function checkRateLimit(supabase: any, userId: string, functionName: strin
   }
 }
 
+type ChatMsg = { role: "user" | "assistant" | "system"; content: string };
+
+function isAffirmative(text: string): boolean {
+  const t = text.toLowerCase().trim();
+  return (
+    t === "ja" ||
+    t === "japp" ||
+    t === "jepp" ||
+    t === "yes" ||
+    t === "yep" ||
+    t === "ok" ||
+    t === "okei" ||
+    t === "oki" ||
+    t === "jada" ||
+    t === "joda" ||
+    t === "jo" ||
+    t === "mhm" ||
+    t === "mm" ||
+    t.includes("stemmer")
+  );
+}
+
+function extractEmployeeCountFromAssistant(content: string): number | null {
+  // Matches the Brreg confirmation message in the UI
+  const m = content.match(/\*\*Ansatte:\*\*\s*(\d+)/i);
+  if (!m) return null;
+  const n = Number(m[1]);
+  return Number.isFinite(n) ? n : null;
+}
+
+function buildKnownFactsMessage(messages: ChatMsg[] | undefined): string | null {
+  if (!messages?.length) return null;
+
+  // 1) Employee count from Brreg message (only if user later confirms)
+  let lastBrregEmployees: number | null = null;
+  let brregConfirmed = false;
+  for (let i = 0; i < messages.length; i++) {
+    const msg = messages[i];
+    if (msg.role === "assistant") {
+      const n = extractEmployeeCountFromAssistant(msg.content);
+      if (n !== null) {
+        lastBrregEmployees = n;
+        // Look ahead for a nearby user confirmation (within next 2 user msgs)
+        brregConfirmed = false;
+        let userChecks = 0;
+        for (let j = i + 1; j < messages.length && userChecks < 2; j++) {
+          if (messages[j].role !== "user") continue;
+          userChecks++;
+          if (isAffirmative(messages[j].content)) {
+            brregConfirmed = true;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // 2) Capture latest “goals” user response after the assistant asks for HMS-mål
+  let lastGoalsAnswer: string | null = null;
+  for (let i = 0; i < messages.length - 1; i++) {
+    const a = messages[i];
+    const u = messages[i + 1];
+    if (a.role !== "assistant" || u.role !== "user") continue;
+    const aText = a.content.toLowerCase();
+    if (aText.includes("hms-mål") || aText.includes("hms mål") || aText.includes("målene")) {
+      const candidate = u.content.trim();
+      if (candidate.length >= 3 && !isAffirmative(candidate) && !candidate.toLowerCase().startsWith("nei")) {
+        lastGoalsAnswer = candidate;
+      }
+    }
+  }
+
+  // 3) Capture latest “risk” user response after the assistant asks about risiko/farekilder
+  let lastRiskAnswer: string | null = null;
+  for (let i = 0; i < messages.length - 1; i++) {
+    const a = messages[i];
+    const u = messages[i + 1];
+    if (a.role !== "assistant" || u.role !== "user") continue;
+    const aText = a.content.toLowerCase();
+    if (aText.includes("risiko") || aText.includes("farekilder") || aText.includes("risikovurder")) {
+      const candidate = u.content.trim();
+      if (candidate.length >= 3 && !isAffirmative(candidate) && !candidate.toLowerCase().startsWith("nei")) {
+        lastRiskAnswer = candidate;
+      }
+    }
+  }
+
+  const lines: string[] = [];
+  lines.push("KJENTE SVAR (fra samtalen så langt) — bruk dette aktivt for å unngå gjentakelser:");
+
+  if (lastBrregEmployees !== null && brregConfirmed) {
+    lines.push(`- Antall ansatte: ${lastBrregEmployees} (bekreftet av bruker)`);
+  }
+  if (lastGoalsAnswer) {
+    lines.push(`- HMS-mål (brukerens siste svar): ${lastGoalsAnswer}`);
+  }
+  if (lastRiskAnswer) {
+    lines.push(`- Risiko/farekilder (brukerens siste svar): ${lastRiskAnswer}`);
+  }
+
+  // Even if we didn't extract specifics, still enforce the core behavior.
+  lines.push(
+    "- VIKTIG: Hvis mål/risiko allerede er besvart i historikken, IKKE spør om det på nytt. Oppsummer heller kort hva som er notert, og gå videre."
+  );
+
+  return lines.join("\n");
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -560,6 +668,7 @@ serve(async (req) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
+          ...(buildKnownFactsMessage(messages) ? [{ role: "system", content: buildKnownFactsMessage(messages)! }] : []),
           ...messages
         ],
         stream: true,
