@@ -298,6 +298,26 @@ const IkMatAvvik = () => {
     }
   };
 
+  const handleFollowUpChange = async (
+    id: string, 
+    updates: { 
+      immediate_actions?: string; 
+      root_cause_analysis?: string; 
+      preventive_measures?: string;
+    }
+  ): Promise<boolean> => {
+    const success = await updateDeviation(id, updates);
+    if (success) {
+      setSelectedDeviation(prev => prev ? {
+        ...prev,
+        immediate_actions: updates.immediate_actions ?? prev.immediate_actions,
+        root_cause_analysis: updates.root_cause_analysis ?? prev.root_cause_analysis,
+        preventive_measures: updates.preventive_measures ?? prev.preventive_measures,
+      } : null);
+    }
+    return success;
+  };
+
   if (isLoading || modulesLoading) {
     return (
       <AppLayout>
@@ -538,6 +558,7 @@ const IkMatAvvik = () => {
           deviation={selectedDeviation}
           onStatusChange={handleStatusChange}
           onAssigneeChange={handleAssigneeChange}
+          onFollowUpChange={handleFollowUpChange}
         />
       )}
     </AppLayout>
