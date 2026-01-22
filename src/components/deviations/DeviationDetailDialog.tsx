@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { 
@@ -8,7 +8,10 @@ import {
   FileText,
   Flag,
   Download,
-  Mail
+  Mail,
+  ClipboardCheck,
+  Save,
+  Loader2
 } from "lucide-react";
 import {
   Dialog,
@@ -27,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { DeviationAttachments } from "./DeviationAttachments";
 import { DeviationComments } from "./DeviationComments";
@@ -35,6 +39,7 @@ import { useDeviationComments } from "@/hooks/useDeviationComments";
 import { exportSingleDeviationToPDF } from "@/utils/deviationExport";
 import { useAuth } from "@/contexts/AuthContext";
 import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
+import { useToast } from "@/hooks/use-toast";
 
 // Valid database category values
 type DeviationCategory = "quality" | "safety" | "environment" | "documentation" | "other" | "process" | "equipment" | "personnel";
@@ -100,6 +105,11 @@ interface DeviationDetailDialogProps {
   onOpenChange: (open: boolean) => void;
   onStatusChange: (id: string, status: Deviation["status"]) => void;
   onAssigneeChange?: (id: string, assignee: string) => void;
+  onFollowUpChange?: (id: string, updates: { 
+    immediate_actions?: string; 
+    root_cause_analysis?: string; 
+    preventive_measures?: string;
+  }) => Promise<boolean>;
 }
 
 export function DeviationDetailDialog({ 
@@ -107,15 +117,67 @@ export function DeviationDetailDialog({
   open, 
   onOpenChange,
   onStatusChange,
-  onAssigneeChange
+  onAssigneeChange,
+  onFollowUpChange
 }: DeviationDetailDialogProps) {
   const { users, getUserDisplayName } = useCompanyUsers();
   const { company } = useAuth();
+  const { toast } = useToast();
   const { attachments } = useDeviationAttachments(deviation?.id || null);
   const { comments } = useDeviationComments(deviation?.id || null);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [isSavingFollowUp, setIsSavingFollowUp] = useState(false);
+  
+  // Local state for follow-up fields
+  const [immediateActions, setImmediateActions] = useState("");
+  const [rootCauseAnalysis, setRootCauseAnalysis] = useState("");
+  const [preventiveMeasures, setPreventiveMeasures] = useState("");
+  
+  // Track if any follow-up field has been modified
+  const [hasFollowUpChanges, setHasFollowUpChanges] = useState(false);
+
+  // Initialize follow-up fields when deviation changes
+  useEffect(() => {
+    if (deviation) {
+      setImmediateActions(deviation.immediate_actions || "");
+      setRootCauseAnalysis(deviation.root_cause_analysis || "");
+      setPreventiveMeasures(deviation.preventive_measures || "");
+      setHasFollowUpChanges(false);
+    }
+  }, [deviation]);
   
   if (!deviation) return null;
+
+  const handleFollowUpFieldChange = (
+    setter: (value: string) => void, 
+    value: string
+  ) => {
+    setter(value);
+    setHasFollowUpChanges(true);
+  };
+
+  const handleSaveFollowUp = async () => {
+    if (!onFollowUpChange || !hasFollowUpChanges) return;
+    
+    setIsSavingFollowUp(true);
+    try {
+      const success = await onFollowUpChange(deviation.id, {
+        immediate_actions: immediateActions || undefined,
+        root_cause_analysis: rootCauseAnalysis || undefined,
+        preventive_measures: preventiveMeasures || undefined,
+      });
+      
+      if (success) {
+        setHasFollowUpChanges(false);
+        toast({
+          title: "Oppfølging lagret",
+          description: "Oppfølgingsinformasjonen ble oppdatert.",
+        });
+      }
+    } finally {
+      setIsSavingFollowUp(false);
+    }
+  };
 
   const generateDeviationEmailHtml = () => {
     const formatDateStr = (dateStr: string) => {
@@ -377,6 +439,91 @@ export function DeviationDetailDialog({
                 Opprettet
               </div>
               <p className="text-sm font-medium pl-6">{formatDate(deviation.createdAt)}</p>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Follow-up and Resolution Section */}
+          <div className="space-y-4 p-4 bg-secondary/30 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <ClipboardCheck className="w-4 h-4 text-muted-foreground" />
+                Oppfølging og løsning
+              </div>
+              {onFollowUpChange && hasFollowUpChanges && (
+                <Button 
+                  size="sm" 
+                  onClick={handleSaveFollowUp}
+                  disabled={isSavingFollowUp}
+                >
+                  {isSavingFollowUp ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4 mr-2" />
+                  )}
+                  Lagre
+                </Button>
+              )}
+            </div>
+            
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="immediate-actions" className="text-xs text-muted-foreground">
+                  Umiddelbare tiltak (hva ble gjort med en gang?)
+                </Label>
+                {onFollowUpChange ? (
+                  <Textarea
+                    id="immediate-actions"
+                    value={immediateActions}
+                    onChange={(e) => handleFollowUpFieldChange(setImmediateActions, e.target.value)}
+                    placeholder="Beskriv tiltak som ble iverksatt umiddelbart..."
+                    className="min-h-[60px] text-sm"
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {immediateActions || "Ikke dokumentert"}
+                  </p>
+                )}
+              </div>
+              
+              <div className="space-y-1.5">
+                <Label htmlFor="root-cause" className="text-xs text-muted-foreground">
+                  Rotårsaksanalyse (hvorfor skjedde det?)
+                </Label>
+                {onFollowUpChange ? (
+                  <Textarea
+                    id="root-cause"
+                    value={rootCauseAnalysis}
+                    onChange={(e) => handleFollowUpFieldChange(setRootCauseAnalysis, e.target.value)}
+                    placeholder="Beskriv underliggende årsaker..."
+                    className="min-h-[60px] text-sm"
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {rootCauseAnalysis || "Ikke dokumentert"}
+                  </p>
+                )}
+              </div>
+              
+              <div className="space-y-1.5">
+                <Label htmlFor="preventive-measures" className="text-xs text-muted-foreground">
+                  Forebyggende tiltak (hvordan unngå i fremtiden?)
+                </Label>
+                {onFollowUpChange ? (
+                  <Textarea
+                    id="preventive-measures"
+                    value={preventiveMeasures}
+                    onChange={(e) => handleFollowUpFieldChange(setPreventiveMeasures, e.target.value)}
+                    placeholder="Beskriv tiltak for å forhindre gjentakelse..."
+                    className="min-h-[60px] text-sm"
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {preventiveMeasures || "Ikke dokumentert"}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 

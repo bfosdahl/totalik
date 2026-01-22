@@ -214,10 +214,13 @@ export function useDeviations() {
     }
   }, [companyId, profile, getNextDeviationNumber, fetchDeviations, toast]);
 
-  // Update deviation
+  // Update deviation - supports all editable fields
   const updateDeviation = useCallback(async (
     id: string, 
-    updates: Partial<Pick<Deviation, "status" | "assignee_id" | "assignee_name" | "priority">>,
+    updates: Partial<Pick<Deviation, 
+      "status" | "assignee_id" | "assignee_name" | "priority" | 
+      "immediate_actions" | "root_cause_analysis" | "preventive_measures"
+    >>,
     options?: { sendNotification?: boolean; assigneeEmail?: string }
   ): Promise<boolean> => {
     setIsSaving(true);
