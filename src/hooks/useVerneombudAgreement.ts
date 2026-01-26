@@ -35,6 +35,11 @@ export interface VerneombudFromProfile {
   phone: string | null;
 }
 
+export interface VerneombudFromAiSetup {
+  personName: string;
+  source: 'ai_setup';
+}
+
 export function useVerneombudAgreement() {
   const { profile } = useAuth();
   const companyId = profile?.company_id;
@@ -83,22 +88,76 @@ export function useVerneombudAgreement() {
     enabled: !!companyId,
   });
 
+  // Fetch verneombud from AI setup (stored in company_modules.settings)
+  const { data: verneombudFromAiSetup, isLoading: isLoadingAiSetup } = useQuery({
+    queryKey: ["verneombud-ai-setup", companyId],
+    queryFn: async () => {
+      if (!companyId) return null;
+      const { data, error } = await supabase
+        .from("company_modules")
+        .select("settings")
+        .eq("company_id", companyId)
+        .eq("module_type", "IK_HMS")
+        .maybeSingle();
+      
+      if (error) {
+        console.error("Error fetching verneombud from AI setup:", error);
+        return null;
+      }
+      
+      if (!data?.settings) return null;
+      
+      const settings = data.settings as any;
+      
+      // Check for verneombudNavn directly in settings (newer format)
+      if (settings.verneombudNavn && typeof settings.verneombudNavn === 'string' && settings.verneombudNavn.trim()) {
+        return {
+          personName: settings.verneombudNavn.trim(),
+          source: 'ai_setup' as const
+        };
+      }
+      
+      // Check for verneombud role in organization.roles (older format)
+      const roles = settings.generatedContent?.organization?.roles;
+      if (Array.isArray(roles)) {
+        const verneombudRole = roles.find((r: any) => 
+          r.title?.toLowerCase().includes('verneombud') && 
+          r.personName && 
+          r.personName.trim() !== ''
+        );
+        if (verneombudRole) {
+          return {
+            personName: verneombudRole.personName.trim(),
+            source: 'ai_setup' as const
+          };
+        }
+      }
+      
+      return null;
+    },
+    enabled: !!companyId,
+  });
+
   const refetch = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["verneombud-agreement", companyId] });
     queryClient.invalidateQueries({ queryKey: ["verneombud-profile", companyId] });
+    queryClient.invalidateQueries({ queryKey: ["verneombud-ai-setup", companyId] });
   }, [queryClient, companyId]);
 
-  // Consider having a verneombud if either there's a formal agreement OR someone marked as verneombud in profiles
+  // Consider having a verneombud if either there's a formal agreement OR someone marked as verneombud in profiles OR from AI setup
   const hasVerneombudAgreement = !!verneombudAgreement;
   const hasVerneombudFromProfile = !!verneombudFromProfile;
-  const hasAnyVerneombud = hasVerneombudAgreement || hasVerneombudFromProfile;
+  const hasVerneombudFromAiSetup = !!verneombudFromAiSetup;
+  const hasAnyVerneombud = hasVerneombudAgreement || hasVerneombudFromProfile || hasVerneombudFromAiSetup;
 
   return {
     verneombudAgreement,
     verneombudFromProfile,
-    isLoading: isLoadingAgreement || isLoadingProfile,
+    verneombudFromAiSetup,
+    isLoading: isLoadingAgreement || isLoadingProfile || isLoadingAiSetup,
     hasVerneombudAgreement,
     hasVerneombudFromProfile,
+    hasVerneombudFromAiSetup,
     hasAnyVerneombud,
     refetch,
   };
