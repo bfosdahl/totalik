@@ -31,7 +31,7 @@ import { nb } from "date-fns/locale";
 export default function VerneombudSeksjon() {
   const { profile, company } = useAuth();
   const { verneombudExemption, isLoading, hasVerneombudExemption, refetch } = useHmsDeclarations();
-  const { verneombudAgreement, isLoading: isLoadingVerneombud, hasVerneombudAgreement, refetch: refetchVerneombud } = useVerneombudAgreement();
+  const { verneombudAgreement, verneombudFromProfile, isLoading: isLoadingVerneombud, hasVerneombudAgreement, hasVerneombudFromProfile, hasAnyVerneombud, refetch: refetchVerneombud } = useVerneombudAgreement();
   const { employees } = useEmployees();
   
   // Determine if company needs verneombud (5+ employees) or can use exemption (<5 employees)
@@ -107,8 +107,8 @@ export default function VerneombudSeksjon() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${hasVerneombudAgreement ? "bg-success/10" : "bg-warning/10"}`}>
-                        {hasVerneombudAgreement ? (
+                      <div className={`p-2 rounded-lg ${hasAnyVerneombud ? "bg-success/10" : "bg-warning/10"}`}>
+                        {hasAnyVerneombud ? (
                           <CheckCircle2 className="w-5 h-5 text-success" />
                         ) : (
                           <AlertCircle className="w-5 h-5 text-warning" />
@@ -121,8 +121,8 @@ export default function VerneombudSeksjon() {
                         </CardDescription>
                       </div>
                     </div>
-                    <Badge variant={hasVerneombudAgreement ? "default" : "secondary"}>
-                      {hasVerneombudAgreement ? "Registrert" : "Ikke registrert"}
+                    <Badge variant={hasAnyVerneombud ? "default" : "secondary"}>
+                      {hasVerneombudAgreement ? "Registrert" : hasVerneombudFromProfile ? "Fra organisering" : "Ikke registrert"}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -186,6 +186,50 @@ export default function VerneombudSeksjon() {
                         >
                           <PenLine className="w-4 h-4 mr-2" />
                           Oppdater verneombud
+                        </Button>
+                      </div>
+                    </>
+                  ) : hasVerneombudFromProfile && verneombudFromProfile ? (
+                    // Show verneombud from profile (set via Organisering page)
+                    <>
+                      <div className="grid gap-3 text-sm">
+                        <div className="flex items-center gap-3">
+                          <UserCheck className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">Verneombud:</span>
+                          <span className="font-medium">
+                            {[verneombudFromProfile.first_name, verneombudFromProfile.last_name].filter(Boolean).join(" ") || "Ukjent"}
+                          </span>
+                        </div>
+                        {verneombudFromProfile.email && (
+                          <div className="flex items-center gap-3">
+                            <User className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-muted-foreground">E-post:</span>
+                            <span className="font-medium">{verneombudFromProfile.email}</span>
+                          </div>
+                        )}
+                        {verneombudFromProfile.phone && (
+                          <div className="flex items-center gap-3">
+                            <User className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-muted-foreground">Telefon:</span>
+                            <span className="font-medium">{verneombudFromProfile.phone}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground">
+                        <p>
+                          Verneombud er registrert via Organisering-siden. For komplett dokumentasjon 
+                          med signatur og opplæringsstatus, registrer en formell verneombudsavtale.
+                        </p>
+                      </div>
+
+                      <Separator />
+                      <div className="flex gap-2">
+                        <Button 
+                          onClick={() => setShowVerneombudAgreementDialog(true)}
+                        >
+                          <PenLine className="w-4 h-4 mr-2" />
+                          Opprett formell avtale
                         </Button>
                       </div>
                     </>
