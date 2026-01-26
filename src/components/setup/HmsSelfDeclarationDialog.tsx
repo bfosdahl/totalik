@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,10 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, FileText, CheckCircle2 } from "lucide-react";
+import { Loader2, FileText, CheckCircle2, User } from "lucide-react";
 import SignatureCanvas from "react-signature-canvas";
+import { useCompanyUsers } from "@/hooks/useCompanyUsers";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface HmsSelfDeclarationDialogProps {
   open: boolean;
@@ -32,22 +35,62 @@ export function HmsSelfDeclarationDialog({
   city,
   onComplete,
 }: HmsSelfDeclarationDialogProps) {
+  const { profile } = useAuth();
+  const { users, isLoading: isLoadingUsers, getUserDisplayName } = useCompanyUsers();
   const [step, setStep] = useState<"info" | "manager" | "complete">("info");
   const [managerName, setManagerName] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [savedSignature, setSavedSignature] = useState<string | null>(null);
+  const [usingSavedSignature, setUsingSavedSignature] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
   const managerSigRef = useRef<SignatureCanvas | null>(null);
 
+  // Fetch current user's saved signature
+  useEffect(() => {
+    if (profile?.id) {
+      supabase
+        .from("profiles")
+        .select("signature_data")
+        .eq("id", profile.id)
+        .single()
+        .then(({ data }) => {
+          if (data?.signature_data) {
+            setSavedSignature(data.signature_data);
+          }
+        });
+    }
+  }, [profile?.id]);
+
+  // Auto-populate manager name when user is selected
+  useEffect(() => {
+    if (selectedUserId && selectedUserId !== "custom") {
+      const user = users.find(u => u.id === selectedUserId);
+      if (user) {
+        setManagerName(getUserDisplayName(user));
+      }
+    }
+  }, [selectedUserId, users, getUserDisplayName]);
+
   const handleClearManagerSig = () => {
     managerSigRef.current?.clear();
+    setUsingSavedSignature(false);
+  };
+
+  const useSavedSignatureHandler = () => {
+    if (savedSignature && managerSigRef.current) {
+      managerSigRef.current.fromDataURL(savedSignature);
+      setUsingSavedSignature(true);
+    }
   };
 
   const handleSubmit = async () => {
-    if (managerSigRef.current?.isEmpty()) {
+    const sig = usingSavedSignature ? savedSignature : managerSigRef.current?.toDataURL() || "";
+    
+    if (!sig || (managerSigRef.current?.isEmpty() && !usingSavedSignature)) {
       toast.error("Vennligst signer før du lagrer");
       return;
     }
-    const sig = managerSigRef.current?.toDataURL() || "";
 
     setIsSaving(true);
     try {
@@ -109,6 +152,8 @@ export function HmsSelfDeclarationDialog({
     // Reset state
     setStep("info");
     setManagerName("");
+    setSelectedUserId("");
+    setUsingSavedSignature(false);
   };
 
   const today = new Date().toLocaleDateString("nb-NO", {
@@ -193,20 +238,67 @@ export function HmsSelfDeclarationDialog({
                 </p>
               </div>
 
-              <div>
-                <Label htmlFor="managerName">Daglig leder / Ansvarlig - Navn</Label>
-                <Input
-                  id="managerName"
-                  value={managerName}
-                  onChange={(e) => setManagerName(e.target.value)}
-                  placeholder="Skriv inn fullt navn"
-                  className="mt-1"
-                />
+              <div className="space-y-2">
+                <Label htmlFor="managerSelect">Velg person eller skriv inn navn</Label>
+                <Select 
+                  value={selectedUserId} 
+                  onValueChange={(value) => {
+                    setSelectedUserId(value);
+                    if (value === "custom") {
+                      setManagerName("");
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg fra ansatte eller skriv inn manuelt" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {!isLoadingUsers && users.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {getUserDisplayName(user)}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Skriv inn manuelt...</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div>
-                <Label>Signatur</Label>
-                <div className="mt-1 border rounded-lg bg-white">
+              {(selectedUserId === "custom" || !selectedUserId) && (
+                <div>
+                  <Label htmlFor="managerName">Daglig leder / Ansvarlig - Navn</Label>
+                  <Input
+                    id="managerName"
+                    value={managerName}
+                    onChange={(e) => setManagerName(e.target.value)}
+                    placeholder="Skriv inn fullt navn"
+                    className="mt-1"
+                  />
+                </div>
+              )}
+
+              {selectedUserId && selectedUserId !== "custom" && (
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-sm"><strong>Valgt person:</strong> {managerName}</p>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Signatur</Label>
+                  {savedSignature && !usingSavedSignature && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={useSavedSignatureHandler}
+                      className="text-primary"
+                    >
+                      <User className="h-4 w-4 mr-1" />
+                      Bruk min signatur
+                    </Button>
+                  )}
+                </div>
+                <div className="border rounded-lg bg-white relative">
                   <SignatureCanvas
                     ref={managerSigRef}
                     canvasProps={{
@@ -214,11 +306,24 @@ export function HmsSelfDeclarationDialog({
                     }}
                     backgroundColor="white"
                   />
+                  {!usingSavedSignature && managerSigRef.current?.isEmpty() !== false && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <p className="text-muted-foreground text-sm">
+                        {savedSignature ? "Tegn eller bruk lagret signatur" : "Tegn signaturen din her"}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <div className="flex gap-2 mt-2">
+                <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={handleClearManagerSig}>
                     Tøm signatur
                   </Button>
+                  {usingSavedSignature && (
+                    <span className="text-xs text-success flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Bruker lagret signatur
+                    </span>
+                  )}
                 </div>
               </div>
 
