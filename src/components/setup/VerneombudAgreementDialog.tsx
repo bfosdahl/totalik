@@ -10,8 +10,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { CheckCircle2, Loader2, PenLine, X, ArrowLeft, ArrowRight, Shield } from "lucide-react";
+import { CheckCircle2, Loader2, PenLine, X, ArrowLeft, ArrowRight, Shield, User } from "lucide-react";
 import SignatureCanvas from "react-signature-canvas";
+import { useCompanyUsers } from "@/hooks/useCompanyUsers";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface VerneombudAgreementDialogProps {
   open: boolean;
@@ -39,6 +41,8 @@ interface PersistedState {
   verneombudSignature: string;
   employerName: string;
   employerSignature: string;
+  selectedVerneombudUserId: string;
+  selectedEmployerUserId: string;
   companyId: string;
 }
 
@@ -49,6 +53,9 @@ export function VerneombudAgreementDialog({
   companyName,
   onComplete,
 }: VerneombudAgreementDialogProps) {
+  const { profile } = useAuth();
+  const { users, isLoading: isLoadingUsers, getUserDisplayName } = useCompanyUsers();
+  
   const getInitialState = useCallback((): Partial<PersistedState> => {
     try {
       const saved = sessionStorage.getItem(SESSION_STORAGE_KEY);
@@ -79,10 +86,52 @@ export function VerneombudAgreementDialog({
   const [verneombudSignature, setVerneombudSignature] = useState(initialState.verneombudSignature || "");
   const [employerName, setEmployerName] = useState(initialState.employerName || "");
   const [employerSignature, setEmployerSignature] = useState(initialState.employerSignature || "");
+  const [selectedVerneombudUserId, setSelectedVerneombudUserId] = useState(initialState.selectedVerneombudUserId || "");
+  const [selectedEmployerUserId, setSelectedEmployerUserId] = useState(initialState.selectedEmployerUserId || "");
+  const [savedSignature, setSavedSignature] = useState<string | null>(null);
+  const [usingSavedVerneombudSig, setUsingSavedVerneombudSig] = useState(false);
+  const [usingSavedEmployerSig, setUsingSavedEmployerSig] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
   const verneombudSigRef = useRef<SignatureCanvas>(null);
   const employerSigRef = useRef<SignatureCanvas>(null);
+
+  // Fetch current user's saved signature
+  useEffect(() => {
+    if (profile?.id) {
+      supabase
+        .from("profiles")
+        .select("signature_data")
+        .eq("id", profile.id)
+        .single()
+        .then(({ data }) => {
+          if (data?.signature_data) {
+            setSavedSignature(data.signature_data);
+          }
+        });
+    }
+  }, [profile?.id]);
+
+  // Auto-populate verneombud name when user is selected
+  useEffect(() => {
+    if (selectedVerneombudUserId && selectedVerneombudUserId !== "custom") {
+      const user = users.find(u => u.id === selectedVerneombudUserId);
+      if (user) {
+        setVerneombudName(getUserDisplayName(user));
+        setVerneombudEmail(user.email || "");
+      }
+    }
+  }, [selectedVerneombudUserId, users, getUserDisplayName]);
+
+  // Auto-populate employer name when user is selected
+  useEffect(() => {
+    if (selectedEmployerUserId && selectedEmployerUserId !== "custom") {
+      const user = users.find(u => u.id === selectedEmployerUserId);
+      if (user) {
+        setEmployerName(getUserDisplayName(user));
+      }
+    }
+  }, [selectedEmployerUserId, users, getUserDisplayName]);
 
   // Persist state
   useEffect(() => {
@@ -104,19 +153,39 @@ export function VerneombudAgreementDialog({
       verneombudSignature,
       employerName,
       employerSignature,
+      selectedVerneombudUserId,
+      selectedEmployerUserId,
       companyId,
     };
     sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(state));
-  }, [step, verneombudName, verneombudEmail, verneombudPhone, electionMethod, termStart, termEnd, trainingCompleted, trainingDate, notes, verneombudSignature, employerName, employerSignature, companyId]);
+  }, [step, verneombudName, verneombudEmail, verneombudPhone, electionMethod, termStart, termEnd, trainingCompleted, trainingDate, notes, verneombudSignature, employerName, employerSignature, selectedVerneombudUserId, selectedEmployerUserId, companyId]);
 
   const handleClearVerneombudSig = () => {
     verneombudSigRef.current?.clear();
     setVerneombudSignature("");
+    setUsingSavedVerneombudSig(false);
   };
 
   const handleClearEmployerSig = () => {
     employerSigRef.current?.clear();
     setEmployerSignature("");
+    setUsingSavedEmployerSig(false);
+  };
+
+  const useSavedVerneombudSignature = () => {
+    if (savedSignature && verneombudSigRef.current) {
+      verneombudSigRef.current.fromDataURL(savedSignature);
+      setUsingSavedVerneombudSig(true);
+      setVerneombudSignature(savedSignature);
+    }
+  };
+
+  const useSavedEmployerSignature = () => {
+    if (savedSignature && employerSigRef.current) {
+      employerSigRef.current.fromDataURL(savedSignature);
+      setUsingSavedEmployerSig(true);
+      setEmployerSignature(savedSignature);
+    }
   };
 
   const handleSubmit = async () => {
@@ -215,6 +284,32 @@ export function VerneombudAgreementDialog({
             </div>
 
             <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="verneombudSelect">Velg verneombud</Label>
+                <Select 
+                  value={selectedVerneombudUserId} 
+                  onValueChange={(value) => {
+                    setSelectedVerneombudUserId(value);
+                    if (value === "custom") {
+                      setVerneombudName("");
+                      setVerneombudEmail("");
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg fra ansatte eller skriv inn manuelt" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {!isLoadingUsers && users.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {getUserDisplayName(user)}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Skriv inn manuelt...</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="verneombudName">Verneombudets navn *</Label>
@@ -223,6 +318,7 @@ export function VerneombudAgreementDialog({
                     value={verneombudName}
                     onChange={(e) => setVerneombudName(e.target.value)}
                     placeholder="Fullt navn"
+                    disabled={selectedVerneombudUserId !== "" && selectedVerneombudUserId !== "custom"}
                   />
                 </div>
                 <div className="space-y-2">
@@ -333,14 +429,22 @@ export function VerneombudAgreementDialog({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Verneombudets signatur</Label>
-                {verneombudSignature && (
-                  <Button variant="ghost" size="sm" onClick={handleClearVerneombudSig}>
-                    <X className="w-4 h-4 mr-1" />
-                    Slett
-                  </Button>
-                )}
+                <div className="flex items-center gap-2">
+                  {savedSignature && !usingSavedVerneombudSig && !verneombudSignature && (
+                    <Button variant="outline" size="sm" onClick={useSavedVerneombudSignature} className="text-primary">
+                      <User className="w-4 h-4 mr-1" />
+                      Bruk min signatur
+                    </Button>
+                  )}
+                  {verneombudSignature && (
+                    <Button variant="ghost" size="sm" onClick={handleClearVerneombudSig}>
+                      <X className="w-4 h-4 mr-1" />
+                      Slett
+                    </Button>
+                  )}
+                </div>
               </div>
-              <div className="border rounded-lg bg-white">
+              <div className="border rounded-lg bg-white relative">
                 <SignatureCanvas
                   ref={verneombudSigRef}
                   canvasProps={{
@@ -352,8 +456,20 @@ export function VerneombudAgreementDialog({
                     if (data) setVerneombudSignature(data);
                   }}
                 />
+                {!verneombudSignature && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <p className="text-muted-foreground text-sm">
+                      {savedSignature ? "Tegn eller bruk lagret signatur" : "Tegn signaturen din her"}
+                    </p>
+                  </div>
+                )}
               </div>
-              <p className="text-xs text-muted-foreground">Tegn signaturen din i feltet over</p>
+              {usingSavedVerneombudSig && (
+                <span className="text-xs text-success flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Bruker lagret signatur
+                </span>
+              )}
             </div>
           </div>
         )}
@@ -368,26 +484,67 @@ export function VerneombudAgreementDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="employerName">Arbeidsgivers navn *</Label>
-              <Input
-                id="employerName"
-                value={employerName}
-                onChange={(e) => setEmployerName(e.target.value)}
-                placeholder="Fullt navn"
-              />
+              <Label htmlFor="employerSelect">Velg arbeidsgiver</Label>
+              <Select 
+                value={selectedEmployerUserId} 
+                onValueChange={(value) => {
+                  setSelectedEmployerUserId(value);
+                  if (value === "custom") {
+                    setEmployerName("");
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Velg fra ansatte eller skriv inn manuelt" />
+                </SelectTrigger>
+                <SelectContent>
+                  {!isLoadingUsers && users.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {getUserDisplayName(user)}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="custom">Skriv inn manuelt...</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+
+            {(selectedEmployerUserId === "custom" || !selectedEmployerUserId) && (
+              <div className="space-y-2">
+                <Label htmlFor="employerName">Arbeidsgivers navn *</Label>
+                <Input
+                  id="employerName"
+                  value={employerName}
+                  onChange={(e) => setEmployerName(e.target.value)}
+                  placeholder="Fullt navn"
+                />
+              </div>
+            )}
+
+            {selectedEmployerUserId && selectedEmployerUserId !== "custom" && (
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <p className="text-sm"><strong>Valgt person:</strong> {employerName}</p>
+              </div>
+            )}
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Arbeidsgivers signatur *</Label>
-                {employerSignature && (
-                  <Button variant="ghost" size="sm" onClick={handleClearEmployerSig}>
-                    <X className="w-4 h-4 mr-1" />
-                    Slett
-                  </Button>
-                )}
+                <div className="flex items-center gap-2">
+                  {savedSignature && !usingSavedEmployerSig && !employerSignature && (
+                    <Button variant="outline" size="sm" onClick={useSavedEmployerSignature} className="text-primary">
+                      <User className="w-4 h-4 mr-1" />
+                      Bruk min signatur
+                    </Button>
+                  )}
+                  {employerSignature && (
+                    <Button variant="ghost" size="sm" onClick={handleClearEmployerSig}>
+                      <X className="w-4 h-4 mr-1" />
+                      Slett
+                    </Button>
+                  )}
+                </div>
               </div>
-              <div className="border rounded-lg bg-white">
+              <div className="border rounded-lg bg-white relative">
                 <SignatureCanvas
                   ref={employerSigRef}
                   canvasProps={{
@@ -399,8 +556,20 @@ export function VerneombudAgreementDialog({
                     if (data) setEmployerSignature(data);
                   }}
                 />
+                {!employerSignature && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <p className="text-muted-foreground text-sm">
+                      {savedSignature ? "Tegn eller bruk lagret signatur" : "Tegn signaturen din her"}
+                    </p>
+                  </div>
+                )}
               </div>
-              <p className="text-xs text-muted-foreground">Tegn signaturen din i feltet over</p>
+              {usingSavedEmployerSig && (
+                <span className="text-xs text-success flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Bruker lagret signatur
+                </span>
+              )}
             </div>
           </div>
         )}

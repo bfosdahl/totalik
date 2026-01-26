@@ -7,10 +7,13 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, FileText, CheckCircle2 } from "lucide-react";
+import { Loader2, FileText, CheckCircle2, User } from "lucide-react";
 import SignatureCanvas from "react-signature-canvas";
+import { useCompanyUsers } from "@/hooks/useCompanyUsers";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface VerneombudExemptionDialogProps {
   open: boolean;
@@ -29,6 +32,7 @@ interface PersistedState {
   step: "info" | "employer" | "complete";
   employerName: string;
   employerSignature: string;
+  selectedUserId: string;
   companyId: string;
 }
 
@@ -42,6 +46,9 @@ export function VerneombudExemptionDialog({
   totalEmployees,
   onComplete,
 }: VerneombudExemptionDialogProps) {
+  const { profile } = useAuth();
+  const { users, isLoading: isLoadingUsers, getUserDisplayName } = useCompanyUsers();
+  
   // Load initial state from sessionStorage
   const getInitialState = useCallback((): PersistedState | null => {
     try {
@@ -66,9 +73,38 @@ export function VerneombudExemptionDialog({
   );
   const [employerName, setEmployerName] = useState(initialState?.employerName || "");
   const [employerSignature, setEmployerSignature] = useState(initialState?.employerSignature || "");
+  const [selectedUserId, setSelectedUserId] = useState(initialState?.selectedUserId || "");
+  const [savedSignature, setSavedSignature] = useState<string | null>(null);
+  const [usingSavedSignature, setUsingSavedSignature] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
   const employerSigRef = useRef<SignatureCanvas | null>(null);
+
+  // Fetch current user's saved signature
+  useEffect(() => {
+    if (profile?.id) {
+      supabase
+        .from("profiles")
+        .select("signature_data")
+        .eq("id", profile.id)
+        .single()
+        .then(({ data }) => {
+          if (data?.signature_data) {
+            setSavedSignature(data.signature_data);
+          }
+        });
+    }
+  }, [profile?.id]);
+
+  // Auto-populate employer name when user is selected
+  useEffect(() => {
+    if (selectedUserId && selectedUserId !== "custom") {
+      const user = users.find(u => u.id === selectedUserId);
+      if (user) {
+        setEmployerName(getUserDisplayName(user));
+      }
+    }
+  }, [selectedUserId, users, getUserDisplayName]);
 
   // Persist state to sessionStorage whenever it changes
   useEffect(() => {
@@ -82,14 +118,24 @@ export function VerneombudExemptionDialog({
       step,
       employerName,
       employerSignature,
+      selectedUserId,
       companyId,
     };
     sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(stateToSave));
-  }, [step, employerName, employerSignature, companyId]);
+  }, [step, employerName, employerSignature, selectedUserId, companyId]);
 
   const handleClearEmployerSig = () => {
     employerSigRef.current?.clear();
     setEmployerSignature("");
+    setUsingSavedSignature(false);
+  };
+
+  const useSavedSignatureHandler = () => {
+    if (savedSignature && employerSigRef.current) {
+      employerSigRef.current.fromDataURL(savedSignature);
+      setUsingSavedSignature(true);
+      setEmployerSignature(savedSignature);
+    }
   };
 
   const handleSubmit = async () => {
@@ -168,6 +214,8 @@ export function VerneombudExemptionDialog({
       setStep("info");
       setEmployerName("");
       setEmployerSignature("");
+      setSelectedUserId("");
+      setUsingSavedSignature(false);
       sessionStorage.removeItem(SESSION_STORAGE_KEY);
     }
   };
@@ -290,20 +338,67 @@ export function VerneombudExemptionDialog({
                 </p>
               </div>
 
-              <div>
-                <Label htmlFor="employerName">Arbeidsgivers navn</Label>
-                <Input
-                  id="employerName"
-                  value={employerName}
-                  onChange={(e) => setEmployerName(e.target.value)}
-                  placeholder="Skriv inn fullt navn"
-                  className="mt-1"
-                />
+              <div className="space-y-2">
+                <Label htmlFor="employerSelect">Velg person eller skriv inn navn</Label>
+                <Select 
+                  value={selectedUserId} 
+                  onValueChange={(value) => {
+                    setSelectedUserId(value);
+                    if (value === "custom") {
+                      setEmployerName("");
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg fra ansatte eller skriv inn manuelt" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {!isLoadingUsers && users.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {getUserDisplayName(user)}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Skriv inn manuelt...</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div>
-                <Label>Arbeidsgivers signatur</Label>
-                <div className="mt-1 border rounded-lg bg-white">
+              {(selectedUserId === "custom" || !selectedUserId) && (
+                <div>
+                  <Label htmlFor="employerName">Arbeidsgivers navn</Label>
+                  <Input
+                    id="employerName"
+                    value={employerName}
+                    onChange={(e) => setEmployerName(e.target.value)}
+                    placeholder="Skriv inn fullt navn"
+                    className="mt-1"
+                  />
+                </div>
+              )}
+
+              {selectedUserId && selectedUserId !== "custom" && (
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-sm"><strong>Valgt person:</strong> {employerName}</p>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Arbeidsgivers signatur</Label>
+                  {savedSignature && !usingSavedSignature && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={useSavedSignatureHandler}
+                      className="text-primary"
+                    >
+                      <User className="h-4 w-4 mr-1" />
+                      Bruk min signatur
+                    </Button>
+                  )}
+                </div>
+                <div className="border rounded-lg bg-white relative">
                   <SignatureCanvas
                     ref={employerSigRef}
                     canvasProps={{
@@ -311,11 +406,24 @@ export function VerneombudExemptionDialog({
                     }}
                     backgroundColor="white"
                   />
+                  {!usingSavedSignature && employerSigRef.current?.isEmpty() !== false && !employerSignature && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <p className="text-muted-foreground text-sm">
+                        {savedSignature ? "Tegn eller bruk lagret signatur" : "Tegn signaturen din her"}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <div className="flex gap-2 mt-2">
+                <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={handleClearEmployerSig}>
                     Tøm signatur
                   </Button>
+                  {usingSavedSignature && (
+                    <span className="text-xs text-success flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Bruker lagret signatur
+                    </span>
+                  )}
                 </div>
               </div>
 
