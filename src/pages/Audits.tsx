@@ -18,7 +18,7 @@ import {
   Shield,
   CalendarDays,
   FileSignature,
-  ShieldCheck
+  UserCheck
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,7 @@ import LoverOgForskrifterCalculator from "@/components/audits/LoverOgForskrifter
 import VernerundeForm from "@/components/audits/VernerundeForm";
 import HmsAarshjul from "@/components/audits/HmsAarshjul";
 import HmsEgenerklaeringSeksjon from "@/components/audits/HmsEgenerklaeringSeksjon";
-import ForsvarlighetsvurderingForm from "@/components/audits/ForsvarlighetsvurderingForm";
+import VerneombudSeksjon from "@/components/audits/VerneombudSeksjon";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -87,7 +87,8 @@ const Audits = () => {
         "fysiske-arbeidsforhold": "fysiske",
         "brannvern": "drift",
         "egenerklaring": "egenerklaring",
-        "forsvarlighetsvurdering": "forsvarlig",
+        "verneombud": "verneombud",
+        "forsvarlighetsvurdering": "verneombud",
       };
       const tab = tabMapping[formType];
       if (tab) {
@@ -193,14 +194,14 @@ const Audits = () => {
                 className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <FileSignature className="w-4 h-4" />
-                <span>Egenerklæring</span>
+                <span>Erklæringer</span>
               </TabsTrigger>
               <TabsTrigger 
-                value="forsvarlig" 
+                value="verneombud" 
                 className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
               >
-                <ShieldCheck className="w-4 h-4" />
-                <span>Forsvarlighetsvurdering</span>
+                <UserCheck className="w-4 h-4" />
+                <span>Verneombud</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -277,7 +278,15 @@ const Audits = () => {
                   onClick={() => setActiveTab("egenerklaring")}
                 >
                   <FileSignature className="w-6 h-6 text-rose-500" />
-                  <span className="text-xs text-center">Egenerklæring</span>
+                  <span className="text-xs text-center">Erklæringer</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 flex flex-col gap-2 items-center justify-center"
+                  onClick={() => setActiveTab("verneombud")}
+                >
+                  <UserCheck className="w-6 h-6 text-primary" />
+                  <span className="text-xs text-center">Verneombud</span>
                 </Button>
               </div>
             </motion.div>
@@ -449,14 +458,14 @@ const Audits = () => {
             <HmsAarshjul />
           </TabsContent>
 
-          {/* Egenerklæring Tab */}
+          {/* Erklæringer Tab */}
           <TabsContent value="egenerklaring">
             <HmsEgenerklaeringSeksjon />
           </TabsContent>
 
-          {/* Forsvarlighetsvurdering Tab */}
-          <TabsContent value="forsvarlig">
-            <ForsvarlighetsvurderingForm />
+          {/* Verneombud Tab */}
+          <TabsContent value="verneombud">
+            <VerneombudSeksjon />
           </TabsContent>
         </Tabs>
       </div>
