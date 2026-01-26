@@ -3054,6 +3054,50 @@ export type Database = {
           },
         ]
       }
+      hms_vernerunde_templates: {
+        Row: {
+          checkpoints: Json
+          company_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_system_template: boolean
+          template_name: string
+          updated_at: string
+        }
+        Insert: {
+          checkpoints?: Json
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system_template?: boolean
+          template_name: string
+          updated_at?: string
+        }
+        Update: {
+          checkpoints?: Json
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system_template?: boolean
+          template_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hms_vernerunde_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_alkohol_attachments: {
         Row: {
           category: string
