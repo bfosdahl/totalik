@@ -31,7 +31,7 @@ import { nb } from "date-fns/locale";
 export default function VerneombudSeksjon() {
   const { profile, company } = useAuth();
   const { verneombudExemption, isLoading, hasVerneombudExemption, refetch } = useHmsDeclarations();
-  const { verneombudAgreement, verneombudFromProfile, isLoading: isLoadingVerneombud, hasVerneombudAgreement, hasVerneombudFromProfile, hasAnyVerneombud, refetch: refetchVerneombud } = useVerneombudAgreement();
+  const { verneombudAgreement, verneombudFromProfile, verneombudFromAiSetup, isLoading: isLoadingVerneombud, hasVerneombudAgreement, hasVerneombudFromProfile, hasVerneombudFromAiSetup, hasAnyVerneombud, refetch: refetchVerneombud } = useVerneombudAgreement();
   const { employees } = useEmployees();
   
   // Determine if company needs verneombud (5+ employees) or can use exemption (<5 employees)
@@ -122,7 +122,7 @@ export default function VerneombudSeksjon() {
                       </div>
                     </div>
                     <Badge variant={hasAnyVerneombud ? "default" : "secondary"}>
-                      {hasVerneombudAgreement ? "Registrert" : hasVerneombudFromProfile ? "Fra organisering" : "Ikke registrert"}
+                      {hasVerneombudAgreement ? "Registrert" : hasVerneombudFromProfile ? "Fra organisering" : hasVerneombudFromAiSetup ? "Fra AI-oppsett" : "Ikke registrert"}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -219,6 +219,34 @@ export default function VerneombudSeksjon() {
                       <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground">
                         <p>
                           Verneombud er registrert via Organisering-siden. For komplett dokumentasjon 
+                          med signatur og opplæringsstatus, registrer en formell verneombudsavtale.
+                        </p>
+                      </div>
+
+                      <Separator />
+                      <div className="flex gap-2">
+                        <Button 
+                          onClick={() => setShowVerneombudAgreementDialog(true)}
+                        >
+                          <PenLine className="w-4 h-4 mr-2" />
+                          Opprett formell avtale
+                        </Button>
+                      </div>
+                    </>
+                  ) : hasVerneombudFromAiSetup && verneombudFromAiSetup ? (
+                    // Show verneombud from AI setup
+                    <>
+                      <div className="grid gap-3 text-sm">
+                        <div className="flex items-center gap-3">
+                          <UserCheck className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">Verneombud:</span>
+                          <span className="font-medium">{verneombudFromAiSetup.personName}</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground">
+                        <p>
+                          Verneombud ble angitt under AI-oppsettet. For komplett dokumentasjon 
                           med signatur og opplæringsstatus, registrer en formell verneombudsavtale.
                         </p>
                       </div>
