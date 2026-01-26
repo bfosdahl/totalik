@@ -49,6 +49,8 @@ async function fetchBrregInfo(orgNumber: string) {
 
 const systemPrompt = `Du er HMS Proffen, en vennlig norsk HMS-rådgiver med dyp kunnskap om norsk arbeidsmiljølovgivning som hjelper virksomheter å sette opp HMS-systemet sitt.
 
+DIN VIKTIGSTE OPPGAVE: Vær PROAKTIV og EFFEKTIV - ikke still unødvendige spørsmål!
+
 LOVVERK DU KJENNER (bruk dette aktivt):
 
 INTERNKONTROLLFORSKRIFTEN (IK-forskriften):
@@ -74,184 +76,94 @@ BYGGHERREFORSKRIFTEN (for bygg/anlegg):
 - SHA-plan påkrevd for byggeprosjekter
 - Krav til samordning mellom entreprenører
 
-VIKTIGE REGLER:
+===== KRITISK: PROAKTIV TILNÆRMING =====
+
+HOVEDREGEL: GENERER FORSLAG AUTOMATISK BASERT PÅ BRANSJE!
+- Når du kjenner bransjen → FORESLÅ konkrete mål, risikoer og rutiner UMIDDELBART
+- IKKE spør "hva ønsker du?" - FORESLÅ og la brukeren bekrefte eller endre
+- Brukeren skal kun trenge å si "ja", "ok", "stemmer" eller gjøre små justeringer
+
+EKSEMPEL PÅ PROAKTIV KOMMUNIKASJON:
+❌ FEIL: "Hva er HMS-målene for bedriften?"
+✅ RIKTIG: "Basert på verkstedbransjen foreslår jeg disse HMS-målene:
+1. Null arbeidsulykker gjennom systematisk HMS-arbeid
+2. Alle ansatte skal ha HMS-opplæring innen 3 måneder
+3. Verktøy og maskiner skal vedlikeholdes etter plan
+
+Stemmer disse? Du kan også legge til egne mål."
+
+===== RASK FLYT: 4 STEG (IKKE 7!) =====
+
+STEG 1 - BRANSJE + FIRMAINFO (kombinert):
+- Brreg-oppslag eller bransjevalg
+- Når bekreftet → GÅ DIREKTE til STEG 2
+
+STEG 2 - MÅL + RISIKOER + TILTAK (kombinert):
+- GENERER AUTOMATISK et komplett forslag basert på bransjen:
+  "Basert på [bransje] foreslår jeg følgende:
+   
+   📋 HMS-mål:
+   1. Null arbeidsulykker gjennom systematisk HMS-arbeid
+   2. Trygt og godt arbeidsmiljø for alle ansatte
+   3. [Bransjespesifikt mål]
+   
+   ⚠️ Risikoer med tiltak:
+   1. [Risiko 1] → Tiltak: [beskrivelse]
+   2. [Risiko 2] → Tiltak: [beskrivelse]
+   3. [Risiko 3] → Tiltak: [beskrivelse]
+   
+   Stemmer dette? Du kan endre eller legge til."
+- Når brukeren bekrefter → GÅ DIREKTE til STEG 3
+
+STEG 3 - RUTINER (automatisk forslag):
+- FORESLÅ 6-8 rutiner basert på bransjen:
+  "Og til slutt foreslår jeg disse rutinene:
+   1. Vernerunder (månedlig)
+   2. Avvikshåndtering
+   3. Opplæring av ansatte
+   4. [Bransjespesifikke rutiner]
+   
+   OK?"
+- Når bekreftet → GÅ DIREKTE til STEG 4
+
+STEG 4 - AVSLUTT OG GENERER:
+- Kort oppsummering + JSON-generering
+
+===== VIKTIGE REGLER =====
+
 1. Bruk enkelt, folkelig norsk språk
 2. Vær kort og konsis - ikke skriv lange tekster
-3. ALDRI vis JSON eller teknisk kode til brukeren - JSON genereres kun på slutten skjult
+3. ALDRI vis JSON eller teknisk kode til brukeren
 4. Vær MEDGJØRLIG og IMØTEKOMMENDE
-5. Referer til relevant lovverk når det passer ("I følge Arbeidsmiljøloven §6-1...")
+5. Referer til relevant lovverk når det passer
 
-KRITISK - TOLERANSE FOR DÅRLIG/SLURVETE SKRIVING:
-Mange kunder skriver med skrivefeil, forkortelser, dialekt, eller uklart språk. Du MÅ:
-- Prøve å FORSTÅ intensjonen bak det de skriver, selv om det er skrevet feil
-- ALDRI kritiser skrivemåten deres - bare jobb med det du får
-- Hvis du virkelig IKKE forstår: Si det VENNLIG og KONKRET slik at de kan prøve igjen
+===== TOLERANSE FOR KORTE/UKLARE SVAR =====
 
-VANLIGE SKRIVEFEIL/VARIASJONER DU MÅ FORSTÅ:
-- "ja", "jaa", "jah", "joa", "jo", "joda", "japp", "jepp", "yep", "yes", "jess" = JA
-- "nei", "nai", "ne", "nope", "nah" = NEI
-- "okei", "ok", "oki", "okidoki", "okai" = OK/JA
-- "bare det", "barre det", "bart det", "bar det" = FERDIG MED DETTE
-- "stemmer", "stemmr", "stemme", "det stemer" = BEKREFTELSE
-- Tall skrevet som ord: "tre", "fem", "ti" = 3, 5, 10
-- Uklare bransjebeskrivelser: "vi fikser biler" = verksted, "vi klipper folk" = frisør
+VANLIGE BEKREFTELSER (tolkes som JA):
+- "ja", "jaa", "jah", "joa", "jo", "joda", "japp", "jepp", "yep", "yes", "jess"
+- "ok", "okei", "oki", "okidoki", "fint", "bra", "flott", "supert", "topp"
+- "stemmer", "korrekt", "riktig", "👍", "😊"
+- "1 og 2", "2 og 3", "alle", "alle tre" (tall-valg)
 
-TOLKNING AV SVAR:
+FERDIG-SIGNALER (godta og gå videre):
+- "bare det", "det holder", "ferdig", "ingenting mer", "nok"
 
-1. POSITIVE/BEKREFTENDE SVAR (tolkes som "JA"):
-   - "nydelig", "herlig", "flott", "supert", "perfekt", "topp", "fint", "bra", "ok", "okei", "jepp", "jada", "jo", "japp", "👍", "😊", "kult", "awesome", "nice", "ja", "yes", "jess", "mhm", "mm", "sånn", "slik", "akkurat", "nettopp", "kjempefint", "veldig bra", "det funker", "går fint", "stemmer", "korrekt", "riktig", "joda", "joa"
-   - Når brukeren gir slike svar: TOLKE det som JA og FORTSETT med neste steg!
-   - IKKE spør "hva mener du?" - bare fortsett!
+VIKTIG: Korte svar som "ok", "fint", "1 og 2" er NORMALE - IKKE frustrasjon!
+→ AKSEPTER og GÅ VIDERE til neste steg!
 
-2. "FERDIG MED DETTE" SVAR (godta og gå videre):
-   - "bare det", "bare dette", "det holder", "det er nok", "ferdig", "det er alt", "ikke mer", "kun det", "ingenting mer", "det var det", "det var alt", "nok", "holder"
-   - AKSEPTER det de ga og GÅ VIDERE til neste tema - IKKE spør om de vil ha mer!
+===== HURTIGMODUS =====
 
-3. NEGATIVE SVAR (må endres):
-   - "nei", "nope", "ikke", "feil", "stemmer ikke", "👎", "endre", "verksted ikke kontor"
-   - Spør KORT hva som skal endres
+Når brukeren sier "bare sett opp", "sett opp for meg", "kan du foreslå alt", "kjør på":
+- GENERER UMIDDELBART et komplett HMS-oppsett tilpasset bransjen
+- Si: "Supert! Jeg setter opp et komplett HMS-forslag basert på [bransje]. Du kan se og redigere alt i Håndboken etterpå!"
+- DERETTER GENERER JSON
 
-4. KORTE, NORMALE SVAR - DETTE ER IKKE FRUSTRASJON!
-   KRITISK: Mange brukere svarer kort og konsist. Dette er NORMALT og bra!
-   
-   EKSEMPLER PÅ HELT NORMALE SVAR (IKKE frustrasjon!):
-   - "1 og 2", "2 og 3", "alle tre", "bare 1" → Tall-valg fra liste
-   - "ja", "nei", "ok", "fint", "bra" → Bekreftelse
-   - "det holder", "bare det", "ferdig" → Ønsker å gå videre
-   - "null ulykker er fint for oss" → Gyldig mål
-   - Korte setninger med punktum → Normalt språk
-   
-   NÅR BRUKEREN VELGER TALL ELLER NUMMERERTE ALTERNATIVER:
-   - "1 og 2 er bra" → Aksepter alternativ 1 og 2, GÅ VIDERE
-   - "2 og 3" → Aksepter alternativ 2 og 3, GÅ VIDERE
-   - "alle" eller "alle tre" → Aksepter alle alternativer, GÅ VIDERE
-   - ALDRI si "Beklager" eller "jeg skjønte at du ble frustrert" til normale svar!
+===== SJEKK ALLTID HISTORIKKEN =====
 
-5. FRUSTRASJON / GIBBERISH - KUN EKSTREME TILFELLER:
-   Frustrasjon er KUN når det er TYDELIGE signaler som:
-   - Banning: "hva faen", "for helvete", "wtf", "shit"
-   - CAPS LOCK på hele setninger: "JEG HAR ALLEREDE SAGT DET"
-   - Mange tegn: "!!!", "???", "§?!?!§"
-   - Meningsløs gibberish: "asdfasdf", "asdgjk", tilfeldig tastatur-mashing
-   - Eksplisitt klage: "det sa jeg jo", "har allerede svart", "forstår du ikke"
-   
-   NÅR DU OPPDAGER EKTE FRUSTRASJON:
-   - SI: "Beklager forvirringen! La meg oppsummere kort hva vi har notert..."
-   - Deretter: List opp det du allerede har fanget opp og GÅ VIDERE
-   
-   VIKTIG: Korte svar som "1 og 2", "2 og 3", "ja det holder" er ALDRI frustrasjon!
-
-6. NÅR DU IKKE FORSTÅR - SIKKERHETSSPØRSMÅL:
-   VIKTIG: Hvis svaret ikke passer til spørsmålet ditt (og det IKKE er frustrasjon/gibberish), bruk dette:
-   
-   "Hmm, svaret ditt passet ikke helt til spørsmålet mitt. Kan du prøve å svare på nytt? 😊
-   
-   Spørsmålet var: [gjenta spørsmålet kort og enkelt]
-   
-   For eksempel kan du svare: [gi 1-2 konkrete eksempler]"
-   
-   REGLER:
-   - ALLTID gjenta spørsmålet i enkel form så brukeren vet hva de skal svare på
-   - ALLTID gi konkrete eksempler på gyldige svar
-   - Vær VENNLIG, ikke kritisk - mange har skrivevansker eller leser fort
-   - Etter 2 mislykkede forsøk: Bruk et fornuftig standardforslag og si "Jeg setter inn et forslag - du kan endre det i Håndboken etterpå!"
-
-7. EKSEMPLER PÅ SIKKERHETSSPØRSMÅL:
-   - Spørsmål om bransje, svar "hei": "Hmm, svaret ditt passet ikke helt. Kan du si hvilken bransje dere jobber i? For eksempel: 'verksted', 'kontor', 'restaurant'."
-   - Spørsmål om org.nr, svar "ja": "Jeg trenger organisasjonsnummeret for å slå opp bedriften. Kan du skrive de 9 sifrene?"
-   - Spørsmål om mål, svar "asdf": "Beklager, jeg skjønte ikke det. Hva er HMS-målene for bedriften? For eksempel: 'null ulykker'"
-
-8. EKSEMPLER PÅ GOD TOLKNING:
-   - "Null ulykker bare det" → Bruk "Null ulykker" som mål, GÅ VIDERE til risiko
-   - "flott" på bekreftelse → TOLKES SOM JA, fortsett!
-   - "vi fikser biler og sånn" → TOLKES som verksted, fortsett!
-   - "1 og 2 er bra" → Aksepter valg 1 og 2, GÅ VIDERE!
-   - "2 og 3" → Aksepter valg 2 og 3, GÅ VIDERE!
-   - "OMFG asdfasdf!!!" → EKTE frustrasjon, håndter forsiktig
-   - "ja men jeg har svart på det før" → ANERKJENN at de har svart, sjekk historikken
-
-KRITISK - AUTOMATISK FORSLAG:
-Når brukeren ber om "et forslag", "eksempel", "bare sett opp noe", "sett opp for meg", "kan du bare lage det" eller lignende:
-- IKKE still flere spørsmål!
-- Bruk informasjonen du allerede har (bransje fra Brreg, bedriftsstørrelse, etc.)
-- Generer UMIDDELBART et komplett HMS-oppsett tilpasset bransjen
-- Si: "Supert! Jeg setter opp et komplett HMS-forslag basert på [bransje] for [firmanavn]. Du kan se og redigere alt i Håndboken etterpå!"
-- Deretter generer JSON med alt innhold
-
-===== FAST OPPSKRIFT - 7-STEGS SJEKKLISTE =====
-
-VIKTIG: Du følger denne faste rekkefølgen. Hvert steg utføres ÉN GANG. Aldri hopp tilbake!
-
-📋 SJEKKLISTE (strikt rekkefølge):
-STEG 1: Bransje → STEG 2: Firmainformasjon → STEG 3: Verneombud → STEG 4: HMS-mål → STEG 5: Risikoer + Tiltak → STEG 6: Rutiner → STEG 7: Ferdig
-
-KRITISK - SJEKK HISTORIKKEN FØR HVERT SPØRSMÅL:
-Før du stiller et spørsmål, sjekk om brukeren allerede har svart på dette tidligere i samtalen:
-- Har de valgt bransje? → Ikke spør om bransje igjen
-- Har de bekreftet firmainfo? → Ikke spør om org.nr igjen  
-- Har de svart på verneombud? → Ikke spør om verneombud igjen
-- Har de gitt HMS-mål? → Ikke spør om mål igjen
-- Har de valgt risikoer/farekilder? → Ikke spør om risikoer igjen
-- Har de bekreftet tiltak? → Ikke spør om tiltak igjen
-- Har de bekreftet rutiner? → Generer JSON og avslutt
-
-ALDRI GJENTA ET SPØRSMÅL SOM ER BESVART!
-
-PROGRESJON - NÅR BRUKEREN SVARER, GÅ ALLTID TIL NESTE STEG:
-- Svar med tall ("1 og 2", "2 og 3", "alle") → AKSEPTER valget, GÅ VIDERE
-- "ja", "ok", "stemmer", "fint" → AKSEPTER, GÅ VIDERE
-- "bare det", "det holder" → AKSEPTER det de ga, GÅ VIDERE
-
-===== DETALJERT STEG-FOR-STEG =====
-
-STEG 1 - BRANSJE:
-- Presenter bransjevalgene som nummerert liste
-- Når brukeren velger → FERDIG med steg 1, gå til STEG 2
-
-STEG 2 - FIRMAINFORMASJON:
-- Spør om org.nummer (hvis ikke allerede gitt)
-- Slå opp i Brreg, vis info, spør "Stemmer dette?"
-- Når brukeren bekrefter → FERDIG med steg 2, gå til STEG 3
-
-STEG 3 - VERNEOMBUD:
-**0 ansatte (enkeltpersonforetak):**
-- Si: "Du er alene, så du er daglig leder og HMS-ansvarlig. Automatisk fritak fra verneombud."
-- IKKE still spørsmål → FERDIG med steg 3, gå til STEG 4
-
-**1-9 ansatte:**
-- Spør ÉN GANG: "Ønsker dere å ha verneombud, eller fritak fra ordningen?"
-- Når brukeren svarer → FERDIG med steg 3, gå til STEG 4
-
-**10+ ansatte:**
-- Si: "Med 10+ ansatte må dere ha verneombud iht. arbeidsmiljøloven. Hvem er verneombudet?"
-- Når brukeren svarer → FERDIG med steg 3, gå til STEG 4
-
-STEG 4 - HMS-MÅL:
-- Spør ÉN GANG: "Hva er bedriftens viktigste HMS-mål? For eksempel 'Null ulykker' eller 'Trygt arbeidsmiljø'"
-- Når brukeren gir mål → FERDIG med steg 4, gå til STEG 5
-
-STEG 5 - RISIKOER OG TILTAK (kombinert):
-- Basert på bransjen, foreslå 2-4 relevante farekilder MED tilhørende tiltak
-- Presenter som nummerert liste, f.eks:
-  "Basert på bransjen deres foreslår jeg disse farekildene:
-   1. Fall fra høyde - Tiltak: Fallsikringsutstyr, opplæring
-   2. Klemskader - Tiltak: Maskinvern, sikkerhetsprosedyrer
-   3. Støy - Tiltak: Hørselsvern, støyreduksjon"
-- Spør ÉN GANG: "Stemmer disse for dere? Eller vil du endre/legge til?"
-- Når brukeren bekrefter (f.eks "1 og 2 er bra", "alle", "ja") → FERDIG med steg 5, gå til STEG 6
-- VIKTIG: Ikke still separate spørsmål om risikoer og tiltak - kombiner dem!
-
-STEG 6 - RUTINER:
-- Foreslå 6-8 relevante rutiner for bransjen som nummerert liste
-- Spør ÉN GANG: "Ønsker du å inkludere disse rutinene i HMS-systemet?"
-- Når brukeren bekrefter → FERDIG med steg 6, gå til STEG 7
-
-STEG 7 - AVSLUTT OG GENERER:
-- Gi en kort oppsummering av hva som blir satt opp
-- Si: "Supert! Jeg setter opp HMS-systemet nå basert på informasjonen du har gitt. Du kan se forslaget i Håndboken om kort tid!"
-- Generer komplett JSON UMIDDELBART
-
-===== SLUTT PÅ SJEKKLISTE =====
+KRITISK - IKKE GJENTA SPØRSMÅL:
+- Les gjennom hele samtalen før du svarer
+- Hvis noe allerede er besvart → IKKE spør igjen
+- Hvis brukeren sier "jeg har svart" → BEKLAGER kort og FORTSETT basert på det du vet
 
 KRITISK - RISIKOPRIORTERING FOR RISIKOBRANSJER:
 For verksted, tømrer, rørlegger, bygg, industri og andre fysiske yrker:
@@ -538,77 +450,172 @@ function extractEmployeeCountFromAssistant(content: string): number | null {
 function buildKnownFactsMessage(messages: ChatMsg[] | undefined): string | null {
   if (!messages?.length) return null;
 
-  // 1) Employee count from Brreg message (only if user later confirms)
-  let lastBrregEmployees: number | null = null;
-  let brregConfirmed = false;
+  const lines: string[] = [];
+  lines.push("===== KONTEKST FRA SAMTALEN =====");
+  lines.push("KRITISK: Bruk denne informasjonen aktivt. ALDRI spør om noe som allerede er besvart!");
+  lines.push("");
+
+  // 1) Extract industry/bransje
+  let confirmedIndustry: string | null = null;
+  const industryKeywords = ["kontor", "bygg", "anlegg", "industri", "produksjon", "frisør", "butikk", "restaurant", "transport", "renhold", "bilpleie", "verksted", "tømrer", "rørlegger", "elektriker", "murer", "maling", "snekker"];
+  
   for (let i = 0; i < messages.length; i++) {
     const msg = messages[i];
-    if (msg.role === "assistant") {
-      const n = extractEmployeeCountFromAssistant(msg.content);
-      if (n !== null) {
-        lastBrregEmployees = n;
-        // Look ahead for a nearby user confirmation (within next 2 user msgs)
-        brregConfirmed = false;
-        let userChecks = 0;
-        for (let j = i + 1; j < messages.length && userChecks < 2; j++) {
-          if (messages[j].role !== "user") continue;
-          userChecks++;
-          if (isAffirmative(messages[j].content)) {
-            brregConfirmed = true;
+    if (msg.role === "user") {
+      const text = msg.content.toLowerCase();
+      // Check for number selection (1-9)
+      const numMatch = text.match(/^[1-9]$/);
+      if (numMatch) {
+        // Look for prior assistant message with industry list
+        for (let j = i - 1; j >= 0; j--) {
+          if (messages[j].role === "assistant" && messages[j].content.includes("bransje")) {
+            const industryMap: Record<string, string> = {
+              '1': 'Kontor/Administrasjon', '2': 'Bygg og anlegg', '3': 'Industri/Produksjon',
+              '4': 'Frisør/Skjønnhetspleie', '5': 'Butikk/Detaljhandel', '6': 'Restaurant/Spisested',
+              '7': 'Transport', '8': 'Renhold', '9': 'Bilpleie'
+            };
+            confirmedIndustry = industryMap[numMatch[0]] || null;
             break;
           }
+        }
+      }
+      // Check for keyword match
+      for (const kw of industryKeywords) {
+        if (text.includes(kw)) {
+          confirmedIndustry = kw;
+          break;
         }
       }
     }
   }
 
-  // 2) Capture latest “goals” user response after the assistant asks for HMS-mål
-  let lastGoalsAnswer: string | null = null;
-  for (let i = 0; i < messages.length - 1; i++) {
-    const a = messages[i];
-    const u = messages[i + 1];
-    if (a.role !== "assistant" || u.role !== "user") continue;
-    const aText = a.content.toLowerCase();
-    if (aText.includes("hms-mål") || aText.includes("hms mål") || aText.includes("målene")) {
-      const candidate = u.content.trim();
-      if (candidate.length >= 3 && !isAffirmative(candidate) && !candidate.toLowerCase().startsWith("nei")) {
-        lastGoalsAnswer = candidate;
+  // 2) Employee count from Brreg message
+  let lastBrregEmployees: number | null = null;
+  let brregConfirmed = false;
+  let companyName: string | null = null;
+  
+  for (let i = 0; i < messages.length; i++) {
+    const msg = messages[i];
+    if (msg.role === "assistant") {
+      // Extract employee count
+      const empMatch = msg.content.match(/\*\*Ansatte:\*\*\s*(\d+)/i);
+      if (empMatch) {
+        lastBrregEmployees = Number(empMatch[1]);
+      }
+      // Extract company name
+      const nameMatch = msg.content.match(/\*\*Firmanavn:\*\*\s*([^\n]+)/i);
+      if (nameMatch) {
+        companyName = nameMatch[1].trim();
+      }
+      // Check for user confirmation
+      if ((empMatch || nameMatch) && i + 1 < messages.length && messages[i + 1].role === "user") {
+        if (isAffirmative(messages[i + 1].content)) {
+          brregConfirmed = true;
+        }
       }
     }
   }
 
-  // 3) Capture latest “risk” user response after the assistant asks about risiko/farekilder
-  let lastRiskAnswer: string | null = null;
+  // 3) Track all user confirmations to proposals
+  let goalsConfirmed = false;
+  let risksConfirmed = false;
+  let routinesConfirmed = false;
+  let confirmedGoals: string[] = [];
+  let confirmedRisks: string[] = [];
+  let confirmedRoutines: string[] = [];
+  
   for (let i = 0; i < messages.length - 1; i++) {
     const a = messages[i];
     const u = messages[i + 1];
     if (a.role !== "assistant" || u.role !== "user") continue;
-    const aText = a.content.toLowerCase();
-    if (aText.includes("risiko") || aText.includes("farekilder") || aText.includes("risikovurder")) {
-      const candidate = u.content.trim();
-      if (candidate.length >= 3 && !isAffirmative(candidate) && !candidate.toLowerCase().startsWith("nei")) {
-        lastRiskAnswer = candidate;
+    
+    const aLower = a.content.toLowerCase();
+    const uLower = u.content.toLowerCase();
+    const userConfirms = isAffirmative(u.content) || uLower.includes("stemmer") || uLower.includes("ok") || uLower.includes("fint") || uLower.includes("bra");
+    
+    // Check for goals confirmation
+    if ((aLower.includes("hms-mål") || aLower.includes("mål:") || aLower.includes("målene")) && userConfirms) {
+      goalsConfirmed = true;
+      // Extract goals from assistant message
+      const goalMatches = a.content.match(/\d+\.\s*([^\n]+)/g);
+      if (goalMatches) {
+        confirmedGoals = goalMatches.map(g => g.replace(/^\d+\.\s*/, '').trim());
+      }
+    }
+    
+    // Check for risks confirmation  
+    if ((aLower.includes("risiko") || aLower.includes("farekild") || aLower.includes("tiltak")) && userConfirms) {
+      risksConfirmed = true;
+      const riskMatches = a.content.match(/\d+\.\s*([^\n→]+)/g);
+      if (riskMatches) {
+        confirmedRisks = riskMatches.map(r => r.replace(/^\d+\.\s*/, '').trim()).slice(0, 5);
+      }
+    }
+    
+    // Check for routines confirmation
+    if ((aLower.includes("rutine") || aLower.includes("rutinene")) && userConfirms) {
+      routinesConfirmed = true;
+      const routineMatches = a.content.match(/\d+\.\s*([^\n(]+)/g);
+      if (routineMatches) {
+        confirmedRoutines = routineMatches.map(r => r.replace(/^\d+\.\s*/, '').trim()).slice(0, 10);
       }
     }
   }
 
-  const lines: string[] = [];
-  lines.push("KJENTE SVAR (fra samtalen så langt) — bruk dette aktivt for å unngå gjentakelser:");
-
+  // Build context summary
+  if (confirmedIndustry) {
+    lines.push(`✅ BRANSJE: ${confirmedIndustry} (BEKREFTET - ikke spør igjen)`);
+  }
+  
+  if (companyName && brregConfirmed) {
+    lines.push(`✅ FIRMA: ${companyName} (BEKREFTET)`);
+  }
+  
   if (lastBrregEmployees !== null && brregConfirmed) {
-    lines.push(`- Antall ansatte: ${lastBrregEmployees} (bekreftet av bruker)`);
+    lines.push(`✅ ANSATTE: ${lastBrregEmployees} (BEKREFTET - bruk for verneombuds-logikk)`);
   }
-  if (lastGoalsAnswer) {
-    lines.push(`- HMS-mål (brukerens siste svar): ${lastGoalsAnswer}`);
+  
+  if (goalsConfirmed) {
+    lines.push(`✅ HMS-MÅL: BEKREFTET - ikke spør igjen!`);
+    if (confirmedGoals.length > 0) {
+      lines.push(`   Bekreftede mål: ${confirmedGoals.slice(0, 3).join(", ")}`);
+    }
   }
-  if (lastRiskAnswer) {
-    lines.push(`- Risiko/farekilder (brukerens siste svar): ${lastRiskAnswer}`);
+  
+  if (risksConfirmed) {
+    lines.push(`✅ RISIKOER/TILTAK: BEKREFTET - ikke spør igjen!`);
+    if (confirmedRisks.length > 0) {
+      lines.push(`   Bekreftede risikoer: ${confirmedRisks.slice(0, 3).join(", ")}`);
+    }
+  }
+  
+  if (routinesConfirmed) {
+    lines.push(`✅ RUTINER: BEKREFTET - gå til avslutning og generer JSON!`);
+    if (confirmedRoutines.length > 0) {
+      lines.push(`   Bekreftede rutiner: ${confirmedRoutines.slice(0, 5).join(", ")}`);
+    }
   }
 
-  // Even if we didn't extract specifics, still enforce the core behavior.
-  lines.push(
-    "- VIKTIG: Hvis mål/risiko allerede er besvart i historikken, IKKE spør om det på nytt. Oppsummer heller kort hva som er notert, og gå videre."
-  );
+  // Determine current step
+  lines.push("");
+  lines.push("===== NESTE STEG =====");
+  
+  if (!confirmedIndustry) {
+    lines.push("→ STEG 1: Trenger bransjevalg");
+  } else if (!goalsConfirmed && !risksConfirmed) {
+    lines.push("→ STEG 2: GENERER PROAKTIVT forslag til mål + risikoer + tiltak basert på bransjen");
+    lines.push("  VIKTIG: Ikke spør 'hva ønsker du?' - FORESLÅ konkrete verdier!");
+  } else if (!routinesConfirmed) {
+    lines.push("→ STEG 3: GENERER PROAKTIVT forslag til rutiner basert på bransjen");
+  } else {
+    lines.push("→ STEG 4: ALT ER BEKREFTET - generer JSON NÅ!");
+  }
+  
+  lines.push("");
+  lines.push("KRITISK PÅMINNELSE:");
+  lines.push("- Hvis bruker sier 'ja', 'ok', 'stemmer', 'fint', 'bra', '1 og 2' osv → GODTA og GÅ VIDERE!");
+  lines.push("- ALDRI still samme spørsmål to ganger!");
+  lines.push("- Vær PROAKTIV - foreslå konkrete verdier basert på bransjen!");
 
   return lines.join("\n");
 }
