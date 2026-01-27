@@ -2305,9 +2305,9 @@ const Handbook = () => {
           <div className="bg-card rounded-xl border border-border shadow-card overflow-hidden">
             <div className="divide-y divide-border">
               {handbookSections.map((section, index) => {
-                const statusInfo = statusConfig[section.status as keyof typeof statusConfig];
-                const StatusIcon = statusInfo.icon;
-                const SectionIcon = section.icon;
+                const statusInfo = statusConfig[section.status as keyof typeof statusConfig] || statusConfig.incomplete;
+                const StatusIcon = statusInfo?.icon || AlertTriangle;
+                const SectionIcon = section.icon || FileText;
                 const isExpanded = expandedSection === section.id;
 
                 return (
