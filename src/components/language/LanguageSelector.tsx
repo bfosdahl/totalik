@@ -34,7 +34,7 @@ export function LanguageSelector({ variant = "icon", className }: LanguageSelect
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-48 z-50 bg-popover border border-border shadow-lg">
         {(Object.keys(LANGUAGE_CONFIG) as SupportedLanguage[]).map((lang) => {
           const config = LANGUAGE_CONFIG[lang];
           const isActive = language === lang;
