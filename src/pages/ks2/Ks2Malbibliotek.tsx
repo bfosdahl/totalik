@@ -434,69 +434,69 @@ export default function Ks2Malbibliotek() {
         />
       </div>
 
-      {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <ClipboardList className="h-5 w-5 text-primary" />
+      {/* Stats - horizontal scroll on mobile */}
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 sm:overflow-visible">
+        <Card className="min-w-[140px] sm:min-w-0 shrink-0">
+          <CardContent className="pt-4 pb-4 sm:pt-6">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10">
+                <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{projectChecklists.length}</p>
-                <p className="text-sm text-muted-foreground">Sjekkliste-maler</p>
+                <p className="text-xl sm:text-2xl font-bold">{projectChecklists.length}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Sjekklister</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-500/10">
-                <BookOpen className="h-5 w-5 text-purple-500" />
+        <Card className="min-w-[140px] sm:min-w-0 shrink-0">
+          <CardContent className="pt-4 pb-4 sm:pt-6">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-purple-500/10">
+                <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{projectRoutines.length}</p>
-                <p className="text-sm text-muted-foreground">Rutine-maler</p>
+                <p className="text-xl sm:text-2xl font-bold">{projectRoutines.length}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Rutiner</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-500/10">
-                <PenLine className="h-5 w-5 text-green-500" />
+        <Card className="min-w-[140px] sm:min-w-0 shrink-0">
+          <CardContent className="pt-4 pb-4 sm:pt-6">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-green-500/10">
+                <PenLine className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{customRoutines.length}</p>
-                <p className="text-sm text-muted-foreground">Egne rutiner</p>
+                <p className="text-xl sm:text-2xl font-bold">{customRoutines.length}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Egne rut.</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-cyan-500/10">
-                <ClipboardList className="h-5 w-5 text-cyan-500" />
+        <Card className="min-w-[140px] sm:min-w-0 shrink-0">
+          <CardContent className="pt-4 pb-4 sm:pt-6">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-cyan-500/10">
+                <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5 text-cyan-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{customChecklistTemplates.length}</p>
-                <p className="text-sm text-muted-foreground">Egne sjekklister</p>
+                <p className="text-xl sm:text-2xl font-bold">{customChecklistTemplates.length}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Egne sjekk.</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-500/10">
-                <FolderOpen className="h-5 w-5 text-amber-500" />
+        <Card className="min-w-[140px] sm:min-w-0 shrink-0">
+          <CardContent className="pt-4 pb-4 sm:pt-6">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-amber-500/10">
+                <FolderOpen className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{projectDocuments.length}</p>
-                <p className="text-sm text-muted-foreground">Dokumenter</p>
+                <p className="text-xl sm:text-2xl font-bold">{projectDocuments.length}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Dokumenter</p>
               </div>
             </div>
           </CardContent>
@@ -532,11 +532,12 @@ export default function Ks2Malbibliotek() {
 
         {/* Checklist Templates Tab */}
         <TabsContent value="checklists" className="space-y-4">
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2">
+          {/* Category Filter - horizontal scroll on mobile */}
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
             <Button
               variant={selectedChecklistCategory === "all" ? "default" : "outline"}
               size="sm"
+              className="shrink-0"
               onClick={() => setSelectedChecklistCategory("all")}
             >
               Alle
@@ -546,6 +547,7 @@ export default function Ks2Malbibliotek() {
                 key={cat}
                 variant={selectedChecklistCategory === cat ? "default" : "outline"}
                 size="sm"
+                className="shrink-0 whitespace-nowrap"
                 onClick={() => setSelectedChecklistCategory(cat)}
               >
                 {CHECKLIST_CATEGORIES[cat] || cat}
@@ -578,43 +580,42 @@ export default function Ks2Malbibliotek() {
                         <Check className="h-3 w-3" />
                       </div>
                     )}
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-primary/10">
-                            <ClipboardList className="h-5 w-5 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <CardTitle className="text-base truncate">{template.template_name}</CardTitle>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              <Badge variant="secondary">
-                                {CHECKLIST_CATEGORIES[template.category] || template.category}
+                    <CardHeader className="pb-2 sm:pb-3">
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 shrink-0">
+                          <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-sm sm:text-base leading-tight">{template.template_name}</CardTitle>
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            <Badge variant="secondary" className="text-xs">
+                              {CHECKLIST_CATEGORIES[template.category] || template.category}
+                            </Badge>
+                            {template.is_mandatory && (
+                              <Badge variant="destructive" className="gap-0.5 text-xs">
+                                <AlertCircle className="h-2.5 w-2.5" />
+                                <span className="hidden xs:inline">Obligatorisk</span>
+                                <span className="xs:hidden">Obl.</span>
                               </Badge>
-                              {template.is_mandatory && (
-                                <Badge variant="destructive" className="gap-1">
-                                  <AlertCircle className="h-3 w-3" />
-                                  Obligatorisk
-                                </Badge>
-                              )}
-                              {template.is_locked && (
-                                <Badge variant="outline" className="gap-1">
-                                  <Lock className="h-3 w-3" />
-                                  Låst
-                                </Badge>
-                              )}
-                            </div>
+                            )}
+                            {template.is_locked && (
+                              <Badge variant="outline" className="gap-0.5 text-xs">
+                                <Lock className="h-2.5 w-2.5" />
+                                Låst
+                              </Badge>
+                            )}
                           </div>
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-0">
                       {template.description && (
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-2">
                           {template.description}
                         </p>
                       )}
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-col gap-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-col gap-0.5">
                           <span className="text-xs text-muted-foreground">
                             {template.checkpoints?.length || 0} sjekkpunkter
                           </span>
@@ -624,21 +625,21 @@ export default function Ks2Malbibliotek() {
                             </span>
                           )}
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1.5 sm:gap-2">
                           <Button 
                             variant="outline" 
                             size="sm" 
-                            className="gap-1"
+                            className="gap-1 h-8 px-2 sm:px-3"
                             onClick={() => setSelectedChecklist(template)}
                           >
                             <Eye className="h-3 w-3" />
-                            Vis
+                            <span className="hidden sm:inline">Vis</span>
                           </Button>
                           {isAdded ? (
                             <Button 
                               variant="outline" 
                               size="sm"
-                              className="gap-1 text-destructive hover:text-destructive"
+                              className="gap-1 text-destructive hover:text-destructive h-8 px-2"
                               onClick={() => projectTemplate && removeTemplate(projectTemplate.id)}
                               disabled={isSaving}
                             >
@@ -647,12 +648,12 @@ export default function Ks2Malbibliotek() {
                           ) : (
                             <Button 
                               size="sm" 
-                              className="gap-1"
+                              className="gap-1 h-8 px-2 sm:px-3"
                               onClick={() => addChecklistTemplate(template.id)}
                               disabled={isSaving}
                             >
                               <Plus className="h-3 w-3" />
-                              Legg til
+                              <span className="hidden sm:inline">Legg til</span>
                             </Button>
                           )}
                         </div>
