@@ -247,11 +247,11 @@ export default function Auth() {
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-primary mb-4">
-            <Shield className="w-8 h-8 text-primary-foreground" />
-          </div>
-          <h1 className="text-2xl font-bold text-white">Total-IK</h1>
-          <p className="text-white/60 text-sm mt-1">HMS · BYGG · MAT</p>
+          <img 
+            src="/total-ik-logo.png" 
+            alt="Total-IK" 
+            className="h-16 mx-auto"
+          />
         </div>
 
         {/* Auth card */}
