@@ -172,17 +172,17 @@ export default function Ks2ProjectDetail() {
 
       {/* Main Content */}
       <div className="lg:pl-[260px] transition-all duration-300">
-        {/* Top Banner */}
-        <div className="border-b bg-card px-6 py-4 pl-16 lg:pl-6">
+        {/* Top Banner - improved mobile spacing */}
+        <div className="border-b bg-card px-4 py-3 pl-14 lg:px-6 lg:py-4 lg:pl-6">
           <p className="text-xs text-muted-foreground font-medium">{project.project_number}</p>
-          <h1 className="text-xl font-semibold">{project.project_name}</h1>
+          <h1 className="text-lg lg:text-xl font-semibold truncate">{project.project_name}</h1>
         </div>
 
         {/* Project Status Bar */}
         <Ks2ProjectStatusBar />
 
-        {/* Page Content */}
-        <main className="p-4 md:p-6">
+        {/* Page Content - extra bottom padding for mobile FAB */}
+        <main className="p-4 md:p-6 pb-24 lg:pb-6">
           {renderContent()}
         </main>
       </div>

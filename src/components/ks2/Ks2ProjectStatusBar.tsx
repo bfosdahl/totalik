@@ -48,59 +48,61 @@ export function Ks2ProjectStatusBar({ className }: Ks2ProjectStatusBarProps) {
 
   return (
     <div className={cn(
-      "bg-card border-b px-4 py-2 flex flex-wrap items-center gap-4 text-sm",
+      "bg-card border-b px-3 md:px-4 py-2 overflow-x-auto",
       className
     )}>
-      {/* Progress */}
-      <div className="flex items-center gap-3 flex-1 min-w-[200px]">
-        <TrendingUp className="h-4 w-4 text-muted-foreground shrink-0" />
-        <div className="flex-1 max-w-[200px]">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-muted-foreground">Fremdrift</span>
-            <span className="text-xs font-medium">{statusData.progressPercent}%</span>
+      <div className="flex items-center gap-3 md:gap-4 text-sm min-w-max">
+        {/* Progress */}
+        <div className="flex items-center gap-2 md:gap-3">
+          <TrendingUp className="h-4 w-4 text-muted-foreground shrink-0" />
+          <div className="w-24 md:w-40">
+            <div className="flex items-center justify-between mb-0.5">
+              <span className="text-xs text-muted-foreground hidden md:inline">Fremdrift</span>
+              <span className="text-xs font-medium">{statusData.progressPercent}%</span>
+            </div>
+            <Progress 
+              value={statusData.progressPercent} 
+              className="h-1.5"
+            />
           </div>
-          <Progress 
-            value={statusData.progressPercent} 
-            className="h-1.5"
-          />
         </div>
-      </div>
 
-      {/* Stats badges */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <button
-          onClick={() => navigate(`/ks/project/${projectId}/egenkontroller`)}
-          className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-500/10 hover:bg-green-500/20 transition-colors"
-        >
-          <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
-          <span className="text-xs font-medium text-green-700 dark:text-green-400">
-            {statusData.completed}/{statusData.total}
-          </span>
-        </button>
-
-        {statusData.overdueChecklists > 0 && (
+        {/* Stats badges */}
+        <div className="flex items-center gap-2">
           <button
             onClick={() => navigate(`/ks/project/${projectId}/egenkontroller`)}
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-yellow-500/10 hover:bg-yellow-500/20 transition-colors"
+            className="flex items-center gap-1 md:gap-1.5 px-2 py-1 rounded-md bg-green-500/10 hover:bg-green-500/20 transition-colors"
           >
-            <Clock className="h-3.5 w-3.5 text-yellow-600" />
-            <span className="text-xs font-medium text-yellow-700 dark:text-yellow-400">
-              {statusData.overdueChecklists} forfalt
+            <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+            <span className="text-xs font-medium text-green-700 dark:text-green-400">
+              {statusData.completed}/{statusData.total}
             </span>
           </button>
-        )}
 
-        {statusData.openAvvik > 0 && (
-          <button
-            onClick={() => navigate(`/ks/project/${projectId}/avvik`)}
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-500/10 hover:bg-red-500/20 transition-colors"
-          >
-            <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
-            <span className="text-xs font-medium text-red-700 dark:text-red-400">
-              {statusData.openAvvik} åpne avvik
-            </span>
-          </button>
-        )}
+          {statusData.overdueChecklists > 0 && (
+            <button
+              onClick={() => navigate(`/ks/project/${projectId}/egenkontroller`)}
+              className="flex items-center gap-1 md:gap-1.5 px-2 py-1 rounded-md bg-yellow-500/10 hover:bg-yellow-500/20 transition-colors"
+            >
+              <Clock className="h-3.5 w-3.5 text-yellow-600" />
+              <span className="text-xs font-medium text-yellow-700 dark:text-yellow-400">
+                {statusData.overdueChecklists} forfalt
+              </span>
+            </button>
+          )}
+
+          {statusData.openAvvik > 0 && (
+            <button
+              onClick={() => navigate(`/ks/project/${projectId}/avvik`)}
+              className="flex items-center gap-1 md:gap-1.5 px-2 py-1 rounded-md bg-red-500/10 hover:bg-red-500/20 transition-colors"
+            >
+              <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
+              <span className="text-xs font-medium text-red-700 dark:text-red-400">
+                {statusData.openAvvik} avvik
+              </span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
