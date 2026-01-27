@@ -15,6 +15,7 @@ import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { Badge } from "@/components/ui/badge";
 import { Department } from "@/hooks/useDepartments";
 import { LanguageSelector } from "@/components/language/LanguageSelector";
+import { useTranslate } from "@/hooks/useTranslate";
 
 interface AppHeaderProps {
   onMenuClick?: () => void;
@@ -24,6 +25,7 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
   const { user, profile, company, signOut, isSystemAdmin, isCompanyAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslate();
   const {
     selectedDepartment,
     userDepartments,
@@ -54,13 +56,13 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
 
   const displayName = profile?.first_name 
     ? `${profile.first_name} ${profile.last_name || ""}`.trim()
-    : user?.email || "Bruker";
+    : user?.email || t("auth.user");
 
   const roleLabel = isSystemAdmin 
-    ? "System Admin" 
+    ? t("auth.systemAdmin")
     : isCompanyAdmin 
-    ? "Bedriftsadmin" 
-    : "Bruker";
+    ? t("auth.companyAdmin")
+    : t("auth.user");
 
   // Show department selector if departments are enabled and user has multiple departments (or is admin)
   const showDepartmentSelector = hasDepartments && (userDepartments.length > 1 || canViewAllDepartments);
@@ -87,7 +89,7 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
               <Button variant="outline" className="flex items-center gap-2 max-w-[220px]">
                 <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <span className="truncate text-sm hidden sm:inline">
-                  {selectedDepartment?.name ?? company?.name ?? "Alle avdelinger"}
+                  {selectedDepartment?.name ?? company?.name ?? t("header.allDepartments")}
                 </span>
                 <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
               </Button>
@@ -97,17 +99,17 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
               {canViewAllDepartments && (
                 <>
                   <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
-                    Hovedbedrift
+                    {t("header.mainCompany")}
                   </DropdownMenuLabel>
                   <DropdownMenuItem
                     onClick={handleSelectMainCompany}
                     className="flex items-center gap-2"
                   >
                     <Home className="h-4 w-4 text-primary" />
-                    <span className="font-medium">{company?.name ?? "Bedrift"}</span>
+                    <span className="font-medium">{company?.name ?? t("settings.company")}</span>
                     {!selectedDepartment && (
                       <Badge variant="secondary" className="ml-auto text-xs">
-                        Aktiv
+                        {t("header.active")}
                       </Badge>
                     )}
                   </DropdownMenuItem>
@@ -119,7 +121,7 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
               {userDepartments.length > 0 && (
                 <>
                   <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
-                    Avdelinger
+                    {t("header.departments")}
                   </DropdownMenuLabel>
                   {userDepartments.map((dept) => (
                     <DropdownMenuItem
@@ -132,7 +134,7 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
                         <span className="truncate">{dept.name}</span>
                         {selectedDepartment?.id === dept.id && (
                           <Badge variant="secondary" className="ml-auto text-xs">
-                            Aktiv
+                            {t("header.active")}
                           </Badge>
                         )}
                       </div>
@@ -186,16 +188,16 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate("/settings?tab=security")}>
               <User className="w-4 h-4 mr-2" />
-              Min profil
+              {t("auth.myProfile")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate("/install")}>
               <Download className="w-4 h-4 mr-2" />
-              Last ned app
+              {t("auth.downloadApp")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
               <LogOut className="w-4 h-4 mr-2" />
-              Logg ut
+              {t("auth.logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

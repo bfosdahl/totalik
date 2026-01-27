@@ -10,18 +10,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { LanguageSelector } from "@/components/language/LanguageSelector";
-
-const loginSchema = z.object({
-  email: z.string().email("Ugyldig e-postadresse"),
-  password: z.string().min(6, "Passordet må være minst 6 tegn"),
-});
-
-const signupSchema = loginSchema.extend({
-  firstName: z.string().min(1, "Fornavn er påkrevd").max(50),
-  lastName: z.string().min(1, "Etternavn er påkrevd").max(50),
-  companyName: z.string().min(2, "Bedriftsnavn må være minst 2 tegn").max(100),
-  orgNumber: z.string().regex(/^\d{9}$/, "Org.nr må være 9 siffer"),
-});
+import { useTranslate } from "@/hooks/useTranslate";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -36,6 +25,20 @@ export default function Auth() {
 
   const { signIn, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslate();
+
+  // Dynamic validation schemas with translations
+  const loginSchema = z.object({
+    email: z.string().email(t("auth.emailInvalid")),
+    password: z.string().min(6, t("auth.passwordMinLength")),
+  });
+
+  const signupSchema = loginSchema.extend({
+    firstName: z.string().min(1, t("auth.firstNameRequired") || "Fornavn er påkrevd").max(50),
+    lastName: z.string().min(1, t("auth.lastNameRequired") || "Etternavn er påkrevd").max(50),
+    companyName: z.string().min(2, t("auth.companyNameMinLength") || "Bedriftsnavn må være minst 2 tegn").max(100),
+    orgNumber: z.string().regex(/^\d{9}$/, t("auth.orgNumberFormat") || "Org.nr må være 9 siffer"),
+  });
 
   useEffect(() => {
     // Avoid redirect loops during the brief period where auth is settled but
@@ -46,9 +49,9 @@ export default function Auth() {
   }, [user, authLoading, navigate]);
 
   const handleForgotPassword = async () => {
-    const validation = z.string().email("Skriv inn en gyldig e-post").safeParse(email);
+    const validation = z.string().email(t("auth.emailInvalid")).safeParse(email);
     if (!validation.success) {
-      toast.error("Skriv inn e-postadressen din først");
+      toast.error(t("auth.enterEmailFirst") || "Skriv inn e-postadressen din først");
       return;
     }
 
@@ -62,7 +65,7 @@ export default function Auth() {
       return;
     }
 
-    toast.success("Sjekk e-posten din for lenke til å sette nytt passord");
+    toast.success(t("auth.resetEmailSent") || "Sjekk e-posten din for lenke til å sette nytt passord");
   };
 
   const handleSignUp = async () => {
@@ -82,7 +85,7 @@ export default function Auth() {
     });
 
     if (authError) throw authError;
-    if (!authData.user) throw new Error("Bruker ble ikke opprettet");
+    if (!authData.user) throw new Error(t("auth.userNotCreated") || "Bruker ble ikke opprettet");
 
     // Ensure we have an active session (session can be null if email confirmation is required)
     const { data: sessionData } = await supabase.auth.getSession();
@@ -93,7 +96,7 @@ export default function Auth() {
       });
       if (signInError) {
         throw new Error(
-          "Konto opprettet, men du må bekrefte e-post/eller logge inn før bedrift kan opprettes."
+          t("auth.accountCreatedNeedConfirm") || "Konto opprettet, men du må bekrefte e-post/eller logge inn før bedrift kan opprettes."
         );
       }
     }
@@ -114,7 +117,7 @@ export default function Auth() {
     if (companyError || !newCompany) {
       console.error("Error creating company:", companyError);
       throw new Error(
-        companyError?.message || "Kunne ikke opprette bedrift (mangler tilgang/innlogging)"
+        companyError?.message || t("auth.companyCreateError") || "Kunne ikke opprette bedrift (mangler tilgang/innlogging)"
       );
     }
 
@@ -200,7 +203,7 @@ export default function Auth() {
         if (error) {
           toast.error(
             error.message === "Invalid login credentials"
-              ? "Feil e-post eller passord"
+              ? t("auth.invalidCredentials")
               : error.message
           );
         }
@@ -219,14 +222,14 @@ export default function Auth() {
         }
 
         await handleSignUp();
-        toast.success("Konto og bedrift opprettet! Velkommen!");
+        toast.success(t("auth.accountCreatedSuccess") || "Konto og bedrift opprettet! Velkommen!");
         navigate("/setup/ai");
       }
     } catch (error: any) {
       if (error.message?.includes("already registered")) {
-        toast.error("Denne e-postadressen er allerede registrert");
+        toast.error(t("auth.emailAlreadyRegistered") || "Denne e-postadressen er allerede registrert");
       } else {
-        toast.error(error.message || "En feil oppstod");
+        toast.error(error.message || t("errors.somethingWentWrong"));
       }
     } finally {
       setIsLoading(false);
@@ -256,9 +259,9 @@ export default function Auth() {
 
         {/* Auth card */}
         <div className="bg-card rounded-2xl shadow-xl p-8">
-          <h1 className="sr-only">Innlogging</h1>
+          <h1 className="sr-only">{t("auth.login")}</h1>
           <h2 className="text-xl font-semibold text-center mb-6">
-            {isLogin ? "Logg inn" : "Opprett bedriftskonto"}
+            {isLogin ? t("auth.login") : t("auth.createCompanyAccount") || "Opprett bedriftskonto"}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -266,7 +269,7 @@ export default function Auth() {
               <>
                 {/* Company name - first for new signups */}
                 <div className="space-y-2">
-                  <Label htmlFor="companyName">Bedriftsnavn</Label>
+                  <Label htmlFor="companyName">{t("auth.companyName") || "Bedriftsnavn"}</Label>
                   <div className="relative">
                     <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -274,7 +277,7 @@ export default function Auth() {
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
                       className="pl-10"
-                      placeholder="Din bedrift AS"
+                      placeholder={t("auth.companyNamePlaceholder") || "Din bedrift AS"}
                     />
                   </div>
                   {errors.companyName && (
@@ -284,7 +287,7 @@ export default function Auth() {
 
                 {/* Organization number */}
                 <div className="space-y-2">
-                  <Label htmlFor="orgNumber">Organisasjonsnummer</Label>
+                  <Label htmlFor="orgNumber">{t("auth.orgNumber") || "Organisasjonsnummer"}</Label>
                   <div className="relative">
                     <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -303,7 +306,7 @@ export default function Auth() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">Fornavn</Label>
+                    <Label htmlFor="firstName">{t("employees.firstName")}</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
@@ -319,7 +322,7 @@ export default function Auth() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Etternavn</Label>
+                    <Label htmlFor="lastName">{t("employees.lastName")}</Label>
                     <Input
                       id="lastName"
                       value={lastName}
@@ -335,7 +338,7 @@ export default function Auth() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">E-post</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -351,7 +354,7 @@ export default function Auth() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Passord</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -372,12 +375,12 @@ export default function Auth() {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {isLogin ? "Logger inn..." : "Oppretter bedrift..."}
+                  {isLogin ? t("auth.loggingIn") || "Logger inn..." : t("auth.creatingAccount") || "Oppretter bedrift..."}
                 </>
               ) : isLogin ? (
-                "Logg inn"
+                t("auth.login")
               ) : (
-                "Opprett bedriftskonto"
+                t("auth.createCompanyAccount") || "Opprett bedriftskonto"
               )}
             </Button>
           </form>
@@ -389,7 +392,7 @@ export default function Auth() {
                 onClick={handleForgotPassword}
                 className="text-sm text-muted-foreground hover:text-primary hover:underline block w-full"
               >
-                Glemt passord?
+                {t("auth.forgotPassword")}
               </button>
             )}
             <button
@@ -400,7 +403,7 @@ export default function Auth() {
               }}
               className="text-sm text-primary hover:underline"
             >
-              {isLogin ? "Har du ikke konto? Registrer deg" : "Har du allerede konto? Logg inn"}
+              {isLogin ? t("auth.dontHaveAccount") + " " + t("auth.signUp") : t("auth.alreadyHaveAccount") + " " + t("auth.login")}
             </button>
           </div>
         </div>
