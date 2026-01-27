@@ -24,10 +24,11 @@ export function LanguageSelector({ variant = "icon", className }: LanguageSelect
         <Button
           variant="ghost"
           size={variant === "icon" ? "icon" : "sm"}
-          className={cn("gap-2", className)}
+          className={cn("gap-2 min-w-[40px]", className)}
           disabled={isChanging}
         >
-          <span className="text-lg">{currentLang.flag}</span>
+          <Globe className="h-4 w-4 shrink-0" />
+          <span className="text-base leading-none">{currentLang.flag}</span>
           {variant === "full" && (
             <span className="hidden sm:inline text-sm">{currentLang.nativeName}</span>
           )}
