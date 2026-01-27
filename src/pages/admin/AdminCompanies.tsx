@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
@@ -17,6 +17,8 @@ import {
   Upload,
   RefreshCw,
   Building,
+  Sparkles,
+  X,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -45,6 +47,7 @@ import { CompanyModulesDialog } from "@/components/admin/CompanyModulesDialog";
 import { BulkCompanyImportDialog } from "@/components/admin/BulkCompanyImportDialog";
 import { CompanyDepartmentsDialog } from "@/components/admin/CompanyDepartmentsDialog";
 import { applyDefaultHmsSetup } from "@/lib/applyDefaultHmsSetup";
+import { applyImportedHmsSetup, getImportedHmsData, clearImportedHmsData, type ImportedHmsData } from "@/lib/applyImportedHmsSetup";
 import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
 import { SelectableCard } from "@/components/ui/selectable-card";
 const companySchema = z.object({
@@ -113,9 +116,34 @@ export default function AdminCompanies() {
   
   // Bulk import dialog state
   const [bulkImportOpen, setBulkImportOpen] = useState(false);
+  
+  // PDF import data state
+  const [importedData, setImportedData] = useState<ImportedHmsData | null>(null);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Check for imported PDF data on mount
+  useEffect(() => {
+    const data = getImportedHmsData();
+    if (data) {
+      setImportedData(data);
+      // Pre-fill form with imported data
+      setFormData(prev => ({
+        ...prev,
+        name: data.firmanavn || prev.name,
+        org_number: data.organisasjonsnummer || prev.org_number,
+        email: data.epost || prev.email,
+        phone: data.telefon || prev.phone,
+      }));
+      // Auto-open dialog with prefilled data
+      setIsDialogOpen(true);
+      toast({
+        title: "PDF-data klar",
+        description: `Bedriftsinfo fra "${data.firmanavn}" er forhåndsutfylt. Verifiser og opprett bedriften.`,
+      });
+    }
+  }, []);
 
   const { data: companies, isLoading } = useQuery({
     queryKey: ["admin-companies"],
@@ -182,17 +210,32 @@ export default function AdminCompanies() {
         );
       }
       
-      // HMS default setup
+      // HMS setup - use imported data if available, otherwise use defaults
       if (createdModules.includes("IK_HMS")) {
-        postSetupPromises.push(
-          applyDefaultHmsSetup(newCompany.id)
-            .then((result) => {
-              if (!result.success) {
-                console.error("Error applying default HMS setup:", result.error);
-              }
-            })
-            .catch((err) => console.error("Error in HMS setup:", err))
-        );
+        const currentImportedData = getImportedHmsData();
+        if (currentImportedData) {
+          console.log('[AdminCompanies] Using imported PDF data for HMS setup');
+          postSetupPromises.push(
+            applyImportedHmsSetup(newCompany.id, currentImportedData)
+              .then((result) => {
+                if (!result.success) {
+                  console.error("Error applying imported HMS setup:", result.error);
+                }
+              })
+              .catch((err) => console.error("Error in imported HMS setup:", err))
+          );
+        } else {
+          console.log('[AdminCompanies] Using default HMS setup');
+          postSetupPromises.push(
+            applyDefaultHmsSetup(newCompany.id)
+              .then((result) => {
+                if (!result.success) {
+                  console.error("Error applying default HMS setup:", result.error);
+                }
+              })
+              .catch((err) => console.error("Error in HMS setup:", err))
+          );
+        }
       }
       
       // Wait for all post-setup tasks to complete (but they won't throw)
@@ -374,6 +417,9 @@ export default function AdminCompanies() {
     setInviteAdmin(false);
     setAdminData({ email: "", firstName: "", lastName: "" });
     setSelectedModules(["IK_HMS"]);
+    // Clear imported data when form is reset
+    clearImportedHmsData();
+    setImportedData(null);
   };
   
   const toggleModuleSelection = (moduleType: string) => {
@@ -503,6 +549,33 @@ export default function AdminCompanies() {
                   {editingCompany ? "Rediger bedrift" : "Opprett ny bedrift"}
                 </DialogTitle>
               </DialogHeader>
+              
+              {/* PDF Import indicator */}
+              {!editingCompany && importedData && (
+                <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-lg text-sm">
+                  <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <span className="font-medium text-primary">PDF-data forhåndsutfylt</span>
+                    <span className="text-muted-foreground ml-1">
+                      ({importedData.farekilder?.length || 0} farekilder, {importedData.hmsmal?.length || 0} mål)
+                    </span>
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-6 w-6 p-0"
+                    onClick={() => {
+                      clearImportedHmsData();
+                      setImportedData(null);
+                      toast({ title: "PDF-data fjernet", description: "Standardoppsett vil bli brukt." });
+                    }}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+              
               <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
                 <div className="flex-1 overflow-y-auto space-y-4 pr-2">
                 <div className="grid grid-cols-2 gap-4">

@@ -23,12 +23,16 @@ import {
   ClipboardList,
   Sparkles,
   ArrowRight,
-  RotateCcw
+  RotateCcw,
+  Building2 as Building2Icon,
+  Loader2 as Loader2Creating
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { applyImportedHmsSetup, type ImportedHmsData } from "@/lib/applyImportedHmsSetup";
+import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
 
 interface ExtractedData {
   firmanavn: string | null;
@@ -61,6 +65,7 @@ export default function AdminCustomerImport() {
   const [file, setFile] = useState<File | null>(null);
   const [textContent, setTextContent] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isCreatingCompany, setIsCreatingCompany] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -174,6 +179,71 @@ export default function AdminCustomerImport() {
     sessionStorage.setItem('customer-import-data', JSON.stringify(extractedData));
     toast.success("Data lagret. Gå til bedriftsopprettelse for å fortsette.");
     navigate('/admin/companies');
+  };
+
+  // Direct company creation without going to companies page
+  const handleDirectCreate = async () => {
+    if (!extractedData) return;
+    
+    setIsCreatingCompany(true);
+    
+    try {
+      // 1. Create the company
+      const { data: newCompany, error: companyError } = await supabase
+        .from("companies")
+        .insert({
+          name: extractedData.firmanavn || "Ny bedrift",
+          org_number: extractedData.organisasjonsnummer || null,
+          email: extractedData.epost || null,
+          phone: extractedData.telefon || null,
+        })
+        .select()
+        .single();
+      
+      if (companyError) throw companyError;
+      
+      // 2. Create IK_HMS module
+      const { error: moduleError } = await supabase
+        .from("company_modules")
+        .insert({
+          company_id: newCompany.id,
+          module_type: "IK_HMS",
+          is_active: true,
+          settings: getModuleDefaultSettings("IK_HMS"),
+        });
+      
+      if (moduleError) {
+        console.error("Error creating module:", moduleError);
+      }
+      
+      // 3. Apply the imported HMS setup
+      const result = await applyImportedHmsSetup(newCompany.id, extractedData as ImportedHmsData);
+      
+      if (!result.success) {
+        console.error("Error applying imported setup:", result.error);
+      }
+      
+      // 4. Sync to kurs system
+      try {
+        await supabase.functions.invoke("sync-to-kurs", {
+          body: { company_id: newCompany.id },
+        });
+      } catch (syncErr) {
+        console.error("Sync error:", syncErr);
+      }
+      
+      toast.success(`Bedrift "${newCompany.name}" opprettet med HMS-oppsett fra PDF!`);
+      
+      // Clear data and navigate
+      sessionStorage.removeItem('customer-import-data');
+      navigate('/admin/companies');
+      
+    } catch (err) {
+      console.error("Error creating company:", err);
+      toast.error(err instanceof Error ? err.message : "Kunne ikke opprette bedrift");
+    } finally {
+      setIsCreatingCompany(false);
+    }
   };
 
   if (!isSystemAdmin) {
@@ -509,11 +579,33 @@ export default function AdminCustomerImport() {
                     </div>
                   )}
 
-                  {/* Action Button */}
-                  <div className="pt-4">
-                    <Button onClick={handleCreateCompany} className="w-full">
+                  {/* Action Buttons */}
+                  <div className="pt-4 space-y-2">
+                    <Button 
+                      onClick={handleDirectCreate} 
+                      className="w-full"
+                      disabled={isCreatingCompany}
+                    >
+                      {isCreatingCompany ? (
+                        <>
+                          <Loader2Creating className="h-4 w-4 mr-2 animate-spin" />
+                          Oppretter bedrift...
+                        </>
+                      ) : (
+                        <>
+                          <Building2Icon className="h-4 w-4 mr-2" />
+                          Opprett bedrift direkte
+                        </>
+                      )}
+                    </Button>
+                    <Button 
+                      onClick={handleCreateCompany} 
+                      variant="outline"
+                      className="w-full"
+                      disabled={isCreatingCompany}
+                    >
                       <ArrowRight className="h-4 w-4 mr-2" />
-                      Fortsett til bedriftsopprettelse
+                      Forhåndsutfyll og rediger først
                     </Button>
                   </div>
                 </div>
