@@ -109,6 +109,18 @@ function getStorageKey(companyId: string, departmentId?: string): string {
     : `${CHAT_STATE_KEY}-${companyId}`;
 }
 
+// Track progress through the setup flow
+interface SetupProgress {
+  brregConfirmed: boolean;
+  industrySelected: boolean;
+  employeeCountConfirmed: boolean;
+  declarationSigned: boolean;
+  verneombudHandled: boolean;
+  goalsConfirmed: boolean;
+  risksConfirmed: boolean;
+  routinesConfirmed: boolean;
+}
+
 interface ChatState {
   messages: Message[];
   pendingBrregInfo: BrregInfo | null;
@@ -118,6 +130,7 @@ interface ChatState {
   selectedIndustry: string | null;
   lastUserMessage?: string;
   wasStreaming?: boolean;
+  progress?: SetupProgress;
 }
 
 function loadChatState(companyId: string, departmentId?: string): ChatState | null {
@@ -202,11 +215,11 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
     });
   }, [messages, pendingBrregInfo, awaitingIndustrySelection, confirmedEmployeeCount, awaitingEmployeeCount, selectedIndustry, lastUserMessage, companyId, departmentId]);
 
-  // Handle visibility change (tab switching)
+  // Handle visibility change (tab switching) - IMPROVED: Don't abort unless actively streaming
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden && isStreamingRef.current) {
-        // User switched away while streaming - save state and abort
+      // Always save state when tab becomes hidden (regardless of streaming)
+      if (document.hidden) {
         saveChatState(companyId, departmentId, {
           messages,
           pendingBrregInfo,
@@ -215,11 +228,19 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
           awaitingEmployeeCount,
           selectedIndustry,
           lastUserMessage,
-          wasStreaming: true,
+          wasStreaming: isStreamingRef.current,
         });
-        // Abort the ongoing request so user can retry when they return
-        if (abortControllerRef.current) {
+        
+        // ONLY abort if we're actively streaming - NOT when just loading or waiting for input
+        // This allows users to switch tabs to check info and come back
+        if (isStreamingRef.current && abortControllerRef.current) {
+          console.log('[IkHmsChatSetup] Aborting stream due to tab switch');
           abortControllerRef.current.abort();
+        }
+      } else {
+        // Tab became visible again - check if we need to show retry button
+        if (wasInterrupted && lastUserMessage) {
+          console.log('[IkHmsChatSetup] Tab visible again, user can retry:', lastUserMessage);
         }
       }
     };
@@ -228,7 +249,7 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [companyId, departmentId, messages, pendingBrregInfo, awaitingIndustrySelection, confirmedEmployeeCount, awaitingEmployeeCount, selectedIndustry, lastUserMessage]);
+  }, [companyId, departmentId, messages, pendingBrregInfo, awaitingIndustrySelection, confirmedEmployeeCount, awaitingEmployeeCount, selectedIndustry, lastUserMessage, wasInterrupted]);
 
   // Cleanup abort controller on unmount
   useEffect(() => {
