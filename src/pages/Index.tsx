@@ -22,12 +22,14 @@ import HmsAarshjul from "@/components/audits/HmsAarshjul";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { AnonymousMessageButton } from "@/components/anonymous/AnonymousMessageButton";
+import { useTranslate } from "@/hooks/useTranslate";
 
 const Index = () => {
   const { compliancePercent, openDeviations, completedActions, dueSoon, isLoading } = useDashboardStats();
   const { modules, isLoading: modulesLoading } = useCompanyModules();
   const navigate = useNavigate();
   const [dismissedBanner, setDismissedBanner] = useState(false);
+  const { t } = useTranslate();
 
   // Check if IK/HMS setup is completed
   const ikHmsModule = modules.find(m => m.module_type === 'IK_HMS');
@@ -49,7 +51,7 @@ const Index = () => {
             <button
               onClick={() => setDismissedBanner(true)}
               className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-primary/10 transition-colors"
-              aria-label="Lukk"
+              aria-label={t("common.close")}
             >
               <X className="w-4 h-4 text-muted-foreground" />
             </button>
@@ -63,14 +65,13 @@ const Index = () => {
               {/* Content */}
               <div className="flex-1 space-y-2">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg md:text-xl font-bold">Velkommen! 🎉</h2>
+                  <h2 className="text-lg md:text-xl font-bold">{t("dashboard.welcome")}! 🎉</h2>
                   <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-primary/20 text-primary">
-                    Ny bruker
+                    {t("common.new")}
                   </span>
                 </div>
                 <p className="text-sm md:text-base text-muted-foreground">
-                  La oss hjelpe deg å sette opp HMS-systemet for bedriften din. Det tar bare 5-10 minutter, 
-                  og du får et skreddersydd system tilpasset din bransje.
+                  {t("dashboard.welcomeMessage") || "La oss hjelpe deg å sette opp HMS-systemet for bedriften din. Det tar bare 5-10 minutter, og du får et skreddersydd system tilpasset din bransje."}
                 </p>
               </div>
 
@@ -82,7 +83,7 @@ const Index = () => {
                   className="w-full md:w-auto gap-2 shadow-md hover:shadow-lg transition-shadow"
                 >
                   <Sparkles className="w-4 h-4" />
-                  Start oppsett nå
+                  {t("dashboard.startSetup") || "Start oppsett nå"}
                 </Button>
                 <Button 
                   size="lg" 
@@ -90,7 +91,7 @@ const Index = () => {
                   onClick={() => setDismissedBanner(true)}
                   className="w-full md:w-auto"
                 >
-                  Senere
+                  {t("dashboard.later") || "Senere"}
                 </Button>
               </div>
             </div>
@@ -107,45 +108,45 @@ const Index = () => {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col gap-1"
         >
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight">{t("nav.dashboard")}</h1>
           <p className="text-sm md:text-base text-muted-foreground">
-            Oversikt over din internkontroll og HMS-status
+            {t("dashboard.overview")}
           </p>
         </motion.div>
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <StatsCard
-            title="Samsvarsstatus"
+            title={t("dashboard.complianceStatus") || "Samsvarsstatus"}
             value={isLoading ? "..." : `${compliancePercent}%`}
-            description="Oppfyller krav"
+            description={t("dashboard.meetsRequirements") || "Oppfyller krav"}
             icon={Shield}
             variant="success"
             delay={0}
             onClick={() => navigate("/setup")}
           />
           <StatsCard
-            title="Åpne avvik"
+            title={t("dashboard.openDeviations")}
             value={isLoading ? "..." : openDeviations}
-            description="Krever handling"
+            description={t("dashboard.requiresAction") || "Krever handling"}
             icon={AlertTriangle}
             variant="warning"
             delay={0.1}
             onClick={() => navigate("/deviations")}
           />
           <StatsCard
-            title="Fullførte tiltak"
+            title={t("dashboard.completedActions") || "Fullførte tiltak"}
             value={isLoading ? "..." : completedActions}
-            description="Totalt"
+            description={t("dashboard.total") || "Totalt"}
             icon={CheckCircle2}
             variant="success"
             delay={0.2}
             onClick={() => navigate("/setup?step=3")}
           />
           <StatsCard
-            title="Forfallende"
+            title={t("dashboard.expiring") || "Forfallende"}
             value={isLoading ? "..." : dueSoon}
-            description="Neste 7 dager"
+            description={t("dashboard.next7Days") || "Neste 7 dager"}
             icon={Clock}
             variant="destructive"
             delay={0.3}
@@ -177,10 +178,10 @@ const Index = () => {
                 <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
                   <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                 </div>
-                <h3 className="text-base md:text-lg font-semibold">Anonym varsling</h3>
+                <h3 className="text-base md:text-lg font-semibold">{t("dashboard.anonymousReporting") || "Anonym varsling"}</h3>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Send en anonym melding til ledelsen om bekymringer, uønskede hendelser eller forbedringsforslag.
+                {t("dashboard.anonymousDescription") || "Send en anonym melding til ledelsen om bekymringer, uønskede hendelser eller forbedringsforslag."}
               </p>
               <AnonymousMessageButton className="w-full" />
             </motion.div>
