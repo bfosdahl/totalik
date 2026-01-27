@@ -161,8 +161,8 @@ export default function Ks2Dashboard() {
         </div>
 
         {/* Search and filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1 max-w-md">
+        <div className="space-y-3">
+          <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Søk i prosjektnavn, nummer eller adresse"
@@ -171,13 +171,15 @@ export default function Ks2Dashboard() {
               className="pl-10"
             />
           </div>
-          <div className="flex flex-wrap gap-2">
+          {/* Horizontal scrollable filter buttons on mobile */}
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
             {filterButtons.map((btn) => (
               <Button
                 key={btn.key}
                 variant={activeFilter === btn.key ? "default" : "outline"}
                 size="sm"
                 onClick={() => setActiveFilter(btn.key)}
+                className="shrink-0"
               >
                 {btn.label}
               </Button>

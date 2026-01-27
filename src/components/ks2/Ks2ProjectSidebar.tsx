@@ -350,15 +350,15 @@ export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSide
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      {/* Mobile Menu Button - positioned to not overlap with content */}
+      <div className="lg:hidden fixed top-3 left-3 z-50">
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
-            <Button size="icon" variant="outline" className="bg-background">
+            <Button size="icon" variant="outline" className="bg-background shadow-md h-10 w-10">
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-[280px] bg-sidebar text-sidebar-foreground">
+          <SheetContent side="left" className="p-0 w-[85vw] max-w-[300px] bg-sidebar text-sidebar-foreground">
             <SidebarContent onNavigate={() => setMobileOpen(false)} />
           </SheetContent>
         </Sheet>

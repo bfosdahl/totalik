@@ -62,7 +62,7 @@ export function Ks2FloatingActions() {
   };
 
   return (
-    <div className="lg:hidden fixed bottom-6 right-6 z-50">
+    <div className="lg:hidden fixed z-50" style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))', right: '1rem' }}>
       <AnimatePresence>
         {isOpen && (
           <>
@@ -94,16 +94,16 @@ export function Ks2FloatingActions() {
                     transition: { delay: (quickActions.length - index) * 0.03 }
                   }}
                   onClick={() => handleAction(action.path)}
-                  className="flex items-center gap-3 pl-4 pr-2 py-2 bg-card rounded-full shadow-lg border"
+                  className="flex items-center gap-2 pl-3 pr-2 py-2 bg-card rounded-full shadow-lg border"
                 >
                   <span className="text-sm font-medium whitespace-nowrap">
                     {action.label}
                   </span>
                   <div className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center",
+                    "w-9 h-9 rounded-full flex items-center justify-center",
                     action.color
                   )}>
-                    <action.icon className="h-5 w-5" />
+                    <action.icon className="h-4 w-4" />
                   </div>
                 </motion.button>
               ))}
@@ -116,7 +116,7 @@ export function Ks2FloatingActions() {
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-colors",
+          "w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-colors",
           isOpen 
             ? "bg-muted text-muted-foreground" 
             : "bg-primary text-primary-foreground"

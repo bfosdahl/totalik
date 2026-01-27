@@ -40,18 +40,18 @@ export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDele
 
   return (
     <Card
-      className="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/30 relative overflow-hidden"
+      className="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/30 active:scale-[0.98] relative overflow-hidden"
       onClick={onClick}
     >
-      {/* Action buttons */}
-      <div className="absolute top-3 right-3 z-10 flex gap-1">
+      {/* Action buttons - always visible on mobile */}
+      <div className="absolute top-2 right-2 z-10 flex gap-1">
         {onDelete && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 opacity-0 group-hover:opacity-60 hover:opacity-100 hover:text-destructive transition-opacity"
+                className="h-8 w-8 opacity-60 md:opacity-0 md:group-hover:opacity-60 hover:opacity-100 hover:text-destructive transition-opacity"
                 onClick={(e) => e.stopPropagation()}
                 title="Slett prosjekt"
               >
@@ -85,7 +85,7 @@ export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDele
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 opacity-0 group-hover:opacity-60 hover:opacity-100 transition-opacity"
+            className="h-8 w-8 opacity-60 md:opacity-0 md:group-hover:opacity-60 hover:opacity-100 transition-opacity"
             onClick={(e) => {
               e.stopPropagation();
               onCopy(project);
@@ -98,7 +98,7 @@ export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDele
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 opacity-60 hover:opacity-100"
+          className="h-8 w-8 opacity-100"
           onClick={(e) => {
             e.stopPropagation();
             onToggleFavorite(project.id, project.is_favorite);
@@ -113,18 +113,18 @@ export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDele
         </Button>
       </div>
 
-      <CardContent className="p-5">
+      <CardContent className="p-4 md:p-5">
         {/* Header */}
-        <div className="mb-4">
-          <div className="flex items-start justify-between pr-8">
+        <div className="mb-3 md:mb-4">
+          <div className="flex items-start justify-between pr-20 md:pr-8">
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1">{project.project_number}</p>
-              <h3 className="font-semibold text-base leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+              <p className="text-xs font-medium text-muted-foreground mb-0.5">{project.project_number}</p>
+              <h3 className="font-semibold text-sm md:text-base leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                 {project.project_name}
               </h3>
             </div>
           </div>
-          <Badge className={cn("mt-2", status.className)}>{status.label}</Badge>
+          <Badge className={cn("mt-2 text-xs", status.className)}>{status.label}</Badge>
         </div>
 
         {/* Details */}
