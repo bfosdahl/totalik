@@ -1667,6 +1667,53 @@ export type Database = {
           },
         ]
       }
+      content_translations: {
+        Row: {
+          company_id: string | null
+          content_hash: string
+          content_type: string
+          created_at: string
+          id: string
+          original_content: string
+          source_language: string
+          target_language: string
+          translated_content: string
+          updated_at: string
+        }
+        Insert: {
+          company_id?: string | null
+          content_hash: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          original_content: string
+          source_language?: string
+          target_language: string
+          translated_content: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string | null
+          content_hash?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          original_content?: string
+          source_language?: string
+          target_language?: string
+          translated_content?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_translations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       department_action_plans: {
         Row: {
           actions: Json
@@ -10735,6 +10782,7 @@ export type Database = {
           next_of_kin_phone: string | null
           next_of_kin_relation: string | null
           phone: string | null
+          preferred_language: string | null
           primary_department_id: string | null
           signature_data: string | null
           status: string
@@ -10765,6 +10813,7 @@ export type Database = {
           next_of_kin_phone?: string | null
           next_of_kin_relation?: string | null
           phone?: string | null
+          preferred_language?: string | null
           primary_department_id?: string | null
           signature_data?: string | null
           status?: string
@@ -10795,6 +10844,7 @@ export type Database = {
           next_of_kin_phone?: string | null
           next_of_kin_relation?: string | null
           phone?: string | null
+          preferred_language?: string | null
           primary_department_id?: string | null
           signature_data?: string | null
           status?: string
