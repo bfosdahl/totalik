@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { LanguageSelector } from "@/components/language/LanguageSelector";
 
 const loginSchema = z.object({
   email: z.string().email("Ugyldig e-postadresse"),
@@ -233,7 +234,12 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4 relative">
+      {/* Language selector in top right */}
+      <div className="absolute top-4 right-4">
+        <LanguageSelector variant="full" className="bg-white/10 hover:bg-white/20 text-white" />
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

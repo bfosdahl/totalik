@@ -14,6 +14,7 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { Badge } from "@/components/ui/badge";
 import { Department } from "@/hooks/useDepartments";
+import { LanguageSelector } from "@/components/language/LanguageSelector";
 
 interface AppHeaderProps {
   onMenuClick?: () => void;
@@ -156,6 +157,9 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
             <span className="truncate max-w-[120px]">{userDepartments[0].name}</span>
           </div>
         )}
+
+        {/* Language selector */}
+        <LanguageSelector variant="icon" />
 
         {/* Notifications */}
         <NotificationBell />

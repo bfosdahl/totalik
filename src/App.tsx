@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { DepartmentProvider } from "@/contexts/DepartmentContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AccentColorProvider } from "@/components/AccentColorProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -100,10 +101,11 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <AuthProvider>
-          <DepartmentProvider>
-            <AccentColorProvider>
-              <TooltipProvider>
-                <Toaster />
+          <LanguageProvider>
+            <DepartmentProvider>
+              <AccentColorProvider>
+                <TooltipProvider>
+                  <Toaster />
                 <Sonner />
                 <BrowserRouter>
                 <Routes>
@@ -215,10 +217,11 @@ const App = () => (
                   {/* 404 */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-                </BrowserRouter>
-              </TooltipProvider>
-            </AccentColorProvider>
-          </DepartmentProvider>
+                  </BrowserRouter>
+                </TooltipProvider>
+              </AccentColorProvider>
+            </DepartmentProvider>
+          </LanguageProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
