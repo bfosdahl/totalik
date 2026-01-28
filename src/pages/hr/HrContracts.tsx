@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, FileText, Search, Loader2 } from "lucide-react";
 import { useEmploymentContracts, EmploymentContract } from "@/hooks/useEmploymentContracts";
 import { useAuth } from "@/contexts/AuthContext";
-import { CreateContractDialog } from "@/components/hr/contracts/CreateContractDialog";
+import { ExtendedContractDialog } from "@/components/hr/contracts/ExtendedContractDialog";
 import { ContractSignatureDialog } from "@/components/hr/contracts/ContractSignatureDialog";
 import { ContractCard } from "@/components/hr/contracts/ContractCard";
 import {
@@ -185,7 +185,7 @@ export default function HrContracts() {
       </div>
 
       {/* Create Contract Dialog */}
-      <CreateContractDialog
+      <ExtendedContractDialog
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
         onSubmit={handleCreateContract}

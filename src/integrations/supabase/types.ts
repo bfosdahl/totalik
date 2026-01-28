@@ -2547,6 +2547,11 @@ export type Database = {
       }
       employment_contracts: {
         Row: {
+          break_duration_minutes: number | null
+          client_company_name: string | null
+          client_company_org_number: string | null
+          collective_agreement_name: string | null
+          collective_agreement_parties: string | null
           company_id: string
           contract_file_path: string | null
           contract_type: string
@@ -2556,18 +2561,55 @@ export type Database = {
           employer_signature: string | null
           employment_percentage: number
           end_date: string | null
+          has_collective_agreement: boolean | null
+          has_multiple_workplaces: boolean | null
+          holiday_pay_percentage: number | null
           id: string
+          insurance_provisions: string | null
+          is_staffing_agency: boolean | null
           notes: string | null
+          notice_period_employee_months: number | null
+          notice_period_employer_months: number | null
+          other_allowances: string | null
+          overtime_compensation: string | null
+          payment_day: number | null
+          payment_method: string | null
+          pension_scheme: string | null
           position: string
           probation_period_months: number | null
+          remote_work_allowed: boolean | null
+          remote_work_details: string | null
+          salary_amount: number | null
+          salary_type: string | null
+          shift_change_rules: string | null
+          sick_pay_rules: string | null
           signed_by_employee: boolean | null
           signed_by_employer: boolean | null
           signed_date: string | null
+          special_work_time_details: string | null
+          special_work_time_exemptions: boolean | null
           start_date: string
           status: string
+          temporary_reason: string | null
+          termination_procedures: string | null
+          training_provisions: string | null
           updated_at: string
+          vacation_days: number | null
+          vacation_rules: string | null
+          variable_hours_description: string | null
+          variable_working_hours: boolean | null
+          work_description: string | null
+          work_time_arrangement: string | null
+          working_hours_per_day: number | null
+          working_hours_per_week: number | null
+          workplace_address: string | null
         }
         Insert: {
+          break_duration_minutes?: number | null
+          client_company_name?: string | null
+          client_company_org_number?: string | null
+          collective_agreement_name?: string | null
+          collective_agreement_parties?: string | null
           company_id: string
           contract_file_path?: string | null
           contract_type: string
@@ -2577,18 +2619,55 @@ export type Database = {
           employer_signature?: string | null
           employment_percentage?: number
           end_date?: string | null
+          has_collective_agreement?: boolean | null
+          has_multiple_workplaces?: boolean | null
+          holiday_pay_percentage?: number | null
           id?: string
+          insurance_provisions?: string | null
+          is_staffing_agency?: boolean | null
           notes?: string | null
+          notice_period_employee_months?: number | null
+          notice_period_employer_months?: number | null
+          other_allowances?: string | null
+          overtime_compensation?: string | null
+          payment_day?: number | null
+          payment_method?: string | null
+          pension_scheme?: string | null
           position: string
           probation_period_months?: number | null
+          remote_work_allowed?: boolean | null
+          remote_work_details?: string | null
+          salary_amount?: number | null
+          salary_type?: string | null
+          shift_change_rules?: string | null
+          sick_pay_rules?: string | null
           signed_by_employee?: boolean | null
           signed_by_employer?: boolean | null
           signed_date?: string | null
+          special_work_time_details?: string | null
+          special_work_time_exemptions?: boolean | null
           start_date: string
           status?: string
+          temporary_reason?: string | null
+          termination_procedures?: string | null
+          training_provisions?: string | null
           updated_at?: string
+          vacation_days?: number | null
+          vacation_rules?: string | null
+          variable_hours_description?: string | null
+          variable_working_hours?: boolean | null
+          work_description?: string | null
+          work_time_arrangement?: string | null
+          working_hours_per_day?: number | null
+          working_hours_per_week?: number | null
+          workplace_address?: string | null
         }
         Update: {
+          break_duration_minutes?: number | null
+          client_company_name?: string | null
+          client_company_org_number?: string | null
+          collective_agreement_name?: string | null
+          collective_agreement_parties?: string | null
           company_id?: string
           contract_file_path?: string | null
           contract_type?: string
@@ -2598,16 +2677,48 @@ export type Database = {
           employer_signature?: string | null
           employment_percentage?: number
           end_date?: string | null
+          has_collective_agreement?: boolean | null
+          has_multiple_workplaces?: boolean | null
+          holiday_pay_percentage?: number | null
           id?: string
+          insurance_provisions?: string | null
+          is_staffing_agency?: boolean | null
           notes?: string | null
+          notice_period_employee_months?: number | null
+          notice_period_employer_months?: number | null
+          other_allowances?: string | null
+          overtime_compensation?: string | null
+          payment_day?: number | null
+          payment_method?: string | null
+          pension_scheme?: string | null
           position?: string
           probation_period_months?: number | null
+          remote_work_allowed?: boolean | null
+          remote_work_details?: string | null
+          salary_amount?: number | null
+          salary_type?: string | null
+          shift_change_rules?: string | null
+          sick_pay_rules?: string | null
           signed_by_employee?: boolean | null
           signed_by_employer?: boolean | null
           signed_date?: string | null
+          special_work_time_details?: string | null
+          special_work_time_exemptions?: boolean | null
           start_date?: string
           status?: string
+          temporary_reason?: string | null
+          termination_procedures?: string | null
+          training_provisions?: string | null
           updated_at?: string
+          vacation_days?: number | null
+          vacation_rules?: string | null
+          variable_hours_description?: string | null
+          variable_working_hours?: boolean | null
+          work_description?: string | null
+          work_time_arrangement?: string | null
+          working_hours_per_day?: number | null
+          working_hours_per_week?: number | null
+          workplace_address?: string | null
         }
         Relationships: [
           {
