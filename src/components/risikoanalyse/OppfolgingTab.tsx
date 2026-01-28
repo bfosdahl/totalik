@@ -173,12 +173,20 @@ export function OppfolgingTab() {
     toast.success("Tiltak fullført");
   };
 
+  // Helper to safely parse dates
+  const safeParseDate = (dateString: string | undefined | null): Date | null => {
+    if (!dateString || dateString.trim() === "") return null;
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? null : date;
+  };
+
   // Get status info
   const getStatusInfo = (action: ActionItem) => {
     if (action.status === "utført") {
       return { label: "Utført", icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50" };
     }
-    if (action.deadline && isPast(new Date(action.deadline)) && !isToday(new Date(action.deadline))) {
+    const deadlineDate = safeParseDate(action.deadline);
+    if (deadlineDate && isPast(deadlineDate) && !isToday(deadlineDate)) {
       return { label: "Forfalt", icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" };
     }
     if (action.status === "pågår") {
@@ -189,7 +197,8 @@ export function OppfolgingTab() {
 
   // Filter actions
   const filteredActions = actions.filter(action => {
-    const isOverdue = action.deadline && isPast(new Date(action.deadline)) && !isToday(new Date(action.deadline)) && action.status !== "utført";
+    const deadlineDate = safeParseDate(action.deadline);
+    const isOverdue = deadlineDate && isPast(deadlineDate) && !isToday(deadlineDate) && action.status !== "utført";
     
     switch (filter) {
       case "åpne":
@@ -207,7 +216,10 @@ export function OppfolgingTab() {
   const stats = {
     total: actions.length,
     open: actions.filter(a => a.status !== "utført").length,
-    overdue: actions.filter(a => a.status !== "utført" && a.deadline && isPast(new Date(a.deadline)) && !isToday(new Date(a.deadline))).length,
+    overdue: actions.filter(a => {
+      const deadlineDate = safeParseDate(a.deadline);
+      return a.status !== "utført" && deadlineDate && isPast(deadlineDate) && !isToday(deadlineDate);
+    }).length,
     completed: actions.filter(a => a.status === "utført").length,
   };
 
@@ -430,9 +442,9 @@ export function OppfolgingTab() {
                           {action.responsible && (
                             <Badge variant="secondary">{action.responsible}</Badge>
                           )}
-                          {action.deadline && (
+                          {action.deadline && safeParseDate(action.deadline) && (
                             <Badge variant="secondary">
-                              Frist: {format(new Date(action.deadline), "d. MMM yyyy", { locale: nb })}
+                              Frist: {format(safeParseDate(action.deadline)!, "d. MMM yyyy", { locale: nb })}
                             </Badge>
                           )}
                           {action.priority && action.priority !== "medium" && (
@@ -454,9 +466,9 @@ export function OppfolgingTab() {
                           </p>
                         )}
 
-                        {action.completed_at && (
+                        {action.completed_at && safeParseDate(action.completed_at) && (
                           <p className="text-xs text-green-600 mt-2 ml-6">
-                            ✓ Fullført {format(new Date(action.completed_at), "d. MMM yyyy", { locale: nb })} av {action.completed_by}
+                            ✓ Fullført {format(safeParseDate(action.completed_at)!, "d. MMM yyyy", { locale: nb })} av {action.completed_by}
                           </p>
                         )}
                       </div>

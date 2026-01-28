@@ -131,7 +131,9 @@
     "newDeviation": "Nytt avvik",
     "newAudit": "Ny revisjon",
     "newRiskAssessment": "Ny risikovurdering",
-    "viewAll": "Se alle"
+    "viewAll": "Se alle",
+    "anonymousReporting": "Anonym varsling",
+    "anonymousDescription": "Send en anonym melding til ledelsen om bekymringer, uønskede hendelser eller forbedringsforslag."
   },
   "deviations": {
     "title": "Avvik",
