@@ -10,6 +10,7 @@ export interface EmploymentContract {
   contract_type: string;
   contract_file_path: string | null;
   position: string;
+  work_description: string | null;
   employment_percentage: number;
   start_date: string;
   end_date: string | null;
@@ -23,6 +24,63 @@ export interface EmploymentContract {
   notes: string | null;
   created_at: string;
   updated_at: string;
+  
+  // Workplace
+  workplace_address: string | null;
+  has_multiple_workplaces: boolean;
+  remote_work_allowed: boolean;
+  remote_work_details: string | null;
+  
+  // Working hours
+  working_hours_per_week: number;
+  working_hours_per_day: number | null;
+  work_time_arrangement: string | null;
+  break_duration_minutes: number;
+  variable_working_hours: boolean;
+  variable_hours_description: string | null;
+  shift_change_rules: string | null;
+  
+  // Temporary
+  temporary_reason: string | null;
+  
+  // Vacation
+  vacation_days: number;
+  holiday_pay_percentage: number;
+  vacation_rules: string | null;
+  
+  // Salary
+  salary_amount: number | null;
+  salary_type: string;
+  payment_method: string;
+  payment_day: number;
+  overtime_compensation: string | null;
+  other_allowances: string | null;
+  
+  // Notice
+  notice_period_employee_months: number;
+  notice_period_employer_months: number;
+  termination_procedures: string | null;
+  
+  // Staffing
+  is_staffing_agency: boolean;
+  client_company_name: string | null;
+  client_company_org_number: string | null;
+  
+  // Benefits
+  training_provisions: string | null;
+  pension_scheme: string | null;
+  insurance_provisions: string | null;
+  sick_pay_rules: string | null;
+  
+  // Collective agreement
+  has_collective_agreement: boolean;
+  collective_agreement_name: string | null;
+  collective_agreement_parties: string | null;
+  
+  // Special
+  special_work_time_exemptions: boolean;
+  special_work_time_details: string | null;
+  
   employee?: {
     id: string;
     first_name: string | null;
@@ -35,11 +93,50 @@ export interface ContractFormData {
   employee_id: string;
   contract_type: string;
   position: string;
+  work_description?: string;
   employment_percentage: number;
   start_date: string;
   end_date?: string | null;
   probation_period_months?: number | null;
   notes?: string | null;
+  
+  // Extended fields
+  workplace_address?: string;
+  has_multiple_workplaces?: boolean;
+  remote_work_allowed?: boolean;
+  remote_work_details?: string;
+  working_hours_per_week?: number;
+  working_hours_per_day?: number;
+  work_time_arrangement?: string;
+  break_duration_minutes?: number;
+  variable_working_hours?: boolean;
+  variable_hours_description?: string;
+  shift_change_rules?: string;
+  temporary_reason?: string;
+  vacation_days?: number;
+  holiday_pay_percentage?: number;
+  vacation_rules?: string;
+  salary_amount?: number;
+  salary_type?: string;
+  payment_method?: string;
+  payment_day?: number;
+  overtime_compensation?: string;
+  other_allowances?: string;
+  notice_period_employee_months?: number;
+  notice_period_employer_months?: number;
+  termination_procedures?: string;
+  is_staffing_agency?: boolean;
+  client_company_name?: string;
+  client_company_org_number?: string;
+  training_provisions?: string;
+  pension_scheme?: string;
+  insurance_provisions?: string;
+  sick_pay_rules?: string;
+  has_collective_agreement?: boolean;
+  collective_agreement_name?: string;
+  collective_agreement_parties?: string;
+  special_work_time_exemptions?: boolean;
+  special_work_time_details?: string;
 }
 
 export function useEmploymentContracts() {
@@ -79,6 +176,7 @@ export function useEmploymentContracts() {
           employee_id: formData.employee_id,
           contract_type: formData.contract_type,
           position: formData.position,
+          work_description: formData.work_description || null,
           employment_percentage: formData.employment_percentage,
           start_date: formData.start_date,
           end_date: formData.end_date || null,
@@ -87,6 +185,44 @@ export function useEmploymentContracts() {
           status: 'draft',
           signed_by_employee: false,
           signed_by_employer: false,
+          
+          // Extended fields
+          workplace_address: formData.workplace_address || null,
+          has_multiple_workplaces: formData.has_multiple_workplaces || false,
+          remote_work_allowed: formData.remote_work_allowed || false,
+          remote_work_details: formData.remote_work_details || null,
+          working_hours_per_week: formData.working_hours_per_week || 37.5,
+          working_hours_per_day: formData.working_hours_per_day || null,
+          work_time_arrangement: formData.work_time_arrangement || 'normal',
+          break_duration_minutes: formData.break_duration_minutes || 30,
+          variable_working_hours: formData.variable_working_hours || false,
+          variable_hours_description: formData.variable_hours_description || null,
+          shift_change_rules: formData.shift_change_rules || null,
+          temporary_reason: formData.temporary_reason || null,
+          vacation_days: formData.vacation_days || 25,
+          holiday_pay_percentage: formData.holiday_pay_percentage || 10.2,
+          vacation_rules: formData.vacation_rules || null,
+          salary_amount: formData.salary_amount || null,
+          salary_type: formData.salary_type || 'monthly',
+          payment_method: formData.payment_method || 'bank_transfer',
+          payment_day: formData.payment_day || 15,
+          overtime_compensation: formData.overtime_compensation || null,
+          other_allowances: formData.other_allowances || null,
+          notice_period_employee_months: formData.notice_period_employee_months || 1,
+          notice_period_employer_months: formData.notice_period_employer_months || 1,
+          termination_procedures: formData.termination_procedures || null,
+          is_staffing_agency: formData.is_staffing_agency || false,
+          client_company_name: formData.client_company_name || null,
+          client_company_org_number: formData.client_company_org_number || null,
+          training_provisions: formData.training_provisions || null,
+          pension_scheme: formData.pension_scheme || null,
+          insurance_provisions: formData.insurance_provisions || null,
+          sick_pay_rules: formData.sick_pay_rules || null,
+          has_collective_agreement: formData.has_collective_agreement || false,
+          collective_agreement_name: formData.collective_agreement_name || null,
+          collective_agreement_parties: formData.collective_agreement_parties || null,
+          special_work_time_exemptions: formData.special_work_time_exemptions || false,
+          special_work_time_details: formData.special_work_time_details || null,
         })
         .select()
         .single();
