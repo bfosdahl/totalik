@@ -119,7 +119,7 @@ const Handbook = () => {
   const { users: companyUsers } = useCompanyUsers();
   const { savedLaws } = useCompanyLawsRegulations();
   const { selfDeclaration, verneombudExemption, hasSelfDeclaration, hasVerneombudExemption } = useHmsDeclarations();
-  const { verneombudAgreement, hasVerneombudAgreement } = useVerneombudAgreement();
+  const { verneombudAgreement, verneombudFromProfile, verneombudFromAiSetup, hasVerneombudAgreement, hasAnyVerneombud } = useVerneombudAgreement();
   const { employees } = useEmployees();
   
   // For verneombud: Companies with 5+ employees MUST have a verneombud, they cannot use exemption agreement
@@ -415,20 +415,114 @@ const Handbook = () => {
       {
         id: "verneombud-selected",
         title: "2. Valg av verneombud",
-        status: (() => {
-          const verneombudRole = organization?.roles?.find(r => 
-            r.title?.toLowerCase().includes("verneombud")
-          );
-          return verneombudRole?.personName ? "complete" as const : "incomplete" as const;
-        })(),
+        // Use hasAnyVerneombud which checks all three sources: formal agreement, profile, AI setup
+        status: hasAnyVerneombud ? "complete" as const : "incomplete" as const,
         stepIndex: -1,
         icon: UserCheck,
         content: (() => {
+          // Check all sources for verneombud
+          if (hasVerneombudAgreement && verneombudAgreement) {
+            // Formal agreement exists
+            return (
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">
+                  Valgt verneombud iht. arbeidsmiljøloven § 6-1.
+                </p>
+                <div className="space-y-2 pt-2">
+                  <div className="space-y-1">
+                    <p className="font-medium text-xs text-muted-foreground">Verneombud</p>
+                    <p className="text-foreground">{verneombudAgreement.verneombud_name}</p>
+                  </div>
+                  {verneombudAgreement.election_method && (
+                    <div className="space-y-1">
+                      <p className="font-medium text-xs text-muted-foreground">Valgmetode</p>
+                      <p className="text-foreground">
+                        {verneombudAgreement.election_method === "election" ? "Valg blant ansatte" :
+                         verneombudAgreement.election_method === "appointment" ? "Utpekt av arbeidsgiver" :
+                         verneombudAgreement.election_method === "volunteer" ? "Frivillig" : 
+                         verneombudAgreement.election_method}
+                      </p>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {employeeCount} ansatte
+                    </Badge>
+                    {verneombudAgreement.election_date && (
+                      <span className="text-xs">
+                        Valgt: {format(new Date(verneombudAgreement.election_date), "d. MMM yyyy", { locale: nb })}
+                      </span>
+                    )}
+                    {verneombudAgreement.term_end && (
+                      <span className="text-xs text-muted-foreground">
+                        • Valgperiode utløper: {format(new Date(verneombudAgreement.term_end), "d. MMM yyyy", { locale: nb })}
+                      </span>
+                    )}
+                  </div>
+                  {verneombudAgreement.training_completed && (
+                    <p className="text-xs text-success font-medium">Opplæring gjennomført</p>
+                  )}
+                </div>
+              </div>
+            );
+          }
+          
+          // Check for verneombud from profile
+          if (verneombudFromProfile) {
+            const fullName = [verneombudFromProfile.first_name, verneombudFromProfile.last_name].filter(Boolean).join(" ") || "Ukjent";
+            return (
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">
+                  Verneombud registrert via Organisering.
+                </p>
+                <div className="space-y-2 pt-2">
+                  <div className="space-y-1">
+                    <p className="font-medium text-xs text-muted-foreground">Verneombud</p>
+                    <p className="text-foreground">{fullName}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {employeeCount} ansatte
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      Fra organisering
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          
+          // Check for verneombud from AI setup
+          if (verneombudFromAiSetup) {
+            return (
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">
+                  Verneombud registrert via AI-oppsett.
+                </p>
+                <div className="space-y-2 pt-2">
+                  <div className="space-y-1">
+                    <p className="font-medium text-xs text-muted-foreground">Verneombud</p>
+                    <p className="text-foreground">{verneombudFromAiSetup.personName}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {employeeCount} ansatte
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      Fra AI-oppsett
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          
+          // Fallback: check legacy organization.roles
           const verneombudRole = organization?.roles?.find(r => 
             r.title?.toLowerCase().includes("verneombud")
           );
           if (verneombudRole?.personName) {
-            // Calculate election date and expiry (2 years from election)
             const electionDate = verneombudRole.electionDate ? new Date(verneombudRole.electionDate) : null;
             const expiryDate = electionDate ? new Date(electionDate.getTime() + (2 * 365 * 24 * 60 * 60 * 1000)) : null;
             
@@ -470,13 +564,24 @@ const Handbook = () => {
               </div>
             );
           }
+          
           return (
             <p className="text-sm text-muted-foreground">
-              Virksomheter med 5 eller flere ansatte skal ha verneombud. Gå til Organisering for å registrere valgt verneombud.
+              Virksomheter med 5 eller flere ansatte skal ha verneombud. Gå til HMS aktiviteter for å registrere valgt verneombud.
             </p>
           );
         })(),
         summary: (() => {
+          if (hasVerneombudAgreement && verneombudAgreement) {
+            return `${verneombudAgreement.verneombud_name} registrert`;
+          }
+          if (verneombudFromProfile) {
+            const fullName = [verneombudFromProfile.first_name, verneombudFromProfile.last_name].filter(Boolean).join(" ");
+            return fullName ? `${fullName} (fra organisering)` : "Registrert";
+          }
+          if (verneombudFromAiSetup) {
+            return `${verneombudFromAiSetup.personName} (fra AI-oppsett)`;
+          }
           const verneombudRole = organization?.roles?.find(r => 
             r.title?.toLowerCase().includes("verneombud")
           );
