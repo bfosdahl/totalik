@@ -115,6 +115,7 @@ const personaladministrasjonItems = {
     { icon: ShieldAlert, label: "Anonyme meldinger", path: "/anonymous-messages", color: "text-amber-500" },
   ],
   mittArbeidsforhold: [
+    { icon: FileText, label: "Min arbeidsavtale", path: "/my/contract", color: "text-slate-500" },
     { icon: Clock, label: "Mine timer", path: "/time-registration", color: "text-indigo-500" },
     { icon: CalendarDays, label: "Min ferie", path: "/time-off", color: "text-orange-500" },
     { icon: HeartPulse, label: "Mitt fravær", path: "/my/absence", color: "text-rose-500" },

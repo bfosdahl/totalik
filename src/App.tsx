@@ -53,6 +53,7 @@ import HrMeetings from "./pages/hr/HrMeetings";
 import HrSurveys from "./pages/hr/HrSurveys";
 import MyAbsence from "./pages/my/MyAbsence";
 import MySurveys from "./pages/my/MySurveys";
+import MyContract from "./pages/hr/MyContract";
 import InstallApp from "./pages/InstallApp";
 import InstallAvvikApp from "./pages/InstallAvvikApp";
 import IkMatHandbok from "./pages/IkMatHandbok";
@@ -149,6 +150,7 @@ const App = () => (
                   <Route path="/hr/surveys" element={<ProtectedRoute><HrSurveys /></ProtectedRoute>} />
                   
                   {/* My pages - for employees */}
+                  <Route path="/my/contract" element={<ProtectedRoute><MyContract /></ProtectedRoute>} />
                   <Route path="/my/absence" element={<ProtectedRoute><MyAbsence /></ProtectedRoute>} />
                   <Route path="/my/surveys" element={<ProtectedRoute><MySurveys /></ProtectedRoute>} />
                   
