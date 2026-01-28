@@ -5,7 +5,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { EmploymentContract } from "@/hooks/useEmploymentContracts";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { MoreHorizontal, Pen, Eye, Trash2, Check, Clock, FileText } from "lucide-react";
+import { MoreHorizontal, Pen, Eye, Trash2, Check, Clock, FileText, Download } from "lucide-react";
+import { generateContractPdf } from "./generateContractPdf";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ContractCardProps {
   contract: EmploymentContract;
@@ -39,6 +41,8 @@ export function ContractCard({
   onDelete,
   canManage 
 }: ContractCardProps) {
+  const { company } = useAuth();
+  
   const employeeName = contract.employee 
     ? `${contract.employee.first_name || ''} ${contract.employee.last_name || ''}`.trim()
     : 'Ukjent ansatt';
@@ -47,6 +51,19 @@ export function ContractCard({
   const contractType = contractTypeLabels[contract.contract_type] || contract.contract_type;
 
   const needsEmployerSignature = !contract.signed_by_employer && canManage;
+  const canDownload = contract.signed_by_employee && contract.signed_by_employer;
+
+  const handleDownload = () => {
+    if (company) {
+      generateContractPdf(contract, {
+        name: company.name,
+        org_number: company.org_number,
+        address: company.address,
+        postal_code: company.postal_code,
+        city: company.city,
+      });
+    }
+  };
 
   return (
     <Card className="p-4 hover:shadow-md transition-shadow">
@@ -97,6 +114,18 @@ export function ContractCard({
         </div>
 
         <div className="flex items-center gap-2">
+          {canDownload && (
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={handleDownload}
+              className="gap-1"
+            >
+              <Download className="w-3 h-3" />
+              <span className="hidden sm:inline">Last ned</span>
+            </Button>
+          )}
+
           {needsEmployerSignature && (
             <Button 
               size="sm" 
@@ -119,6 +148,12 @@ export function ContractCard({
                 <Eye className="w-4 h-4 mr-2" />
                 Se detaljer
               </DropdownMenuItem>
+              {canDownload && (
+                <DropdownMenuItem onClick={handleDownload}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Last ned PDF
+                </DropdownMenuItem>
+              )}
               {canManage && !contract.signed_by_employer && (
                 <DropdownMenuItem onClick={() => onSignAsEmployer(contract)}>
                   <Pen className="w-4 h-4 mr-2" />
