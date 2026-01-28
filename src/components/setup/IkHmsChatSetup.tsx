@@ -188,6 +188,13 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
   const [awaitingEmployeeCount, setAwaitingEmployeeCount] = useState(initialState?.awaitingEmployeeCount ?? false);
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(initialState?.selectedIndustry ?? null);
   const [pendingPostSignature, setPendingPostSignature] = useState<{ industry: string; employeeCount: number } | null>(null);
+  // Track if user has skipped signing dialogs (persisted in sessionStorage)
+  const [skippedSelfDeclaration, setSkippedSelfDeclaration] = useState(() => {
+    return sessionStorage.getItem(`hms-setup-skipped-declaration-${companyId}`) === 'true';
+  });
+  const [skippedExemption, setSkippedExemption] = useState(() => {
+    return sessionStorage.getItem(`hms-setup-skipped-exemption-${companyId}`) === 'true';
+  });
   const [wasInterrupted, setWasInterrupted] = useState(initialState?.wasStreaming ?? false);
   const [lastUserMessage, setLastUserMessage] = useState<string | undefined>(initialState?.lastUserMessage);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -508,14 +515,16 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
         .maybeSingle(),
     ]);
 
-    if (!existingDeclaration) {
+    // Only show self-declaration dialog if not already signed AND not already skipped
+    if (!existingDeclaration && !skippedSelfDeclaration) {
       setPendingPostSignature({ industry, employeeCount });
       setShowSelfDeclarationDialog(true);
       setIsLoading(false);
       return;
     }
 
-    if (employeeCount < 5 && !existingExemption) {
+    // Only show exemption dialog if not already signed AND not already skipped
+    if (employeeCount < 5 && !existingExemption && !skippedExemption) {
       setPendingPostSignature({ industry, employeeCount });
       setShowExemptionDialog(true);
       setIsLoading(false);
@@ -533,6 +542,9 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
     const employeeCount = pendingPostSignature?.employeeCount ?? confirmedEmployeeCount ?? 5;
 
     if (wasSkipped) {
+      // Persist the skip state so dialog doesn't reappear
+      setSkippedSelfDeclaration(true);
+      sessionStorage.setItem(`hms-setup-skipped-declaration-${companyId}`, 'true');
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: "OK! Du kan signere Egenerklæring om HMS senere under Oppsett.\n\nLa oss gå videre..." },
@@ -552,7 +564,8 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
         .eq("company_id", companyId)
         .maybeSingle();
 
-      if (!existingExemption) {
+      // Only show if not already signed AND not already skipped
+      if (!existingExemption && !skippedExemption) {
         setMessages((prev) => [
           ...prev,
           { role: "assistant", content: "Neste steg: Avtale om fritak fra verneombud." },
@@ -575,6 +588,9 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
     const employeeCount = pendingPostSignature?.employeeCount ?? confirmedEmployeeCount ?? 4;
 
     if (wasSkipped) {
+      // Persist the skip state so dialog doesn't reappear
+      setSkippedExemption(true);
+      sessionStorage.setItem(`hms-setup-skipped-exemption-${companyId}`, 'true');
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: "OK! Du kan signere Avtale om verneombud senere under Oppsett.\n\nLa oss fortsette med HMS-oppsettet..." },
