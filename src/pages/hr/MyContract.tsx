@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -87,37 +88,41 @@ export default function MyContract() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      <AppLayout>
+        <div className="p-6">
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   if (!contract) {
     return (
-      <div className="p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Min arbeidsavtale
-            </CardTitle>
-            <CardDescription>Se og signer din arbeidsavtale</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-12">
-              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-medium mb-2">Ingen arbeidsavtale funnet</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                Du har ingen arbeidsavtale registrert i systemet. 
-                Kontakt din leder hvis du mener dette er feil.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <AppLayout>
+        <div className="p-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Min arbeidsavtale
+              </CardTitle>
+              <CardDescription>Se og signer din arbeidsavtale</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12">
+                <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">Ingen arbeidsavtale funnet</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Du har ingen arbeidsavtale registrert i systemet. 
+                  Kontakt din leder hvis du mener dette er feil.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </AppLayout>
     );
   }
 
@@ -126,7 +131,8 @@ export default function MyContract() {
   const needsEmployeeSignature = !contract.signed_by_employee;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <AppLayout>
+      <div className="p-6 max-w-4xl mx-auto space-y-6">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -419,6 +425,7 @@ export default function MyContract() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AppLayout>
   );
 }
