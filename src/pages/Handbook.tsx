@@ -874,7 +874,11 @@ const Handbook = () => {
     ...auditFormSections,
   ];
 
-  const completeSections = handbookSections.filter((s) => s.status === "complete").length;
+  // For completion calculation, only count required sections (not "ongoing" status like deviations/audits)
+  // Sections with status "ongoing" are optional/continuous activities and should not affect completion %
+  const requiredSections = handbookSections.filter((s) => s.status !== "ongoing");
+  const completeSections = requiredSections.filter((s) => s.status === "complete").length;
+  const totalRequiredSections = requiredSections.length;
   const lastUpdated = new Date();
 
   // PDF Generation - now uses sanitized data from handbookPdfSanitizer
@@ -2277,7 +2281,7 @@ const Handbook = () => {
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                 <div>
-                  <p className="text-3xl font-bold">{completeSections}/{handbookSections.length}</p>
+                  <p className="text-3xl font-bold">{completeSections}/{totalRequiredSections}</p>
                   <p className="text-sm text-primary-foreground/70">Seksjoner fullført</p>
                 </div>
                 <div>
@@ -2285,7 +2289,7 @@ const Handbook = () => {
                   <p className="text-sm text-primary-foreground/70">Elementer totalt</p>
                 </div>
                 <div>
-                  <p className="text-3xl font-bold">{Math.round((completeSections / handbookSections.length) * 100)}%</p>
+                  <p className="text-3xl font-bold">{totalRequiredSections > 0 ? Math.round((completeSections / totalRequiredSections) * 100) : 0}%</p>
                   <p className="text-sm text-primary-foreground/70">Komplett</p>
                 </div>
               </div>
