@@ -273,7 +273,9 @@ export function RisikovurderingOgHandlingsplan() {
     };
   };
 
-  // Load data
+  // Load data - uses a key to force re-fetch after deletions
+  const [refreshKey, setRefreshKey] = useState(0);
+
   useEffect(() => {
     const loadData = async () => {
       if (!company?.id) return;
@@ -283,23 +285,27 @@ export function RisikovurderingOgHandlingsplan() {
           .from("company_risk_assessments")
           .select("*")
           .eq("company_id", company.id)
-          .single();
+          .maybeSingle();
         
         if (riskData?.risks) {
           const rawRisks = riskData.risks as unknown as any[];
           // Convert all risks to full format
           const convertedRisks = rawRisks.map(r => convertSimpleToFullFormat(r));
           setRisks(convertedRisks);
+        } else {
+          setRisks([]);
         }
 
         const { data: actionData } = await supabase
           .from("company_action_plans")
           .select("*")
           .eq("company_id", company.id)
-          .single();
+          .maybeSingle();
         
         if (actionData?.actions) {
           setActions(actionData.actions as unknown as ActionItem[]);
+        } else {
+          setActions([]);
         }
       } catch (error) {
         console.error("Error loading data:", error);
@@ -309,7 +315,7 @@ export function RisikovurderingOgHandlingsplan() {
     };
 
     loadData();
-  }, [company?.id]);
+  }, [company?.id, refreshKey]);
 
   // Save all data
   const handleSave = async () => {
@@ -565,6 +571,8 @@ export function RisikovurderingOgHandlingsplan() {
       }
 
       toast.success("Farekilde slettet");
+      // Force re-fetch data so UI matches DB without full navigation
+      setRefreshKey((k) => k + 1);
     } catch (error) {
       console.error("Error deleting risk:", error);
       toast.error("Kunne ikke slette farekilde");
