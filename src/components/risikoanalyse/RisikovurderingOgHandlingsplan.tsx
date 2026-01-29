@@ -487,6 +487,8 @@ export function RisikovurderingOgHandlingsplan() {
   // Delete risk - with auto-save to database
   const deleteRisk = async (id: string) => {
     if (!company?.id) return;
+    const prevRisks = risks;
+    const prevActions = actions;
     
     const updatedRisks = risks.filter(r => r.id !== id);
     const updatedActions = actions.filter(a => a.risk_id !== id);
@@ -497,33 +499,40 @@ export function RisikovurderingOgHandlingsplan() {
     
     // Auto-save to database to prevent data from reappearing after navigation
     try {
-      const { error: riskError } = await supabase
+      const { data: riskSaveData, error: riskError } = await supabase
         .from("company_risk_assessments")
         .upsert([{
           company_id: company.id,
           risks: updatedRisks as unknown as Json,
           updated_at: new Date().toISOString(),
-        }], { onConflict: "company_id" });
+        }], { onConflict: "company_id" })
+        // Ensure the backend actually processed the write (and surface RLS/select issues)
+        .select("company_id, updated_at")
+        .maybeSingle();
 
       if (riskError) throw riskError;
+      if (!riskSaveData?.company_id) throw new Error("Risk save did not return a row");
 
-      const { error: actionError } = await supabase
+      const { data: actionSaveData, error: actionError } = await supabase
         .from("company_action_plans")
         .upsert([{
           company_id: company.id,
           actions: updatedActions as unknown as Json,
           updated_at: new Date().toISOString(),
-        }], { onConflict: "company_id" });
+        }], { onConflict: "company_id" })
+        .select("company_id, updated_at")
+        .maybeSingle();
 
       if (actionError) throw actionError;
+      if (!actionSaveData?.company_id) throw new Error("Action save did not return a row");
 
       toast.success("Farekilde slettet");
     } catch (error) {
       console.error("Error deleting risk:", error);
       toast.error("Kunne ikke slette farekilde");
       // Rollback on error
-      setRisks(risks);
-      setActions(actions);
+      setRisks(prevRisks);
+      setActions(prevActions);
     }
   };
 
