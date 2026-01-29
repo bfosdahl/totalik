@@ -54,11 +54,12 @@ export const useSearchGlobalChemicals = (searchQuery: string, enabled: boolean =
       if (!searchQuery || searchQuery.length < 2) return [];
 
       // Search by product name, CAS number, or manufacturer
+      // Use LEFT JOIN (no !inner) to include chemicals without SDS files
       const { data, error } = await supabase
         .from("global_chemicals" as any)
         .select(`
           *,
-          global_chemical_sds_versions!inner(*)
+          global_chemical_sds_versions(*)
         `)
         .or(`product_name.ilike.%${searchQuery}%,cas_number.ilike.%${searchQuery}%,manufacturer.ilike.%${searchQuery}%`)
         .order("product_name", { ascending: true })
