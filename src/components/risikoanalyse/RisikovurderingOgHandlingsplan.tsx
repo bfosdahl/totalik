@@ -484,11 +484,47 @@ export function RisikovurderingOgHandlingsplan() {
     toast.success("Hendelse revurdert");
   };
 
-  // Delete risk
-  const deleteRisk = (id: string) => {
-    setRisks(risks.filter(r => r.id !== id));
-    setActions(actions.filter(a => a.risk_id !== id));
-    toast.success("Farekilde slettet");
+  // Delete risk - with auto-save to database
+  const deleteRisk = async (id: string) => {
+    if (!company?.id) return;
+    
+    const updatedRisks = risks.filter(r => r.id !== id);
+    const updatedActions = actions.filter(a => a.risk_id !== id);
+    
+    // Update local state immediately
+    setRisks(updatedRisks);
+    setActions(updatedActions);
+    
+    // Auto-save to database to prevent data from reappearing after navigation
+    try {
+      const { error: riskError } = await supabase
+        .from("company_risk_assessments")
+        .upsert([{
+          company_id: company.id,
+          risks: updatedRisks as unknown as Json,
+          updated_at: new Date().toISOString(),
+        }], { onConflict: "company_id" });
+
+      if (riskError) throw riskError;
+
+      const { error: actionError } = await supabase
+        .from("company_action_plans")
+        .upsert([{
+          company_id: company.id,
+          actions: updatedActions as unknown as Json,
+          updated_at: new Date().toISOString(),
+        }], { onConflict: "company_id" });
+
+      if (actionError) throw actionError;
+
+      toast.success("Farekilde slettet");
+    } catch (error) {
+      console.error("Error deleting risk:", error);
+      toast.error("Kunne ikke slette farekilde");
+      // Rollback on error
+      setRisks(risks);
+      setActions(actions);
+    }
   };
 
   // Update action
