@@ -499,32 +499,70 @@ export function RisikovurderingOgHandlingsplan() {
     
     // Auto-save to database to prevent data from reappearing after navigation
     try {
-      const { data: riskSaveData, error: riskError } = await supabase
+      const nowIso = new Date().toISOString();
+
+      // Prefer explicit UPDATE (more predictable than upsert when debugging persistence)
+      const { data: updatedRiskRow, error: riskUpdateError } = await supabase
         .from("company_risk_assessments")
-        .upsert([{
-          company_id: company.id,
+        .update({
           risks: updatedRisks as unknown as Json,
-          updated_at: new Date().toISOString(),
-        }], { onConflict: "company_id" })
-        // Ensure the backend actually processed the write (and surface RLS/select issues)
-        .select("company_id, updated_at")
+          updated_at: nowIso,
+        })
+        .eq("company_id", company.id)
+        .select("company_id, risks")
         .maybeSingle();
 
-      if (riskError) throw riskError;
-      if (!riskSaveData?.company_id) throw new Error("Risk save did not return a row");
+      // If row doesn't exist yet, INSERT it
+      if (riskUpdateError || !updatedRiskRow) {
+        const { data: insertedRiskRow, error: riskInsertError } = await supabase
+          .from("company_risk_assessments")
+          .insert({
+            company_id: company.id,
+            risks: updatedRisks as unknown as Json,
+            updated_at: nowIso,
+          })
+          .select("company_id, risks")
+          .maybeSingle();
 
-      const { data: actionSaveData, error: actionError } = await supabase
+        if (riskInsertError || !insertedRiskRow) throw riskInsertError || new Error("Risk insert failed");
+      }
+
+      const { data: updatedActionRow, error: actionUpdateError } = await supabase
         .from("company_action_plans")
-        .upsert([{
-          company_id: company.id,
+        .update({
           actions: updatedActions as unknown as Json,
-          updated_at: new Date().toISOString(),
-        }], { onConflict: "company_id" })
-        .select("company_id, updated_at")
+          updated_at: nowIso,
+        })
+        .eq("company_id", company.id)
+        .select("company_id")
         .maybeSingle();
 
-      if (actionError) throw actionError;
-      if (!actionSaveData?.company_id) throw new Error("Action save did not return a row");
+      if (actionUpdateError || !updatedActionRow) {
+        const { data: insertedActionRow, error: actionInsertError } = await supabase
+          .from("company_action_plans")
+          .insert({
+            company_id: company.id,
+            actions: updatedActions as unknown as Json,
+            updated_at: nowIso,
+          })
+          .select("company_id")
+          .maybeSingle();
+
+        if (actionInsertError || !insertedActionRow) throw actionInsertError || new Error("Action insert failed");
+      }
+
+      // Final verification: re-read and ensure the deleted id is actually gone
+      const { data: verifyRiskRow, error: verifyError } = await supabase
+        .from("company_risk_assessments")
+        .select("risks")
+        .eq("company_id", company.id)
+        .maybeSingle();
+
+      if (verifyError) throw verifyError;
+      const verifyRisks = (verifyRiskRow?.risks as unknown as Array<{ id?: string }> | null) || [];
+      if (verifyRisks.some((r) => r?.id === id)) {
+        throw new Error("Delete verification failed: risk still present");
+      }
 
       toast.success("Farekilde slettet");
     } catch (error) {
