@@ -826,6 +826,67 @@ export type Database = {
           },
         ]
       }
+      company_chemical_entries: {
+        Row: {
+          company_id: string
+          created_at: string
+          custom_notes: string | null
+          global_chemical_id: string
+          id: string
+          last_updated: string
+          location: string | null
+          project_id: string | null
+          quantity: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          custom_notes?: string | null
+          global_chemical_id: string
+          id?: string
+          last_updated?: string
+          location?: string | null
+          project_id?: string | null
+          quantity?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          custom_notes?: string | null
+          global_chemical_id?: string
+          id?: string
+          last_updated?: string
+          location?: string | null
+          project_id?: string | null
+          quantity?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_chemical_entries_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_chemical_entries_global_chemical_id_fkey"
+            columns: ["global_chemical_id"]
+            isOneToOne: false
+            referencedRelation: "global_chemicals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_chemical_entries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_departments: {
         Row: {
           address: string | null
@@ -2837,6 +2898,86 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      global_chemical_sds_versions: {
+        Row: {
+          file_name: string | null
+          file_size: number | null
+          global_chemical_id: string
+          id: string
+          is_current: boolean | null
+          notes: string | null
+          sds_file_path: string
+          uploaded_at: string
+          version_number: number
+        }
+        Insert: {
+          file_name?: string | null
+          file_size?: number | null
+          global_chemical_id: string
+          id?: string
+          is_current?: boolean | null
+          notes?: string | null
+          sds_file_path: string
+          uploaded_at?: string
+          version_number?: number
+        }
+        Update: {
+          file_name?: string | null
+          file_size?: number | null
+          global_chemical_id?: string
+          id?: string
+          is_current?: boolean | null
+          notes?: string | null
+          sds_file_path?: string
+          uploaded_at?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "global_chemical_sds_versions_global_chemical_id_fkey"
+            columns: ["global_chemical_id"]
+            isOneToOne: false
+            referencedRelation: "global_chemicals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      global_chemicals: {
+        Row: {
+          cas_number: string | null
+          created_at: string
+          danger_classes: string[] | null
+          id: string
+          manufacturer: string | null
+          notes: string | null
+          product_name: string
+          search_vector: unknown
+          updated_at: string
+        }
+        Insert: {
+          cas_number?: string | null
+          created_at?: string
+          danger_classes?: string[] | null
+          id?: string
+          manufacturer?: string | null
+          notes?: string | null
+          product_name: string
+          search_vector?: unknown
+          updated_at?: string
+        }
+        Update: {
+          cas_number?: string | null
+          created_at?: string
+          danger_classes?: string[] | null
+          id?: string
+          manufacturer?: string | null
+          notes?: string | null
+          product_name?: string
+          search_vector?: unknown
+          updated_at?: string
+        }
+        Relationships: []
       }
       hms_card_requests: {
         Row: {
