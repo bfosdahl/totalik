@@ -20,11 +20,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, FlaskConical, AlertTriangle, FileText, Download, Eye, Upload, Loader2 } from "lucide-react";
+import { Plus, Search, FlaskConical, AlertTriangle, FileText, Download, Eye, Upload, Loader2, Globe } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { GlobalChemicalSearch } from "@/components/stoffkartotek/GlobalChemicalSearch";
+import { useGlobalChemicalRegistry, GlobalChemicalWithSds } from "@/hooks/useGlobalChemicalRegistry";
 
 interface IkHmsStoffkartotek {
   id: string;
@@ -75,6 +77,7 @@ export default function IkHmsStoffkartotek() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
+  const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -545,14 +548,24 @@ export default function IkHmsStoffkartotek() {
         </div>
 
         {/* Search */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Søk etter stoff..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Søk etter stoff..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => setIsGlobalSearchOpen(true)}
+            className="gap-2 whitespace-nowrap"
+          >
+            <Globe className="w-4 h-4" />
+            Søk i felles register
+          </Button>
         </div>
 
         {/* List */}
@@ -731,7 +744,158 @@ export default function IkHmsStoffkartotek() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Global Chemical Search Dialog */}
+        <GlobalChemicalSearchDialog
+          open={isGlobalSearchOpen}
+          onOpenChange={setIsGlobalSearchOpen}
+          companyId={company?.id || ""}
+          onImportSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id] });
+          }}
+        />
       </div>
     </AppLayout>
+  );
+}
+
+// Component for Global Chemical Search Dialog
+interface GlobalSearchDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  companyId: string;
+  onImportSuccess: () => void;
+}
+
+function GlobalChemicalSearchDialog({ 
+  open, 
+  onOpenChange, 
+  companyId,
+  onImportSuccess 
+}: GlobalSearchDialogProps) {
+  const [selectedChemical, setSelectedChemical] = useState<GlobalChemicalWithSds | null>(null);
+  const [location, setLocation] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
+
+  const handleImport = async () => {
+    if (!selectedChemical || !companyId) return;
+    
+    setIsImporting(true);
+    try {
+      // Import from global registry to local ik_hms_stoffkartotek table
+      const { error } = await supabase
+        .from("ik_hms_stoffkartotek" as any)
+        .insert({
+          company_id: companyId,
+          product_name: selectedChemical.product_name,
+          manufacturer: selectedChemical.manufacturer || null,
+          danger_classes: selectedChemical.danger_classes || [],
+          location: location || null,
+          notes: selectedChemical.notes || null,
+          last_updated: new Date().toISOString(),
+        } as any);
+      
+      if (error) throw error;
+      
+      toast.success(`"${selectedChemical.product_name}" lagt til i ditt stoffkartotek`);
+      onImportSuccess();
+      onOpenChange(false);
+      setSelectedChemical(null);
+      setLocation("");
+    } catch (error) {
+      console.error("Import error:", error);
+      toast.error("Kunne ikke importere stoffet");
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(value) => {
+      if (!value) {
+        setSelectedChemical(null);
+        setLocation("");
+      }
+      onOpenChange(value);
+    }}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Globe className="h-5 w-5" />
+            Søk i felles stoffregister
+          </DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            Her kan du finne stoffer som andre bedrifter har registrert og legge dem til i ditt eget kartotek
+          </p>
+        </DialogHeader>
+
+        {selectedChemical ? (
+          <div className="space-y-4 pt-2">
+            <Card>
+              <CardContent className="pt-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-semibold text-lg">{selectedChemical.product_name}</h3>
+                    {selectedChemical.manufacturer && (
+                      <p className="text-sm text-muted-foreground">{selectedChemical.manufacturer}</p>
+                    )}
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setSelectedChemical(null)}
+                  >
+                    Velg annet
+                  </Button>
+                </div>
+                {selectedChemical.danger_classes?.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-3">
+                    {selectedChemical.danger_classes.map((dc, idx) => (
+                      <Badge key={idx} variant="secondary" className={getDangerClassColor(dc)}>
+                        {dc}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                {selectedChemical.current_sds && (
+                  <div className="flex items-center gap-2 mt-3 text-sm text-green-600">
+                    <FileText className="h-4 w-4" />
+                    Sikkerhetsdatablad tilgjengelig
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <div>
+              <Label htmlFor="import-location">Lagringssted (valgfritt)</Label>
+              <Input
+                id="import-location"
+                placeholder="F.eks. Kjemikalskap A, Lager 2"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Avbryt
+              </Button>
+              <Button onClick={handleImport} disabled={isImporting}>
+                {isImporting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Legg til i mitt kartotek
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <GlobalChemicalSearch
+            onSelectChemical={setSelectedChemical}
+            onCreateNew={() => {
+              onOpenChange(false);
+              // Could open the create dialog here
+            }}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
