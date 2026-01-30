@@ -30,6 +30,7 @@ const adminNavItems = [
   { icon: CreditCard, label: "HMS-kort", path: "/admin/hms-requests", color: undefined },
   { icon: Award, label: "SG Register", path: "/admin/sg-register", color: undefined },
   { icon: FolderOpen, label: "Dokumentsenter", path: "/admin/documents", color: "text-primary" },
+  { icon: Leaf, label: "Stoffkartotek", path: "/admin/stoffkartotek", color: "text-primary" },
 ];
 
 interface SidebarContentProps {
