@@ -89,15 +89,15 @@ export function NewErgonomicAssessmentDialog({ open, onOpenChange }: NewErgonomi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
+      <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Ny ergonomisk risikovurdering</DialogTitle>
           <DialogDescription>
             Opprett en ny risikovurdering for ergonomiske forhold
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 flex-1 overflow-y-auto pr-1">
           {/* Assessment Type Selection */}
           <div className="space-y-3">
             <Label>Type vurdering</Label>
