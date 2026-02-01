@@ -119,10 +119,10 @@ export function ErgonomicAssessmentDialog({
       setExposureDuration(assessment.exposure_duration || "");
       setConsequenceSeverity(assessment.consequence_severity);
       setProbability(assessment.probability);
-      setRiskFactors((assessment.risk_factors as RiskFactor[]) || []);
-      setExistingMeasures((assessment.existing_measures as ProtectiveMeasure[]) || []);
-      setPlannedMeasures((assessment.planned_measures as ProtectiveMeasure[]) || []);
-      setRequiredPpe((assessment.required_ppe as string[]) || []);
+      setRiskFactors(Array.isArray(assessment.risk_factors) ? assessment.risk_factors : []);
+      setExistingMeasures(Array.isArray(assessment.existing_measures) ? assessment.existing_measures : []);
+      setPlannedMeasures(Array.isArray(assessment.planned_measures) ? assessment.planned_measures : []);
+      setRequiredPpe(Array.isArray(assessment.required_ppe) ? assessment.required_ppe : []);
       setConclusion(assessment.conclusion || "");
       setRecommendations(assessment.recommendations || "");
       setHealthMonitoringRequired(assessment.health_monitoring_required || false);

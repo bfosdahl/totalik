@@ -81,8 +81,11 @@ export function ErgonomiTab() {
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   
-  const { data: assessments = [], isLoading } = useErgonomicRiskAssessments();
+  const { data: assessmentsData, isLoading } = useErgonomicRiskAssessments();
   const { mutate: deleteAssessment, isPending: isDeleting } = useDeleteErgonomicAssessment();
+
+  // Ensure assessments is always an array
+  const assessments = assessmentsData ?? [];
 
   // Filter assessments
   const filteredAssessments = assessments.filter((a) => {
