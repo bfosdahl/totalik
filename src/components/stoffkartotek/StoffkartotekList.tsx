@@ -8,10 +8,10 @@ import {
   Trash2, 
   Edit2, 
   Download,
-  ExternalLink,
   MoreVertical,
   Search,
-  Plus
+  Plus,
+  Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +50,8 @@ import {
 } from "@/hooks/useGlobalChemicalRegistry";
 import { AddChemicalDialog } from "./AddChemicalDialog";
 import { EditChemicalEntryDialog } from "./EditChemicalEntryDialog";
+import { ChemicalRiskAssessmentDialog } from "./ChemicalRiskAssessmentDialog";
+import { ChemicalRiskBadge } from "./ChemicalRiskBadge";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -79,6 +81,7 @@ export const StoffkartotekList = ({ projectId }: StoffkartotekListProps) => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editEntry, setEditEntry] = useState<CompanyChemicalEntry | null>(null);
   const [deleteEntry, setDeleteEntry] = useState<CompanyChemicalEntry | null>(null);
+  const [riskAssessmentEntry, setRiskAssessmentEntry] = useState<CompanyChemicalEntry | null>(null);
 
   const { data: chemicals = [], isLoading } = useCompanyChemicals(projectId);
   const { removeFromRegistry, getSdsDownloadUrl, isRemoving } = useGlobalChemicalRegistry(projectId);
@@ -207,6 +210,7 @@ export const StoffkartotekList = ({ projectId }: StoffkartotekListProps) => {
                     <TableHead>Produkt</TableHead>
                     <TableHead>Produsent</TableHead>
                     <TableHead>Fareklasser</TableHead>
+                    <TableHead>Risikovurdering</TableHead>
                     <TableHead>Lokasjon</TableHead>
                     <TableHead>SDS</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
@@ -262,6 +266,12 @@ export const StoffkartotekList = ({ projectId }: StoffkartotekListProps) => {
                           )}
                         </TableCell>
                         <TableCell>
+                          <ChemicalRiskBadge
+                            chemicalEntryId={entry.id}
+                            onClick={() => setRiskAssessmentEntry(entry)}
+                          />
+                        </TableCell>
+                        <TableCell>
                           {entry.location ? (
                             <span className="flex items-center gap-1 text-sm">
                               <MapPin className="h-3 w-3 text-muted-foreground" />
@@ -296,6 +306,10 @@ export const StoffkartotekList = ({ projectId }: StoffkartotekListProps) => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => setRiskAssessmentEntry(entry)}>
+                                <Shield className="h-4 w-4 mr-2" />
+                                Risikovurdering
+                              </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => setEditEntry(entry)}>
                                 <Edit2 className="h-4 w-4 mr-2" />
                                 Rediger
@@ -340,6 +354,16 @@ export const StoffkartotekList = ({ projectId }: StoffkartotekListProps) => {
           open={!!editEntry}
           onOpenChange={(open) => !open && setEditEntry(null)}
           entry={editEntry}
+          projectId={projectId}
+        />
+      )}
+
+      {/* Risk Assessment Dialog */}
+      {riskAssessmentEntry && (
+        <ChemicalRiskAssessmentDialog
+          open={!!riskAssessmentEntry}
+          onOpenChange={(open) => !open && setRiskAssessmentEntry(null)}
+          chemicalEntry={riskAssessmentEntry}
           projectId={projectId}
         />
       )}
