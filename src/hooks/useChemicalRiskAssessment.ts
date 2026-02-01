@@ -90,19 +90,26 @@ export interface ChemicalRiskAssessment {
   updated_at: string;
 }
 
-// Get risk assessment for a specific chemical entry
-export const useChemicalRiskAssessment = (chemicalEntryId: string | null) => {
+// Get risk assessment for a specific chemical entry (either source)
+export const useChemicalRiskAssessment = (
+  chemicalEntryId: string | null,
+  source: 'global' | 'ik_hms' = 'global'
+) => {
   const { company } = useAuth();
 
   return useQuery({
-    queryKey: ["chemical-risk-assessment", chemicalEntryId],
+    queryKey: ["chemical-risk-assessment", chemicalEntryId, source],
     queryFn: async () => {
       if (!chemicalEntryId || !company?.id) return null;
+
+      const column = source === 'ik_hms' 
+        ? 'ik_hms_stoffkartotek_id' 
+        : 'company_chemical_entry_id';
 
       const { data, error } = await supabase
         .from("chemical_risk_assessments" as any)
         .select("*")
-        .eq("company_chemical_entry_id", chemicalEntryId)
+        .eq(column, chemicalEntryId)
         .maybeSingle();
 
       if (error) throw error;
@@ -183,7 +190,10 @@ export const useCompanyChemicalRiskAssessments = () => {
 };
 
 // Hook for CRUD operations
-export const useChemicalRiskAssessmentMutations = (projectId: string | null) => {
+export const useChemicalRiskAssessmentMutations = (
+  projectId: string | null,
+  source: 'global' | 'ik_hms' = 'global'
+) => {
   const queryClient = useQueryClient();
   const { company, profile } = useAuth();
   const userName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
@@ -193,25 +203,37 @@ export const useChemicalRiskAssessmentMutations = (projectId: string | null) => 
     mutationFn: async (chemicalEntryId: string) => {
       if (!company?.id) throw new Error("Mangler bedrift");
 
+      const insertData: any = {
+        company_id: company.id,
+        project_id: projectId,
+        current_phase: 1,
+        status: 'draft',
+      };
+
+      // Set the correct foreign key based on source
+      if (source === 'ik_hms') {
+        insertData.ik_hms_stoffkartotek_id = chemicalEntryId;
+      } else {
+        insertData.company_chemical_entry_id = chemicalEntryId;
+      }
+
       const { data, error } = await supabase
         .from("chemical_risk_assessments" as any)
-        .insert({
-          company_id: company.id,
-          company_chemical_entry_id: chemicalEntryId,
-          project_id: projectId,
-          current_phase: 1,
-          status: 'draft',
-        } as any)
+        .insert(insertData)
         .select()
         .single();
 
       if (error) {
         if (error.code === "23505") {
           // Already exists, fetch it
+          const column = source === 'ik_hms' 
+            ? 'ik_hms_stoffkartotek_id' 
+            : 'company_chemical_entry_id';
+          
           const { data: existing } = await supabase
             .from("chemical_risk_assessments" as any)
             .select("*")
-            .eq("company_chemical_entry_id", chemicalEntryId)
+            .eq(column, chemicalEntryId)
             .single();
           return existing;
         }
