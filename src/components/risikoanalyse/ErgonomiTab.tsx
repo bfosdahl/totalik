@@ -36,6 +36,7 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { ErgonomicAssessmentDialog } from "./ergonomi/ErgonomicAssessmentDialog";
 import { NewErgonomicAssessmentDialog } from "./ergonomi/NewErgonomicAssessmentDialog";
+import { ExposureCalculators } from "./ergonomi/ExposureCalculators";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -390,6 +391,9 @@ export function ErgonomiTab() {
         </CardContent>
       </Card>
 
+      {/* Exposure Calculators */}
+      <ExposureCalculators />
+
       {/* Info Card */}
       <Card>
         <CardHeader>
@@ -403,7 +407,7 @@ export function ErgonomiTab() {
           <div className="grid md:grid-cols-3 gap-4">
             <div className="p-3 bg-muted rounded-lg">
               <div className="flex items-center gap-2 mb-1">
-                <Activity className="h-4 w-4 text-blue-600" />
+                <Activity className="h-4 w-4 text-primary" />
                 <h4 className="font-medium text-foreground">Muskel- og skjelett</h4>
               </div>
               <p className="text-xs">
@@ -412,7 +416,7 @@ export function ErgonomiTab() {
             </div>
             <div className="p-3 bg-muted rounded-lg">
               <div className="flex items-center gap-2 mb-1">
-                <Vibrate className="h-4 w-4 text-purple-600" />
+                <Vibrate className="h-4 w-4 text-primary" />
                 <h4 className="font-medium text-foreground">Vibrasjoner</h4>
               </div>
               <p className="text-xs">
@@ -421,7 +425,7 @@ export function ErgonomiTab() {
             </div>
             <div className="p-3 bg-muted rounded-lg">
               <div className="flex items-center gap-2 mb-1">
-                <Volume2 className="h-4 w-4 text-orange-600" />
+                <Volume2 className="h-4 w-4 text-primary" />
                 <h4 className="font-medium text-foreground">Støy</h4>
               </div>
               <p className="text-xs">
