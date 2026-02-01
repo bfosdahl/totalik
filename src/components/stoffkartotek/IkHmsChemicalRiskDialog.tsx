@@ -107,6 +107,7 @@ export function IkHmsChemicalRiskDialog({
   const [existingMeasures, setExistingMeasures] = useState<ProtectiveMeasure[]>([]);
   const [requiredPpe, setRequiredPpe] = useState<string[]>([]);
   const [phase1Conclusion, setPhase1Conclusion] = useState("");
+  const [isInitializing, setIsInitializing] = useState(false);
 
   // Initialize form from assessment
   useEffect(() => {
@@ -127,17 +128,27 @@ export function IkHmsChemicalRiskDialog({
   // Create assessment if it doesn't exist
   useEffect(() => {
     const initAssessment = async () => {
-      if (open && !assessment && !isLoading && chemical.id) {
-        await createAssessment(chemical.id);
+      if (open && !assessment && !isLoading && !isInitializing && !isCreating && chemical.id) {
+        setIsInitializing(true);
+        try {
+          await createAssessment(chemical.id);
+        } catch (error) {
+          console.error("Failed to create assessment:", error);
+        } finally {
+          setIsInitializing(false);
+        }
       }
     };
     initAssessment();
-  }, [open, assessment, isLoading, chemical.id]);
+  }, [open, assessment, isLoading, chemical.id, isCreating]);
 
   const riskLevel = calculateChemicalRiskLevel(hazardSeverity, exposureProbability);
 
   const handleSave = (complete: boolean = false) => {
-    if (!assessment) return;
+    if (!assessment) {
+      console.error("Cannot save: assessment not initialized");
+      return;
+    }
 
     updatePhase1({
       assessmentId: assessment.id,
@@ -195,12 +206,15 @@ export function IkHmsChemicalRiskDialog({
     return Math.round((filled / 8) * 100);
   };
 
-  if (isLoading || isCreating) {
+  if (isLoading || isCreating || isInitializing) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl">
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2 text-muted-foreground">
+              {isInitializing ? "Oppretter vurdering..." : "Laster..."}
+            </span>
           </div>
         </DialogContent>
       </Dialog>
@@ -451,11 +465,18 @@ export function IkHmsChemicalRiskDialog({
 
           {/* Actions */}
           <div className="flex flex-wrap gap-2 pt-4 border-t">
-            <Button onClick={() => handleSave(false)} disabled={isUpdating} variant="outline">
+            <Button 
+              onClick={() => handleSave(false)} 
+              disabled={isUpdating || !assessment} 
+              variant="outline"
+            >
               <Save className="h-4 w-4 mr-2" />
               {isUpdating ? "Lagrer..." : "Lagre utkast"}
             </Button>
-            <Button onClick={() => handleSave(true)} disabled={isUpdating}>
+            <Button 
+              onClick={() => handleSave(true)} 
+              disabled={isUpdating || !assessment}
+            >
               {isUpdating ? "Lagrer..." : "Fullfør vurdering"}
             </Button>
             <Button variant="ghost" onClick={() => onOpenChange(false)}>
