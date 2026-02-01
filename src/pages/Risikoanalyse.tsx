@@ -59,8 +59,8 @@ const Risikoanalyse = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-          <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
-            <TabsList className="inline-flex w-max sm:w-full sm:grid sm:grid-cols-6 h-auto p-1 bg-muted/50 gap-1">
+          <div className="w-full overflow-x-auto pb-1">
+            <TabsList className="inline-flex min-w-max w-max sm:w-full sm:grid sm:grid-cols-6 h-auto p-1 bg-muted/50 gap-1">
               <TabsTrigger 
                 value="risiko-handlingsplan" 
                 className="flex items-center gap-2 py-3 px-3 whitespace-nowrap data-[state=active]:bg-background"
