@@ -104,7 +104,7 @@ export const ChemicalRiskAssessmentDialog = ({
   const { createAssessment, updatePhase1, isCreating, isUpdating } = useChemicalRiskAssessmentMutations(projectId);
 
   // Phase 1 form state
-  const [exposureType, setExposureType] = useState<string>("");
+  const [exposureTypes, setExposureTypes] = useState<string[]>([]);
   const [exposureLevel, setExposureLevel] = useState<string>("");
   const [exposureDuration, setExposureDuration] = useState<string>("");
   const [exposedWorkersCount, setExposedWorkersCount] = useState<number>(1);
@@ -122,7 +122,7 @@ export const ChemicalRiskAssessmentDialog = ({
   // Initialize form from assessment
   useEffect(() => {
     if (assessment) {
-      setExposureType(assessment.exposure_type || "");
+      setExposureTypes(assessment.exposure_type ? assessment.exposure_type.split(",") : []);
       setExposureLevel(assessment.exposure_level || "");
       setExposureDuration(assessment.exposure_duration || "");
       setExposedWorkersCount(assessment.exposed_workers_count || 1);
@@ -157,7 +157,7 @@ export const ChemicalRiskAssessmentDialog = ({
     updatePhase1({
       assessmentId: assessment.id,
       data: {
-        exposure_type: exposureType || null,
+        exposure_type: exposureTypes.length > 0 ? exposureTypes.join(",") : null,
         exposure_level: exposureLevel || null,
         exposure_duration: exposureDuration || null,
         exposed_workers_count: exposedWorkersCount,
@@ -236,7 +236,7 @@ export const ChemicalRiskAssessmentDialog = ({
 
   const getProgressPercent = () => {
     let filled = 0;
-    const fields = [exposureType, exposureLevel, exposureDuration, hazardSeverity, exposureProbability];
+    const fields = [exposureTypes.length > 0, exposureLevel, exposureDuration, hazardSeverity, exposureProbability];
     fields.forEach((f) => {
       if (f) filled++;
     });
@@ -341,19 +341,27 @@ export const ChemicalRiskAssessmentDialog = ({
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label>Eksponeringstype</Label>
-                    <Select value={exposureType} onValueChange={setExposureType}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Velg type eksponering" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {EXPOSURE_TYPES.map((t) => (
-                          <SelectItem key={t.value} value={t.value}>
+                    <Label className="mb-2 block">Eksponeringstype (velg alle relevante)</Label>
+                    <div className="space-y-2">
+                      {EXPOSURE_TYPES.map((t) => (
+                        <div key={t.value} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`exposure-${t.value}`}
+                            checked={exposureTypes.includes(t.value)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setExposureTypes([...exposureTypes, t.value]);
+                              } else {
+                                setExposureTypes(exposureTypes.filter(v => v !== t.value));
+                              }
+                            }}
+                          />
+                          <label htmlFor={`exposure-${t.value}`} className="text-sm cursor-pointer">
                             {t.label} - {t.description}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                   <div>
                     <Label>Eksponeringsnivå</Label>
