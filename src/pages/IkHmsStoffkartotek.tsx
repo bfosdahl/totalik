@@ -20,13 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, FlaskConical, AlertTriangle, FileText, Download, Eye, Upload, Loader2, Globe } from "lucide-react";
+import { Plus, Search, FlaskConical, AlertTriangle, FileText, Download, Eye, Upload, Loader2, Globe, Edit } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { GlobalChemicalSearch } from "@/components/stoffkartotek/GlobalChemicalSearch";
 import { useGlobalChemicalRegistry, GlobalChemicalWithSds } from "@/hooks/useGlobalChemicalRegistry";
+import { EditIkHmsChemicalDialog } from "@/components/stoffkartotek/EditIkHmsChemicalDialog";
 
 interface IkHmsStoffkartotek {
   id: string;
@@ -77,6 +78,7 @@ export default function IkHmsStoffkartotek() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
+  const [editProductId, setEditProductId] = useState<string | null>(null);
   const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false);
 
   // Form state
@@ -728,7 +730,17 @@ export default function IkHmsStoffkartotek() {
                   )}
                 </div>
 
-                <div className="flex gap-2 pt-4 border-t">
+                <div className="flex flex-wrap gap-2 pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsDetailOpen(false);
+                      setEditProductId(selectedProduct.id);
+                    }}
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Rediger
+                  </Button>
                   <Button
                     variant="destructive"
                     onClick={() => deleteMutation.mutate(selectedProduct.id)}
@@ -754,6 +766,16 @@ export default function IkHmsStoffkartotek() {
             queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id] });
           }}
         />
+
+        {/* Edit Chemical Dialog */}
+        {editProductId && (
+          <EditIkHmsChemicalDialog
+            open={!!editProductId}
+            onOpenChange={(open) => !open && setEditProductId(null)}
+            productId={editProductId}
+            companyId={company?.id || ""}
+          />
+        )}
       </div>
     </AppLayout>
   );
