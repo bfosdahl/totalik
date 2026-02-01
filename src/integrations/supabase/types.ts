@@ -728,6 +728,190 @@ export type Database = {
           },
         ]
       }
+      chemical_risk_assessments: {
+        Row: {
+          company_chemical_entry_id: string
+          company_id: string
+          created_at: string
+          current_phase: number
+          existing_measures: Json | null
+          exposed_workers_count: number | null
+          exposure_duration: string | null
+          exposure_level: string | null
+          exposure_probability: number | null
+          exposure_type: string | null
+          hazard_identification: Json | null
+          hazard_severity: number | null
+          health_monitoring_details: string | null
+          health_monitoring_required: boolean | null
+          id: string
+          implemented_measures: Json | null
+          phase_1_assessed_at: string | null
+          phase_1_assessed_by_id: string | null
+          phase_1_assessed_by_name: string | null
+          phase_1_completed: boolean
+          phase_1_conclusion: string | null
+          phase_1_needs_further_assessment: boolean | null
+          phase_2_assessed_at: string | null
+          phase_2_assessed_by_id: string | null
+          phase_2_assessed_by_name: string | null
+          phase_2_completed: boolean
+          phase_2_conclusion: string | null
+          phase_2_measurement_method: string | null
+          phase_2_measurements: Json | null
+          phase_2_needs_detailed_assessment: boolean | null
+          phase_3_assessed_at: string | null
+          phase_3_assessed_by_id: string | null
+          phase_3_assessed_by_name: string | null
+          phase_3_completed: boolean
+          phase_3_conclusion: string | null
+          phase_3_measurements: Json | null
+          phase_3_statistical_analysis: Json | null
+          planned_measures: Json | null
+          project_id: string | null
+          required_ppe: Json | null
+          risk_level: string | null
+          status: string
+          updated_at: string
+          work_tasks: Json | null
+        }
+        Insert: {
+          company_chemical_entry_id: string
+          company_id: string
+          created_at?: string
+          current_phase?: number
+          existing_measures?: Json | null
+          exposed_workers_count?: number | null
+          exposure_duration?: string | null
+          exposure_level?: string | null
+          exposure_probability?: number | null
+          exposure_type?: string | null
+          hazard_identification?: Json | null
+          hazard_severity?: number | null
+          health_monitoring_details?: string | null
+          health_monitoring_required?: boolean | null
+          id?: string
+          implemented_measures?: Json | null
+          phase_1_assessed_at?: string | null
+          phase_1_assessed_by_id?: string | null
+          phase_1_assessed_by_name?: string | null
+          phase_1_completed?: boolean
+          phase_1_conclusion?: string | null
+          phase_1_needs_further_assessment?: boolean | null
+          phase_2_assessed_at?: string | null
+          phase_2_assessed_by_id?: string | null
+          phase_2_assessed_by_name?: string | null
+          phase_2_completed?: boolean
+          phase_2_conclusion?: string | null
+          phase_2_measurement_method?: string | null
+          phase_2_measurements?: Json | null
+          phase_2_needs_detailed_assessment?: boolean | null
+          phase_3_assessed_at?: string | null
+          phase_3_assessed_by_id?: string | null
+          phase_3_assessed_by_name?: string | null
+          phase_3_completed?: boolean
+          phase_3_conclusion?: string | null
+          phase_3_measurements?: Json | null
+          phase_3_statistical_analysis?: Json | null
+          planned_measures?: Json | null
+          project_id?: string | null
+          required_ppe?: Json | null
+          risk_level?: string | null
+          status?: string
+          updated_at?: string
+          work_tasks?: Json | null
+        }
+        Update: {
+          company_chemical_entry_id?: string
+          company_id?: string
+          created_at?: string
+          current_phase?: number
+          existing_measures?: Json | null
+          exposed_workers_count?: number | null
+          exposure_duration?: string | null
+          exposure_level?: string | null
+          exposure_probability?: number | null
+          exposure_type?: string | null
+          hazard_identification?: Json | null
+          hazard_severity?: number | null
+          health_monitoring_details?: string | null
+          health_monitoring_required?: boolean | null
+          id?: string
+          implemented_measures?: Json | null
+          phase_1_assessed_at?: string | null
+          phase_1_assessed_by_id?: string | null
+          phase_1_assessed_by_name?: string | null
+          phase_1_completed?: boolean
+          phase_1_conclusion?: string | null
+          phase_1_needs_further_assessment?: boolean | null
+          phase_2_assessed_at?: string | null
+          phase_2_assessed_by_id?: string | null
+          phase_2_assessed_by_name?: string | null
+          phase_2_completed?: boolean
+          phase_2_conclusion?: string | null
+          phase_2_measurement_method?: string | null
+          phase_2_measurements?: Json | null
+          phase_2_needs_detailed_assessment?: boolean | null
+          phase_3_assessed_at?: string | null
+          phase_3_assessed_by_id?: string | null
+          phase_3_assessed_by_name?: string | null
+          phase_3_completed?: boolean
+          phase_3_conclusion?: string | null
+          phase_3_measurements?: Json | null
+          phase_3_statistical_analysis?: Json | null
+          planned_measures?: Json | null
+          project_id?: string | null
+          required_ppe?: Json | null
+          risk_level?: string | null
+          status?: string
+          updated_at?: string
+          work_tasks?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chemical_risk_assessments_company_chemical_entry_id_fkey"
+            columns: ["company_chemical_entry_id"]
+            isOneToOne: true
+            referencedRelation: "company_chemical_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chemical_risk_assessments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chemical_risk_assessments_phase_1_assessed_by_id_fkey"
+            columns: ["phase_1_assessed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chemical_risk_assessments_phase_2_assessed_by_id_fkey"
+            columns: ["phase_2_assessed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chemical_risk_assessments_phase_3_assessed_by_id_fkey"
+            columns: ["phase_3_assessed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chemical_risk_assessments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           accent_color: string | null

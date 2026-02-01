@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, ClipboardList, CalendarCheck, FileCheck, BookOpen } from "lucide-react";
+import { Shield, ClipboardList, CalendarCheck, FileCheck, BookOpen, FlaskConical } from "lucide-react";
 import { RisikovurderingOgHandlingsplan } from "@/components/risikoanalyse/RisikovurderingOgHandlingsplan";
 import { OppfolgingTab } from "@/components/risikoanalyse/OppfolgingTab";
 import { HmsSjaTab } from "@/components/risikoanalyse/HmsSjaTab";
 import { RutinerTab } from "@/components/risikoanalyse/RutinerTab";
+import { KjemikalierTab } from "@/components/risikoanalyse/KjemikalierTab";
 
 const Risikoanalyse = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,6 +21,8 @@ const Risikoanalyse = () => {
       setActiveTab("sja");
     } else if (tabParam === "rutiner") {
       setActiveTab("rutiner");
+    } else if (tabParam === "kjemikalier") {
+      setActiveTab("kjemikalier");
     } else {
       setActiveTab("risiko-handlingsplan");
     }
@@ -53,14 +56,22 @@ const Risikoanalyse = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-muted/50">
+          <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-muted/50">
             <TabsTrigger 
               value="risiko-handlingsplan" 
               className="flex items-center gap-2 py-3 data-[state=active]:bg-background"
             >
               <ClipboardList className="h-4 w-4" />
-              <span className="hidden sm:inline">Risikovurdering & Handlingsplan</span>
+              <span className="hidden sm:inline">Risikovurdering</span>
               <span className="sm:hidden">Risiko</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="kjemikalier" 
+              className="flex items-center gap-2 py-3 data-[state=active]:bg-background"
+            >
+              <FlaskConical className="h-4 w-4" />
+              <span className="hidden sm:inline">Kjemikalier</span>
+              <span className="sm:hidden">Kjem.</span>
             </TabsTrigger>
             <TabsTrigger 
               value="oppfolging" 
@@ -89,6 +100,10 @@ const Risikoanalyse = () => {
 
           <TabsContent value="risiko-handlingsplan" className="mt-6">
             <RisikovurderingOgHandlingsplan />
+          </TabsContent>
+
+          <TabsContent value="kjemikalier" className="mt-6">
+            <KjemikalierTab />
           </TabsContent>
 
           <TabsContent value="oppfolging" className="mt-6">
