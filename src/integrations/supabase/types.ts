@@ -2992,6 +2992,164 @@ export type Database = {
           },
         ]
       }
+      ergonomic_risk_assessments: {
+        Row: {
+          assessed_at: string | null
+          assessed_by_id: string | null
+          assessed_by_name: string | null
+          assessment_type: string
+          company_id: string
+          conclusion: string | null
+          consequence_severity: number | null
+          created_at: string
+          department_id: string | null
+          description: string | null
+          existing_measures: Json | null
+          exposed_workers_count: number | null
+          exposure_duration: string | null
+          exposure_frequency: string | null
+          follow_up_date: string | null
+          health_monitoring_details: string | null
+          health_monitoring_required: boolean | null
+          id: string
+          implemented_measures: Json | null
+          job_role: string | null
+          noise_exposure_time: number | null
+          noise_level: number | null
+          noise_peak_level: number | null
+          noise_sources: Json | null
+          planned_measures: Json | null
+          probability: number | null
+          project_id: string | null
+          recommendations: string | null
+          required_ppe: Json | null
+          risk_factors: Json | null
+          risk_level: string | null
+          risk_score: number | null
+          status: string
+          title: string
+          updated_at: string
+          vibration_equipment: Json | null
+          vibration_exposure_time: number | null
+          vibration_level: number | null
+          vibration_type: string | null
+          work_area: string | null
+        }
+        Insert: {
+          assessed_at?: string | null
+          assessed_by_id?: string | null
+          assessed_by_name?: string | null
+          assessment_type: string
+          company_id: string
+          conclusion?: string | null
+          consequence_severity?: number | null
+          created_at?: string
+          department_id?: string | null
+          description?: string | null
+          existing_measures?: Json | null
+          exposed_workers_count?: number | null
+          exposure_duration?: string | null
+          exposure_frequency?: string | null
+          follow_up_date?: string | null
+          health_monitoring_details?: string | null
+          health_monitoring_required?: boolean | null
+          id?: string
+          implemented_measures?: Json | null
+          job_role?: string | null
+          noise_exposure_time?: number | null
+          noise_level?: number | null
+          noise_peak_level?: number | null
+          noise_sources?: Json | null
+          planned_measures?: Json | null
+          probability?: number | null
+          project_id?: string | null
+          recommendations?: string | null
+          required_ppe?: Json | null
+          risk_factors?: Json | null
+          risk_level?: string | null
+          risk_score?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+          vibration_equipment?: Json | null
+          vibration_exposure_time?: number | null
+          vibration_level?: number | null
+          vibration_type?: string | null
+          work_area?: string | null
+        }
+        Update: {
+          assessed_at?: string | null
+          assessed_by_id?: string | null
+          assessed_by_name?: string | null
+          assessment_type?: string
+          company_id?: string
+          conclusion?: string | null
+          consequence_severity?: number | null
+          created_at?: string
+          department_id?: string | null
+          description?: string | null
+          existing_measures?: Json | null
+          exposed_workers_count?: number | null
+          exposure_duration?: string | null
+          exposure_frequency?: string | null
+          follow_up_date?: string | null
+          health_monitoring_details?: string | null
+          health_monitoring_required?: boolean | null
+          id?: string
+          implemented_measures?: Json | null
+          job_role?: string | null
+          noise_exposure_time?: number | null
+          noise_level?: number | null
+          noise_peak_level?: number | null
+          noise_sources?: Json | null
+          planned_measures?: Json | null
+          probability?: number | null
+          project_id?: string | null
+          recommendations?: string | null
+          required_ppe?: Json | null
+          risk_factors?: Json | null
+          risk_level?: string | null
+          risk_score?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+          vibration_equipment?: Json | null
+          vibration_exposure_time?: number | null
+          vibration_level?: number | null
+          vibration_type?: string | null
+          work_area?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ergonomic_risk_assessments_assessed_by_id_fkey"
+            columns: ["assessed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ergonomic_risk_assessments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ergonomic_risk_assessments_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ergonomic_risk_assessments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gdpr_checklist_responses: {
         Row: {
           checklist_type: string
