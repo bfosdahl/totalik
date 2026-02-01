@@ -6,16 +6,18 @@ import { cn } from "@/lib/utils";
 
 interface ChemicalRiskBadgeProps {
   chemicalEntryId: string;
+  source?: 'global' | 'ik_hms';
   onClick?: () => void;
   showDetails?: boolean;
 }
 
 export const ChemicalRiskBadge = ({
   chemicalEntryId,
+  source = 'global',
   onClick,
   showDetails = false,
 }: ChemicalRiskBadgeProps) => {
-  const { data: assessment, isLoading } = useChemicalRiskAssessment(chemicalEntryId);
+  const { data: assessment, isLoading } = useChemicalRiskAssessment(chemicalEntryId, source);
 
   if (isLoading) {
     return (

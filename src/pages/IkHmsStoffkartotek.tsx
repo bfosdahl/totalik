@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, FlaskConical, AlertTriangle, FileText, Download, Eye, Upload, Loader2, Globe, Edit } from "lucide-react";
+import { Plus, Search, FlaskConical, AlertTriangle, FileText, Download, Eye, Upload, Loader2, Globe, Edit, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +28,8 @@ import { toast } from "sonner";
 import { GlobalChemicalSearch } from "@/components/stoffkartotek/GlobalChemicalSearch";
 import { useGlobalChemicalRegistry, GlobalChemicalWithSds } from "@/hooks/useGlobalChemicalRegistry";
 import { EditIkHmsChemicalDialog } from "@/components/stoffkartotek/EditIkHmsChemicalDialog";
+import { ChemicalRiskBadge } from "@/components/stoffkartotek/ChemicalRiskBadge";
+import { IkHmsChemicalRiskDialog } from "@/components/stoffkartotek/IkHmsChemicalRiskDialog";
 
 interface IkHmsStoffkartotek {
   id: string;
@@ -80,6 +82,7 @@ export default function IkHmsStoffkartotek() {
   const [isParsing, setIsParsing] = useState(false);
   const [editProductId, setEditProductId] = useState<string | null>(null);
   const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false);
+  const [riskAssessmentProduct, setRiskAssessmentProduct] = useState<IkHmsStoffkartotek | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -632,6 +635,16 @@ export default function IkHmsStoffkartotek() {
                         SDS tilgjengelig
                       </div>
                     )}
+                    {/* Risk Assessment Badge */}
+                    <div onClick={(e) => {
+                      e.stopPropagation();
+                      setRiskAssessmentProduct(item);
+                    }}>
+                      <ChemicalRiskBadge 
+                        chemicalEntryId={item.id} 
+                        source="ik_hms"
+                      />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -732,6 +745,16 @@ export default function IkHmsStoffkartotek() {
 
                 <div className="flex flex-wrap gap-2 pt-4 border-t">
                   <Button
+                    variant="default"
+                    onClick={() => {
+                      setIsDetailOpen(false);
+                      setRiskAssessmentProduct(selectedProduct);
+                    }}
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    Risikovurder
+                  </Button>
+                  <Button
                     variant="outline"
                     onClick={() => {
                       setIsDetailOpen(false);
@@ -774,6 +797,20 @@ export default function IkHmsStoffkartotek() {
             onOpenChange={(open) => !open && setEditProductId(null)}
             productId={editProductId}
             companyId={company?.id || ""}
+          />
+        )}
+
+        {/* Risk Assessment Dialog */}
+        {riskAssessmentProduct && (
+          <IkHmsChemicalRiskDialog
+            open={!!riskAssessmentProduct}
+            onOpenChange={(open) => !open && setRiskAssessmentProduct(null)}
+            chemical={{
+              id: riskAssessmentProduct.id,
+              product_name: riskAssessmentProduct.product_name,
+              manufacturer: riskAssessmentProduct.manufacturer,
+              danger_classes: riskAssessmentProduct.danger_classes,
+            }}
           />
         )}
       </div>

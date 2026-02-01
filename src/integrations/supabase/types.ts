@@ -730,7 +730,7 @@ export type Database = {
       }
       chemical_risk_assessments: {
         Row: {
-          company_chemical_entry_id: string
+          company_chemical_entry_id: string | null
           company_id: string
           created_at: string
           current_phase: number
@@ -745,6 +745,7 @@ export type Database = {
           health_monitoring_details: string | null
           health_monitoring_required: boolean | null
           id: string
+          ik_hms_stoffkartotek_id: string | null
           implemented_measures: Json | null
           phase_1_assessed_at: string | null
           phase_1_assessed_by_id: string | null
@@ -776,7 +777,7 @@ export type Database = {
           work_tasks: Json | null
         }
         Insert: {
-          company_chemical_entry_id: string
+          company_chemical_entry_id?: string | null
           company_id: string
           created_at?: string
           current_phase?: number
@@ -791,6 +792,7 @@ export type Database = {
           health_monitoring_details?: string | null
           health_monitoring_required?: boolean | null
           id?: string
+          ik_hms_stoffkartotek_id?: string | null
           implemented_measures?: Json | null
           phase_1_assessed_at?: string | null
           phase_1_assessed_by_id?: string | null
@@ -822,7 +824,7 @@ export type Database = {
           work_tasks?: Json | null
         }
         Update: {
-          company_chemical_entry_id?: string
+          company_chemical_entry_id?: string | null
           company_id?: string
           created_at?: string
           current_phase?: number
@@ -837,6 +839,7 @@ export type Database = {
           health_monitoring_details?: string | null
           health_monitoring_required?: boolean | null
           id?: string
+          ik_hms_stoffkartotek_id?: string | null
           implemented_measures?: Json | null
           phase_1_assessed_at?: string | null
           phase_1_assessed_by_id?: string | null
@@ -871,7 +874,7 @@ export type Database = {
           {
             foreignKeyName: "chemical_risk_assessments_company_chemical_entry_id_fkey"
             columns: ["company_chemical_entry_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "company_chemical_entries"
             referencedColumns: ["id"]
           },
@@ -880,6 +883,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chemical_risk_assessments_ik_hms_stoffkartotek_id_fkey"
+            columns: ["ik_hms_stoffkartotek_id"]
+            isOneToOne: false
+            referencedRelation: "ik_hms_stoffkartotek"
             referencedColumns: ["id"]
           },
           {
