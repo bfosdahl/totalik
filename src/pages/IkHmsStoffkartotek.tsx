@@ -743,37 +743,43 @@ export default function IkHmsStoffkartotek() {
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-2 pt-4 border-t">
-                  <Button
-                    variant="default"
-                    onClick={() => {
-                      setIsDetailOpen(false);
-                      setRiskAssessmentProduct(selectedProduct);
-                    }}
-                  >
-                    <Shield className="w-4 h-4 mr-2" />
-                    Risikovurder
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setIsDetailOpen(false);
-                      setEditProductId(selectedProduct.id);
-                    }}
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    Rediger
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => deleteMutation.mutate(selectedProduct.id)}
-                    disabled={deleteMutation.isPending}
-                  >
-                    {deleteMutation.isPending ? "Sletter..." : "Slett"}
-                  </Button>
-                  <Button variant="outline" onClick={() => setIsDetailOpen(false)}>
-                    Lukk
-                  </Button>
+                <div className="space-y-3 pt-4 border-t">
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="default"
+                      className="w-full"
+                      onClick={() => {
+                        setIsDetailOpen(false);
+                        setRiskAssessmentProduct(selectedProduct);
+                      }}
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      Risikovurder
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        setIsDetailOpen(false);
+                        setEditProductId(selectedProduct.id);
+                      }}
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Rediger
+                    </Button>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="destructive"
+                      onClick={() => deleteMutation.mutate(selectedProduct.id)}
+                      disabled={deleteMutation.isPending}
+                    >
+                      {deleteMutation.isPending ? "Sletter..." : "Slett"}
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsDetailOpen(false)}>
+                      Lukk
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
