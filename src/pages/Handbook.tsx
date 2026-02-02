@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { SupportedLanguage } from "@/contexts/LanguageContext";
 import { 
   BookOpen, 
   Download, 
@@ -56,6 +57,7 @@ import { nb } from "date-fns/locale";
 import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
 import { HmsSelfDeclarationDialog } from "@/components/setup/HmsSelfDeclarationDialog";
 import { VerneombudExemptionDialog } from "@/components/setup/VerneombudExemptionDialog";
+import { TranslateHandbookDialog } from "@/components/handbook/TranslateHandbookDialog";
 import {
   sanitizeHandbookData,
   sanitizeRisks,
@@ -145,6 +147,22 @@ const Handbook = () => {
   const [includeElkontrollInPdf, setIncludeElkontrollInPdf] = useState(false);
   const [includeFysiskeForholdInPdf, setIncludeFysiskeForholdInPdf] = useState(false);
   const [includeDagligDriftInPdf, setIncludeDagligDriftInPdf] = useState(false);
+  
+  // Translated content state - using TranslatedHandbookContent type from component
+  const [translatedContent, setTranslatedContent] = useState<{
+    goals?: string[];
+    organizationDescription?: string;
+    organizationRoles?: { title: string; personName: string; description: string }[];
+    risks?: { description: string; existing_measures: string; planned_measures: string }[];
+    actions?: { action_description: string; risk_description: string; responsible: string; deadline: string; status: string }[];
+    routines?: { routine_name: string; purpose: string; responsibility: string; procedure: string }[];
+  } | null>(null);
+  const [currentTranslationLang, setCurrentTranslationLang] = useState<SupportedLanguage>("no");
+  
+  const handleTranslationComplete = useCallback((content: typeof translatedContent, language: SupportedLanguage) => {
+    setTranslatedContent(content);
+    setCurrentTranslationLang(language);
+  }, []);
 
   // Fetch deviation attachments
   useEffect(() => {
@@ -2235,6 +2253,16 @@ const Handbook = () => {
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
+            <TranslateHandbookDialog
+              content={{
+                goals: goals,
+                organization: organization,
+                riskAssessment: riskAssessment,
+                actionPlan: actionPlan,
+                routines: routines,
+              }}
+              onTranslated={handleTranslationComplete}
+            />
             <Button variant="outline" className="gap-2" onClick={() => setEmailDialogOpen(true)}>
               <Mail className="w-4 h-4" />
               Send på e-post
