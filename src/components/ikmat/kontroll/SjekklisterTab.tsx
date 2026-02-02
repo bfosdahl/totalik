@@ -7,7 +7,7 @@ import { CheckCircle2, ClipboardList, PlayCircle, History, Trash2, Check, X, Min
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useIkMatChecklistResponses } from "@/hooks/useIkMatChecklistResponses";
+import { useIkMatChecklistResponses, CheckpointItem, getCheckpointText } from "@/hooks/useIkMatChecklistResponses";
 import { useCustomChecklists } from "@/hooks/useCustomChecklists";
 import { FillChecklistDialog } from "@/components/ikmat/FillChecklistDialog";
 import { CreateChecklistDialog } from "@/components/ikmat/CreateChecklistDialog";
@@ -20,7 +20,7 @@ interface Checklist {
   id: string;
   name: string;
   description: string;
-  checkpoints: string[];
+  checkpoints: CheckpointItem[];
 }
 
 export const SjekklisterTab = () => {
@@ -209,7 +209,7 @@ export const SjekklisterTab = () => {
                       {checklist.checkpoints?.slice(0, 2).map((point, idx) => (
                         <div key={idx} className="flex items-start gap-1.5 sm:gap-2 text-xs sm:text-sm">
                           <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                          <span className="text-muted-foreground line-clamp-1">{point}</span>
+                          <span className="text-muted-foreground line-clamp-1">{getCheckpointText(point)}</span>
                         </div>
                       ))}
                       {checklist.checkpoints?.length > 2 && (
@@ -256,11 +256,11 @@ export const SjekklisterTab = () => {
             <div className="grid gap-4">
               {responses.map((response) => {
                 const checklist = allChecklists.find(c => c.id === response.checklist_type);
-                const displayChecklist = checklist || {
+                const displayChecklist: Checklist = checklist || {
                   id: response.checklist_type,
                   name: response.checklist_name,
                   description: '',
-                  checkpoints: response.responses.map(r => r.checkpoint)
+                  checkpoints: response.responses.map(r => r.checkpoint) as CheckpointItem[]
                 };
 
                 const okCount = response.responses.filter(r => r.status === 'ok').length;
