@@ -131,7 +131,16 @@
     "newDeviation": "Naujas nukrypimas",
     "newAudit": "Naujas auditas",
     "newRiskAssessment": "Naujas rizikos vertinimas",
-    "viewAll": "Žiūrėti viską"
+    "viewAll": "Žiūrėti viską",
+    "anonymousReporting": "Anoniminis pranešimas",
+    "anonymousDescription": "Siųskite anoniminį pranešimą vadovybei apie susirūpinimą, nepageidaujamus incidentus ar pasiūlymus tobulėti.",
+    "complianceStatus": "Atitikties būsena",
+    "meetsRequirements": "Atitinka reikalavimus",
+    "completedActions": "Baigti veiksmai",
+    "total": "Iš viso",
+    "expiring": "Baigiasi galiojimas",
+    "next7Days": "Artimiausios 7 dienos",
+    "requiresAction": "Reikia veiksmų"
   },
   "deviations": {
     "title": "Nukrypimai",
