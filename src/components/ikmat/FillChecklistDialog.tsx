@@ -4,14 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckpointResponse } from "@/hooks/useIkMatChecklistResponses";
+import { CheckpointResponse, CheckpointItem, getCheckpointText } from "@/hooks/useIkMatChecklistResponses";
 import { Check, X, Minus } from "lucide-react";
 
 interface FillChecklistDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   checklistName: string;
-  checkpoints: string[];
+  checkpoints: CheckpointItem[];
   existingResponses?: CheckpointResponse[];
   onSave: (responses: CheckpointResponse[], status: 'draft' | 'completed', notes?: string) => Promise<boolean>;
 }
@@ -26,7 +26,7 @@ export function FillChecklistDialog({
 }: FillChecklistDialogProps) {
   const [responses, setResponses] = useState<CheckpointResponse[]>(
     existingResponses || checkpoints.map(cp => ({
-      checkpoint: cp,
+      checkpoint: getCheckpointText(cp),
       status: 'na' as const,
       comment: ''
     }))

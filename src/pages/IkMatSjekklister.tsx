@@ -9,7 +9,7 @@ import { CheckCircle2, ClipboardList, PlayCircle, History, Trash2, Check, X, Min
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useIkMatChecklistResponses } from "@/hooks/useIkMatChecklistResponses";
+import { useIkMatChecklistResponses, CheckpointItem, getCheckpointText } from "@/hooks/useIkMatChecklistResponses";
 import { useCustomChecklists } from "@/hooks/useCustomChecklists";
 import { FillChecklistDialog } from "@/components/ikmat/FillChecklistDialog";
 import { CreateChecklistDialog } from "@/components/ikmat/CreateChecklistDialog";
@@ -22,7 +22,7 @@ interface Checklist {
   id: string;
   name: string;
   description: string;
-  checkpoints: string[];
+  checkpoints: CheckpointItem[];
 }
 
 const IkMatSjekklister = () => {
@@ -227,7 +227,7 @@ const IkMatSjekklister = () => {
                           {checklist.checkpoints?.slice(0, 3).map((point, idx) => (
                             <div key={idx} className="flex items-start gap-2 text-sm">
                               <CheckCircle2 className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                              <span className="text-muted-foreground">{point}</span>
+                              <span className="text-muted-foreground">{getCheckpointText(point)}</span>
                             </div>
                           ))}
                           {checklist.checkpoints?.length > 3 && (
