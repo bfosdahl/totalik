@@ -4,11 +4,20 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useIkMatDeviation } from "./useIkMatDeviation";
 
+// Checkpoint can be either a string or an object with text property
+export type CheckpointItem = string | { id?: string | number; text: string; is_critical?: boolean };
+
 export interface CheckpointResponse {
   checkpoint: string;
   status: 'ok' | 'not_ok' | 'na';
   comment?: string;
 }
+
+// Helper function to extract text from checkpoint
+export const getCheckpointText = (checkpoint: CheckpointItem): string => {
+  if (typeof checkpoint === 'string') return checkpoint;
+  return checkpoint?.text || '';
+};
 
 export interface ChecklistResponse {
   id: string;
@@ -58,7 +67,7 @@ export function useIkMatChecklistResponses() {
   const createResponse = async (
     checklistType: string,
     checklistName: string,
-    checkpoints: string[]
+    checkpoints: CheckpointItem[]
   ) => {
     if (!profile?.company_id || !profile?.id) {
       toast.error('Du må være logget inn');
@@ -67,11 +76,10 @@ export function useIkMatChecklistResponses() {
 
     try {
       const initialResponses: CheckpointResponse[] = checkpoints.map(cp => ({
-        checkpoint: cp,
+        checkpoint: getCheckpointText(cp),
         status: 'na' as const,
         comment: ''
       }));
-
       const { data, error } = await supabase
         .from('ik_mat_checklist_responses')
         .insert({
