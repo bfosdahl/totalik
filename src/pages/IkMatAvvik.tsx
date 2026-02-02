@@ -11,7 +11,9 @@ import {
   Download,
   FileText,
   FileSpreadsheet,
-  Utensils
+  Utensils,
+  Trash2,
+  RotateCcw
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -115,7 +117,7 @@ const IkMatAvvik = () => {
   const { profile, company } = useAuth();
   const navigate = useNavigate();
   const { hasModule, isLoading: modulesLoading } = useCompanyModules();
-  const { deviations, isLoading, createDeviation, updateDeviation } = useDeviations();
+  const { deviations, isLoading, createDeviation, updateDeviation, deleteDeviation, refetch } = useDeviations();
   const { users, getUserDisplayName } = useCompanyUsers();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
@@ -123,6 +125,7 @@ const IkMatAvvik = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedDeviation, setSelectedDeviation] = useState<DeviationForDialog | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
 
   // Redirect if module not enabled
   useEffect(() => {
@@ -318,6 +321,51 @@ const IkMatAvvik = () => {
     return success;
   };
 
+  // Delete a single deviation
+  const handleDeleteDeviation = async (id: string) => {
+    if (!confirm("Er du sikker på at du vil slette dette avviket?")) return;
+    
+    const success = await deleteDeviation(id);
+    if (success) {
+      setIsDetailOpen(false);
+      setSelectedDeviation(null);
+    }
+  };
+
+  // Delete all open IK-MAT deviations (for system startup/reset)
+  const handleDeleteAllOpenDeviations = async () => {
+    const openDeviations = foodSafetyDeviations.filter(d => d.status === "open" || d.status === "in-progress");
+    
+    if (openDeviations.length === 0) {
+      toast({
+        title: "Ingen åpne avvik",
+        description: "Det finnes ingen åpne avvik å slette.",
+      });
+      return;
+    }
+
+    if (!confirm(`Er du sikker på at du vil slette ${openDeviations.length} åpne avvik? Dette kan ikke angres.\n\nDette er nyttig hvis bedriften ikke har tatt systemet i bruk ennå.`)) {
+      return;
+    }
+
+    setIsDeletingAll(true);
+    let successCount = 0;
+    
+    for (const deviation of openDeviations) {
+      const success = await deleteDeviation(deviation.id);
+      if (success) successCount++;
+    }
+    
+    setIsDeletingAll(false);
+    
+    toast({
+      title: "Avvik nullstilt",
+      description: `${successCount} av ${openDeviations.length} åpne avvik ble slettet.`,
+    });
+    
+    refetch();
+  };
+
   if (isLoading || modulesLoading) {
     return (
       <AppLayout>
@@ -349,7 +397,24 @@ const IkMatAvvik = () => {
                 </p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              {/* Reset button for startup - only show if there are open deviations */}
+              {stats.open > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-1.5 text-destructive hover:text-destructive"
+                  onClick={handleDeleteAllOpenDeviations}
+                  disabled={isDeletingAll}
+                >
+                  {isDeletingAll ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RotateCcw className="w-4 h-4" />
+                  )}
+                  <span className="hidden sm:inline">Nullstill avvik</span>
+                </Button>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-1.5">
@@ -559,6 +624,7 @@ const IkMatAvvik = () => {
           onStatusChange={handleStatusChange}
           onAssigneeChange={handleAssigneeChange}
           onFollowUpChange={handleFollowUpChange}
+          onDelete={handleDeleteDeviation}
         />
       )}
     </AppLayout>

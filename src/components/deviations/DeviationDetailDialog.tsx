@@ -11,7 +11,8 @@ import {
   Mail,
   ClipboardCheck,
   Save,
-  Loader2
+  Loader2,
+  Trash2
 } from "lucide-react";
 import {
   Dialog,
@@ -110,6 +111,7 @@ interface DeviationDetailDialogProps {
     root_cause_analysis?: string; 
     preventive_measures?: string;
   }) => Promise<boolean>;
+  onDelete?: (id: string) => void;
 }
 
 export function DeviationDetailDialog({ 
@@ -118,7 +120,8 @@ export function DeviationDetailDialog({
   onOpenChange,
   onStatusChange,
   onAssigneeChange,
-  onFollowUpChange
+  onFollowUpChange,
+  onDelete
 }: DeviationDetailDialogProps) {
   const { users, getUserDisplayName } = useCompanyUsers();
   const { company } = useAuth();
@@ -539,18 +542,31 @@ export function DeviationDetailDialog({
         </div>
 
         {/* Actions - Fixed at bottom */}
-        <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t flex-shrink-0">
-          <Button variant="outline" size="sm" onClick={() => setEmailDialogOpen(true)} className="w-full sm:w-auto">
-            <Mail className="w-4 h-4 mr-2" />
-            Send på e-post
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleDownloadPDF} className="w-full sm:w-auto">
-            <Download className="w-4 h-4 mr-2" />
-            Last ned PDF
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
-            Lukk
-          </Button>
+        <div className="flex flex-col sm:flex-row justify-between gap-2 pt-4 border-t flex-shrink-0">
+          {onDelete && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onDelete(deviation.id)} 
+              className="w-full sm:w-auto text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Slett
+            </Button>
+          )}
+          <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
+            <Button variant="outline" size="sm" onClick={() => setEmailDialogOpen(true)} className="w-full sm:w-auto">
+              <Mail className="w-4 h-4 mr-2" />
+              Send på e-post
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleDownloadPDF} className="w-full sm:w-auto">
+              <Download className="w-4 h-4 mr-2" />
+              Last ned PDF
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
+              Lukk
+            </Button>
+          </div>
         </div>
       </DialogContent>
 
