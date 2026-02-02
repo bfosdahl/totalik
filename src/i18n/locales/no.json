@@ -133,7 +133,14 @@
     "newRiskAssessment": "Ny risikovurdering",
     "viewAll": "Se alle",
     "anonymousReporting": "Anonym varsling",
-    "anonymousDescription": "Send en anonym melding til ledelsen om bekymringer, uønskede hendelser eller forbedringsforslag."
+    "anonymousDescription": "Send en anonym melding til ledelsen om bekymringer, uønskede hendelser eller forbedringsforslag.",
+    "complianceStatus": "Samsvarsstatus",
+    "meetsRequirements": "Oppfyller krav",
+    "completedActions": "Fullførte tiltak",
+    "total": "Totalt",
+    "expiring": "Forfallende",
+    "next7Days": "Neste 7 dager",
+    "requiresAction": "Krever handling"
   },
   "deviations": {
     "title": "Avvik",
