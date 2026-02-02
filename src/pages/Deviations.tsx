@@ -101,7 +101,7 @@ interface DeviationForDialog {
 const Deviations = () => {
   const { toast } = useToast();
   const { profile } = useAuth();
-  const { deviations, isLoading, createDeviation, updateDeviation } = useDeviations();
+  const { deviations, isLoading, createDeviation, updateDeviation, deleteDeviation } = useDeviations();
   const { users, getUserDisplayName } = useCompanyUsers();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
@@ -301,6 +301,17 @@ const Deviations = () => {
       } : null);
     }
     return success;
+  };
+
+  // Delete a single deviation
+  const handleDeleteDeviation = async (id: string) => {
+    if (!confirm("Er du sikker på at du vil slette dette avviket?")) return;
+    
+    const success = await deleteDeviation(id);
+    if (success) {
+      setIsDetailOpen(false);
+      setSelectedDeviation(null);
+    }
   };
 
   if (isLoading) {
@@ -545,6 +556,7 @@ const Deviations = () => {
         onStatusChange={handleStatusChange}
         onAssigneeChange={handleAssigneeChange}
         onFollowUpChange={handleFollowUpChange}
+        onDelete={handleDeleteDeviation}
       />
 
       {/* Work Accident Dialog */}
