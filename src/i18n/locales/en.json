@@ -131,7 +131,16 @@
     "newDeviation": "New Deviation",
     "newAudit": "New Audit",
     "newRiskAssessment": "New Risk Assessment",
-    "viewAll": "View all"
+    "viewAll": "View all",
+    "anonymousReporting": "Anonymous Reporting",
+    "anonymousDescription": "Send an anonymous message to management about concerns, unwanted incidents, or improvement suggestions.",
+    "complianceStatus": "Compliance Status",
+    "meetsRequirements": "Meets requirements",
+    "completedActions": "Completed Actions",
+    "total": "Total",
+    "expiring": "Expiring",
+    "next7Days": "Next 7 days",
+    "requiresAction": "Requires action"
   },
   "deviations": {
     "title": "Deviations",

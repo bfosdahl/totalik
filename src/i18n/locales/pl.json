@@ -131,7 +131,16 @@
     "newDeviation": "Nowe odchylenie",
     "newAudit": "Nowy audyt",
     "newRiskAssessment": "Nowa ocena ryzyka",
-    "viewAll": "Zobacz wszystko"
+    "viewAll": "Zobacz wszystko",
+    "anonymousReporting": "Anonimowe zgłoszenie",
+    "anonymousDescription": "Wyślij anonimową wiadomość do kierownictwa w sprawie obaw, niepożądanych zdarzeń lub sugestii usprawnień.",
+    "complianceStatus": "Status zgodności",
+    "meetsRequirements": "Spełnia wymagania",
+    "completedActions": "Zakończone działania",
+    "total": "Łącznie",
+    "expiring": "Wygasające",
+    "next7Days": "Następne 7 dni",
+    "requiresAction": "Wymaga działania"
   },
   "deviations": {
     "title": "Odchylenia",
