@@ -106,7 +106,7 @@ INTERNKONTROLLFORSKRIFTEN (IK-forskriften):
 
 ARBEIDSMILJØLOVEN (AML):
 - §3-1: Arbeidsgivers plikt til systematisk HMS-arbeid
-- §6-1: Verneombud PÅKREVD ved 10+ ansatte, kan avtales bort ved <10 ansatte
+- §6-1: Verneombud PÅKREVD ved 5+ ansatte, kan avtales bort ved <5 ansatte
 - §7-1: AMU (arbeidsmiljøutvalg) påkrevd ved 50+ ansatte
 
 VIKTIG: Korte svar som "ok", "fint", "1 og 2" er NORMALE - IKKE frustrasjon!
