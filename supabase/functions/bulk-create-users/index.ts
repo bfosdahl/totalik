@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,9 +46,9 @@ async function sendWelcomeEmail(
     const resetLink = resetData.properties.action_link;
     
     const emailResponse = await resend.emails.send({
-      from: "HMS Nova <noreply@hmsnova.no>",
+      from: "Total-IK <noreply@totalik.no>",
       to: [email],
-      subject: "Velkommen til HMS Nova - Sett ditt passord",
+      subject: "Velkommen til Total-IK - Sett ditt passord",
       html: `
         <!DOCTYPE html>
         <html>
@@ -57,14 +58,14 @@ async function sendWelcomeEmail(
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">HMS Nova</h1>
+            <h1 style="color: white; margin: 0; font-size: 28px;">Total-IK</h1>
             <p style="color: rgba(255,255,255,0.9); margin-top: 10px;">Velkommen til ditt HMS-system</p>
           </div>
           
           <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
             <h2 style="color: #1f2937; margin-top: 0;">Hei ${displayName}!</h2>
             
-            <p>Din brukerkonto hos <strong>${companyName}</strong> er nå opprettet i HMS Nova.</p>
+            <p>Din brukerkonto hos <strong>${companyName}</strong> er nå opprettet i Total-IK.</p>
             
             <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
               <h3 style="margin-top: 0; color: #374151;">Din påloggingsinformasjon:</h3>
@@ -88,12 +89,17 @@ async function sendWelcomeEmail(
             <p style="color: #666; font-size: 14px;">Hvis knappen ikke fungerer, kopier og lim inn denne lenken i nettleseren din:</p>
             <p style="color: #6366f1; font-size: 12px; word-break: break-all;">${resetLink}</p>
             
-            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+            ${getTermsNoticeHtml()}
             
-            <p style="color: #6b7280; font-size: 14px;">
-              Ved å logge inn godtar du våre 
-              <a href="https://emagasin.no/katalog/mimir/mobile/" style="color: #6366f1;">avtalevilkår</a>.
-            </p>
+            ${getTermsHtml()}
+            
+            <div style="background: #e8f4f8; border: 1px solid #b8daff; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
+              <p style="margin: 0; color: #004085; font-size: 14px;">
+                <strong>Ved å logge inn bekrefter du at du har lest og godtar avtalevilkårene ovenfor.</strong>
+              </p>
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             
             <p style="color: #6b7280; font-size: 14px;">
               Har du spørsmål? Kontakt din bedriftsadministrator eller svar på denne e-posten.
@@ -101,7 +107,7 @@ async function sendWelcomeEmail(
           </div>
           
           <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 12px;">
-            <p>© 2025 HMS Nova. Alle rettigheter reservert.</p>
+            <p>© 2025 Total-IK. Alle rettigheter reservert.</p>
           </div>
         </body>
         </html>

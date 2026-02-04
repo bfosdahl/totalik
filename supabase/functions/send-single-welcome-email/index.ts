@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -98,15 +99,21 @@ const handler = async (req: Request): Promise<Response> => {
           <p style="color: #333; font-size: 16px;">
             Du kan endre passordet ditt etter innlogging under "Innstillinger" dersom du ønsker det.
           </p>
-
-          <p style="color: #333; font-size: 14px;">
-            Ved å logge inn godtar du våre <a href="https://emagasin.no/katalog/mimir/mobile/" style="color: #0066cc;">avtalevilkår</a>.
-          </p>
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${loginUrl}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
               Logg inn nå
             </a>
+          </div>
+          
+          ${getTermsNoticeHtml()}
+          
+          ${getTermsHtml()}
+          
+          <div style="background: #e8f4f8; border: 1px solid #b8daff; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
+            <p style="margin: 0; color: #004085; font-size: 14px;">
+              <strong>Ved å logge inn bekrefter du at du har lest og godtar avtalevilkårene ovenfor.</strong>
+            </p>
           </div>
           
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
