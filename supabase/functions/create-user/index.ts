@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -219,10 +220,15 @@ serve(async (req) => {
                 <p style="color: #666; font-size: 14px;">Hvis knappen ikke fungerer, kopier og lim inn denne lenken i nettleseren din:</p>
                 <p style="color: #667eea; font-size: 12px; word-break: break-all;">${resetData.properties.action_link}</p>
                 
-                <p style="color: #666; font-size: 14px; text-align: center;">
-                  Ved å logge inn godtar du våre 
-                  <a href="https://emagasin.no/katalog/mimir/mobile/" style="color: #667eea;">avtalevilkår</a>.
-                </p>
+                ${getTermsNoticeHtml()}
+                
+                ${getTermsHtml()}
+                
+                <div style="background: #e8f4f8; border: 1px solid #b8daff; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
+                  <p style="margin: 0; color: #004085; font-size: 14px;">
+                    <strong>Ved å logge inn bekrefter du at du har lest og godtar avtalevilkårene ovenfor.</strong>
+                  </p>
+                </div>
                 
                 <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
                 
