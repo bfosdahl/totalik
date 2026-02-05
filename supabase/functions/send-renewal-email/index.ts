@@ -42,10 +42,10 @@
      const resend = new Resend(resendApiKey);
      const userName = firstName || "kunde";
  
-     const emailResponse = await resend.emails.send({
-       from: "Athena Kurs og Internkontroll AS <noreply@athenahms.no>",
-       to: [email],
-       subject: `Takk for at dere fortsetter å bruke Athena Kurs og Internkontroll AS`,
+    const emailResponse = await resend.emails.send({
+      from: "Total-IK <noreply@totalik.no>",
+      to: [email],
+      subject: `Takk for fornyelsen - ${companyName}`,
        html: `
          <!DOCTYPE html>
          <html>
