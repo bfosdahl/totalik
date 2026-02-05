@@ -152,7 +152,7 @@ Deno.serve(async (req) => {
           <p>Hei,</p>
           <p>Dette er en påminnelse om at HMS-kortet til <strong>${employeeName}</strong> utløper <strong>${formattedDate}</strong> (om ${daysText}).</p>
           <p>Vennligst sørg for å fornye HMS-kortet før utløpsdatoen for å sikre at arbeidstakeren kan fortsette å jobbe i henhold til regelverket.</p>
-          <p>Med vennlig hilsen,<br>HMS Athena</p>
+          <p>Med vennlig hilsen,<br>Total-IK</p>
         `
 
         // Send to employee if they have email
@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                from: 'HMS Athena <noreply@athenahms.no>',
+                from: 'Total-IK <noreply@totalik.no>',
                 to: [profile.email],
                 subject: subject,
                 html: emailContent,
@@ -202,7 +202,7 @@ Deno.serve(async (req) => {
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                  from: 'HMS Athena <noreply@athenahms.no>',
+                  from: 'Total-IK <noreply@totalik.no>',
                   to: [admin.email],
                   subject: `[Leder] ${subject}`,
                   html: emailContent,
