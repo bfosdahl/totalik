@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { SupportedLanguage } from "@/contexts/LanguageContext";
+import { SupportedLanguage, LANGUAGE_CONFIG } from "@/contexts/LanguageContext";
 import { 
   BookOpen, 
   Download, 
@@ -159,10 +159,71 @@ const Handbook = () => {
   } | null>(null);
   const [currentTranslationLang, setCurrentTranslationLang] = useState<SupportedLanguage>("no");
   
+  // Check if translation is active (not Norwegian)
+  const isTranslationActive = currentTranslationLang !== "no" && translatedContent !== null;
+  
   const handleTranslationComplete = useCallback((content: typeof translatedContent, language: SupportedLanguage) => {
     setTranslatedContent(content);
     setCurrentTranslationLang(language);
   }, []);
+  
+  // Helper functions to get translated or original content
+  const getGoalText = useCallback((goal: typeof goals[0], index: number) => {
+    if (isTranslationActive && translatedContent?.goals?.[index]) {
+      return translatedContent.goals[index];
+    }
+    return goal.goal_text;
+  }, [isTranslationActive, translatedContent]);
+  
+  const getOrganizationRoles = useCallback(() => {
+    if (isTranslationActive && translatedContent?.organizationRoles) {
+      return translatedContent.organizationRoles;
+    }
+    return organization?.roles?.map(r => ({
+      title: r.title,
+      personName: r.personName,
+      description: r.description
+    })) || [];
+  }, [isTranslationActive, translatedContent, organization?.roles]);
+  
+  const getOrganizationDescription = useCallback(() => {
+    if (isTranslationActive && translatedContent?.organizationDescription) {
+      return translatedContent.organizationDescription;
+    }
+    return organization?.description || "";
+  }, [isTranslationActive, translatedContent, organization?.description]);
+  
+  const getRiskDescription = useCallback((risk: NonNullable<typeof riskAssessment>["risks"][0], index: number) => {
+    if (isTranslationActive && translatedContent?.risks?.[index]) {
+      return translatedContent.risks[index].description;
+    }
+    return risk.description;
+  }, [isTranslationActive, translatedContent]);
+  
+  const getActionDescription = useCallback((action: NonNullable<typeof actionPlan>["actions"][0], index: number) => {
+    if (isTranslationActive && translatedContent?.actions?.[index]) {
+      return translatedContent.actions[index].action_description;
+    }
+    return action.action_description;
+  }, [isTranslationActive, translatedContent]);
+  
+  const getRoutineContent = useCallback((routine: NonNullable<typeof routines>["routines"][0], index: number) => {
+    if (isTranslationActive && translatedContent?.routines?.[index]) {
+      const t = translatedContent.routines[index];
+      return {
+        routine_name: t.routine_name,
+        purpose: t.purpose,
+        responsibility: t.responsibility,
+        procedure: t.procedure
+      };
+    }
+    return {
+      routine_name: routine.routine_name,
+      purpose: routine.purpose,
+      responsibility: routine.responsibility,
+      procedure: routine.procedure
+    };
+  }, [isTranslationActive, translatedContent]);
 
   // Fetch deviation attachments
   useEffect(() => {
@@ -670,8 +731,8 @@ const Handbook = () => {
       icon: Target,
       content: goals.length > 0 ? (
         <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-          {goals.map((goal) => (
-            <li key={goal.id}>{goal.goal_text}</li>
+          {goals.map((goal, idx) => (
+            <li key={goal.id}>{getGoalText(goal, idx)}</li>
           ))}
         </ul>
       ) : (
@@ -690,18 +751,18 @@ const Handbook = () => {
         <div className="text-sm text-muted-foreground space-y-1 max-h-48 overflow-y-auto">
           {(organization?.roles?.length ?? 0) > 0 ? (
             <>
-              {organization?.roles?.slice(0, 5).map((role, idx) => (
+              {getOrganizationRoles().slice(0, 5).map((role, idx) => (
                 <div key={idx} className="flex items-center gap-2">
                   <span className="font-medium">{role.title}</span>
                   {role.personName && <span className="text-xs">({role.personName})</span>}
                 </div>
               ))}
-              {(organization?.roles?.length ?? 0) > 5 && (
-                <p className="text-xs">+ {(organization?.roles?.length ?? 0) - 5} flere roller</p>
+              {getOrganizationRoles().length > 5 && (
+                <p className="text-xs">+ {getOrganizationRoles().length - 5} flere roller</p>
               )}
             </>
-          ) : organization?.description ? (
-            <div className="whitespace-pre-wrap">{organization.description.slice(0, 500)}{organization.description.length > 500 ? "..." : ""}</div>
+          ) : getOrganizationDescription() ? (
+            <div className="whitespace-pre-wrap">{getOrganizationDescription().slice(0, 500)}{getOrganizationDescription().length > 500 ? "..." : ""}</div>
           ) : null}
         </div>
       ) : (
@@ -722,9 +783,9 @@ const Handbook = () => {
       icon: Shield,
       content: (riskAssessment?.risks?.length ?? 0) > 0 ? (
         <div className="space-y-2">
-          {riskAssessment?.risks.slice(0, 5).map((risk) => (
+          {riskAssessment?.risks.slice(0, 5).map((risk, idx) => (
             <div key={risk.id} className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground truncate flex-1">{risk.description}</span>
+              <span className="text-muted-foreground truncate flex-1">{getRiskDescription(risk, idx)}</span>
               <Badge variant="outline" className={cn(
                 "ml-2",
                 risk.consequence * risk.probability >= 15 ? "border-destructive text-destructive" :
@@ -753,9 +814,9 @@ const Handbook = () => {
       icon: ClipboardList,
       content: (actionPlan?.actions?.length ?? 0) > 0 ? (
         <div className="space-y-2">
-          {actionPlan?.actions.slice(0, 5).map((action) => (
+          {actionPlan?.actions.slice(0, 5).map((action, idx) => (
             <div key={action.id} className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground truncate flex-1">{action.action_description}</span>
+              <span className="text-muted-foreground truncate flex-1">{getActionDescription(action, idx)}</span>
               <Badge variant="outline" className={cn(
                 "ml-2",
                 action.status === "fullført" ? "border-success text-success" :
@@ -829,65 +890,68 @@ const Handbook = () => {
       icon: FileCheck,
       content: (routines?.routines?.length ?? 0) > 0 ? (
         <div className="space-y-4">
-          {routines?.routines.map((routine, index) => (
-            <div key={routine.id} className="bg-background/50 rounded-lg p-4 border border-border/50">
-              <div className="flex items-start gap-3">
-                <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded shrink-0">{sectionOffset + 6}.{index + 1}</span>
-                <div className="flex-1 min-w-0 space-y-3">
-                  {/* Header */}
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-xs text-muted-foreground">{routine.routine_number}:</span>
-                      <span className="font-medium">{routine.routine_name}</span>
-                      {routine.category && (
-                        <Badge variant="secondary" className="text-xs">{routine.category}</Badge>
-                      )}
+          {routines?.routines.map((routine, index) => {
+            const translatedRoutine = getRoutineContent(routine, index);
+            return (
+              <div key={routine.id} className="bg-background/50 rounded-lg p-4 border border-border/50">
+                <div className="flex items-start gap-3">
+                  <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded shrink-0">{sectionOffset + 6}.{index + 1}</span>
+                  <div className="flex-1 min-w-0 space-y-3">
+                    {/* Header */}
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono text-xs text-muted-foreground">{routine.routine_number}:</span>
+                        <span className="font-medium">{translatedRoutine.routine_name}</span>
+                        {routine.category && (
+                          <Badge variant="secondary" className="text-xs">{routine.category}</Badge>
+                        )}
+                      </div>
                     </div>
+                    
+                    {/* Purpose */}
+                    {translatedRoutine.purpose && (
+                      <div>
+                        <p className="text-xs font-medium text-foreground mb-1">Formål:</p>
+                        <p className="text-sm text-muted-foreground">{translatedRoutine.purpose}</p>
+                      </div>
+                    )}
+                    
+                    {/* Responsibility */}
+                    {translatedRoutine.responsibility && (
+                      <div>
+                        <p className="text-xs font-medium text-foreground mb-1">Ansvar:</p>
+                        <p className="text-sm text-muted-foreground">{translatedRoutine.responsibility}</p>
+                      </div>
+                    )}
+                    
+                    {/* Procedure */}
+                    {translatedRoutine.procedure && (
+                      <div>
+                        <p className="text-xs font-medium text-foreground mb-1">Fremgangsmåte:</p>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{translatedRoutine.procedure}</p>
+                      </div>
+                    )}
+                    
+                    {/* Examples - keep original as these aren't translated */}
+                    {routine.examples && (
+                      <div>
+                        <p className="text-xs font-medium text-foreground mb-1">Eksempler:</p>
+                        <p className="text-sm text-muted-foreground">{routine.examples}</p>
+                      </div>
+                    )}
+                    
+                    {/* Remember - keep original as these aren't translated */}
+                    {routine.remember && (
+                      <div className="bg-warning/10 border border-warning/20 rounded p-2">
+                        <p className="text-xs font-medium text-warning mb-1">Husk:</p>
+                        <p className="text-sm text-muted-foreground">{routine.remember}</p>
+                      </div>
+                    )}
                   </div>
-                  
-                  {/* Purpose */}
-                  {routine.purpose && (
-                    <div>
-                      <p className="text-xs font-medium text-foreground mb-1">Formål:</p>
-                      <p className="text-sm text-muted-foreground">{routine.purpose}</p>
-                    </div>
-                  )}
-                  
-                  {/* Responsibility */}
-                  {routine.responsibility && (
-                    <div>
-                      <p className="text-xs font-medium text-foreground mb-1">Ansvar:</p>
-                      <p className="text-sm text-muted-foreground">{routine.responsibility}</p>
-                    </div>
-                  )}
-                  
-                  {/* Procedure */}
-                  {routine.procedure && (
-                    <div>
-                      <p className="text-xs font-medium text-foreground mb-1">Fremgangsmåte:</p>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{routine.procedure}</p>
-                    </div>
-                  )}
-                  
-                  {/* Examples */}
-                  {routine.examples && (
-                    <div>
-                      <p className="text-xs font-medium text-foreground mb-1">Eksempler:</p>
-                      <p className="text-sm text-muted-foreground">{routine.examples}</p>
-                    </div>
-                  )}
-                  
-                  {/* Remember */}
-                  {routine.remember && (
-                    <div className="bg-warning/10 border border-warning/20 rounded p-2">
-                      <p className="text-xs font-medium text-warning mb-1">Husk:</p>
-                      <p className="text-sm text-muted-foreground">{routine.remember}</p>
-                    </div>
-                  )}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">Ingen rutiner er lagt til ennå.</p>
@@ -2277,6 +2341,38 @@ const Handbook = () => {
             </Button>
           </div>
         </motion.div>
+
+        {/* Translation Active Banner */}
+        <AnimatePresence>
+          {isTranslationActive && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{LANGUAGE_CONFIG[currentTranslationLang].flag}</span>
+                <span className="text-sm font-medium">
+                  Viser innhold på {LANGUAGE_CONFIG[currentTranslationLang].nativeName}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  (kun for denne økten)
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setTranslatedContent(null);
+                  setCurrentTranslationLang("no");
+                }}
+              >
+                Vis norsk
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* PDF Export Options Dialog */}
         <AnimatePresence>
