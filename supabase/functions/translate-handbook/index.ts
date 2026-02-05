@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 interface TranslationRequest {
@@ -10,10 +10,10 @@ interface TranslationRequest {
   content: {
     goals?: string[];
     organizationDescription?: string;
-    organizationRoles?: { role: string; name: string; responsibilities: string }[];
-    risks?: { hazard_source: string; events?: { event: string; measures: string[] }[] }[];
-    actions?: { description: string; responsible: string; deadline: string; status: string }[];
-    routines?: { title: string; description: string; content: string }[];
+    organizationRoles?: { title: string; personName: string; description: string }[];
+    risks?: { description: string; existing_measures: string; planned_measures: string }[];
+    actions?: { action_description: string; risk_description: string; responsible: string; deadline: string; status: string }[];
+    routines?: { routine_name: string; purpose: string; responsibility: string; procedure: string }[];
   };
 }
 
@@ -32,6 +32,8 @@ serve(async (req) => {
   try {
     const { targetLanguage, content }: TranslationRequest = await req.json();
     
+    console.log("Translation request received:", { targetLanguage, contentKeys: Object.keys(content || {}) });
+    
     if (!targetLanguage || targetLanguage === "no") {
       return new Response(JSON.stringify({ translatedContent: content }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -40,6 +42,7 @@ serve(async (req) => {
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
+      console.error("LOVABLE_API_KEY is not configured");
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
@@ -47,6 +50,7 @@ serve(async (req) => {
     
     // Build content string for translation
     const contentToTranslate = JSON.stringify(content, null, 2);
+    console.log("Content to translate length:", contentToTranslate.length);
     
     const systemPrompt = `You are a professional translator specializing in workplace safety (HMS/HSE) documentation.
 Translate the following JSON content from Norwegian to ${targetLangName}.
@@ -56,7 +60,7 @@ IMPORTANT RULES:
 2. Keep proper names (company names, personal names) unchanged
 3. Translate technical HMS/HSE terms appropriately for the target language
 4. Maintain professional, formal language suitable for official documentation
-5. Return ONLY valid JSON - no explanations, no markdown, just the translated JSON object
+5. Return ONLY valid JSON - no explanations, no markdown code blocks, just the raw translated JSON object
 
 The content is from an Internal Control (HMS) Handbook containing:
 - Goals (mål) - workplace safety objectives
@@ -65,6 +69,8 @@ The content is from an Internal Control (HMS) Handbook containing:
 - Action plans - improvement actions
 - Routines - standard operating procedures`;
 
+    console.log("Calling AI gateway...");
+    
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -72,7 +78,7 @@ The content is from an Internal Control (HMS) Handbook containing:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: contentToTranslate }
@@ -81,7 +87,12 @@ The content is from an Internal Control (HMS) Handbook containing:
       }),
     });
 
+    console.log("AI gateway response status:", response.status);
+
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("AI gateway error:", response.status, errorText);
+      
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
           status: 429,
@@ -94,15 +105,22 @@ The content is from an Internal Control (HMS) Handbook containing:
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error(`AI gateway error: ${response.status}`);
+      throw new Error(`AI gateway error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log("AI response structure:", JSON.stringify({
+      hasChoices: !!data.choices,
+      choicesLength: data.choices?.length,
+      hasMessage: !!data.choices?.[0]?.message,
+      hasContent: !!data.choices?.[0]?.message?.content,
+      contentPreview: data.choices?.[0]?.message?.content?.substring(0, 100)
+    }));
+    
     const translatedText = data.choices?.[0]?.message?.content;
     
     if (!translatedText) {
+      console.error("No content in AI response:", JSON.stringify(data));
       throw new Error("No translation received from AI");
     }
 
@@ -120,8 +138,10 @@ The content is from an Internal Control (HMS) Handbook containing:
         cleanJson = cleanJson.slice(0, -3);
       }
       translatedContent = JSON.parse(cleanJson.trim());
+      console.log("Successfully parsed translated content");
     } catch (parseError) {
-      console.error("Failed to parse translated JSON:", parseError, translatedText);
+      console.error("Failed to parse translated JSON:", parseError);
+      console.error("Raw translated text:", translatedText);
       throw new Error("Failed to parse translated content");
     }
 
