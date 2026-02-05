@@ -1157,9 +1157,12 @@ const Handbook = () => {
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(28);
       doc.setFont("helvetica", "bold");
-      doc.text("INTERNKONTROLL", pageWidth / 2, 35, { align: "center" });
+      // Translate cover page titles
+      const coverTitle1 = isTranslationActive ? "INTERNAL CONTROL" : "INTERNKONTROLL";
+      const coverTitle2 = isTranslationActive ? "HSE HANDBOOK" : "HMS-HÅNDBOK";
+      doc.text(coverTitle1, pageWidth / 2, 35, { align: "center" });
       doc.setFontSize(20);
-      doc.text("HMS-HÅNDBOK", pageWidth / 2, 50, { align: "center" });
+      doc.text(coverTitle2, pageWidth / 2, 50, { align: "center" });
 
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(22);
@@ -1184,11 +1187,15 @@ const Handbook = () => {
       }
 
       doc.setFontSize(12);
-      doc.text(`Dato: ${formatDateForPdf(new Date())}`, pageWidth / 2, pageHeight - 40, { align: "center" });
+      const dateLabel = isTranslationActive ? "Date" : "Dato";
+      doc.text(`${dateLabel}: ${formatDateForPdf(new Date())}`, pageWidth / 2, pageHeight - 40, { align: "center" });
 
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
-      doc.text("Utarbeidet i henhold til forskrift om systematisk helse-, miljø- og sikkerhetsarbeid", pageWidth / 2, pageHeight - 25, { align: "center" });
+      const footerText = isTranslationActive 
+        ? "Prepared in accordance with regulations on systematic health, safety and environmental work" 
+        : "Utarbeidet i henhold til forskrift om systematisk helse-, miljø- og sikkerhetsarbeid";
+      doc.text(footerText, pageWidth / 2, pageHeight - 25, { align: "center" });
 
       // TABLE OF CONTENTS (filled in at the end so page numbers and links are correct)
       doc.addPage();
@@ -1197,7 +1204,8 @@ const Handbook = () => {
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(20);
       doc.setFont("helvetica", "bold");
-      doc.text("Innholdsfortegnelse", margin, yPos);
+      const tocTitle = isTranslationActive ? "Table of Contents" : "Innholdsfortegnelse";
+      doc.text(tocTitle, margin, yPos);
       yPos += 15;
       // (entries are rendered later by renderToc())
 
@@ -1555,21 +1563,27 @@ const Handbook = () => {
         }
       }
 
-      // SECTION: GOALS
+      // SECTION: GOALS - use translated content if available
       doc.addPage();
       sectionNumber++;
-      addTocEntry(`${sectionNumber}. Mål for internkontroll`);
+      const goalsSectionTitle = isTranslationActive ? "Goals for Internal Control" : "Mål for internkontroll";
+      addTocEntry(`${sectionNumber}. ${goalsSectionTitle}`);
       yPos = margin;
-      addSectionHeader(`${sectionNumber}. Mål for internkontroll`);
+      addSectionHeader(`${sectionNumber}. ${goalsSectionTitle}`);
       doc.setFontSize(11);
       doc.setFont("helvetica", "normal");
-      doc.text("Bedriften har fastsatt følgende mål for sitt systematiske HMS-arbeid:", margin, yPos);
+      const goalsIntroText = isTranslationActive 
+        ? "The company has established the following goals for its systematic HSE work:" 
+        : "Bedriften har fastsatt følgende mål for sitt systematiske HMS-arbeid:";
+      doc.text(goalsIntroText, margin, yPos);
       yPos += 10;
       if (goals.length > 0) {
         goals.forEach((goal, index) => {
           checkPageBreak(15);
           doc.setFillColor(240, 249, 255);
-          const lines = doc.splitTextToSize(goal.goal_text, contentWidth - 15);
+          // Use translated goal text if available
+          const goalText = getGoalText(goal, index);
+          const lines = doc.splitTextToSize(goalText, contentWidth - 15);
           const boxHeight = lines.length * 6 + 6;
           doc.roundedRect(margin, yPos, contentWidth, boxHeight, 2, 2, "F");
           doc.setFontSize(11);
@@ -1579,32 +1593,36 @@ const Handbook = () => {
         });
       } else {
         doc.setTextColor(150, 150, 150);
-        doc.text("Ingen mål er definert.", margin, yPos);
+        const noGoalsText = isTranslationActive ? "No goals defined." : "Ingen mål er definert.";
+        doc.text(noGoalsText, margin, yPos);
         doc.setTextColor(0, 0, 0);
       }
 
-      // SECTION 2: ORGANIZATION
+      // SECTION 2: ORGANIZATION - use translated content if available
       doc.addPage();
       sectionNumber++;
-      addTocEntry(`${sectionNumber}. Organisering og ansvar`);
+      const orgSectionTitle = isTranslationActive ? "Organization and Responsibilities" : "Organisering og ansvar";
+      addTocEntry(`${sectionNumber}. ${orgSectionTitle}`);
       yPos = margin;
-      addSectionHeader(`${sectionNumber}. Organisering og ansvar`);
+      addSectionHeader(`${sectionNumber}. ${orgSectionTitle}`);
       
-      // organization is now in new format with roles array directly
-      const orgData = organization;
+      // Get translated or original roles
+      const pdfOrgRoles = getOrganizationRoles();
+      const pdfOrgDescription = getOrganizationDescription();
 
-      if (orgData && orgData.roles && orgData.roles.length > 0) {
+      if (pdfOrgRoles.length > 0) {
         // Draw visual org chart
         doc.setFontSize(11);
         doc.setFont("helvetica", "bold");
-        doc.text("Organisasjonskart", margin, yPos);
+        const orgChartLabel = isTranslationActive ? "Organization Chart" : "Organisasjonskart";
+        doc.text(orgChartLabel, margin, yPos);
         yPos += 10;
         
         const boxWidth = 80;
         const boxHeight = 20;
         const centerX = pageWidth / 2;
         
-        orgData.roles.forEach((role, index) => {
+        pdfOrgRoles.forEach((role, index) => {
           checkPageBreak(35);
           
           // Draw connecting line from previous box
@@ -1624,7 +1642,7 @@ const Handbook = () => {
           doc.setFontSize(10);
           doc.setFont("helvetica", "bold");
           doc.setTextColor(0, 0, 0);
-          const titleText = role.title || "Uten tittel";
+          const titleText = role.title || (isTranslationActive ? "Untitled" : "Uten tittel");
           doc.text(titleText, centerX, yPos + 8, { align: "center" });
           
           // Person name
@@ -1644,10 +1662,11 @@ const Handbook = () => {
         // Draw role descriptions
         doc.setFontSize(11);
         doc.setFont("helvetica", "bold");
-        doc.text("Roller og ansvar", margin, yPos);
+        const rolesLabel = isTranslationActive ? "Roles and Responsibilities" : "Roller og ansvar";
+        doc.text(rolesLabel, margin, yPos);
         yPos += 8;
         
-        orgData.roles.forEach((role) => {
+        pdfOrgRoles.forEach((role) => {
           if (role.title && role.description) {
             checkPageBreak(25);
             
@@ -1675,25 +1694,26 @@ const Handbook = () => {
         });
         
         // Add general description if exists
-        if (orgData.description && orgData.description.trim()) {
+        if (pdfOrgDescription && pdfOrgDescription.trim()) {
           checkPageBreak(20);
           yPos += 5;
           doc.setFontSize(11);
           doc.setFont("helvetica", "bold");
-          doc.text("Generell beskrivelse", margin, yPos);
+          const generalDescLabel = isTranslationActive ? "General Description" : "Generell beskrivelse";
+          doc.text(generalDescLabel, margin, yPos);
           yPos += 8;
           doc.setFont("helvetica", "normal");
           doc.setFontSize(10);
-          const descLines = doc.splitTextToSize(orgData.description, contentWidth);
+          const descLines = doc.splitTextToSize(pdfOrgDescription, contentWidth);
           descLines.forEach((line: string) => {
             checkPageBreak(6);
             doc.text(line, margin, yPos);
             yPos += 5;
           });
         }
-      } else if (orgData?.description) {
+      } else if (pdfOrgDescription) {
         // Just description without roles
-        const orgLines = doc.splitTextToSize(orgData.description, contentWidth);
+        const orgLines = doc.splitTextToSize(pdfOrgDescription, contentWidth);
         orgLines.forEach((line: string) => {
           checkPageBreak(8);
           doc.setFontSize(11);
@@ -1702,32 +1722,46 @@ const Handbook = () => {
         });
       } else {
         doc.setTextColor(150, 150, 150);
-        doc.text("Organisasjonsstruktur er ikke definert.", margin, yPos);
+        const noOrgText = isTranslationActive ? "Organization structure not defined." : "Organisasjonsstruktur er ikke definert.";
+        doc.text(noOrgText, margin, yPos);
         doc.setTextColor(0, 0, 0);
       }
 
-      // SECTION 3: RISK ASSESSMENT
+      // SECTION 3: RISK ASSESSMENT - use translated content if available
       doc.addPage();
       sectionNumber++;
-      addTocEntry(`${sectionNumber}. Risikovurdering`);
+      const riskSectionTitle = isTranslationActive ? "Risk Assessment" : "Risikovurdering";
+      addTocEntry(`${sectionNumber}. ${riskSectionTitle}`);
       yPos = margin;
-      addSectionHeader(`${sectionNumber}. Risikovurdering`);
+      addSectionHeader(`${sectionNumber}. ${riskSectionTitle}`);
       doc.setFontSize(11);
-      doc.text("Risiko = Sannsynlighet × Konsekvens (Arbeidstilsynets metodikk)", margin, yPos);
+      const riskMethodText = isTranslationActive 
+        ? "Risk = Probability × Consequence (Norwegian Labour Inspection methodology)" 
+        : "Risiko = Sannsynlighet × Konsekvens (Arbeidstilsynets metodikk)";
+      doc.text(riskMethodText, margin, yPos);
       yPos += 10;
       // Use sanitized risk data to prevent undefined errors
       const sanitizedRisks = sanitizeRisks(riskAssessment);
       if (sanitizedRisks.length > 0) {
-        const riskTableData = sanitizedRisks.map((risk) => [
-          risk.description.substring(0, 80) + (risk.description.length > 80 ? "..." : ""),
-          String(risk.probability),
-          String(risk.consequence),
-          String(risk.riskValue),
-          risk.riskLevel,
-        ]);
+        // Apply translations to risk descriptions if available
+        const riskTableData = sanitizedRisks.map((risk, index) => {
+          const riskDesc = isTranslationActive && translatedContent?.risks?.[index]
+            ? translatedContent.risks[index].description
+            : risk.description;
+          return [
+            riskDesc.substring(0, 80) + (riskDesc.length > 80 ? "..." : ""),
+            String(risk.probability),
+            String(risk.consequence),
+            String(risk.riskValue),
+            risk.riskLevel,
+          ];
+        });
+        const riskTableHeaders = isTranslationActive 
+          ? [["Description", "P", "C", "R", "Level"]]
+          : [["Beskrivelse", "S", "K", "R", "Nivå"]];
         autoTable(doc, {
           startY: yPos,
-          head: [["Beskrivelse", "S", "K", "R", "Nivå"]],
+          head: riskTableHeaders,
           body: riskTableData,
           theme: "striped",
           headStyles: { fillColor: [59, 130, 246], fontSize: 9, fontStyle: "bold" },
@@ -1754,28 +1788,39 @@ const Handbook = () => {
         yPos = (doc as any).lastAutoTable.finalY + 10;
       } else {
         doc.setTextColor(150, 150, 150);
-        doc.text("Ingen risikovurderinger utført.", margin, yPos);
+        const noRisksText = isTranslationActive ? "No risk assessments performed." : "Ingen risikovurderinger utført.";
+        doc.text(noRisksText, margin, yPos);
         doc.setTextColor(0, 0, 0);
       }
 
-      // SECTION 4: ACTION PLAN
+      // SECTION 4: ACTION PLAN - use translated content if available
       doc.addPage();
       sectionNumber++;
-      addTocEntry(`${sectionNumber}. Handlingsplan`);
+      const actionSectionTitle = isTranslationActive ? "Action Plan" : "Handlingsplan";
+      addTocEntry(`${sectionNumber}. ${actionSectionTitle}`);
       yPos = margin;
-      addSectionHeader(`${sectionNumber}. Handlingsplan`);
+      addSectionHeader(`${sectionNumber}. ${actionSectionTitle}`);
       // Use sanitized action data to prevent undefined errors
       const sanitizedActions = sanitizeActions(actionPlan);
       if (sanitizedActions.length > 0) {
-        const actionTableData = sanitizedActions.map((action) => [
-          action.action_description.substring(0, 60) + (action.action_description.length > 60 ? "..." : ""),
-          action.responsible,
-          action.deadline,
-          action.statusLabel,
-        ]);
+        // Apply translations to action descriptions if available
+        const actionTableData = sanitizedActions.map((action, index) => {
+          const actionDesc = isTranslationActive && translatedContent?.actions?.[index]
+            ? translatedContent.actions[index].action_description
+            : action.action_description;
+          return [
+            actionDesc.substring(0, 60) + (actionDesc.length > 60 ? "..." : ""),
+            action.responsible,
+            action.deadline,
+            action.statusLabel,
+          ];
+        });
+        const actionTableHeaders = isTranslationActive 
+          ? [["Action", "Responsible", "Deadline", "Status"]]
+          : [["Tiltak", "Ansvarlig", "Frist", "Status"]];
         autoTable(doc, {
           startY: yPos,
-          head: [["Tiltak", "Ansvarlig", "Frist", "Status"]],
+          head: actionTableHeaders,
           body: actionTableData,
           theme: "striped",
           headStyles: { fillColor: [59, 130, 246], fontSize: 9, fontStyle: "bold" },
@@ -1785,20 +1830,27 @@ const Handbook = () => {
         yPos = (doc as any).lastAutoTable.finalY + 10;
       } else {
         doc.setTextColor(150, 150, 150);
-        doc.text("Ingen tiltak registrert.", margin, yPos);
+        const noActionsText = isTranslationActive ? "No actions registered." : "Ingen tiltak registrert.";
+        doc.text(noActionsText, margin, yPos);
         doc.setTextColor(0, 0, 0);
       }
 
-      // SECTION 5: ROUTINES
+      // SECTION 5: ROUTINES - use translated content if available
       doc.addPage();
       sectionNumber++;
       const routinesSectionNum = sectionNumber;
-      addTocEntry(`${sectionNumber}. Rutiner og prosedyrer`);
+      const routinesSectionTitle = isTranslationActive ? "Routines and Procedures" : "Rutiner og prosedyrer";
+      addTocEntry(`${sectionNumber}. ${routinesSectionTitle}`);
       yPos = margin;
-      addSectionHeader(`${sectionNumber}. Rutiner og prosedyrer`);
+      addSectionHeader(`${sectionNumber}. ${routinesSectionTitle}`);
 
       // Use sanitized routines data to prevent undefined errors
       const sanitizedRoutinesList = sanitizeRoutines(routines);
+
+      // Label translations
+      const routineLabels = isTranslationActive 
+        ? { purpose: "Purpose", responsibility: "Responsibility", procedure: "Procedure", examples: "Examples", remember: "Remember", notSpecified: "Not specified" }
+        : { purpose: "Formål", responsibility: "Ansvar", procedure: "Fremgangsmåte", examples: "Eksempler", remember: "Husk", notSpecified: "Ikke spesifisert" };
 
       const renderLabeledBlock = (label: string, value: string) => {
         const clean = (value || "").trim();
@@ -1828,6 +1880,13 @@ const Handbook = () => {
 
       if (sanitizedRoutinesList.length > 0) {
         sanitizedRoutinesList.forEach((routine, index) => {
+          // Get translated routine data if available
+          const translatedRoutine = isTranslationActive && translatedContent?.routines?.[index];
+          const routineName = translatedRoutine?.routine_name || routine.routine_name;
+          const routinePurpose = translatedRoutine?.purpose || routine.purpose || routineLabels.notSpecified;
+          const routineResponsibility = translatedRoutine?.responsibility || routine.responsibility;
+          const routineProcedure = translatedRoutine?.procedure || routine.procedure;
+
           // Routine header card
           checkPageBreak(22);
           doc.setFillColor(248, 250, 252);
@@ -1835,24 +1894,25 @@ const Handbook = () => {
           doc.setFont("helvetica", "bold");
           doc.setFontSize(11);
           doc.text(
-            `${routinesSectionNum}.${index + 1} ${routine.routine_number}: ${routine.routine_name}`,
+            `${routinesSectionNum}.${index + 1} ${routine.routine_number}: ${routineName}`,
             margin + 5,
             yPos + 9
           );
           yPos += 18;
 
           // Full routine content
-          renderLabeledBlock("Formål", routine.purpose || "Ikke spesifisert");
-          renderLabeledBlock("Ansvar", routine.responsibility);
-          renderLabeledBlock("Fremgangsmåte", routine.procedure);
-          renderLabeledBlock("Eksempler", routine.examples);
-          renderLabeledBlock("Husk", routine.remember);
+          renderLabeledBlock(routineLabels.purpose, routinePurpose);
+          renderLabeledBlock(routineLabels.responsibility, routineResponsibility);
+          renderLabeledBlock(routineLabels.procedure, routineProcedure);
+          renderLabeledBlock(routineLabels.examples, routine.examples);
+          renderLabeledBlock(routineLabels.remember, routine.remember);
 
           yPos += 4; // spacing between routines
         });
       } else {
         doc.setTextColor(150, 150, 150);
-        doc.text("Ingen rutiner registrert.", margin, yPos);
+        const noRoutinesText = isTranslationActive ? "No routines registered." : "Ingen rutiner registrert.";
+        doc.text(noRoutinesText, margin, yPos);
         doc.setTextColor(0, 0, 0);
       }
 
@@ -2232,18 +2292,21 @@ const Handbook = () => {
       // Render table of contents with correct page numbers and links
       renderToc();
 
-      // Save PDF
-      const fileName = `IK-Handbok_${companyName.replace(/[^a-zA-Z0-9æøåÆØÅ]/g, "_")}_${format(new Date(), "yyyy-MM-dd")}.pdf`;
+      // Save PDF - include language suffix if translated
+      const langSuffix = isTranslationActive ? `_${currentTranslationLang.toUpperCase()}` : "";
+      const fileName = `IK-Handbok${langSuffix}_${companyName.replace(/[^a-zA-Z0-9æøåÆØÅ]/g, "_")}_${format(new Date(), "yyyy-MM-dd")}.pdf`;
       doc.save(fileName);
-      toast.success("PDF lastet ned!");
+      const successMsg = isTranslationActive ? "PDF downloaded!" : "PDF lastet ned!";
+      toast.success(successMsg);
       setShowExportOptions(false);
     } catch (error) {
       console.error("Error generating PDF:", error);
-      toast.error("Kunne ikke generere PDF");
+      const errorMsg = isTranslationActive ? "Could not generate PDF" : "Kunne ikke generere PDF";
+      toast.error(errorMsg);
     } finally {
       setIsGeneratingPdf(false);
     }
-  }, [goals, organization, riskAssessment, actionPlan, routines, companyInfo, deviations, audits, openDeviationsCount, completedAuditsCount, pendingAuditsCount, includeDeviationsInPdf, includeAuditsInPdf, includeAnnualHmsInPdf, includeElkontrollInPdf, includeFysiskeForholdInPdf, includeDagligDriftInPdf, getLatestByFormType]);
+  }, [goals, organization, riskAssessment, actionPlan, routines, companyInfo, deviations, audits, openDeviationsCount, completedAuditsCount, pendingAuditsCount, includeDeviationsInPdf, includeAuditsInPdf, includeAnnualHmsInPdf, includeElkontrollInPdf, includeFysiskeForholdInPdf, includeDagligDriftInPdf, getLatestByFormType, isTranslationActive, translatedContent, currentTranslationLang, getGoalText, getOrganizationRoles, getOrganizationDescription]);
 
   const handleSectionClick = (section: typeof handbookSections[0]) => {
     // All sections can be expanded/collapsed
