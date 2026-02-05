@@ -19,6 +19,7 @@ import {
   Building,
   Sparkles,
   X,
+  CalendarOff,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ import { applyDefaultHmsSetup } from "@/lib/applyDefaultHmsSetup";
 import { applyImportedHmsSetup, getImportedHmsData, clearImportedHmsData, type ImportedHmsData } from "@/lib/applyImportedHmsSetup";
 import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
 import { SelectableCard } from "@/components/ui/selectable-card";
+import { ResetDeviationsDialog } from "@/components/admin/ResetDeviationsDialog";
 const companySchema = z.object({
   name: z.string().min(1, "Bedriftsnavn er påkrevd").max(100),
   org_number: z.string().optional(),
@@ -116,6 +118,10 @@ export default function AdminCompanies() {
   
   // Bulk import dialog state
   const [bulkImportOpen, setBulkImportOpen] = useState(false);
+  
+  // Reset deviations dialog state
+  const [resetDeviationsOpen, setResetDeviationsOpen] = useState(false);
+  const [resetDeviationsCompany, setResetDeviationsCompany] = useState<any>(null);
   
   // PDF import data state
   const [importedData, setImportedData] = useState<ImportedHmsData | null>(null);
@@ -862,6 +868,13 @@ export default function AdminCompanies() {
                               <RefreshCw className={`w-4 h-4 mr-2 ${syncToKursMutation.isPending ? 'animate-spin' : ''}`} />
                               Synk til kurssystem
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setResetDeviationsCompany(company);
+                              setResetDeviationsOpen(true);
+                            }}>
+                              <CalendarOff className="w-4 h-4 mr-2" />
+                              Nullstill avvik
+                            </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive"
                               onClick={() => {
@@ -1114,6 +1127,13 @@ export default function AdminCompanies() {
           open={departmentsDialogOpen}
           onOpenChange={setDepartmentsDialogOpen}
           company={departmentsCompany}
+        />
+
+        {/* Reset Deviations Dialog */}
+        <ResetDeviationsDialog
+          open={resetDeviationsOpen}
+          onOpenChange={setResetDeviationsOpen}
+          company={resetDeviationsCompany}
         />
       </div>
     </AdminLayout>

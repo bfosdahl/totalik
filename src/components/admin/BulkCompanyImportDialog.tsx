@@ -41,6 +41,7 @@ interface ParsedCompany {
   errorMessage?: string;
   isDuplicate?: boolean;
   isKurslisensOnly?: boolean;
+  isRenewal?: boolean;
 }
 
 interface ImportResult {
@@ -175,7 +176,11 @@ export function BulkCompanyImportDialog({
               productNameLower.includes("lisens") ||
               productName === ""
             );
-            
+
+            // Check if this is a renewal order
+            const isRenewal = productNameLower.includes("fornyelse") || 
+                              productNameLower.includes("renewal");
+
             const isValid = orgNumber.length >= 9 && name.length > 0 && !isDuplicate && !isKurslisensOnly;
             
             let errorMessage: string | undefined;
@@ -203,6 +208,7 @@ export function BulkCompanyImportDialog({
               isValid,
               isDuplicate,
               isKurslisensOnly,
+              isRenewal,
               errorMessage,
             });
           }
@@ -296,23 +302,45 @@ export function BulkCompanyImportDialog({
         let userCreateError: string | undefined;
         if (createUsers && company.email) {
           try {
-            const { data: inviteData, error: userError } = await supabase.functions.invoke("invite-user", {
-              body: {
-                email: company.email,
-                firstName: company.contactFirstName || "",
-                lastName: company.contactLastName || "",
-                role: "company_admin",
-                companyId: newCompany.id,
-              },
-            });
+            // Use different email for renewal vs new customers
+            if (company.isRenewal) {
+              // Send renewal thank-you email
+              const { data: renewalData, error: renewalError } = await supabase.functions.invoke("send-renewal-email", {
+                body: {
+                  email: company.email,
+                  firstName: company.contactFirstName || "",
+                  companyName: company.name,
+                },
+              });
 
-            if (userError) {
-              userCreateError = userError.message;
-            } else if (inviteData?.error) {
-              userCreateError = inviteData.error;
+              if (renewalError) {
+                userCreateError = renewalError.message;
+              } else if (renewalData?.error) {
+                userCreateError = renewalData.error;
+              } else {
+                userCreated = true;
+                userEmail = company.email;
+              }
             } else {
-              userCreated = true;
-              userEmail = company.email;
+              // Send standard invite email for new customers
+              const { data: inviteData, error: userError } = await supabase.functions.invoke("invite-user", {
+                body: {
+                  email: company.email,
+                  firstName: company.contactFirstName || "",
+                  lastName: company.contactLastName || "",
+                  role: "company_admin",
+                  companyId: newCompany.id,
+                },
+              });
+
+              if (userError) {
+                userCreateError = userError.message;
+              } else if (inviteData?.error) {
+                userCreateError = inviteData.error;
+              } else {
+                userCreated = true;
+                userEmail = company.email;
+              }
             }
           } catch (userErr) {
             console.error("Failed to create user:", userErr);
@@ -327,7 +355,9 @@ export function BulkCompanyImportDialog({
           name: company.name,
           success: true,
           message: userCreated
-            ? `Opprettet + bruker (${userEmail})`
+            ? company.isRenewal 
+              ? `Opprettet + fornyelsesmail (${userEmail})`
+              : `Opprettet + bruker (${userEmail})`
             : userCreateError
               ? `Opprettet (bruker feilet: ${userCreateError})`
               : "Opprettet",
