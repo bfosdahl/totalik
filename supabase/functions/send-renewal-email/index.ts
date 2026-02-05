@@ -112,9 +112,9 @@ serve(async (req) => {
             `}
             
             <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 24px 0;">
-              <p style="margin: 0 0 10px 0; font-weight: 600; color: #92400e;">🚀 Nyhet: Helt nytt IK-system i 2025!</p>
+              <p style="margin: 0 0 10px 0; font-weight: 600; color: #92400e;">🚀 Nyhet: Vi har lansert nytt IK-system!</p>
               <p style="margin: 0 0 10px 0; font-size: 14px; color: #78350f;">
-                I år får alle våre kunder tilgang til et helt nytt og forbedret IK-system. Systemet er designet slik at de fleste skal klare å bruke det på egen hånd.
+                Alle våre kunder får nå tilgang til et helt nytt og forbedret IK-system. Systemet er designet slik at de fleste skal klare å bruke det på egen hånd.
               </p>
               <p style="margin: 0; font-size: 14px; color: #78350f;">
                 Trenger dere hjelp med å komme i gang? Send oss gjerne en e-post, så hjelper vi dere!
