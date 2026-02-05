@@ -168,8 +168,11 @@ export function BulkCompanyImportDialog({
               productNameLower.includes("ik/hms") ||
               productNameLower.includes("ik/mat") ||
               productNameLower.includes("ik-bygg") ||
+              productNameLower.includes("ik/bygg") ||
               productNameLower.includes("ik/khms") ||
-              productNameLower.includes("internkontroll");
+              productNameLower.includes("ik-system") ||
+              productNameLower.includes("internkontroll") ||
+              productNameLower.includes("internkontrollsystem");
             
             const isKurslisensOnly = !isIkProduct && (
               productNameLower.includes("kurs") ||
@@ -177,9 +180,11 @@ export function BulkCompanyImportDialog({
               productName === ""
             );
 
-            // Check if this is a renewal order
-            const isRenewal = productNameLower.includes("fornyelse") || 
-                              productNameLower.includes("renewal");
+            // Check if this is a renewal order (only for IK products, not kurslisens)
+            const isRenewal = isIkProduct && (
+              productNameLower.includes("fornyelse") || 
+              productNameLower.includes("renewal")
+            );
 
             const isValid = orgNumber.length >= 9 && name.length > 0 && !isDuplicate && !isKurslisensOnly;
             
