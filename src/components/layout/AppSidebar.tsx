@@ -318,7 +318,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto min-h-0">
+        <nav className="flex-1 px-3 py-4 pb-24 space-y-1 overflow-y-auto min-h-0" style={{ paddingBottom: 'max(6rem, calc(env(safe-area-inset-bottom) + 4rem))' }}>
           {/* Standard navigation items - always visible */}
           {standardNavItems.map((item) => {
             const isActive = location.pathname === item.path || 
