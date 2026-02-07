@@ -821,6 +821,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
 
                         {item.type === "photo" && (
                           <div className="space-y-2">
+                            {/* Camera input - for taking photos */}
                             <input
                               ref={(el) => { fileInputRefs.current[item.id] = el; }}
                               type="file"
@@ -831,7 +832,17 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                               className="hidden"
                               id={`photo-upload-${item.id}`}
                             />
-                            <div className="flex items-center gap-2">
+                            {/* Gallery input - for uploading existing photos */}
+                            <input
+                              ref={(el) => { fileInputRefs.current[`${item.id}-gallery`] = el; }}
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={(e) => handlePhotoUpload(item.id, e)}
+                              className="hidden"
+                              id={`photo-upload-gallery-${item.id}`}
+                            />
+                            <div className="flex items-center gap-2 flex-wrap">
                               <Button
                                 type="button"
                                 variant="outline"
@@ -841,6 +852,16 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                               >
                                 <Camera className="h-4 w-4 mr-2" />
                                 {uploadingPhotoIndex === item.id ? "Laster opp..." : "Ta bilde"}
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => fileInputRefs.current[`${item.id}-gallery`]?.click()}
+                                disabled={uploadingPhotoIndex === item.id}
+                              >
+                                <Image className="h-4 w-4 mr-2" />
+                                Last opp
                               </Button>
                               {item.required && !item.photos?.length && (
                                 <span className="text-xs text-red-500">Obligatorisk bilde</span>
@@ -882,6 +903,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                         {/* Photo attachment option for all types */}
                         {item.type !== "photo" && (
                           <div className="pt-2 border-t mt-2">
+                            {/* Camera input - for taking photos */}
                             <input
                               ref={(el) => { fileInputRefs.current[`${item.id}-extra`] = el; }}
                               type="file"
@@ -892,7 +914,17 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                               className="hidden"
                               id={`photo-upload-extra-${item.id}`}
                             />
-                            <div className="flex items-center gap-2">
+                            {/* Gallery input - for uploading existing photos */}
+                            <input
+                              ref={(el) => { fileInputRefs.current[`${item.id}-extra-gallery`] = el; }}
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={(e) => handlePhotoUpload(item.id, e)}
+                              className="hidden"
+                              id={`photo-upload-extra-gallery-${item.id}`}
+                            />
+                            <div className="flex items-center gap-2 flex-wrap">
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -901,8 +933,19 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                                 disabled={uploadingPhotoIndex === item.id}
                                 className="text-muted-foreground"
                               >
+                                <Camera className="h-4 w-4 mr-1" />
+                                Ta bilde
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => fileInputRefs.current[`${item.id}-extra-gallery`]?.click()}
+                                disabled={uploadingPhotoIndex === item.id}
+                                className="text-muted-foreground"
+                              >
                                 <Image className="h-4 w-4 mr-1" />
-                                Legg til bilde
+                                Last opp
                               </Button>
                               {item.photos && item.photos.length > 0 && (
                                 <Badge variant="outline" className="text-xs">
