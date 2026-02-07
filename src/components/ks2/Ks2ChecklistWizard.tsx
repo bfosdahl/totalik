@@ -825,6 +825,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                               ref={(el) => { fileInputRefs.current[item.id] = el; }}
                               type="file"
                               accept="image/*"
+                              capture="environment"
                               multiple
                               onChange={(e) => handlePhotoUpload(item.id, e)}
                               className="hidden"
@@ -885,6 +886,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                               ref={(el) => { fileInputRefs.current[`${item.id}-extra`] = el; }}
                               type="file"
                               accept="image/*"
+                              capture="environment"
                               multiple
                               onChange={(e) => handlePhotoUpload(item.id, e)}
                               className="hidden"
