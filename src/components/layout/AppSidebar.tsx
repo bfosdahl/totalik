@@ -125,10 +125,11 @@ const personaladministrasjonItems = {
 };
 
 // Route detection helper
-type SectionKey = 'ks' | 'ikMat' | 'ikAlkohol' | 'ikHms' | 'personal' | 'gdpr' | 'apenhetsloven' | 'none';
+type SectionKey = 'ks' | 'ikMat' | 'ikAlkohol' | 'ikHms' | 'ikFdv' | 'personal' | 'gdpr' | 'apenhetsloven' | 'none';
 
 const detectActiveSection = (pathname: string): SectionKey => {
   if (pathname.startsWith('/ks')) return 'ks';
+  if (pathname.startsWith('/fdv')) return 'ikFdv';
   if (pathname.startsWith('/ik-alkohol')) return 'ikAlkohol';
   if (pathname.startsWith('/ik-mat')) return 'ikMat';
   if (pathname.startsWith('/gdpr')) return 'gdpr';
@@ -195,6 +196,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const hasKsBygg = hasModule("IK_BYGG");
   const hasIkMat = hasModule("IK_MAT");
   const hasIkAlkohol = hasModule("IK_ALKOHOL");
+  const hasIkFdv = hasModule("IK_FDV");
   const hasGdpr = hasModule("GDPR");
   const hasApenhetsloven = hasModule("APENHETSLOVEN");
   
@@ -1133,6 +1135,181 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                       )}
                     >
                       Befaring
+                    </NavLink>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* IK/FDV collapsible section - visible but locked if module not active */}
+          <div className={cn(!hasIkFdv && "opacity-60")}>
+            <button
+              onClick={() => hasIkFdv ? toggleSection('ikFdv') : handleLockedModuleClick('IK_FDV')}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group w-full",
+                collapsed && "justify-center",
+                hasIkFdv && location.pathname.startsWith("/fdv")
+                  ? "text-sidebar-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              )}
+              title={!hasIkFdv ? "Kun tilgjengelig for systemadministrator" : undefined}
+            >
+              <Building2 className={cn(
+                "w-5 h-5 flex-shrink-0 transition-transform text-teal-500",
+                hasIkFdv && !location.pathname.startsWith("/fdv") && "group-hover:scale-110"
+              )} />
+              <AnimatePresence mode="wait">
+                {!collapsed && (
+                  <>
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      className="font-medium text-sm flex-1 text-left flex items-center gap-2"
+                    >
+                      <span className="w-2 h-2 rounded-full bg-teal-500" />
+                      IK/FDV
+                    </motion.span>
+                    {!hasIkFdv ? (
+                      <Lock className="w-4 h-4 text-muted-foreground" />
+                    ) : expandedSections.has('ikFdv') ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </>
+                )}
+              </AnimatePresence>
+            </button>
+            
+            {/* Locked module message - only shown when clicked */}
+            <AnimatePresence>
+              {!hasIkFdv && !collapsed && selectedLockedModule === 'IK_FDV' && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-6 pr-3 py-2 space-y-2">
+                    <p className="text-xs text-muted-foreground">
+                      Kontakt systemadministrator for å aktivere
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
+            {/* IK/FDV submenu - only when active */}
+            <AnimatePresence>
+              {hasIkFdv && expandedSections.has('ikFdv') && !collapsed && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-6 space-y-1 mt-1">
+                    <NavLink
+                      to="/fdv"
+                      end
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname === "/fdv"
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Dashboard
+                    </NavLink>
+                    <NavLink
+                      to="/fdv/bygg"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname.startsWith("/fdv/bygg")
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Byggoversikt
+                    </NavLink>
+                    <NavLink
+                      to="/fdv/ansvar"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname.startsWith("/fdv/ansvar")
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Ansvar og roller
+                    </NavLink>
+                    <NavLink
+                      to="/fdv/risiko"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname.startsWith("/fdv/risiko")
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Risikoanalyse
+                    </NavLink>
+                    <NavLink
+                      to="/fdv/kontroller"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname.startsWith("/fdv/kontroller")
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Kontroller
+                    </NavLink>
+                    <NavLink
+                      to="/fdv/avvik"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname.startsWith("/fdv/avvik")
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Avvik
+                    </NavLink>
+                    <NavLink
+                      to="/fdv/etasjeplaner"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname.startsWith("/fdv/etasjeplaner")
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Etasjeplaner
+                    </NavLink>
+                    <NavLink
+                      to="/fdv/dokumenter"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname.startsWith("/fdv/dokumenter")
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Dokumenter
+                    </NavLink>
+                    <NavLink
+                      to="/fdv/forskrifter"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                        location.pathname.startsWith("/fdv/forskrifter")
+                          ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      Forskrifter
                     </NavLink>
                   </div>
                 </motion.div>
