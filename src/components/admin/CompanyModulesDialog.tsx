@@ -45,6 +45,11 @@ const MODULE_DEFINITIONS = [
     description: "Kvalitetssikring for byggprosjekter",
   },
   {
+    type: "IK_FDV",
+    name: "IK FDV",
+    description: "Forvaltning, drift og vedlikehold av bygg",
+  },
+  {
     type: "PERSONALHANDBOK",
     name: "Personalhåndbok",
     description: "Digital personalhåndbok for ansatte",
