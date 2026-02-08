@@ -110,6 +110,9 @@ export function getModuleDefaultSettings(moduleType: string): Record<string, any
         manualContent: {},
       };
     
+    case "IK_FDV":
+      return {};
+    
     case "GDPR":
     case "APENHETSLOVEN":
     case "PERSONALHANDBOK":

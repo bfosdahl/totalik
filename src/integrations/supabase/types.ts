@@ -2272,6 +2272,7 @@ export type Database = {
           description: string | null
           deviation_number: string
           due_date: string
+          fdv_building_id: string | null
           id: string
           immediate_actions: string | null
           incident_date: string | null
@@ -2310,6 +2311,7 @@ export type Database = {
           description?: string | null
           deviation_number: string
           due_date: string
+          fdv_building_id?: string | null
           id?: string
           immediate_actions?: string | null
           incident_date?: string | null
@@ -2348,6 +2350,7 @@ export type Database = {
           description?: string | null
           deviation_number?: string
           due_date?: string
+          fdv_building_id?: string | null
           id?: string
           immediate_actions?: string | null
           incident_date?: string | null
@@ -2394,6 +2397,13 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deviations_fdv_building_id_fkey"
+            columns: ["fdv_building_id"]
+            isOneToOne: false
+            referencedRelation: "fdv_buildings"
             referencedColumns: ["id"]
           },
           {
@@ -3146,6 +3156,508 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fdv_building_roles: {
+        Row: {
+          building_id: string
+          company_id: string
+          created_at: string
+          email: string | null
+          external_actor: string | null
+          id: string
+          notes: string | null
+          person_name: string | null
+          phone: string | null
+          profile_id: string | null
+          role_type: string
+          updated_at: string
+        }
+        Insert: {
+          building_id: string
+          company_id: string
+          created_at?: string
+          email?: string | null
+          external_actor?: string | null
+          id?: string
+          notes?: string | null
+          person_name?: string | null
+          phone?: string | null
+          profile_id?: string | null
+          role_type: string
+          updated_at?: string
+        }
+        Update: {
+          building_id?: string
+          company_id?: string
+          created_at?: string
+          email?: string | null
+          external_actor?: string | null
+          id?: string
+          notes?: string | null
+          person_name?: string | null
+          phone?: string | null
+          profile_id?: string | null
+          role_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdv_building_roles_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "fdv_buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdv_building_roles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdv_building_roles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fdv_buildings: {
+        Row: {
+          address: string | null
+          area_sqm: number | null
+          building_type: string
+          city: string | null
+          company_id: string
+          created_at: string
+          external_contact_email: string | null
+          external_contact_name: string | null
+          external_contact_phone: string | null
+          floors: number | null
+          id: string
+          image_url: string | null
+          internal_contact_email: string | null
+          internal_contact_name: string | null
+          internal_contact_phone: string | null
+          name: string
+          notes: string | null
+          owner_type: string
+          postal_code: string | null
+          status: string
+          updated_at: string
+          usage_type: string
+        }
+        Insert: {
+          address?: string | null
+          area_sqm?: number | null
+          building_type?: string
+          city?: string | null
+          company_id: string
+          created_at?: string
+          external_contact_email?: string | null
+          external_contact_name?: string | null
+          external_contact_phone?: string | null
+          floors?: number | null
+          id?: string
+          image_url?: string | null
+          internal_contact_email?: string | null
+          internal_contact_name?: string | null
+          internal_contact_phone?: string | null
+          name: string
+          notes?: string | null
+          owner_type?: string
+          postal_code?: string | null
+          status?: string
+          updated_at?: string
+          usage_type?: string
+        }
+        Update: {
+          address?: string | null
+          area_sqm?: number | null
+          building_type?: string
+          city?: string | null
+          company_id?: string
+          created_at?: string
+          external_contact_email?: string | null
+          external_contact_name?: string | null
+          external_contact_phone?: string | null
+          floors?: number | null
+          id?: string
+          image_url?: string | null
+          internal_contact_email?: string | null
+          internal_contact_name?: string | null
+          internal_contact_phone?: string | null
+          name?: string
+          notes?: string | null
+          owner_type?: string
+          postal_code?: string | null
+          status?: string
+          updated_at?: string
+          usage_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdv_buildings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fdv_control_logs: {
+        Row: {
+          building_id: string
+          company_id: string
+          completed_at: string
+          completed_by_id: string | null
+          completed_by_name: string
+          control_id: string
+          created_at: string
+          documentation_path: string | null
+          findings: string | null
+          id: string
+          next_due_date: string | null
+          notes: string | null
+          status: string
+        }
+        Insert: {
+          building_id: string
+          company_id: string
+          completed_at?: string
+          completed_by_id?: string | null
+          completed_by_name: string
+          control_id: string
+          created_at?: string
+          documentation_path?: string | null
+          findings?: string | null
+          id?: string
+          next_due_date?: string | null
+          notes?: string | null
+          status: string
+        }
+        Update: {
+          building_id?: string
+          company_id?: string
+          completed_at?: string
+          completed_by_id?: string | null
+          completed_by_name?: string
+          control_id?: string
+          created_at?: string
+          documentation_path?: string | null
+          findings?: string | null
+          id?: string
+          next_due_date?: string | null
+          notes?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdv_control_logs_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "fdv_buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdv_control_logs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdv_control_logs_completed_by_id_fkey"
+            columns: ["completed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdv_control_logs_control_id_fkey"
+            columns: ["control_id"]
+            isOneToOne: false
+            referencedRelation: "fdv_controls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fdv_controls: {
+        Row: {
+          building_id: string
+          company_id: string
+          control_type: string
+          created_at: string
+          description: string | null
+          documentation_path: string | null
+          id: string
+          interval_months: number
+          last_completed_by_id: string | null
+          last_completed_by_name: string | null
+          last_completed_date: string | null
+          name: string
+          next_due_date: string | null
+          notes: string | null
+          reminder_days_before: number | null
+          reminder_enabled: boolean | null
+          responsible_id: string | null
+          responsible_name: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          building_id: string
+          company_id: string
+          control_type: string
+          created_at?: string
+          description?: string | null
+          documentation_path?: string | null
+          id?: string
+          interval_months?: number
+          last_completed_by_id?: string | null
+          last_completed_by_name?: string | null
+          last_completed_date?: string | null
+          name: string
+          next_due_date?: string | null
+          notes?: string | null
+          reminder_days_before?: number | null
+          reminder_enabled?: boolean | null
+          responsible_id?: string | null
+          responsible_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          building_id?: string
+          company_id?: string
+          control_type?: string
+          created_at?: string
+          description?: string | null
+          documentation_path?: string | null
+          id?: string
+          interval_months?: number
+          last_completed_by_id?: string | null
+          last_completed_by_name?: string | null
+          last_completed_date?: string | null
+          name?: string
+          next_due_date?: string | null
+          notes?: string | null
+          reminder_days_before?: number | null
+          reminder_enabled?: boolean | null
+          responsible_id?: string | null
+          responsible_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdv_controls_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "fdv_buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdv_controls_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdv_controls_last_completed_by_id_fkey"
+            columns: ["last_completed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdv_controls_responsible_id_fkey"
+            columns: ["responsible_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fdv_documents: {
+        Row: {
+          building_id: string | null
+          category: string
+          company_id: string
+          created_at: string
+          description: string | null
+          document_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          updated_at: string
+          uploaded_by_id: string | null
+          uploaded_by_name: string
+          valid_from: string | null
+          valid_to: string | null
+          version: string | null
+        }
+        Insert: {
+          building_id?: string | null
+          category: string
+          company_id: string
+          created_at?: string
+          description?: string | null
+          document_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          updated_at?: string
+          uploaded_by_id?: string | null
+          uploaded_by_name: string
+          valid_from?: string | null
+          valid_to?: string | null
+          version?: string | null
+        }
+        Update: {
+          building_id?: string | null
+          category?: string
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          document_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          updated_at?: string
+          uploaded_by_id?: string | null
+          uploaded_by_name?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdv_documents_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "fdv_buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdv_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdv_documents_uploaded_by_id_fkey"
+            columns: ["uploaded_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fdv_risk_assessments: {
+        Row: {
+          actions: Json | null
+          assessed_at: string | null
+          assessed_by_id: string | null
+          assessed_by_name: string | null
+          building_id: string
+          category: string
+          company_id: string
+          consequence: number
+          created_at: string
+          existing_measures: string | null
+          hazard_description: string
+          id: string
+          notes: string | null
+          probability: number
+          responsible_id: string | null
+          responsible_name: string | null
+          revision_date: string | null
+          risk_score: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          actions?: Json | null
+          assessed_at?: string | null
+          assessed_by_id?: string | null
+          assessed_by_name?: string | null
+          building_id: string
+          category: string
+          company_id: string
+          consequence: number
+          created_at?: string
+          existing_measures?: string | null
+          hazard_description: string
+          id?: string
+          notes?: string | null
+          probability: number
+          responsible_id?: string | null
+          responsible_name?: string | null
+          revision_date?: string | null
+          risk_score?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          actions?: Json | null
+          assessed_at?: string | null
+          assessed_by_id?: string | null
+          assessed_by_name?: string | null
+          building_id?: string
+          category?: string
+          company_id?: string
+          consequence?: number
+          created_at?: string
+          existing_measures?: string | null
+          hazard_description?: string
+          id?: string
+          notes?: string | null
+          probability?: number
+          responsible_id?: string | null
+          responsible_name?: string | null
+          revision_date?: string | null
+          risk_score?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdv_risk_assessments_assessed_by_id_fkey"
+            columns: ["assessed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdv_risk_assessments_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "fdv_buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdv_risk_assessments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdv_risk_assessments_responsible_id_fkey"
+            columns: ["responsible_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -12745,6 +13257,14 @@ export type Database = {
       is_hms_responsible: { Args: { user_id: string }; Returns: boolean }
       is_leader_or_verneombud: { Args: { p_user_id: string }; Returns: boolean }
       is_system_admin: { Args: { _user_id: string }; Returns: boolean }
+      user_can_manage_fdv: {
+        Args: { _company_id: string; _user_id: string }
+        Returns: boolean
+      }
+      user_has_fdv_access: {
+        Args: { _company_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role:
