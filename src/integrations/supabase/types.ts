@@ -3564,6 +3564,57 @@ export type Database = {
           },
         ]
       }
+      fdv_floor_plans: {
+        Row: {
+          building_id: string
+          company_id: string
+          created_at: string
+          created_by_name: string
+          elements_json: string | null
+          floor_name: string
+          id: string
+          image_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          building_id: string
+          company_id: string
+          created_at?: string
+          created_by_name: string
+          elements_json?: string | null
+          floor_name?: string
+          id?: string
+          image_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          building_id?: string
+          company_id?: string
+          created_at?: string
+          created_by_name?: string
+          elements_json?: string | null
+          floor_name?: string
+          id?: string
+          image_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdv_floor_plans_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "fdv_buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdv_floor_plans_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fdv_risk_assessments: {
         Row: {
           actions: Json | null

@@ -54,6 +54,7 @@ import FdvBuildings from "./pages/fdv/FdvBuildings";
 import FdvControls from "./pages/fdv/FdvControls";
 import FdvRisks from "./pages/fdv/FdvRisks";
 import FdvRegulations from "./pages/fdv/FdvRegulations";
+import FdvFloorPlans from "./pages/fdv/FdvFloorPlans";
 import HrContracts from "./pages/hr/HrContracts";
 import HrAbsence from "./pages/hr/HrAbsence";
 import HrMeetings from "./pages/hr/HrMeetings";
@@ -195,6 +196,7 @@ const App = () => (
                   <Route path="/fdv/kontroller" element={<ProtectedRoute><FdvControls /></ProtectedRoute>} />
                   <Route path="/fdv/risiko" element={<ProtectedRoute><FdvRisks /></ProtectedRoute>} />
                   <Route path="/fdv/regelverk" element={<ProtectedRoute><FdvRegulations /></ProtectedRoute>} />
+                  <Route path="/fdv/etasjeplaner" element={<ProtectedRoute><FdvFloorPlans /></ProtectedRoute>} />
                   
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="/brukerveiledning" element={<ProtectedRoute><Brukerveiledning /></ProtectedRoute>} />
