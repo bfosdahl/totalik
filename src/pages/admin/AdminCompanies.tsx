@@ -75,6 +75,7 @@ const MODULE_OPTIONS = [
   { type: "IK_MAT", name: "IK MAT", description: "Internkontroll for matsikkerhet" },
   { type: "IK_ALKOHOL", name: "IK Alkohol", description: "Internkontroll for alkoholhåndtering" },
   { type: "IK_BYGG", name: "KS Bygg", description: "Kvalitetssikring for byggprosjekter" },
+  { type: "IK_FDV", name: "IK FDV", description: "Forvaltning, drift og vedlikehold av bygg" },
   { type: "PERSONALHANDBOK", name: "Personalhåndbok", description: "Digital personalhåndbok" },
   { type: "GDPR", name: "GDPR", description: "Personvern og datahåndtering" },
   { type: "APENHETSLOVEN", name: "Åpenhetsloven", description: "Aktsomhetsvurderinger" },
