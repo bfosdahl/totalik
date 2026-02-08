@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-export type ModuleType = "IK_HMS" | "IK_MAT" | "IK_ALKOHOL" | "IK_BYGG" | "PERSONALHANDBOK" | "GDPR" | "APENHETSLOVEN" | "AVDELINGER" | "KS" | "HR" | "TIMEREGISTRERING";
+export type ModuleType = "IK_HMS" | "IK_MAT" | "IK_ALKOHOL" | "IK_BYGG" | "IK_FDV" | "PERSONALHANDBOK" | "GDPR" | "APENHETSLOVEN" | "AVDELINGER" | "KS" | "HR" | "TIMEREGISTRERING";
 
 export interface CompanyModule {
   id: string;
