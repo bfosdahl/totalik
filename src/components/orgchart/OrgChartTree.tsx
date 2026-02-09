@@ -359,48 +359,41 @@ const MobileNode: React.FC<MobileNodeProps> = ({
   const personCount = node.persons?.length || 0;
   
   return (
-    <div style={{ marginLeft: depth * 12 }}>
+    <div className="pl-3">
       <div 
         className={cn(
-          "border-2 rounded-xl bg-card shadow-sm",
+          "border rounded-lg bg-card shadow-sm",
           node.is_root ? "border-primary bg-primary/5" : "border-border"
         )}
       >
-        {/* Header row */}
-        <div className="flex items-center gap-2 p-3 pb-2">
+        {/* Header row - compact */}
+        <div className="flex items-center gap-1.5 p-2">
           {hasChildren ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 flex-shrink-0"
+            <button
+              className="h-7 w-7 flex items-center justify-center flex-shrink-0 rounded-md hover:bg-muted transition-colors"
               onClick={() => setIsExpanded(!isExpanded)}
             >
               {isExpanded ? (
-                <ChevronDown className="h-5 w-5" />
+                <ChevronDown className="h-4 w-4" />
               ) : (
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-4 w-4" />
               )}
-            </Button>
+            </button>
           ) : (
-            <div className="w-8" />
+            <div className="w-7 flex-shrink-0" />
           )}
           
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              {node.is_root && (
-                <span className="inline-flex items-center gap-1 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-                  <Crown className="h-3 w-3" />
-                </span>
-              )}
-              <span className="font-bold text-base break-words">{node.role_title}</span>
-            </div>
-          </div>
+          {node.is_root && (
+            <Crown className="h-4 w-4 text-primary flex-shrink-0" />
+          )}
+          
+          <span className="font-semibold text-sm flex-1 min-w-0">{node.role_title}</span>
           
           {canEdit && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="secondary" size="icon" className="h-9 w-9 flex-shrink-0">
-                  <MoreHorizontal className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0">
+                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
@@ -440,39 +433,30 @@ const MobileNode: React.FC<MobileNodeProps> = ({
           )}
         </div>
         
-        {/* Persons section */}
-        <div className="px-3 pb-3 ml-8">
-          {personCount > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {node.persons!.map(person => (
-                <div 
-                  key={person.id} 
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted/70 text-sm"
-                >
-                  <User className="h-3.5 w-3.5 text-primary" />
-                  <span className="font-medium">{person.person_name}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <button
-              onClick={() => canEdit && onAddPerson(node.id)}
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 border-dashed border-muted-foreground/30 text-sm text-muted-foreground",
-                canEdit && "hover:border-primary hover:text-primary transition-colors"
-              )}
-            >
-              <UserPlus className="h-3.5 w-3.5" />
-              {canEdit ? "Tilknytt" : "Ingen"}
-            </button>
-          )}
-          
-          {hasChildren && (
-            <div className="text-xs text-muted-foreground mt-2">
-              {node.children.length} underordnet{node.children.length !== 1 ? 'e' : ''}
-            </div>
-          )}
-        </div>
+        {/* Persons - inline compact */}
+        {personCount > 0 && (
+          <div className="px-2 pb-2 pl-9 flex flex-wrap gap-1.5">
+            {node.persons!.map(person => (
+              <span 
+                key={person.id} 
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/60 text-xs"
+              >
+                <User className="h-3 w-3 text-primary" />
+                {person.person_name}
+              </span>
+            ))}
+          </div>
+        )}
+        
+        {personCount === 0 && canEdit && (
+          <button
+            onClick={() => onAddPerson(node.id)}
+            className="mx-2 mb-2 ml-9 inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-dashed border-muted-foreground/30 text-xs text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+          >
+            <UserPlus className="h-3 w-3" />
+            Tilknytt
+          </button>
+        )}
       </div>
       
       <AnimatePresence>
@@ -481,7 +465,7 @@ const MobileNode: React.FC<MobileNodeProps> = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-2 space-y-2 border-l-2 border-border ml-3"
+            className="mt-1 space-y-1 border-l-2 border-border/50"
           >
             {node.children.map(child => (
               <MobileNode
