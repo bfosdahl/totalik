@@ -360,6 +360,49 @@ const IkHmsOrganisering = () => {
               </CardContent>
             </Card>
 
+            {/* Role description editing */}
+            {canEdit && nodes.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Rediger roller</CardTitle>
+                  <CardDescription>Rediger rollebeskrivelser direkte. Disse vises i HMS-håndboken.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {nodes.map((node, index) => (
+                    <div key={node.id} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0 text-sm">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-sm">{node.role_title}</h4>
+                          {node.persons && node.persons.length > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              {node.persons.map(p => p.person_name).join(', ')}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <Textarea
+                        value={node.role_description || ''}
+                        onChange={(e) => {
+                          updateNode.mutate({
+                            id: node.id,
+                            role_title: node.role_title,
+                            role_description: e.target.value,
+                            parent_node_id: node.parent_node_id,
+                          });
+                        }}
+                        placeholder="Beskriv ansvarsområder og oppgaver for denne rollen..."
+                        rows={2}
+                        className="text-sm"
+                      />
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Persons list */}
             {nodes.some(n => n.persons && n.persons.length > 0) && (
               <Card>
