@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -111,6 +111,44 @@ const IkHmsOrganisering = () => {
     fetchDescription();
   }, [profile?.company_id]);
 
+  // Auto-sync roles to company_organization when org chart nodes change
+  const initialLoadRef = useRef(true);
+  useEffect(() => {
+    // Skip initial load and wait for description to be loaded
+    if (isLoadingDescription || isLoading || !profile?.company_id) return;
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+    // Sync roles from current tree
+    const roles = nodes.length > 0 ? (() => {
+      const result: { title: string; personName: string; description: string }[] = [];
+      const traverse = (node: TreeNode) => {
+        result.push({
+          title: node.role_title,
+          personName: node.persons?.map(p => p.person_name).join(', ') || '',
+          description: node.role_description || '',
+        });
+        node.children.forEach(child => traverse(child));
+      };
+      tree.forEach(root => traverse(root));
+      return result;
+    })() : [];
+    
+    const content = JSON.stringify({ description, roles });
+    supabase
+      .from("company_organization")
+      .upsert({
+        company_id: profile.company_id,
+        custom_content: content,
+        is_custom: true,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "company_id" })
+      .then(({ error }) => {
+        if (error) console.error("Error auto-syncing roles:", error);
+      });
+  }, [nodes, tree, profile?.company_id]);
+
   // Handle node operations
   const handleAddNode = (parentId?: string) => {
     setEditingNode(null);
@@ -197,13 +235,32 @@ const IkHmsOrganisering = () => {
     await setAsRoot.mutateAsync(nodeId);
   };
 
+  // Build roles array from org chart tree for handbook integration
+  const buildRolesFromTree = (treeNodes: TreeNode[]): { title: string; personName: string; description: string }[] => {
+    const roles: { title: string; personName: string; description: string }[] = [];
+    
+    const traverse = (node: TreeNode) => {
+      roles.push({
+        title: node.role_title,
+        personName: node.persons?.map(p => p.person_name).join(', ') || '',
+        description: node.role_description || '',
+      });
+      node.children.forEach(child => traverse(child));
+    };
+    
+    treeNodes.forEach(root => traverse(root));
+    return roles;
+  };
+
   // Save description
   const handleSaveDescription = async () => {
     if (!profile?.company_id) return;
     
     setIsSavingDescription(true);
     try {
-      const content = JSON.stringify({ description });
+      // Include roles from org chart so handbook picks them up
+      const roles = buildRolesFromTree(tree);
+      const content = JSON.stringify({ description, roles });
       
       const { error } = await supabase
         .from("company_organization")
@@ -286,6 +343,41 @@ const IkHmsOrganisering = () => {
     }
   };
 
+  // Auto-save roles to company_organization for handbook sync
+  const syncRolesToHandbook = async (updatedDescription: string, overrideNodes?: typeof nodes) => {
+    if (!profile?.company_id) return;
+    try {
+      const sourceNodes = overrideNodes || nodes;
+      // Build tree from provided nodes
+      const nodeMap = new Map<string, TreeNode>();
+      const roots: TreeNode[] = [];
+      sourceNodes.forEach(node => {
+        nodeMap.set(node.id, { ...node, children: [], depth: 0 });
+      });
+      sourceNodes.forEach(node => {
+        const treeNode = nodeMap.get(node.id)!;
+        if (node.parent_node_id && nodeMap.has(node.parent_node_id)) {
+          nodeMap.get(node.parent_node_id)!.children.push(treeNode);
+        } else {
+          roots.push(treeNode);
+        }
+      });
+      const roles = buildRolesFromTree(roots);
+      const content = JSON.stringify({ description: updatedDescription, roles });
+      
+      await supabase
+        .from("company_organization")
+        .upsert({
+          company_id: profile.company_id,
+          custom_content: content,
+          is_custom: true,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "company_id" });
+    } catch (error) {
+      console.error("Error syncing roles to handbook:", error);
+    }
+  };
+
   // Handle role description save with auto-generation
   const handleRoleDescriptionSave = async (nodeId: string, roleDescription: string) => {
     await updateNodeSilent(nodeId, roleDescription);
@@ -294,6 +386,10 @@ const IkHmsOrganisering = () => {
     const generatedText = generateDescriptionText({ id: nodeId, role_description: roleDescription });
     if (generatedText) {
       setDescription(generatedText);
+      setOriginalDescription(generatedText);
+      // Auto-sync to handbook with updated node
+      const updatedNodes = nodes.map(n => n.id === nodeId ? { ...n, role_description: roleDescription } : n);
+      await syncRolesToHandbook(generatedText, updatedNodes);
     }
   };
 
