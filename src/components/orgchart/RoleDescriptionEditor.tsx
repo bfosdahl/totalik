@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Save, Loader2 } from "lucide-react";
 import type { OrgChartNode } from "@/hooks/useOrgChart";
 
 interface RoleDescriptionEditorProps {
@@ -12,55 +13,31 @@ interface RoleDescriptionEditorProps {
 export const RoleDescriptionEditor = ({ node, index, onSave }: RoleDescriptionEditorProps) => {
   const [localValue, setLocalValue] = useState(node.role_description || '');
   const [isSaving, setIsSaving] = useState(false);
-  const [showSaved, setShowSaved] = useState(false);
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const savedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [hasChanges, setHasChanges] = useState(false);
 
-  // Sync with external changes
+  // Sync with external changes only when not dirty
   useEffect(() => {
-    if (!isSaving) {
+    if (!hasChanges) {
       setLocalValue(node.role_description || '');
     }
-  }, [node.role_description, isSaving]);
+  }, [node.role_description, hasChanges]);
 
   const handleChange = (value: string) => {
     setLocalValue(value);
-    setShowSaved(false);
-    
-    // Clear existing timeout
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-    
-    // Debounce: save after 800ms of no typing
-    saveTimeoutRef.current = setTimeout(async () => {
-      if (value !== node.role_description) {
-        setIsSaving(true);
-        try {
-          await onSave(node.id, value);
-          setShowSaved(true);
-          
-          // Hide "saved" indicator after 2 seconds
-          if (savedTimeoutRef.current) {
-            clearTimeout(savedTimeoutRef.current);
-          }
-          savedTimeoutRef.current = setTimeout(() => {
-            setShowSaved(false);
-          }, 2000);
-        } finally {
-          setIsSaving(false);
-        }
-      }
-    }, 800);
+    setHasChanges(value !== (node.role_description || ''));
   };
 
-  // Cleanup timeouts on unmount
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-      if (savedTimeoutRef.current) clearTimeout(savedTimeoutRef.current);
-    };
-  }, []);
+  const handleSave = async () => {
+    if (!hasChanges) return;
+    
+    setIsSaving(true);
+    try {
+      await onSave(node.id, localValue);
+      setHasChanges(false);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="border rounded-lg p-4 space-y-3">
@@ -76,10 +53,20 @@ export const RoleDescriptionEditor = ({ node, index, onSave }: RoleDescriptionEd
             </p>
           )}
         </div>
-        <div className="w-6 h-6 flex items-center justify-center">
-          {isSaving && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-          {showSaved && !isSaving && <Check className="h-4 w-4 text-emerald-600" />}
-        </div>
+        <Button 
+          size="sm" 
+          onClick={handleSave}
+          disabled={!hasChanges || isSaving}
+          variant={hasChanges ? "default" : "outline"}
+          className="gap-1.5"
+        >
+          {isSaving ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Save className="h-3.5 w-3.5" />
+          )}
+          Lagre
+        </Button>
       </div>
       <Textarea
         value={localValue}
