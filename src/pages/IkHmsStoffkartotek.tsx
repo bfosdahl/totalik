@@ -83,6 +83,7 @@ export default function IkHmsStoffkartotek() {
   const [editProductId, setEditProductId] = useState<string | null>(null);
   const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false);
   const [riskAssessmentProduct, setRiskAssessmentProduct] = useState<IkHmsStoffkartotek | null>(null);
+  const [aiRiskSuggestion, setAiRiskSuggestion] = useState<any>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -133,10 +134,29 @@ export default function IkHmsStoffkartotek() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id] });
       toast.success("Stoff lagt til i stoffkartoteket");
       setIsCreateOpen(false);
+      
+      // If AI risk suggestion exists, auto-open risk assessment dialog
+      if (aiRiskSuggestion && data) {
+        const newProduct: IkHmsStoffkartotek = {
+          id: data.id,
+          company_id: data.company_id,
+          product_name: data.product_name,
+          manufacturer: data.manufacturer,
+          danger_classes: data.danger_classes || [],
+          location: data.location,
+          sds_file_path: data.sds_file_path,
+          notes: data.notes,
+          last_updated: data.last_updated,
+          created_at: data.created_at,
+        };
+        setRiskAssessmentProduct(newProduct);
+        toast.info("AI-risikovurdering er forhåndsutfylt. Gjennomgå og juster etter behov.");
+      }
+      
       resetForm();
     },
     onError: () => {
@@ -264,7 +284,12 @@ export default function IkHmsStoffkartotek() {
         notes: result.data.notes || prev.notes,
       }));
 
-      toast.success("PDF analysert! Sjekk og juster informasjonen før du lagrer.");
+      // Store AI risk assessment suggestion
+      if (result.data.risk_assessment) {
+        setAiRiskSuggestion(result.data.risk_assessment);
+      }
+
+      toast.success("PDF analysert! Sjekk og juster informasjonen før du lagrer. AI-risikovurdering er også klar.");
     } catch (error) {
       console.error("Error parsing PDF:", error);
       toast.error("Kunne ikke lese PDF. Fyll ut manuelt.");
@@ -810,13 +835,19 @@ export default function IkHmsStoffkartotek() {
         {riskAssessmentProduct && (
           <IkHmsChemicalRiskDialog
             open={!!riskAssessmentProduct}
-            onOpenChange={(open) => !open && setRiskAssessmentProduct(null)}
+            onOpenChange={(open) => {
+              if (!open) {
+                setRiskAssessmentProduct(null);
+                setAiRiskSuggestion(null);
+              }
+            }}
             chemical={{
               id: riskAssessmentProduct.id,
               product_name: riskAssessmentProduct.product_name,
               manufacturer: riskAssessmentProduct.manufacturer,
               danger_classes: riskAssessmentProduct.danger_classes,
             }}
+            aiRiskSuggestion={aiRiskSuggestion}
           />
         )}
       </div>

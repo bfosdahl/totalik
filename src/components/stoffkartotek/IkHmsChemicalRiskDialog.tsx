@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +34,17 @@ import {
 } from "@/hooks/useChemicalRiskAssessment";
 import { cn } from "@/lib/utils";
 
+export interface AiRiskSuggestion {
+  exposure_types: string[];
+  exposure_level: string;
+  exposure_duration: string;
+  hazard_severity: number;
+  exposure_probability: number;
+  required_ppe: string[];
+  work_tasks: { description: string; frequency: string }[];
+  conclusion: string;
+}
+
 interface IkHmsChemicalRiskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -42,6 +54,7 @@ interface IkHmsChemicalRiskDialogProps {
     manufacturer: string | null;
     danger_classes: string[];
   };
+  aiRiskSuggestion?: AiRiskSuggestion | null;
 }
 
 const EXPOSURE_TYPES = [
@@ -92,9 +105,11 @@ export function IkHmsChemicalRiskDialog({
   open,
   onOpenChange,
   chemical,
+  aiRiskSuggestion,
 }: IkHmsChemicalRiskDialogProps) {
   const { data: assessment, isLoading } = useChemicalRiskAssessment(chemical.id, 'ik_hms');
   const { createAssessment, updatePhase1, isCreating, isUpdating } = useChemicalRiskAssessmentMutations(null, 'ik_hms');
+  const [aiApplied, setAiApplied] = useState(false);
 
   // Form state
   const [exposureTypes, setExposureTypes] = useState<string[]>([]);
@@ -124,6 +139,32 @@ export function IkHmsChemicalRiskDialog({
       setPhase1Conclusion(assessment.phase_1_conclusion || "");
     }
   }, [assessment]);
+
+  // Apply AI risk suggestion when available and no existing assessment data
+  useEffect(() => {
+    if (aiRiskSuggestion && assessment && !aiApplied && !assessment.phase_1_completed) {
+      // Only apply if the assessment is fresh (no existing data)
+      const hasExistingData = assessment.exposure_type || assessment.hazard_severity || assessment.phase_1_conclusion;
+      if (!hasExistingData) {
+        setExposureTypes(aiRiskSuggestion.exposure_types || []);
+        setExposureLevel(aiRiskSuggestion.exposure_level || "");
+        setExposureDuration(aiRiskSuggestion.exposure_duration || "");
+        setHazardSeverity(aiRiskSuggestion.hazard_severity || 3);
+        setExposureProbability(aiRiskSuggestion.exposure_probability || 3);
+        setRequiredPpe(aiRiskSuggestion.required_ppe || []);
+        setPhase1Conclusion(aiRiskSuggestion.conclusion || "");
+        if (aiRiskSuggestion.work_tasks?.length > 0) {
+          setWorkTasks(aiRiskSuggestion.work_tasks.map((t: any) => ({
+            id: crypto.randomUUID(),
+            description: t.description,
+            frequency: t.frequency || "daglig",
+            duration_minutes: 30,
+          })));
+        }
+        setAiApplied(true);
+      }
+    }
+  }, [aiRiskSuggestion, assessment, aiApplied]);
 
   // Create assessment if it doesn't exist
   useEffect(() => {
@@ -242,6 +283,16 @@ export function IkHmsChemicalRiskDialog({
           </div>
           <Progress value={getProgressPercent()} className="h-2" />
         </div>
+
+        {/* AI suggestion banner */}
+        {aiApplied && (
+          <Alert className="mb-4 border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800">
+            <Shield className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-800 dark:text-blue-300">
+              AI har foreslått en risikovurdering basert på sikkerhetsdatabladet. Gjennomgå og juster verdiene etter behov og bruk før du lagrer.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Chemical info + Risk score */}
         <Card className="mb-4">

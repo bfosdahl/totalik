@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const systemPrompt = `Du er en ekspert på sikkerhetsdatablader (SDS) for kjemikalier. Din oppgave er å analysere tekst fra et sikkerhetsdatablad og ekstrahere relevant informasjon.
+const systemPrompt = `Du er en ekspert på sikkerhetsdatablader (SDS) for kjemikalier og kjemisk risikovurdering. Din oppgave er å analysere tekst fra et sikkerhetsdatablad og ekstrahere relevant informasjon, samt foreslå en risikovurdering.
 
 Du skal returnere en JSON-struktur med følgende felt:
 - product_name: Produktnavnet/kjemikalienavnet
@@ -22,15 +22,37 @@ Du skal returnere en JSON-struktur med følgende felt:
   * "Miljøskadelig" - for miljøskadelige stoffer
   * "Gass under trykk" - for komprimerte gasser
 - notes: Viktig tilleggsinformasjon som førstehjelpstiltak, lagringsanvisninger, eller verneutstyr (kort oppsummert)
+- risk_assessment: Et objekt med forslag til risikovurdering basert på stoffets egenskaper:
+  * exposure_types: Liste over relevante eksponeringstyper. Velg fra: "innånding", "hudkontakt", "svelging", "øyekontakt"
+  * exposure_level: Foreslått eksponeringsnivå. Velg fra: "lav", "middels", "høy"
+  * exposure_duration: Foreslått varighet. Velg fra: "kort", "periodisk", "langvarig"
+  * hazard_severity: Alvorlighetsgrad 1-5 (1=ubetydelig, 5=kritisk). Basér på H-setninger og fareklasser.
+  * exposure_probability: Sannsynlighet 1-5 (1=svært lite, 5=svært sannsynlig). Basér på typisk bruk av produktet.
+  * required_ppe: Liste over påkrevd verneutstyr. Velg fra: "Vernebriller", "Ansiktsskjerm", "Kjemikalieresistente hansker", "Åndedrettsvern", "Verneforkle/drakt", "Vernestøvler"
+  * work_tasks: Liste med typiske arbeidsoppgaver der stoffet brukes (maks 3), hvert objekt har "description" og "frequency" (velg fra: "daglig", "ukentlig", "månedlig", "sjelden")
+  * conclusion: En kort konklusjon (2-3 setninger) om risikoen ved bruk av dette stoffet og viktigste tiltak
 
-Analyser H-setninger (faresetninger) og P-setninger (sikkerhetssetninger) for å bestemme riktige fareklasser.
+Analyser H-setninger (faresetninger) og P-setninger (sikkerhetssetninger) for å bestemme riktige fareklasser og risikovurdering.
 
 VIKTIG: Returner KUN gyldig JSON, ingen annen tekst. Eksempel:
 {
   "product_name": "Aceton",
   "manufacturer": "Jotun AS",
   "danger_classes": ["Brannfarlig", "Irriterende"],
-  "notes": "Bruk vernehansker og vernebriller. Oppbevares utilgjengelig for barn. Hold unna varmekilder."
+  "notes": "Bruk vernehansker og vernebriller. Oppbevares utilgjengelig for barn.",
+  "risk_assessment": {
+    "exposure_types": ["innånding", "hudkontakt", "øyekontakt"],
+    "exposure_level": "middels",
+    "exposure_duration": "periodisk",
+    "hazard_severity": 3,
+    "exposure_probability": 3,
+    "required_ppe": ["Vernebriller", "Kjemikalieresistente hansker", "Åndedrettsvern"],
+    "work_tasks": [
+      {"description": "Rengjøring av overflater", "frequency": "daglig"},
+      {"description": "Fortynning av maling", "frequency": "ukentlig"}
+    ],
+    "conclusion": "Aceton er brannfarlig og kan irritere hud og øyne. Bruk alltid verneutstyr og sørg for god ventilasjon. Unngå langvarig hudkontakt."
+  }
 }`;
 
 serve(async (req) => {
@@ -170,6 +192,8 @@ serve(async (req) => {
 
     console.log("Parsed SDS data for user:", userId, parsedData);
 
+    const riskAssessment = parsedData.risk_assessment || {};
+
     return new Response(JSON.stringify({
       success: true,
       data: {
@@ -177,6 +201,16 @@ serve(async (req) => {
         manufacturer: parsedData.manufacturer || "",
         danger_classes: Array.isArray(parsedData.danger_classes) ? parsedData.danger_classes : [],
         notes: parsedData.notes || "",
+        risk_assessment: {
+          exposure_types: Array.isArray(riskAssessment.exposure_types) ? riskAssessment.exposure_types : [],
+          exposure_level: riskAssessment.exposure_level || "",
+          exposure_duration: riskAssessment.exposure_duration || "",
+          hazard_severity: typeof riskAssessment.hazard_severity === 'number' ? riskAssessment.hazard_severity : 3,
+          exposure_probability: typeof riskAssessment.exposure_probability === 'number' ? riskAssessment.exposure_probability : 3,
+          required_ppe: Array.isArray(riskAssessment.required_ppe) ? riskAssessment.required_ppe : [],
+          work_tasks: Array.isArray(riskAssessment.work_tasks) ? riskAssessment.work_tasks : [],
+          conclusion: riskAssessment.conclusion || "",
+        },
       }
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
