@@ -1153,7 +1153,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                   ? "text-sidebar-foreground"
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
               )}
-              title={!hasIkFdv ? "Kun tilgjengelig for systemadministrator" : undefined}
+              title={!hasIkFdv ? "Klikk for å bestille denne modulen" : undefined}
             >
               <Building2 className={cn(
                 "w-5 h-5 flex-shrink-0 transition-transform text-teal-500",
@@ -1183,7 +1183,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               </AnimatePresence>
             </button>
             
-            {/* Locked module message - only shown when clicked */}
+            {/* Locked module message with order button - only shown when clicked */}
             <AnimatePresence>
               {!hasIkFdv && !collapsed && selectedLockedModule === 'IK_FDV' && (
                 <motion.div
@@ -1193,9 +1193,21 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                   className="overflow-hidden"
                 >
                   <div className="pl-6 pr-3 py-2 space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      Kontakt systemadministrator for å aktivere
-                    </p>
+                    {canOrderModules ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOrderModule("IK_FDV")}
+                        className="w-full justify-start text-xs h-auto py-1.5 text-primary hover:text-primary"
+                      >
+                        <ShoppingCart className="w-3 h-3 mr-2" />
+                        Bestill modul
+                      </Button>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Kontakt bedriftsadmin for å aktivere
+                      </p>
+                    )}
                   </div>
                 </motion.div>
               )}
