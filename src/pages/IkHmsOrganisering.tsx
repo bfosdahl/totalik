@@ -122,16 +122,18 @@ const IkHmsOrganisering = () => {
     }
     // Sync roles from current tree
     const roles = nodes.length > 0 ? (() => {
-      const result: { title: string; personName: string; description: string }[] = [];
-      const traverse = (node: TreeNode) => {
+      const result: { title: string; personName: string; description: string; depth: number; childCount: number }[] = [];
+      const traverse = (node: TreeNode, depth: number) => {
         result.push({
           title: node.role_title,
           personName: node.persons?.map(p => p.person_name).join(', ') || '',
           description: node.role_description || '',
+          depth,
+          childCount: node.children.length,
         });
-        node.children.forEach(child => traverse(child));
+        node.children.forEach(child => traverse(child, depth + 1));
       };
-      tree.forEach(root => traverse(root));
+      tree.forEach(root => traverse(root, 0));
       return result;
     })() : [];
     
@@ -236,19 +238,21 @@ const IkHmsOrganisering = () => {
   };
 
   // Build roles array from org chart tree for handbook integration
-  const buildRolesFromTree = (treeNodes: TreeNode[]): { title: string; personName: string; description: string }[] => {
-    const roles: { title: string; personName: string; description: string }[] = [];
+  const buildRolesFromTree = (treeNodes: TreeNode[]): { title: string; personName: string; description: string; depth: number; childCount: number }[] => {
+    const roles: { title: string; personName: string; description: string; depth: number; childCount: number }[] = [];
     
-    const traverse = (node: TreeNode) => {
+    const traverse = (node: TreeNode, depth: number) => {
       roles.push({
         title: node.role_title,
         personName: node.persons?.map(p => p.person_name).join(', ') || '',
         description: node.role_description || '',
+        depth,
+        childCount: node.children.length,
       });
-      node.children.forEach(child => traverse(child));
+      node.children.forEach(child => traverse(child, depth + 1));
     };
     
-    treeNodes.forEach(root => traverse(root));
+    treeNodes.forEach(root => traverse(root, 0));
     return roles;
   };
 
