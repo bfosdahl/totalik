@@ -1621,39 +1621,55 @@ const Handbook = () => {
         const boxWidth = 80;
         const boxHeight = 20;
         const centerX = pageWidth / 2;
+        const indentPerLevel = 15;
+        
+        // Track positions for drawing connectors
+        const levelLastY: Record<number, number> = {};
         
         pdfOrgRoles.forEach((role, index) => {
+          const depth = (role as any).depth ?? 0;
           checkPageBreak(35);
           
-          // Draw connecting line from previous box
+          // Draw connecting line from parent level
           if (index > 0) {
             doc.setDrawColor(200, 200, 200);
             doc.setLineWidth(0.5);
-            doc.line(centerX, yPos - 5, centerX, yPos);
+            // Vertical line down to this box
+            const lineX = centerX - boxWidth / 2 + depth * indentPerLevel - 5;
+            const parentY = levelLastY[depth - 1] ?? (yPos - 5);
+            if (depth > 0) {
+              // L-shaped connector: vertical from parent, then horizontal to box
+              doc.line(lineX, parentY, lineX, yPos + boxHeight / 2);
+              doc.line(lineX, yPos + boxHeight / 2, centerX - boxWidth / 2 + depth * indentPerLevel, yPos + boxHeight / 2);
+            } else {
+              doc.line(centerX, yPos - 5, centerX, yPos);
+            }
           }
           
-          // Draw box
+          // Draw box offset by depth
+          const boxX = centerX - boxWidth / 2 + depth * indentPerLevel;
           doc.setFillColor(248, 250, 252);
           doc.setDrawColor(59, 130, 246);
           doc.setLineWidth(0.5);
-          doc.roundedRect(centerX - boxWidth/2, yPos, boxWidth, boxHeight, 2, 2, "FD");
+          doc.roundedRect(boxX, yPos, boxWidth, boxHeight, 2, 2, "FD");
           
           // Role title
           doc.setFontSize(10);
           doc.setFont("helvetica", "bold");
           doc.setTextColor(0, 0, 0);
           const titleText = role.title || (isTranslationActive ? "Untitled" : "Uten tittel");
-          doc.text(titleText, centerX, yPos + 8, { align: "center" });
+          doc.text(titleText, boxX + boxWidth / 2, yPos + 8, { align: "center" });
           
           // Person name
           if (role.personName) {
             doc.setFontSize(8);
             doc.setFont("helvetica", "normal");
             doc.setTextColor(100, 100, 100);
-            doc.text(role.personName, centerX, yPos + 14, { align: "center" });
+            doc.text(role.personName, boxX + boxWidth / 2, yPos + 14, { align: "center" });
           }
           
           doc.setTextColor(0, 0, 0);
+          levelLastY[depth] = yPos + boxHeight;
           yPos += boxHeight + 10;
         });
         

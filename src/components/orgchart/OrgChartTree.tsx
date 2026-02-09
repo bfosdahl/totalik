@@ -392,7 +392,7 @@ const MobileNode: React.FC<MobileNodeProps> = ({
                   <Crown className="h-3 w-3" />
                 </span>
               )}
-              <span className="font-bold text-base truncate">{node.role_title}</span>
+              <span className="font-bold text-base break-words">{node.role_title}</span>
             </div>
           </div>
           
