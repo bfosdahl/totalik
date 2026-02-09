@@ -179,7 +179,7 @@ export function useEmploymentContracts() {
           work_description: formData.work_description || null,
           employment_percentage: formData.employment_percentage,
           start_date: formData.start_date,
-          end_date: formData.end_date || null,
+          end_date: formData.end_date && formData.end_date.trim() !== '' ? formData.end_date : null,
           probation_period_months: formData.probation_period_months || null,
           notes: formData.notes || null,
           status: 'draft',
