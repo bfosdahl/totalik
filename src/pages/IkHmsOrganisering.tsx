@@ -228,17 +228,45 @@ const IkHmsOrganisering = () => {
     }
   };
 
-  // Generate description from org chart
-  const generateDescriptionFromChart = () => {
-    if (nodes.length === 0) return;
+  // Generate description from org chart (returns the text, optionally with node override)
+  const generateDescriptionText = (nodeOverride?: { id: string; role_description: string }) => {
+    if (nodes.length === 0) return '';
+    
+    // Create nodes with override if provided
+    const nodesWithOverride = nodeOverride 
+      ? nodes.map(n => n.id === nodeOverride.id ? { ...n, role_description: nodeOverride.role_description } : n)
+      : nodes;
+    
+    // Rebuild tree with overridden data
+    const buildTreeWithData = (nodesList: typeof nodes) => {
+      const nodeMap = new Map<string, TreeNode>();
+      const roots: TreeNode[] = [];
+      
+      nodesList.forEach(node => {
+        nodeMap.set(node.id, { ...node, children: [], depth: 0 });
+      });
+      
+      nodesList.forEach(node => {
+        const treeNode = nodeMap.get(node.id)!;
+        if (node.parent_node_id && nodeMap.has(node.parent_node_id)) {
+          const parent = nodeMap.get(node.parent_node_id)!;
+          parent.children.push(treeNode);
+        } else {
+          roots.push(treeNode);
+        }
+      });
+      
+      return roots;
+    };
+    
+    const treeData = nodeOverride ? buildTreeWithData(nodesWithOverride) : tree;
     
     const generateNodeDescription = (node: TreeNode, depth: number = 0): string => {
-      const indent = '';
       const persons = node.persons?.map(p => p.person_name).join(', ') || '';
       const personText = persons ? ` (${persons})` : '';
       const desc = node.role_description ? `: ${node.role_description}` : '';
       
-      let text = `${indent}**${node.role_title}**${personText}${desc}`;
+      let text = `**${node.role_title}**${personText}${desc}`;
       
       if (node.children.length > 0) {
         text += '\n\n' + node.children.map(c => generateNodeDescription(c, depth + 1)).join('\n\n');
@@ -247,9 +275,26 @@ const IkHmsOrganisering = () => {
       return text;
     };
     
-    const generatedText = tree.map(node => generateNodeDescription(node, 0)).join('\n\n');
-    setDescription(generatedText);
-    toast.success("Beskrivelse generert fra orgkart");
+    return treeData.map(node => generateNodeDescription(node, 0)).join('\n\n');
+  };
+
+  const generateDescriptionFromChart = () => {
+    const generatedText = generateDescriptionText();
+    if (generatedText) {
+      setDescription(generatedText);
+      toast.success("Beskrivelse generert fra orgkart");
+    }
+  };
+
+  // Handle role description save with auto-generation
+  const handleRoleDescriptionSave = async (nodeId: string, roleDescription: string) => {
+    await updateNodeSilent(nodeId, roleDescription);
+    
+    // Auto-generate description with the new value immediately
+    const generatedText = generateDescriptionText({ id: nodeId, role_description: roleDescription });
+    if (generatedText) {
+      setDescription(generatedText);
+    }
   };
 
   const hasDescriptionChanges = description !== originalDescription;
@@ -375,7 +420,7 @@ const IkHmsOrganisering = () => {
                       key={node.id}
                       node={node}
                       index={index}
-                      onSave={updateNodeSilent}
+                      onSave={handleRoleDescriptionSave}
                     />
                   ))}
                 </CardContent>
