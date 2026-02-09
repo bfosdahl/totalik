@@ -77,7 +77,7 @@ const OrgChartTree: React.FC<OrgChartTreeProps> = ({
   }
 
   return (
-    <div className="overflow-x-auto pb-8">
+    <div className="overflow-x-auto pb-8 pt-6">
       <div className="flex flex-col items-center min-w-max">
         {tree.map((node, index) => (
           <React.Fragment key={node.id}>
