@@ -89,30 +89,17 @@ serve(async (req) => {
       });
     }
 
-    // Check if user already exists - use listUsers with filter to avoid pagination limits
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers({
-      page: 1,
-      perPage: 1,
-    });
-    
-    // More reliable: try to get user by email directly
+    // Check if user already exists via profiles table (avoids listUsers pagination limit)
     let existingUser = null;
-    const { data: userList } = await supabaseAdmin.auth.admin.listUsers();
-    existingUser = userList?.users?.find(u => u.email === email);
+    const { data: existingProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id")
+      .eq("email", email)
+      .maybeSingle();
     
-    // Fallback: if not found in first page, search specifically
-    if (!existingUser) {
-      // Try creating and catch if exists
-      const { data: inviteCheck } = await supabaseAdmin
-        .from("profiles")
-        .select("user_id")
-        .eq("email", email)
-        .maybeSingle();
-      
-      if (inviteCheck?.user_id) {
-        const { data: userData } = await supabaseAdmin.auth.admin.getUserById(inviteCheck.user_id);
-        existingUser = userData?.user || null;
-      }
+    if (existingProfile?.user_id) {
+      const { data: userData } = await supabaseAdmin.auth.admin.getUserById(existingProfile.user_id);
+      existingUser = userData?.user || null;
     }
 
     if (existingUser) {
