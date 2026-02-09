@@ -5,13 +5,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { EmploymentContract } from "@/hooks/useEmploymentContracts";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { MoreHorizontal, Pen, Eye, Trash2, Check, Clock, FileText, Download } from "lucide-react";
+import { MoreHorizontal, Pen, Eye, Trash2, Check, Clock, FileText, Download, Edit } from "lucide-react";
 import { generateContractPdf } from "./generateContractPdf";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface ContractCardProps {
   contract: EmploymentContract;
   onView: (contract: EmploymentContract) => void;
+  onEdit: (contract: EmploymentContract) => void;
   onSignAsEmployer: (contract: EmploymentContract) => void;
   onDelete: (contract: EmploymentContract) => void;
   canManage: boolean;
@@ -37,6 +38,7 @@ const contractTypeLabels: Record<string, string> = {
 export function ContractCard({ 
   contract, 
   onView, 
+  onEdit,
   onSignAsEmployer,
   onDelete,
   canManage 
@@ -148,6 +150,12 @@ export function ContractCard({
                 <Eye className="w-4 h-4 mr-2" />
                 Se detaljer
               </DropdownMenuItem>
+              {canManage && (
+                <DropdownMenuItem onClick={() => onEdit(contract)}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  Rediger
+                </DropdownMenuItem>
+              )}
               {canDownload && (
                 <DropdownMenuItem onClick={handleDownload}>
                   <Download className="w-4 h-4 mr-2" />
@@ -160,7 +168,7 @@ export function ContractCard({
                   Signer som arbeidsgiver
                 </DropdownMenuItem>
               )}
-              {canManage && contract.status === 'draft' && (
+              {canManage && (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
