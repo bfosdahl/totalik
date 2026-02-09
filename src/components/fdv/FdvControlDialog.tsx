@@ -104,8 +104,8 @@ export function FdvControlDialog({ open, onOpenChange, control, buildings, onSav
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
+      <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{control ? "Rediger kontroll" : "Ny kontroll"}</DialogTitle>
           <DialogDescription>
             {control ? "Oppdater kontrollinformasjon" : "Legg til en ny kontroll"}
@@ -113,7 +113,7 @@ export function FdvControlDialog({ open, onOpenChange, control, buildings, onSav
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-y-auto space-y-4 pr-2">
             <FormField
               control={form.control}
               name="building_id"
@@ -282,7 +282,7 @@ export function FdvControlDialog({ open, onOpenChange, control, buildings, onSav
               )}
             />
 
-            <DialogFooter>
+            <DialogFooter className="flex-shrink-0 pt-4 border-t">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Avbryt
               </Button>
