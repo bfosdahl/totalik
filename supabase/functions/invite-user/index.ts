@@ -101,29 +101,64 @@ serve(async (req) => {
       });
     }
 
-    // Check if user already exists
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const existingUser = existingUsers?.users?.find(u => u.email === email);
+    // Check if user already exists via profiles table (avoids listUsers pagination limit)
+    let existingUser = null;
+    const { data: existingProfileCheck } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id, company_id")
+      .eq("email", email)
+      .maybeSingle();
+    
+    if (existingProfileCheck?.user_id) {
+      const { data: userData } = await supabaseAdmin.auth.admin.getUserById(existingProfileCheck.user_id);
+      existingUser = userData?.user || null;
+    }
 
     if (existingUser) {
-      // Check if user is already in this company
-      const { data: existingProfile } = await supabaseAdmin
-        .from("profiles")
-        .select("company_id")
-        .eq("user_id", existingUser.id)
-        .single();
-
-      if (existingProfile?.company_id === targetCompanyId) {
-        return new Response(JSON.stringify({ error: "User is already in this company" }), {
+      if (existingProfileCheck?.company_id === targetCompanyId) {
+        return new Response(JSON.stringify({ error: "Bruker er allerede i dette selskapet" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      return new Response(JSON.stringify({ error: "User already exists with this email" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      // User exists but not in this company - update their profile to this company
+      await supabaseAdmin
+        .from("profiles")
+        .update({ 
+          company_id: targetCompanyId,
+          first_name: firstName || null,
+          last_name: lastName || null,
+        })
+        .eq("user_id", existingUser.id);
+
+      // Add role if specified and not already present
+      if (role && role !== "user") {
+        const { data: existingRoles } = await supabaseAdmin
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", existingUser.id);
+        
+        const hasRole = existingRoles?.some(r => r.role === role);
+        if (!hasRole) {
+          await supabaseAdmin
+            .from("user_roles")
+            .insert({ user_id: existingUser.id, role });
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: "Eksisterende bruker lagt til i selskapet",
+          userId: existingUser.id,
+          emailSent: false,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     // Use standard default password for all new users
