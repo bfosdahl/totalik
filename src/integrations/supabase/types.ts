@@ -11924,6 +11924,102 @@ export type Database = {
           },
         ]
       }
+      org_chart_node_persons: {
+        Row: {
+          created_at: string
+          id: string
+          node_id: string
+          person_email: string | null
+          person_name: string
+          profile_id: string | null
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          node_id: string
+          person_email?: string | null
+          person_name: string
+          profile_id?: string | null
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          node_id?: string
+          person_email?: string | null
+          person_name?: string
+          profile_id?: string | null
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_chart_node_persons_node_id_fkey"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "org_chart_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_chart_node_persons_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_chart_nodes: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          is_root: boolean
+          parent_node_id: string | null
+          role_description: string | null
+          role_title: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          is_root?: boolean
+          parent_node_id?: string | null
+          role_description?: string | null
+          role_title: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_root?: boolean
+          parent_node_id?: string | null
+          role_description?: string | null
+          role_title?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_chart_nodes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_chart_nodes_parent_node_id_fkey"
+            columns: ["parent_node_id"]
+            isOneToOne: false
+            referencedRelation: "org_chart_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
