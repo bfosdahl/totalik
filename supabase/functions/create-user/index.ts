@@ -105,11 +105,14 @@ serve(async (req) => {
       });
     }
 
-    // Check if user already exists
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const existingUser = existingUsers?.users?.find(u => u.email === email);
+    // Check if user already exists via profiles table (avoids listUsers pagination limit)
+    const { data: existingProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id")
+      .eq("email", email)
+      .maybeSingle();
 
-    if (existingUser) {
+    if (existingProfile) {
       return new Response(JSON.stringify({ error: "User already exists with this email" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

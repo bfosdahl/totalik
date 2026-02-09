@@ -80,19 +80,15 @@ serve(async (req) => {
       });
     }
 
-    // Check if user already exists
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const existingUser = existingUsers?.users?.find(u => u.email === email);
+    // Check if user already exists via profiles table (avoids listUsers pagination limit)
+    const { data: existingProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id, company_id")
+      .eq("email", email)
+      .maybeSingle();
 
-    if (existingUser) {
-      // Check if user is already in this company
-      const { data: existingProfile } = await supabaseAdmin
-        .from("profiles")
-        .select("company_id")
-        .eq("user_id", existingUser.id)
-        .single();
-
-      if (existingProfile?.company_id === requestingProfile.company_id) {
+    if (existingProfile) {
+      if (existingProfile.company_id === requestingProfile.company_id) {
         return new Response(JSON.stringify({ error: "Bruker finnes allerede i denne bedriften" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
