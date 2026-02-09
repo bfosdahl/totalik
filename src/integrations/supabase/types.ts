@@ -13408,6 +13408,7 @@ export type Database = {
         Args: { _company_id: string; _user_id: string }
         Returns: boolean
       }
+      user_has_any_role: { Args: { _user_id: string }; Returns: boolean }
       user_has_fdv_access: {
         Args: { _company_id: string; _user_id: string }
         Returns: boolean
