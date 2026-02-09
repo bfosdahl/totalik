@@ -214,6 +214,17 @@ export const useOrgChart = () => {
     },
   });
 
+  // Silent update for role descriptions (no toast)
+  const updateNodeSilent = async (id: string, role_description: string) => {
+    const { error } = await supabase
+      .from('org_chart_nodes')
+      .update({ role_description })
+      .eq('id', id);
+    
+    if (error) throw error;
+    queryClient.invalidateQueries({ queryKey: ['org-chart-nodes'] });
+  };
+
   // Delete node
   const deleteNode = useMutation({
     mutationFn: async (id: string) => {
@@ -365,6 +376,7 @@ export const useOrgChart = () => {
     isLoading,
     createNode,
     updateNode,
+    updateNodeSilent,
     deleteNode,
     moveNode,
     addPerson,
