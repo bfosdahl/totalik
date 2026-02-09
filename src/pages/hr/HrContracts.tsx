@@ -27,12 +27,14 @@ export default function HrContracts() {
     isLoading, 
     stats, 
     createContract, 
+    updateContract,
     signContract, 
     deleteContract 
   } = useEmploymentContracts();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingContract, setEditingContract] = useState<EmploymentContract | null>(null);
   const [signatureDialog, setSignatureDialog] = useState<{
     open: boolean;
     contract: EmploymentContract | null;
@@ -57,6 +59,23 @@ export default function HrContracts() {
   const handleCreateContract = (data: Parameters<typeof createContract.mutate>[0]) => {
     createContract.mutate(data, {
       onSuccess: () => setShowCreateDialog(false),
+    });
+  };
+
+  const handleEditContract = (data: Parameters<typeof createContract.mutate>[0]) => {
+    if (!editingContract) return;
+    updateContract.mutate({
+      id: editingContract.id,
+      ...data,
+      // Reset signatures when contract is edited
+      signed_by_employee: false,
+      signed_by_employer: false,
+      employee_signature: null,
+      employer_signature: null,
+      signed_date: null,
+      status: 'draft',
+    } as any, {
+      onSuccess: () => setEditingContract(null),
     });
   };
 
@@ -148,6 +167,7 @@ export default function HrContracts() {
                 contract={contract}
                 canManage={isCompanyAdmin}
                 onView={(c) => setSignatureDialog({ open: true, contract: c, type: 'employer' })}
+                onEdit={(c) => setEditingContract(c)}
                 onSignAsEmployer={(c) => setSignatureDialog({ open: true, contract: c, type: 'employer' })}
                 onDelete={(c) => setDeleteDialog({ open: true, contract: c })}
               />
@@ -190,6 +210,15 @@ export default function HrContracts() {
         onOpenChange={setShowCreateDialog}
         onSubmit={handleCreateContract}
         isSubmitting={createContract.isPending}
+      />
+
+      {/* Edit Contract Dialog */}
+      <ExtendedContractDialog
+        open={!!editingContract}
+        onOpenChange={(open) => !open && setEditingContract(null)}
+        onSubmit={handleEditContract}
+        isSubmitting={updateContract.isPending}
+        editingContract={editingContract}
       />
 
       {/* Signature Dialog */}
