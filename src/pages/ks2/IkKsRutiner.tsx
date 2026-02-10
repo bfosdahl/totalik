@@ -93,7 +93,6 @@ export default function IkKsRutiner() {
       description: template.description || "",
       content,
       category: template.subcategory || "general",
-      admin_template_id: template.id,
     });
   };
 
