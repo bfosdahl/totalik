@@ -174,7 +174,7 @@ export function useCompanyKsChecklistTemplates() {
   };
 
   // Select/deselect admin templates
-  const selectAdminTemplate = async (templateType: 'checklist' | 'routine' | 'document', adminTemplateId: string) => {
+  const selectAdminTemplate = async (templateType: 'checklist' | 'routine' | 'document', adminTemplateId: string, adminTemplate?: { template_name: string; description?: string | null; category?: string; checkpoints?: Json }) => {
     if (!companyId || !profile) return false;
     
     setIsSaving(true);
@@ -193,7 +193,31 @@ export function useCompanyKsChecklistTemplates() {
       if (error) throw error;
       
       setSelectedAdminTemplates(prev => [...prev, data]);
-      toast({ title: "Mal valgt" });
+
+      // If it's a checklist and we have template data, also create a company checklist template
+      if (templateType === 'checklist' && adminTemplate) {
+        const { data: newTemplate, error: createError } = await supabase
+          .from("company_ks_checklist_templates")
+          .insert({
+            company_id: companyId,
+            template_name: adminTemplate.template_name,
+            description: adminTemplate.description || null,
+            category: adminTemplate.category || "general",
+            checkpoints: adminTemplate.checkpoints || [],
+          })
+          .select()
+          .single();
+
+        if (!createError && newTemplate) {
+          const parsed: CompanyKsChecklistTemplate = {
+            ...newTemplate,
+            checkpoints: parseCheckpoints(newTemplate.checkpoints),
+          };
+          setTemplates(prev => [parsed, ...prev]);
+        }
+      }
+
+      toast({ title: "Mal lagt til" });
       return true;
     } catch (error) {
       console.error("Error selecting admin template:", error);

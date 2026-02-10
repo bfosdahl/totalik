@@ -115,7 +115,13 @@ export default function IkKsSjekklister() {
     if (isAdminTemplateSelected("checklist", templateId)) {
       await deselectAdminTemplate("checklist", templateId);
     } else {
-      await selectAdminTemplate("checklist", templateId);
+      const adminTemplate = adminTemplates?.find(t => t.id === templateId);
+      await selectAdminTemplate("checklist", templateId, adminTemplate ? {
+        template_name: adminTemplate.template_name,
+        description: adminTemplate.description,
+        category: adminTemplate.category,
+        checkpoints: adminTemplate.checkpoints,
+      } : undefined);
     }
   };
 
