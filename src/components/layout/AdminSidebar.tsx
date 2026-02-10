@@ -31,6 +31,7 @@ const adminNavItems = [
   { icon: Award, label: "SG Register", path: "/admin/sg-register", color: undefined },
   { icon: FolderOpen, label: "Dokumentsenter", path: "/admin/documents", color: "text-primary" },
   { icon: Leaf, label: "Stoffkartotek", path: "/admin/stoffkartotek", color: "text-primary" },
+  { icon: BookOpen, label: "Rutine Maker", path: "/admin/routine-maker", color: "text-primary" },
 ];
 
 interface SidebarContentProps {

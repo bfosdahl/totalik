@@ -28,6 +28,7 @@ import AdminKsPanel from "./pages/admin/AdminKsPanel";
 import AdminByggesakTemplates from "./pages/admin/AdminByggesakTemplates";
 import AdminCustomerImport from "./pages/admin/AdminCustomerImport";
 import AdminStoffkartotek from "./pages/admin/AdminStoffkartotek";
+import AdminRoutineMaker from "./pages/admin/AdminRoutineMaker";
 import SetupSystemAdmin from "./pages/admin/SetupSystemAdmin";
 import Ks2Dashboard from "./pages/ks2/Ks2Dashboard";
 import Ks2ProjectDetail from "./pages/ks2/Ks2ProjectDetail";
@@ -232,6 +233,7 @@ const App = () => (
                   <Route path="/admin/byggesak-templates" element={<ProtectedRoute requireSystemAdmin><AdminByggesakTemplates /></ProtectedRoute>} />
                   <Route path="/admin/customer-import" element={<ProtectedRoute requireSystemAdmin><AdminCustomerImport /></ProtectedRoute>} />
                   <Route path="/admin/stoffkartotek" element={<ProtectedRoute requireSystemAdmin><AdminStoffkartotek /></ProtectedRoute>} />
+                  <Route path="/admin/routine-maker" element={<ProtectedRoute requireSystemAdmin><AdminRoutineMaker /></ProtectedRoute>} />
                   
                   {/* 404 */}
                   <Route path="*" element={<NotFound />} />
