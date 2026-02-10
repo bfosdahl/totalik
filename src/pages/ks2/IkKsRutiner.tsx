@@ -19,6 +19,7 @@ import {
   Loader2
 } from "lucide-react";
 import { RoutineLibraryDialog } from "@/components/routines/RoutineLibraryDialog";
+import type { RoutineTemplate } from "@/hooks/useRoutineLibrary";
 import { useCompanyKsRoutines, CompanyKsRoutine } from "@/hooks/useCompanyKsRoutines";
 import {
   Dialog,
@@ -78,6 +79,27 @@ export default function IkKsRutiner() {
     setShowNewDialog(false);
   };
 
+  const handleAdoptFromLibrary = async (template: RoutineTemplate) => {
+    const steps = Array.isArray(template.steps) ? template.steps : [];
+    const stepsText = steps.map((s: any, i: number) => 
+      `${i + 1}. ${typeof s === "string" ? s : s.text || s.label || ""}`
+    ).join("\n");
+    const content = [
+      template.purpose ? `Formål:\n${template.purpose}` : "",
+      stepsText ? `\nSjekkliste:\n${stepsText}` : "",
+    ].filter(Boolean).join("\n");
+    await createRoutine({
+      routine_name: template.title,
+      description: template.description || "",
+      content,
+      category: template.subcategory || "general",
+      admin_template_id: template.id,
+    });
+  };
+
+  const adoptedKsTemplateIds = new Set(
+    routines.filter(r => r.admin_template_id).map(r => r.admin_template_id!)
+  );
 
   const getCategoryLabel = (value: string) => {
     return CATEGORIES.find(c => c.value === value)?.label || value;
@@ -105,7 +127,7 @@ export default function IkKsRutiner() {
           </div>
           
           <div className="flex gap-2">
-            <RoutineLibraryDialog module="ks_ik_bygg" />
+            <RoutineLibraryDialog module="ks_ik_bygg" onAdopt={handleAdoptFromLibrary} adoptedIds={adoptedKsTemplateIds} />
             <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
               <DialogTrigger asChild>
                 <Button>
