@@ -52,7 +52,6 @@ export function useRoutineLibrary(module: RoutineLibraryModule) {
         .select("*")
         .eq("module", module)
         .eq("status", "published")
-        .eq("is_global_default", true)
         .order("title");
 
       if (error) throw error;
