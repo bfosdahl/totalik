@@ -1,0 +1,187 @@
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Library, Search, Download, Check, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { useRoutineLibrary, RoutineLibraryModule } from "@/hooks/useRoutineLibrary";
+
+const FREQUENCY_LABELS: Record<string, string> = {
+  daglig: "Daglig",
+  ukentlig: "Ukentlig",
+  maanedlig: "Månedlig",
+  aarlig: "Årlig",
+  ved_behov: "Ved behov",
+};
+
+interface RoutineLibraryDialogProps {
+  module: RoutineLibraryModule;
+  buttonLabel?: string;
+  buttonVariant?: "default" | "outline" | "secondary" | "ghost";
+}
+
+export function RoutineLibraryDialog({ 
+  module, 
+  buttonLabel = "Rutinebibliotek",
+  buttonVariant = "outline",
+}: RoutineLibraryDialogProps) {
+  const { templates, isLoading, adoptTemplate, adoptedTemplateIds } = useRoutineLibrary(module);
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const filtered = templates.filter(t =>
+    t.title.toLowerCase().includes(search.toLowerCase()) ||
+    (t.description || "").toLowerCase().includes(search.toLowerCase()) ||
+    (t.subcategory || "").toLowerCase().includes(search.toLowerCase())
+  );
+
+  if (templates.length === 0 && !isLoading) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant={buttonVariant}>
+          <Library className="w-4 h-4 mr-2" />
+          {buttonLabel}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Library className="w-5 h-5" />
+            Rutinebibliotek
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Søk i rutiner..."
+            className="pl-9"
+          />
+        </div>
+
+        <ScrollArea className="flex-1 overflow-y-auto" style={{ maxHeight: "calc(85vh - 180px)" }}>
+          {isLoading ? (
+            <div className="flex justify-center p-8">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              {search ? "Ingen rutiner funnet" : "Ingen maler tilgjengelig for denne modulen ennå"}
+            </p>
+          ) : (
+            <div className="space-y-2 pr-4 pb-2">
+              {filtered.map((template) => {
+                const isAdopted = adoptedTemplateIds.has(template.id);
+                const isExpanded = expandedId === template.id;
+                const steps = Array.isArray(template.steps) ? template.steps : [];
+
+                return (
+                  <Collapsible
+                    key={template.id}
+                    open={isExpanded}
+                    onOpenChange={() => setExpandedId(isExpanded ? null : template.id)}
+                  >
+                    <Card className="border">
+                      <CollapsibleTrigger asChild>
+                        <CardHeader className="py-3 px-4 cursor-pointer hover:bg-muted/50 transition-colors">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              {isExpanded ? (
+                                <ChevronDown className="w-4 h-4 shrink-0 text-muted-foreground" />
+                              ) : (
+                                <ChevronRight className="w-4 h-4 shrink-0 text-muted-foreground" />
+                              )}
+                              <div className="min-w-0">
+                                <CardTitle className="text-sm font-medium truncate">{template.title}</CardTitle>
+                                {template.description && (
+                                  <CardDescription className="text-xs line-clamp-1">{template.description}</CardDescription>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              {template.subcategory && (
+                                <Badge variant="outline" className="text-xs">{template.subcategory}</Badge>
+                              )}
+                              {template.frequency && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {FREQUENCY_LABELS[template.frequency] || template.frequency}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </CardHeader>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <CardContent className="pt-0 pb-3 px-4 space-y-3">
+                          {template.purpose && (
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-1">Formål</p>
+                              <p className="text-sm">{template.purpose}</p>
+                            </div>
+                          )}
+                          {steps.length > 0 && (
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-1">Sjekkliste</p>
+                              <ul className="space-y-1">
+                                {steps.map((step: any, i: number) => (
+                                  <li key={i} className="flex items-start gap-2 text-sm">
+                                    <span className="text-muted-foreground">•</span>
+                                    <span>{typeof step === "string" ? step : step.text || step.label || JSON.stringify(step)}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {template.target_roles && template.target_roles.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {template.target_roles.map(role => (
+                                <Badge key={role} variant="outline" className="text-xs">{role}</Badge>
+                              ))}
+                            </div>
+                          )}
+                          <div className="pt-2 border-t">
+                            <Button
+                              size="sm"
+                              disabled={isAdopted || adoptTemplate.isPending}
+                              onClick={() => adoptTemplate.mutate(template)}
+                              variant={isAdopted ? "secondary" : "default"}
+                            >
+                              {isAdopted ? (
+                                <>
+                                  <Check className="w-4 h-4 mr-1" />
+                                  Allerede lagt til
+                                </>
+                              ) : adoptTemplate.isPending ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                  Legger til...
+                                </>
+                              ) : (
+                                <>
+                                  <Download className="w-4 h-4 mr-1" />
+                                  Legg til rutine
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Card>
+                  </Collapsible>
+                );
+              })}
+            </div>
+          )}
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+}
