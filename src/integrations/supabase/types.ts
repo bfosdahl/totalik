@@ -441,6 +441,69 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_routine_templates_v2: {
+        Row: {
+          attachments: Json | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          frequency: string | null
+          id: string
+          is_global_default: boolean
+          legal_refs: Json | null
+          module: string
+          purpose: string | null
+          status: string
+          steps: Json | null
+          subcategory: string | null
+          tags: string[] | null
+          target_roles: string[] | null
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          attachments?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          frequency?: string | null
+          id?: string
+          is_global_default?: boolean
+          legal_refs?: Json | null
+          module?: string
+          purpose?: string | null
+          status?: string
+          steps?: Json | null
+          subcategory?: string | null
+          tags?: string[] | null
+          target_roles?: string[] | null
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          attachments?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          frequency?: string | null
+          id?: string
+          is_global_default?: boolean
+          legal_refs?: Json | null
+          module?: string
+          purpose?: string | null
+          status?: string
+          steps?: Json | null
+          subcategory?: string | null
+          tags?: string[] | null
+          target_roles?: string[] | null
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
       ai_rate_limits: {
         Row: {
           created_at: string
@@ -1965,6 +2028,69 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_routine_instances: {
+        Row: {
+          company_id: string
+          content: Json
+          created_at: string
+          id: string
+          last_reviewed: string | null
+          module: string
+          next_due: string | null
+          status: string
+          template_id: string | null
+          template_version: number | null
+          title: string
+          update_available: boolean
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          content?: Json
+          created_at?: string
+          id?: string
+          last_reviewed?: string | null
+          module: string
+          next_due?: string | null
+          status?: string
+          template_id?: string | null
+          template_version?: number | null
+          title: string
+          update_available?: boolean
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          content?: Json
+          created_at?: string
+          id?: string
+          last_reviewed?: string | null
+          module?: string
+          next_due?: string | null
+          status?: string
+          template_id?: string | null
+          template_version?: number | null
+          title?: string
+          update_available?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_routine_instances_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_routine_instances_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "admin_routine_templates_v2"
             referencedColumns: ["id"]
           },
         ]
