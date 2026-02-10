@@ -18,6 +18,7 @@ import {
   Download,
   Loader2
 } from "lucide-react";
+import { RoutineLibraryDialog } from "@/components/routines/RoutineLibraryDialog";
 import { useCompanyKsRoutines, CompanyKsRoutine } from "@/hooks/useCompanyKsRoutines";
 import { useAdminKsTemplates } from "@/hooks/useAdminKsTemplates";
 import {
@@ -115,6 +116,7 @@ export default function IkKsRutiner() {
           </div>
           
           <div className="flex gap-2">
+            <RoutineLibraryDialog module="ks_ik_bygg" />
             <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
               <DialogTrigger asChild>
                 <Button>

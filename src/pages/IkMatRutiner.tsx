@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BookOpen, Plus, Trash2, Save, Loader2 } from "lucide-react";
+import { RoutineLibraryDialog } from "@/components/routines/RoutineLibraryDialog";
 
 const FREQUENCY_OPTIONS = [
   'Daglig',
@@ -95,6 +96,7 @@ const IkMatRutiner = () => {
             </p>
           </div>
           <div className="flex gap-2">
+            <RoutineLibraryDialog module="ik_mat" />
             <Button variant="outline" onClick={handleAddRoutine}>
               <Plus className="h-4 w-4 mr-2" />
               Legg til rutine
