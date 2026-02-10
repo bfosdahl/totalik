@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Users,
@@ -76,6 +76,7 @@ export default function AdminUsers() {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isBulkImportDialogOpen, setIsBulkImportDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isCompanyDialogOpen, setIsCompanyDialogOpen] = useState(false);
   
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole>("user");
@@ -84,6 +85,8 @@ export default function AdminUsers() {
   const [sendPasswordEmail, setSendPasswordEmail] = useState(true);
   const [selectedCompany, setSelectedCompany] = useState<string>("");
   const [newPassword, setNewPassword] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 50;
   
   // New user form state
   const [newUserEmail, setNewUserEmail] = useState("");
@@ -415,9 +418,39 @@ export default function AdminUsers() {
     setTimeout(() => setPasswordCopied(false), 2000);
   }, [newPassword]);
 
-  const getUserRoles = useCallback((userId: string): AppRole[] => {
-    return userRoles?.filter((r) => r.user_id === userId).map((r) => r.role as AppRole) || [];
+  // Build a Map for fast role lookups instead of filtering the array for every row
+  const rolesMap = useMemo(() => {
+    const map = new Map<string, AppRole[]>();
+    userRoles?.forEach((r) => {
+      const existing = map.get(r.user_id) || [];
+      existing.push(r.role as AppRole);
+      map.set(r.user_id, existing);
+    });
+    return map;
   }, [userRoles]);
+
+  const getUserRoles = useCallback((userId: string): AppRole[] => {
+    return rolesMap.get(userId) || [];
+  }, [rolesMap]);
+
+  const filteredProfiles = useMemo(() => {
+    if (!search) return profiles || [];
+    const s = search.toLowerCase();
+    return (profiles || []).filter(
+      (p) =>
+        p.first_name?.toLowerCase().includes(s) ||
+        p.last_name?.toLowerCase().includes(s) ||
+        p.email?.toLowerCase().includes(s)
+    );
+  }, [profiles, search]);
+
+  // Reset to page 1 when search changes
+  const totalPages = Math.max(1, Math.ceil((filteredProfiles?.length || 0) / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedProfiles = useMemo(() => {
+    const start = (safePage - 1) * PAGE_SIZE;
+    return filteredProfiles.slice(start, start + PAGE_SIZE);
+  }, [filteredProfiles, safePage]);
 
   const getRoleBadge = (role: AppRole) => {
     switch (role) {
@@ -432,12 +465,11 @@ export default function AdminUsers() {
     }
   };
 
-  const filteredProfiles = profiles?.filter(
-    (p) =>
-      p.first_name?.toLowerCase().includes(search.toLowerCase()) ||
-      p.last_name?.toLowerCase().includes(search.toLowerCase()) ||
-      p.email?.toLowerCase().includes(search.toLowerCase())
-  );
+  // Reset page when search changes
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setCurrentPage(1);
+  };
 
   const exportUsersToCSV = useCallback(() => {
     if (!profiles || profiles.length === 0) {
@@ -480,6 +512,35 @@ export default function AdminUsers() {
     toast({ title: "Eksport fullført", description: `${dataToExport.length} brukere eksportert til CSV` });
   }, [profiles, filteredProfiles, getUserRoles, toast]);
 
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between bg-card rounded-xl border border-border p-3">
+            <p className="text-sm text-muted-foreground">
+              Viser {((safePage - 1) * PAGE_SIZE) + 1}–{Math.min(safePage * PAGE_SIZE, filteredProfiles.length)} av {filteredProfiles.length} brukere
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={safePage <= 1}
+                onClick={() => setCurrentPage(safePage - 1)}
+              >
+                Forrige
+              </Button>
+              <span className="text-sm font-medium">
+                Side {safePage} av {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={safePage >= totalPages}
+                onClick={() => setCurrentPage(safePage + 1)}
+              >
+                Neste
+              </Button>
+            </div>
+          </div>
+        )}
 
   // Error handling for profiles query
   if (profilesError) {
@@ -545,7 +606,7 @@ export default function AdminUsers() {
             <Input
               placeholder="Søk etter bruker..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -576,14 +637,14 @@ export default function AdminUsers() {
                       Laster...
                     </td>
                   </tr>
-                ) : filteredProfiles?.length === 0 ? (
+                ) : filteredProfiles.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-muted-foreground">
                       Ingen brukere funnet
                     </td>
                   </tr>
                 ) : (
-                  filteredProfiles?.map((profile) => (
+                  paginatedProfiles.map((profile) => (
                     <tr key={profile.id} className="hover:bg-secondary/30 transition-colors">
                       <td className="p-4">
                         <div className="flex items-center gap-3">
@@ -601,27 +662,9 @@ export default function AdminUsers() {
                         </div>
                       </td>
                       <td className="p-4">
-                        <Select
-                          value={profile.company_id || "none"}
-                          onValueChange={(value) =>
-                            assignCompanyMutation.mutate({
-                              userId: profile.user_id,
-                              companyId: value === "none" ? null : value,
-                            })
-                          }
-                        >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Velg bedrift" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">Ingen bedrift</SelectItem>
-                            {companies?.map((company) => (
-                              <SelectItem key={company.id} value={company.id}>
-                                {company.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <span className="text-sm">
+                          {(profile as any).companies?.name || <span className="text-muted-foreground">Ingen bedrift</span>}
+                        </span>
                       </td>
                       <td className="p-4">
                         <div className="flex flex-wrap gap-1">
@@ -649,11 +692,22 @@ export default function AdminUsers() {
                             <DropdownMenuItem
                               onClick={() => {
                                 setSelectedUser(profile);
+                                setSelectedCompany(profile.company_id || "none");
                                 setIsRoleDialogOpen(true);
                               }}
                             >
                               <Shield className="w-4 h-4 mr-2" />
                               Administrer roller
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedUser(profile);
+                                setSelectedCompany(profile.company_id || "none");
+                                setIsCompanyDialogOpen(true);
+                              }}
+                            >
+                              <Building2 className="w-4 h-4 mr-2" />
+                              Endre bedrift
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => {
@@ -708,12 +762,12 @@ export default function AdminUsers() {
             <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
               Laster...
             </div>
-          ) : filteredProfiles?.length === 0 ? (
+          ) : filteredProfiles.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
               Ingen brukere funnet
             </div>
           ) : (
-            filteredProfiles?.map((profile) => (
+            paginatedProfiles.map((profile) => (
               <div
                 key={profile.id}
                 className="bg-card rounded-xl border border-border p-4 space-y-3"
@@ -741,27 +795,9 @@ export default function AdminUsers() {
                 {/* Company select */}
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Bedrift</Label>
-                  <Select
-                    value={profile.company_id || "none"}
-                    onValueChange={(value) =>
-                      assignCompanyMutation.mutate({
-                        userId: profile.user_id,
-                        companyId: value === "none" ? null : value,
-                      })
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Velg bedrift" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Ingen bedrift</SelectItem>
-                      {companies?.map((company) => (
-                        <SelectItem key={company.id} value={company.id}>
-                          {company.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <p className="text-sm">
+                    {(profile as any).companies?.name || <span className="text-muted-foreground">Ingen bedrift</span>}
+                  </p>
                 </div>
 
                 {/* Roles */}
@@ -905,7 +941,53 @@ export default function AdminUsers() {
           </DialogContent>
         </Dialog>
 
-        {/* Create user dialog */}
+        {/* Company change dialog */}
+        <Dialog open={isCompanyDialogOpen} onOpenChange={setIsCompanyDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Endre bedrift</DialogTitle>
+            </DialogHeader>
+            {selectedUser && (
+              <div className="space-y-4 mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Bruker: {selectedUser.first_name} {selectedUser.last_name} ({selectedUser.email})
+                </p>
+                <div className="space-y-2">
+                  <Label>Bedrift</Label>
+                  <Select
+                    value={selectedCompany}
+                    onValueChange={setSelectedCompany}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Velg bedrift" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Ingen bedrift</SelectItem>
+                      {companies?.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          {company.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={() => {
+                    assignCompanyMutation.mutate({
+                      userId: selectedUser.user_id,
+                      companyId: selectedCompany === "none" ? null : selectedCompany,
+                    });
+                    setIsCompanyDialogOpen(false);
+                  }}
+                >
+                  Lagre
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+
         <Dialog open={isCreateUserDialogOpen} onOpenChange={(open) => {
           setIsCreateUserDialogOpen(open);
           if (!open) resetNewUserForm();
