@@ -461,11 +461,11 @@ export default function AdminRoutineMaker() {
 
       {/* Editor Dialog */}
       <Dialog open={showEditor} onOpenChange={v => { if (!v) resetEditor(); }}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+         <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>{editingId ? "Rediger rutinemal" : "Ny rutinemal"}</DialogTitle>
           </DialogHeader>
-          <ScrollArea className="flex-1 pr-4">
+          <ScrollArea className="flex-1 overflow-y-auto pr-4" style={{ maxHeight: 'calc(90vh - 140px)' }}>
             <div className="space-y-6 pb-4">
               {/* Basic info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
