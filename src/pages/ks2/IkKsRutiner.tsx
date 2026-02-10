@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import { RoutineLibraryDialog } from "@/components/routines/RoutineLibraryDialog";
 import { useCompanyKsRoutines, CompanyKsRoutine } from "@/hooks/useCompanyKsRoutines";
-import { useAdminKsTemplates } from "@/hooks/useAdminKsTemplates";
 import {
   Dialog,
   DialogContent,
@@ -52,7 +51,6 @@ const CATEGORIES = [
 
 export default function IkKsRutiner() {
   const { routines, isLoading, isSaving, createRoutine, updateRoutine, deleteRoutine } = useCompanyKsRoutines();
-  const { routineTemplates } = useAdminKsTemplates();
   
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -80,15 +78,6 @@ export default function IkKsRutiner() {
     setShowNewDialog(false);
   };
 
-  const handleImportFromAdmin = async (template: typeof routineTemplates[0]) => {
-    await createRoutine({
-      routine_name: template.routine_name,
-      description: template.description || "",
-      content: template.content || "",
-      category: template.category || "general",
-      admin_template_id: template.id,
-    });
-  };
 
   const getCategoryLabel = (value: string) => {
     return CATEGORIES.find(c => c.value === value)?.label || value;
@@ -185,34 +174,6 @@ export default function IkKsRutiner() {
             </Dialog>
           </div>
         </div>
-
-        {/* Import from admin templates */}
-        {routineTemplates && routineTemplates.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Importer fra maler</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {routineTemplates.slice(0, 5).map(template => (
-                  <Button
-                    key={template.id}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleImportFromAdmin(template)}
-                    disabled={isSaving}
-                  >
-                    <Download className="w-3 h-3 mr-1" />
-                    {template.routine_name}
-                  </Button>
-                ))}
-                {routineTemplates.length > 5 && (
-                  <Badge variant="secondary">+{routineTemplates.length - 5} flere</Badge>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Routine list */}
         <div className="space-y-3">
