@@ -18,8 +18,8 @@ const parseCheckpoints = (data: Json | null): Checkpoint[] => {
     }
     return {
       id: item.id || crypto.randomUUID(),
-      text: item.text || item.checkpoint_text || '',
-      description: item.description || item.help_text || undefined,
+      text: item.text || item.checkpoint_text || item.checkpoint || '',
+      description: item.description || item.help_text || item.help || undefined,
     };
   });
 };
