@@ -12,7 +12,16 @@ export interface Checkpoint {
 
 const parseCheckpoints = (data: Json | null): Checkpoint[] => {
   if (!data || !Array.isArray(data)) return [];
-  return data as unknown as Checkpoint[];
+  return data.map((item: any, idx: number) => {
+    if (typeof item === 'string') {
+      return { id: crypto.randomUUID(), text: item };
+    }
+    return {
+      id: item.id || crypto.randomUUID(),
+      text: item.text || item.checkpoint_text || '',
+      description: item.description || item.help_text || undefined,
+    };
+  });
 };
 
 export interface CompanyKsChecklistTemplate {

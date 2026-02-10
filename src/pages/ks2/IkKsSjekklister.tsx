@@ -509,7 +509,12 @@ function TemplateCard({
                   {template.checkpoints.map((cp, idx) => (
                     <div key={cp.id} className="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-muted/30">
                       <span className="text-xs text-muted-foreground w-5 shrink-0">{idx + 1}.</span>
-                      <span className="text-sm">{cp.text}</span>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm">{cp.text}</span>
+                        {cp.description && (
+                          <span className="text-xs text-muted-foreground ml-2">— {cp.description}</span>
+                        )}
+                      </div>
                     </div>
                   ))}
                   {template.checkpoints.length === 0 && (
