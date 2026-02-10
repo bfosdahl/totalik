@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Library, Search, Download, Check, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
-import { useRoutineLibrary, RoutineLibraryModule } from "@/hooks/useRoutineLibrary";
+import { useRoutineLibrary, RoutineLibraryModule, RoutineTemplate } from "@/hooks/useRoutineLibrary";
+import { toast } from "sonner";
 
 const FREQUENCY_LABELS: Record<string, string> = {
   daglig: "Daglig",
@@ -21,23 +22,51 @@ interface RoutineLibraryDialogProps {
   module: RoutineLibraryModule;
   buttonLabel?: string;
   buttonVariant?: "default" | "outline" | "secondary" | "ghost";
+  /** Custom adopt handler. If provided, this is called instead of the default customer_routine_instances insert. */
+  onAdopt?: (template: RoutineTemplate) => Promise<void>;
+  /** Set of already-adopted template IDs from the parent (overrides internal tracking) */
+  adoptedIds?: Set<string>;
 }
 
 export function RoutineLibraryDialog({ 
   module, 
   buttonLabel = "Rutinebibliotek",
   buttonVariant = "outline",
+  onAdopt,
+  adoptedIds: externalAdoptedIds,
 }: RoutineLibraryDialogProps) {
-  const { templates, isLoading, adoptTemplate, adoptedTemplateIds } = useRoutineLibrary(module);
+  const { templates, isLoading, adoptTemplate, adoptedTemplateIds: internalAdoptedIds } = useRoutineLibrary(module);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [adopting, setAdopting] = useState(false);
+  const [localAdopted, setLocalAdopted] = useState<Set<string>>(new Set());
+
+  const adoptedTemplateIds = externalAdoptedIds || internalAdoptedIds;
 
   const filtered = templates.filter(t =>
     t.title.toLowerCase().includes(search.toLowerCase()) ||
     (t.description || "").toLowerCase().includes(search.toLowerCase()) ||
     (t.subcategory || "").toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleAdopt = async (template: RoutineTemplate) => {
+    setAdopting(true);
+    try {
+      if (onAdopt) {
+        await onAdopt(template);
+      } else {
+        await adoptTemplate.mutateAsync(template);
+      }
+      setLocalAdopted(prev => new Set([...prev, template.id]));
+    } catch {
+      toast.error("Kunne ikke legge til rutine");
+    } finally {
+      setAdopting(false);
+    }
+  };
+
+  const isTemplateAdopted = (id: string) => adoptedTemplateIds.has(id) || localAdopted.has(id);
 
   if (templates.length === 0 && !isLoading) {
     return (
@@ -101,7 +130,7 @@ export function RoutineLibraryDialog({
           ) : (
             <div className="space-y-2 pr-4 pb-2">
               {filtered.map((template) => {
-                const isAdopted = adoptedTemplateIds.has(template.id);
+                const isAdopted = isTemplateAdopted(template.id);
                 const isExpanded = expandedId === template.id;
                 const steps = Array.isArray(template.steps) ? template.steps : [];
 
@@ -172,8 +201,8 @@ export function RoutineLibraryDialog({
                           <div className="pt-2 border-t">
                             <Button
                               size="sm"
-                              disabled={isAdopted || adoptTemplate.isPending}
-                              onClick={() => adoptTemplate.mutate(template)}
+                              disabled={isAdopted || adopting}
+                              onClick={() => handleAdopt(template)}
                               variant={isAdopted ? "secondary" : "default"}
                             >
                               {isAdopted ? (
@@ -181,7 +210,7 @@ export function RoutineLibraryDialog({
                                   <Check className="w-4 h-4 mr-1" />
                                   Allerede lagt til
                                 </>
-                              ) : adoptTemplate.isPending ? (
+                              ) : adopting ? (
                                 <>
                                   <Loader2 className="w-4 h-4 mr-1 animate-spin" />
                                   Legger til...
