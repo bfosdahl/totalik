@@ -17,7 +17,7 @@ import {
   ChevronRight,
   Download,
   Loader2,
-  CheckSquare
+  GripVertical,
 } from "lucide-react";
 import { useCompanyKsChecklistTemplates, Checkpoint } from "@/hooks/useCompanyKsChecklistTemplates";
 import { useAdminKsTemplates } from "@/hooks/useAdminKsTemplates";
@@ -146,7 +146,7 @@ export default function IkKsSjekklister() {
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">Sjekklistemaler</h1>
             <p className="text-muted-foreground mt-1">
-              Bedriftens egne sjekklistemaler for bruk i prosjekter
+              Bedriftens sjekklistemaler for bruk i prosjekter
             </p>
           </div>
           
@@ -282,36 +282,13 @@ export default function IkKsSjekklister() {
           </div>
         </div>
 
-        {/* Selected admin templates */}
-        {selectedAdminTemplates.filter(t => t.template_type === "checklist").length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <CheckSquare className="w-4 h-4" />
-                Valgte maler fra malbiblioteket
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {selectedAdminTemplates
-                  .filter(t => t.template_type === "checklist")
-                  .map(selected => {
-                    const template = adminTemplates?.find(t => t.id === selected.admin_template_id);
-                    return template ? (
-                      <Badge key={selected.id} variant="secondary" className="gap-1">
-                        {template.template_name}
-                        <button
-                          onClick={() => deselectAdminTemplate("checklist", template.id)}
-                          className="ml-1 hover:text-destructive"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </Badge>
-                    ) : null;
-                  })}
-              </div>
-            </CardContent>
-          </Card>
+        {/* Summary */}
+        {templates.length > 0 && (
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <span>{templates.length} sjekklistemaler totalt</span>
+            <span>•</span>
+            <span>{templates.filter(t => t.is_active).length} aktive</span>
+          </div>
         )}
 
         {/* Template list */}
@@ -344,7 +321,7 @@ export default function IkKsSjekklister() {
                 isExpanded={expandedIds.has(template.id)}
                 onToggle={() => toggleExpanded(template.id)}
                 isEditing={editingId === template.id}
-                onEdit={() => setEditingId(template.id)}
+                onEdit={() => { setEditingId(template.id); setExpandedIds(prev => new Set(prev).add(template.id)); }}
                 onCancelEdit={() => setEditingId(null)}
                 onUpdate={updateTemplate}
                 onDelete={deleteTemplate}
@@ -382,58 +359,181 @@ function TemplateCard({
   getCategoryLabel: (value: string) => string;
   isSaving: boolean;
 }) {
+  const [editName, setEditName] = useState(template.template_name);
+  const [editDescription, setEditDescription] = useState(template.description || "");
+  const [editCategory, setEditCategory] = useState(template.category);
+  const [editCheckpoints, setEditCheckpoints] = useState<Checkpoint[]>(template.checkpoints);
+  const [addText, setAddText] = useState("");
+
+  const startEdit = () => {
+    setEditName(template.template_name);
+    setEditDescription(template.description || "");
+    setEditCategory(template.category);
+    setEditCheckpoints([...template.checkpoints]);
+    setAddText("");
+    onEdit();
+  };
+
+  const handleSave = async () => {
+    await onUpdate(template.id, {
+      template_name: editName,
+      description: editDescription || null,
+      category: editCategory,
+      checkpoints: editCheckpoints,
+    });
+    onCancelEdit();
+  };
+
+  const addEditCheckpoint = () => {
+    if (!addText.trim()) return;
+    setEditCheckpoints(prev => [...prev, { id: crypto.randomUUID(), text: addText.trim() }]);
+    setAddText("");
+  };
+
+  const removeEditCheckpoint = (id: string) => {
+    setEditCheckpoints(prev => prev.filter(c => c.id !== id));
+  };
+
+  const updateCheckpointText = (id: string, text: string) => {
+    setEditCheckpoints(prev => prev.map(c => c.id === id ? { ...c, text } : c));
+  };
+
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <Collapsible open={isExpanded} onOpenChange={onToggle}>
         <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {isExpanded ? (
-                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                )}
-                <div>
-                  <CardTitle className="text-base">{template.template_name}</CardTitle>
-                  {template.description && (
-                    <p className="text-sm text-muted-foreground mt-0.5">{template.description}</p>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline">{getCategoryLabel(template.category)}</Badge>
-                <Badge variant="secondary">{template.checkpoints.length} punkter</Badge>
-              </div>
+          <div className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors">
+            <div className="shrink-0">
+              {isExpanded ? (
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              )}
             </div>
-          </CardHeader>
+            <ClipboardList className="w-4 h-4 text-primary shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm truncate">{template.template_name}</p>
+              {template.description && !isExpanded && (
+                <p className="text-xs text-muted-foreground truncate">{template.description}</p>
+              )}
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Badge variant="outline" className="text-xs">{getCategoryLabel(template.category)}</Badge>
+              <Badge variant="secondary" className="text-xs">{template.checkpoints.length} punkter</Badge>
+            </div>
+          </div>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <CardContent className="pt-0">
-            <div className="space-y-2">
-              {template.checkpoints.map((cp, idx) => (
-                <div key={cp.id} className="flex items-center gap-2 p-2 bg-muted/30 rounded">
-                  <span className="text-sm text-muted-foreground w-6">{idx + 1}.</span>
-                  <span className="text-sm">{cp.text}</span>
+          <CardContent className="pt-0 pb-4 px-4 border-t">
+            {isEditing ? (
+              /* Edit mode */
+              <div className="space-y-4 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Navn</label>
+                    <Input value={editName} onChange={e => setEditName(e.target.value)} className="mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Kategori</label>
+                    <Select value={editCategory} onValueChange={setEditCategory}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              ))}
-            </div>
-            <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
-              <Button variant="outline" size="sm" onClick={onEdit}>
-                <Edit2 className="w-4 h-4 mr-1" />
-                Rediger
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-destructive hover:text-destructive"
-                onClick={() => onDelete(template.id)}
-                disabled={isSaving}
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Slett
-              </Button>
-            </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Beskrivelse</label>
+                  <Textarea value={editDescription} onChange={e => setEditDescription(e.target.value)} rows={2} className="mt-1" />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-2 block">
+                    Sjekkpunkter ({editCheckpoints.length})
+                  </label>
+                  <div className="space-y-1.5">
+                    {editCheckpoints.map((cp, idx) => (
+                      <div key={cp.id} className="flex items-center gap-2 group">
+                        <GripVertical className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
+                        <span className="text-xs text-muted-foreground w-5 shrink-0">{idx + 1}.</span>
+                        <Input
+                          value={cp.text}
+                          onChange={e => updateCheckpointText(cp.id, e.target.value)}
+                          className="h-8 text-sm"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                          onClick={() => removeEditCheckpoint(cp.id)}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                    <div className="flex gap-2 pt-1">
+                      <Input
+                        value={addText}
+                        onChange={e => setAddText(e.target.value)}
+                        placeholder="Legg til nytt sjekkpunkt..."
+                        className="h-8 text-sm"
+                        onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addEditCheckpoint())}
+                      />
+                      <Button variant="outline" size="sm" className="h-8 shrink-0" onClick={addEditCheckpoint}>
+                        <Plus className="w-3.5 h-3.5 mr-1" />
+                        Legg til
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t">
+                  <Button variant="outline" size="sm" onClick={onCancelEdit}>
+                    <X className="w-3.5 h-3.5 mr-1" />
+                    Avbryt
+                  </Button>
+                  <Button size="sm" onClick={handleSave} disabled={isSaving || !editName.trim()}>
+                    {isSaving ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Save className="w-3.5 h-3.5 mr-1" />}
+                    Lagre
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              /* View mode */
+              <div className="pt-4">
+                {template.description && (
+                  <p className="text-sm text-muted-foreground mb-3">{template.description}</p>
+                )}
+                <div className="space-y-1">
+                  {template.checkpoints.map((cp, idx) => (
+                    <div key={cp.id} className="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-muted/30">
+                      <span className="text-xs text-muted-foreground w-5 shrink-0">{idx + 1}.</span>
+                      <span className="text-sm">{cp.text}</span>
+                    </div>
+                  ))}
+                  {template.checkpoints.length === 0 && (
+                    <p className="text-sm text-muted-foreground italic py-2">Ingen sjekkpunkter lagt til ennå</p>
+                  )}
+                </div>
+                <div className="flex justify-end gap-2 mt-4 pt-3 border-t">
+                  <Button variant="outline" size="sm" onClick={startEdit}>
+                    <Edit2 className="w-3.5 h-3.5 mr-1" />
+                    Rediger
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => onDelete(template.id)}
+                    disabled={isSaving}
+                  >
+                    <Trash2 className="w-3.5 h-3.5 mr-1" />
+                    Slett
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </CollapsibleContent>
       </Collapsible>
