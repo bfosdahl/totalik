@@ -407,17 +407,17 @@ export default function AdminRoutineMaker() {
           <div className="grid gap-3">
             {filtered.map(t => (
               <Card key={t.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="flex items-center justify-between p-4">
-                  <div className="flex-1 min-w-0">
+                <CardContent className="flex items-start justify-between gap-4 p-4">
+                  <div className="flex-1 min-w-0 overflow-hidden">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold truncate">{t.title}</h3>
+                      <h3 className="font-semibold truncate max-w-[300px] sm:max-w-[400px] lg:max-w-none">{t.title}</h3>
                       {getStatusBadge(t.status)}
                       <Badge variant="outline">{getModuleLabel(t.module)}</Badge>
                       {t.is_global_default && <Badge variant="default" className="text-xs">Standard</Badge>}
                       <span className="text-xs text-muted-foreground">v{t.version}</span>
                     </div>
                     {t.description && (
-                      <p className="text-sm text-muted-foreground mt-1 truncate">{t.description}</p>
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{t.description}</p>
                     )}
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                       <span>{FREQUENCIES.find(f => f.value === t.frequency)?.label || t.frequency}</span>
@@ -425,7 +425,7 @@ export default function AdminRoutineMaker() {
                       <span>• Oppdatert {format(new Date(t.updated_at), "dd.MM.yyyy", { locale: nb })}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 ml-4">
+                  <div className="flex items-center gap-1 ml-4 shrink-0">
                     <Button variant="ghost" size="icon" onClick={() => setShowPreview(t)}>
                       <Eye className="w-4 h-4" />
                     </Button>
