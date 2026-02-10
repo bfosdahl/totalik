@@ -39,7 +39,29 @@ export function RoutineLibraryDialog({
     (t.subcategory || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  if (templates.length === 0 && !isLoading) return null;
+  if (templates.length === 0 && !isLoading) {
+    return (
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button variant={buttonVariant}>
+            <Library className="w-4 h-4 mr-2" />
+            {buttonLabel}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Library className="w-5 h-5" />
+              Rutinebibliotek
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-center text-muted-foreground py-8">
+            Ingen rutiner tilgjengelig i biblioteket ennå. Kontakt systemadministrator for å publisere maler.
+          </p>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
