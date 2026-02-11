@@ -52,6 +52,7 @@ import { cn } from "@/lib/utils";
 import { DocumentFolderTree } from "@/components/admin/DocumentFolderTree";
 import { DocumentBulkActions } from "@/components/admin/DocumentBulkActions";
 import { AiChecklistDialog } from "@/components/admin/AiChecklistDialog";
+import { KsBygChecklistOverview } from "@/components/admin/KsBygChecklistOverview";
 import { useAdminDocumentFolders, AdminDocumentFolder, ModuleType } from "@/hooks/useAdminDocumentFolders";
 
 interface AdminDocument {
@@ -779,6 +780,13 @@ export default function AdminDocuments() {
                 </span>
               </div>
             </div>
+
+            {/* Checklist templates overview for KS Bygg */}
+            {activeModule === "ks-bygg" && (
+              <div className="p-4 border-b">
+                <KsBygChecklistOverview />
+              </div>
+            )}
 
             {/* Toolbar */}
             <div className="p-4 border-b flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
