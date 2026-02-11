@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Upload, FileSpreadsheet, Check, X, AlertCircle, User } from "lucide-react";
 import {
   Dialog,
@@ -257,10 +257,19 @@ export function BulkCompanyImportDialog({
     const results: ImportResult[] = [];
     let successCount = 0;
     let failCount = 0;
+    let lastProgressUpdate = 0;
 
     for (let i = 0; i < validCompanies.length; i++) {
       const company = validCompanies[i];
-      setImportProgress(Math.round(((i + 1) / validCompanies.length) * 100));
+      
+      // Throttle progress updates to avoid excessive re-renders
+      const newProgress = Math.round(((i + 1) / validCompanies.length) * 100);
+      if (newProgress - lastProgressUpdate >= 5 || i === validCompanies.length - 1) {
+        setImportProgress(newProgress);
+        lastProgressUpdate = newProgress;
+        // Yield to browser to prevent blocking
+        await new Promise(r => setTimeout(r, 0));
+      }
 
       try {
         // 1. Create the company
@@ -291,14 +300,22 @@ export function BulkCompanyImportDialog({
 
           // Create seed projects for KS Bygg
           if (moduleType === "IK_BYGG") {
-            const { createSeedProjects } = await import("@/utils/ksModule2SeedProjects");
-            await createSeedProjects(newCompany.id);
+            try {
+              const { createSeedProjects } = await import("@/utils/ksModule2SeedProjects");
+              await createSeedProjects(newCompany.id);
+            } catch (seedErr) {
+              console.error("Error creating seed projects:", seedErr);
+            }
           }
         }
 
         // 3. Apply default HMS setup if IK_HMS is selected
         if (selectedModules.includes("IK_HMS")) {
-          await applyDefaultHmsSetup(newCompany.id);
+          try {
+            await applyDefaultHmsSetup(newCompany.id);
+          } catch (hmsErr) {
+            console.error("Error applying HMS setup:", hmsErr);
+          }
         }
 
         // 4. Create company admin user if enabled and email exists
@@ -350,7 +367,6 @@ export function BulkCompanyImportDialog({
           } catch (userErr) {
             console.error("Failed to create user:", userErr);
             userCreateError = userErr instanceof Error ? userErr.message : "Ukjent feil ved brukeropprettelse";
-            // Don't fail the whole import if user creation fails
           }
         }
 
@@ -385,7 +401,10 @@ export function BulkCompanyImportDialog({
 
     if (successCount > 0) {
       toast.success(`${successCount} bedrifter importert`);
-      onSuccess?.();
+      // Delay the query invalidation to avoid re-render cascade while dialog updates
+      setTimeout(() => {
+        onSuccess?.();
+      }, 100);
     }
     if (failCount > 0) {
       toast.error(`${failCount} bedrifter feilet`);
