@@ -22,12 +22,19 @@ import {
   Eye,
   File,
   FileSpreadsheet,
-  Image
+  Image,
+  Sparkles,
+  Loader2,
+  Save,
+  RefreshCw,
+  HelpCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useKsModule2Templates } from "@/hooks/useKsModule2Templates";
 import { useKsModule2Settings } from "@/hooks/useKsModule2Settings";
 import { useKsModule2DocumentTemplates } from "@/hooks/useKsModule2DocumentTemplates";
+import { useAdminKsTemplates, CHECKLIST_CATEGORIES } from "@/hooks/useAdminKsTemplates";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const CATEGORIES = [
@@ -64,6 +71,8 @@ export default function Ks2Admin() {
   const { settings, isLoading: settingsLoading, updateSettings } = useKsModule2Settings();
   const { documents, isLoading: documentsLoading, uploadDocument, deleteDocument, getDownloadUrl, isUploading } = useKsModule2DocumentTemplates();
   
+  const { createChecklistTemplate } = useAdminKsTemplates();
+
   const [isNewTemplateOpen, setIsNewTemplateOpen] = useState(false);
   const [isUploadDocOpen, setIsUploadDocOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<any>(null);
@@ -84,6 +93,83 @@ export default function Ks2Admin() {
     category: "sjekkliste",
     description: ""
   });
+
+  // AI Checklist Maker state
+  const [aiTema, setAiTema] = useState("");
+  const [aiKategori, setAiKategori] = useState("");
+  const [aiTrade, setAiTrade] = useState("");
+  const [aiDetaljer, setAiDetaljer] = useState("");
+  const [aiRutineRef, setAiRutineRef] = useState("");
+  const [aiIsGenerating, setAiIsGenerating] = useState(false);
+  const [aiResult, setAiResult] = useState<any>(null);
+
+  const handleAiGenerate = async () => {
+    if (!aiTema.trim()) {
+      toast.error("Skriv inn et tema for sjekklisten");
+      return;
+    }
+    setAiIsGenerating(true);
+    setAiResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-checklist-template", {
+        body: {
+          tema: aiTema,
+          kategori: aiKategori || undefined,
+          trade: aiTrade || undefined,
+          detaljer: aiDetaljer || undefined,
+          rutine_referanse: aiRutineRef || undefined,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setAiResult(data.checklist);
+      toast.success("Sjekkliste generert!");
+    } catch (err: any) {
+      console.error("AI generation error:", err);
+      toast.error(err.message || "Kunne ikke generere sjekkliste");
+    } finally {
+      setAiIsGenerating(false);
+    }
+  };
+
+  const handleSaveAiChecklist = async () => {
+    if (!aiResult) return;
+    try {
+      await createChecklistTemplate.mutateAsync({
+        template_name: aiResult.template_name,
+        description: aiResult.description,
+        category: aiResult.category || "Generell egenkontroll",
+        trade: aiResult.trade,
+        checkpoints: aiResult.checkpoints || [],
+        is_active: true,
+      });
+      toast.success("Sjekkliste-mal lagret i malbiblioteket!");
+      setAiResult(null);
+      setAiTema("");
+      setAiKategori("");
+      setAiTrade("");
+      setAiDetaljer("");
+      setAiRutineRef("");
+    } catch (err: any) {
+      toast.error("Kunne ikke lagre mal");
+    }
+  };
+
+  const handleRemoveAiCheckpoint = (index: number) => {
+    setAiResult((prev: any) => ({
+      ...prev,
+      checkpoints: prev.checkpoints.filter((_: any, i: number) => i !== index),
+    }));
+  };
+
+  const handleEditAiCheckpoint = (index: number, field: string, value: string) => {
+    setAiResult((prev: any) => ({
+      ...prev,
+      checkpoints: prev.checkpoints.map((cp: any, i: number) =>
+        i === index ? { ...cp, [field]: value } : cp
+      ),
+    }));
+  };
 
   const handleCreateTemplate = async () => {
     if (!newTemplate.template_name) {
@@ -203,8 +289,13 @@ export default function Ks2Admin() {
       </div>
 
       <div className="container mx-auto px-4 py-6">
-        <Tabs defaultValue="templates" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 max-w-md">
+        <Tabs defaultValue="ai-maker" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 max-w-lg">
+            <TabsTrigger value="ai-maker" className="gap-2">
+              <Sparkles className="h-4 w-4" />
+              <span className="hidden sm:inline">AI Maker</span>
+              <span className="sm:hidden">AI</span>
+            </TabsTrigger>
             <TabsTrigger value="templates" className="gap-2">
               <CheckSquare className="h-4 w-4" />
               <span className="hidden sm:inline">Sjekkliste-maler</span>
@@ -221,6 +312,217 @@ export default function Ks2Admin() {
               <span className="sm:hidden">Innst.</span>
             </TabsTrigger>
           </TabsList>
+
+          {/* AI Sjekkliste Maker Tab */}
+          <TabsContent value="ai-maker" className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                AI Sjekkliste Maker
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Generer komplette sjekklistemaler med AI – malene blir tilgjengelige for kundene i Sjekklistemaler
+              </p>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Input form */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Beskriv sjekklisten</CardTitle>
+                  <CardDescription>Fyll inn tema og detaljer, så genererer AI-en en komplett sjekkliste</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Tema / tittel *</Label>
+                    <Input
+                      value={aiTema}
+                      onChange={(e) => setAiTema(e.target.value)}
+                      placeholder="F.eks. Tømrerarbeid yttervegger, Betongstøp gulv på grunn..."
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Kategori</Label>
+                      <Select value={aiKategori} onValueChange={setAiKategori}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Velg kategori..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CHECKLIST_CATEGORIES.map((cat) => (
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Fag / håndverk</Label>
+                      <Select value={aiTrade} onValueChange={setAiTrade}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Velg fag..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Tømrer">Tømrer</SelectItem>
+                          <SelectItem value="Murer">Murer</SelectItem>
+                          <SelectItem value="Betongarbeider">Betongarbeider</SelectItem>
+                          <SelectItem value="Rørlegger">Rørlegger</SelectItem>
+                          <SelectItem value="Elektriker">Elektriker</SelectItem>
+                          <SelectItem value="Blikkenslager">Blikkenslager</SelectItem>
+                          <SelectItem value="Maler">Maler</SelectItem>
+                          <SelectItem value="Flislegger">Flislegger</SelectItem>
+                          <SelectItem value="Taktekker">Taktekker</SelectItem>
+                          <SelectItem value="Generelt">Generelt</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-1">
+                      Tilknyttet rutine
+                      <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Label>
+                    <Input
+                      value={aiRutineRef}
+                      onChange={(e) => setAiRutineRef(e.target.value)}
+                      placeholder="F.eks. Rutine for egenkontroll tømrerarbeid..."
+                    />
+                    <p className="text-xs text-muted-foreground">Skriv inn rutinen denne sjekklisten hører til (valgfritt)</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Tilleggsdetaljer</Label>
+                    <Textarea
+                      value={aiDetaljer}
+                      onChange={(e) => setAiDetaljer(e.target.value)}
+                      placeholder="Spesielle krav, standarder, materialer eller fokusområder..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleAiGenerate}
+                    disabled={aiIsGenerating || !aiTema.trim()}
+                    className="w-full gap-2"
+                  >
+                    {aiIsGenerating ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Genererer sjekkliste...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        Generer med AI
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Preview / Result */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Forhåndsvisning</CardTitle>
+                  <CardDescription>
+                    {aiResult ? "Rediger og lagre sjekklisten" : "Generert sjekkliste vises her"}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {!aiResult ? (
+                    <div className="py-12 text-center text-muted-foreground">
+                      <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                      <p>Fyll inn tema og trykk "Generer med AI"</p>
+                      <p className="text-sm mt-1">Sjekklisten blir klar på noen sekunder</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Navn</Label>
+                        <Input
+                          value={aiResult.template_name}
+                          onChange={(e) => setAiResult((p: any) => ({ ...p, template_name: e.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Beskrivelse</Label>
+                        <Textarea
+                          value={aiResult.description}
+                          onChange={(e) => setAiResult((p: any) => ({ ...p, description: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Badge variant="outline">{aiResult.category}</Badge>
+                        {aiResult.trade && <Badge variant="secondary">{aiResult.trade}</Badge>}
+                      </div>
+
+                      {aiResult.related_standards?.length > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          <span className="font-medium">Standarder: </span>
+                          {aiResult.related_standards.join(", ")}
+                        </div>
+                      )}
+
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">
+                          Sjekkpunkter ({aiResult.checkpoints?.length || 0})
+                        </Label>
+                        <div className="border rounded-lg divide-y max-h-[400px] overflow-y-auto">
+                          {aiResult.checkpoints?.map((cp: any, idx: number) => (
+                            <div key={idx} className="p-3 group hover:bg-muted/50">
+                              <div className="flex items-start gap-2">
+                                <span className="text-xs text-muted-foreground font-mono mt-0.5">{idx + 1}.</span>
+                                <div className="flex-1 min-w-0">
+                                  <Input
+                                    value={cp.checkpoint_text}
+                                    onChange={(e) => handleEditAiCheckpoint(idx, "checkpoint_text", e.target.value)}
+                                    className="text-sm border-0 p-0 h-auto shadow-none focus-visible:ring-0 bg-transparent"
+                                  />
+                                  {cp.help_text && (
+                                    <Input
+                                      value={cp.help_text}
+                                      onChange={(e) => handleEditAiCheckpoint(idx, "help_text", e.target.value)}
+                                      className="text-xs text-muted-foreground border-0 p-0 h-auto shadow-none focus-visible:ring-0 bg-transparent mt-1"
+                                    />
+                                  )}
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                                  onClick={() => handleRemoveAiCheckpoint(idx)}
+                                >
+                                  <Trash2 className="h-3 w-3 text-destructive" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <Button onClick={handleSaveAiChecklist} className="flex-1 gap-2">
+                          <Save className="h-4 w-4" />
+                          Lagre i malbiblioteket
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={handleAiGenerate}
+                          disabled={aiIsGenerating}
+                          className="gap-2"
+                        >
+                          <RefreshCw className={`h-4 w-4 ${aiIsGenerating ? 'animate-spin' : ''}`} />
+                          Generer på nytt
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
           {/* Sjekkliste-maler Tab */}
           <TabsContent value="templates" className="space-y-4">
