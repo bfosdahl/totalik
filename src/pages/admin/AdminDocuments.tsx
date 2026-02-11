@@ -51,6 +51,7 @@ import { nb } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { DocumentFolderTree } from "@/components/admin/DocumentFolderTree";
 import { DocumentBulkActions } from "@/components/admin/DocumentBulkActions";
+import { AiChecklistDialog } from "@/components/admin/AiChecklistDialog";
 import { useAdminDocumentFolders, AdminDocumentFolder, ModuleType } from "@/hooks/useAdminDocumentFolders";
 
 interface AdminDocument {
@@ -545,6 +546,9 @@ export default function AdminDocuments() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  {activeModule === "ks-bygg" && (
+                    <AiChecklistDialog />
+                  )}
                   <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
                     <DialogTrigger asChild>
                       <Button className={cn(
