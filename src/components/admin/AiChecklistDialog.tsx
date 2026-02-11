@@ -117,15 +117,15 @@ export function AiChecklistDialog({ trigger }: AiChecklistDialogProps) {
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-blue-500" />
             AI Sjekkliste-generator
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-4">
+        <div className="flex-1 overflow-y-auto pr-2">
           <div className="space-y-6 pb-4">
             {/* Input Form */}
             {!result && (
@@ -299,7 +299,7 @@ export function AiChecklistDialog({ trigger }: AiChecklistDialogProps) {
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
