@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, Users, Calendar, Phone, Mail, Check, Trash2, Loader2, ChevronsUpDown, UserPlus } from "lucide-react";
+import { Plus, Users, Calendar, Phone, Mail, Check, Trash2, Loader2, ChevronsUpDown, UserPlus, Pencil } from "lucide-react";
 import { useIkAlkoholOrganization, ROLE_TYPES } from "@/hooks/useIkAlkoholOrganization";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
@@ -22,10 +22,11 @@ const IkAlkoholOrganisering = () => {
   const navigate = useNavigate();
   const { modules, isLoading: modulesLoading } = useCompanyModules();
   const { users: companyUsers, isLoading: usersLoading, getUserDisplayName } = useCompanyUsers();
-  const { organization, shifts, isLoading, createRole, deleteRole, confirmRole, createShift, deleteShift } = useIkAlkoholOrganization();
+  const { organization, shifts, isLoading, createRole, updateRole, deleteRole, confirmRole, createShift, deleteShift } = useIkAlkoholOrganization();
   
   const [activeTab, setActiveTab] = useState('roles');
   const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
   const [showShiftDialog, setShowShiftDialog] = useState(false);
   const [employeePopoverOpen, setEmployeePopoverOpen] = useState(false);
   const [styrerPopoverOpen, setStyrerPopoverOpen] = useState(false);
@@ -51,10 +52,28 @@ const IkAlkoholOrganisering = () => {
   const handleSaveRole = async () => {
     if (!roleForm.role_type || !roleForm.employee_name) return;
     const { employee_id, ...rest } = roleForm;
-    await createRole.mutateAsync({ ...rest, user_id: employee_id || undefined } as any);
+    if (editingRoleId) {
+      await updateRole.mutateAsync({ id: editingRoleId, ...rest, user_id: employee_id || undefined } as any);
+    } else {
+      await createRole.mutateAsync({ ...rest, user_id: employee_id || undefined } as any);
+    }
     setShowRoleDialog(false);
+    setEditingRoleId(null);
     setRoleForm({ role_type: '', employee_name: '', employee_id: '', phone: '', email: '' });
     setCustomNameMode(false);
+  };
+
+  const handleEditRole = (role: typeof organization[0]) => {
+    setRoleForm({
+      role_type: role.role_type,
+      employee_name: role.employee_name,
+      employee_id: role.user_id || '',
+      phone: role.phone || '',
+      email: role.email || '',
+    });
+    setEditingRoleId(role.id);
+    setCustomNameMode(!role.user_id);
+    setShowRoleDialog(true);
   };
 
   const selectEmployee = (user: typeof companyUsers[0]) => {
@@ -138,6 +157,9 @@ const IkAlkoholOrganisering = () => {
                                 <Check className="h-4 w-4 mr-1" />Bekreft rolle
                               </Button>
                             )}
+                            <Button size="sm" variant="outline" onClick={() => handleEditRole(role)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
                             <Button size="sm" variant="outline" onClick={() => deleteRole.mutate(role.id)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -188,9 +210,9 @@ const IkAlkoholOrganisering = () => {
         </Tabs>
 
         {/* Role Dialog */}
-        <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog} modal={false}>
+        <Dialog open={showRoleDialog} onOpenChange={(open) => { setShowRoleDialog(open); if (!open) { setEditingRoleId(null); setRoleForm({ role_type: '', employee_name: '', employee_id: '', phone: '', email: '' }); setCustomNameMode(false); } }} modal={false}>
           <DialogContent className="sm:max-w-[500px]" onInteractOutside={(e) => e.preventDefault()}>
-            <DialogHeader><DialogTitle>Legg til rolle</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{editingRoleId ? 'Rediger rolle' : 'Legg til rolle'}</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium">Rolletype *</label>
