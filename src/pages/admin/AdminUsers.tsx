@@ -86,7 +86,7 @@ export default function AdminUsers() {
   const [selectedCompany, setSelectedCompany] = useState<string>("");
   const [newPassword, setNewPassword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const PAGE_SIZE = 50;
+  const [pageSize, setPageSize] = useState(25);
   
   // New user form state
   const [newUserEmail, setNewUserEmail] = useState("");
@@ -444,13 +444,13 @@ export default function AdminUsers() {
     );
   }, [profiles, search]);
 
-  // Reset to page 1 when search changes
-  const totalPages = Math.max(1, Math.ceil((filteredProfiles?.length || 0) / PAGE_SIZE));
+  // Reset to page 1 when search or pageSize changes
+  const totalPages = Math.max(1, Math.ceil((filteredProfiles?.length || 0) / pageSize));
   const safePage = Math.min(currentPage, totalPages);
   const paginatedProfiles = useMemo(() => {
-    const start = (safePage - 1) * PAGE_SIZE;
-    return filteredProfiles.slice(start, start + PAGE_SIZE);
-  }, [filteredProfiles, safePage]);
+    const start = (safePage - 1) * pageSize;
+    return filteredProfiles.slice(start, start + pageSize);
+  }, [filteredProfiles, safePage, pageSize]);
 
   const getRoleBadge = (role: AppRole) => {
     switch (role) {
@@ -468,6 +468,11 @@ export default function AdminUsers() {
   // Reset page when search changes
   const handleSearchChange = (value: string) => {
     setSearch(value);
+    setCurrentPage(1);
+  };
+
+  const handlePageSizeChange = (value: number) => {
+    setPageSize(value);
     setCurrentPage(1);
   };
 
@@ -513,12 +518,25 @@ export default function AdminUsers() {
   }, [profiles, filteredProfiles, getUserRoles, toast]);
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {filteredProfiles.length > 0 && (
           <div className="flex items-center justify-between bg-card rounded-xl border border-border p-3">
-            <p className="text-sm text-muted-foreground">
-              Viser {((safePage - 1) * PAGE_SIZE) + 1}–{Math.min(safePage * PAGE_SIZE, filteredProfiles.length)} av {filteredProfiles.length} brukere
-            </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>Vis</span>
+              <select
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                className="rounded-md border border-input bg-background px-2 py-1 text-sm"
+              >
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span>per side</span>
+              <span className="ml-2">
+                ({((safePage - 1) * pageSize) + 1}–{Math.min(safePage * pageSize, filteredProfiles.length)} av {filteredProfiles.length})
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
               <Button
                 variant="outline"
                 size="sm"
@@ -527,8 +545,8 @@ export default function AdminUsers() {
               >
                 Forrige
               </Button>
-              <span className="text-sm font-medium">
-                Side {safePage} av {totalPages}
+              <span className="px-3 text-sm text-muted-foreground">
+                {safePage} / {totalPages}
               </span>
               <Button
                 variant="outline"
