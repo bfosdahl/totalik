@@ -29,12 +29,15 @@ import {
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { KsBygChecklistEditDialog } from "./KsBygChecklistEditDialog";
+import type { AdminChecklistTemplate } from "@/hooks/useAdminKsTemplates";
 
 export function KsBygChecklistOverview() {
   const { checklistTemplates, isLoading, deleteChecklistTemplate } = useAdminKsTemplates();
   const [search, setSearch] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editTemplate, setEditTemplate] = useState<AdminChecklistTemplate | null>(null);
 
   const filtered = checklistTemplates.filter(
     (t) =>
@@ -150,6 +153,14 @@ export function KsBygChecklistOverview() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="h-7 w-7 opacity-0 group-hover:opacity-100"
+                            onClick={() => setEditTemplate(t)}
+                          >
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive"
                             onClick={() => setDeleteId(t.id)}
                           >
@@ -189,6 +200,12 @@ export function KsBygChecklistOverview() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <KsBygChecklistEditDialog
+        template={editTemplate}
+        open={!!editTemplate}
+        onOpenChange={(open) => !open && setEditTemplate(null)}
+      />
     </div>
   );
 }
