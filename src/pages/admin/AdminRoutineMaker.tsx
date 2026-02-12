@@ -25,7 +25,7 @@ import { nb } from "date-fns/locale";
 
 const MODULES = [
   { value: "ks_ik_bygg", label: "KS/IK Bygg" },
-  { value: "hms", label: "HMS" },
+  { value: "ik_hms", label: "HMS" },
   { value: "ik_mat", label: "IK Mat" },
   { value: "ik_alkohol", label: "IK Alkohol" },
   { value: "felles", label: "Felles" },
