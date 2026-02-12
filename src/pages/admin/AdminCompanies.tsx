@@ -83,6 +83,8 @@ const MODULE_OPTIONS = [
 
 export default function AdminCompanies() {
   const [search, setSearch] = useState("");
+  const [pageSize, setPageSize] = useState(25);
+  const [currentPage, setCurrentPage] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<any>(null);
   const [formData, setFormData] = useState<CompanyFormData>({
@@ -491,6 +493,18 @@ export default function AdminCompanies() {
       c.org_number?.includes(search)
   );
 
+  const totalFiltered = filteredCompanies?.length || 0;
+  const totalPages = Math.ceil(totalFiltered / pageSize);
+  const paginatedCompanies = filteredCompanies?.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  // Reset to page 1 when search or pageSize changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, pageSize]);
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
@@ -788,7 +802,7 @@ export default function AdminCompanies() {
                     </td>
                   </tr>
                 ) : (
-                  filteredCompanies?.map((company) => (
+                  paginatedCompanies?.map((company) => (
                     <tr key={company.id} className="hover:bg-secondary/30 transition-colors">
                       <td className="p-4">
                         <div className="flex items-center gap-3">
@@ -896,6 +910,49 @@ export default function AdminCompanies() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination controls */}
+          {totalFiltered > 0 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>Vis</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="rounded-md border border-input bg-background px-2 py-1 text-sm"
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span>per side</span>
+                <span className="ml-2">
+                  ({(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, totalFiltered)} av {totalFiltered})
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Forrige
+                </Button>
+                <span className="px-3 text-sm text-muted-foreground">
+                  {currentPage} / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Neste
+                </Button>
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Companies list - Mobile */}
@@ -914,7 +971,7 @@ export default function AdminCompanies() {
               Ingen bedrifter funnet
             </div>
           ) : (
-            filteredCompanies?.map((company) => (
+            paginatedCompanies?.map((company) => (
               <div
                 key={company.id}
                 className="bg-card rounded-xl border border-border p-4 space-y-3"
