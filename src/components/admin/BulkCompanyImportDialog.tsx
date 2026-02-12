@@ -177,6 +177,10 @@ export function BulkCompanyImportDialog({
             const isKurslisensOnly = !isIkProduct && (
               productNameLower.includes("kurs") ||
               productNameLower.includes("lisens") ||
+              productNameLower.includes("id-kort") ||
+              productNameLower.includes("idkort") ||
+              productNameLower.includes("hmskort") ||
+              productNameLower.includes("hms-kort") ||
               productName === ""
             );
 
