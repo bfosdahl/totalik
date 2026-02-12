@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,19 +10,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, FileText, ChevronDown, Edit, Trash2, Loader2, Sparkles, Check } from "lucide-react";
+import { Plus, FileText, ChevronDown, Edit, Trash2, Loader2, Check } from "lucide-react";
 import { RoutineLibraryDialog } from "@/components/routines/RoutineLibraryDialog";
-import { useIkAlkoholRoutines, ROUTINE_CATEGORIES, VENUE_TYPES } from "@/hooks/useIkAlkoholRoutines";
+import { useIkAlkoholRoutines, ROUTINE_CATEGORIES, VENUE_TYPES, DEFAULT_ROUTINES } from "@/hooks/useIkAlkoholRoutines";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { RoutineTemplate } from "@/hooks/useRoutineLibrary";
 
 const IkAlkoholRutiner = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { modules, isLoading: modulesLoading } = useCompanyModules();
-  const { routines, isLoading, createRoutine, updateRoutine, deleteRoutine, initializeDefaultRoutines } = useIkAlkoholRoutines();
+  const { routines, isLoading, createRoutine, updateRoutine, deleteRoutine } = useIkAlkoholRoutines();
   
   const [activeCategory, setActiveCategory] = useState('alle');
   const [showDialog, setShowDialog] = useState(false);
@@ -39,6 +40,20 @@ const IkAlkoholRutiner = () => {
   });
 
   const hasIkAlkohol = modules?.some(m => m.module_type === 'IK_ALKOHOL' && m.is_active);
+
+  // Track which built-in routines are already adopted (by name match)
+  const adoptedBuiltinNames = new Set(routines.map(r => r.routine_name.toLowerCase()));
+
+  // Build adopted IDs for the library (both admin templates and built-in)
+  const adoptedLibraryIds = useMemo(() => {
+    const ids = new Set<string>();
+    DEFAULT_ROUTINES.forEach((r, i) => {
+      if (adoptedBuiltinNames.has(r.routine_name.toLowerCase())) {
+        ids.add(`_builtin_${i}`);
+      }
+    });
+    return ids;
+  }, [adoptedBuiltinNames]);
   
   if (modulesLoading) {
     return <AppLayout><div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div></AppLayout>;
@@ -50,6 +65,42 @@ const IkAlkoholRutiner = () => {
   }
 
   const filteredRoutines = activeCategory === 'alle' ? routines : routines.filter(r => r.category === activeCategory);
+
+  const handleAdoptFromLibrary = async (template: RoutineTemplate) => {
+    if (!profile?.company_id) return;
+    
+    // Check if it's a built-in template (has _builtin_ prefix)
+    const builtinIndex = template.id.startsWith("_builtin_") 
+      ? parseInt(template.id.replace("_builtin_", ""), 10)
+      : -1;
+    
+    if (builtinIndex >= 0 && builtinIndex < DEFAULT_ROUTINES.length) {
+      const defaultRoutine = DEFAULT_ROUTINES[builtinIndex];
+      await createRoutine.mutateAsync({
+        company_id: profile.company_id,
+        category: defaultRoutine.category,
+        routine_name: defaultRoutine.routine_name,
+        content: defaultRoutine.content,
+        description: defaultRoutine.description || undefined,
+        venue_type: defaultRoutine.venue_type,
+        is_mandatory: defaultRoutine.is_mandatory,
+        is_active: true,
+        sort_order: defaultRoutine.sort_order,
+      });
+    } else {
+      // Regular library template - create from template content
+      const steps = Array.isArray(template.steps) ? template.steps : [];
+      const content = steps.map((s: any) => typeof s === "string" ? s : s.text || s.label || "").join("\n");
+      await createRoutine.mutateAsync({
+        company_id: profile.company_id,
+        category: template.subcategory || 'dokumentasjon',
+        routine_name: template.title,
+        content: content || template.purpose || template.description || "",
+        description: template.description || undefined,
+      });
+    }
+  };
+
 
   const handleSave = async () => {
     if (!formData.routine_name || !formData.content) return;
@@ -90,13 +141,11 @@ const IkAlkoholRutiner = () => {
             <p className="text-muted-foreground">Rutinebibliotek for alkoholkontroll</p>
           </div>
           <div className="flex gap-2">
-            <RoutineLibraryDialog module="ik_alkohol" />
-            {routines.length === 0 && (
-              <Button variant="outline" onClick={() => initializeDefaultRoutines.mutate()} disabled={initializeDefaultRoutines.isPending}>
-                <Sparkles className="h-4 w-4 mr-2" />
-                Legg til standardrutiner
-              </Button>
-            )}
+            <RoutineLibraryDialog 
+              module="ik_alkohol" 
+              onAdopt={handleAdoptFromLibrary}
+              adoptedIds={adoptedLibraryIds}
+            />
             <Button onClick={() => setShowDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Ny rutine

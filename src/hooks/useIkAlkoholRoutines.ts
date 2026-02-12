@@ -68,7 +68,7 @@ export const DEFAULT_ROUTINES: Omit<AlkoholRoutine, 'id' | 'company_id' | 'creat
 - Dokumentet skal ikke konfiskeres
 - Noter hendelsen i logg
 - Vurder å kontakte politi`,
-    is_mandatory: true,
+    is_mandatory: false,
     is_active: true,
     sort_order: 1,
   },
@@ -117,7 +117,7 @@ Sikre effektiv alderskontroll ved store arrangementer
 
 ## Vurdering
 Ved tvil om påvirkning - stopp servering og konsulter med kollega eller leder`,
-    is_mandatory: true,
+    is_mandatory: false,
     is_active: true,
     sort_order: 1,
   },
@@ -146,7 +146,7 @@ Vær alltid:
 ## Ved allerede betalt
 - Tilby refusjon eller byttekvittering
 - Dokumenter i hendelseslogg`,
-    is_mandatory: true,
+    is_mandatory: false,
     is_active: true,
     sort_order: 2,
   },
@@ -179,7 +179,7 @@ Vær alltid:
 ## Trinn 5: Ekstern hjelp
 - Ring vaktselskap/politi ved behov
 - Prioriter alltid sikkerheten til ansatte og andre gjester`,
-    is_mandatory: true,
+    is_mandatory: false,
     is_active: true,
     sort_order: 1,
   },
@@ -206,7 +206,7 @@ Vær alltid:
 ## Shots/runder-policy
 - Maks 2 shots per person per bestilling
 - Ingen "runder til bordet" uten alderskontroll av alle`,
-    is_mandatory: true,
+    is_mandatory: false,
     is_active: true,
     sort_order: 1,
   },
@@ -234,7 +234,7 @@ Vær alltid:
 - Rutinekort for legitimasjonskontroll
 - Kontaktliste (styrer, vakt, politi, ambulanse)
 - Eskaleringsprosedyre`,
-    is_mandatory: true,
+    is_mandatory: false,
     is_active: true,
     sort_order: 1,
   },
@@ -266,7 +266,7 @@ Vær alltid:
 ### Oppbevaring
 - Revisjonslogg oppbevares i minimum 3 år
 - Tilgjengelig for kommunal kontroll`,
-    is_mandatory: true,
+    is_mandatory: false,
     is_active: true,
     sort_order: 1,
   },

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Library, Search, Download, Check, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { useRoutineLibrary, RoutineLibraryModule, RoutineTemplate } from "@/hooks/useRoutineLibrary";
+import { DEFAULT_ROUTINES, ROUTINE_CATEGORIES } from "@/hooks/useIkAlkoholRoutines";
 import { toast } from "sonner";
 
 const FREQUENCY_LABELS: Record<string, string> = {
@@ -17,6 +18,25 @@ const FREQUENCY_LABELS: Record<string, string> = {
   aarlig: "Årlig",
   ved_behov: "Ved behov",
 };
+
+// Convert DEFAULT_ROUTINES to RoutineTemplate format for the library
+const BUILTIN_ALKOHOL_TEMPLATES: RoutineTemplate[] = DEFAULT_ROUTINES.map((r, i) => ({
+  id: `_builtin_${i}`,
+  title: r.routine_name,
+  description: r.description || null,
+  module: "ik_alkohol",
+  subcategory: ROUTINE_CATEGORIES.find(c => c.value === r.category)?.label || r.category,
+  frequency: null,
+  purpose: r.content.substring(0, 200),
+  steps: r.content.split("\n").filter(line => line.trim().startsWith("- ")).map(line => ({ text: line.replace(/^-\s*/, "").trim() })).slice(0, 8),
+  legal_refs: null,
+  target_roles: null,
+  tags: r.venue_type ? [r.venue_type] : null,
+  status: "published",
+  version: 1,
+  is_global_default: true,
+  created_at: new Date().toISOString(),
+}));
 
 interface RoutineLibraryDialogProps {
   module: RoutineLibraryModule;
@@ -35,7 +55,7 @@ export function RoutineLibraryDialog({
   onAdopt,
   adoptedIds: externalAdoptedIds,
 }: RoutineLibraryDialogProps) {
-  const { templates, isLoading, adoptTemplate, adoptedTemplateIds: internalAdoptedIds } = useRoutineLibrary(module);
+  const { templates: adminTemplates, isLoading, adoptTemplate, adoptedTemplateIds: internalAdoptedIds } = useRoutineLibrary(module);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -43,6 +63,17 @@ export function RoutineLibraryDialog({
   const [localAdopted, setLocalAdopted] = useState<Set<string>>(new Set());
 
   const adoptedTemplateIds = externalAdoptedIds || internalAdoptedIds;
+
+  // Merge admin templates with built-in alkohol templates
+  const templates = useMemo(() => {
+    if (module === "ik_alkohol") {
+      // Combine built-in templates with any admin-published templates
+      const adminIds = new Set(adminTemplates.map(t => t.title.toLowerCase()));
+      const uniqueBuiltins = BUILTIN_ALKOHOL_TEMPLATES.filter(t => !adminIds.has(t.title.toLowerCase()));
+      return [...uniqueBuiltins, ...adminTemplates];
+    }
+    return adminTemplates;
+  }, [module, adminTemplates]);
 
   const filtered = templates.filter(t =>
     t.title.toLowerCase().includes(search.toLowerCase()) ||
