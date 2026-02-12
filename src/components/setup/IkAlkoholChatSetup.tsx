@@ -220,23 +220,14 @@ export function IkAlkoholChatSetup({ companyId, onComplete }: IkAlkoholChatSetup
 
       // Save organization roles
       if (data.organization?.roles?.length > 0) {
-        const orgContent = JSON.stringify(data.organization);
-        const { data: existing } = await supabase
-          .from("ik_alkohol_organization")
-          .select("id")
-          .eq("company_id", companyId)
-          .maybeSingle();
-
-        if (existing) {
-          await supabase.from("ik_alkohol_organization")
-            .update({ custom_content: orgContent, is_custom: true })
-            .eq("id", existing.id);
-        } else {
+        for (const role of data.organization.roles) {
           await supabase.from("ik_alkohol_organization").insert({
             company_id: companyId,
-            custom_content: orgContent,
-            is_custom: true,
-          });
+            role_type: role.role_type || 'styrer',
+            employee_name: role.name || role.employee_name || 'Ikke angitt',
+            responsibilities: role.responsibilities || [],
+            is_active: true,
+          } as any);
         }
       }
 
