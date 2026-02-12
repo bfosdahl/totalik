@@ -128,13 +128,19 @@ export const useAdminKsTemplates = () => {
         .order("category", { ascending: true });
 
       if (error) throw error;
-      return (data || []).map((t) => ({
-        ...t,
-        checkpoints: (t.checkpoints as Array<{ checkpoint_text: string; help_text?: string }>).map(c => ({
-          checkpoint_text: c.checkpoint_text,
-          help_text: c.help_text || "",
-        })),
-      })) as AdminChecklistTemplate[];
+      return (data || []).map((t) => {
+        let checkpoints: Array<{ checkpoint_text: string; help_text: string }> = [];
+        try {
+          const raw = Array.isArray(t.checkpoints) ? t.checkpoints : [];
+          checkpoints = raw.map((c: any) => ({
+            checkpoint_text: typeof c === "string" ? c : (c?.checkpoint_text || c?.text || c?.checkpoint || ""),
+            help_text: typeof c === "string" ? "" : (c?.help_text || ""),
+          }));
+        } catch {
+          checkpoints = [];
+        }
+        return { ...t, checkpoints } as AdminChecklistTemplate;
+      });
     },
   });
 
