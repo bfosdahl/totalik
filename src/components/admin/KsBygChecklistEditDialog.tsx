@@ -79,12 +79,12 @@ export function KsBygChecklistEditDialog({ template, open, onOpenChange }: Props
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Rediger sjekklistemal</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-4 -mr-4">
+        <div className="flex-1 overflow-y-auto pr-2 -mr-2 min-h-0">
           <div className="space-y-4 pb-2">
             <div className="space-y-1.5">
               <Label className="text-xs">Malnavn</Label>
@@ -164,9 +164,9 @@ export function KsBygChecklistEditDialog({ template, open, onOpenChange }: Props
               </div>
             </div>
           </div>
-        </ScrollArea>
+        </div>
 
-        <DialogFooter className="pt-3 border-t">
+        <DialogFooter className="pt-3 border-t flex-shrink-0">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Avbryt</Button>
           <Button onClick={handleSave} disabled={!name.trim() || updateChecklistTemplate.isPending}>
             {updateChecklistTemplate.isPending ? "Lagrer..." : "Lagre endringer"}
