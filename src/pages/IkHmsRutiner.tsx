@@ -16,7 +16,7 @@ export default function IkHmsRutiner() {
               {t("handbook.routinesDescription") || "Administrer bedriftens HMS-rutiner og prosedyrer"}
             </p>
           </div>
-          <RoutineLibraryDialog module="hms" />
+          <RoutineLibraryDialog module="ik_hms" />
         </div>
         
         <RutinerTab />

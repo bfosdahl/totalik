@@ -36,7 +36,7 @@ export interface CustomerRoutineInstance {
   created_at: string;
 }
 
-export type RoutineLibraryModule = "hms" | "ik_mat" | "ik_alkohol" | "ks_ik_bygg";
+export type RoutineLibraryModule = "ik_hms" | "ik_mat" | "ik_alkohol" | "ks_ik_bygg";
 
 export function useRoutineLibrary(module: RoutineLibraryModule) {
   const { profile } = useAuth();
