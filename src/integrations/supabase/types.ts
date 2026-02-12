@@ -4545,6 +4545,66 @@ export type Database = {
           },
         ]
       }
+      ik_alkohol_controls: {
+        Row: {
+          checklist_items: Json
+          company_id: string
+          completed_by_id: string | null
+          completed_by_name: string | null
+          control_category: string
+          control_date: string
+          control_type: string
+          created_at: string
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          checklist_items?: Json
+          company_id: string
+          completed_by_id?: string | null
+          completed_by_name?: string | null
+          control_category: string
+          control_date?: string
+          control_type: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          checklist_items?: Json
+          company_id?: string
+          completed_by_id?: string | null
+          completed_by_name?: string | null
+          control_category?: string
+          control_date?: string
+          control_type?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_controls_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_controls_completed_by_id_fkey"
+            columns: ["completed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_alkohol_goals: {
         Row: {
           actions: string[] | null
