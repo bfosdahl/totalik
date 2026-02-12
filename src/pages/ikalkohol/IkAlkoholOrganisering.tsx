@@ -50,7 +50,8 @@ const IkAlkoholOrganisering = () => {
 
   const handleSaveRole = async () => {
     if (!roleForm.role_type || !roleForm.employee_name) return;
-    await createRole.mutateAsync(roleForm);
+    const { employee_id, ...rest } = roleForm;
+    await createRole.mutateAsync({ ...rest, user_id: employee_id || undefined } as any);
     setShowRoleDialog(false);
     setRoleForm({ role_type: '', employee_name: '', employee_id: '', phone: '', email: '' });
     setCustomNameMode(false);
