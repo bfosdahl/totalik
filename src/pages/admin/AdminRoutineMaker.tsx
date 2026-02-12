@@ -148,9 +148,44 @@ export default function AdminRoutineMaker() {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: async (_data, isUpdate) => {
       toast.success(editingId ? "Rutinemal oppdatert" : "Rutinemal opprettet");
       queryClient.invalidateQueries({ queryKey: ["admin-routine-templates-v2"] });
+      
+      // Auto-generate matching checklist when creating a new routine (not updating)
+      if (!isUpdate && form.module === "ks_ik_bygg" && form.steps.length > 0) {
+        try {
+          toast.info("Genererer tilhørende sjekkliste...");
+          const { data: checklistData, error: checklistError } = await supabase.functions.invoke("generate-checklist-template", {
+            body: {
+              tema: form.title,
+              kategori: form.subcategory || undefined,
+              trade: form.tags_text?.split(",")[0]?.trim() || undefined,
+              detaljer: `Basert på rutine: ${form.title}. ${form.description || ""}. Steg: ${form.steps.map(s => s.text).join(", ")}`,
+              rutine_referanse: form.title,
+            },
+          });
+          if (checklistError) throw checklistError;
+          if (checklistData?.checklist) {
+            const cl = checklistData.checklist;
+            const { error: saveErr } = await supabase.from("admin_checklist_templates").insert({
+              template_name: cl.template_name || `Sjekkliste – ${form.title}`,
+              description: cl.description || `Auto-generert sjekkliste for rutine: ${form.title}`,
+              category: cl.category || form.subcategory || "Generell egenkontroll",
+              trade: cl.trade || null,
+              checkpoints: cl.checkpoints || [],
+              is_active: true,
+            });
+            if (saveErr) throw saveErr;
+            toast.success("Tilhørende sjekkliste opprettet automatisk!");
+            queryClient.invalidateQueries({ queryKey: ["admin-checklist-templates"] });
+          }
+        } catch (e) {
+          console.error("Auto-checklist generation failed:", e);
+          toast.warning("Rutinen ble lagret, men sjekklisten kunne ikke genereres automatisk");
+        }
+      }
+      
       resetEditor();
     },
     onError: () => toast.error("Kunne ikke lagre rutinemal"),
