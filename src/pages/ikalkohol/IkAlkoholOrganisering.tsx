@@ -187,8 +187,8 @@ const IkAlkoholOrganisering = () => {
         </Tabs>
 
         {/* Role Dialog */}
-        <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
-          <DialogContent>
+        <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog} modal={false}>
+          <DialogContent className="sm:max-w-[500px]" onInteractOutside={(e) => e.preventDefault()}>
             <DialogHeader><DialogTitle>Legg til rolle</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div>
@@ -223,7 +223,7 @@ const IkAlkoholOrganisering = () => {
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-0 bg-popover" align="start">
+                    <PopoverContent className="w-full p-0 bg-popover z-[9999]" align="start">
                       <Command>
                         <CommandInput placeholder="Søk etter ansatt..." />
                         <CommandList>
