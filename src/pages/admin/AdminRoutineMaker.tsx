@@ -690,7 +690,7 @@ export default function AdminRoutineMaker() {
             <DialogTitle>Forhåndsvisning</DialogTitle>
           </DialogHeader>
           {showPreview && (
-            <ScrollArea className="flex-1 pr-4">
+            <ScrollArea className="flex-1 overflow-y-auto pr-4" style={{ maxHeight: "calc(90vh - 120px)" }}>
               <div className="space-y-4 pb-4">
                 <div className="flex items-center gap-2 flex-wrap">
                   {getStatusBadge(showPreview.status)}
