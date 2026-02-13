@@ -67,6 +67,7 @@ interface RoutineTemplate {
   version: number;
   is_global_default: boolean;
   created_by: string | null;
+  template_number: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -445,6 +446,9 @@ export default function AdminRoutineMaker() {
                 <CardContent className="flex items-start justify-between gap-4 p-4">
                   <div className="flex-1 min-w-0 overflow-hidden">
                     <div className="flex items-center gap-2 flex-wrap">
+                      {t.template_number && (
+                        <span className="text-xs font-mono font-semibold text-primary shrink-0">{t.template_number}</span>
+                      )}
                       <h3 className="font-semibold truncate max-w-[300px] sm:max-w-[400px] lg:max-w-none">{t.title}</h3>
                       {getStatusBadge(t.status)}
                       <Badge variant="outline">{getModuleLabel(t.module)}</Badge>
@@ -693,6 +697,9 @@ export default function AdminRoutineMaker() {
             <ScrollArea className="flex-1 overflow-y-auto pr-4" style={{ maxHeight: "calc(90vh - 120px)" }}>
               <div className="space-y-4 pb-4">
                 <div className="flex items-center gap-2 flex-wrap">
+                  {showPreview.template_number && (
+                    <span className="text-sm font-mono font-semibold text-primary">{showPreview.template_number}</span>
+                  )}
                   {getStatusBadge(showPreview.status)}
                   <Badge variant="outline">{getModuleLabel(showPreview.module)}</Badge>
                   {showPreview.subcategory && <Badge variant="secondary">{showPreview.subcategory}</Badge>}
