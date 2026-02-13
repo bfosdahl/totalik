@@ -19,6 +19,7 @@ export interface RoutineTemplate {
   version: number;
   is_global_default: boolean;
   created_at: string;
+  template_number: string | null;
 }
 
 export interface CustomerRoutineInstance {

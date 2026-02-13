@@ -6,9 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Library, Search, Download, Check, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { Library, Search, Download, Check, ChevronDown, ChevronRight, Loader2, Calendar } from "lucide-react";
 import { useRoutineLibrary, RoutineLibraryModule, RoutineTemplate } from "@/hooks/useRoutineLibrary";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
 
 const FREQUENCY_LABELS: Record<string, string> = {
   daglig: "Daglig",
@@ -153,13 +155,26 @@ export function RoutineLibraryDialog({
                                 <ChevronRight className="w-4 h-4 shrink-0 text-muted-foreground" />
                               )}
                               <div className="min-w-0">
-                                <CardTitle className="text-sm font-medium truncate">{template.title}</CardTitle>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {template.template_number && (
+                                    <Badge variant="outline" className="text-xs font-mono shrink-0">
+                                      {template.template_number}
+                                    </Badge>
+                                  )}
+                                  <CardTitle className="text-sm font-medium truncate">{template.title}</CardTitle>
+                                </div>
                                 {template.description && (
                                   <CardDescription className="text-xs line-clamp-1">{template.description}</CardDescription>
                                 )}
                               </div>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
+                              {template.created_at && (
+                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  {format(new Date(template.created_at), "dd.MM.yyyy", { locale: nb })}
+                                </span>
+                              )}
                               {template.subcategory && (
                                 <Badge variant="outline" className="text-xs">{template.subcategory}</Badge>
                               )}
