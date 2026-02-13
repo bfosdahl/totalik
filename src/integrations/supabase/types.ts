@@ -156,6 +156,7 @@ export type Database = {
           is_locked: boolean | null
           is_mandatory: boolean | null
           template_name: string
+          template_number: string | null
           trade: string | null
           updated_at: string
           valid_from: string | null
@@ -174,6 +175,7 @@ export type Database = {
           is_locked?: boolean | null
           is_mandatory?: boolean | null
           template_name: string
+          template_number?: string | null
           trade?: string | null
           updated_at?: string
           valid_from?: string | null
@@ -192,6 +194,7 @@ export type Database = {
           is_locked?: boolean | null
           is_mandatory?: boolean | null
           template_name?: string
+          template_number?: string | null
           trade?: string | null
           updated_at?: string
           valid_from?: string | null
@@ -260,6 +263,7 @@ export type Database = {
           folder_id: string | null
           id: string
           is_mandatory: boolean | null
+          template_number: string | null
           updated_at: string
           uploaded_by_name: string
           valid_from: string | null
@@ -278,6 +282,7 @@ export type Database = {
           folder_id?: string | null
           id?: string
           is_mandatory?: boolean | null
+          template_number?: string | null
           updated_at?: string
           uploaded_by_name: string
           valid_from?: string | null
@@ -296,6 +301,7 @@ export type Database = {
           folder_id?: string | null
           id?: string
           is_mandatory?: boolean | null
+          template_number?: string | null
           updated_at?: string
           uploaded_by_name?: string
           valid_from?: string | null
@@ -458,6 +464,7 @@ export type Database = {
           subcategory: string | null
           tags: string[] | null
           target_roles: string[] | null
+          template_number: string | null
           title: string
           updated_at: string
           version: number
@@ -478,6 +485,7 @@ export type Database = {
           subcategory?: string | null
           tags?: string[] | null
           target_roles?: string[] | null
+          template_number?: string | null
           title: string
           updated_at?: string
           version?: number
@@ -498,6 +506,7 @@ export type Database = {
           subcategory?: string | null
           tags?: string[] | null
           target_roles?: string[] | null
+          template_number?: string | null
           title?: string
           updated_at?: string
           version?: number
@@ -13551,6 +13560,14 @@ export type Database = {
         Args: { p_company_id: string }
         Returns: string
       }
+      generate_checklist_template_number: {
+        Args: { p_category: string }
+        Returns: string
+      }
+      generate_document_template_number: {
+        Args: { p_category: string }
+        Returns: string
+      }
       generate_forsvarlighetsvurdering_number: { Args: never; Returns: string }
       generate_hms_sja_number: { Args: never; Returns: string }
       generate_inspection_number: {
@@ -13565,6 +13582,10 @@ export type Database = {
       generate_ks_module2_routine_number: { Args: never; Returns: string }
       generate_ks_module2_uk_number: { Args: never; Returns: string }
       generate_project_number: { Args: never; Returns: string }
+      generate_routine_template_number: {
+        Args: { p_module: string }
+        Returns: string
+      }
       get_admin_department_ids: {
         Args: { _user_id: string }
         Returns: string[]
