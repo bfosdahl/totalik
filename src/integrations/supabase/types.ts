@@ -1548,6 +1548,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           routine_name: string
+          routine_number: string | null
           sort_order: number | null
           updated_at: string
           version: string | null
@@ -1563,6 +1564,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           routine_name: string
+          routine_number?: string | null
           sort_order?: number | null
           updated_at?: string
           version?: string | null
@@ -1578,6 +1580,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           routine_name?: string
+          routine_number?: string | null
           sort_order?: number | null
           updated_at?: string
           version?: string | null

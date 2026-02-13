@@ -16,8 +16,11 @@ import {
   ChevronRight,
   Upload,
   Download,
-  Loader2
+  Loader2,
+  Calendar
 } from "lucide-react";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
 import { RoutineLibraryDialog } from "@/components/routines/RoutineLibraryDialog";
 import type { RoutineTemplate } from "@/hooks/useRoutineLibrary";
 import { useCompanyKsRoutines, CompanyKsRoutine } from "@/hooks/useCompanyKsRoutines";
@@ -93,6 +96,7 @@ export default function IkKsRutiner() {
       description: template.description || "",
       content,
       category: template.subcategory || "general",
+      routine_number: template.template_number || undefined,
     });
   };
 
@@ -281,14 +285,25 @@ function RoutineCard({
                 ) : (
                   <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 )}
-                <div>
-                  <CardTitle className="text-base">{routine.routine_name}</CardTitle>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {routine.routine_number && (
+                      <Badge variant="outline" className="text-xs font-mono shrink-0">
+                        {routine.routine_number}
+                      </Badge>
+                    )}
+                    <CardTitle className="text-base">{routine.routine_name}</CardTitle>
+                  </div>
                   {routine.description && (
-                    <p className="text-sm text-muted-foreground mt-0.5">{routine.description}</p>
+                    <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{routine.description}</p>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  {format(new Date(routine.created_at), "dd.MM.yyyy", { locale: nb })}
+                </span>
                 <Badge variant="outline">{getCategoryLabel(routine.category)}</Badge>
                 {routine.admin_template_id && (
                   <Badge variant="secondary">Fra mal</Badge>

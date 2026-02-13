@@ -15,6 +15,7 @@ export interface CompanyKsRoutine {
   version: string;
   is_active: boolean;
   sort_order: number;
+  routine_number: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -25,6 +26,7 @@ export interface NewRoutineInput {
   content?: string;
   category?: string;
   admin_template_id?: string;
+  routine_number?: string;
 }
 
 export function useCompanyKsRoutines() {
@@ -77,6 +79,7 @@ export function useCompanyKsRoutines() {
           content: input.content || "",
           category: input.category || "general",
           admin_template_id: input.admin_template_id || null,
+          routine_number: input.routine_number || null,
           sort_order: maxOrder,
         })
         .select()
