@@ -101,7 +101,7 @@ export function useIkMatDeviation() {
       // Invalidate deviations cache to refresh lists
       queryClient.invalidateQueries({ queryKey: ['deviations'] });
 
-      toast.error(`Avvik opprettet automatisk: ${deviationNumber}`, {
+      toast.success(`Avvik opprettet automatisk: ${deviationNumber}`, {
         description: params.title,
         duration: 5000,
       });
