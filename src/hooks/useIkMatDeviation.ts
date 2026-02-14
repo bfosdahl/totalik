@@ -42,17 +42,18 @@ export function useIkMatDeviation() {
         .from('deviations')
         .select('deviation_number')
         .eq('company_id', company.id)
-        .eq('type', 'ik_mat')
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .like('deviation_number', 'IKM-%');
 
       if (data && data.length > 0) {
-        const lastNumber = data[0].deviation_number;
-        const match = lastNumber.match(/IKM-(\d+)/);
-        if (match) {
-          const nextNum = parseInt(match[1], 10) + 1;
-          return `IKM-${String(nextNum).padStart(3, '0')}`;
-        }
+        let maxNum = 0;
+        data.forEach((row) => {
+          const match = row.deviation_number.match(/IKM-(\d+)/);
+          if (match) {
+            const num = parseInt(match[1], 10);
+            if (num > maxNum) maxNum = num;
+          }
+        });
+        return `IKM-${String(maxNum + 1).padStart(3, '0')}`;
       }
       return 'IKM-001';
     } catch {
