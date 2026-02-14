@@ -128,16 +128,18 @@ export function useDeviations() {
         .from("deviations")
         .select("deviation_number")
         .eq("company_id", companyId)
-        .order("created_at", { ascending: false })
-        .limit(1);
+        .like("deviation_number", "DEV-%");
 
       if (data && data.length > 0) {
-        const lastNumber = data[0].deviation_number;
-        const match = lastNumber.match(/DEV-(\d+)/);
-        if (match) {
-          const nextNum = parseInt(match[1], 10) + 1;
-          return `DEV-${String(nextNum).padStart(3, "0")}`;
-        }
+        let maxNum = 0;
+        data.forEach((row) => {
+          const match = row.deviation_number.match(/DEV-(\d+)/);
+          if (match) {
+            const num = parseInt(match[1], 10);
+            if (num > maxNum) maxNum = num;
+          }
+        });
+        return `DEV-${String(maxNum + 1).padStart(3, "0")}`;
       }
       return "DEV-001";
     } catch {
