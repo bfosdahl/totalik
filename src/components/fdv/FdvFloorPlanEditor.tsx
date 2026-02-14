@@ -35,7 +35,11 @@ import {
   ZoomOut,
   Copy,
   Layers,
+  ChevronUp,
+  ChevronDown,
+  Settings2,
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Floor plan element types
 type ElementType = 
@@ -68,7 +72,7 @@ interface FdvFloorPlanEditorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   buildingName: string;
-  initialData?: string; // JSON string of elements
+  initialData?: string;
   onSave: (imageDataUrl: string, elementsJson: string) => Promise<void>;
 }
 
@@ -90,6 +94,7 @@ const ELEMENT_PRESETS: Record<ElementType, { label: string; icon: React.ReactNod
 export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialData, onSave }: FdvFloorPlanEditorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
   
   const [elements, setElements] = useState<FloorPlanElement[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -101,6 +106,8 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
   const [textInput, setTextInput] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [floorName, setFloorName] = useState("1. etasje");
+  const [mobileToolbarOpen, setMobileToolbarOpen] = useState(false);
+  const [mobileSection, setMobileSection] = useState<"elements" | "settings">("elements");
 
   // Load initial data
   useEffect(() => {
@@ -115,6 +122,27 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
     }
   }, [initialData]);
 
+  // Resize canvas to fit container
+  useEffect(() => {
+    const resizeCanvas = () => {
+      const canvas = canvasRef.current;
+      const container = containerRef.current;
+      if (!canvas || !container) return;
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      if (w > 0 && h > 0) {
+        canvas.width = w;
+        canvas.height = h;
+        drawCanvas();
+      }
+    };
+    if (open) {
+      setTimeout(resizeCanvas, 100);
+      window.addEventListener("resize", resizeCanvas);
+      return () => window.removeEventListener("resize", resizeCanvas);
+    }
+  }, [open, isMobile]);
+
   // Draw canvas
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -123,7 +151,6 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Clear
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -156,7 +183,6 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
       ctx.rotate((el.rotation * Math.PI) / 180);
       ctx.translate(-(x + w/2), -(y + h/2));
 
-      // Draw based on type
       switch (el.type) {
         case "room":
         case "office":
@@ -167,23 +193,19 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
           ctx.lineWidth = 2;
           ctx.strokeRect(x, y, w, h);
           break;
-        
         case "wall":
           ctx.fillStyle = el.color || "#1f2937";
           ctx.fillRect(x, y, w, h);
           break;
-
         case "door":
           ctx.fillStyle = el.color || "#3b82f6";
           ctx.fillRect(x, y, w, h);
-          // Door swing arc
           ctx.beginPath();
           ctx.arc(x, y + h/2, w * 0.8, -Math.PI/2, 0);
           ctx.strokeStyle = "#3b82f6";
           ctx.lineWidth = 1;
           ctx.stroke();
           break;
-
         case "emergency_exit":
           ctx.fillStyle = "#22c55e";
           ctx.fillRect(x, y, w, h);
@@ -193,11 +215,9 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
           ctx.textBaseline = "middle";
           ctx.fillText("EXIT", x + w/2, y + h/2);
           break;
-
         case "stairs":
           ctx.fillStyle = "#d1d5db";
           ctx.fillRect(x, y, w, h);
-          // Draw stair lines
           ctx.strokeStyle = "#6b7280";
           ctx.lineWidth = 1;
           const stepCount = 6;
@@ -209,7 +229,6 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
             ctx.stroke();
           }
           break;
-
         case "elevator":
           ctx.fillStyle = "#c4b5fd";
           ctx.fillRect(x, y, w, h);
@@ -222,7 +241,6 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
           ctx.textBaseline = "middle";
           ctx.fillText("HEIS", x + w/2, y + h/2);
           break;
-
         case "fire_extinguisher":
           ctx.beginPath();
           ctx.arc(x + w/2, y + h/2, w/2, 0, Math.PI * 2);
@@ -234,14 +252,12 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
           ctx.textBaseline = "middle";
           ctx.fillText("🧯", x + w/2, y + h/2);
           break;
-
         case "fire_alarm":
           ctx.beginPath();
           ctx.arc(x + w/2, y + h/2, w/2, 0, Math.PI * 2);
           ctx.fillStyle = "#f97316";
           ctx.fill();
           break;
-
         case "first_aid":
           ctx.fillStyle = "#22c55e";
           ctx.fillRect(x, y, w, h);
@@ -251,7 +267,6 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
           ctx.textBaseline = "middle";
           ctx.fillText("+", x + w/2, y + h/2);
           break;
-
         case "text":
           ctx.fillStyle = el.color || "#1f2937";
           ctx.font = `${14 * zoom}px sans-serif`;
@@ -261,7 +276,6 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
           break;
       }
 
-      // Draw label for rooms
       if (el.label && el.type !== "text") {
         ctx.fillStyle = "#374151";
         ctx.font = `${11 * zoom}px sans-serif`;
@@ -272,15 +286,12 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
 
       ctx.restore();
 
-      // Selection indicator
       if (el.id === selectedId) {
         ctx.strokeStyle = "#3b82f6";
         ctx.lineWidth = 2;
         ctx.setLineDash([5, 5]);
         ctx.strokeRect(x - 4, y - 4, w + 8, h + 8);
         ctx.setLineDash([]);
-
-        // Resize handles
         const handleSize = 8;
         ctx.fillStyle = "#3b82f6";
         [[x - handleSize/2, y - handleSize/2], [x + w - handleSize/2, y - handleSize/2],
@@ -290,7 +301,6 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
       }
     });
 
-    // Floor name
     ctx.fillStyle = "#6b7280";
     ctx.font = "14px sans-serif";
     ctx.textAlign = "left";
@@ -303,23 +313,27 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
     drawCanvas();
   }, [drawCanvas]);
 
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  // Touch handling for mobile
+  const getCanvasCoords = (clientX: number, clientY: number) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-
+    if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left - pan.x) / zoom;
-    const y = (e.clientY - rect.top - pan.y) / zoom;
+    return {
+      x: (clientX - rect.left - pan.x) / zoom,
+      y: (clientY - rect.top - pan.y) / zoom,
+    };
+  };
+
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const { x, y } = getCanvasCoords(e.clientX, e.clientY);
 
     if (activeTool === "select" || activeTool === "move") {
-      // Find clicked element
       const clicked = [...elements].reverse().find(el => 
         x >= el.x && x <= el.x + el.width &&
         y >= el.y && y <= el.y + el.height
       );
       setSelectedId(clicked?.id || null);
     } else {
-      // Add new element
       const preset = ELEMENT_PRESETS[activeTool];
       const newElement: FloorPlanElement = {
         id: crypto.randomUUID(),
@@ -334,6 +348,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
       };
       setElements([...elements, newElement]);
       setSelectedId(newElement.id);
+      if (isMobile) setMobileToolbarOpen(false);
       setActiveTool("select");
     }
   };
@@ -346,12 +361,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
     }
 
     if (selectedId && activeTool === "select") {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left - pan.x) / zoom;
-      const y = (e.clientY - rect.top - pan.y) / zoom;
-      
+      const { x, y } = getCanvasCoords(e.clientX, e.clientY);
       const el = elements.find(e => e.id === selectedId);
       if (el && x >= el.x && x <= el.x + el.width && y >= el.y && y <= el.y + el.height) {
         setIsDragging(true);
@@ -369,12 +379,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
     }
 
     if (selectedId) {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left - pan.x) / zoom;
-      const y = (e.clientY - rect.top - pan.y) / zoom;
-
+      const { x, y } = getCanvasCoords(e.clientX, e.clientY);
       setElements(elements.map(el => 
         el.id === selectedId 
           ? { ...el, x: x - dragStart.x, y: y - dragStart.y }
@@ -384,6 +389,46 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
   };
 
   const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Touch events for mobile drag
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    const touch = e.touches[0];
+    if (activeTool === "move") {
+      setIsDragging(true);
+      setDragStart({ x: touch.clientX - pan.x, y: touch.clientY - pan.y });
+      return;
+    }
+    if (selectedId && activeTool === "select") {
+      const { x, y } = getCanvasCoords(touch.clientX, touch.clientY);
+      const el = elements.find(e => e.id === selectedId);
+      if (el && x >= el.x && x <= el.x + el.width && y >= el.y && y <= el.y + el.height) {
+        setIsDragging(true);
+        setDragStart({ x: x - el.x, y: y - el.y });
+      }
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    if (activeTool === "move") {
+      setPan({ x: touch.clientX - dragStart.x, y: touch.clientY - dragStart.y });
+      return;
+    }
+    if (selectedId) {
+      const { x, y } = getCanvasCoords(touch.clientX, touch.clientY);
+      setElements(elements.map(el => 
+        el.id === selectedId 
+          ? { ...el, x: x - dragStart.x, y: y - dragStart.y }
+          : el
+      ));
+    }
+  };
+
+  const handleTouchEnd = () => {
     setIsDragging(false);
   };
 
@@ -427,13 +472,11 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
 
     setIsSaving(true);
     try {
-      // Reset view for clean export
       const tempZoom = zoom;
       const tempPan = pan;
       setZoom(1);
       setPan({ x: 0, y: 0 });
       
-      // Wait for redraw
       await new Promise(r => setTimeout(r, 100));
       
       const imageDataUrl = canvas.toDataURL("image/png");
@@ -450,195 +493,355 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
 
   const selectedElement = elements.find(e => e.id === selectedId);
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] w-[1200px] max-h-[95vh] p-0 overflow-hidden">
-        <DialogHeader className="px-6 pt-6 pb-2">
-          <DialogTitle>Tegn etasjeplan – {buildingName}</DialogTitle>
-          <DialogDescription>
-            Lag en enkel skisse av bygget med rom, dører, nødutganger og utstyr
-          </DialogDescription>
-        </DialogHeader>
+  // Mobile bottom toolbar content
+  const renderMobileToolbar = () => (
+    <div className="border-t bg-background">
+      {/* Quick action bar - always visible */}
+      <div className="flex items-center gap-1 p-2 overflow-x-auto">
+        <Button 
+          variant={activeTool === "select" ? "default" : "outline"} 
+          size="icon" 
+          className="h-10 w-10 shrink-0"
+          onClick={() => setActiveTool("select")}
+        >
+          <MousePointer className="h-4 w-4" />
+        </Button>
+        <Button 
+          variant={activeTool === "move" ? "default" : "outline"} 
+          size="icon" 
+          className="h-10 w-10 shrink-0"
+          onClick={() => setActiveTool("move")}
+        >
+          <Move className="h-4 w-4" />
+        </Button>
+        
+        <Separator orientation="vertical" className="h-8 mx-1" />
+        
+        {selectedId && (
+          <>
+            <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0" onClick={deleteSelected}>
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0" onClick={duplicateSelected}>
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0" onClick={rotateSelected}>
+              <RotateCcw className="h-4 w-4" />
+            </Button>
+            <Separator orientation="vertical" className="h-8 mx-1" />
+          </>
+        )}
+        
+        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0" onClick={() => setZoom(Math.max(0.25, zoom - 0.25))}>
+          <ZoomOut className="h-4 w-4" />
+        </Button>
+        <span className="text-xs text-muted-foreground shrink-0 w-10 text-center">{Math.round(zoom * 100)}%</span>
+        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0" onClick={() => setZoom(Math.min(2, zoom + 0.25))}>
+          <ZoomIn className="h-4 w-4" />
+        </Button>
+        
+        <div className="flex-1" />
+        
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0 gap-1"
+          onClick={() => setMobileToolbarOpen(!mobileToolbarOpen)}
+        >
+          {mobileToolbarOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+          <span className="text-xs">Elementer</span>
+        </Button>
+      </div>
 
-        <div className="flex flex-1 overflow-hidden">
-          {/* Toolbar */}
-          <div className="w-56 border-r bg-muted/30 p-3 flex flex-col gap-4">
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Etasjenavn</Label>
-              <Input 
-                value={floorName} 
-                onChange={(e) => setFloorName(e.target.value)}
-                placeholder="1. etasje"
-                className="h-8 text-sm"
-              />
-            </div>
-
-            <Separator />
-
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Verktøy</Label>
-              <div className="grid grid-cols-3 gap-1">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant={activeTool === "select" ? "default" : "outline"} 
-                        size="icon" 
-                        className="h-9 w-9"
-                        onClick={() => setActiveTool("select")}
-                      >
-                        <MousePointer className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Velg</TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant={activeTool === "move" ? "default" : "outline"} 
-                        size="icon" 
-                        className="h-9 w-9"
-                        onClick={() => setActiveTool("move")}
-                      >
-                        <Move className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Flytt visning</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            </div>
-
-            <Separator />
-
-            <ScrollArea className="flex-1">
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Elementer</Label>
-                <div className="grid grid-cols-2 gap-1">
-                  <TooltipProvider>
-                    {(Object.entries(ELEMENT_PRESETS) as [ElementType, typeof ELEMENT_PRESETS[ElementType]][]).map(([type, preset]) => (
-                      <Tooltip key={type}>
-                        <TooltipTrigger asChild>
-                          <Button 
-                            variant={activeTool === type ? "default" : "outline"} 
-                            size="sm" 
-                            className="h-9 justify-start gap-2 text-xs"
-                            onClick={() => setActiveTool(type)}
-                          >
-                            {preset.icon}
-                            <span className="truncate">{preset.label}</span>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{preset.label}</TooltipContent>
-                      </Tooltip>
-                    ))}
-                  </TooltipProvider>
-                </div>
-              </div>
-            </ScrollArea>
-
-            {activeTool === "text" && (
-              <div className="space-y-2">
-                <Label className="text-xs">Tekst</Label>
-                <Input 
-                  value={textInput}
-                  onChange={(e) => setTextInput(e.target.value)}
-                  placeholder="Skriv inn tekst..."
-                  className="h-8 text-sm"
-                />
-              </div>
-            )}
-
-            <Separator />
-
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Zoom: {Math.round(zoom * 100)}%</Label>
-              <div className="flex gap-1">
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setZoom(Math.max(0.25, zoom - 0.25))}>
-                  <ZoomOut className="h-3 w-3" />
-                </Button>
-                <Slider 
-                  value={[zoom]} 
-                  onValueChange={([v]) => setZoom(v)} 
-                  min={0.25} 
-                  max={2} 
-                  step={0.25}
-                  className="flex-1"
-                />
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setZoom(Math.min(2, zoom + 0.25))}>
-                  <ZoomIn className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
+      {/* Expandable panel */}
+      {mobileToolbarOpen && (
+        <div className="border-t p-3 max-h-[40vh] overflow-y-auto">
+          {/* Section tabs */}
+          <div className="flex gap-2 mb-3">
+            <Button
+              variant={mobileSection === "elements" ? "default" : "outline"}
+              size="sm"
+              className="flex-1 text-xs"
+              onClick={() => setMobileSection("elements")}
+            >
+              Elementer
+            </Button>
+            <Button
+              variant={mobileSection === "settings" ? "default" : "outline"}
+              size="sm"
+              className="flex-1 text-xs gap-1"
+              onClick={() => setMobileSection("settings")}
+            >
+              <Settings2 className="h-3 w-3" />
+              Innstillinger
+            </Button>
           </div>
 
-          {/* Canvas */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Canvas toolbar */}
-            <div className="flex items-center gap-2 p-2 border-b bg-muted/20">
-              <Button variant="ghost" size="sm" onClick={deleteSelected} disabled={!selectedId}>
-                <Trash2 className="h-4 w-4 mr-1" />
-                Slett
-              </Button>
-              <Button variant="ghost" size="sm" onClick={duplicateSelected} disabled={!selectedId}>
-                <Copy className="h-4 w-4 mr-1" />
-                Dupliser
-              </Button>
-              <Button variant="ghost" size="sm" onClick={rotateSelected} disabled={!selectedId}>
-                <RotateCcw className="h-4 w-4 mr-1" />
-                Roter
-              </Button>
-              
-              <Separator orientation="vertical" className="h-6" />
-              
+          {mobileSection === "elements" && (
+            <div className="grid grid-cols-3 xs:grid-cols-4 gap-2">
+              {(Object.entries(ELEMENT_PRESETS) as [ElementType, typeof ELEMENT_PRESETS[ElementType]][]).map(([type, preset]) => (
+                <Button 
+                  key={type}
+                  variant={activeTool === type ? "default" : "outline"} 
+                  size="sm" 
+                  className="h-14 flex-col gap-1 text-xs p-1"
+                  onClick={() => { setActiveTool(type); }}
+                >
+                  {preset.icon}
+                  <span className="truncate w-full text-center text-[10px]">{preset.label}</span>
+                </Button>
+              ))}
+            </div>
+          )}
+
+          {mobileSection === "settings" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Etasjenavn</Label>
+                <Input 
+                  value={floorName} 
+                  onChange={(e) => setFloorName(e.target.value)}
+                  placeholder="1. etasje"
+                  className="h-10 text-sm"
+                />
+              </div>
+              {activeTool === "text" && (
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Tekst</Label>
+                  <Input 
+                    value={textInput}
+                    onChange={(e) => setTextInput(e.target.value)}
+                    placeholder="Skriv inn tekst..."
+                    className="h-10 text-sm"
+                  />
+                </div>
+              )}
               {selectedElement && (
-                <div className="flex items-center gap-2">
-                  <Label className="text-xs">Etikett:</Label>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Etikett</Label>
                   <Input 
                     value={selectedElement.label || ""} 
                     onChange={(e) => updateSelectedLabel(e.target.value)}
                     placeholder="Romnavn..."
-                    className="h-7 w-32 text-xs"
+                    className="h-10 text-sm"
                   />
                 </div>
               )}
-
-              <div className="flex-1" />
-              
-              <Button variant="ghost" size="sm" onClick={() => { setPan({ x: 0, y: 0 }); setZoom(1); }}>
-                Tilbakestill visning
-              </Button>
             </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 
-            {/* Canvas area */}
+  // Desktop sidebar
+  const renderDesktopSidebar = () => (
+    <div className="w-56 border-r bg-muted/30 p-3 flex flex-col gap-4">
+      <div className="space-y-2">
+        <Label className="text-xs text-muted-foreground">Etasjenavn</Label>
+        <Input 
+          value={floorName} 
+          onChange={(e) => setFloorName(e.target.value)}
+          placeholder="1. etasje"
+          className="h-8 text-sm"
+        />
+      </div>
+
+      <Separator />
+
+      <div className="space-y-2">
+        <Label className="text-xs text-muted-foreground">Verktøy</Label>
+        <div className="grid grid-cols-3 gap-1">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant={activeTool === "select" ? "default" : "outline"} 
+                  size="icon" 
+                  className="h-9 w-9"
+                  onClick={() => setActiveTool("select")}
+                >
+                  <MousePointer className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Velg</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant={activeTool === "move" ? "default" : "outline"} 
+                  size="icon" 
+                  className="h-9 w-9"
+                  onClick={() => setActiveTool("move")}
+                >
+                  <Move className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Flytt visning</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </div>
+
+      <Separator />
+
+      <ScrollArea className="flex-1">
+        <div className="space-y-2">
+          <Label className="text-xs text-muted-foreground">Elementer</Label>
+          <div className="grid grid-cols-2 gap-1">
+            <TooltipProvider>
+              {(Object.entries(ELEMENT_PRESETS) as [ElementType, typeof ELEMENT_PRESETS[ElementType]][]).map(([type, preset]) => (
+                <Tooltip key={type}>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant={activeTool === type ? "default" : "outline"} 
+                      size="sm" 
+                      className="h-9 justify-start gap-2 text-xs"
+                      onClick={() => setActiveTool(type)}
+                    >
+                      {preset.icon}
+                      <span className="truncate">{preset.label}</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{preset.label}</TooltipContent>
+                </Tooltip>
+              ))}
+            </TooltipProvider>
+          </div>
+        </div>
+      </ScrollArea>
+
+      {activeTool === "text" && (
+        <div className="space-y-2">
+          <Label className="text-xs">Tekst</Label>
+          <Input 
+            value={textInput}
+            onChange={(e) => setTextInput(e.target.value)}
+            placeholder="Skriv inn tekst..."
+            className="h-8 text-sm"
+          />
+        </div>
+      )}
+
+      <Separator />
+
+      <div className="space-y-2">
+        <Label className="text-xs text-muted-foreground">Zoom: {Math.round(zoom * 100)}%</Label>
+        <div className="flex gap-1">
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setZoom(Math.max(0.25, zoom - 0.25))}>
+            <ZoomOut className="h-3 w-3" />
+          </Button>
+          <Slider 
+            value={[zoom]} 
+            onValueChange={([v]) => setZoom(v)} 
+            min={0.25} 
+            max={2} 
+            step={0.25}
+            className="flex-1"
+          />
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setZoom(Math.min(2, zoom + 0.25))}>
+            <ZoomIn className="h-3 w-3" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className={
+        isMobile
+          ? "max-w-[100vw] w-full h-[100dvh] max-h-[100dvh] p-0 overflow-hidden rounded-none flex flex-col"
+          : "max-w-[95vw] w-[1200px] max-h-[95vh] p-0 overflow-hidden flex flex-col"
+      }>
+        <DialogHeader className={isMobile ? "px-4 pt-4 pb-2 shrink-0" : "px-6 pt-6 pb-2 shrink-0"}>
+          <DialogTitle className={isMobile ? "text-base" : ""}>
+            {isMobile ? `Etasjeplan – ${buildingName}` : `Tegn etasjeplan – ${buildingName}`}
+          </DialogTitle>
+          <DialogDescription className={isMobile ? "text-xs" : ""}>
+            Lag en enkel skisse av bygget med rom, dører, nødutganger og utstyr
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-1 overflow-hidden min-h-0">
+          {/* Desktop sidebar */}
+          {!isMobile && renderDesktopSidebar()}
+
+          {/* Canvas area */}
+          <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+            {/* Desktop canvas toolbar */}
+            {!isMobile && (
+              <div className="flex items-center gap-2 p-2 border-b bg-muted/20 shrink-0">
+                <Button variant="ghost" size="sm" onClick={deleteSelected} disabled={!selectedId}>
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Slett
+                </Button>
+                <Button variant="ghost" size="sm" onClick={duplicateSelected} disabled={!selectedId}>
+                  <Copy className="h-4 w-4 mr-1" />
+                  Dupliser
+                </Button>
+                <Button variant="ghost" size="sm" onClick={rotateSelected} disabled={!selectedId}>
+                  <RotateCcw className="h-4 w-4 mr-1" />
+                  Roter
+                </Button>
+                
+                <Separator orientation="vertical" className="h-6" />
+                
+                {selectedElement && (
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs">Etikett:</Label>
+                    <Input 
+                      value={selectedElement.label || ""} 
+                      onChange={(e) => updateSelectedLabel(e.target.value)}
+                      placeholder="Romnavn..."
+                      className="h-7 w-32 text-xs"
+                    />
+                  </div>
+                )}
+
+                <div className="flex-1" />
+                
+                <Button variant="ghost" size="sm" onClick={() => { setPan({ x: 0, y: 0 }); setZoom(1); }}>
+                  Tilbakestill visning
+                </Button>
+              </div>
+            )}
+
+            {/* Canvas */}
             <div 
               ref={containerRef}
-              className="flex-1 overflow-hidden bg-gray-100 cursor-crosshair"
-              style={{ cursor: activeTool === "move" ? "grab" : activeTool === "select" ? "default" : "crosshair" }}
+              className="flex-1 overflow-hidden bg-muted/50 min-h-0"
+              style={{ cursor: activeTool === "move" ? "grab" : activeTool === "select" ? "default" : "crosshair", touchAction: "none" }}
             >
               <canvas
                 ref={canvasRef}
-                width={1000}
-                height={600}
+                width={isMobile ? 400 : 1000}
+                height={isMobile ? 400 : 600}
                 onClick={handleCanvasClick}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
-                className="bg-white shadow-lg"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                className="bg-white w-full h-full"
               />
             </div>
+
+            {/* Mobile bottom toolbar */}
+            {isMobile && renderMobileToolbar()}
           </div>
         </div>
 
-        <DialogFooter className="px-6 py-4 border-t">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className={isMobile ? "px-4 py-3 border-t shrink-0 flex-row gap-2" : "px-6 py-4 border-t shrink-0"}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className={isMobile ? "flex-1" : ""}>
             Avbryt
           </Button>
-          <Button onClick={handleSave} disabled={isSaving} className="gap-2">
+          <Button onClick={handleSave} disabled={isSaving} className={isMobile ? "flex-1 gap-2" : "gap-2"}>
             <Download className="h-4 w-4" />
-            {isSaving ? "Lagrer..." : "Lagre etasjeplan"}
+            {isSaving ? "Lagrer..." : "Lagre"}
           </Button>
         </DialogFooter>
       </DialogContent>
