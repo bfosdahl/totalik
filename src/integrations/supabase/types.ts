@@ -6171,6 +6171,141 @@ export type Database = {
           },
         ]
       }
+      ks_calculation_items: {
+        Row: {
+          calculation_id: string
+          category: string
+          created_at: string
+          description: string
+          id: string
+          quantity: number
+          sort_order: number | null
+          total_price: number | null
+          unit: string | null
+          unit_price: number
+        }
+        Insert: {
+          calculation_id: string
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          quantity?: number
+          sort_order?: number | null
+          total_price?: number | null
+          unit?: string | null
+          unit_price?: number
+        }
+        Update: {
+          calculation_id?: string
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          quantity?: number
+          sort_order?: number | null
+          total_price?: number | null
+          unit?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_calculation_items_calculation_id_fkey"
+            columns: ["calculation_id"]
+            isOneToOne: false
+            referencedRelation: "ks_calculations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ks_calculations: {
+        Row: {
+          calculation_number: string
+          client_name: string | null
+          company_id: string
+          created_at: string
+          created_by_id: string | null
+          created_by_name: string
+          description: string | null
+          id: string
+          markup_percent: number | null
+          notes: string | null
+          project_id: string | null
+          status: string
+          title: string
+          total_equipment_cost: number | null
+          total_hours_cost: number | null
+          total_materials_cost: number | null
+          total_other_cost: number | null
+          updated_at: string
+          vat_percent: number | null
+        }
+        Insert: {
+          calculation_number: string
+          client_name?: string | null
+          company_id: string
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string
+          description?: string | null
+          id?: string
+          markup_percent?: number | null
+          notes?: string | null
+          project_id?: string | null
+          status?: string
+          title: string
+          total_equipment_cost?: number | null
+          total_hours_cost?: number | null
+          total_materials_cost?: number | null
+          total_other_cost?: number | null
+          updated_at?: string
+          vat_percent?: number | null
+        }
+        Update: {
+          calculation_number?: string
+          client_name?: string | null
+          company_id?: string
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string
+          description?: string | null
+          id?: string
+          markup_percent?: number | null
+          notes?: string | null
+          project_id?: string | null
+          status?: string
+          title?: string
+          total_equipment_cost?: number | null
+          total_hours_cost?: number | null
+          total_materials_cost?: number | null
+          total_other_cost?: number | null
+          updated_at?: string
+          vat_percent?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_calculations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_calculations_created_by_id_fkey"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_calculations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_change_orders: {
         Row: {
           approved_at: string | null

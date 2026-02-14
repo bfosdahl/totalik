@@ -35,6 +35,7 @@ import Ks2ProjectDetail from "./pages/ks2/Ks2ProjectDetail";
 import Ks2Admin from "./pages/ks2/Ks2Admin";
 import Ks2Statistikk from "./pages/ks2/Ks2Statistikk";
 import Ks2Befaring from "./pages/ks2/Ks2Befaring";
+import KsKalkyler from "./pages/ks2/KsKalkyler";
 import IkKsRutiner from "./pages/ks2/IkKsRutiner";
 import IkKsMaal from "./pages/ks2/IkKsMaal";
 import IkKsDokumenter from "./pages/ks2/IkKsDokumenter";
@@ -213,6 +214,7 @@ const App = () => (
                   <Route path="/ks/project/:projectId/*" element={<ProtectedRoute><Ks2ProjectDetail /></ProtectedRoute>} />
                   <Route path="/ks/admin" element={<ProtectedRoute><Ks2Admin /></ProtectedRoute>} />
                   <Route path="/ks/befaring" element={<ProtectedRoute><Ks2Befaring /></ProtectedRoute>} />
+                  <Route path="/ks/kalkyler" element={<ProtectedRoute><KsKalkyler /></ProtectedRoute>} />
                   
                   {/* IK/KS Grunnlag routes */}
                   <Route path="/ks/ik-ks/maalsetting" element={<ProtectedRoute><IkKsMaalsetting /></ProtectedRoute>} />
