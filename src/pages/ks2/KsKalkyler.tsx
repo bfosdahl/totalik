@@ -248,8 +248,12 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function CalculationDetail({ calc, onBack, onUpdate }: { calc: KsCalculation; onBack: () => void; onUpdate: any }) {
-  const { items, isLoading, addItem, deleteItem } = useKsCalculationItems(calc.id);
+  const { items, isLoading, addItem, deleteItem, updateItem } = useKsCalculationItems(calc.id);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState(calc.title);
+  const [editClient, setEditClient] = useState(calc.client_name || "");
+  const [editDesc, setEditDesc] = useState(calc.description || "");
   const [newCategory, setNewCategory] = useState("materials");
   const [newDesc, setNewDesc] = useState("");
   const [newUnit, setNewUnit] = useState("stk");
@@ -257,6 +261,9 @@ function CalculationDetail({ calc, onBack, onUpdate }: { calc: KsCalculation; on
   const [newPrice, setNewPrice] = useState("");
   const [markup, setMarkup] = useState(String(calc.markup_percent || 0));
   const [vat, setVat] = useState(String(calc.vat_percent || 25));
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editItemQty, setEditItemQty] = useState("");
+  const [editItemPrice, setEditItemPrice] = useState("");
 
   const handleAddItem = () => {
     if (!newDesc.trim() || !newPrice) return;
@@ -271,6 +278,31 @@ function CalculationDetail({ calc, onBack, onUpdate }: { calc: KsCalculation; on
         },
       }
     );
+  };
+
+  const handleSaveEdit = () => {
+    if (!editTitle.trim()) return;
+    onUpdate.mutate({
+      id: calc.id,
+      title: editTitle,
+      client_name: editClient || null,
+      description: editDesc || null,
+    });
+    setIsEditOpen(false);
+    toast.success("Kalkyle oppdatert");
+  };
+
+  const startEditItem = (item: any) => {
+    setEditingItemId(item.id);
+    setEditItemQty(String(item.quantity));
+    setEditItemPrice(String(item.unit_price));
+  };
+
+  const saveEditItem = (itemId: string) => {
+    const qty = parseFloat(editItemQty) || 0;
+    const price = parseFloat(editItemPrice) || 0;
+    updateItem.mutate({ id: itemId, quantity: qty, unit_price: price, total_price: qty * price });
+    setEditingItemId(null);
   };
 
   const groupedItems = {
@@ -317,7 +349,10 @@ function CalculationDetail({ calc, onBack, onUpdate }: { calc: KsCalculation; on
               {calc.client_name && <p className="text-muted-foreground text-sm">{calc.client_name}</p>}
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button size="sm" variant="outline" onClick={() => setIsEditOpen(true)}>
+              <Pencil className="w-4 h-4 mr-1" />Rediger
+            </Button>
             <StatusBadge status={calc.status} />
             {calc.status === "draft" && (
               <Button size="sm" variant="outline" onClick={() => { onUpdate.mutate({ id: calc.id, status: "sent" }); toast.success("Kalkyle merket som sendt"); }}>
@@ -326,6 +361,34 @@ function CalculationDetail({ calc, onBack, onUpdate }: { calc: KsCalculation; on
             )}
           </div>
         </div>
+
+        {/* Edit dialog */}
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <DialogContent className="max-h-[90vh] flex flex-col">
+            <DialogHeader>
+              <DialogTitle>Rediger kalkyle</DialogTitle>
+              <DialogDescription>Endre informasjon om kalkylen</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4 flex-1 overflow-y-auto">
+              <div className="space-y-2">
+                <Label>Tittel *</Label>
+                <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Kunde</Label>
+                <Input value={editClient} onChange={(e) => setEditClient(e.target.value)} placeholder="Kundenavn" />
+              </div>
+              <div className="space-y-2">
+                <Label>Beskrivelse</Label>
+                <Textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={3} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditOpen(false)}>Avbryt</Button>
+              <Button onClick={handleSaveEdit} disabled={!editTitle.trim()}>Lagre</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {calc.description && (
           <Card><CardContent className="pt-4"><p className="text-sm text-muted-foreground">{calc.description}</p></CardContent></Card>
@@ -347,23 +410,49 @@ function CalculationDetail({ calc, onBack, onUpdate }: { calc: KsCalculation; on
                 <div className="space-y-2">
                   {/* Table header */}
                   <div className="hidden sm:grid grid-cols-12 gap-2 text-xs text-muted-foreground font-medium px-2">
-                    <div className="col-span-5">Beskrivelse</div>
+                    <div className="col-span-4">Beskrivelse</div>
                     <div className="col-span-2">Enhet</div>
                     <div className="col-span-2 text-right">Mengde</div>
-                    <div className="col-span-2 text-right">Pris</div>
+                    <div className="col-span-2 text-right">Enhetspris</div>
+                    <div className="col-span-1 text-right">Sum</div>
                     <div className="col-span-1"></div>
                   </div>
                   {groupedItems[cat].map((item) => (
                     <div key={item.id} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center p-2 border rounded-lg bg-muted/30">
-                      <div className="sm:col-span-5 text-sm font-medium">{item.description}</div>
+                      <div className="sm:col-span-4 text-sm font-medium">{item.description}</div>
                       <div className="sm:col-span-2 text-sm text-muted-foreground">{item.unit}</div>
-                      <div className="sm:col-span-2 text-sm text-right">{item.quantity}</div>
-                      <div className="sm:col-span-2 text-sm text-right font-medium">{(item.total_price || 0).toLocaleString("nb-NO", { minimumFractionDigits: 2 })} kr</div>
-                      <div className="sm:col-span-1 flex justify-end">
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteItem.mutate(item.id)}>
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
+                      {editingItemId === item.id ? (
+                        <>
+                          <div className="sm:col-span-2">
+                            <Input type="number" className="h-8 text-right text-sm" value={editItemQty} onChange={(e) => setEditItemQty(e.target.value)} min="0" step="0.5" />
+                          </div>
+                          <div className="sm:col-span-2">
+                            <Input type="number" className="h-8 text-right text-sm" value={editItemPrice} onChange={(e) => setEditItemPrice(e.target.value)} min="0" />
+                          </div>
+                          <div className="sm:col-span-1 text-sm text-right font-medium">
+                            {((parseFloat(editItemQty) || 0) * (parseFloat(editItemPrice) || 0)).toLocaleString("nb-NO", { minimumFractionDigits: 2 })} kr
+                          </div>
+                          <div className="sm:col-span-1 flex justify-end gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" onClick={() => saveEditItem(item.id)}>
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="sm:col-span-2 text-sm text-right">{item.quantity}</div>
+                          <div className="sm:col-span-2 text-sm text-right">{(item.unit_price || 0).toLocaleString("nb-NO", { minimumFractionDigits: 2 })} kr</div>
+                          <div className="sm:col-span-1 text-sm text-right font-medium">{(item.total_price || 0).toLocaleString("nb-NO", { minimumFractionDigits: 2 })} kr</div>
+                          <div className="sm:col-span-1 flex justify-end gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => startEditItem(item)}>
+                              <Pencil className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteItem.mutate(item.id)}>
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>
