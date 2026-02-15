@@ -14,12 +14,12 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Calculator, Trash2, ArrowLeft, FileText, Clock, CheckCircle2, Pencil } from "lucide-react";
+import { Plus, Calculator, Trash2, ArrowLeft, FileText, Clock, CheckCircle2, Pencil, FolderOpen } from "lucide-react";
 import { useKsCalculations, useKsCalculationItems, KsCalculation } from "@/hooks/useKsCalculations";
+import { useSimpleProjects } from "@/hooks/useSimpleProjects";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
-
 const categoryLabels: Record<string, string> = {
   hours: "Timer / Arbeid",
   materials: "Materialer",
@@ -31,22 +31,25 @@ const unitOptions = ["stk", "m", "m²", "m³", "kg", "liter", "timer", "rs", "pa
 
 export default function KsKalkyler() {
   const { calculations, isLoading, createCalculation, deleteCalculation, updateCalculation } = useKsCalculations();
+  const { projects } = useSimpleProjects();
   const [selectedCalc, setSelectedCalc] = useState<KsCalculation | null>(null);
   const [isNewOpen, setIsNewOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newClient, setNewClient] = useState("");
+  const [newProjectId, setNewProjectId] = useState<string>("");
 
   const handleCreate = () => {
     if (!newTitle.trim()) return;
     createCalculation.mutate(
-      { title: newTitle, description: newDesc, client_name: newClient },
+      { title: newTitle, description: newDesc, client_name: newClient, project_id: newProjectId || undefined },
       {
         onSuccess: (data) => {
           setIsNewOpen(false);
           setNewTitle("");
           setNewDesc("");
           setNewClient("");
+          setNewProjectId("");
           setSelectedCalc(data as KsCalculation);
         },
       }
@@ -82,6 +85,28 @@ export default function KsKalkyler() {
                 <div className="space-y-2">
                   <Label>Tittel *</Label>
                   <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="F.eks. Rehabilitering Storgata 5" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Koble til prosjekt</Label>
+                  <Select value={newProjectId} onValueChange={(val) => {
+                    setNewProjectId(val === "__none__" ? "" : val);
+                    if (val !== "__none__") {
+                      const proj = projects.find(p => p.id === val);
+                      if (proj?.client_name && !newClient) setNewClient(proj.client_name);
+                    }
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Velg prosjekt (valgfritt)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">Ingen prosjekt</SelectItem>
+                      {projects.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.project_number} – {p.project_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Kunde</Label>
@@ -160,6 +185,10 @@ export default function KsKalkyler() {
                           <StatusBadge status={calc.status} />
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1 flex-wrap">
+                          {calc.project_id && (() => {
+                            const proj = projects.find(p => p.id === calc.project_id);
+                            return proj ? <span className="flex items-center gap-1"><FolderOpen className="w-3 h-3" />{proj.project_name}</span> : null;
+                          })()}
                           {calc.client_name && <span>{calc.client_name}</span>}
                           <span>{format(new Date(calc.created_at), "d. MMM yyyy", { locale: nb })}</span>
                           <span>{calc.created_by_name}</span>

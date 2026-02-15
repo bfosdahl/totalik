@@ -80,7 +80,7 @@ export function useKsCalculations() {
   };
 
   const createCalculation = useMutation({
-    mutationFn: async (input: { title: string; description?: string; client_name?: string }) => {
+    mutationFn: async (input: { title: string; description?: string; client_name?: string; project_id?: string }) => {
       if (!companyId || !profile) throw new Error("Mangler bedrift");
       const calcNumber = await generateNumber();
       const { data, error } = await supabase
@@ -91,6 +91,7 @@ export function useKsCalculations() {
           title: input.title,
           description: input.description || null,
           client_name: input.client_name || null,
+          project_id: input.project_id || null,
           created_by_id: profile.id,
           created_by_name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "Ukjent",
         })
