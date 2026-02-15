@@ -35,10 +35,17 @@ export default function KsKalkyler() {
   const { calculations, isLoading, createCalculation, deleteCalculation, updateCalculation } = useKsCalculations();
   const { projects: simpleProjects } = useSimpleProjects();
   const { projects: fullProjects } = useKsModule2Projects();
-  const allProjects = useMemo(() => [
-    ...simpleProjects.map(p => ({ id: p.id, name: p.project_name, number: p.project_number, client: p.client_name })),
-    ...fullProjects.map(p => ({ id: p.id, name: p.project_name, number: p.project_number, client: p.client_name })),
-  ], [simpleProjects, fullProjects]);
+  const allProjects = useMemo(() => {
+    const seen = new Set<string>();
+    const result: { id: string; name: string; number: string; client: string | null }[] = [];
+    for (const p of [...fullProjects, ...simpleProjects]) {
+      if (!seen.has(p.id)) {
+        seen.add(p.id);
+        result.push({ id: p.id, name: p.project_name, number: p.project_number, client: p.client_name });
+      }
+    }
+    return result;
+  }, [simpleProjects, fullProjects]);
   const [selectedCalc, setSelectedCalc] = useState<KsCalculation | null>(null);
   const [isNewOpen, setIsNewOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -83,12 +90,12 @@ export default function KsKalkyler() {
             <DialogTrigger asChild>
               <Button><Plus className="w-4 h-4 mr-2" />Ny kalkyle</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-h-[90vh] flex flex-col">
               <DialogHeader>
                 <DialogTitle>Ny kalkyle</DialogTitle>
                 <DialogDescription>Opprett en ny prosjektkalkyle</DialogDescription>
               </DialogHeader>
-              <div className="space-y-4 py-4">
+              <div className="space-y-4 py-4 flex-1 overflow-y-auto">
                 <div className="space-y-2">
                   <Label>Tittel *</Label>
                   <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="F.eks. Rehabilitering Storgata 5" />
