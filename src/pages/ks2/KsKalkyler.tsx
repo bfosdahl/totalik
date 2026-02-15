@@ -17,6 +17,8 @@ import {
 import { Plus, Calculator, Trash2, ArrowLeft, FileText, Clock, CheckCircle2, Pencil, FolderOpen } from "lucide-react";
 import { useKsCalculations, useKsCalculationItems, KsCalculation } from "@/hooks/useKsCalculations";
 import { useSimpleProjects } from "@/hooks/useSimpleProjects";
+import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
+import { useMemo } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
@@ -31,7 +33,12 @@ const unitOptions = ["stk", "m", "m²", "m³", "kg", "liter", "timer", "rs", "pa
 
 export default function KsKalkyler() {
   const { calculations, isLoading, createCalculation, deleteCalculation, updateCalculation } = useKsCalculations();
-  const { projects } = useSimpleProjects();
+  const { projects: simpleProjects } = useSimpleProjects();
+  const { projects: fullProjects } = useKsModule2Projects();
+  const allProjects = useMemo(() => [
+    ...simpleProjects.map(p => ({ id: p.id, name: p.project_name, number: p.project_number, client: p.client_name })),
+    ...fullProjects.map(p => ({ id: p.id, name: p.project_name, number: p.project_number, client: p.client_name })),
+  ], [simpleProjects, fullProjects]);
   const [selectedCalc, setSelectedCalc] = useState<KsCalculation | null>(null);
   const [isNewOpen, setIsNewOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -91,8 +98,8 @@ export default function KsKalkyler() {
                   <Select value={newProjectId} onValueChange={(val) => {
                     setNewProjectId(val === "__none__" ? "" : val);
                     if (val !== "__none__") {
-                      const proj = projects.find(p => p.id === val);
-                      if (proj?.client_name && !newClient) setNewClient(proj.client_name);
+                      const proj = allProjects.find(p => p.id === val);
+                      if (proj?.client && !newClient) setNewClient(proj.client);
                     }
                   }}>
                     <SelectTrigger>
@@ -100,9 +107,9 @@ export default function KsKalkyler() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__none__">Ingen prosjekt</SelectItem>
-                      {projects.map((p) => (
+                      {allProjects.map((p) => (
                         <SelectItem key={p.id} value={p.id}>
-                          {p.project_number} – {p.project_name}
+                          {p.number} – {p.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -186,8 +193,8 @@ export default function KsKalkyler() {
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1 flex-wrap">
                           {calc.project_id && (() => {
-                            const proj = projects.find(p => p.id === calc.project_id);
-                            return proj ? <span className="flex items-center gap-1"><FolderOpen className="w-3 h-3" />{proj.project_name}</span> : null;
+                            const proj = allProjects.find(p => p.id === calc.project_id);
+                            return proj ? <span className="flex items-center gap-1"><FolderOpen className="w-3 h-3" />{proj.name}</span> : null;
                           })()}
                           {calc.client_name && <span>{calc.client_name}</span>}
                           <span>{format(new Date(calc.created_at), "d. MMM yyyy", { locale: nb })}</span>
