@@ -228,47 +228,36 @@ export function ErgonomicAssessmentDialog({
 
   const getRiskFactorOptions = () => {
     if (!assessment) return [];
-    switch (assessment.assessment_type) {
-      case "muskel_skjelett":
-        return MUSKEL_SKJELETT_RISK_FACTORS;
-      case "vibrasjon":
-        return VIBRASJON_RISK_FACTORS;
-      case "stoy":
-        return STOY_RISK_FACTORS;
-      default:
-        return [];
-    }
+    const factors: string[] = [];
+    if (assessment.assessment_type.includes("muskel_skjelett")) factors.push(...MUSKEL_SKJELETT_RISK_FACTORS);
+    if (assessment.assessment_type.includes("vibrasjon")) factors.push(...VIBRASJON_RISK_FACTORS);
+    if (assessment.assessment_type.includes("stoy")) factors.push(...STOY_RISK_FACTORS);
+    return factors.length > 0 ? factors : MUSKEL_SKJELETT_RISK_FACTORS;
   };
 
   const getPpeOptions = () => {
     if (!assessment) return [];
-    return PPE_OPTIONS[assessment.assessment_type] || [];
+    const options: string[] = [];
+    for (const t of assessment.assessment_type) {
+      if (PPE_OPTIONS[t]) options.push(...PPE_OPTIONS[t]);
+    }
+    return options.length > 0 ? options : [];
   };
 
   const getTypeIcon = () => {
     if (!assessment) return Activity;
-    switch (assessment.assessment_type) {
-      case "vibrasjon":
-        return Vibrate;
-      case "stoy":
-        return Volume2;
-      default:
-        return Activity;
-    }
+    if (assessment.assessment_type.includes("vibrasjon")) return Vibrate;
+    if (assessment.assessment_type.includes("stoy")) return Volume2;
+    return Activity;
   };
 
   const getTypeLabel = () => {
     if (!assessment) return "";
-    switch (assessment.assessment_type) {
-      case "muskel_skjelett":
-        return "Muskel- og skjelett";
-      case "vibrasjon":
-        return "Vibrasjoner";
-      case "stoy":
-        return "Støy";
-      default:
-        return "";
-    }
+    const labels: string[] = [];
+    if (assessment.assessment_type.includes("muskel_skjelett")) labels.push("Muskel- og skjelett");
+    if (assessment.assessment_type.includes("vibrasjon")) labels.push("Vibrasjoner");
+    if (assessment.assessment_type.includes("stoy")) labels.push("Støy");
+    return labels.join(", ");
   };
 
   if (isLoading) {
@@ -396,7 +385,7 @@ export function ErgonomicAssessmentDialog({
                 </div>
 
                 {/* Type-specific fields */}
-                {assessment.assessment_type === "vibrasjon" && (
+                {assessment.assessment_type.includes("vibrasjon") && (
                   <div className="p-4 border rounded-lg space-y-4">
                     <h4 className="font-medium flex items-center gap-2">
                       <Vibrate className="h-4 w-4" />
@@ -436,7 +425,7 @@ export function ErgonomicAssessmentDialog({
                   </div>
                 )}
 
-                {assessment.assessment_type === "stoy" && (
+                {assessment.assessment_type.includes("stoy") && (
                   <div className="p-4 border rounded-lg space-y-4">
                     <h4 className="font-medium flex items-center gap-2">
                       <Volume2 className="h-4 w-4" />

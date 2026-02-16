@@ -3145,13 +3145,14 @@ export type Database = {
           assessed_at: string | null
           assessed_by_id: string | null
           assessed_by_name: string | null
-          assessment_type: string
+          assessment_type: string[]
           company_id: string
           conclusion: string | null
           consequence_severity: number | null
           created_at: string
           department_id: string | null
           description: string | null
+          equipment: string[] | null
           existing_measures: Json | null
           exposed_workers_count: number | null
           exposure_duration: string | null
@@ -3187,13 +3188,14 @@ export type Database = {
           assessed_at?: string | null
           assessed_by_id?: string | null
           assessed_by_name?: string | null
-          assessment_type: string
+          assessment_type: string[]
           company_id: string
           conclusion?: string | null
           consequence_severity?: number | null
           created_at?: string
           department_id?: string | null
           description?: string | null
+          equipment?: string[] | null
           existing_measures?: Json | null
           exposed_workers_count?: number | null
           exposure_duration?: string | null
@@ -3229,13 +3231,14 @@ export type Database = {
           assessed_at?: string | null
           assessed_by_id?: string | null
           assessed_by_name?: string | null
-          assessment_type?: string
+          assessment_type?: string[]
           company_id?: string
           conclusion?: string | null
           consequence_severity?: number | null
           created_at?: string
           department_id?: string | null
           description?: string | null
+          equipment?: string[] | null
           existing_measures?: Json | null
           exposed_workers_count?: number | null
           exposure_duration?: string | null
