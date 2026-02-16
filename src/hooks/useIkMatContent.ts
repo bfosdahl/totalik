@@ -80,6 +80,13 @@ export interface IkMatRoutine {
   description: string;
   frequency: string;
   responsible: string;
+  routineNumber?: string;
+  templateNumber?: string;
+  subcategory?: string;
+  createdAt?: string;
+  lastRevisedAt?: string;
+  revisedBy?: string;
+  revisionCount?: number;
 }
 
 // HACCP Control log entry
