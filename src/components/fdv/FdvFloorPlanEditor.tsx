@@ -507,8 +507,13 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
     return null;
   };
 
+  const wasDraggingRef = useRef(false);
+
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (isResizing) return; // don't place elements after resize
+    if (isResizing || wasDraggingRef.current) {
+      wasDraggingRef.current = false;
+      return;
+    }
 
     const { x, y } = getCanvasCoords(e.clientX, e.clientY);
 
@@ -541,30 +546,38 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    wasDraggingRef.current = false;
+
     if (activeTool === "move") {
       setIsDragging(true);
       setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
       return;
     }
 
-    // Check resize handles first
-    if (selectedId && activeTool === "select") {
-      const { sx, sy } = getScreenCoords(e.clientX, e.clientY);
-      const handle = hitTestHandle(sx, sy);
-      if (handle) {
-        const el = elements.find(e => e.id === selectedId)!;
-        setIsResizing(true);
-        setResizeHandle(handle);
-        setResizeOrigin({ x: el.x, y: el.y, w: el.width, h: el.height, ex: e.clientX, ey: e.clientY });
-        return;
+    if (activeTool === "select") {
+      // Check resize handles first (only if element is selected)
+      if (selectedId) {
+        const { sx, sy } = getScreenCoords(e.clientX, e.clientY);
+        const handle = hitTestHandle(sx, sy);
+        if (handle) {
+          const el = elements.find(e => e.id === selectedId)!;
+          setIsResizing(true);
+          setResizeHandle(handle);
+          setResizeOrigin({ x: el.x, y: el.y, w: el.width, h: el.height, ex: e.clientX, ey: e.clientY });
+          return;
+        }
       }
 
-      // Otherwise drag the element
+      // Find element under cursor and start dragging immediately
       const { x, y } = getCanvasCoords(e.clientX, e.clientY);
-      const el = elements.find(e => e.id === selectedId);
-      if (el && x >= el.x && x <= el.x + el.width && y >= el.y && y <= el.y + el.height) {
+      const clickedEl = [...elements].reverse().find(el =>
+        x >= el.x && x <= el.x + el.width &&
+        y >= el.y && y <= el.y + el.height
+      );
+      if (clickedEl) {
+        setSelectedId(clickedEl.id);
         setIsDragging(true);
-        setDragStart({ x: x - el.x, y: y - el.y });
+        setDragStart({ x: x - clickedEl.x, y: y - clickedEl.y });
       }
     }
   };
@@ -634,6 +647,9 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
   };
 
   const handleMouseUp = () => {
+    if (isDragging || isResizing) {
+      wasDraggingRef.current = true;
+    }
     setIsDragging(false);
     setIsResizing(false);
     setResizeHandle(null);
@@ -641,32 +657,41 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
 
   // Touch events for mobile
   const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    wasDraggingRef.current = false;
     const touch = e.touches[0];
     if (activeTool === "move") {
       setIsDragging(true);
       setDragStart({ x: touch.clientX - pan.x, y: touch.clientY - pan.y });
       return;
     }
-    if (selectedId && activeTool === "select") {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
-      const sx = touch.clientX - rect.left;
-      const sy = touch.clientY - rect.top;
-      const handle = hitTestHandle(sx, sy);
-      if (handle) {
-        const el = elements.find(e => e.id === selectedId)!;
-        setIsResizing(true);
-        setResizeHandle(handle);
-        setResizeOrigin({ x: el.x, y: el.y, w: el.width, h: el.height, ex: touch.clientX, ey: touch.clientY });
-        return;
+    if (activeTool === "select") {
+      // Check resize handles first
+      if (selectedId) {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        const sx = touch.clientX - rect.left;
+        const sy = touch.clientY - rect.top;
+        const handle = hitTestHandle(sx, sy);
+        if (handle) {
+          const el = elements.find(e => e.id === selectedId)!;
+          setIsResizing(true);
+          setResizeHandle(handle);
+          setResizeOrigin({ x: el.x, y: el.y, w: el.width, h: el.height, ex: touch.clientX, ey: touch.clientY });
+          return;
+        }
       }
 
+      // Find element under touch and start dragging immediately
       const { x, y } = getCanvasCoords(touch.clientX, touch.clientY);
-      const el = elements.find(e => e.id === selectedId);
-      if (el && x >= el.x && x <= el.x + el.width && y >= el.y && y <= el.y + el.height) {
+      const clickedEl = [...elements].reverse().find(el =>
+        x >= el.x && x <= el.x + el.width &&
+        y >= el.y && y <= el.y + el.height
+      );
+      if (clickedEl) {
+        setSelectedId(clickedEl.id);
         setIsDragging(true);
-        setDragStart({ x: x - el.x, y: y - el.y });
+        setDragStart({ x: x - clickedEl.x, y: y - clickedEl.y });
       }
     }
   };
