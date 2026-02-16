@@ -71,6 +71,31 @@ export default function FdvFloorPlans() {
 
   const companyId = profile?.company_id;
 
+  // Helper to get a signed URL for a storage path
+  const getSignedUrl = async (storagePath: string): Promise<string | null> => {
+    const { data, error } = await supabase.storage
+      .from("fdv-documents")
+      .createSignedUrl(storagePath, 3600);
+    if (error) {
+      console.error("Error creating signed URL:", error);
+      return null;
+    }
+    return data.signedUrl;
+  };
+
+  // Extract storage path from a stored value (handles both old public URLs and new paths)
+  const extractStoragePath = (imageUrl: string): string => {
+    // If it's a full URL (old format), extract the path after the bucket name
+    if (imageUrl.startsWith("http")) {
+      const marker = "/fdv-documents/";
+      const idx = imageUrl.indexOf(marker);
+      if (idx !== -1) {
+        return decodeURIComponent(imageUrl.substring(idx + marker.length));
+      }
+    }
+    return imageUrl;
+  };
+
   // Fetch floor plans
   const fetchFloorPlans = async () => {
     if (!companyId) return;
@@ -84,7 +109,21 @@ export default function FdvFloorPlans() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setFloorPlans((data as FloorPlan[]) || []);
+
+      // Generate signed URLs for all plans that have images
+      const plans = (data as FloorPlan[]) || [];
+      const plansWithSignedUrls = await Promise.all(
+        plans.map(async (plan) => {
+          if (plan.image_url) {
+            const storagePath = extractStoragePath(plan.image_url);
+            const signedUrl = await getSignedUrl(storagePath);
+            return { ...plan, image_url: signedUrl };
+          }
+          return plan;
+        })
+      );
+
+      setFloorPlans(plansWithSignedUrls);
     } catch (error) {
       console.error("Error fetching floor plans:", error);
       toast.error("Kunne ikke hente etasjeplaner");
@@ -183,11 +222,7 @@ export default function FdvFloorPlans() {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from("fdv-documents")
-        .getPublicUrl(storagePath);
-
+      // Store the storage path (not public URL) since bucket is private
       const parsed = JSON.parse(elementsJson);
       const floorName = parsed.floorName || "Etasje";
 
@@ -197,7 +232,7 @@ export default function FdvFloorPlans() {
           .from("fdv_floor_plans")
           .update({
             floor_name: floorName,
-            image_url: urlData.publicUrl,
+            image_url: storagePath,
             elements_json: elementsJson,
           })
           .eq("id", editingPlan.id);
@@ -212,7 +247,7 @@ export default function FdvFloorPlans() {
             building_id: selectedBuilding,
             company_id: companyId,
             floor_name: floorName,
-            image_url: urlData.publicUrl,
+            image_url: storagePath,
             elements_json: elementsJson,
             created_by_name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email || "Ukjent",
           });
@@ -230,13 +265,23 @@ export default function FdvFloorPlans() {
     }
   };
 
-  const downloadPlan = (plan: FloorPlan) => {
+  const downloadPlan = async (plan: FloorPlan) => {
     if (!plan.image_url) return;
     
-    const link = document.createElement("a");
-    link.href = plan.image_url;
-    link.download = `${plan.floor_name}.png`;
-    link.click();
+    // image_url at this point is already a signed URL from fetchFloorPlans
+    try {
+      const response = await fetch(plan.image_url);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${plan.floor_name}.png`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading plan:", error);
+      toast.error("Kunne ikke laste ned etasjeplan");
+    }
   };
 
   const getBuildingName = (buildingId: string) => {
