@@ -38,6 +38,7 @@ import {
   ChevronUp,
   ChevronDown,
   Settings2,
+  Ruler,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -76,20 +77,30 @@ interface FdvFloorPlanEditorProps {
   onSave: (imageDataUrl: string, elementsJson: string) => Promise<void>;
 }
 
+// Scale: pixels per meter (configurable)
+const DEFAULT_PIXELS_PER_METER = 50;
+const MIN_ELEMENT_SIZE = 10; // minimum px
+const GRID_SNAP = 10; // snap to 10px grid (0.2m at default scale)
+
 const ELEMENT_PRESETS: Record<ElementType, { label: string; icon: React.ReactNode; defaultWidth: number; defaultHeight: number; color: string }> = {
-  wall: { label: "Vegg", icon: <Minus className="h-4 w-4" />, defaultWidth: 100, defaultHeight: 8, color: "#1f2937" },
-  room: { label: "Rom", icon: <Square className="h-4 w-4" />, defaultWidth: 120, defaultHeight: 100, color: "#e5e7eb" },
-  door: { label: "Dør", icon: <DoorOpen className="h-4 w-4" />, defaultWidth: 40, defaultHeight: 8, color: "#3b82f6" },
+  wall: { label: "Vegg", icon: <Minus className="h-4 w-4" />, defaultWidth: 200, defaultHeight: 10, color: "#1f2937" },
+  room: { label: "Rom", icon: <Square className="h-4 w-4" />, defaultWidth: 200, defaultHeight: 150, color: "#e5e7eb" },
+  door: { label: "Dør", icon: <DoorOpen className="h-4 w-4" />, defaultWidth: 50, defaultHeight: 10, color: "#3b82f6" },
   emergency_exit: { label: "Nødutgang", icon: <ArrowRight className="h-4 w-4" />, defaultWidth: 50, defaultHeight: 30, color: "#22c55e" },
-  toilet: { label: "Toalett", icon: <span className="text-xs font-bold">WC</span>, defaultWidth: 60, defaultHeight: 60, color: "#60a5fa" },
-  office: { label: "Kontor", icon: <Square className="h-4 w-4" />, defaultWidth: 100, defaultHeight: 80, color: "#fef3c7" },
-  stairs: { label: "Trapp", icon: <Layers className="h-4 w-4" />, defaultWidth: 60, defaultHeight: 80, color: "#d1d5db" },
-  elevator: { label: "Heis", icon: <Square className="h-4 w-4" />, defaultWidth: 50, defaultHeight: 50, color: "#c4b5fd" },
+  toilet: { label: "Toalett", icon: <span className="text-xs font-bold">WC</span>, defaultWidth: 100, defaultHeight: 100, color: "#60a5fa" },
+  office: { label: "Kontor", icon: <Square className="h-4 w-4" />, defaultWidth: 150, defaultHeight: 120, color: "#fef3c7" },
+  stairs: { label: "Trapp", icon: <Layers className="h-4 w-4" />, defaultWidth: 75, defaultHeight: 100, color: "#d1d5db" },
+  elevator: { label: "Heis", icon: <Square className="h-4 w-4" />, defaultWidth: 75, defaultHeight: 75, color: "#c4b5fd" },
   fire_extinguisher: { label: "Brannslukker", icon: <Circle className="h-4 w-4" />, defaultWidth: 24, defaultHeight: 24, color: "#ef4444" },
   fire_alarm: { label: "Brannalarm", icon: <Circle className="h-4 w-4" />, defaultWidth: 20, defaultHeight: 20, color: "#f97316" },
   first_aid: { label: "Førstehjelp", icon: <span className="text-xs font-bold">+</span>, defaultWidth: 30, defaultHeight: 30, color: "#22c55e" },
   text: { label: "Tekst", icon: <Type className="h-4 w-4" />, defaultWidth: 80, defaultHeight: 24, color: "#1f2937" },
 };
+
+type ResizeHandle = "nw" | "ne" | "sw" | "se" | "n" | "s" | "e" | "w";
+
+const snapToGrid = (val: number) => Math.round(val / GRID_SNAP) * GRID_SNAP;
+const pxToMeters = (px: number, ppm: number) => (px / ppm).toFixed(1);
 
 export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialData, onSave }: FdvFloorPlanEditorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -100,6 +111,9 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeTool, setActiveTool] = useState<ElementType | "select" | "move">("select");
   const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeHandle, setResizeHandle] = useState<ResizeHandle | null>(null);
+  const [resizeOrigin, setResizeOrigin] = useState({ x: 0, y: 0, w: 0, h: 0, ex: 0, ey: 0 });
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -108,6 +122,8 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
   const [floorName, setFloorName] = useState("1. etasje");
   const [mobileToolbarOpen, setMobileToolbarOpen] = useState(false);
   const [mobileSection, setMobileSection] = useState<"elements" | "settings">("elements");
+  const [pixelsPerMeter, setPixelsPerMeter] = useState(DEFAULT_PIXELS_PER_METER);
+  const [showDimensions, setShowDimensions] = useState(true);
 
   // Load initial data
   useEffect(() => {
@@ -116,6 +132,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
         const parsed = JSON.parse(initialData);
         setElements(parsed.elements || []);
         setFloorName(parsed.floorName || "1. etasje");
+        if (parsed.pixelsPerMeter) setPixelsPerMeter(parsed.pixelsPerMeter);
       } catch {
         setElements([]);
       }
@@ -154,21 +171,71 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw grid
+    // Draw grid with meter markings
+    const gridSizePx = pixelsPerMeter * zoom; // 1 meter grid
+    const subGridSize = gridSizePx / 5; // 0.2m sub-grid
+
+    // Sub-grid
     ctx.strokeStyle = "#f3f4f6";
-    ctx.lineWidth = 1;
-    const gridSize = 20 * zoom;
-    for (let x = pan.x % gridSize; x < canvas.width; x += gridSize) {
+    ctx.lineWidth = 0.5;
+    for (let x = pan.x % subGridSize; x < canvas.width; x += subGridSize) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, canvas.height);
       ctx.stroke();
     }
-    for (let y = pan.y % gridSize; y < canvas.height; y += gridSize) {
+    for (let y = pan.y % subGridSize; y < canvas.height; y += subGridSize) {
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(canvas.width, y);
       ctx.stroke();
+    }
+
+    // Main meter grid
+    ctx.strokeStyle = "#d1d5db";
+    ctx.lineWidth = 1;
+    for (let x = pan.x % gridSizePx; x < canvas.width; x += gridSizePx) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+    for (let y = pan.y % gridSizePx; y < canvas.height; y += gridSizePx) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+
+    // Draw meter ruler along top and left
+    ctx.fillStyle = "#f9fafb";
+    ctx.fillRect(0, 0, canvas.width, 20);
+    ctx.fillRect(0, 0, 20, canvas.height);
+    ctx.fillStyle = "#9ca3af";
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+
+    for (let x = pan.x % gridSizePx; x < canvas.width; x += gridSizePx) {
+      const meterVal = Math.round((x - pan.x) / gridSizePx);
+      if (x > 20) {
+        ctx.fillText(`${meterVal}m`, x, 4);
+        // tick
+        ctx.beginPath();
+        ctx.moveTo(x, 16);
+        ctx.lineTo(x, 20);
+        ctx.strokeStyle = "#9ca3af";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    for (let y = pan.y % gridSizePx; y < canvas.height; y += gridSizePx) {
+      const meterVal = Math.round((y - pan.y) / gridSizePx);
+      if (y > 20) {
+        ctx.fillText(`${meterVal}`, 16, y);
+      }
     }
 
     // Draw elements
@@ -276,6 +343,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
           break;
       }
 
+      // Label inside element
       if (el.label && el.type !== "text") {
         ctx.fillStyle = "#374151";
         ctx.font = `${11 * zoom}px sans-serif`;
@@ -286,34 +354,111 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
 
       ctx.restore();
 
+      // Dimension labels (meter measurements) for sizable elements
+      if (showDimensions && ["wall", "room", "office", "toilet", "stairs", "elevator"].includes(el.type)) {
+        const wMeters = pxToMeters(el.width, pixelsPerMeter);
+        const hMeters = pxToMeters(el.height, pixelsPerMeter);
+        
+        ctx.save();
+        ctx.fillStyle = "#1d4ed8";
+        ctx.font = `bold ${Math.max(9, 11 * zoom)}px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+
+        // Width dimension (top)
+        const dimY = y - 4;
+        ctx.fillText(`${wMeters}m`, x + w / 2, dimY);
+
+        // Draw dimension line on top
+        ctx.strokeStyle = "#3b82f6";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, dimY + 1);
+        ctx.lineTo(x + w, dimY + 1);
+        ctx.stroke();
+        // end caps
+        ctx.beginPath();
+        ctx.moveTo(x, dimY - 2);
+        ctx.lineTo(x, dimY + 4);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x + w, dimY - 2);
+        ctx.lineTo(x + w, dimY + 4);
+        ctx.stroke();
+
+        // Height dimension (right side)
+        ctx.save();
+        ctx.translate(x + w + 12, y + h / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.textBaseline = "bottom";
+        ctx.fillText(`${hMeters}m`, 0, 0);
+        ctx.restore();
+
+        // Height dimension line on right
+        ctx.beginPath();
+        ctx.moveTo(x + w + 4, y);
+        ctx.lineTo(x + w + 4, y + h);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x + w + 2, y);
+        ctx.lineTo(x + w + 6, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x + w + 2, y + h);
+        ctx.lineTo(x + w + 6, y + h);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // Selection + resize handles
       if (el.id === selectedId) {
         ctx.strokeStyle = "#3b82f6";
         ctx.lineWidth = 2;
         ctx.setLineDash([5, 5]);
         ctx.strokeRect(x - 4, y - 4, w + 8, h + 8);
         ctx.setLineDash([]);
-        const handleSize = 8;
+
+        const hs = 8; // handle size
         ctx.fillStyle = "#3b82f6";
-        [[x - handleSize/2, y - handleSize/2], [x + w - handleSize/2, y - handleSize/2],
-         [x - handleSize/2, y + h - handleSize/2], [x + w - handleSize/2, y + h - handleSize/2]].forEach(([hx, hy]) => {
-          ctx.fillRect(hx, hy, handleSize, handleSize);
+        // Corner handles
+        const handles: [number, number][] = [
+          [x - hs/2, y - hs/2],           // nw
+          [x + w - hs/2, y - hs/2],       // ne
+          [x - hs/2, y + h - hs/2],       // sw
+          [x + w - hs/2, y + h - hs/2],   // se
+        ];
+        handles.forEach(([hx, hy]) => {
+          ctx.fillRect(hx, hy, hs, hs);
+        });
+        // Edge midpoint handles
+        const edgeHandles: [number, number][] = [
+          [x + w/2 - hs/2, y - hs/2],         // n
+          [x + w/2 - hs/2, y + h - hs/2],     // s
+          [x - hs/2, y + h/2 - hs/2],         // w
+          [x + w - hs/2, y + h/2 - hs/2],     // e
+        ];
+        ctx.fillStyle = "#60a5fa";
+        edgeHandles.forEach(([hx, hy]) => {
+          ctx.fillRect(hx, hy, hs, hs);
         });
       }
     });
 
+    // Floor name
     ctx.fillStyle = "#6b7280";
     ctx.font = "14px sans-serif";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText(floorName, 10, 10);
+    ctx.fillText(floorName, 24, 24);
 
-  }, [elements, selectedId, zoom, pan, floorName]);
+  }, [elements, selectedId, zoom, pan, floorName, pixelsPerMeter, showDimensions]);
 
   useEffect(() => {
     drawCanvas();
   }, [drawCanvas]);
 
-  // Touch handling for mobile
+  // Coordinate helpers
   const getCanvasCoords = (clientX: number, clientY: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
@@ -324,7 +469,47 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
     };
   };
 
+  const getScreenCoords = (clientX: number, clientY: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { sx: 0, sy: 0 };
+    const rect = canvas.getBoundingClientRect();
+    return { sx: clientX - rect.left, sy: clientY - rect.top };
+  };
+
+  // Check if a point hits a resize handle, returns handle name or null
+  const hitTestHandle = (sx: number, sy: number): ResizeHandle | null => {
+    if (!selectedId) return null;
+    const el = elements.find(e => e.id === selectedId);
+    if (!el) return null;
+
+    const x = (el.x * zoom) + pan.x;
+    const y = (el.y * zoom) + pan.y;
+    const w = el.width * zoom;
+    const h = el.height * zoom;
+    const hs = 10; // hit area slightly larger than visual
+
+    const handlePositions: { handle: ResizeHandle; hx: number; hy: number }[] = [
+      { handle: "nw", hx: x, hy: y },
+      { handle: "ne", hx: x + w, hy: y },
+      { handle: "sw", hx: x, hy: y + h },
+      { handle: "se", hx: x + w, hy: y + h },
+      { handle: "n", hx: x + w/2, hy: y },
+      { handle: "s", hx: x + w/2, hy: y + h },
+      { handle: "w", hx: x, hy: y + h/2 },
+      { handle: "e", hx: x + w, hy: y + h/2 },
+    ];
+
+    for (const { handle, hx, hy } of handlePositions) {
+      if (Math.abs(sx - hx) < hs && Math.abs(sy - hy) < hs) {
+        return handle;
+      }
+    }
+    return null;
+  };
+
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isResizing) return; // don't place elements after resize
+
     const { x, y } = getCanvasCoords(e.clientX, e.clientY);
 
     if (activeTool === "select" || activeTool === "move") {
@@ -335,11 +520,13 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
       setSelectedId(clicked?.id || null);
     } else {
       const preset = ELEMENT_PRESETS[activeTool];
+      const snappedX = snapToGrid(x - preset.defaultWidth / 2);
+      const snappedY = snapToGrid(y - preset.defaultHeight / 2);
       const newElement: FloorPlanElement = {
         id: crypto.randomUUID(),
         type: activeTool,
-        x: x - preset.defaultWidth / 2,
-        y: y - preset.defaultHeight / 2,
+        x: snappedX,
+        y: snappedY,
         width: preset.defaultWidth,
         height: preset.defaultHeight,
         rotation: 0,
@@ -360,7 +547,19 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
       return;
     }
 
+    // Check resize handles first
     if (selectedId && activeTool === "select") {
+      const { sx, sy } = getScreenCoords(e.clientX, e.clientY);
+      const handle = hitTestHandle(sx, sy);
+      if (handle) {
+        const el = elements.find(e => e.id === selectedId)!;
+        setIsResizing(true);
+        setResizeHandle(handle);
+        setResizeOrigin({ x: el.x, y: el.y, w: el.width, h: el.height, ex: e.clientX, ey: e.clientY });
+        return;
+      }
+
+      // Otherwise drag the element
       const { x, y } = getCanvasCoords(e.clientX, e.clientY);
       const el = elements.find(e => e.id === selectedId);
       if (el && x >= el.x && x <= el.x + el.width && y >= el.y && y <= el.y + el.height) {
@@ -371,6 +570,50 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    // Update cursor based on handle hover
+    if (selectedId && activeTool === "select" && !isDragging && !isResizing) {
+      const { sx, sy } = getScreenCoords(e.clientX, e.clientY);
+      const handle = hitTestHandle(sx, sy);
+      const canvas = canvasRef.current;
+      if (canvas) {
+        if (handle) {
+          const cursorMap: Record<ResizeHandle, string> = {
+            nw: "nw-resize", ne: "ne-resize", sw: "sw-resize", se: "se-resize",
+            n: "n-resize", s: "s-resize", w: "w-resize", e: "e-resize",
+          };
+          canvas.style.cursor = cursorMap[handle];
+        } else {
+          canvas.style.cursor = "default";
+        }
+      }
+    }
+
+    if (isResizing && selectedId && resizeHandle) {
+      const dx = (e.clientX - resizeOrigin.ex) / zoom;
+      const dy = (e.clientY - resizeOrigin.ey) / zoom;
+      
+      let newX = resizeOrigin.x;
+      let newY = resizeOrigin.y;
+      let newW = resizeOrigin.w;
+      let newH = resizeOrigin.h;
+
+      if (resizeHandle.includes("e")) newW = Math.max(MIN_ELEMENT_SIZE, resizeOrigin.w + dx);
+      if (resizeHandle.includes("w")) { newX = resizeOrigin.x + dx; newW = Math.max(MIN_ELEMENT_SIZE, resizeOrigin.w - dx); }
+      if (resizeHandle.includes("s")) newH = Math.max(MIN_ELEMENT_SIZE, resizeOrigin.h + dy);
+      if (resizeHandle.includes("n")) { newY = resizeOrigin.y + dy; newH = Math.max(MIN_ELEMENT_SIZE, resizeOrigin.h - dy); }
+
+      // Snap to grid
+      newX = snapToGrid(newX);
+      newY = snapToGrid(newY);
+      newW = snapToGrid(newW);
+      newH = snapToGrid(newH);
+
+      setElements(elements.map(el => 
+        el.id === selectedId ? { ...el, x: newX, y: newY, width: newW, height: newH } : el
+      ));
+      return;
+    }
+
     if (!isDragging) return;
 
     if (activeTool === "move") {
@@ -380,9 +623,11 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
 
     if (selectedId) {
       const { x, y } = getCanvasCoords(e.clientX, e.clientY);
+      const snappedX = snapToGrid(x - dragStart.x);
+      const snappedY = snapToGrid(y - dragStart.y);
       setElements(elements.map(el => 
         el.id === selectedId 
-          ? { ...el, x: x - dragStart.x, y: y - dragStart.y }
+          ? { ...el, x: snappedX, y: snappedY }
           : el
       ));
     }
@@ -390,9 +635,11 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
 
   const handleMouseUp = () => {
     setIsDragging(false);
+    setIsResizing(false);
+    setResizeHandle(null);
   };
 
-  // Touch events for mobile drag
+  // Touch events for mobile
   const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
     const touch = e.touches[0];
     if (activeTool === "move") {
@@ -401,6 +648,20 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
       return;
     }
     if (selectedId && activeTool === "select") {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const sx = touch.clientX - rect.left;
+      const sy = touch.clientY - rect.top;
+      const handle = hitTestHandle(sx, sy);
+      if (handle) {
+        const el = elements.find(e => e.id === selectedId)!;
+        setIsResizing(true);
+        setResizeHandle(handle);
+        setResizeOrigin({ x: el.x, y: el.y, w: el.width, h: el.height, ex: touch.clientX, ey: touch.clientY });
+        return;
+      }
+
       const { x, y } = getCanvasCoords(touch.clientX, touch.clientY);
       const el = elements.find(e => e.id === selectedId);
       if (el && x >= el.x && x <= el.x + el.width && y >= el.y && y <= el.y + el.height) {
@@ -411,9 +672,23 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isDragging) return;
+    if (!isDragging && !isResizing) return;
     e.preventDefault();
     const touch = e.touches[0];
+
+    if (isResizing && selectedId && resizeHandle) {
+      const dx = (touch.clientX - resizeOrigin.ex) / zoom;
+      const dy = (touch.clientY - resizeOrigin.ey) / zoom;
+      let newX = resizeOrigin.x, newY = resizeOrigin.y, newW = resizeOrigin.w, newH = resizeOrigin.h;
+      if (resizeHandle.includes("e")) newW = Math.max(MIN_ELEMENT_SIZE, resizeOrigin.w + dx);
+      if (resizeHandle.includes("w")) { newX = resizeOrigin.x + dx; newW = Math.max(MIN_ELEMENT_SIZE, resizeOrigin.w - dx); }
+      if (resizeHandle.includes("s")) newH = Math.max(MIN_ELEMENT_SIZE, resizeOrigin.h + dy);
+      if (resizeHandle.includes("n")) { newY = resizeOrigin.y + dy; newH = Math.max(MIN_ELEMENT_SIZE, resizeOrigin.h - dy); }
+      newX = snapToGrid(newX); newY = snapToGrid(newY); newW = snapToGrid(newW); newH = snapToGrid(newH);
+      setElements(elements.map(el => el.id === selectedId ? { ...el, x: newX, y: newY, width: newW, height: newH } : el));
+      return;
+    }
+
     if (activeTool === "move") {
       setPan({ x: touch.clientX - dragStart.x, y: touch.clientY - dragStart.y });
       return;
@@ -422,7 +697,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
       const { x, y } = getCanvasCoords(touch.clientX, touch.clientY);
       setElements(elements.map(el => 
         el.id === selectedId 
-          ? { ...el, x: x - dragStart.x, y: y - dragStart.y }
+          ? { ...el, x: snapToGrid(x - dragStart.x), y: snapToGrid(y - dragStart.y) }
           : el
       ));
     }
@@ -430,6 +705,8 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
 
   const handleTouchEnd = () => {
     setIsDragging(false);
+    setIsResizing(false);
+    setResizeHandle(null);
   };
 
   const deleteSelected = () => {
@@ -458,6 +735,16 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
     }
   };
 
+  const updateSelectedSize = (field: "width" | "height", meters: string) => {
+    if (!selectedId) return;
+    const val = parseFloat(meters);
+    if (isNaN(val) || val <= 0) return;
+    const px = Math.round(val * pixelsPerMeter);
+    setElements(elements.map(el => 
+      el.id === selectedId ? { ...el, [field]: px } : el
+    ));
+  };
+
   const rotateSelected = () => {
     if (selectedId) {
       setElements(elements.map(el => 
@@ -480,7 +767,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
       await new Promise(r => setTimeout(r, 100));
       
       const imageDataUrl = canvas.toDataURL("image/png");
-      const elementsJson = JSON.stringify({ elements, floorName });
+      const elementsJson = JSON.stringify({ elements, floorName, pixelsPerMeter });
       
       await onSave(imageDataUrl, elementsJson);
       
@@ -605,6 +892,43 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
                   className="h-10 text-sm"
                 />
               </div>
+              {selectedElement && (
+                <>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Etikett</Label>
+                    <Input 
+                      value={selectedElement.label || ""} 
+                      onChange={(e) => updateSelectedLabel(e.target.value)}
+                      placeholder="Romnavn..."
+                      className="h-10 text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Bredde (m)</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                        value={pxToMeters(selectedElement.width, pixelsPerMeter)}
+                        onChange={(e) => updateSelectedSize("width", e.target.value)}
+                        className="h-10 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Høyde (m)</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                        value={pxToMeters(selectedElement.height, pixelsPerMeter)}
+                        onChange={(e) => updateSelectedSize("height", e.target.value)}
+                        className="h-10 text-sm"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
               {activeTool === "text" && (
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Tekst</Label>
@@ -612,17 +936,6 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
                     placeholder="Skriv inn tekst..."
-                    className="h-10 text-sm"
-                  />
-                </div>
-              )}
-              {selectedElement && (
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Etikett</Label>
-                  <Input 
-                    value={selectedElement.label || ""} 
-                    onChange={(e) => updateSelectedLabel(e.target.value)}
-                    placeholder="Romnavn..."
                     className="h-10 text-sm"
                   />
                 </div>
@@ -636,7 +949,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
 
   // Desktop sidebar
   const renderDesktopSidebar = () => (
-    <div className="w-56 border-r bg-muted/30 p-3 flex flex-col gap-4">
+    <div className="w-60 border-r bg-muted/30 p-3 flex flex-col gap-4 overflow-y-auto">
       <div className="space-y-2">
         <Label className="text-xs text-muted-foreground">Etasjenavn</Label>
         <Input 
@@ -686,31 +999,29 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
 
       <Separator />
 
-      <ScrollArea className="flex-1">
-        <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">Elementer</Label>
-          <div className="grid grid-cols-2 gap-1">
-            <TooltipProvider>
-              {(Object.entries(ELEMENT_PRESETS) as [ElementType, typeof ELEMENT_PRESETS[ElementType]][]).map(([type, preset]) => (
-                <Tooltip key={type}>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant={activeTool === type ? "default" : "outline"} 
-                      size="sm" 
-                      className="h-9 justify-start gap-2 text-xs"
-                      onClick={() => setActiveTool(type)}
-                    >
-                      {preset.icon}
-                      <span className="truncate">{preset.label}</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{preset.label}</TooltipContent>
-                </Tooltip>
-              ))}
-            </TooltipProvider>
-          </div>
+      <div className="space-y-2">
+        <Label className="text-xs text-muted-foreground">Elementer</Label>
+        <div className="grid grid-cols-2 gap-1">
+          <TooltipProvider>
+            {(Object.entries(ELEMENT_PRESETS) as [ElementType, typeof ELEMENT_PRESETS[ElementType]][]).map(([type, preset]) => (
+              <Tooltip key={type}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant={activeTool === type ? "default" : "outline"} 
+                    size="sm" 
+                    className="h-9 justify-start gap-2 text-xs"
+                    onClick={() => setActiveTool(type)}
+                  >
+                    {preset.icon}
+                    <span className="truncate">{preset.label}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{preset.label}</TooltipContent>
+              </Tooltip>
+            ))}
+          </TooltipProvider>
         </div>
-      </ScrollArea>
+      </div>
 
       {activeTool === "text" && (
         <div className="space-y-2">
@@ -725,6 +1036,57 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
       )}
 
       <Separator />
+
+      {/* Selected element dimensions */}
+      {selectedElement && (
+        <>
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground flex items-center gap-1">
+              <Ruler className="h-3 w-3" />
+              Mål (meter)
+            </Label>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-[10px] text-muted-foreground">Bredde</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0.1"
+                  value={pxToMeters(selectedElement.width, pixelsPerMeter)}
+                  onChange={(e) => updateSelectedSize("width", e.target.value)}
+                  className="h-7 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] text-muted-foreground">Høyde</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0.1"
+                  value={pxToMeters(selectedElement.height, pixelsPerMeter)}
+                  onChange={(e) => updateSelectedSize("height", e.target.value)}
+                  className="h-7 text-xs"
+                />
+              </div>
+            </div>
+          </div>
+          <Separator />
+        </>
+      )}
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs text-muted-foreground">Vis mål</Label>
+          <Button
+            variant={showDimensions ? "default" : "outline"}
+            size="sm"
+            className="h-6 text-[10px] px-2"
+            onClick={() => setShowDimensions(!showDimensions)}
+          >
+            {showDimensions ? "På" : "Av"}
+          </Button>
+        </div>
+      </div>
 
       <div className="space-y-2">
         <Label className="text-xs text-muted-foreground">Zoom: {Math.round(zoom * 100)}%</Label>
@@ -760,7 +1122,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
             {isMobile ? `Etasjeplan – ${buildingName}` : `Tegn etasjeplan – ${buildingName}`}
           </DialogTitle>
           <DialogDescription className={isMobile ? "text-xs" : ""}>
-            Lag en enkel skisse av bygget med rom, dører, nødutganger og utstyr
+            Lag en enkel skisse av bygget med rom, dører, nødutganger og utstyr. Dra i hjørnene for å endre størrelse.
           </DialogDescription>
         </DialogHeader>
 
@@ -772,7 +1134,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
           <div className="flex-1 flex flex-col overflow-hidden min-h-0">
             {/* Desktop canvas toolbar */}
             {!isMobile && (
-              <div className="flex items-center gap-2 p-2 border-b bg-muted/20 shrink-0">
+              <div className="flex items-center gap-2 p-2 border-b bg-muted/20 shrink-0 flex-wrap">
                 <Button variant="ghost" size="sm" onClick={deleteSelected} disabled={!selectedId}>
                   <Trash2 className="h-4 w-4 mr-1" />
                   Slett
@@ -797,6 +1159,10 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
                       placeholder="Romnavn..."
                       className="h-7 w-32 text-xs"
                     />
+                    <Separator orientation="vertical" className="h-6" />
+                    <span className="text-xs text-muted-foreground">
+                      {pxToMeters(selectedElement.width, pixelsPerMeter)}m × {pxToMeters(selectedElement.height, pixelsPerMeter)}m
+                    </span>
                   </div>
                 )}
 
