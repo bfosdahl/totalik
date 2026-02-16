@@ -90,7 +90,7 @@ export function ErgonomiTab() {
   // Filter assessments
   const filteredAssessments = assessments.filter((a) => {
     // Filter by type
-    if (activeSubTab !== "all" && a.assessment_type !== activeSubTab) {
+    if (activeSubTab !== "all" && !a.assessment_type.includes(activeSubTab as any)) {
       return false;
     }
     
@@ -343,11 +343,15 @@ export function ErgonomiTab() {
                   {filteredAssessments.map((assessment) => (
                     <TableRow key={assessment.id}>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          {getTypeIcon(assessment.assessment_type)}
-                          <span className="text-sm">
-                            {ASSESSMENT_TYPE_CONFIG[assessment.assessment_type].label}
-                          </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {assessment.assessment_type.map((t) => (
+                            <span key={t} className="flex items-center gap-1">
+                              {getTypeIcon(t)}
+                              <span className="text-sm">
+                                {ASSESSMENT_TYPE_CONFIG[t]?.label || t}
+                              </span>
+                            </span>
+                          ))}
                         </div>
                       </TableCell>
                       <TableCell>

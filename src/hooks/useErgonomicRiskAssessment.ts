@@ -27,7 +27,8 @@ export interface ErgonomicRiskAssessment {
   company_id: string;
   department_id?: string;
   project_id?: string;
-  assessment_type: ErgonomicAssessmentType;
+  assessment_type: ErgonomicAssessmentType[];
+  equipment?: string[];
   title: string;
   description?: string;
   work_area?: string;
@@ -66,11 +67,12 @@ export interface ErgonomicRiskAssessment {
 }
 
 export interface CreateErgonomicAssessmentInput {
-  assessment_type: ErgonomicAssessmentType;
+  assessment_type: ErgonomicAssessmentType[];
   title: string;
   description?: string;
   work_area?: string;
   job_role?: string;
+  equipment?: string[];
 }
 
 export interface UpdateErgonomicAssessmentInput extends Partial<Omit<ErgonomicRiskAssessment, 'id' | 'company_id' | 'created_at' | 'updated_at' | 'risk_score' | 'risk_level'>> {
@@ -81,7 +83,8 @@ export interface UpdateErgonomicAssessmentInput extends Partial<Omit<ErgonomicRi
 function mapDbToAssessment(data: any): ErgonomicRiskAssessment {
   return {
     ...data,
-    assessment_type: data.assessment_type as ErgonomicAssessmentType,
+    assessment_type: (data.assessment_type as ErgonomicAssessmentType[]) || [],
+    equipment: (data.equipment as string[]) || [],
     status: data.status as ErgonomicAssessmentStatus,
     risk_factors: (data.risk_factors as RiskFactor[]) || [],
     existing_measures: (data.existing_measures as ProtectiveMeasure[]) || [],
@@ -153,6 +156,7 @@ export function useCreateErgonomicAssessment() {
           description: input.description,
           work_area: input.work_area,
           job_role: input.job_role,
+          equipment: input.equipment || [],
           status: "draft",
           risk_factors: [],
           existing_measures: [],
