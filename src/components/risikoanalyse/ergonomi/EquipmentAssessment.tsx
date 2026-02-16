@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Plus,
   Trash2,
@@ -18,15 +19,42 @@ import {
   Wrench,
   Clock,
   Calculator,
+  Save,
+  FileDown,
+  FolderOpen,
+  Loader2,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 // ===== Tool interface: combined vibration + noise =====
 interface EquipmentTool {
   id: string;
   name: string;
-  vibrationLevel: number; // m/s²
-  noiseLevel: number; // dB(A)
+  vibrationLevel: number;
+  noiseLevel: number;
   exposureMinutes: number;
 }
 
@@ -73,13 +101,10 @@ function ExposureBar({ value, actionLimit, expLimit, unit, label }: {
         </span>
       </div>
       <div className="relative h-5 rounded-full overflow-hidden bg-muted">
-        {/* Filled bar */}
         <div className={cn("absolute inset-y-0 left-0 rounded-full transition-all", barColor)}
           style={{ width: `${percentage}%` }} />
-        {/* Action limit marker */}
         <div className="absolute inset-y-0 border-r-2 border-yellow-600 border-dashed z-10"
           style={{ left: `${actionPct}%` }} />
-        {/* Exposure limit marker */}
         <div className="absolute inset-y-0 border-r-2 border-red-700 z-10"
           style={{ left: `${limitPct}%` }} />
       </div>
@@ -252,7 +277,6 @@ function ToolRow({ tool, onUpdate, onRemove, canRemove, vibType, showNoise }: {
     ? Math.min(Math.max(480 * Math.pow(2, (85 - tool.noiseLevel) / 3), 0), 480)
     : 480;
 
-  // Per-tool A(8)
   const perToolA8 = tool.vibrationLevel > 0 && tool.exposureMinutes > 0
     ? tool.vibrationLevel * Math.sqrt(tool.exposureMinutes / 480)
     : 0;
@@ -316,7 +340,6 @@ function ToolRow({ tool, onUpdate, onRemove, canRemove, vibType, showNoise }: {
           )}
         </div>
       </div>
-      {/* Per-tool result */}
       {perToolA8 > 0 && (
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <Badge variant="outline" className="text-[10px]">
@@ -334,16 +357,281 @@ function ToolRow({ tool, onUpdate, onRemove, canRemove, vibType, showNoise }: {
   );
 }
 
+// ===== PDF Export =====
+function exportToPDF(
+  title: string,
+  vibType: "hand_arm" | "whole_body",
+  tools: EquipmentTool[],
+  a8: number,
+  lex8h: number,
+  peak: number,
+  vibZone: string,
+  noiseZone: string,
+  notes: string,
+  assessedByName: string,
+) {
+  const doc = new jsPDF();
+  const vibTypeLabel = vibType === "hand_arm" ? "Hånd-arm" : "Helkropp";
+  const actionLimit = vibType === "hand_arm" ? HAND_ARM_ACTION : WHOLE_BODY_ACTION;
+  const expLimit = vibType === "hand_arm" ? HAND_ARM_LIMIT : WHOLE_BODY_LIMIT;
+  const now = format(new Date(), "d. MMMM yyyy HH:mm", { locale: nb });
+
+  let y = 15;
+
+  // Header
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text("Vibrasjon & Stoy - Eksponeringskalkulator", 14, y);
+  y += 8;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Type: ${vibTypeLabel} vibrasjoner`, 14, y);
+  y += 5;
+  doc.text(`Dato: ${now}`, 14, y);
+  y += 5;
+  if (assessedByName) {
+    doc.text(`Vurdert av: ${assessedByName}`, 14, y);
+    y += 5;
+  }
+  if (title) {
+    doc.text(`Tittel: ${title}`, 14, y);
+    y += 5;
+  }
+  y += 3;
+
+  // Limits
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.text("Grenseverdier", 14, y);
+  y += 6;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Vibrasjon - Tiltaksverdi: ${actionLimit} m/s2 A(8)  |  Grenseverdi: ${expLimit} m/s2 A(8)`, 14, y);
+  y += 5;
+  doc.text(`Stoy - Nedre tiltaksverdi: 80 dB  |  Ovre tiltaksverdi: 85 dB  |  Grenseverdi: 87 dB`, 14, y);
+  y += 8;
+
+  // Tools table
+  const tableData = tools
+    .filter(t => t.name || t.vibrationLevel > 0 || t.noiseLevel > 0)
+    .map(t => {
+      const perA8 = t.vibrationLevel > 0 && t.exposureMinutes > 0
+        ? (t.vibrationLevel * Math.sqrt(t.exposureMinutes / 480)).toFixed(2)
+        : "-";
+      return [
+        t.name || "-",
+        t.vibrationLevel > 0 ? t.vibrationLevel.toString() : "-",
+        t.noiseLevel > 0 ? t.noiseLevel.toString() : "-",
+        t.exposureMinutes.toString(),
+        perA8,
+      ];
+    });
+
+  if (tableData.length > 0) {
+    autoTable(doc, {
+      startY: y,
+      head: [["Verktoy/maskin", "Vibrasjon (m/s2)", "Stoy dB(A)", "Eksponering (min)", "A(8) per verktoy"]],
+      body: tableData,
+      theme: "grid",
+      headStyles: { fillColor: [59, 130, 246], fontSize: 9 },
+      styles: { fontSize: 8 },
+    });
+    y = (doc as any).lastAutoTable.finalY + 8;
+  }
+
+  // Results
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "bold");
+  doc.text("RESULTAT", 14, y);
+  y += 8;
+
+  const zoneText = (z: string) =>
+    z === "green" ? "GRONN SONE" : z === "yellow" ? "GUL SONE" : z === "red" ? "ROD SONE" : "-";
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  if (a8 > 0) {
+    doc.text(`Vibrasjon A(8): ${a8.toFixed(2)} m/s2  -  ${zoneText(vibZone)}`, 14, y);
+    y += 6;
+  }
+  if (lex8h > 0) {
+    doc.text(`Stoy LEX,8h: ${lex8h.toFixed(1)} dB  -  ${zoneText(noiseZone)}`, 14, y);
+    y += 6;
+  }
+  if (peak > 0) {
+    doc.text(`Toppverdi (impulssstoy): ${peak} dB(C)`, 14, y);
+    y += 6;
+  }
+
+  // Hearing protection
+  const hp = lex8h >= NOISE_UPPER || peak >= PEAK_UPPER ? "PABUDT" :
+    lex8h >= NOISE_LOWER || peak >= PEAK_LOWER ? "Skal vaere tilgjengelig" : "Ingen krav";
+  doc.text(`Horselvernkrav: ${hp}`, 14, y);
+  y += 8;
+
+  // Notes
+  if (notes) {
+    doc.setFont("helvetica", "bold");
+    doc.text("Merknader:", 14, y);
+    y += 5;
+    doc.setFont("helvetica", "normal");
+    const lines = doc.splitTextToSize(notes, 180);
+    doc.text(lines, 14, y);
+    y += lines.length * 4 + 5;
+  }
+
+  // Zone recommendations
+  if (vibZone === "yellow" || vibZone === "red") {
+    doc.setFont("helvetica", "bold");
+    doc.text("Pakrevde tiltak (vibrasjon):", 14, y);
+    y += 5;
+    doc.setFont("helvetica", "normal");
+    const actions = vibZone === "red"
+      ? ["Stans arbeidet umiddelbart", "Iverksett tiltak for a redusere eksponeringen", "Helseundersokelse er PABUDT"]
+      : ["Reduser tiden eller ta hvilepauser", "Varier med andre arbeidsoppgaver", "Tilbud om helseundersokelse"];
+    actions.forEach(a => {
+      doc.text(`- ${a}`, 16, y);
+      y += 4;
+    });
+  }
+
+  // Footer
+  doc.setFontSize(7);
+  doc.setTextColor(128);
+  doc.text("Generert fra Eksponeringskalkulator iht. Arbeidstilsynets krav", 14, 285);
+
+  const filename = `eksponeringsvurdering_${format(new Date(), "yyyy-MM-dd")}.pdf`;
+  doc.save(filename);
+}
+
 // ===== Main Component =====
 export function EquipmentAssessment() {
+  const { company, profile } = useAuth();
+  const queryClient = useQueryClient();
+
   const [vibType, setVibType] = useState<"hand_arm" | "whole_body">("hand_arm");
   const [peakLevel, setPeakLevel] = useState<number | "">("");
   const [tools, setTools] = useState<EquipmentTool[]>([
     { id: "1", name: "", vibrationLevel: 0, noiseLevel: 0, exposureMinutes: 0 },
   ]);
+  const [title, setTitle] = useState("");
+  const [notes, setNotes] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [showSavedList, setShowSavedList] = useState(false);
 
   const actionLimit = vibType === "hand_arm" ? HAND_ARM_ACTION : WHOLE_BODY_ACTION;
   const expLimit = vibType === "hand_arm" ? HAND_ARM_LIMIT : WHOLE_BODY_LIMIT;
+
+  // === Saved assessments query ===
+  const { data: savedAssessments = [] } = useQuery({
+    queryKey: ["equipment-exposure-assessments", company?.id],
+    queryFn: async () => {
+      if (!company?.id) return [];
+      const { data, error } = await supabase
+        .from("equipment_exposure_assessments")
+        .select("*")
+        .eq("company_id", company.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!company?.id,
+  });
+
+  // === Save mutation ===
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      if (!company?.id) throw new Error("Ingen bedrift valgt");
+      const a8 = calcA8();
+      const lex8h = calcLEX8h();
+      const peak = typeof peakLevel === "number" ? peakLevel : 0;
+
+      const payload = {
+        company_id: company.id,
+        title: title || `Eksponeringsvurdering ${format(new Date(), "d. MMM yyyy", { locale: nb })}`,
+        vibration_type: vibType,
+        tools: tools as any,
+        peak_noise_level: peak || null,
+        vibration_a8: a8 > 0 ? Number(a8.toFixed(4)) : null,
+        vibration_zone: a8 === 0 ? null : a8 < actionLimit ? "green" : a8 < expLimit ? "yellow" : "red",
+        noise_lex8h: lex8h > 0 ? Number(lex8h.toFixed(2)) : null,
+        noise_zone: (() => {
+          if (lex8h === 0 && peak === 0) return null;
+          if (lex8h >= NOISE_LIMIT || peak >= PEAK_LIMIT) return "red";
+          if (lex8h >= NOISE_LOWER || peak >= PEAK_LOWER) return "yellow";
+          return "green";
+        })(),
+        assessed_by_id: profile?.id || null,
+        assessed_by_name: profile ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() : null,
+        notes: notes || null,
+        status: "completed" as const,
+      };
+
+      if (editingId) {
+        const { data, error } = await supabase
+          .from("equipment_exposure_assessments")
+          .update(payload)
+          .eq("id", editingId)
+          .select()
+          .single();
+        if (error) throw error;
+        return data;
+      } else {
+        const { data, error } = await supabase
+          .from("equipment_exposure_assessments")
+          .insert(payload)
+          .select()
+          .single();
+        if (error) throw error;
+        return data;
+      }
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["equipment-exposure-assessments"] });
+      setEditingId(data.id);
+      toast.success(editingId ? "Vurdering oppdatert" : "Vurdering lagret");
+    },
+    onError: (err) => {
+      console.error("Save error:", err);
+      toast.error("Kunne ikke lagre vurdering");
+    },
+  });
+
+  // === Delete mutation ===
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("equipment_exposure_assessments")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["equipment-exposure-assessments"] });
+      toast.success("Vurdering slettet");
+    },
+    onError: () => toast.error("Kunne ikke slette"),
+  });
+
+  // === Load saved assessment ===
+  const loadAssessment = (item: any) => {
+    setEditingId(item.id);
+    setTitle(item.title || "");
+    setVibType(item.vibration_type || "hand_arm");
+    setTools((item.tools as EquipmentTool[]) || [{ id: "1", name: "", vibrationLevel: 0, noiseLevel: 0, exposureMinutes: 0 }]);
+    setPeakLevel(item.peak_noise_level || "");
+    setNotes(item.notes || "");
+    setShowSavedList(false);
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setTitle("");
+    setVibType("hand_arm");
+    setTools([{ id: "1", name: "", vibrationLevel: 0, noiseLevel: 0, exposureMinutes: 0 }]);
+    setPeakLevel("");
+    setNotes("");
+  };
 
   const addTool = () => {
     setTools([...tools, { id: Date.now().toString(), name: "", vibrationLevel: 0, noiseLevel: 0, exposureMinutes: 0 }]);
@@ -362,7 +650,6 @@ export function EquipmentAssessment() {
   };
 
   // === Calculations ===
-  // Vibration A(8) = sqrt(sum(ai² × Ti / 480))
   const calcA8 = () => {
     let sum = 0;
     tools.forEach((t) => {
@@ -373,7 +660,6 @@ export function EquipmentAssessment() {
     return Math.sqrt(sum);
   };
 
-  // Noise LEX,8h = 10 × log10(sum(10^(Li/10) × Ti / 480))
   const calcLEX8h = () => {
     let sum = 0;
     tools.forEach((t) => {
@@ -388,7 +674,6 @@ export function EquipmentAssessment() {
   const a8 = calcA8();
   const lex8h = calcLEX8h();
   const peak = typeof peakLevel === "number" ? peakLevel : 0;
-  const hasAnyNoise = tools.some((t) => t.noiseLevel > 0);
 
   const vibZone: "green" | "yellow" | "red" | "none" =
     a8 === 0 ? "none" : a8 < actionLimit ? "green" : a8 < expLimit ? "yellow" : "red";
@@ -402,26 +687,100 @@ export function EquipmentAssessment() {
 
   const hasResults = a8 > 0 || lex8h > 0 || peak > 0;
 
-  // Hearing protection requirement
   const hearingProtection = lex8h >= NOISE_UPPER || peak >= PEAK_UPPER
     ? "påbudt" : lex8h >= NOISE_LOWER || peak >= PEAK_LOWER ? "tilgjengelig" : "ingen";
 
   const vibTypeLabel = vibType === "hand_arm" ? "Hånd-arm" : "Helkropp";
 
+  const handleExportPDF = () => {
+    exportToPDF(
+      title,
+      vibType,
+      tools,
+      a8,
+      lex8h,
+      peak,
+      vibZone,
+      noiseZone,
+      notes,
+      profile ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() : "",
+    );
+  };
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Wrench className="h-5 w-5" />
-            Vibrasjon & Støy – Eksponeringskalkulator
-          </CardTitle>
-          <CardDescription>
-            Beregn daglig eksponering A(8) for vibrasjoner og L<sub>EX,8h</sub> for støy per verktøy.
-            Kalkulatoren varsler automatisk ved overskridelse av tiltaks- og grenseverdier iht. Arbeidstilsynets krav.
-          </CardDescription>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Wrench className="h-5 w-5" />
+                Vibrasjon & Støy – Eksponeringskalkulator
+                {editingId && (
+                  <Badge variant="outline" className="ml-2 text-xs">Redigerer</Badge>
+                )}
+              </CardTitle>
+              <CardDescription>
+                Beregn daglig eksponering A(8) for vibrasjoner og L<sub>EX,8h</sub> for støy per verktøy.
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {savedAssessments.length > 0 && (
+                <Button variant="outline" size="sm" onClick={() => setShowSavedList(true)} className="gap-1.5">
+                  <FolderOpen className="h-4 w-4" />
+                  <span className="hidden sm:inline">Lagrede</span>
+                  <Badge variant="secondary" className="h-5 px-1.5 text-xs">{savedAssessments.length}</Badge>
+                </Button>
+              )}
+              {editingId && (
+                <Button variant="outline" size="sm" onClick={resetForm} className="gap-1.5">
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Ny</span>
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportPDF}
+                disabled={!hasResults}
+                className="gap-1.5"
+              >
+                <FileDown className="h-4 w-4" />
+                <span className="hidden sm:inline">Eksporter PDF</span>
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => saveMutation.mutate()}
+                disabled={saveMutation.isPending || !hasResults}
+                className="gap-1.5"
+              >
+                {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                <span className="hidden sm:inline">Lagre</span>
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
+
+          {/* Title & notes */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1">
+              <Label className="text-sm font-medium">Tittel / beskrivelse</Label>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="F.eks. Vibrasjonsvurdering – Betongarbeid"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-sm font-medium">Merknader</Label>
+              <Input
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Tilleggsinformasjon..."
+              />
+            </div>
+          </div>
 
           {/* Vibration type selector */}
           <div className="space-y-2">
@@ -518,7 +877,6 @@ export function EquipmentAssessment() {
             <div className="space-y-6">
               <h3 className="text-center font-bold text-lg">RESULTAT</h3>
 
-              {/* Exposure bars */}
               <div className="space-y-4">
                 {a8 > 0 && (
                   <ExposureBar
@@ -540,9 +898,7 @@ export function EquipmentAssessment() {
                 )}
               </div>
 
-              {/* Result cards */}
               <div className="grid md:grid-cols-2 gap-4">
-                {/* Vibration result */}
                 {a8 > 0 && (
                   <div className={cn(
                     "p-4 rounded-lg border-2 flex items-start gap-3",
@@ -575,7 +931,6 @@ export function EquipmentAssessment() {
                   </div>
                 )}
 
-                {/* Noise result */}
                 {(lex8h > 0 || peak > 0) && (
                   <div className={cn(
                     "p-4 rounded-lg border-2 flex items-start gap-3",
@@ -613,7 +968,6 @@ export function EquipmentAssessment() {
                 )}
               </div>
 
-              {/* Hearing protection */}
               {(lex8h > 0 || peak > 0) && (
                 <div className={cn(
                   "p-3 rounded-lg border flex items-center gap-3",
@@ -635,7 +989,6 @@ export function EquipmentAssessment() {
                 </div>
               )}
 
-              {/* Zone statuses */}
               {vibZone !== "none" && vibZone !== "green" && (
                 <ZoneStatus level={vibZone} type="vibrasjon" />
               )}
@@ -643,7 +996,6 @@ export function EquipmentAssessment() {
                 <ZoneStatus level={noiseZone} type="stoy" />
               )}
 
-              {/* Health monitoring */}
               {(vibZone === "yellow" || vibZone === "red") && (
                 <Alert className="border-purple-300 bg-purple-50">
                   <Info className="h-4 w-4 text-purple-600" />
@@ -703,6 +1055,80 @@ export function EquipmentAssessment() {
           </div>
         </CardContent>
       </Card>
+
+      {/* === Saved Assessments Dialog === */}
+      <Dialog open={showSavedList} onOpenChange={setShowSavedList}>
+        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FolderOpen className="h-5 w-5" />
+              Lagrede eksponeringsvurderinger
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto">
+            {savedAssessments.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">Ingen lagrede vurderinger</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tittel</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>A(8)</TableHead>
+                    <TableHead>Sone</TableHead>
+                    <TableHead>Dato</TableHead>
+                    <TableHead className="w-[80px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {savedAssessments.map((item: any) => {
+                    const vZone = item.vibration_zone;
+                    return (
+                      <TableRow key={item.id} className="cursor-pointer" onClick={() => loadAssessment(item)}>
+                        <TableCell className="font-medium">{item.title || "Uten tittel"}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">
+                            {item.vibration_type === "hand_arm" ? "Hånd-arm" : "Helkropp"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {item.vibration_a8 ? `${Number(item.vibration_a8).toFixed(2)} m/s²` : "-"}
+                        </TableCell>
+                        <TableCell>
+                          {vZone && (
+                            <div className={cn(
+                              "h-4 w-4 rounded-full",
+                              vZone === "green" ? "bg-green-500" :
+                              vZone === "yellow" ? "bg-yellow-500" :
+                              "bg-red-500"
+                            )} />
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {format(new Date(item.created_at), "d. MMM yy", { locale: nb })}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteMutation.mutate(item.id);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
