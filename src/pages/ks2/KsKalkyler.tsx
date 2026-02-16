@@ -400,7 +400,12 @@ function CalculationDetail({ calc, onBack, onUpdate }: { calc: KsCalculation; on
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">{categoryLabels[cat]}</CardTitle>
-                <span className="text-sm font-semibold">{subtotalByCategory(cat).toLocaleString("nb-NO", { minimumFractionDigits: 2 })} kr</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold">{subtotalByCategory(cat).toLocaleString("nb-NO", { minimumFractionDigits: 2 })} kr</span>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setNewCategory(cat); setIsAddOpen(true); }}>
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
