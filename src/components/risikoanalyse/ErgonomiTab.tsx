@@ -24,6 +24,7 @@ import {
   Activity,
   Volume2,
   Vibrate,
+  Wrench,
 } from "lucide-react";
 import {
   useErgonomicRiskAssessments,
@@ -36,7 +37,7 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { ErgonomicAssessmentDialog } from "./ergonomi/ErgonomicAssessmentDialog";
 import { NewErgonomicAssessmentDialog } from "./ergonomi/NewErgonomicAssessmentDialog";
-import { ExposureCalculators } from "./ergonomi/ExposureCalculators";
+import { EquipmentAssessment } from "./ergonomi/EquipmentAssessment";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -75,6 +76,7 @@ const ASSESSMENT_TYPE_CONFIG: Record<ErgonomicAssessmentType, {
 };
 
 export function ErgonomiTab() {
+  const [mainTab, setMainTab] = useState("risikovurderinger");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSubTab, setActiveSubTab] = useState<ErgonomicAssessmentType | "all">("all");
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
@@ -204,244 +206,245 @@ export function ErgonomiTab() {
 
   return (
     <div className="space-y-6">
-      {/* Statistics Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold">{totalCount}</p>
-                <p className="text-sm text-muted-foreground">Totalt vurdert</p>
-              </div>
-              <Activity className="h-8 w-8 text-muted-foreground" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-green-600">{completedCount}</p>
-                <p className="text-sm text-muted-foreground">Fullført</p>
-              </div>
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-blue-600">{inProgressCount}</p>
-                <p className="text-sm text-muted-foreground">Pågående</p>
-              </div>
-              <Clock className="h-8 w-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-red-600">{highRiskCount}</p>
-                <p className="text-sm text-muted-foreground">Høy risiko</p>
-              </div>
-              <AlertTriangle className="h-8 w-8 text-red-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Main tabs: Risikovurderinger vs Verktøy & Utstyr */}
+      <Tabs value={mainTab} onValueChange={setMainTab}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="risikovurderinger" className="gap-2">
+            <Activity className="h-4 w-4" />
+            Risikovurderinger
+          </TabsTrigger>
+          <TabsTrigger value="verktoy" className="gap-2">
+            <Wrench className="h-4 w-4" />
+            Verktøy & Utstyr
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Main Content */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Ergonomisk risikovurdering
-              </CardTitle>
-              <CardDescription>
-                Muskel- og skjelettplager, vibrasjoner og støy
-              </CardDescription>
-            </div>
-            <Button onClick={() => setShowNewDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Ny vurdering
-            </Button>
+        {/* ===== Risikovurderinger Tab ===== */}
+        <TabsContent value="risikovurderinger" className="mt-6 space-y-6">
+          {/* Statistics Cards */}
+          <div className="grid gap-4 md:grid-cols-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-bold">{totalCount}</p>
+                    <p className="text-sm text-muted-foreground">Totalt vurdert</p>
+                  </div>
+                  <Activity className="h-8 w-8 text-muted-foreground" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-bold text-green-600">{completedCount}</p>
+                    <p className="text-sm text-muted-foreground">Fullført</p>
+                  </div>
+                  <CheckCircle2 className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-bold text-blue-600">{inProgressCount}</p>
+                    <p className="text-sm text-muted-foreground">Pågående</p>
+                  </div>
+                  <Clock className="h-8 w-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-bold text-red-600">{highRiskCount}</p>
+                    <p className="text-sm text-muted-foreground">Høy risiko</p>
+                  </div>
+                  <AlertTriangle className="h-8 w-8 text-red-600" />
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardHeader>
 
-        <CardContent className="space-y-4">
-          {/* Sub-tabs for assessment types */}
-          <Tabs value={activeSubTab} onValueChange={(v) => setActiveSubTab(v as ErgonomicAssessmentType | "all")}>
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="all">Alle</TabsTrigger>
-              <TabsTrigger value="muskel_skjelett" className="gap-1">
-                <Activity className="h-4 w-4" />
-                <span className="hidden sm:inline">Muskel-skjelett</span>
-              </TabsTrigger>
-              <TabsTrigger value="vibrasjon" className="gap-1">
-                <Vibrate className="h-4 w-4" />
-                <span className="hidden sm:inline">Vibrasjon</span>
-              </TabsTrigger>
-              <TabsTrigger value="stoy" className="gap-1">
-                <Volume2 className="h-4 w-4" />
-                <span className="hidden sm:inline">Støy</span>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {/* Assessment List */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5" />
+                    Ergonomisk risikovurdering
+                  </CardTitle>
+                  <CardDescription>
+                    Muskel- og skjelettplager, arbeidsstillinger og belastningsskader
+                  </CardDescription>
+                </div>
+                <Button onClick={() => setShowNewDialog(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ny vurdering
+                </Button>
+              </div>
+            </CardHeader>
 
-          {/* Search */}
-          {assessments.length > 0 && (
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Søk etter vurdering..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          )}
+            <CardContent className="space-y-4">
+              {/* Sub-tabs for assessment types */}
+              <Tabs value={activeSubTab} onValueChange={(v) => setActiveSubTab(v as ErgonomicAssessmentType | "all")}>
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="all">Alle</TabsTrigger>
+                  <TabsTrigger value="muskel_skjelett" className="gap-1">
+                    <Activity className="h-4 w-4" />
+                    <span className="hidden sm:inline">Muskel-skjelett</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="vibrasjon" className="gap-1">
+                    <Vibrate className="h-4 w-4" />
+                    <span className="hidden sm:inline">Vibrasjon</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="stoy" className="gap-1">
+                    <Volume2 className="h-4 w-4" />
+                    <span className="hidden sm:inline">Støy</span>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
 
-          {/* Table or Empty State */}
-          {assessments.length === 0 ? (
-            <div className="text-center py-12">
-              <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Ingen ergonomiske risikovurderinger</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Opprett din første vurdering for muskel-skjelett, vibrasjon eller støy
-              </p>
-              <Button onClick={() => setShowNewDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Ny vurdering
-              </Button>
-            </div>
-          ) : filteredAssessments.length === 0 ? (
-            <div className="text-center py-8">
-              <Search className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-              <p className="text-sm text-muted-foreground">
-                Ingen vurderinger matcher søket
-              </p>
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Tittel</TableHead>
-                    <TableHead>Område</TableHead>
-                    <TableHead>Risikonivå</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Sist oppdatert</TableHead>
-                    <TableHead className="w-[100px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAssessments.map((assessment) => (
-                    <TableRow key={assessment.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {assessment.assessment_type.map((t) => (
-                            <span key={t} className="flex items-center gap-1">
-                              {getTypeIcon(t)}
-                              <span className="text-sm">
-                                {ASSESSMENT_TYPE_CONFIG[t]?.label || t}
-                              </span>
+              {/* Search */}
+              {assessments.length > 0 && (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Søk etter vurdering..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              )}
+
+              {/* Table or Empty State */}
+              {assessments.length === 0 ? (
+                <div className="text-center py-12">
+                  <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Ingen ergonomiske risikovurderinger</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Opprett din første vurdering for muskel-skjelett, vibrasjon eller støy
+                  </p>
+                  <Button onClick={() => setShowNewDialog(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Ny vurdering
+                  </Button>
+                </div>
+              ) : filteredAssessments.length === 0 ? (
+                <div className="text-center py-8">
+                  <Search className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+                  <p className="text-sm text-muted-foreground">
+                    Ingen vurderinger matcher søket
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Tittel</TableHead>
+                        <TableHead>Område</TableHead>
+                        <TableHead>Risikonivå</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Sist oppdatert</TableHead>
+                        <TableHead className="w-[100px]"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredAssessments.map((assessment) => (
+                        <TableRow key={assessment.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {assessment.assessment_type.map((t) => (
+                                <span key={t} className="flex items-center gap-1">
+                                  {getTypeIcon(t)}
+                                  <span className="text-sm">
+                                    {ASSESSMENT_TYPE_CONFIG[t]?.label || t}
+                                  </span>
+                                </span>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <span className="font-medium">{assessment.title}</span>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm text-muted-foreground">
+                              {assessment.work_area || "-"}
                             </span>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-medium">{assessment.title}</span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm text-muted-foreground">
-                          {assessment.work_area || "-"}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        {getRiskBadge(assessment.consequence_severity, assessment.probability)}
-                      </TableCell>
-                      <TableCell>{getStatusBadge(assessment.status)}</TableCell>
-                      <TableCell>
-                        <span className="text-sm text-muted-foreground">
-                          {format(new Date(assessment.updated_at), "d. MMM yyyy", { locale: nb })}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setSelectedAssessmentId(assessment.id)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setDeleteConfirmId(assessment.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                          </TableCell>
+                          <TableCell>
+                            {getRiskBadge(assessment.consequence_severity, assessment.probability)}
+                          </TableCell>
+                          <TableCell>{getStatusBadge(assessment.status)}</TableCell>
+                          <TableCell>
+                            <span className="text-sm text-muted-foreground">
+                              {format(new Date(assessment.updated_at), "d. MMM yyyy", { locale: nb })}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setSelectedAssessmentId(assessment.id)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeleteConfirmId(assessment.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-      {/* Exposure Calculators */}
-      <ExposureCalculators />
+          {/* Info Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Om ergonomisk risikovurdering</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <p>
+                Ergonomisk risikovurdering følger Arbeidstilsynets metodikk for kartlegging og vurdering
+                av fysiske belastninger i arbeidsmiljøet. Vurderingene dekker muskel- og skjelettplager,
+                tunge løft, arbeidsstillinger og belastningsskader.
+              </p>
+              <p>
+                For vurdering av vibrasjon og støy fra verktøy og utstyr, bruk fanen{" "}
+                <button
+                  className="text-primary underline font-medium"
+                  onClick={() => setMainTab("verktoy")}
+                >
+                  Verktøy & Utstyr
+                </button>
+                {" "}som inkluderer kalkulatorer med automatiske varsler ved overskridelse av grenseverdier.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      {/* Info Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Om ergonomisk risikovurdering</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm text-muted-foreground">
-          <p>
-            Ergonomisk risikovurdering følger Arbeidstilsynets metodikk for kartlegging og vurdering
-            av fysiske belastninger i arbeidsmiljøet.
-          </p>
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="p-3 bg-muted rounded-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <Activity className="h-4 w-4 text-primary" />
-                <h4 className="font-medium text-foreground">Muskel- og skjelett</h4>
-              </div>
-              <p className="text-xs">
-                Tunge løft, bæring, uheldige arbeidsstillinger, gjentakende bevegelser og statisk belastning.
-              </p>
-            </div>
-            <div className="p-3 bg-muted rounded-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <Vibrate className="h-4 w-4 text-primary" />
-                <h4 className="font-medium text-foreground">Vibrasjoner</h4>
-              </div>
-              <p className="text-xs">
-                Hånd-arm vibrasjoner fra verktøy og helkroppsvibrasjoner fra kjøretøy og maskiner.
-              </p>
-            </div>
-            <div className="p-3 bg-muted rounded-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <Volume2 className="h-4 w-4 text-primary" />
-                <h4 className="font-medium text-foreground">Støy</h4>
-              </div>
-              <p className="text-xs">
-                Støyeksponering over 80 dB, impulsstøy og langvarig eksponering uten hørselvern.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        {/* ===== Verktøy & Utstyr Tab ===== */}
+        <TabsContent value="verktoy" className="mt-6">
+          <EquipmentAssessment />
+        </TabsContent>
+      </Tabs>
 
       {/* Dialogs */}
       <NewErgonomicAssessmentDialog
