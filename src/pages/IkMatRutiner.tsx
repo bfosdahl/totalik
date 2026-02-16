@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useIkMatContent, IkMatRoutine } from "@/hooks/useIkMatContent";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,9 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { BookOpen, Plus, Trash2, Loader2, Edit, FileText, ChevronDown } from "lucide-react";
+import { BookOpen, Plus, Trash2, Loader2, Edit, FileText, ChevronDown, Calendar, Hash, RotateCcw } from "lucide-react";
 import { RoutineLibraryDialog } from "@/components/routines/RoutineLibraryDialog";
 import { RoutineTemplate } from "@/hooks/useRoutineLibrary";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
 
 const FREQUENCY_OPTIONS = [
   'Daglig',
@@ -31,6 +34,7 @@ const IkMatRutiner = () => {
   const navigate = useNavigate();
   const { hasModule, isLoading: modulesLoading } = useCompanyModules();
   const { content, isLoading, isSaving, saveContent } = useIkMatContent();
+  const { profile } = useAuth();
   const [routines, setRoutines] = useState<IkMatRoutine[]>([]);
   const [expandedRoutines, setExpandedRoutines] = useState<string[]>([]);
   const [showDialog, setShowDialog] = useState(false);
@@ -69,6 +73,10 @@ const IkMatRutiner = () => {
         : template.frequency === 'ved_behov' ? 'Ved behov'
         : 'Ved behov',
       responsible: (template.target_roles && template.target_roles[0]) || '',
+      templateNumber: template.template_number || undefined,
+      subcategory: template.subcategory || undefined,
+      createdAt: new Date().toISOString(),
+      revisionCount: 0,
     };
     
     const updated = [...routines, newRoutine];
@@ -81,11 +89,22 @@ const IkMatRutiner = () => {
 
     let updated: IkMatRoutine[];
     if (editingRoutine) {
-      updated = routines.map(r => r.id === editingRoutine.id ? { ...r, ...formData } : r);
+      const userName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
+      updated = routines.map(r => r.id === editingRoutine.id ? { 
+        ...r, 
+        ...formData,
+        lastRevisedAt: new Date().toISOString(),
+        revisedBy: userName || undefined,
+        revisionCount: (r.revisionCount || 0) + 1,
+      } : r);
     } else {
+      const routineIndex = routines.length + 1;
       const newRoutine: IkMatRoutine = {
         id: `routine-${Date.now()}`,
         ...formData,
+        routineNumber: `IKM-Rut-${String(routineIndex).padStart(4, '0')}`,
+        createdAt: new Date().toISOString(),
+        revisionCount: 0,
       };
       updated = [...routines, newRoutine];
     }
@@ -178,15 +197,30 @@ const IkMatRutiner = () => {
                       <div className="flex items-center gap-3">
                         <FileText className="h-5 w-5 text-primary shrink-0" />
                         <div className="text-left">
-                          <CardTitle className="text-base">{routine.name}</CardTitle>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {(routine.templateNumber || routine.routineNumber) && (
+                              <Badge variant="secondary" className="text-xs font-mono">
+                                {routine.templateNumber || routine.routineNumber}
+                              </Badge>
+                            )}
+                            <CardTitle className="text-base">{routine.name}</CardTitle>
+                          </div>
+                          <div className="flex items-center gap-3 mt-1 flex-wrap">
+                            {routine.createdAt && (
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                {format(new Date(routine.createdAt), "dd.MM.yyyy", { locale: nb })}
+                              </span>
+                            )}
+                            {routine.subcategory && (
+                              <Badge variant="outline" className="text-xs">{routine.subcategory}</Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         {routine.frequency && (
                           <Badge variant="outline" className="text-xs">{routine.frequency}</Badge>
-                        )}
-                        {routine.responsible && (
-                          <Badge variant="secondary" className="text-xs hidden sm:inline-flex">{routine.responsible}</Badge>
                         )}
                         <ChevronDown className="h-4 w-4" />
                       </div>
@@ -199,11 +233,23 @@ const IkMatRutiner = () => {
                           {routine.description}
                         </div>
                       )}
-                      {routine.responsible && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                          <span className="font-medium">Ansvarlig:</span> {routine.responsible}
-                        </p>
-                      )}
+                      <div className="flex flex-wrap gap-x-6 gap-y-1 mt-3 text-sm text-muted-foreground">
+                        {routine.responsible && (
+                          <p><span className="font-medium">Ansvarlig:</span> {routine.responsible}</p>
+                        )}
+                        {(routine.revisionCount != null && routine.revisionCount > 0) && (
+                          <p className="flex items-center gap-1">
+                            <RotateCcw className="w-3 h-3" />
+                            <span className="font-medium">Revisjon {routine.revisionCount}</span>
+                            {routine.lastRevisedAt && (
+                              <span> – {format(new Date(routine.lastRevisedAt), "dd.MM.yyyy", { locale: nb })}</span>
+                            )}
+                            {routine.revisedBy && (
+                              <span> av {routine.revisedBy}</span>
+                            )}
+                          </p>
+                        )}
+                      </div>
                       <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
                         <Button size="sm" variant="outline" onClick={() => openEdit(routine)}>
                           <Edit className="h-4 w-4" />
