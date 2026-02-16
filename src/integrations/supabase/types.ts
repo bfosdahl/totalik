@@ -3140,6 +3140,78 @@ export type Database = {
           },
         ]
       }
+      equipment_exposure_assessments: {
+        Row: {
+          assessed_by_id: string | null
+          assessed_by_name: string | null
+          company_id: string
+          created_at: string
+          id: string
+          noise_lex8h: number | null
+          noise_zone: string | null
+          notes: string | null
+          peak_noise_level: number | null
+          status: string
+          title: string
+          tools: Json
+          updated_at: string
+          vibration_a8: number | null
+          vibration_type: string
+          vibration_zone: string | null
+        }
+        Insert: {
+          assessed_by_id?: string | null
+          assessed_by_name?: string | null
+          company_id: string
+          created_at?: string
+          id?: string
+          noise_lex8h?: number | null
+          noise_zone?: string | null
+          notes?: string | null
+          peak_noise_level?: number | null
+          status?: string
+          title?: string
+          tools?: Json
+          updated_at?: string
+          vibration_a8?: number | null
+          vibration_type?: string
+          vibration_zone?: string | null
+        }
+        Update: {
+          assessed_by_id?: string | null
+          assessed_by_name?: string | null
+          company_id?: string
+          created_at?: string
+          id?: string
+          noise_lex8h?: number | null
+          noise_zone?: string | null
+          notes?: string | null
+          peak_noise_level?: number | null
+          status?: string
+          title?: string
+          tools?: Json
+          updated_at?: string
+          vibration_a8?: number | null
+          vibration_type?: string
+          vibration_zone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_exposure_assessments_assessed_by_id_fkey"
+            columns: ["assessed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_exposure_assessments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ergonomic_risk_assessments: {
         Row: {
           assessed_at: string | null
