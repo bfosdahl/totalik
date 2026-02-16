@@ -211,13 +211,13 @@ const Setup = () => {
         if (!isNaN(stepIndex) && stepIndex >= 0 && stepIndex < steps.length) {
           setCurrentStep(stepIndex);
         } else {
-          setCurrentStep(progress.current_step);
+          setCurrentStep(Math.min(progress.current_step, steps.length - 1));
         }
       } else if (typeof uiState.currentStep === "number" && uiState.currentStep >= 0 && uiState.currentStep < steps.length) {
         // If the tab/app was suspended and reloaded, continue where the user left off
         setCurrentStep(uiState.currentStep);
       } else {
-        setCurrentStep(progress.current_step);
+        setCurrentStep(Math.min(progress.current_step, steps.length - 1));
       }
 
       setHasInitializedStep(true);
