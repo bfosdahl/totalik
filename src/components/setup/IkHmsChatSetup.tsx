@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Bot, User, Sparkles, RefreshCcw } from "lucide-react";
+import { Loader2, Send, Bot, User, Sparkles, RefreshCcw, ClipboardPaste } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -197,6 +198,8 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
   });
   const [wasInterrupted, setWasInterrupted] = useState(initialState?.wasStreaming ?? false);
   const [lastUserMessage, setLastUserMessage] = useState<string | undefined>(initialState?.lastUserMessage);
+  const [showPasteMode, setShowPasteMode] = useState(false);
+  const [pasteText, setPasteText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isStreamingRef = useRef(false);
@@ -1634,32 +1637,89 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
         </ScrollArea>
       </Card>
 
-      <div className="flex gap-2">
-        <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSend();
-            }
-          }}
-          placeholder="Skriv ditt svar her..."
-          disabled={isLoading || isSaving}
-          className="text-base sm:text-sm"
-        />
-        <Button 
-          onClick={handleSend} 
-          disabled={isLoading || isSaving || !input.trim()}
-          size="default"
-          className="px-3 sm:px-4"
-        >
-          {isLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Send className="w-4 h-4" />
-          )}
-        </Button>
+      <div className="space-y-2">
+        {showPasteMode ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+                📋 Lim inn kravtekst fra forskrifter, tilsyn e.l.
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPasteMode(false)}
+                className="text-xs"
+              >
+                Avbryt
+              </Button>
+            </div>
+            <Textarea
+              value={pasteText}
+              onChange={(e) => setPasteText(e.target.value)}
+              placeholder="Lim inn hele teksten her... F.eks. krav fra forurensningsforskriften, Mattilsynet, kommunale krav osv."
+              className="min-h-[120px] text-sm"
+              disabled={isLoading || isSaving}
+            />
+            <Button
+              onClick={() => {
+                if (pasteText.trim()) {
+                  setInput(`Sett opp HMS basert på følgende krav:\n\n${pasteText.trim()}`);
+                  setShowPasteMode(false);
+                  setPasteText("");
+                  // Auto-send after setting input
+                  setTimeout(() => {
+                    const sendBtn = document.getElementById('hms-chat-send-btn');
+                    sendBtn?.click();
+                  }, 100);
+                }
+              }}
+              disabled={isLoading || isSaving || !pasteText.trim()}
+              className="w-full gap-2"
+            >
+              <Send className="w-4 h-4" />
+              Send kravtekst til AI
+            </Button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setShowPasteMode(true)}
+              disabled={isLoading || isSaving}
+              title="Lim inn kravtekst"
+              className="shrink-0"
+            >
+              <ClipboardPaste className="w-4 h-4" />
+            </Button>
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="Skriv ditt svar her..."
+              disabled={isLoading || isSaving}
+              className="text-base sm:text-sm"
+            />
+            <Button 
+              id="hms-chat-send-btn"
+              onClick={handleSend} 
+              disabled={isLoading || isSaving || !input.trim()}
+              size="default"
+              className="px-3 sm:px-4"
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
+        )}
       </div>
 
       {messages.length <= 2 && (
@@ -1668,8 +1728,8 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
           <ul className="space-y-1 list-disc list-inside">
             <li>Jeg stiller deg noen enkle spørsmål om bedriften</li>
             <li>Basert på svarene lager jeg et tilpasset HMS-oppsett</li>
+            <li>Du kan lime inn kravtekster fra tilsyn/forskrifter med 📋-knappen</li>
             <li>Du kan alltid gjøre endringer etterpå</li>
-            <li>Oppsettet tar ca. 5-10 minutter</li>
           </ul>
         </div>
       )}
