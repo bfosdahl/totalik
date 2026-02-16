@@ -518,10 +518,14 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
     const { x, y } = getCanvasCoords(e.clientX, e.clientY);
 
     if (activeTool === "select" || activeTool === "move") {
-      const clicked = [...elements].reverse().find(el => 
-        x >= el.x && x <= el.x + el.width &&
-        y >= el.y && y <= el.y + el.height
-      );
+      const clicked = [...elements].reverse().find(el => {
+        const minHit = 20;
+        const hitW = Math.max(el.width, minHit);
+        const hitH = Math.max(el.height, minHit);
+        const hitX = el.x - (hitW - el.width) / 2;
+        const hitY = el.y - (hitH - el.height) / 2;
+        return x >= hitX && x <= hitX + hitW && y >= hitY && y <= hitY + hitH;
+      });
       setSelectedId(clicked?.id || null);
     } else {
       const preset = ELEMENT_PRESETS[activeTool];
@@ -570,10 +574,15 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
 
       // Find element under cursor and start dragging immediately
       const { x, y } = getCanvasCoords(e.clientX, e.clientY);
-      const clickedEl = [...elements].reverse().find(el =>
-        x >= el.x && x <= el.x + el.width &&
-        y >= el.y && y <= el.y + el.height
-      );
+      // Use a minimum hit area for small elements
+      const clickedEl = [...elements].reverse().find(el => {
+        const minHit = 20; // minimum 20px hit area
+        const hitW = Math.max(el.width, minHit);
+        const hitH = Math.max(el.height, minHit);
+        const hitX = el.x - (hitW - el.width) / 2;
+        const hitY = el.y - (hitH - el.height) / 2;
+        return x >= hitX && x <= hitX + hitW && y >= hitY && y <= hitY + hitH;
+      });
       if (clickedEl) {
         setSelectedId(clickedEl.id);
         setIsDragging(true);
@@ -684,10 +693,14 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
 
       // Find element under touch and start dragging immediately
       const { x, y } = getCanvasCoords(touch.clientX, touch.clientY);
-      const clickedEl = [...elements].reverse().find(el =>
-        x >= el.x && x <= el.x + el.width &&
-        y >= el.y && y <= el.y + el.height
-      );
+      const clickedEl = [...elements].reverse().find(el => {
+        const minHit = 30; // larger hit area for touch
+        const hitW = Math.max(el.width, minHit);
+        const hitH = Math.max(el.height, minHit);
+        const hitX = el.x - (hitW - el.width) / 2;
+        const hitY = el.y - (hitH - el.height) / 2;
+        return x >= hitX && x <= hitX + hitW && y >= hitY && y <= hitY + hitH;
+      });
       if (clickedEl) {
         setSelectedId(clickedEl.id);
         setIsDragging(true);
@@ -779,25 +792,179 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
   };
 
   const handleSave = async () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (elements.length === 0) return;
 
     setIsSaving(true);
     try {
-      const tempZoom = zoom;
-      const tempPan = pan;
-      setZoom(1);
-      setPan({ x: 0, y: 0 });
-      
-      await new Promise(r => setTimeout(r, 100));
-      
-      const imageDataUrl = canvas.toDataURL("image/png");
+      // Calculate bounding box of all elements with padding
+      const padding = 60; // px padding around content
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      elements.forEach(el => {
+        minX = Math.min(minX, el.x);
+        minY = Math.min(minY, el.y);
+        maxX = Math.max(maxX, el.x + el.width);
+        maxY = Math.max(maxY, el.y + el.height);
+      });
+
+      // Add space for dimension labels
+      minX -= padding;
+      minY -= padding;
+      maxX += padding;
+      maxY += padding;
+
+      const exportWidth = Math.max(800, maxX - minX);
+      const exportHeight = Math.max(600, maxY - minY);
+
+      // Create an offscreen canvas sized to fit all elements
+      const exportCanvas = document.createElement("canvas");
+      exportCanvas.width = exportWidth;
+      exportCanvas.height = exportHeight;
+      const ctx = exportCanvas.getContext("2d")!;
+
+      // White background
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, exportWidth, exportHeight);
+
+      // Draw grid
+      const gridSizePx = pixelsPerMeter;
+      ctx.strokeStyle = "#e5e7eb";
+      ctx.lineWidth = 0.5;
+      for (let gx = (-minX) % gridSizePx; gx < exportWidth; gx += gridSizePx) {
+        ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, exportHeight); ctx.stroke();
+      }
+      for (let gy = (-minY) % gridSizePx; gy < exportHeight; gy += gridSizePx) {
+        ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(exportWidth, gy); ctx.stroke();
+      }
+
+      // Draw meter ruler along top
+      ctx.fillStyle = "#f9fafb";
+      ctx.fillRect(0, 0, exportWidth, 20);
+      ctx.fillStyle = "#9ca3af";
+      ctx.font = "10px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      for (let gx = (-minX) % gridSizePx; gx < exportWidth; gx += gridSizePx) {
+        const meterVal = Math.round((gx + minX) / gridSizePx);
+        if (gx > 20) ctx.fillText(`${meterVal}m`, gx, 4);
+      }
+
+      // Draw all elements offset by -minX, -minY
+      const offsetX = -minX;
+      const offsetY = -minY;
+
+      elements.forEach((el) => {
+        const x = el.x + offsetX;
+        const y = el.y + offsetY;
+        const w = el.width;
+        const h = el.height;
+
+        ctx.save();
+        ctx.translate(x + w/2, y + h/2);
+        ctx.rotate((el.rotation * Math.PI) / 180);
+        ctx.translate(-(x + w/2), -(y + h/2));
+
+        switch (el.type) {
+          case "room": case "office": case "toilet":
+            ctx.fillStyle = el.color || ELEMENT_PRESETS[el.type].color;
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeStyle = "#374151"; ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, w, h);
+            break;
+          case "wall":
+            ctx.fillStyle = el.color || "#1f2937";
+            ctx.fillRect(x, y, w, h);
+            break;
+          case "door":
+            ctx.fillStyle = el.color || "#3b82f6";
+            ctx.fillRect(x, y, w, h);
+            ctx.beginPath(); ctx.arc(x, y + h/2, w * 0.8, -Math.PI/2, 0);
+            ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 1; ctx.stroke();
+            break;
+          case "emergency_exit":
+            ctx.fillStyle = "#22c55e";
+            ctx.fillRect(x, y, w, h);
+            ctx.fillStyle = "#ffffff"; ctx.font = "12px sans-serif";
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText("EXIT", x + w/2, y + h/2);
+            break;
+          case "stairs":
+            ctx.fillStyle = "#d1d5db"; ctx.fillRect(x, y, w, h);
+            ctx.strokeStyle = "#6b7280"; ctx.lineWidth = 1;
+            for (let i = 1; i < 6; i++) {
+              const stepY = y + (h / 6) * i;
+              ctx.beginPath(); ctx.moveTo(x, stepY); ctx.lineTo(x + w, stepY); ctx.stroke();
+            }
+            break;
+          case "elevator":
+            ctx.fillStyle = "#c4b5fd"; ctx.fillRect(x, y, w, h);
+            ctx.strokeStyle = "#7c3aed"; ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h);
+            ctx.fillStyle = "#7c3aed"; ctx.font = "10px sans-serif";
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText("HEIS", x + w/2, y + h/2);
+            break;
+          case "fire_extinguisher":
+            ctx.beginPath(); ctx.arc(x + w/2, y + h/2, w/2, 0, Math.PI * 2);
+            ctx.fillStyle = "#ef4444"; ctx.fill();
+            ctx.fillStyle = "#ffffff"; ctx.font = "bold 10px sans-serif";
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText("🧯", x + w/2, y + h/2);
+            break;
+          case "fire_alarm":
+            ctx.beginPath(); ctx.arc(x + w/2, y + h/2, w/2, 0, Math.PI * 2);
+            ctx.fillStyle = "#f97316"; ctx.fill();
+            break;
+          case "first_aid":
+            ctx.fillStyle = "#22c55e"; ctx.fillRect(x, y, w, h);
+            ctx.fillStyle = "#ffffff"; ctx.font = "bold 16px sans-serif";
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText("+", x + w/2, y + h/2);
+            break;
+          case "text":
+            ctx.fillStyle = el.color || "#1f2937"; ctx.font = "14px sans-serif";
+            ctx.textAlign = "left"; ctx.textBaseline = "top";
+            ctx.fillText(el.label || "Tekst", x, y);
+            break;
+        }
+
+        if (el.label && el.type !== "text") {
+          ctx.fillStyle = "#374151"; ctx.font = "11px sans-serif";
+          ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(el.label, x + w/2, y + h/2);
+        }
+
+        ctx.restore();
+
+        // Dimension labels
+        if (showDimensions && ["wall", "room", "office", "toilet", "stairs", "elevator"].includes(el.type)) {
+          const wMeters = pxToMeters(el.width, pixelsPerMeter);
+          const hMeters = pxToMeters(el.height, pixelsPerMeter);
+          ctx.save();
+          ctx.fillStyle = "#1d4ed8";
+          ctx.font = `bold ${Math.max(9, 11)}px sans-serif`;
+          ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+          ctx.fillText(`${wMeters}m`, x + w / 2, y - 4);
+          ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(x, y - 3); ctx.lineTo(x + w, y - 3); ctx.stroke();
+          ctx.save();
+          ctx.translate(x + w + 12, y + h / 2);
+          ctx.rotate(-Math.PI / 2);
+          ctx.textBaseline = "bottom";
+          ctx.fillText(`${hMeters}m`, 0, 0);
+          ctx.restore();
+          ctx.beginPath(); ctx.moveTo(x + w + 4, y); ctx.lineTo(x + w + 4, y + h); ctx.stroke();
+          ctx.restore();
+        }
+      });
+
+      // Floor name
+      ctx.fillStyle = "#6b7280"; ctx.font = "14px sans-serif";
+      ctx.textAlign = "left"; ctx.textBaseline = "top";
+      ctx.fillText(floorName, 24, 24);
+
+      const imageDataUrl = exportCanvas.toDataURL("image/png");
       const elementsJson = JSON.stringify({ elements, floorName, pixelsPerMeter });
       
       await onSave(imageDataUrl, elementsJson);
-      
-      setZoom(tempZoom);
-      setPan(tempPan);
     } finally {
       setIsSaving(false);
     }
