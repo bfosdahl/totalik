@@ -511,9 +511,16 @@ export function EquipmentAssessment() {
 
   const [vibType, setVibType] = useState<"hand_arm" | "whole_body">("hand_arm");
   const [peakLevel, setPeakLevel] = useState<number | "">("");
-  const [tools, setTools] = useState<EquipmentTool[]>([
-    { id: "1", name: "", vibrationLevel: 0, noiseLevel: 0, exposureMinutes: 0 },
-  ]);
+  const CARPENTER_EXAMPLE_TOOLS: EquipmentTool[] = [
+    { id: "1", name: "Sirkelsag (håndholdt)", vibrationLevel: 3.5, noiseLevel: 97, exposureMinutes: 90 },
+    { id: "2", name: "Stikksag", vibrationLevel: 7.0, noiseLevel: 95, exposureMinutes: 45 },
+    { id: "3", name: "Skrumaskin / Drill", vibrationLevel: 2.5, noiseLevel: 85, exposureMinutes: 120 },
+    { id: "4", name: "Vinkelsliper 125mm", vibrationLevel: 6.0, noiseLevel: 100, exposureMinutes: 30 },
+    { id: "5", name: "Spikerpistol", vibrationLevel: 4.0, noiseLevel: 105, exposureMinutes: 60 },
+    { id: "6", name: "Høvel (elektrisk)", vibrationLevel: 5.5, noiseLevel: 92, exposureMinutes: 30 },
+  ];
+
+  const [tools, setTools] = useState<EquipmentTool[]>(CARPENTER_EXAMPLE_TOOLS);
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -631,6 +638,13 @@ export function EquipmentAssessment() {
     setTools([{ id: "1", name: "", vibrationLevel: 0, noiseLevel: 0, exposureMinutes: 0 }]);
     setPeakLevel("");
     setNotes("");
+  };
+
+  const loadExampleTools = () => {
+    setTools(CARPENTER_EXAMPLE_TOOLS.map((t, i) => ({ ...t, id: Date.now().toString() + i })));
+    setTitle("Eksempel: Snekkerverktøy – daglig eksponering");
+    setNotes("Typisk verktøybruk for en snekker/tømrer. Verdier er veiledende – sjekk alltid produsentens datablad for nøyaktige vibrasjon- og støyverdier.");
+    toast.success("Eksempelverktøy for snekker lastet inn");
   };
 
   const addTool = () => {
@@ -850,10 +864,16 @@ export function EquipmentAssessment() {
                 showNoise={true}
               />
             ))}
-            <Button variant="outline" size="sm" onClick={addTool} className="gap-1">
-              <Plus className="h-4 w-4" />
-              Legg til verktøy
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={addTool} className="gap-1">
+                <Plus className="h-4 w-4" />
+                Legg til verktøy
+              </Button>
+              <Button variant="secondary" size="sm" onClick={loadExampleTools} className="gap-1">
+                <Wrench className="h-4 w-4" />
+                Last inn eksempel (snekker)
+              </Button>
+            </div>
           </div>
 
           {/* Peak noise */}
