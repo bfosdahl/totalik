@@ -42,9 +42,10 @@ import { Ks2WelcomeCard } from "./Ks2WelcomeCard";
 interface Ks2EnhancedDashboardProps {
   contractorType?: string | null;
   projectAddress?: string | null;
+  noSubcontractors?: boolean;
 }
 
-export function Ks2EnhancedDashboard({ contractorType, projectAddress }: Ks2EnhancedDashboardProps = {}) {
+export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcontractors }: Ks2EnhancedDashboardProps = {}) {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const { checklists, stats, isLoading } = useKsModule2Checklists(projectId || "");
@@ -138,7 +139,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress }: Ks2Enha
       {/* Welcome/Onboarding Card for new projects */}
       <Ks2WelcomeCard 
         hasChecklists={checklists.length > 0}
-        hasSubcontractors={subcontractors.length > 0}
+        hasSubcontractors={subcontractors.length > 0 || !!noSubcontractors}
         hasTemplates={templates.length > 0}
         contractorType={contractorType}
         hasProjectInfo={!!projectAddress}

@@ -8757,6 +8757,7 @@ export type Database = {
           is_favorite: boolean | null
           last_activity_date: string | null
           last_activity_description: string | null
+          no_subcontractors: boolean
           planned_end_date: string | null
           planned_start_date: string | null
           progress_percent: number | null
@@ -8788,6 +8789,7 @@ export type Database = {
           is_favorite?: boolean | null
           last_activity_date?: string | null
           last_activity_description?: string | null
+          no_subcontractors?: boolean
           planned_end_date?: string | null
           planned_start_date?: string | null
           progress_percent?: number | null
@@ -8819,6 +8821,7 @@ export type Database = {
           is_favorite?: boolean | null
           last_activity_date?: string | null
           last_activity_description?: string | null
+          no_subcontractors?: boolean
           planned_end_date?: string | null
           planned_start_date?: string | null
           progress_percent?: number | null
