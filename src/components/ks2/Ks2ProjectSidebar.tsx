@@ -105,15 +105,24 @@ interface MenuGroup {
   color?: string;
 }
 
-const menuGroups: MenuGroup[] = [
-  { id: "ks", label: "Kvalitetssikring", icon: ClipboardCheck, items: kvalitetssikringItems, color: "text-primary" },
-  { id: "hms", label: "HMS / SHA", icon: Shield, items: hmsMenuItems, color: "text-emerald-500" },
-  { id: "byggesak", label: "Byggesak & Blanketter", icon: Home, items: byggesakItems, color: "text-orange-500" },
-  { id: "prosjekt", label: "Prosjektstyring", icon: Briefcase, items: prosjektstyringItems, color: "text-blue-500" },
-  { id: "okonomi", label: "Økonomi", icon: Wallet, items: okonomiFakturaItems, color: "text-amber-500" },
-  { id: "partnere", label: "Partnere", icon: Building2, items: partnereItems, color: "text-purple-500" },
-  { id: "dokumenter", label: "Dokumentasjon", icon: FolderOpen, items: dokumentasjonItems, color: "text-cyan-500" },
-];
+/** Contractor types that typically manage subcontractors */
+const CONTRACTOR_TYPES_WITH_SUBS = ["total", "hoved"];
+
+function getMenuGroups(contractorType?: string | null): MenuGroup[] {
+  const needsSubs = contractorType ? CONTRACTOR_TYPES_WITH_SUBS.includes(contractorType) : true;
+
+  const groups: MenuGroup[] = [
+    { id: "ks", label: "Kvalitetssikring", icon: ClipboardCheck, items: kvalitetssikringItems, color: "text-primary" },
+    { id: "hms", label: "HMS / SHA", icon: Shield, items: hmsMenuItems, color: "text-emerald-500" },
+    { id: "byggesak", label: "Byggesak & Blanketter", icon: Home, items: byggesakItems, color: "text-orange-500" },
+    { id: "prosjekt", label: "Prosjektstyring", icon: Briefcase, items: prosjektstyringItems, color: "text-blue-500" },
+    { id: "okonomi", label: "Økonomi", icon: Wallet, items: okonomiFakturaItems, color: "text-amber-500" },
+    ...(needsSubs ? [{ id: "partnere", label: "Partnere", icon: Building2, items: partnereItems, color: "text-purple-500" }] : []),
+    { id: "dokumenter", label: "Dokumentasjon", icon: FolderOpen, items: dokumentasjonItems, color: "text-cyan-500" },
+  ];
+
+  return groups;
+}
 
 export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType }: Ks2ProjectSidebarProps) {
   const { projectId } = useParams();
