@@ -301,15 +301,76 @@ export default function IkKsHandbok() {
           }
 
           if (routine.content) {
-            const contentPlain = routine.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-            if (contentPlain.length > 0) {
-              const contentLines = doc.splitTextToSize(contentPlain, pageWidth - 50);
-              contentLines.forEach((line: string) => {
-                addPageIfNeeded(7);
-                doc.text(line, 30, y);
+            // Parse content: split by numbered items, headings, or paragraph breaks
+            let contentText = routine.content;
+            // Replace HTML block elements with newlines
+            contentText = contentText.replace(/<br\s*\/?>/gi, '\n');
+            contentText = contentText.replace(/<\/(p|div|li|h[1-6])>/gi, '\n');
+            contentText = contentText.replace(/<(p|div|li|h[1-6])[^>]*>/gi, '');
+            contentText = contentText.replace(/<[^>]*>/g, '');
+            // Decode HTML entities
+            contentText = contentText.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ');
+            
+            // Split into paragraphs by newlines or numbered pattern (e.g. "1. ", "2. ")
+            const paragraphs = contentText
+              .split(/\n+/)
+              .map((p: string) => p.trim())
+              .filter((p: string) => p.length > 0);
+
+            // Further split paragraphs that contain inline numbered items like "1. ... 2. ..."
+            const finalParagraphs: string[] = [];
+            paragraphs.forEach((p: string) => {
+              // Split on patterns like " 1. " or " 2. " that appear mid-sentence (numbered steps)
+              const parts = p.split(/(?<=\.)\s+(?=\d+\.\s)/);
+              if (parts.length > 1) {
+                parts.forEach((part: string) => finalParagraphs.push(part.trim()));
+              } else {
+                finalParagraphs.push(p);
+              }
+            });
+
+            finalParagraphs.forEach((paragraph: string) => {
+              if (paragraph.length === 0) return;
+              
+              // Check if it's a labeled section like "Formål:" or "Sjekkliste:"
+              const isHeading = /^[A-ZÆØÅ][a-zæøåA-ZÆØÅ\s]+:/.test(paragraph) && paragraph.indexOf(':') < 40;
+              // Check if it starts with a number like "1. " 
+              const isNumbered = /^\d+\.\s/.test(paragraph);
+              
+              const indent = isNumbered ? 35 : 30;
+              const maxWidth = pageWidth - indent - 15;
+              
+              if (isHeading && !isNumbered) {
+                // Render heading part bold, rest normal
+                const colonIdx = paragraph.indexOf(':');
+                const headingPart = paragraph.substring(0, colonIdx + 1);
+                const restPart = paragraph.substring(colonIdx + 1).trim();
+                
+                addPageIfNeeded(12);
+                doc.setFont("helvetica", "bold");
+                doc.text(headingPart, 30, y);
                 y += 5;
-              });
-            }
+                doc.setFont("helvetica", "normal");
+                
+                if (restPart) {
+                  const restLines = doc.splitTextToSize(restPart, maxWidth);
+                  restLines.forEach((line: string) => {
+                    addPageIfNeeded(6);
+                    doc.text(line, 30, y);
+                    y += 5;
+                  });
+                }
+                y += 2;
+              } else {
+                const wrappedLines = doc.splitTextToSize(paragraph, maxWidth);
+                wrappedLines.forEach((line: string) => {
+                  addPageIfNeeded(6);
+                  doc.text(line, indent, y);
+                  y += 5;
+                });
+                y += 2;
+              }
+            });
           }
           y += 5;
         });
