@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,10 +16,11 @@ import {
   Users,
   ShieldAlert,
   CheckCircle2,
-  Pencil,
-  Trash2
+  Trash2,
+  Loader2
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface HmsGoal {
   id: string;
@@ -33,52 +34,77 @@ interface HmsResponsible {
   responsibilities: string;
 }
 
-export default function Ks2HmsPlan() {
-  const { projectId } = useParams();
-  const [activeTab, setActiveTab] = useState("goals");
-  const [isSaving, setIsSaving] = useState(false);
+const DEFAULT_GOALS: HmsGoal[] = [
+  { id: "1", text: "Null skader på personer", isPredefined: true },
+  { id: "2", text: "Null skader på materiell", isPredefined: true },
+  { id: "3", text: "Alle ansatte skal ha nødvendig opplæring og sertifisering", isPredefined: true },
+  { id: "4", text: "Alle skal bruke påbudt verneutstyr", isPredefined: true },
+];
 
-  // HMS Goals
-  const [goals, setGoals] = useState<HmsGoal[]>([
-    { id: "1", text: "Null skader på personer", isPredefined: true },
-    { id: "2", text: "Null skader på materiell", isPredefined: true },
-    { id: "3", text: "Alle ansatte skal ha nødvendig opplæring og sertifisering", isPredefined: true },
-    { id: "4", text: "Alle skal bruke påbudt verneutstyr", isPredefined: true },
-  ]);
-  const [newGoal, setNewGoal] = useState("");
+const DEFAULT_RESPONSIBILITIES: HmsResponsible[] = [
+  { role: "Prosjektleder", name: "", responsibilities: "Overordnet ansvar for HMS i prosjektet. Sikrer at HMS-plan følges og at ressurser er tilgjengelige." },
+  { role: "HMS-ansvarlig", name: "", responsibilities: "Daglig oppfølging av HMS-arbeidet. Gjennomfører vernerunder og følger opp avvik." },
+  { role: "Verneombud", name: "", responsibilities: "Ivaretar arbeidstakernes interesser i HMS-spørsmål. Deltar i vernerunder og HMS-møter." },
+  { role: "Byggeleder", name: "", responsibilities: "Koordinerer arbeidet på byggeplass og sikrer at HMS-rutiner følges i det daglige." },
+];
 
-  // HMS Responsibilities
-  const [responsibilities, setResponsibilities] = useState<HmsResponsible[]>([
-    { 
-      role: "Prosjektleder", 
-      name: "", 
-      responsibilities: "Overordnet ansvar for HMS i prosjektet. Sikrer at HMS-plan følges og at ressurser er tilgjengelige." 
-    },
-    { 
-      role: "HMS-ansvarlig", 
-      name: "", 
-      responsibilities: "Daglig oppfølging av HMS-arbeidet. Gjennomfører vernerunder og følger opp avvik." 
-    },
-    { 
-      role: "Verneombud", 
-      name: "", 
-      responsibilities: "Ivaretar arbeidstakernes interesser i HMS-spørsmål. Deltar i vernerunder og HMS-møter." 
-    },
-    { 
-      role: "Byggeleder", 
-      name: "", 
-      responsibilities: "Koordinerer arbeidet på byggeplass og sikrer at HMS-rutiner følges i det daglige." 
-    },
-  ]);
-
-  // HMS Measures
-  const [generalMeasures, setGeneralMeasures] = useState(`• Alle skal ha gjennomført HMS-opplæring før oppstart
+const DEFAULT_MEASURES = `• Alle skal ha gjennomført HMS-opplæring før oppstart
 • Verneutstyr (hjelm, vernesko, synlighetsklær) er påbudt på hele byggeplassen
 • Daglig sikker jobb analyse (SJA) før risikofylt arbeid
 • Ukentlige vernerunder med dokumentasjon
 • Alle avvik skal rapporteres og følges opp
 • Førstehjelpsutstyr tilgjengelig og merket
-• Brannslukker på strategiske steder`);
+• Brannslukker på strategiske steder`;
+
+export default function Ks2HmsPlan() {
+  const { projectId } = useParams();
+  const [activeTab, setActiveTab] = useState("goals");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [existingId, setExistingId] = useState<string | null>(null);
+
+  // HMS Goals
+  const [goals, setGoals] = useState<HmsGoal[]>(DEFAULT_GOALS);
+  const [newGoal, setNewGoal] = useState("");
+
+  // HMS Responsibilities
+  const [responsibilities, setResponsibilities] = useState<HmsResponsible[]>(DEFAULT_RESPONSIBILITIES);
+
+  // HMS Measures
+  const [generalMeasures, setGeneralMeasures] = useState(DEFAULT_MEASURES);
+
+  // Load existing data
+  useEffect(() => {
+    if (!projectId) return;
+
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("ks_module2_hms_plans")
+          .select("*")
+          .eq("project_id", projectId)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (data) {
+          setExistingId(data.id);
+          const loadedGoals = data.goals as unknown as HmsGoal[];
+          const loadedResp = data.responsibilities as unknown as HmsResponsible[];
+          if (Array.isArray(loadedGoals) && loadedGoals.length > 0) setGoals(loadedGoals);
+          if (Array.isArray(loadedResp) && loadedResp.length > 0) setResponsibilities(loadedResp);
+          if (data.general_measures) setGeneralMeasures(data.general_measures);
+        }
+      } catch (error) {
+        console.error("Error loading HMS plan:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [projectId]);
 
   const progress = {
     goals: goals.length >= 3 ? 100 : (goals.length / 3) * 100,
@@ -102,17 +128,53 @@ export default function Ks2HmsPlan() {
 
   const updateResponsible = (index: number, name: string) => {
     const updated = [...responsibilities];
-    updated[index].name = name;
+    updated[index] = { ...updated[index], name };
     setResponsibilities(updated);
   };
 
   const handleSave = async () => {
+    if (!projectId) return;
     setIsSaving(true);
-    // Simulate save - in real implementation, save to database
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsSaving(false);
-    toast.success("HMS-plan lagret");
+    try {
+      const payload = {
+        project_id: projectId,
+        goals: goals as unknown as any,
+        responsibilities: responsibilities as unknown as any,
+        general_measures: generalMeasures,
+      };
+
+      if (existingId) {
+        const { error } = await supabase
+          .from("ks_module2_hms_plans")
+          .update(payload)
+          .eq("id", existingId);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from("ks_module2_hms_plans")
+          .insert(payload)
+          .select("id")
+          .single();
+        if (error) throw error;
+        setExistingId(data.id);
+      }
+
+      toast.success("HMS-plan lagret");
+    } catch (error: any) {
+      console.error("Error saving HMS plan:", error);
+      toast.error("Kunne ikke lagre HMS-plan: " + (error.message || "Ukjent feil"));
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

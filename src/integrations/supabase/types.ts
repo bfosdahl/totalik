@@ -7842,6 +7842,44 @@ export type Database = {
           },
         ]
       }
+      ks_module2_hms_plans: {
+        Row: {
+          created_at: string
+          general_measures: string
+          goals: Json
+          id: string
+          project_id: string
+          responsibilities: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          general_measures?: string
+          goals?: Json
+          id?: string
+          project_id: string
+          responsibilities?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          general_measures?: string
+          goals?: Json
+          id?: string
+          project_id?: string
+          responsibilities?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_hms_plans_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_inspection_templates: {
         Row: {
           category: string | null
