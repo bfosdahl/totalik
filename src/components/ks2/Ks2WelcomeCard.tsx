@@ -78,11 +78,28 @@ export function Ks2WelcomeCard({
     return localStorage.getItem(storageKey) === "true";
   });
 
-  // Determine if project seems "new" (no data yet)
-  const isNewProject = !hasChecklists && !hasSubcontractors;
+  // Filter steps based on contractor type
+  const needsSubs = contractorType ? CONTRACTOR_TYPES_WITH_SUBS.includes(contractorType) : true;
+  const onboardingSteps = allOnboardingSteps.filter(step => {
+    if (STEPS_REQUIRING_SUBCONTRACTORS.includes(step.id) && !needsSubs) return false;
+    return true;
+  });
 
-  // Don't show if dismissed or project has substantial data
-  if (isDismissed || (hasChecklists && hasSubcontractors && hasTemplates)) {
+  // Determine if project seems "new" (no data yet)
+  const isNewProject = !hasChecklists && (!needsSubs || !hasSubcontractors);
+
+  // Build completion status matching filtered steps
+  const completedSteps = onboardingSteps.map(step => {
+    switch (step.id) {
+      case "maler": return hasTemplates;
+      case "prosjektinfo": return hasChecklists;
+      case "underleverandorer": return hasSubcontractors;
+      default: return false;
+    }
+  });
+
+  // Don't show if dismissed or all steps completed
+  if (isDismissed || completedSteps.every(Boolean)) {
     return null;
   }
 
@@ -91,11 +108,6 @@ export function Ks2WelcomeCard({
     setIsDismissed(true);
   };
 
-  const completedSteps = [
-    hasTemplates,
-    hasChecklists,
-    hasSubcontractors,
-  ];
   const progress = Math.round((completedSteps.filter(Boolean).length / completedSteps.length) * 100);
 
   return (

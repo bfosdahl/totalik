@@ -115,7 +115,7 @@ const menuGroups: MenuGroup[] = [
   { id: "dokumenter", label: "Dokumentasjon", icon: FolderOpen, items: dokumentasjonItems, color: "text-cyan-500" },
 ];
 
-export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSidebarProps) {
+export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType }: Ks2ProjectSidebarProps) {
   const { projectId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
