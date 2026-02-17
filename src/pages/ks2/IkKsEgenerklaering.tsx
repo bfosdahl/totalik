@@ -139,123 +139,116 @@ export default function IkKsEgenerklaering() {
         Tilbake
       </Button>
 
-      {/* Introduction */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-card rounded-xl border border-border p-5 shadow-card"
-      >
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-xl bg-primary/10">
-            <FileText className="w-6 h-6 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold mb-1">Egenerklæring om kvalitetssikringssystem</h2>
-            <p className="text-muted-foreground text-sm">
-              Bekreftelse på at bedriften har et godt og velfungerende kvalitetssikringssystem 
-              for ytelsen som skal leveres. Denne erklæringen inkluderes automatisk i prosjektrapporter.
-            </p>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* KS Self Declaration Card */}
+      {/* Declaration Document */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
         <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${hasSelfDeclaration ? "bg-success/10" : "bg-warning/10"}`}>
-                  {hasSelfDeclaration ? (
-                    <CheckCircle2 className="w-5 h-5 text-success" />
-                  ) : (
-                    <AlertCircle className="w-5 h-5 text-warning" />
-                  )}
-                </div>
-                <div>
-                  <CardTitle className="text-lg">Egenerklæring KS</CardTitle>
-                  <CardDescription>
-                    Bekreftelse på kvalitetssikringssystem iht. gjeldende lover og forskrifter
-                  </CardDescription>
-                </div>
-              </div>
-              <Badge variant={hasSelfDeclaration ? "default" : "secondary"}>
+          <CardContent className="p-6 md:p-10">
+            {/* Status + actions bar */}
+            <div className="flex items-center justify-between mb-6">
+              <Badge variant={hasSelfDeclaration ? "default" : "secondary"} className="text-xs">
                 {hasSelfDeclaration ? "Signert" : "Ikke signert"}
               </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {hasSelfDeclaration && selfDeclaration ? (
-              <>
-                <div className="grid gap-3 text-sm">
-                  <div className="flex items-center gap-3">
-                    <Building2 className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Bedrift:</span>
-                    <span className="font-medium">{selfDeclaration.company_name}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <User className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Signert av:</span>
-                    <span className="font-medium">{selfDeclaration.manager_name || "Ikke angitt"}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Signert dato:</span>
-                    <span className="font-medium">{formatDate(selfDeclaration.manager_signed_at)}</span>
-                  </div>
-                </div>
-
-                {selfDeclaration.manager_signature && (
-                  <>
-                    <Separator />
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">Signatur:</p>
-                      <div className="bg-muted/30 rounded-lg p-2 inline-block border">
-                        <img 
-                          src={selfDeclaration.manager_signature} 
-                          alt="Signatur" 
-                          className="max-h-20"
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                <Separator />
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowDialog(true)}
-                  >
-                    <PenLine className="w-4 h-4 mr-2" />
-                    Signer på nytt
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={handleDownloadPdf}
-                  >
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setShowDialog(true)}>
+                  <PenLine className="w-4 h-4 mr-2" />
+                  {hasSelfDeclaration ? "Signer på nytt" : "Signer"}
+                </Button>
+                {hasSelfDeclaration && (
+                  <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
                     <Download className="w-4 h-4 mr-2" />
                     Last ned PDF
                   </Button>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-6">
-                <AlertCircle className="w-12 h-12 text-warning mx-auto mb-3 opacity-50" />
-                <p className="text-muted-foreground mb-4">
-                  Egenerklæring om kvalitetssikringssystem er ikke signert ennå. 
-                  Denne dokumentasjonen bekrefter at bedriften har et velfungerende KS-system.
-                </p>
-                <Button onClick={() => setShowDialog(true)}>
-                  <PenLine className="w-4 h-4 mr-2" />
-                  Signer egenerklæring
-                </Button>
+                )}
               </div>
-            )}
+            </div>
+
+            <Separator className="mb-8" />
+
+            {/* Document content */}
+            <div className="max-w-2xl mx-auto space-y-6 text-sm leading-relaxed">
+              <h2 className="text-center text-base font-bold tracking-wide">
+                EGENERKLÆRING – KVALITETSSIKRINGSSYSTEM
+              </h2>
+
+              <div className="space-y-1 text-muted-foreground">
+                <p>Virksomhet: <span className="font-medium text-foreground">{company?.name || "_________________________________"}</span></p>
+                <p>Organisasjonsnummer: <span className="font-medium text-foreground">{company?.org_number || "_________________________"}</span></p>
+              </div>
+
+              <Separator />
+
+              <p>
+                Vi erklærer med dette at virksomheten har etablert og tatt i bruk et kvalitetssikringssystem 
+                (Total IK – med modul IK/Bygg) som benyttes i den daglige driften.
+              </p>
+
+              <p>
+                Systemet er tilpasset virksomhetens størrelse og aktiviteter, og skal sikre at arbeid 
+                planlegges, utføres og dokumenteres i samsvar med gjeldende lover, forskrifter og krav til kvalitet.
+              </p>
+
+              <p className="font-medium">Kvalitetssikringssystemet omfatter blant annet:</p>
+
+              <ul className="list-disc list-inside space-y-1.5 pl-2">
+                <li>Klare ansvarsforhold og rutiner for gjennomføring av arbeid</li>
+                <li>Kontroll og dokumentasjon av utført arbeid</li>
+                <li>Håndtering av avvik og forbedringstiltak</li>
+                <li>Jevnlig gjennomgang og oppdatering av systemet</li>
+              </ul>
+
+              <p>
+                Systemet er gjort kjent for ansatte og brukes aktivt i virksomhetens prosjekter og leveranser.
+              </p>
+
+              <Separator />
+
+              {/* Signature section */}
+              <div className="grid grid-cols-2 gap-6 pt-2">
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">Sted</p>
+                  <p className="font-medium border-b border-border pb-1 min-h-[1.5rem]">
+                    {selfDeclaration?.city || ""}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">Dato</p>
+                  <p className="font-medium border-b border-border pb-1 min-h-[1.5rem]">
+                    {selfDeclaration?.manager_signed_at ? formatDate(selfDeclaration.manager_signed_at) : ""}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">Navn</p>
+                  <p className="font-medium border-b border-border pb-1 min-h-[1.5rem]">
+                    {selfDeclaration?.manager_name || ""}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">Stilling</p>
+                  <p className="font-medium border-b border-border pb-1 min-h-[1.5rem]">
+                    Daglig leder
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">Signatur</p>
+                  <div className="border-b border-border pb-1 min-h-[3rem]">
+                    {selfDeclaration?.manager_signature && (
+                      <img 
+                        src={selfDeclaration.manager_signature} 
+                        alt="Signatur" 
+                        className="max-h-16"
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </motion.div>
