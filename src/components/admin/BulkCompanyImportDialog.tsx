@@ -162,7 +162,7 @@ export function BulkCompanyImportDialog({
             const isDuplicate = existingOrgs.has(orgNumber);
             
             // Check if this is a kurslisens-only order (no IK system)
-            // Valid IK products contain: IK/HMS, IK/MAT, IK-BYGG, IK/KHMS, Internkontroll
+            // Only IK products should be imported - everything else is blocked
             const productNameLower = productName.toLowerCase();
             const isIkProduct = 
               productNameLower.includes("ik/hms") ||
@@ -172,17 +172,12 @@ export function BulkCompanyImportDialog({
               productNameLower.includes("ik/khms") ||
               productNameLower.includes("ik-system") ||
               productNameLower.includes("internkontroll") ||
-              productNameLower.includes("internkontrollsystem");
+              productNameLower.includes("internkontrollsystem") ||
+              productNameLower.includes("total-ik") ||
+              productNameLower.includes("total ik");
             
-            const isKurslisensOnly = !isIkProduct && (
-              productNameLower.includes("kurs") ||
-              productNameLower.includes("lisens") ||
-              productNameLower.includes("id-kort") ||
-              productNameLower.includes("idkort") ||
-              productNameLower.includes("hmskort") ||
-              productNameLower.includes("hms-kort") ||
-              productName === ""
-            );
+            // If the product is NOT an IK product, it should be blocked
+            const isKurslisensOnly = !isIkProduct;
 
             // Check if this is a renewal order (only for IK products, not kurslisens)
             const isRenewal = isIkProduct && (
