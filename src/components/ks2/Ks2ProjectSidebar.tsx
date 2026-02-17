@@ -97,11 +97,19 @@ const dokumentasjonItems = [
   { id: "rapport", label: "Prosjektrapport", icon: FileText, path: "/rapport", guestAllowed: true },
 ];
 
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  path: string;
+  guestAllowed: boolean;
+}
+
 interface MenuGroup {
   id: string;
   label: string;
   icon: typeof LayoutDashboard;
-  items: typeof kvalitetssikringItems;
+  items: MenuItem[];
   color?: string;
 }
 
