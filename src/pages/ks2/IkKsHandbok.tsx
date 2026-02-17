@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useKsDeclarations } from "@/hooks/useKsDeclarations";
 import { useQuery } from "@tanstack/react-query";
@@ -736,6 +737,7 @@ export default function IkKsHandbok() {
   };
 
   return (
+    <AppLayout>
     <div className="space-y-6">
       {/* Back button */}
       <Button variant="ghost" size="sm" onClick={() => navigate("/ks")} className="gap-2">
@@ -815,5 +817,6 @@ export default function IkKsHandbok() {
         </Card>
       </motion.div>
     </div>
+    </AppLayout>
   );
 }
