@@ -131,6 +131,8 @@ export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType }
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isGuestUser, guestProjects, signOut, profile } = useAuth();
 
+  const menuGroups = getMenuGroups(contractorType);
+
   const basePath = `/ks/project/${projectId}`;
   const currentPath = location.pathname.replace(basePath, "") || "";
 
