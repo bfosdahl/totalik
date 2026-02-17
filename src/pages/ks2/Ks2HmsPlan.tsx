@@ -106,10 +106,11 @@ export default function Ks2HmsPlan() {
     fetchData();
   }, [projectId]);
 
+  // Progress: 100% by default. Each section is complete if it has any content (defaults count).
   const progress = {
-    goals: goals.length >= 3 ? 100 : (goals.length / 3) * 100,
-    organization: responsibilities.filter(r => r.name).length >= 2 ? 100 : (responsibilities.filter(r => r.name).length / 2) * 100,
-    measures: generalMeasures.length > 50 ? 100 : 0,
+    goals: 100, // Always has default goals
+    organization: 100, // Roles are defined by default; filling names is optional
+    measures: generalMeasures.length > 0 ? 100 : 0,
   };
 
   const totalProgress = Math.round((progress.goals + progress.organization + progress.measures) / 3);
