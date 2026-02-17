@@ -212,6 +212,7 @@ interface ProjectReportData {
   companyName: string;
   companyLogoUrl?: string;
   generatedBy: string;
+  ksHandbok?: KsHandbokData;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -315,6 +316,14 @@ export interface ReportSections {
   includeChangeOrders: boolean;
   includeClaims: boolean;
   includeSubcontractors: boolean;
+  includeKsHandbok: boolean;
+}
+
+export interface KsHandbokData {
+  systemGoals: Array<{ goal_text: string; description?: string }>;
+  goals: Array<{ goal_text: string }>;
+  organization?: { custom_content: string } | null;
+  routines: Array<{ routine_name: string; description?: string; content?: string }>;
 }
 
 export const generateProjectReportPdf = async (data: ProjectReportData, sections: ReportSections) => {
@@ -1432,6 +1441,118 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
       styles: { fontSize: 9 },
       headStyles: { fillColor: [107, 114, 128] },
     });
+  }
+
+  // ============ KS Håndbok ============
+  if (sections.includeKsHandbok && data.ksHandbok) {
+    addSectionHeader("KS Håndbok");
+    const hb = data.ksHandbok;
+
+    // Goals
+    if (hb.systemGoals.length > 0) {
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("Målsetting", 20, yPos);
+      yPos += 8;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      hb.systemGoals.forEach(g => {
+        checkPageBreak(10);
+        const lines = doc.splitTextToSize(`• ${g.goal_text}`, pageWidth - 45);
+        doc.text(lines, 25, yPos);
+        yPos += lines.length * 5 + 3;
+      });
+      yPos += 5;
+    }
+
+    if (hb.goals.length > 0) {
+      checkPageBreak(15);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("Kvalitetsmål", 20, yPos);
+      yPos += 8;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      hb.goals.forEach(g => {
+        checkPageBreak(10);
+        const lines = doc.splitTextToSize(`• ${g.goal_text}`, pageWidth - 45);
+        doc.text(lines, 25, yPos);
+        yPos += lines.length * 5 + 3;
+      });
+      yPos += 5;
+    }
+
+    // Organization
+    if (hb.organization?.custom_content) {
+      checkPageBreak(15);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("Organisasjonsplan", 20, yPos);
+      yPos += 8;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      
+      let roles: any[] = [];
+      try {
+        const parsed = JSON.parse(hb.organization.custom_content);
+        if (parsed?.roles && Array.isArray(parsed.roles)) roles = parsed.roles;
+        else if (Array.isArray(parsed)) roles = parsed;
+      } catch {}
+
+      if (roles.length > 0) {
+        roles.sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+        roles.forEach((role: any) => {
+          checkPageBreak(15);
+          doc.setFont("helvetica", "bold");
+          const title = role.title || "Ukjent rolle";
+          const person = role.personName ? ` – ${role.personName}` : "";
+          doc.text(`${title}${person}`, 25, yPos);
+          yPos += 5;
+          doc.setFont("helvetica", "normal");
+          if (role.description) {
+            const descLines = doc.splitTextToSize(role.description, pageWidth - 50);
+            descLines.forEach((line: string) => {
+              checkPageBreak(6);
+              doc.text(line, 30, yPos);
+              yPos += 5;
+            });
+          }
+          yPos += 3;
+        });
+      } else {
+        const plainText = hb.organization.custom_content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+        const lines = doc.splitTextToSize(plainText, pageWidth - 40);
+        lines.forEach((line: string) => {
+          checkPageBreak(7);
+          doc.text(line, 25, yPos);
+          yPos += 5;
+        });
+      }
+      yPos += 5;
+    }
+
+    // Routines
+    if (hb.routines.length > 0) {
+      checkPageBreak(15);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("Rutiner", 20, yPos);
+      yPos += 8;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      hb.routines.forEach((r, idx) => {
+        checkPageBreak(12);
+        doc.setFont("helvetica", "bold");
+        doc.text(`${idx + 1}. ${r.routine_name}`, 25, yPos);
+        yPos += 5;
+        doc.setFont("helvetica", "normal");
+        if (r.description) {
+          const descLines = doc.splitTextToSize(r.description, pageWidth - 50);
+          doc.text(descLines, 30, yPos);
+          yPos += descLines.length * 5 + 3;
+        }
+      });
+    }
   }
 
   // ============ Footer on all pages ============
