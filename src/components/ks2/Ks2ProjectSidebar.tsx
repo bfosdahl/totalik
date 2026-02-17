@@ -41,6 +41,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 interface Ks2ProjectSidebarProps {
   projectName: string;
   projectNumber: string;
+  contractorType?: string | null;
 }
 
 // Top-level standalone items

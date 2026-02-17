@@ -22,7 +22,7 @@ interface Step {
   color: string;
 }
 
-const onboardingSteps: Step[] = [
+const allOnboardingSteps: Step[] = [
   {
     id: "maler",
     title: "Velg maler",
@@ -49,16 +49,24 @@ const onboardingSteps: Step[] = [
   },
 ];
 
+/** Steps that only apply to certain contractor types */
+const STEPS_REQUIRING_SUBCONTRACTORS = ["underleverandorer"];
+
+/** Contractor types that typically manage subcontractors */
+const CONTRACTOR_TYPES_WITH_SUBS = ["total", "hoved"];
+
 interface Ks2WelcomeCardProps {
   hasChecklists: boolean;
   hasSubcontractors: boolean;
   hasTemplates: boolean;
+  contractorType?: string | null;
 }
 
 export function Ks2WelcomeCard({ 
   hasChecklists, 
   hasSubcontractors,
-  hasTemplates 
+  hasTemplates,
+  contractorType,
 }: Ks2WelcomeCardProps) {
   const { projectId } = useParams();
   const navigate = useNavigate();

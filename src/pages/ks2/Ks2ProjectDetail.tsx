@@ -168,6 +168,7 @@ export default function Ks2ProjectDetail() {
       <Ks2ProjectSidebar
         projectName={project.project_name}
         projectNumber={project.project_number}
+        contractorType={project.contractor_type}
       />
 
       {/* Main Content */}
