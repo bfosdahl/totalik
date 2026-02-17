@@ -138,57 +138,149 @@ export default function IkKsHandbok() {
       const pageHeight = doc.internal.pageSize.getHeight();
       let y = 20;
 
+      // Construction theme colors (RGB)
+      const COLORS = {
+        darkBlue: [30, 58, 82] as [number, number, number],       // Steel blue - headers
+        orange: [232, 119, 34] as [number, number, number],        // Construction orange - accents
+        lightGray: [240, 243, 246] as [number, number, number],    // Background tint
+        medGray: [180, 190, 200] as [number, number, number],      // Subtle lines
+        white: [255, 255, 255] as [number, number, number],
+        textDark: [33, 37, 41] as [number, number, number],
+      };
+
+      // Load company logo if available
+      let logoImg: string | null = null;
+      if (company.logo_url) {
+        try {
+          const response = await fetch(company.logo_url);
+          const blob = await response.blob();
+          logoImg = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+        } catch (e) {
+          console.warn("Could not load company logo for PDF:", e);
+        }
+      }
+
+      // Helper: add colored header bar + footer to current page
+      const addPageDecoration = (isFirstPage = false) => {
+        // Top bar
+        doc.setFillColor(...COLORS.darkBlue);
+        doc.rect(0, 0, pageWidth, 8, 'F');
+        // Orange accent stripe
+        doc.setFillColor(...COLORS.orange);
+        doc.rect(0, 8, pageWidth, 2, 'F');
+
+        // Footer
+        doc.setFillColor(...COLORS.darkBlue);
+        doc.rect(0, pageHeight - 12, pageWidth, 12, 'F');
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...COLORS.white);
+        doc.text(company.name, 15, pageHeight - 4.5);
+        doc.text("KS Håndbok – Kvalitetssikringssystem", pageWidth / 2, pageHeight - 4.5, { align: "center" });
+        doc.text(`Side ${doc.getNumberOfPages()}`, pageWidth - 15, pageHeight - 4.5, { align: "right" });
+        // Reset text color
+        doc.setTextColor(...COLORS.textDark);
+      };
+
+      // Overridden addPage that includes decoration
+      const addNewPage = () => {
+        doc.addPage();
+        addPageDecoration();
+        y = 22;
+      };
+
       const addPageIfNeeded = (requiredSpace: number) => {
-        if (y + requiredSpace > pageHeight - 20) {
-          doc.addPage();
-          y = 20;
+        if (y + requiredSpace > pageHeight - 25) {
+          addNewPage();
         }
       };
 
       const addSectionTitle = (title: string, sectionNum: number) => {
-        addPageIfNeeded(20);
-        doc.setFontSize(14);
+        addPageIfNeeded(25);
+        // Section header with colored background
+        doc.setFillColor(...COLORS.darkBlue);
+        doc.roundedRect(15, y - 5, pageWidth - 30, 12, 2, 2, 'F');
+        doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
-        doc.text(`${sectionNum}. ${title}`, 20, y);
-        y += 10;
+        doc.setTextColor(...COLORS.white);
+        doc.text(`${sectionNum}. ${title}`, 20, y + 3);
+        doc.setTextColor(...COLORS.textDark);
+        y += 14;
         doc.setFontSize(10);
         doc.setFont("helvetica", "normal");
       };
 
       // ---- Cover page ----
-      doc.setFontSize(24);
+      addPageDecoration(true);
+
+      // Large colored area for cover
+      doc.setFillColor(...COLORS.lightGray);
+      doc.rect(0, 10, pageWidth, 80, 'F');
+
+      // Logo
+      if (logoImg) {
+        try {
+          doc.addImage(logoImg, "PNG", pageWidth / 2 - 20, 18, 40, 40);
+        } catch {
+          // Skip if logo fails
+        }
+      }
+
+      const coverTextStart = logoImg ? 65 : 35;
+
+      doc.setFontSize(28);
       doc.setFont("helvetica", "bold");
-      doc.text("KS Håndbok", pageWidth / 2, 60, { align: "center" });
+      doc.setTextColor(...COLORS.darkBlue);
+      doc.text("KS Håndbok", pageWidth / 2, coverTextStart, { align: "center" });
       
-      doc.setFontSize(14);
+      doc.setFontSize(13);
       doc.setFont("helvetica", "normal");
-      doc.text("Kvalitetssikringssystem", pageWidth / 2, 75, { align: "center" });
-      
+      doc.setTextColor(...COLORS.orange);
+      doc.text("Kvalitetssikringssystem for bygg og anlegg", pageWidth / 2, coverTextStart + 12, { align: "center" });
+
+      // Orange divider line
+      doc.setDrawColor(...COLORS.orange);
+      doc.setLineWidth(1);
+      doc.line(pageWidth / 2 - 40, coverTextStart + 20, pageWidth / 2 + 40, coverTextStart + 20);
+
+      doc.setTextColor(...COLORS.textDark);
       doc.setFontSize(16);
       doc.setFont("helvetica", "bold");
-      doc.text(company.name, pageWidth / 2, 100, { align: "center" });
+      doc.text(company.name, pageWidth / 2, coverTextStart + 35, { align: "center" });
       
-      if (company.address) {
-        doc.setFontSize(11);
+      if (company.org_number) {
+        doc.setFontSize(10);
         doc.setFont("helvetica", "normal");
-        doc.text(company.address, pageWidth / 2, 112, { align: "center" });
+        doc.text(`Org.nr: ${company.org_number}`, pageWidth / 2, coverTextStart + 43, { align: "center" });
+      }
+
+      if (company.address) {
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        const addrY = company.org_number ? coverTextStart + 51 : coverTextStart + 43;
+        doc.text(company.address, pageWidth / 2, addrY, { align: "center" });
         if (company.postal_code || company.city) {
           doc.text(
             [company.postal_code, company.city].filter(Boolean).join(" "),
-            pageWidth / 2, 119, { align: "center" }
+            pageWidth / 2, addrY + 6, { align: "center" }
           );
         }
       }
 
-      doc.setFontSize(10);
+      doc.setFontSize(9);
+      doc.setTextColor(...COLORS.medGray);
       doc.text(
         `Generert: ${format(new Date(), "d. MMMM yyyy", { locale: nb })}`,
-        pageWidth / 2, 140, { align: "center" }
+        pageWidth / 2, pageHeight - 30, { align: "center" }
       );
+      doc.setTextColor(...COLORS.textDark);
 
       // ---- Section 1: Målsetting ----
-      doc.addPage();
-      y = 20;
+      addNewPage();
       let sectionNum = 1;
 
       addSectionTitle("Målsetting", sectionNum++);
@@ -380,13 +472,14 @@ export default function IkKsHandbok() {
       }
 
       // ---- Section 5: Egenerklæring ----
-      doc.addPage();
-      y = 20;
+      addNewPage();
 
       // Title
       doc.setFontSize(16);
       doc.setFont("helvetica", "bold");
+      doc.setTextColor(...COLORS.darkBlue);
       doc.text("EGENERKLÆRING – KVALITETSSIKRINGSSYSTEM", pageWidth / 2, y, { align: "center" });
+      doc.setTextColor(...COLORS.textDark);
       y += 12;
 
       // Company info block
