@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useKsDeclarations } from "@/hooks/useKsDeclarations";
 import { useQuery } from "@tanstack/react-query";
@@ -17,7 +18,8 @@ import {
   Users,
   FileText,
   ClipboardList,
-  Loader2
+  Loader2,
+  ArrowLeft
 } from "lucide-react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -25,6 +27,7 @@ import jsPDF from "jspdf";
 
 export default function IkKsHandbok() {
   const { company, profile } = useAuth();
+  const navigate = useNavigate();
   const companyId = profile?.company_id;
   const { selfDeclaration, hasSelfDeclaration } = useKsDeclarations();
   const [isGenerating, setIsGenerating] = useState(false);
@@ -321,6 +324,12 @@ export default function IkKsHandbok() {
 
   return (
     <div className="space-y-6">
+      {/* Back button */}
+      <Button variant="ghost" size="sm" onClick={() => navigate("/ks/ik-ks")} className="gap-2">
+        <ArrowLeft className="w-4 h-4" />
+        Tilbake
+      </Button>
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
