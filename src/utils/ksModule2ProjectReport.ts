@@ -329,25 +329,79 @@ export interface KsHandbokData {
 export const generateProjectReportPdf = async (data: ProjectReportData, sections: ReportSections) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
   let yPos = 20;
   let sectionNumber = 0;
 
+  // Construction theme colors (matching KS Håndbok)
+  const COLORS = {
+    darkBlue: [30, 58, 82] as [number, number, number],
+    orange: [232, 119, 34] as [number, number, number],
+    lightGray: [240, 243, 246] as [number, number, number],
+    medGray: [180, 190, 200] as [number, number, number],
+    white: [255, 255, 255] as [number, number, number],
+    textDark: [33, 37, 41] as [number, number, number],
+  };
+
+  // Load company logo if available
+  let logoImg: string | null = null;
+  if (data.companyLogoUrl) {
+    try {
+      const response = await fetch(data.companyLogoUrl);
+      const blob = await response.blob();
+      logoImg = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
+    } catch (e) {
+      console.warn("Could not load company logo for PDF:", e);
+    }
+  }
+
+  // Page decoration helper
+  const addPageDecoration = () => {
+    doc.setFillColor(...COLORS.darkBlue);
+    doc.rect(0, 0, pageWidth, 8, 'F');
+    doc.setFillColor(...COLORS.orange);
+    doc.rect(0, 8, pageWidth, 2, 'F');
+    // Footer
+    doc.setFillColor(...COLORS.darkBlue);
+    doc.rect(0, pageHeight - 12, pageWidth, 12, 'F');
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...COLORS.white);
+    doc.text(data.companyName, 15, pageHeight - 4.5);
+    doc.text(`${data.project.project_number} – ${data.project.project_name}`, pageWidth / 2, pageHeight - 4.5, { align: "center" });
+    doc.text(`Side ${doc.getNumberOfPages()}`, pageWidth - 15, pageHeight - 4.5, { align: "right" });
+    doc.setTextColor(...COLORS.textDark);
+  };
+
+  const addNewPage = () => {
+    doc.addPage();
+    addPageDecoration();
+    yPos = 22;
+  };
+
   // Helper to add new page if needed
   const checkPageBreak = (requiredSpace: number) => {
-    if (yPos + requiredSpace > 270) {
-      doc.addPage();
-      yPos = 20;
+    if (yPos + requiredSpace > pageHeight - 25) {
+      addNewPage();
     }
   };
 
   const addSectionHeader = (title: string) => {
     sectionNumber++;
-    doc.addPage();
-    yPos = 20;
-    doc.setFontSize(16);
+    addNewPage();
+    // Styled section header with colored background
+    doc.setFillColor(...COLORS.darkBlue);
+    doc.roundedRect(15, yPos - 5, pageWidth - 30, 12, 2, 2, 'F');
+    doc.setFontSize(13);
     doc.setFont("helvetica", "bold");
-    doc.text(`${sectionNumber}. ${title}`, 20, yPos);
-    yPos += 15;
+    doc.setTextColor(...COLORS.white);
+    doc.text(`${sectionNumber}. ${title}`, 20, yPos + 3);
+    doc.setTextColor(...COLORS.textDark);
+    yPos += 16;
     doc.setFont("helvetica", "normal");
   };
 
@@ -357,34 +411,52 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
   };
 
   // ============ Title Page ============
-  doc.setFontSize(24);
-  doc.setFont("helvetica", "bold");
-  doc.text("PROSJEKTRAPPORT", pageWidth / 2, 50, { align: "center" });
-  
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text("Kvalitetssikring og dokumentasjon", pageWidth / 2, 62, { align: "center" });
+  addPageDecoration();
 
-  // Project name box
-  doc.setFillColor(245, 245, 245);
-  doc.roundedRect(30, 80, pageWidth - 60, 50, 3, 3, "F");
-  
+  // Large colored area for cover
+  doc.setFillColor(...COLORS.lightGray);
+  doc.rect(0, 10, pageWidth, 80, 'F');
+
+  // Logo
+  if (logoImg) {
+    try {
+      doc.addImage(logoImg, "PNG", pageWidth / 2 - 20, 18, 40, 40);
+    } catch {}
+  }
+
+  const coverTextStart = logoImg ? 65 : 35;
+
+  doc.setFontSize(28);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.darkBlue);
+  doc.text("PROSJEKTRAPPORT", pageWidth / 2, coverTextStart, { align: "center" });
+
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.orange);
+  doc.text("Kvalitetssikring og dokumentasjon", pageWidth / 2, coverTextStart + 12, { align: "center" });
+
+  // Orange divider line
+  doc.setDrawColor(...COLORS.orange);
+  doc.setLineWidth(1);
+  doc.line(pageWidth / 2 - 40, coverTextStart + 20, pageWidth / 2 + 40, coverTextStart + 20);
+
+  doc.setTextColor(...COLORS.textDark);
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text(data.project.project_name, pageWidth / 2, 100, { align: "center" });
-  
+  doc.text(data.project.project_name, pageWidth / 2, coverTextStart + 35, { align: "center" });
+
   doc.setFontSize(12);
   doc.setFont("helvetica", "normal");
-  doc.text(data.project.project_number, pageWidth / 2, 115, { align: "center" });
-  
+  doc.text(data.project.project_number, pageWidth / 2, coverTextStart + 45, { align: "center" });
+
   if (data.project.address) {
-    doc.text(data.project.address, pageWidth / 2, 125, { align: "center" });
+    doc.text(data.project.address, pageWidth / 2, coverTextStart + 53, { align: "center" });
   }
 
   // Metadata
-  doc.setFontSize(10);
   yPos = 160;
-  
+  doc.setFontSize(10);
   if (data.project.client_name) {
     doc.text(`Byggherre: ${data.project.client_name}`, pageWidth / 2, yPos, { align: "center" });
     yPos += 10;
@@ -400,17 +472,23 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
 
   // Generation info at bottom
   doc.setFontSize(9);
-  doc.text(`Generert: ${format(new Date(), "d. MMMM yyyy 'kl.' HH:mm", { locale: nb })}`, pageWidth / 2, 240, { align: "center" });
-  doc.text(`Utført av: ${data.generatedBy}`, pageWidth / 2, 248, { align: "center" });
-  doc.text(`Bedrift: ${data.companyName}`, pageWidth / 2, 256, { align: "center" });
+  doc.setTextColor(...COLORS.medGray);
+  doc.text(`Generert: ${format(new Date(), "d. MMMM yyyy 'kl.' HH:mm", { locale: nb })}`, pageWidth / 2, pageHeight - 50, { align: "center" });
+  doc.text(`Utført av: ${data.generatedBy}`, pageWidth / 2, pageHeight - 42, { align: "center" });
+  doc.text(`Bedrift: ${data.companyName}`, pageWidth / 2, pageHeight - 34, { align: "center" });
+  doc.setTextColor(...COLORS.textDark);
 
   // ============ Table of Contents ============
-  doc.addPage();
-  yPos = 20;
-  doc.setFontSize(16);
+  addNewPage();
+
+  doc.setFillColor(...COLORS.darkBlue);
+  doc.roundedRect(15, yPos - 5, pageWidth - 30, 12, 2, 2, 'F');
+  doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
-  doc.text("Innholdsfortegnelse", 20, yPos);
-  yPos += 15;
+  doc.setTextColor(...COLORS.white);
+  doc.text("Innholdsfortegnelse", 20, yPos + 3);
+  doc.setTextColor(...COLORS.textDark);
+  yPos += 18;
 
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
@@ -465,11 +543,21 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
   if (sections.includeDocuments) {
     tocItems.push({ title: "Dokumentoversikt", count: data.documents.length });
   }
+  if (sections.includeKsHandbok && data.ksHandbok) {
+    tocItems.push({ title: "KS Håndbok" });
+  }
 
   tocItems.forEach((item, index) => {
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...COLORS.textDark);
     const countStr = item.count !== undefined ? ` (${item.count})` : "";
     doc.text(`${index + 1}. ${item.title}${countStr}`, 25, yPos);
-    yPos += 8;
+    // Dotted line to page number area
+    doc.setDrawColor(...COLORS.medGray);
+    doc.setLineDashPattern([1, 1], 0);
+    doc.line(100, yPos, pageWidth - 25, yPos);
+    doc.setLineDashPattern([], 0);
+    yPos += 9;
   });
 
   // ============ Project Information ============
@@ -537,7 +625,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
       body: checklistData,
       theme: "striped",
       styles: { fontSize: 9 },
-      headStyles: { fillColor: [59, 130, 246] },
+      headStyles: { fillColor: [30, 58, 82] },
     });
 
     // Detailed checkpoint responses if enabled
@@ -571,7 +659,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
             body: checkpointData,
             theme: "striped",
             styles: { fontSize: 8, cellPadding: 2 },
-            headStyles: { fillColor: [59, 130, 246] },
+            headStyles: { fillColor: [30, 58, 82] },
             columnStyles: {
               0: { cellWidth: 80 },
               1: { cellWidth: 30 },
@@ -659,7 +747,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
       body: avvikData,
       theme: "striped",
       styles: { fontSize: 9 },
-      headStyles: { fillColor: [239, 68, 68] },
+      headStyles: { fillColor: [30, 58, 82] },
     });
 
     // Detailed avvik information
@@ -787,7 +875,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
       body: ukData,
       theme: "striped",
       styles: { fontSize: 9 },
-      headStyles: { fillColor: [34, 197, 94] },
+      headStyles: { fillColor: [30, 58, 82] },
     });
 
     // Detailed UK information
@@ -912,7 +1000,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
         body: riskData,
         theme: "striped",
         styles: { fontSize: 8 },
-        headStyles: { fillColor: [16, 185, 129] },
+        headStyles: { fillColor: [30, 58, 82] },
       });
     }
   }
@@ -942,7 +1030,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
       body: sjaData,
       theme: "striped",
       styles: { fontSize: 8 },
-      headStyles: { fillColor: [245, 158, 11] },
+      headStyles: { fillColor: [30, 58, 82] },
     });
 
     // Detailed SJA information
@@ -1015,7 +1103,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
             body: riskData,
             theme: "striped",
             styles: { fontSize: 8 },
-            headStyles: { fillColor: [245, 158, 11] },
+            headStyles: { fillColor: [30, 58, 82] },
           });
 
           yPos = (doc as any).lastAutoTable.finalY + 10;
@@ -1041,7 +1129,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
             body: measureData,
             theme: "striped",
             styles: { fontSize: 8 },
-            headStyles: { fillColor: [34, 197, 94] },
+            headStyles: { fillColor: [30, 58, 82] },
           });
 
           yPos = (doc as any).lastAutoTable.finalY + 10;
@@ -1076,7 +1164,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
       body: vrData,
       theme: "striped",
       styles: { fontSize: 8 },
-      headStyles: { fillColor: [139, 92, 246] },
+      headStyles: { fillColor: [30, 58, 82] },
     });
 
     // Detailed vernerunde information
@@ -1136,7 +1224,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
             body: findingsData,
             theme: "striped",
             styles: { fontSize: 8 },
-            headStyles: { fillColor: [139, 92, 246] },
+            headStyles: { fillColor: [30, 58, 82] },
             columnStyles: {
               0: { cellWidth: 10 },
               1: { cellWidth: "auto" },
@@ -1174,7 +1262,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
       body: stoffData,
       theme: "striped",
       styles: { fontSize: 9 },
-      headStyles: { fillColor: [249, 115, 22] },
+      headStyles: { fillColor: [30, 58, 82] },
     });
   }
 
@@ -1202,7 +1290,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
       body: milestoneData,
       theme: "striped",
       styles: { fontSize: 9 },
-      headStyles: { fillColor: [59, 130, 246] },
+      headStyles: { fillColor: [30, 58, 82] },
     });
   }
 
@@ -1231,7 +1319,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
       body: meetingData,
       theme: "striped",
       styles: { fontSize: 8 },
-      headStyles: { fillColor: [99, 102, 241] },
+      headStyles: { fillColor: [30, 58, 82] },
     });
   }
 
@@ -1298,7 +1386,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
         body: invoiceData,
         theme: "striped",
         styles: { fontSize: 8 },
-        headStyles: { fillColor: [245, 158, 11] },
+        headStyles: { fillColor: [30, 58, 82] },
       });
     }
   }
@@ -1328,7 +1416,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
       body: changeOrderData,
       theme: "striped",
       styles: { fontSize: 9 },
-      headStyles: { fillColor: [6, 182, 212] },
+      headStyles: { fillColor: [30, 58, 82] },
     });
   }
 
@@ -1358,7 +1446,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
       body: claimData,
       theme: "striped",
       styles: { fontSize: 8 },
-      headStyles: { fillColor: [244, 63, 94] },
+      headStyles: { fillColor: [30, 58, 82] },
     });
   }
 
@@ -1388,7 +1476,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
       body: subcontractorData,
       theme: "striped",
       styles: { fontSize: 8 },
-      headStyles: { fillColor: [168, 85, 247] },
+      headStyles: { fillColor: [30, 58, 82] },
     });
   }
 
@@ -1415,7 +1503,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
       body: routineData,
       theme: "striped",
       styles: { fontSize: 9 },
-      headStyles: { fillColor: [20, 184, 166] },
+      headStyles: { fillColor: [30, 58, 82] },
     });
   }
 
@@ -1439,7 +1527,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
       body: docData,
       theme: "striped",
       styles: { fontSize: 9 },
-      headStyles: { fillColor: [107, 114, 128] },
+      headStyles: { fillColor: [30, 58, 82] },
     });
   }
 
@@ -1555,25 +1643,25 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
     }
   }
 
-  // ============ Footer on all pages ============
+  // ============ Update page decorations on all pages ============
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.setFontSize(8);
+    // Top bar
+    doc.setFillColor(...COLORS.darkBlue);
+    doc.rect(0, 0, pageWidth, 8, 'F');
+    doc.setFillColor(...COLORS.orange);
+    doc.rect(0, 8, pageWidth, 2, 'F');
+    // Footer
+    doc.setFillColor(...COLORS.darkBlue);
+    doc.rect(0, pageHeight - 12, pageWidth, 12, 'F');
+    doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
-    doc.setDrawColor(200, 200, 200);
-    doc.line(20, 285, pageWidth - 20, 285);
-    doc.text(
-      `${data.project.project_number} - ${data.project.project_name}`,
-      20,
-      290
-    );
-    doc.text(
-      `Side ${i} av ${pageCount}`,
-      pageWidth - 20,
-      290,
-      { align: "right" }
-    );
+    doc.setTextColor(...COLORS.white);
+    doc.text(data.companyName, 15, pageHeight - 4.5);
+    doc.text(`${data.project.project_number} – ${data.project.project_name}`, pageWidth / 2, pageHeight - 4.5, { align: "center" });
+    doc.text(`Side ${i} av ${pageCount}`, pageWidth - 15, pageHeight - 4.5, { align: "right" });
+    doc.setTextColor(...COLORS.textDark);
   }
 
   // Download
