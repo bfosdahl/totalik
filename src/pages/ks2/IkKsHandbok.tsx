@@ -279,39 +279,258 @@ export default function IkKsHandbok() {
       }
 
       // ---- Section 5: Egenerklæring ----
-      addSectionTitle("Egenerklæring om kvalitetssikringssystem", sectionNum++);
+      doc.addPage();
+      y = 20;
+
+      // Title
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.text("EGENERKLÆRING – KVALITETSSIKRINGSSYSTEM", pageWidth / 2, y, { align: "center" });
+      y += 12;
+
+      // Company info block
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      const companyInfo = [
+        `Virksomhet: ${company.name}`,
+        `Organisasjonsnummer: ${company.org_number || "___________________________"}`,
+        `Adresse: ${company.address || "____________________________________"}`,
+        `Postnr./sted: ${[company.postal_code, company.city].filter(Boolean).join(" ") || "________________________________"}`,
+      ];
+      companyInfo.forEach(line => {
+        doc.text(line, 20, y);
+        y += 6;
+      });
+      y += 4;
+
+      // Section 1: Formål
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("1. FORMÅL", 20, y);
+      y += 7;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      const purposeText = "Denne egenerklæringen bekrefter at virksomheten har etablert, tatt i bruk og vedlikeholder et kvalitetssikringssystem (KS-system) som skal sikre at arbeid, tjenester og leveranser planlegges, gjennomføres og dokumenteres i samsvar med gjeldende lover, forskrifter og kontraktskrav.";
+      const purposeLines = doc.splitTextToSize(purposeText, pageWidth - 40);
+      doc.text(purposeLines, 20, y);
+      y += purposeLines.length * 4.5 + 3;
+
+      const qualityPoints = [
+        "Riktig kvalitet på utført arbeid",
+        "Forutsigbar gjennomføring av oppdrag",
+        "Sporbar dokumentasjon",
+        "Kontinuerlig forbedring av virksomheten",
+        "Etterlevelse av myndighetskrav",
+      ];
+      doc.text("Kvalitetssystemet skal bidra til:", 20, y);
+      y += 5;
+      qualityPoints.forEach(point => {
+        addPageIfNeeded(6);
+        doc.text(`• ${point}`, 25, y);
+        y += 5;
+      });
+      y += 4;
+
+      // Section 2: Omfang
+      addPageIfNeeded(40);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("2. OMFANG", 20, y);
+      y += 7;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text("Kvalitetssikringssystemet gjelder for alle virksomhetens aktiviteter innen:", 20, y);
+      y += 5;
+      const scopeItems = ["Prosjektering", "Utførelse av arbeid", "Leveranser og tjenester", "Innkjøp og bruk av underleverandører", "Kontroll, dokumentasjon og overlevering"];
+      scopeItems.forEach(item => {
+        doc.text(`☐ ${item}`, 25, y);
+        y += 5;
+      });
+      y += 2;
+      doc.setFont("helvetica", "italic");
+      doc.text("(Systemet tilpasses virksomhetens størrelse og risikobilde.)", 20, y);
+      doc.setFont("helvetica", "normal");
+      y += 8;
+
+      // Section 3: Organisering og ansvar
+      addPageIfNeeded(50);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("3. ORGANISERING OG ANSVAR", 20, y);
+      y += 7;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text("Virksomheten har definert ansvar og myndighet for kvalitetssikring:", 20, y);
+      y += 6;
+
+      // Simple table
+      const roles = [
+        ["Rolle", "Ansvar"],
+        ["Daglig leder", "Overordnet ansvar for kvalitetssystemet"],
+        ["Faglig ansvarlig", "Sikrer faglig utførelse iht. regelverk"],
+        ["Prosjekt-/arbeidsleder", "Planlegging, gjennomføring og kontroll"],
+        ["Ansatte", "Utfører arbeid iht. rutiner og melder avvik"],
+      ];
+      doc.setFont("helvetica", "bold");
+      doc.text(roles[0][0], 25, y);
+      doc.text(roles[0][1], 80, y);
+      y += 5;
+      doc.setFont("helvetica", "normal");
+      roles.slice(1).forEach(row => {
+        doc.text(row[0], 25, y);
+        doc.text(row[1], 80, y);
+        y += 5;
+      });
+      y += 3;
+      doc.text("Alle ansatte er gjort kjent med relevante rutiner og krav.", 20, y);
+      y += 8;
+
+      // Section 4: Sentrale rutiner
+      addPageIfNeeded(50);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("4. SENTRALE RUTINER I KVALITETSSYSTEMET", 20, y);
+      y += 7;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text("Virksomheten har etablerte rutiner for:", 20, y);
+      y += 5;
+      const routinePoints = [
+        "Planlegging av oppdrag og arbeidsprosesser",
+        "Kompetansesikring og opplæring av ansatte",
+        "Risikovurdering før og under arbeid",
+        "Kontroll av arbeid og leveranser",
+        "Dokumentstyring og arkivering",
+        "Avviksbehandling og korrigerende tiltak",
+        "Bruk og oppfølging av underleverandører",
+        "Sluttkontroll og overlevering",
+        "Periodisk gjennomgang av systemet",
+      ];
+      routinePoints.forEach(point => {
+        addPageIfNeeded(6);
+        doc.text(`• ${point}`, 25, y);
+        y += 5;
+      });
+      y += 4;
+
+      // Section 5: Avvik og forbedring
+      addPageIfNeeded(30);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("5. AVVIK OG FORBEDRING", 20, y);
+      y += 7;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text("Virksomheten har system for registrering og behandling av:", 20, y);
+      y += 5;
+      ["Avvik fra krav og spesifikasjoner", "Uønskede hendelser og feil", "Forbedringsforslag"].forEach(p => {
+        doc.text(`• ${p}`, 25, y);
+        y += 5;
+      });
+      y += 2;
+      const improvText = "Avvik behandles systematisk for å hindre gjentakelse og sikre kontinuerlig forbedring.";
+      doc.text(doc.splitTextToSize(improvText, pageWidth - 40), 20, y);
+      y += 8;
+
+      // Section 6: Dokumentasjon
+      addPageIfNeeded(35);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("6. DOKUMENTASJON", 20, y);
+      y += 7;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text("Alle relevante aktiviteter dokumenteres der det er nødvendig, herunder:", 20, y);
+      y += 5;
+      ["Sjekklister og kontroller", "Prosjektdokumentasjon", "Samsvarserklæringer / sluttdokumentasjon", "Opplæringsoversikt", "Avviksbehandling"].forEach(p => {
+        doc.text(`• ${p}`, 25, y);
+        y += 5;
+      });
+      y += 2;
+      doc.text("Dokumentasjon oppbevares i virksomhetens system for internkontroll og kvalitetssikring.", 20, y);
+      y += 8;
+
+      // Section 7: Lover
+      addPageIfNeeded(30);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("7. ETTERLEVELSE AV LOVER OG FORSKRIFTER", 20, y);
+      y += 7;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text("Kvalitetssystemet er etablert med grunnlag i relevante krav, blant annet:", 20, y);
+      y += 5;
+      ["Plan- og bygningsloven (PBL)", "Byggesaksforskriften (SAK10) – der relevant", "Internkontrollforskriften", "Arbeidsmiljøloven", "Eventuelle bransjespesifikke forskrifter"].forEach(p => {
+        doc.text(`• ${p}`, 25, y);
+        y += 5;
+      });
+      y += 4;
+
+      // Section 8: Gjennomgang
+      addPageIfNeeded(30);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("8. GJENNOMGANG OG VEDLIKEHOLD", 20, y);
+      y += 7;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text("Kvalitetssystemet gjennomgås jevnlig og oppdateres ved:", 20, y);
+      y += 5;
+      ["Endringer i regelverk", "Nye arbeidsområder", "Erfaring fra avvik eller prosjekter", "Organisatoriske endringer"].forEach(p => {
+        doc.text(`• ${p}`, 25, y);
+        y += 5;
+      });
+      y += 4;
+
+      // Section 9: Erklæring
+      addPageIfNeeded(50);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("9. ERKLÆRING", 20, y);
+      y += 7;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      const erklText1 = "Vi bekrefter at virksomheten har et fungerende og implementert kvalitetssikringssystem som brukes aktivt i den daglige driften.";
+      const erklLines1 = doc.splitTextToSize(erklText1, pageWidth - 40);
+      doc.text(erklLines1, 20, y);
+      y += erklLines1.length * 4.5 + 3;
+      const erklText2 = "Systemet er tilpasset virksomhetens størrelse, aktiviteter og risiko, og etterleves av ansatte og ledelse.";
+      const erklLines2 = doc.splitTextToSize(erklText2, pageWidth - 40);
+      doc.text(erklLines2, 20, y);
+      y += erklLines2.length * 4.5 + 8;
+
+      // Signature area
       if (selfDeclaration) {
-        const declTexts = [
-          `Bedrift: ${selfDeclaration.company_name}`,
-          "",
-          "Det kreves at tilbyder har et godt og velfungerende kvalitetssikringssystem / styringssystem samt helse, miljø og sikkerhetspolicy for ytelsen som skal leveres.",
-          "",
-          "Undertegnende leverandør erklærer med dette at nevnte forpliktelser vil bli overholdt.",
-          "",
-          `Signert av: ${selfDeclaration.manager_name || "Ikke angitt"}`,
-          `Dato: ${selfDeclaration.manager_signed_at ? format(new Date(selfDeclaration.manager_signed_at), "d. MMMM yyyy", { locale: nb }) : "Ikke angitt"}`,
-        ];
-
-        declTexts.forEach(text => {
-          if (text === "") { y += 4; return; }
-          addPageIfNeeded(7);
-          const lines = doc.splitTextToSize(text, pageWidth - 40);
-          doc.text(lines, 25, y);
-          y += lines.length * 5 + 2;
-        });
-
+        doc.text(`Sted: ${company.city || "___________________________"}`, 20, y);
+        doc.text(`Dato: ${selfDeclaration.manager_signed_at ? format(new Date(selfDeclaration.manager_signed_at), "d. MMMM yyyy", { locale: nb }) : "___________________________"}`, 110, y);
+        y += 12;
+        doc.text("For virksomheten", 20, y);
+        y += 8;
+        doc.text(`Navn: ${selfDeclaration.manager_name || ""}`, 20, y);
+        y += 6;
+        doc.text("Stilling: Daglig leder", 20, y);
+        y += 6;
+        doc.text("Signatur:", 20, y);
+        y += 5;
         if (selfDeclaration.manager_signature) {
-          addPageIfNeeded(35);
-          y += 5;
           try {
-            doc.addImage(selfDeclaration.manager_signature, "PNG", 25, y, 60, 25);
+            doc.addImage(selfDeclaration.manager_signature, "PNG", 20, y, 60, 25);
             y += 30;
           } catch {
             // Skip if signature image fails
           }
         }
       } else {
-        doc.text("Egenerklæring er ikke signert.", 25, y);
+        doc.text("Sted: ___________________________", 20, y);
+        doc.text("Dato: ___________________________", 110, y);
+        y += 12;
+        doc.text("For virksomheten", 20, y);
+        y += 8;
+        doc.text("Navn:", 20, y);
+        y += 6;
+        doc.text("Stilling:", 20, y);
+        y += 6;
+        doc.text("Signatur:", 20, y);
       }
 
       doc.save(`KS_Handbok_${company.name.replace(/\s+/g, '_')}.pdf`);

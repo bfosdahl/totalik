@@ -49,56 +49,27 @@ export default function IkKsEgenerklaering() {
     // Title
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text("Egenerklæring om kvalitetssikringssystem", pageWidth / 2, y, { align: "center" });
-    y += 10;
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("for ytelsen som skal leveres", pageWidth / 2, y, { align: "center" });
+    doc.text("EGENERKLÆRING – KVALITETSSIKRINGSSYSTEM", pageWidth / 2, y, { align: "center" });
     y += 15;
 
     // Company info
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.text("Bedrift:", 20, y);
-    doc.setFont("helvetica", "normal");
-    doc.text(selfDeclaration.company_name || "", 60, y);
-    y += 7;
-
-    if (selfDeclaration.company_address) {
-      doc.setFont("helvetica", "bold");
-      doc.text("Adresse:", 20, y);
-      doc.setFont("helvetica", "normal");
-      doc.text(selfDeclaration.company_address, 60, y);
-      y += 7;
-    }
-
-    if (selfDeclaration.postal_code || selfDeclaration.city) {
-      doc.setFont("helvetica", "bold");
-      doc.text("Postnr./-sted:", 20, y);
-      doc.setFont("helvetica", "normal");
-      doc.text([selfDeclaration.postal_code, selfDeclaration.city].filter(Boolean).join(" "), 60, y);
-      y += 7;
-    }
-
-    y += 8;
-
-    // Declaration text
     doc.setFontSize(10);
-    const texts = [
-      "Det kreves at tilbyder har et godt og velfungerende kvalitetssikringssystem / styringssystem samt helse, miljø og sikkerhetspolicy for ytelsen som skal leveres. Tilbyder skal sørge for til enhver tid å ha et oppdatert kvalitetssikringssystem, samt sørge for at ansatte i egen organisasjon kjenner til og utfører sitt arbeid i henhold til dette.",
+    doc.setFont("helvetica", "normal");
+    doc.text(`Virksomhet: ${selfDeclaration.company_name || ""}`, 20, y);
+    y += 6;
+    doc.text(`Organisasjonsnummer: ${company?.org_number || "___________________________"}`, 20, y);
+    y += 12;
+
+    // Declaration body
+    const bodyTexts = [
+      "Vi erklærer med dette at virksomheten har etablert og tatt i bruk et kvalitetssikringssystem (Total IK – med modul IK/Bygg) som benyttes i den daglige driften.",
       "",
-      "Kvalitetssikringssystemet skal være utarbeidet i den form og det omfang som er nødvendig på bakgrunn av virksomhetens art, aktiviteter, risikoforhold og størrelse.",
+      "Systemet er tilpasset virksomhetens størrelse og aktiviteter, og skal sikre at arbeid planlegges, utføres og dokumenteres i samsvar med gjeldende lover, forskrifter og krav til kvalitet.",
       "",
-      "Kvalitetssikringssystemet skal være i henhold til enhver tid gjeldende lover og forskrifter.",
-      "",
-      "Tilbyder skal på anmodning legge fram dokumentasjon på kvalitetssikringssystemet.",
-      "",
-      "Oppdragsgiver stiller krav om at bekreftelsen signeres.",
-      "",
-      "Undertegnende leverandør erklærer med dette at nevnte forpliktelser vil bli overholdt.",
+      "Kvalitetssikringssystemet omfatter blant annet:",
     ];
 
-    texts.forEach(text => {
+    bodyTexts.forEach(text => {
       if (text === "") {
         y += 4;
       } else {
@@ -107,16 +78,37 @@ export default function IkKsEgenerklaering() {
         y += lines.length * 5;
       }
     });
+    y += 3;
 
-    y += 15;
+    // Bullet points
+    const bullets = [
+      "Klare ansvarsforhold og rutiner for gjennomføring av arbeid",
+      "Kontroll og dokumentasjon av utført arbeid",
+      "Håndtering av avvik og forbedringstiltak",
+      "Jevnlig gjennomgang og oppdatering av systemet",
+    ];
+    bullets.forEach(b => {
+      doc.text(`• ${b}`, 25, y);
+      y += 6;
+    });
+    y += 4;
+
+    const closingText = "Systemet er gjort kjent for ansatte og brukes aktivt i virksomhetens prosjekter og leveranser.";
+    const closingLines = doc.splitTextToSize(closingText, pageWidth - 40);
+    doc.text(closingLines, 20, y);
+    y += closingLines.length * 5 + 15;
 
     // Signature section
-    doc.setFontSize(11);
-    doc.text(`Sted: ${selfDeclaration.city || "_____________"}`, 20, y);
+    doc.setFontSize(10);
+    doc.text(`Sted: ${selfDeclaration.city || "___________________________"}`, 20, y);
     doc.text(`Dato: ${formatDate(selfDeclaration.manager_signed_at)}`, 110, y);
     y += 15;
 
-    doc.text("Underskrift:", 20, y);
+    doc.text(`Navn: ${selfDeclaration.manager_name || ""}`, 20, y);
+    y += 6;
+    doc.text("Stilling: Daglig leder", 20, y);
+    y += 8;
+    doc.text("Signatur:", 20, y);
     y += 5;
 
     if (selfDeclaration.manager_signature) {
@@ -127,8 +119,6 @@ export default function IkKsEgenerklaering() {
         y += 5;
       }
     }
-
-    doc.text(`${selfDeclaration.manager_name || ""}`, 20, y);
 
     doc.save(`Egenerklaering_KS_${selfDeclaration.company_name?.replace(/\s+/g, '_')}.pdf`);
   };
