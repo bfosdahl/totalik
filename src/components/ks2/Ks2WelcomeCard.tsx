@@ -60,6 +60,7 @@ interface Ks2WelcomeCardProps {
   hasSubcontractors: boolean;
   hasTemplates: boolean;
   contractorType?: string | null;
+  hasProjectInfo?: boolean;
 }
 
 export function Ks2WelcomeCard({ 
@@ -67,6 +68,7 @@ export function Ks2WelcomeCard({
   hasSubcontractors,
   hasTemplates,
   contractorType,
+  hasProjectInfo = false,
 }: Ks2WelcomeCardProps) {
   const { projectId } = useParams();
   const navigate = useNavigate();
@@ -92,7 +94,7 @@ export function Ks2WelcomeCard({
   const completedSteps = onboardingSteps.map(step => {
     switch (step.id) {
       case "maler": return hasTemplates;
-      case "prosjektinfo": return hasChecklists;
+      case "prosjektinfo": return hasProjectInfo;
       case "underleverandorer": return hasSubcontractors;
       default: return false;
     }
