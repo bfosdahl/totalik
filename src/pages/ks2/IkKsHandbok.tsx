@@ -230,14 +230,54 @@ export default function IkKsHandbok() {
       // ---- Section 3: Organisasjonsplan ----
       addSectionTitle("Organisasjonsplan", sectionNum++);
       if (organization?.custom_content) {
-        // Strip HTML tags for PDF
-        const plainText = organization.custom_content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-        const lines = doc.splitTextToSize(plainText, pageWidth - 40);
-        lines.forEach((line: string) => {
-          addPageIfNeeded(7);
-          doc.text(line, 25, y);
-          y += 5;
-        });
+        // Try to parse as JSON roles array
+        let roles: any[] = [];
+        try {
+          const parsed = JSON.parse(organization.custom_content);
+          if (parsed?.roles && Array.isArray(parsed.roles)) {
+            roles = parsed.roles;
+          } else if (Array.isArray(parsed)) {
+            roles = parsed;
+          }
+        } catch {
+          // Not JSON, treat as plain text
+        }
+
+        if (roles.length > 0) {
+          // Sort by sortOrder
+          roles.sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+          
+          doc.text("Virksomheten har definert følgende roller og ansvarsfordeling:", 25, y);
+          y += 7;
+
+          roles.forEach((role: any) => {
+            addPageIfNeeded(18);
+            doc.setFont("helvetica", "bold");
+            const title = role.title || "Ukjent rolle";
+            const person = role.personName ? ` – ${role.personName}` : "";
+            doc.text(`${title}${person}`, 25, y);
+            y += 5;
+            doc.setFont("helvetica", "normal");
+            if (role.description) {
+              const descLines = doc.splitTextToSize(role.description, pageWidth - 50);
+              descLines.forEach((line: string) => {
+                addPageIfNeeded(6);
+                doc.text(line, 30, y);
+                y += 5;
+              });
+            }
+            y += 3;
+          });
+        } else {
+          // Fallback: render as plain text (strip HTML)
+          const plainText = organization.custom_content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+          const lines = doc.splitTextToSize(plainText, pageWidth - 40);
+          lines.forEach((line: string) => {
+            addPageIfNeeded(7);
+            doc.text(line, 25, y);
+            y += 5;
+          });
+        }
       } else {
         doc.text("Ingen organisasjonsplan definert.", 25, y);
         y += 8;
