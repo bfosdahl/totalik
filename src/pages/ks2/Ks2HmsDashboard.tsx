@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -12,31 +12,78 @@ import {
   HardHat,
   Calendar,
   ArrowRight,
-  Plus
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useKsModule2Sja } from "@/hooks/useKsModule2Sja";
+import { useKsModule2Avvik } from "@/hooks/useKsModule2Avvik";
+import { useKsModule2Vernerunder } from "@/hooks/useKsModule2Vernerunder";
+import { format, parseISO } from "date-fns";
+import { nb } from "date-fns/locale";
+import { useMemo } from "react";
 
 export default function Ks2HmsDashboard() {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const basePath = `/ks/project/${projectId}`;
 
-  // Placeholder stats - will be dynamic later
-  const stats = {
-    hmsProgress: 35,
-    openSja: 2,
-    openHmsAvvik: 1,
-    completedVernerunder: 3,
-    totalVernerunder: 5,
-    nextVernerunde: "15.12.2024",
-  };
+  const { sjaList } = useKsModule2Sja(projectId);
+  const { avvikList } = useKsModule2Avvik(projectId || null);
+  const { vernerunder } = useKsModule2Vernerunder(projectId);
+
+  const stats = useMemo(() => {
+    const openSja = (sjaList || []).filter(s => s.status !== "approved" && s.status !== "rejected").length;
+    const openAvvik = (avvikList || []).filter(a => a.status === "open" || a.status === "in_progress").length;
+    const completedVernerunder = (vernerunder || []).filter(v => v.status === "completed").length;
+    const totalVernerunder = (vernerunder || []).length;
+
+    // Calculate HMS progress based on what's been done
+    let progressPoints = 0;
+    let totalPoints = 0;
+    
+    // SJA: have any been created?
+    totalPoints += 1;
+    if ((sjaList || []).length > 0) progressPoints += 1;
+    
+    // Avvik: are all closed?
+    totalPoints += 1;
+    if ((avvikList || []).length === 0 || openAvvik === 0) progressPoints += 1;
+    
+    // Vernerunder: completion ratio
+    totalPoints += 1;
+    if (totalVernerunder > 0) progressPoints += completedVernerunder / totalVernerunder;
+
+    const hmsProgress = totalPoints > 0 ? Math.round((progressPoints / totalPoints) * 100) : 0;
+
+    // Find next upcoming vernerunde
+    const upcoming = (vernerunder || [])
+      .filter(v => v.status !== "completed" && v.scheduled_date)
+      .sort((a, b) => (a.scheduled_date || "").localeCompare(b.scheduled_date || ""));
+    const nextVernerunde = upcoming[0]?.scheduled_date 
+      ? format(parseISO(upcoming[0].scheduled_date), "dd.MM.yyyy")
+      : null;
+
+    return { hmsProgress, openSja, openAvvik, completedVernerunder, totalVernerunder, nextVernerunde };
+  }, [sjaList, avvikList, vernerunder]);
+
+  // Recent SJA (last 3)
+  const recentSja = useMemo(() => {
+    return (sjaList || [])
+      .sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""))
+      .slice(0, 3);
+  }, [sjaList]);
+
+  // Recent avvik (last 3)
+  const recentAvvik = useMemo(() => {
+    return (avvikList || [])
+      .sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""))
+      .slice(0, 3);
+  }, [avvikList]);
 
   const quickActions = [
-    { label: "HMS-plan", icon: FileText, path: "/hms/hms-plan", color: "text-emerald-500" },
-    { label: "Ny SJA", icon: ClipboardCheck, path: "/hms/sja", color: "text-emerald-500" },
-    { label: "SHA-plan", icon: FileCheck, path: "/hms/sha-plan", color: "text-emerald-500" },
-    { label: "Vernerunde", icon: HardHat, path: "/hms/vernerunder", color: "text-emerald-500" },
-    { label: "HMS-avvik", icon: AlertTriangle, path: "/hms/avvik", color: "text-emerald-500" },
+    { label: "HMS-plan", icon: FileText, path: "/hms/hms-plan" },
+    { label: "Ny SJA", icon: ClipboardCheck, path: "/hms/sja" },
+    { label: "SHA-plan", icon: FileCheck, path: "/hms/sha-plan" },
+    { label: "Vernerunde", icon: HardHat, path: "/hms/vernerunder" },
+    { label: "HMS-avvik", icon: AlertTriangle, path: "/hms/avvik" },
   ];
 
   return (
@@ -54,7 +101,6 @@ export default function Ks2HmsDashboard() {
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* HMS Progress */}
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>HMS Fremdrift</CardDescription>
@@ -65,43 +111,46 @@ export default function Ks2HmsDashboard() {
           </CardContent>
         </Card>
 
-        {/* Open SJA */}
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Åpne SJA</CardDescription>
             <CardTitle className="text-3xl">{stats.openSja}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Badge variant={stats.openSja > 0 ? "default" : "secondary"} className="bg-emerald-500">
+            <Badge variant={stats.openSja > 0 ? "default" : "secondary"} className={stats.openSja > 0 ? "bg-emerald-500" : ""}>
               {stats.openSja > 0 ? "Aktive" : "Ingen åpne"}
             </Badge>
           </CardContent>
         </Card>
 
-        {/* HMS Avvik */}
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Åpne HMS-avvik</CardDescription>
-            <CardTitle className="text-3xl">{stats.openHmsAvvik}</CardTitle>
+            <CardTitle className="text-3xl">{stats.openAvvik}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Badge variant={stats.openHmsAvvik > 0 ? "destructive" : "secondary"}>
-              {stats.openHmsAvvik > 0 ? "Krever oppfølging" : "Ingen åpne"}
+            <Badge variant={stats.openAvvik > 0 ? "destructive" : "secondary"}>
+              {stats.openAvvik > 0 ? "Krever oppfølging" : "Ingen åpne"}
             </Badge>
           </CardContent>
         </Card>
 
-        {/* Vernerunder */}
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Vernerunder</CardDescription>
-            <CardTitle className="text-3xl">{stats.completedVernerunder}/{stats.totalVernerunder}</CardTitle>
+            <CardTitle className="text-3xl">
+              {stats.totalVernerunder > 0 ? `${stats.completedVernerunder}/${stats.totalVernerunder}` : "0"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>Neste: {stats.nextVernerunde}</span>
-            </div>
+            {stats.nextVernerunde ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                <span>Neste: {stats.nextVernerunde}</span>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Ingen planlagt</p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -120,7 +169,7 @@ export default function Ks2HmsDashboard() {
                 className="h-auto py-4 flex flex-col items-center gap-2 hover:border-emerald-500 hover:bg-emerald-500/5"
                 onClick={() => navigate(`${basePath}${action.path}`)}
               >
-                <action.icon className={`h-6 w-6 ${action.color}`} />
+                <action.icon className="h-6 w-6 text-emerald-500" />
                 <span>{action.label}</span>
               </Button>
             ))}
@@ -146,22 +195,28 @@ export default function Ks2HmsDashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                <div>
-                  <p className="font-medium">Arbeid i høyden - Tak</p>
-                  <p className="text-sm text-muted-foreground">02.12.2024</p>
-                </div>
-                <Badge className="bg-emerald-500">Godkjent</Badge>
+            {recentSja.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">Ingen SJA registrert ennå</p>
+            ) : (
+              <div className="space-y-3">
+                {recentSja.map((sja) => (
+                  <div key={sja.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div>
+                      <p className="font-medium">{sja.title || "Uten tittel"}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {sja.created_at ? format(parseISO(sja.created_at), "dd.MM.yyyy") : ""}
+                      </p>
+                    </div>
+                    <Badge 
+                      className={sja.status === "approved" ? "bg-emerald-500" : ""}
+                      variant={sja.status === "rejected" ? "destructive" : sja.status === "approved" ? "default" : "secondary"}
+                    >
+                      {sja.status === "approved" ? "Godkjent" : sja.status === "rejected" ? "Avvist" : "Aktiv"}
+                    </Badge>
+                  </div>
+                ))}
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                <div>
-                  <p className="font-medium">Varmt arbeid - Sveising</p>
-                  <p className="text-sm text-muted-foreground">28.11.2024</p>
-                </div>
-                <Badge className="bg-emerald-500">Godkjent</Badge>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -181,22 +236,27 @@ export default function Ks2HmsDashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                <div>
-                  <p className="font-medium">Manglende verneutstyr</p>
-                  <p className="text-sm text-muted-foreground">HMS-001 • 01.12.2024</p>
-                </div>
-                <Badge variant="destructive">Åpen</Badge>
+            {recentAvvik.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">Ingen HMS-avvik registrert ennå</p>
+            ) : (
+              <div className="space-y-3">
+                {recentAvvik.map((avvik) => (
+                  <div key={avvik.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div>
+                      <p className="font-medium">{avvik.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {avvik.avvik_number} • {avvik.created_at ? format(parseISO(avvik.created_at), "dd.MM.yyyy") : ""}
+                      </p>
+                    </div>
+                    <Badge 
+                      variant={avvik.status === "open" ? "destructive" : avvik.status === "closed" ? "secondary" : "default"}
+                    >
+                      {avvik.status === "open" ? "Åpen" : avvik.status === "in_progress" ? "Under arbeid" : "Lukket"}
+                    </Badge>
+                  </div>
+                ))}
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                <div>
-                  <p className="font-medium">Rydding av arbeidsområde</p>
-                  <p className="text-sm text-muted-foreground">HMS-002 • 25.11.2024</p>
-                </div>
-                <Badge variant="secondary">Lukket</Badge>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
