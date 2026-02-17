@@ -1,0 +1,1 @@
+ALTER TABLE public.ks_module2_projects ADD COLUMN no_subcontractors boolean NOT NULL DEFAULT false;

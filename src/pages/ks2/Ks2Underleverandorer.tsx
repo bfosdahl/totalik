@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   Plus, 
@@ -22,6 +22,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { useKsModule2Subcontractors, KsModule2Subcontractor } from "@/hooks/useKsModule2Subcontractors";
 import { useKsModule2ProjectAccess, KsModule2ProjectAccess } from "@/hooks/useKsModule2ProjectAccess";
 import { NewSubcontractorDialog } from "@/components/ks2/NewSubcontractorDialog";
@@ -67,6 +69,35 @@ export default function Ks2Underleverandorer() {
 
   const { subcontractors, isLoading } = useKsModule2Subcontractors(projectId || null);
   const { accessList, revokeAccess, renewAccess, isLoading: accessLoading } = useKsModule2ProjectAccess(projectId || null);
+  const [noUe, setNoUe] = useState(false);
+
+  // Load the no_subcontractors flag from the project
+  useEffect(() => {
+    if (!projectId) return;
+    supabase
+      .from("ks_module2_projects")
+      .select("no_subcontractors")
+      .eq("id", projectId)
+      .single()
+      .then(({ data }) => {
+        if (data) setNoUe(!!data.no_subcontractors);
+      });
+  }, [projectId]);
+
+  const handleToggleNoUe = async () => {
+    if (!projectId) return;
+    const newValue = !noUe;
+    const { error } = await supabase
+      .from("ks_module2_projects")
+      .update({ no_subcontractors: newValue } as any)
+      .eq("id", projectId);
+    if (error) {
+      toast.error("Kunne ikke oppdatere");
+      return;
+    }
+    setNoUe(newValue);
+    toast.success(newValue ? "Markert som ingen UE" : "UE-markering fjernet");
+  };
 
   const filteredSubcontractors = subcontractors.filter(sub =>
     sub.firm_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -159,13 +190,25 @@ export default function Ks2Underleverandorer() {
         <TabsContent value="subcontractors">
           {isLoading ? (
             <p className="text-center py-8 text-muted-foreground">Laster...</p>
+          ) : noUe && subcontractors.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <CheckCircle className="h-12 w-12 mx-auto text-emerald-500 mb-4" />
+                <h3 className="text-lg font-medium mb-2">Ingen UE i dette prosjektet</h3>
+                <p className="text-muted-foreground mb-4">Du har markert at prosjektet ikke har underleverandører.</p>
+                <Button variant="outline" onClick={handleToggleNoUe}>Angre – legg til UE likevel</Button>
+              </CardContent>
+            </Card>
           ) : filteredSubcontractors.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
                 <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-medium mb-2">Ingen underleverandører</h3>
                 <p className="text-muted-foreground mb-4">Registrer underleverandører for å følge opp.</p>
-                <Button onClick={() => setShowNewDialog(true)}><Plus className="h-4 w-4 mr-2" />Registrer</Button>
+                <div className="flex items-center justify-center gap-3">
+                  <Button onClick={() => setShowNewDialog(true)}><Plus className="h-4 w-4 mr-2" />Registrer</Button>
+                  <Button variant="outline" onClick={handleToggleNoUe}>Ingen UE i prosjektet</Button>
+                </div>
               </CardContent>
             </Card>
           ) : (
