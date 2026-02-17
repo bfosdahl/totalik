@@ -35,23 +35,32 @@ export default function Ks2HmsDashboard() {
     const completedVernerunder = (vernerunder || []).filter(v => v.status === "completed").length;
     const totalVernerunder = (vernerunder || []).length;
 
-    // Calculate HMS progress based on what's been done
+    // Calculate HMS progress: 100% if nothing is registered (empty = complete)
+    // Only count categories where user has actively added items
     let progressPoints = 0;
     let totalPoints = 0;
     
-    // SJA: have any been created?
-    totalPoints += 1;
-    if ((sjaList || []).length > 0) progressPoints += 1;
+    // SJA: only count if user has created any
+    if ((sjaList || []).length > 0) {
+      totalPoints += 1;
+      const completedSja = (sjaList || []).filter(s => s.status === "approved" || s.status === "completed").length;
+      progressPoints += completedSja / (sjaList || []).length;
+    }
     
-    // Avvik: are all closed?
-    totalPoints += 1;
-    if ((avvikList || []).length === 0 || openAvvik === 0) progressPoints += 1;
+    // Avvik: only count if user has registered any
+    if ((avvikList || []).length > 0) {
+      totalPoints += 1;
+      const closedAvvik = (avvikList || []).filter(a => a.status === "closed").length;
+      progressPoints += closedAvvik / (avvikList || []).length;
+    }
     
-    // Vernerunder: completion ratio
-    totalPoints += 1;
-    if (totalVernerunder > 0) progressPoints += completedVernerunder / totalVernerunder;
+    // Vernerunder: only count if user has planned any
+    if (totalVernerunder > 0) {
+      totalPoints += 1;
+      progressPoints += completedVernerunder / totalVernerunder;
+    }
 
-    const hmsProgress = totalPoints > 0 ? Math.round((progressPoints / totalPoints) * 100) : 0;
+    const hmsProgress = totalPoints > 0 ? Math.round((progressPoints / totalPoints) * 100) : 100;
 
     // Find next upcoming vernerunde
     const upcoming = (vernerunder || [])
