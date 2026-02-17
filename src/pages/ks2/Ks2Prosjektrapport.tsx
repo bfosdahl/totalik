@@ -367,6 +367,7 @@ export default function Ks2Prosjektrapport() {
           is_active: s.is_active,
         })),
         companyName: company?.name || "Ukjent bedrift",
+        companyLogoUrl: company?.logo_url || undefined,
         generatedBy,
         ksHandbok: ksHandbokData,
       }, sections);
