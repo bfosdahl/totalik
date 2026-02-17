@@ -43,28 +43,35 @@ export default function Ks2ProjectDetail() {
   const [project, setProject] = useState<KsModule2Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchProject = async () => {
+    if (!projectId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("ks_module2_projects")
+        .select("*")
+        .eq("id", projectId)
+        .single();
+
+      if (error) throw error;
+      setProject(data as KsModule2Project);
+    } catch (error) {
+      console.error("Error fetching project:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProject = async () => {
-      if (!projectId) return;
-
-      try {
-        const { data, error } = await supabase
-          .from("ks_module2_projects")
-          .select("*")
-          .eq("id", projectId)
-          .single();
-
-        if (error) throw error;
-        setProject(data as KsModule2Project);
-      } catch (error) {
-        console.error("Error fetching project:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchProject();
   }, [projectId]);
+
+  // Refetch project data when navigating back to dashboard
+  useEffect(() => {
+    if (!isLoading && project) {
+      fetchProject();
+    }
+  }, [location.pathname]);
 
   if (isLoading) {
     return (
