@@ -431,7 +431,7 @@ export function Ks2EnhancedDashboard({ contractorType }: Ks2EnhancedDashboardPro
       </div>
 
       {/* Subcontractor Overview */}
-      {subcontractors.length > 0 && (
+      {subcontractors.length > 0 && (!contractorType || ["total", "hoved"].includes(contractorType)) && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
