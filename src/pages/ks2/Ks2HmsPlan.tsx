@@ -136,23 +136,28 @@ export default function Ks2HmsPlan() {
     if (!projectId) return;
     setIsSaving(true);
     try {
-      const payload = {
-        project_id: projectId,
-        goals: goals as unknown as any,
-        responsibilities: responsibilities as unknown as any,
-        general_measures: generalMeasures,
-      };
+      const goalsJson = JSON.parse(JSON.stringify(goals));
+      const responsibilitiesJson = JSON.parse(JSON.stringify(responsibilities));
 
       if (existingId) {
         const { error } = await supabase
           .from("ks_module2_hms_plans")
-          .update(payload)
+          .update({
+            goals: goalsJson,
+            responsibilities: responsibilitiesJson,
+            general_measures: generalMeasures,
+          })
           .eq("id", existingId);
         if (error) throw error;
       } else {
         const { data, error } = await supabase
           .from("ks_module2_hms_plans")
-          .insert(payload)
+          .insert({
+            project_id: projectId,
+            goals: goalsJson,
+            responsibilities: responsibilitiesJson,
+            general_measures: generalMeasures,
+          })
           .select("id")
           .single();
         if (error) throw error;
