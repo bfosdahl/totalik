@@ -6252,7 +6252,9 @@ export type Database = {
           category: string
           created_at: string
           description: string
+          discount_percent: number | null
           id: string
+          notes: string | null
           quantity: number
           sort_order: number | null
           total_price: number | null
@@ -6264,7 +6266,9 @@ export type Database = {
           category?: string
           created_at?: string
           description: string
+          discount_percent?: number | null
           id?: string
+          notes?: string | null
           quantity?: number
           sort_order?: number | null
           total_price?: number | null
@@ -6276,7 +6280,9 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string
+          discount_percent?: number | null
           id?: string
+          notes?: string | null
           quantity?: number
           sort_order?: number | null
           total_price?: number | null

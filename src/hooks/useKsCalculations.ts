@@ -34,6 +34,8 @@ export interface KsCalculationItem {
   quantity: number;
   unit_price: number;
   total_price: number;
+  discount_percent: number;
+  notes: string | null;
   sort_order: number;
   created_at: string;
 }
@@ -130,7 +132,70 @@ export function useKsCalculations() {
     onError: () => toast.error("Kunne ikke oppdatere kalkyle"),
   });
 
-  return { calculations, isLoading, createCalculation, deleteCalculation, updateCalculation };
+  const duplicateCalculation = useMutation({
+    mutationFn: async (sourceId: string) => {
+      if (!companyId || !profile) throw new Error("Mangler bedrift");
+      // Get source calculation
+      const { data: source, error: srcErr } = await supabase
+        .from("ks_calculations")
+        .select("*")
+        .eq("id", sourceId)
+        .single();
+      if (srcErr || !source) throw srcErr || new Error("Fant ikke kalkyle");
+      
+      // Get source items
+      const { data: sourceItems } = await supabase
+        .from("ks_calculation_items")
+        .select("*")
+        .eq("calculation_id", sourceId)
+        .order("sort_order", { ascending: true });
+
+      const calcNumber = await generateNumber();
+      const { data: newCalc, error: createErr } = await supabase
+        .from("ks_calculations")
+        .insert({
+          company_id: companyId,
+          calculation_number: calcNumber,
+          title: `${source.title} (kopi)`,
+          description: source.description,
+          client_name: source.client_name,
+          project_id: source.project_id,
+          created_by_id: profile.id,
+          created_by_name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "Ukjent",
+          markup_percent: source.markup_percent,
+          vat_percent: source.vat_percent,
+        })
+        .select()
+        .single();
+      if (createErr) throw createErr;
+
+      // Copy items
+      if (sourceItems && sourceItems.length > 0) {
+        const newItems = sourceItems.map((item: any) => ({
+          calculation_id: newCalc.id,
+          category: item.category,
+          description: item.description,
+          unit: item.unit,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          total_price: item.total_price,
+          discount_percent: item.discount_percent || 0,
+          notes: item.notes,
+          sort_order: item.sort_order,
+        }));
+        await supabase.from("ks_calculation_items").insert(newItems);
+      }
+
+      return newCalc;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ks-calculations"] });
+      toast.success("Kalkyle duplisert");
+    },
+    onError: () => toast.error("Kunne ikke duplisere kalkyle"),
+  });
+
+  return { calculations, isLoading, createCalculation, deleteCalculation, updateCalculation, duplicateCalculation };
 }
 
 export function useKsCalculationItems(calculationId: string | null) {
