@@ -325,7 +325,7 @@ export default function IkKsHandbok() {
   return (
     <div className="space-y-6">
       {/* Back button */}
-      <Button variant="ghost" size="sm" onClick={() => navigate("/ks/ik-ks")} className="gap-2">
+      <Button variant="ghost" size="sm" onClick={() => navigate("/ks")} className="gap-2">
         <ArrowLeft className="w-4 h-4" />
         Tilbake
       </Button>
