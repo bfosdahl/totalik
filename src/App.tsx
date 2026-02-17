@@ -42,6 +42,8 @@ import IkKsDokumenter from "./pages/ks2/IkKsDokumenter";
 import IkKsSjekklister from "./pages/ks2/IkKsSjekklister";
 import IkKsMaalsetting from "@/pages/ks2/IkKsMaalsetting";
 import IkKsOrganisering from "@/pages/ks2/IkKsOrganisering";
+import IkKsEgenerklaering from "./pages/ks2/IkKsEgenerklaering";
+import IkKsHandbok from "./pages/ks2/IkKsHandbok";
 import MineProsjekterDashboard from "./pages/mineprosjekter/MineProsjekterDashboard";
 import SimpleProjectDetail from "./pages/mineprosjekter/SimpleProjectDetail";
 import HmsChat from "./pages/HmsChat";
@@ -223,6 +225,8 @@ const App = () => (
                   <Route path="/ks/ik-ks/maal" element={<ProtectedRoute><IkKsMaal /></ProtectedRoute>} />
                   <Route path="/ks/ik-ks/dokumenter" element={<ProtectedRoute><IkKsDokumenter /></ProtectedRoute>} />
                   <Route path="/ks/ik-ks/sjekklister" element={<ProtectedRoute><IkKsSjekklister /></ProtectedRoute>} />
+                  <Route path="/ks/ik-ks/egenerklaering" element={<ProtectedRoute><IkKsEgenerklaering /></ProtectedRoute>} />
+                  <Route path="/ks/ik-ks/handbok" element={<ProtectedRoute><IkKsHandbok /></ProtectedRoute>} />
                   
                   {/* Småprosjekter routes */}
                   <Route path="/ks/smaaprosjekter" element={<ProtectedRoute><MineProsjekterDashboard /></ProtectedRoute>} />

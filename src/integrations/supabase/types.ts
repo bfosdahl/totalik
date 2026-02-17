@@ -11577,6 +11577,65 @@ export type Database = {
           },
         ]
       }
+      ks_self_declarations: {
+        Row: {
+          city: string | null
+          company_address: string | null
+          company_id: string
+          company_name: string
+          country: string | null
+          created_at: string
+          declaration_date: string | null
+          id: string
+          manager_name: string | null
+          manager_signature: string | null
+          manager_signed_at: string | null
+          postal_code: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          company_address?: string | null
+          company_id: string
+          company_name: string
+          country?: string | null
+          created_at?: string
+          declaration_date?: string | null
+          id?: string
+          manager_name?: string | null
+          manager_signature?: string | null
+          manager_signed_at?: string | null
+          postal_code?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          company_address?: string | null
+          company_id?: string
+          company_name?: string
+          country?: string | null
+          created_at?: string
+          declaration_date?: string | null
+          id?: string
+          manager_name?: string | null
+          manager_signature?: string | null
+          manager_signed_at?: string | null
+          postal_code?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_self_declarations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_sja: {
         Row: {
           aktivitet: string | null

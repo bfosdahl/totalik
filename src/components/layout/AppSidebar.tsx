@@ -1119,6 +1119,28 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                             >
                               Sjekklistemaler
                             </NavLink>
+                            <NavLink
+                              to="/ks/ik-ks/egenerklaering"
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm",
+                                location.pathname === "/ks/ik-ks/egenerklaering"
+                                  ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                              )}
+                            >
+                              Egenerklæring
+                            </NavLink>
+                            <NavLink
+                              to="/ks/ik-ks/handbok"
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm",
+                                location.pathname === "/ks/ik-ks/handbok"
+                                  ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
+                                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                              )}
+                            >
+                              KS Håndbok
+                            </NavLink>
                           </div>
                         </motion.div>
                       )}
