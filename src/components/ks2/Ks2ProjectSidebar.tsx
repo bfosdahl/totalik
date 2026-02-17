@@ -41,6 +41,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 interface Ks2ProjectSidebarProps {
   projectName: string;
   projectNumber: string;
+  contractorType?: string | null;
 }
 
 // Top-level standalone items
@@ -96,30 +97,49 @@ const dokumentasjonItems = [
   { id: "rapport", label: "Prosjektrapport", icon: FileText, path: "/rapport", guestAllowed: true },
 ];
 
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  path: string;
+  guestAllowed: boolean;
+}
+
 interface MenuGroup {
   id: string;
   label: string;
   icon: typeof LayoutDashboard;
-  items: typeof kvalitetssikringItems;
+  items: MenuItem[];
   color?: string;
 }
 
-const menuGroups: MenuGroup[] = [
-  { id: "ks", label: "Kvalitetssikring", icon: ClipboardCheck, items: kvalitetssikringItems, color: "text-primary" },
-  { id: "hms", label: "HMS / SHA", icon: Shield, items: hmsMenuItems, color: "text-emerald-500" },
-  { id: "byggesak", label: "Byggesak & Blanketter", icon: Home, items: byggesakItems, color: "text-orange-500" },
-  { id: "prosjekt", label: "Prosjektstyring", icon: Briefcase, items: prosjektstyringItems, color: "text-blue-500" },
-  { id: "okonomi", label: "Økonomi", icon: Wallet, items: okonomiFakturaItems, color: "text-amber-500" },
-  { id: "partnere", label: "Partnere", icon: Building2, items: partnereItems, color: "text-purple-500" },
-  { id: "dokumenter", label: "Dokumentasjon", icon: FolderOpen, items: dokumentasjonItems, color: "text-cyan-500" },
-];
+/** Contractor types that typically manage subcontractors */
+const CONTRACTOR_TYPES_WITH_SUBS = ["total", "hoved"];
 
-export function Ks2ProjectSidebar({ projectName, projectNumber }: Ks2ProjectSidebarProps) {
+function getMenuGroups(contractorType?: string | null): MenuGroup[] {
+  const needsSubs = contractorType ? CONTRACTOR_TYPES_WITH_SUBS.includes(contractorType) : true;
+
+  const groups: MenuGroup[] = [
+    { id: "ks", label: "Kvalitetssikring", icon: ClipboardCheck, items: kvalitetssikringItems, color: "text-primary" },
+    { id: "hms", label: "HMS / SHA", icon: Shield, items: hmsMenuItems, color: "text-emerald-500" },
+    { id: "byggesak", label: "Byggesak & Blanketter", icon: Home, items: byggesakItems, color: "text-orange-500" },
+    { id: "prosjekt", label: "Prosjektstyring", icon: Briefcase, items: prosjektstyringItems, color: "text-blue-500" },
+    { id: "okonomi", label: "Økonomi", icon: Wallet, items: okonomiFakturaItems, color: "text-amber-500" },
+    ...(needsSubs ? [{ id: "partnere", label: "Partnere", icon: Building2, items: partnereItems, color: "text-purple-500" }] : []),
+    { id: "dokumenter", label: "Dokumentasjon", icon: FolderOpen, items: dokumentasjonItems, color: "text-cyan-500" },
+  ];
+
+  return groups;
+}
+
+export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType }: Ks2ProjectSidebarProps) {
   const { projectId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isGuestUser, guestProjects, signOut, profile } = useAuth();
+
+  const menuGroups = getMenuGroups(contractorType);
 
   const basePath = `/ks/project/${projectId}`;
   const currentPath = location.pathname.replace(basePath, "") || "";

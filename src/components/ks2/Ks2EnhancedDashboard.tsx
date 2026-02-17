@@ -39,7 +39,11 @@ import {
 import { Ks2PopulateExampleButton } from "./Ks2PopulateExampleButton";
 import { Ks2WelcomeCard } from "./Ks2WelcomeCard";
 
-export function Ks2EnhancedDashboard() {
+interface Ks2EnhancedDashboardProps {
+  contractorType?: string | null;
+}
+
+export function Ks2EnhancedDashboard({ contractorType }: Ks2EnhancedDashboardProps = {}) {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const { checklists, stats, isLoading } = useKsModule2Checklists(projectId || "");
@@ -135,6 +139,7 @@ export function Ks2EnhancedDashboard() {
         hasChecklists={checklists.length > 0}
         hasSubcontractors={subcontractors.length > 0}
         hasTemplates={templates.length > 0}
+        contractorType={contractorType}
       />
 
       {/* Quick Actions - TOP OF PAGE (hidden on mobile, use FAB instead) */}
@@ -426,7 +431,7 @@ export function Ks2EnhancedDashboard() {
       </div>
 
       {/* Subcontractor Overview */}
-      {subcontractors.length > 0 && (
+      {subcontractors.length > 0 && (!contractorType || ["total", "hoved"].includes(contractorType)) && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">

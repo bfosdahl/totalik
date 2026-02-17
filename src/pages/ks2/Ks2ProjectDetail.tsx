@@ -158,7 +158,7 @@ export default function Ks2ProjectDetail() {
         if (currentPath.startsWith("/byggesak/form/")) {
           return <Ks2ByggesakForm />;
         }
-        return <Ks2EnhancedDashboard />;
+        return <Ks2EnhancedDashboard contractorType={project.contractor_type} />;
     }
   };
 
@@ -168,6 +168,7 @@ export default function Ks2ProjectDetail() {
       <Ks2ProjectSidebar
         projectName={project.project_name}
         projectNumber={project.project_number}
+        contractorType={project.contractor_type}
       />
 
       {/* Main Content */}
