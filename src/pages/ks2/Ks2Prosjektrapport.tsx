@@ -43,7 +43,7 @@ import { useKsModule2ChangeOrders } from "@/hooks/useKsModule2ChangeOrders";
 import { useKsModule2Claims } from "@/hooks/useKsModule2Claims";
 import { useKsModule2Subcontractors } from "@/hooks/useKsModule2Subcontractors";
 import { supabase } from "@/integrations/supabase/client";
-import { generateProjectReportPdf, ReportSections } from "@/utils/ksModule2ProjectReport";
+import { generateProjectReportPdf, ReportSections, KsHandbokData } from "@/utils/ksModule2ProjectReport";
 import { toast } from "sonner";
 
 interface ProjectData {
@@ -106,6 +106,7 @@ export default function Ks2Prosjektrapport() {
     includeChangeOrders: true,
     includeClaims: true,
     includeSubcontractors: true,
+    includeKsHandbok: false,
   });
 
   // Fetch project info
@@ -142,6 +143,27 @@ export default function Ks2Prosjektrapport() {
     const hasPhotos = sections.includeChecklistPhotos || sections.includeAvvikPhotos;
     if (hasPhotos) {
       toast.info("Genererer rapport med bilder - dette kan ta litt tid...");
+    }
+
+    // Fetch KS Handbook data if included
+    let ksHandbokData: KsHandbokData | undefined;
+    if (sections.includeKsHandbok && profile?.company_id) {
+      try {
+        const [goalsRes, systemGoalsRes, orgRes, routinesRes] = await Promise.all([
+          supabase.from("company_ks_goals").select("*").eq("company_id", profile.company_id).order("sort_order"),
+          supabase.from("company_ks_system_goals").select("*").eq("company_id", profile.company_id).order("sort_order"),
+          supabase.from("company_ks_organization").select("*").eq("company_id", profile.company_id).maybeSingle(),
+          supabase.from("company_ks_routines").select("*").eq("company_id", profile.company_id).eq("is_active", true).order("sort_order"),
+        ]);
+        ksHandbokData = {
+          systemGoals: (systemGoalsRes.data || []).map(g => ({ goal_text: g.goal_text, description: g.description || undefined })),
+          goals: (goalsRes.data || []).map(g => ({ goal_text: g.goal_text })),
+          organization: orgRes.data ? { custom_content: orgRes.data.custom_content } : null,
+          routines: (routinesRes.data || []).map(r => ({ routine_name: r.routine_name, description: r.description || undefined, content: r.content || undefined })),
+        };
+      } catch (e) {
+        console.error("Error fetching KS handbook data:", e);
+      }
     }
 
     try {
@@ -346,6 +368,7 @@ export default function Ks2Prosjektrapport() {
         })),
         companyName: company?.name || "Ukjent bedrift",
         generatedBy,
+        ksHandbok: ksHandbokData,
       }, sections);
 
       toast.success("Prosjektrapport generert!");
@@ -691,6 +714,19 @@ export default function Ks2Prosjektrapport() {
                 checked={sections.includeDocuments}
                 onCheckedChange={(checked) => 
                   setSections(s => ({ ...s, includeDocuments: !!checked }))
+                }
+              />
+
+              {/* KS Håndbok */}
+              <SectionToggle
+                icon={BookOpen}
+                iconBgColor="bg-sky-100"
+                iconColor="text-sky-600"
+                label="KS Håndbok"
+                description="Bedriftens kvalitetssikringshåndbok (mål, org, rutiner)"
+                checked={sections.includeKsHandbok}
+                onCheckedChange={(checked) => 
+                  setSections(s => ({ ...s, includeKsHandbok: !!checked }))
                 }
               />
             </CardContent>
