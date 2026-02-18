@@ -208,7 +208,7 @@ Deno.serve(async (req) => {
             : "bruker";
 
           const emailResponse = await resend.emails.send({
-            from: "Internkontroll <noreply@totalik.no>",
+            from: "Total-IK <noreply@totalik.no>",
             to: [targetUser.user.email],
             subject: "Tilbakestill passord",
             html: `
@@ -230,7 +230,7 @@ Deno.serve(async (req) => {
               <body>
                 <div class="container">
                   <div class="header">
-                    <h1 style="margin: 0;">Internkontroll</h1>
+                    <h1 style="margin: 0;">Total-IK</h1>
                     <p style="margin: 10px 0 0 0; opacity: 0.9;">Tilbakestill passord</p>
                   </div>
                   <div class="content">
@@ -244,10 +244,10 @@ Deno.serve(async (req) => {
                     <div class="warning">
                       <strong>Viktig:</strong> Denne lenken utløper om 24 timer. Hvis du ikke ba om denne tilbakestillingen, kan du ignorere denne e-posten.
                     </div>
-                    <p>Med vennlig hilsen,<br>Internkontroll Team</p>
+                    <p>Med vennlig hilsen,<br>Total-IK</p>
                   </div>
                   <div class="footer">
-                    <p>Denne e-posten ble sendt fra Internkontroll. Hvis du ikke forventet denne meldingen, vennligst kontakt din administrator.</p>
+                    <p>Denne e-posten ble sendt fra Total-IK. Hvis du ikke forventet denne meldingen, vennligst kontakt din administrator.</p>
                   </div>
                 </div>
               </body>

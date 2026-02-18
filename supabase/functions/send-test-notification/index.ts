@@ -106,7 +106,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
                 <div class="footer">
                   <p style="margin: 0;">Dette er en automatisk test-e-post fra ${company_name}</p>
-                  <p style="margin: 5px 0 0 0;">Sendt via Athena HMS</p>
+                  <p style="margin: 5px 0 0 0;">Sendt via Total-IK</p>
                 </div>
               </div>
             </body>

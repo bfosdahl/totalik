@@ -115,13 +115,13 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
             
             <p style="color: #6b7280; font-size: 14px;">
-              Logg inn i Athena HMS for å se detaljer og behandle avviket.
+              Logg inn i Total-IK for å se detaljer og behandle avviket.
             </p>
             
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 25px 0;">
             
             <p style="color: #9ca3af; font-size: 12px; margin-bottom: 0; text-align: center;">
-              Denne e-posten ble sendt automatisk fra Athena HMS.<br>
+              Denne e-posten ble sendt automatisk fra Total-IK.<br>
               Vennligst ikke svar på denne e-posten.
             </p>
           </div>
