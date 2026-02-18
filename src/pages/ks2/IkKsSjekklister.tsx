@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Plus, 
   ClipboardList, 
@@ -18,6 +19,8 @@ import {
   Download,
   Loader2,
   GripVertical,
+  Search,
+  CheckCircle2,
 } from "lucide-react";
 import { useCompanyKsChecklistTemplates, Checkpoint } from "@/hooks/useCompanyKsChecklistTemplates";
 import { useAdminKsTemplates } from "@/hooks/useAdminKsTemplates";
@@ -35,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import {
   Collapsible,
   CollapsibleContent,
@@ -158,37 +162,61 @@ export default function IkKsSjekklister() {
                   Velg fra maler
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+              <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
                 <DialogHeader>
                   <DialogTitle>Velg maler fra malbiblioteket</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-2 mt-4">
-                  {adminTemplates?.map(template => (
-                    <div 
-                      key={template.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Checkbox
-                          checked={isAdminTemplateSelected("checklist", template.id)}
-                          onCheckedChange={() => handleToggleAdminTemplate(template.id)}
-                        />
-                        <div>
-                          <p className="font-medium">{template.template_name}</p>
-                          {template.description && (
-                            <p className="text-sm text-muted-foreground">{template.description}</p>
-                          )}
-                        </div>
-                      </div>
-                      <Badge variant="outline">{template.category}</Badge>
-                    </div>
-                  ))}
-                  {(!adminTemplates || adminTemplates.length === 0) && (
-                    <p className="text-center text-muted-foreground py-8">
-                      Ingen maler tilgjengelig
-                    </p>
-                  )}
+                <div className="relative mb-3">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Søk i maler..."
+                    className="pl-9"
+                    onChange={(e) => {
+                      const q = e.target.value.toLowerCase();
+                      // Store search in a data attribute for filtering
+                      e.target.closest('[role="dialog"]')?.setAttribute('data-search', q);
+                      // Force re-render by toggling a class
+                      e.target.dispatchEvent(new Event('input', { bubbles: true }));
+                    }}
+                  />
                 </div>
+                <ScrollArea className="flex-1">
+                  <div className="space-y-0.5 pr-4">
+                    {adminTemplates?.map(template => {
+                      const isSelected = isAdminTemplateSelected("checklist", template.id);
+                      return (
+                        <div 
+                          key={template.id}
+                          className={cn(
+                            "flex items-center justify-between gap-3 px-3 py-2.5 rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
+                            isSelected && "bg-primary/5"
+                          )}
+                          onClick={() => handleToggleAdminTemplate(template.id)}
+                        >
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            {isSelected ? (
+                              <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+                            ) : (
+                              <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/30 shrink-0" />
+                            )}
+                            <div className="min-w-0">
+                              <p className="font-medium text-sm truncate">{template.template_name}</p>
+                              {template.description && (
+                                <p className="text-xs text-muted-foreground line-clamp-1">{template.description}</p>
+                              )}
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="text-xs shrink-0">{template.category}</Badge>
+                        </div>
+                      );
+                    })}
+                    {(!adminTemplates || adminTemplates.length === 0) && (
+                      <p className="text-center text-muted-foreground py-8">
+                        Ingen maler tilgjengelig
+                      </p>
+                    )}
+                  </div>
+                </ScrollArea>
               </DialogContent>
             </Dialog>
 
