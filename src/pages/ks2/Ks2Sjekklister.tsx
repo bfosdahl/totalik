@@ -17,7 +17,9 @@ import {
   ArrowRight,
   Eye,
   Play,
-  Image
+  Image,
+  Download,
+  Loader2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useKsModule2ProjectTemplates } from "@/hooks/useKsModule2ProjectTemplates";
@@ -26,19 +28,56 @@ import { Ks2ChecklistWizard, PreSelectedTemplate } from "@/components/ks2/Ks2Che
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { useAuth } from "@/contexts/AuthContext";
+import { generateKsModule2ChecklistPdf } from "@/utils/ksModule2ChecklistPdf";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Ks2Sjekklister() {
   const { projectId } = useParams();
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [showWizard, setShowWizard] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<any>(null);
   const [selectedTemplateForWizard, setSelectedTemplateForWizard] = useState<PreSelectedTemplate | null>(null);
   const [existingChecklist, setExistingChecklist] = useState<KsModule2Checklist | null>(null);
   const [viewingChecklist, setViewingChecklist] = useState<KsModule2Checklist | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   
   const { checklistTemplates, isLoading: loadingTemplates } = useKsModule2ProjectTemplates(projectId || "");
   const { checklists, isLoading: loadingChecklists, refetch: refetchChecklists } = useKsModule2Checklists(projectId || "");
+
+  const handleDownloadChecklist = async (checklist: KsModule2Checklist) => {
+    if (!profile?.company_id) return;
+    setIsDownloading(true);
+    try {
+      // Fetch project and company data
+      const [projectRes, companyRes] = await Promise.all([
+        supabase.from("ks_module2_projects").select("*").eq("id", projectId!).single(),
+        supabase.from("companies").select("*").eq("id", profile.company_id).single(),
+      ]);
+      if (projectRes.error || companyRes.error) throw new Error("Kunne ikke hente data");
+      const { blob, fileName } = await generateKsModule2ChecklistPdf({
+        checklist,
+        project: projectRes.data as any,
+        company: companyRes.data as any,
+        includePhotos: true,
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast({ title: "PDF lastet ned" });
+    } catch (error) {
+      console.error("Error downloading checklist PDF:", error);
+      toast({ title: "Feil", description: "Kunne ikke laste ned PDF", variant: "destructive" });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -93,10 +132,15 @@ export default function Ks2Sjekklister() {
     switch (checklist.status) {
       case 'completed':
         return (
-          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleViewChecklist(checklist); }}>
-            <Eye className="h-4 w-4 mr-1" />
-            Se
-          </Button>
+          <div className="flex gap-1">
+            <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleViewChecklist(checklist); }}>
+              <Eye className="h-4 w-4 mr-1" />
+              Se
+            </Button>
+            <Button variant="outline" size="sm" disabled={isDownloading} onClick={(e) => { e.stopPropagation(); handleDownloadChecklist(checklist); }}>
+              {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            </Button>
+          </div>
         );
       case 'in_progress':
         return (
@@ -401,9 +445,19 @@ export default function Ks2Sjekklister() {
           </DialogHeader>
           {viewingChecklist && (
             <div className="space-y-4">
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2 items-center">
                 <Badge>{viewingChecklist.template_name}</Badge>
                 {getStatusBadge(viewingChecklist.status)}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="ml-auto gap-2"
+                  disabled={isDownloading}
+                  onClick={() => handleDownloadChecklist(viewingChecklist)}
+                >
+                  {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                  Last ned PDF
+                </Button>
               </div>
               
               {viewingChecklist.responsible_user_name && (
