@@ -222,7 +222,7 @@ const App = () => (
                   <Route path="/ks/ik-ks/maalsetting" element={<ProtectedRoute><IkKsMaalsetting /></ProtectedRoute>} />
                   <Route path="/ks/ik-ks/organisering" element={<ProtectedRoute><IkKsOrganisering /></ProtectedRoute>} />
                   <Route path="/ks/ik-ks/rutiner" element={<ProtectedRoute><IkKsRutiner /></ProtectedRoute>} />
-                  <Route path="/ks/ik-ks/maal" element={<ProtectedRoute><IkKsMaal /></ProtectedRoute>} />
+                  <Route path="/ks/ik-ks/maal" element={<Navigate to="/ks/ik-ks/maalsetting" replace />} />
                   <Route path="/ks/ik-ks/dokumenter" element={<ProtectedRoute><IkKsDokumenter /></ProtectedRoute>} />
                   <Route path="/ks/ik-ks/sjekklister" element={<ProtectedRoute><IkKsSjekklister /></ProtectedRoute>} />
                   <Route path="/ks/ik-ks/egenerklaering" element={<ProtectedRoute><IkKsEgenerklaering /></ProtectedRoute>} />

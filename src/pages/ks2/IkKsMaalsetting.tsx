@@ -28,6 +28,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCompanyKsGoals, CompanyKsGoal } from "@/hooks/useCompanyKsGoals";
 
 interface KsSystemGoal {
   id: string;
@@ -82,6 +83,19 @@ export default function IkKsMaalsetting() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newGoal, setNewGoal] = useState({ goal_text: "", description: "", goal_type: "ks_handbook" });
   const [activeTab, setActiveTab] = useState("ks_handbook");
+  
+  // Kvalitetsmål (from company_ks_goals)
+  const { 
+    goals: kvalitetsGoals, 
+    isLoading: isLoadingKvalitet, 
+    isSaving: isSavingKvalitet, 
+    createGoal: createKvalitetsGoal, 
+    updateGoal: updateKvalitetsGoal, 
+    deleteGoal: deleteKvalitetsGoal 
+  } = useCompanyKsGoals();
+  const [showNewKvalitetDialog, setShowNewKvalitetDialog] = useState(false);
+  const [editingKvalitetId, setEditingKvalitetId] = useState<string | null>(null);
+  const [newKvalitetGoal, setNewKvalitetGoal] = useState({ goal_text: "", description: "" });
 
   useEffect(() => {
     const fetchGoals = async () => {
@@ -208,12 +222,7 @@ export default function IkKsMaalsetting() {
     }
   };
 
-  const filteredGoals = goals.filter(g => g.goal_type === activeTab);
-  const defaultGoals = activeTab === "ks_handbook" ? DEFAULT_KS_GOALS.filter(g => g.type === "ks_handbook") 
-    : activeTab === "ks_system" ? DEFAULT_KS_GOALS.filter(g => g.type === "ks_system")
-    : DEFAULT_HMS_PROJECT_GOALS;
-
-  if (isLoading) {
+  if (isLoading || isLoadingKvalitet) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center min-h-[400px]">
@@ -230,10 +239,10 @@ export default function IkKsMaalsetting() {
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
               <Target className="h-8 w-8 text-primary" />
-              Målsetting
+              Målsetting & Kvalitetsmål
             </h1>
             <p className="text-muted-foreground mt-1">
-              Mål for KS-håndbok, KS-system og HMS i prosjekter
+              Mål for KS-håndbok, KS-system, HMS i prosjekter og overordnede kvalitetsmål
             </p>
           </div>
           
@@ -301,32 +310,159 @@ export default function IkKsMaalsetting() {
         </Alert>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="ks_handbook">KS-håndbok</TabsTrigger>
             <TabsTrigger value="ks_system">KS-system</TabsTrigger>
             <TabsTrigger value="hms_project">HMS prosjekt</TabsTrigger>
+            <TabsTrigger value="kvalitetsmal">Kvalitetsmål</TabsTrigger>
           </TabsList>
 
-          <TabsContent value={activeTab} className="space-y-4 mt-6">
-            {/* Quick add default goals */}
-            {filteredGoals.length === 0 && (
+          {/* KS/HMS tabs */}
+          {["ks_handbook", "ks_system", "hms_project"].map(tabKey => (
+            <TabsContent key={tabKey} value={tabKey} className="space-y-4 mt-6">
+              {goals.filter(g => g.goal_type === tabKey).length === 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Foreslåtte mål</CardTitle>
+                    <CardDescription>Klikk for å legge til et foreslått mål</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {(tabKey === "hms_project" ? DEFAULT_HMS_PROJECT_GOALS : DEFAULT_KS_GOALS.filter(g => g.type === tabKey)).map((goal, idx) => (
+                        <Button
+                          key={idx}
+                          variant="outline"
+                          className="w-full justify-start text-left h-auto py-3"
+                          onClick={() => handleAddDefault(goal)}
+                          disabled={isSaving}
+                        >
+                          <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
+                          <span className="line-clamp-2">{goal.text}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {goals.filter(g => g.goal_type === tabKey).length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <Target className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+                    <h3 className="font-medium text-lg mb-2">Ingen mål definert</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Legg til mål for {tabKey === "ks_handbook" ? "KS-håndboken" : tabKey === "ks_system" ? "KS-systemet" : "HMS i prosjekter"}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-3">
+                  {goals.filter(g => g.goal_type === tabKey).map((goal, index) => (
+                    <GoalCard
+                      key={goal.id}
+                      goal={goal}
+                      index={index}
+                      isEditing={editingId === goal.id}
+                      onEdit={() => setEditingId(goal.id)}
+                      onCancelEdit={() => setEditingId(null)}
+                      onUpdate={handleUpdate}
+                      onDelete={handleDelete}
+                      isSaving={isSaving}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {goals.filter(g => g.goal_type === tabKey).length > 0 && (
+                <Card>
+                  <CardContent className="py-4">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      <span>{goals.filter(g => g.goal_type === tabKey).length} mål definert</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          ))}
+
+          {/* Kvalitetsmål tab */}
+          <TabsContent value="kvalitetsmal" className="space-y-4 mt-6">
+            <div className="flex justify-end">
+              <Dialog open={showNewKvalitetDialog} onOpenChange={setShowNewKvalitetDialog}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nytt kvalitetsmål
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Legg til kvalitetsmål</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    <div>
+                      <label className="text-sm font-medium">Mål</label>
+                      <Input
+                        value={newKvalitetGoal.goal_text}
+                        onChange={(e) => setNewKvalitetGoal({ ...newKvalitetGoal, goal_text: e.target.value })}
+                        placeholder="Beskriv kvalitetsmålet..."
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Beskrivelse (valgfritt)</label>
+                      <Textarea
+                        value={newKvalitetGoal.description}
+                        onChange={(e) => setNewKvalitetGoal({ ...newKvalitetGoal, description: e.target.value })}
+                        placeholder="Utdypende beskrivelse..."
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setShowNewKvalitetDialog(false)}>
+                        Avbryt
+                      </Button>
+                      <Button 
+                        onClick={async () => {
+                          if (!newKvalitetGoal.goal_text.trim()) return;
+                          await createKvalitetsGoal(newKvalitetGoal.goal_text, newKvalitetGoal.description);
+                          setNewKvalitetGoal({ goal_text: "", description: "" });
+                          setShowNewKvalitetDialog(false);
+                        }} 
+                        disabled={isSavingKvalitet || !newKvalitetGoal.goal_text.trim()}
+                      >
+                        {isSavingKvalitet && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                        Legg til
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {kvalitetsGoals.length === 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Foreslåtte mål</CardTitle>
-                  <CardDescription>Klikk for å legge til et foreslått mål</CardDescription>
+                  <CardTitle className="text-base">Foreslåtte kvalitetsmål</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {defaultGoals.map((goal, idx) => (
+                    {[
+                      "Levere alle prosjekter innenfor avtalt tid og budsjett",
+                      "Oppnå null kritiske avvik ved sluttbefaring",
+                      "Sikre at alle ansatte har nødvendig kompetanse og sertifiseringer",
+                      "Gjennomføre systematisk egenkontroll på alle prosjekter",
+                      "Oppnå høy kundetilfredshet (>90%)",
+                    ].map((goal, idx) => (
                       <Button
                         key={idx}
                         variant="outline"
                         className="w-full justify-start text-left h-auto py-3"
-                        onClick={() => handleAddDefault(goal)}
-                        disabled={isSaving}
+                        onClick={() => createKvalitetsGoal(goal)}
+                        disabled={isSavingKvalitet}
                       >
                         <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
-                        <span className="line-clamp-2">{goal.text}</span>
+                        <span className="line-clamp-2">{goal}</span>
                       </Button>
                     ))}
                   </div>
@@ -334,41 +470,40 @@ export default function IkKsMaalsetting() {
               </Card>
             )}
 
-            {/* Goal list */}
-            {filteredGoals.length === 0 ? (
+            {kvalitetsGoals.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
                   <Target className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                  <h3 className="font-medium text-lg mb-2">Ingen mål definert</h3>
+                  <h3 className="font-medium text-lg mb-2">Ingen kvalitetsmål ennå</h3>
                   <p className="text-muted-foreground mb-4">
-                    Legg til mål for {activeTab === "ks_handbook" ? "KS-håndboken" : activeTab === "ks_system" ? "KS-systemet" : "HMS i prosjekter"}
+                    Legg til bedriftens overordnede kvalitetsmål
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="space-y-3">
-                {filteredGoals.map((goal, index) => (
-                  <GoalCard
+                {kvalitetsGoals.map((goal, index) => (
+                  <KvalitetGoalCard
                     key={goal.id}
                     goal={goal}
                     index={index}
-                    isEditing={editingId === goal.id}
-                    onEdit={() => setEditingId(goal.id)}
-                    onCancelEdit={() => setEditingId(null)}
-                    onUpdate={handleUpdate}
-                    onDelete={handleDelete}
-                    isSaving={isSaving}
+                    isEditing={editingKvalitetId === goal.id}
+                    onEdit={() => setEditingKvalitetId(goal.id)}
+                    onCancelEdit={() => setEditingKvalitetId(null)}
+                    onUpdate={updateKvalitetsGoal}
+                    onDelete={deleteKvalitetsGoal}
+                    isSaving={isSavingKvalitet}
                   />
                 ))}
               </div>
             )}
 
-            {filteredGoals.length > 0 && (
+            {kvalitetsGoals.length > 0 && (
               <Card>
                 <CardContent className="py-4">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <CheckCircle2 className="w-4 h-4 text-green-500" />
-                    <span>{filteredGoals.length} mål definert</span>
+                    <span>{kvalitetsGoals.length} kvalitetsmål definert</span>
                   </div>
                 </CardContent>
               </Card>
@@ -377,6 +512,80 @@ export default function IkKsMaalsetting() {
         </Tabs>
       </div>
     </AppLayout>
+  );
+}
+
+function KvalitetGoalCard({
+  goal,
+  index,
+  isEditing,
+  onEdit,
+  onCancelEdit,
+  onUpdate,
+  onDelete,
+  isSaving,
+}: {
+  goal: CompanyKsGoal;
+  index: number;
+  isEditing: boolean;
+  onEdit: () => void;
+  onCancelEdit: () => void;
+  onUpdate: (id: string, updates: Partial<CompanyKsGoal>) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+  isSaving: boolean;
+}) {
+  const [editData, setEditData] = useState({
+    goal_text: goal.goal_text,
+    description: goal.description || "",
+  });
+
+  const handleSave = async () => {
+    await onUpdate(goal.id, editData);
+    onCancelEdit();
+  };
+
+  if (isEditing) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Mål</label>
+              <Input value={editData.goal_text} onChange={(e) => setEditData({ ...editData, goal_text: e.target.value })} />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Beskrivelse</label>
+              <Textarea value={editData.description} onChange={(e) => setEditData({ ...editData, description: e.target.value })} rows={2} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={onCancelEdit}><X className="w-4 h-4 mr-1" />Avbryt</Button>
+              <Button size="sm" onClick={handleSave} disabled={isSaving}><Save className="w-4 h-4 mr-1" />Lagre</Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="group">
+      <CardContent className="py-4">
+        <div className="flex items-start gap-3">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <GripVertical className="w-4 h-4 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity" />
+            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-medium flex items-center justify-center">{index + 1}</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium">{goal.goal_text}</p>
+            {goal.description && <p className="text-sm text-muted-foreground mt-1">{goal.description}</p>}
+          </div>
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onEdit}><Edit2 className="w-4 h-4" /></Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => onDelete(goal.id)} disabled={isSaving}><Trash2 className="w-4 h-4" /></Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
