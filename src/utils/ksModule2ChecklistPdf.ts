@@ -21,6 +21,7 @@ interface GenerateChecklistPdfOptions {
   project: KsModule2Project;
   company: Company;
   checklistNumber?: string;
+  includePhotos?: boolean;
 }
 
 export async function generateKsModule2ChecklistPdf(options: GenerateChecklistPdfOptions): Promise<{ blob: Blob; fileName: string }> {
@@ -158,6 +159,60 @@ export async function generateKsModule2ChecklistPdf(options: GenerateChecklistPd
   doc.text(`Fremdrift: ${checklist.progress_percent}%`, 20, yPos + 28);
 
   yPos += 45;
+
+  // Photos section
+  if (options.includePhotos !== false) {
+    const items = checklist.checklist_items as ChecklistItem[];
+    const photosPerItem = items
+      .map((item, idx) => ({ item, idx, photos: (item as any).photos as string[] | undefined }))
+      .filter(p => p.photos && p.photos.length > 0);
+
+    if (photosPerItem.length > 0) {
+      checkPageBreak();
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("BILDER", 15, yPos);
+      yPos += 8;
+
+      for (const { item, idx, photos } of photosPerItem) {
+        if (!photos) continue;
+        for (const photo of photos) {
+          if (yPos > 200) {
+            doc.addPage();
+            yPos = 20;
+          }
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(100, 116, 139);
+          doc.text(`${idx + 1}. ${item.text}`, 15, yPos);
+          doc.setTextColor(0, 0, 0);
+          yPos += 5;
+
+          try {
+            const imgUrl = photo.startsWith("http")
+              ? photo
+              : `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/ks-module2-checklist-photos/${photo}`;
+            const response = await fetch(imgUrl);
+            if (response.ok) {
+              const blob = await response.blob();
+              const dataUrl = await new Promise<string>((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.readAsDataURL(blob);
+              });
+              doc.addImage(dataUrl, "JPEG", 15, yPos, 80, 60);
+              yPos += 65;
+            }
+          } catch (e) {
+            doc.setFontSize(8);
+            doc.text("[Bilde kunne ikke lastes]", 15, yPos);
+            yPos += 8;
+          }
+        }
+      }
+      yPos += 10;
+    }
+  }
 
   // Signatures section
   if (checklist.signatures && (checklist.signatures as any[]).length > 0) {
