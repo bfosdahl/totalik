@@ -531,30 +531,7 @@ export default function Ks2Malbibliotek() {
         </TabsList>
 
         {/* Checklist Templates Tab */}
-        <TabsContent value="checklists" className="space-y-4">
-          {/* Category Filter - horizontal scroll on mobile */}
-          <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
-            <Button
-              variant={selectedChecklistCategory === "all" ? "default" : "outline"}
-              size="sm"
-              className="shrink-0"
-              onClick={() => setSelectedChecklistCategory("all")}
-            >
-              Alle
-            </Button>
-            {checklistCategoriesInUse.map((cat) => (
-              <Button
-                key={cat}
-                variant={selectedChecklistCategory === cat ? "default" : "outline"}
-                size="sm"
-                className="shrink-0 whitespace-nowrap"
-                onClick={() => setSelectedChecklistCategory(cat)}
-              >
-                {CHECKLIST_CATEGORIES[cat] || cat}
-              </Button>
-            ))}
-          </div>
-
+        <TabsContent value="checklists" className="space-y-2">
           {filteredChecklists.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
@@ -563,103 +540,102 @@ export default function Ks2Malbibliotek() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredChecklists.map((template) => {
-                const isAdded = addedChecklistIds.includes(template.id);
-                const projectTemplate = projectChecklists.find(
-                  pt => pt.admin_checklist_template_id === template.id
-                );
+            <div className="space-y-1">
+              {/* Group by category */}
+              {checklistCategoriesInUse.map((cat) => {
+                const categoryTemplates = filteredChecklists.filter(t => t.category === cat);
+                if (categoryTemplates.length === 0) return null;
+                const isCatExpanded = expandedDocCategories[`cl-${cat}`] ?? false;
 
                 return (
-                  <Card key={template.id} className={cn(
-                    "hover:shadow-md transition-shadow relative",
-                    isAdded && "ring-2 ring-primary/50"
-                  )}>
-                    {isAdded && (
-                      <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-1">
-                        <Check className="h-3 w-3" />
-                      </div>
-                    )}
-                    <CardHeader className="pb-2 sm:pb-3">
-                      <div className="flex items-start gap-2 sm:gap-3">
-                        <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 shrink-0">
-                          <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-sm sm:text-base leading-tight">{template.template_name}</CardTitle>
-                          <div className="flex flex-wrap gap-1 mt-1.5">
-                            <Badge variant="secondary" className="text-xs">
-                              {CHECKLIST_CATEGORIES[template.category] || template.category}
-                            </Badge>
-                            {template.is_mandatory && (
-                              <Badge variant="destructive" className="gap-0.5 text-xs">
-                                <AlertCircle className="h-2.5 w-2.5" />
-                                <span className="hidden xs:inline">Obligatorisk</span>
-                                <span className="xs:hidden">Obl.</span>
-                              </Badge>
-                            )}
-                            {template.is_locked && (
-                              <Badge variant="outline" className="gap-0.5 text-xs">
-                                <Lock className="h-2.5 w-2.5" />
-                                Låst
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      {template.description && (
-                        <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-2">
-                          {template.description}
-                        </p>
-                      )}
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-xs text-muted-foreground">
-                            {template.checkpoints?.length || 0} sjekkpunkter
-                          </span>
-                          {template.version && (
-                            <span className="text-xs text-muted-foreground">
-                              v{template.version}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex gap-1.5 sm:gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="gap-1 h-8 px-2 sm:px-3"
-                            onClick={() => setSelectedChecklist(template)}
-                          >
-                            <Eye className="h-3 w-3" />
-                            <span className="hidden sm:inline">Vis</span>
-                          </Button>
-                          {isAdded ? (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="gap-1 text-destructive hover:text-destructive h-8 px-2"
-                              onClick={() => projectTemplate && removeTemplate(projectTemplate.id)}
-                              disabled={isSaving}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                  <Collapsible
+                    key={cat}
+                    open={isCatExpanded}
+                    onOpenChange={(open) => setExpandedDocCategories(prev => ({ ...prev, [`cl-${cat}`]: open }))}
+                  >
+                    <CollapsibleTrigger asChild>
+                      <div className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-2">
+                          {isCatExpanded ? (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
                           ) : (
-                            <Button 
-                              size="sm" 
-                              className="gap-1 h-8 px-2 sm:px-3"
-                              onClick={() => addChecklistTemplate(template.id)}
-                              disabled={isSaving}
-                            >
-                              <Plus className="h-3 w-3" />
-                              <span className="hidden sm:inline">Legg til</span>
-                            </Button>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                           )}
+                          <span className="font-medium text-sm">{CHECKLIST_CATEGORIES[cat] || cat}</span>
                         </div>
+                        <Badge variant="secondary" className="text-xs">{categoryTemplates.length}</Badge>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="ml-6 border-l pl-3 space-y-0.5 mb-2">
+                        {categoryTemplates.map((template) => {
+                          const isAdded = addedChecklistIds.includes(template.id);
+                          const projectTemplate = projectChecklists.find(
+                            pt => pt.admin_checklist_template_id === template.id
+                          );
+
+                          return (
+                            <div
+                              key={template.id}
+                              className={cn(
+                                "flex items-center justify-between gap-3 px-3 py-2 rounded-md hover:bg-muted/50 transition-colors group",
+                                isAdded && "bg-primary/5"
+                              )}
+                            >
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
+                                {isAdded && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium truncate">{template.template_name}</span>
+                                    {template.is_mandatory && (
+                                      <Badge variant="destructive" className="text-[10px] px-1.5 py-0 shrink-0">Obl.</Badge>
+                                    )}
+                                    {template.is_locked && (
+                                      <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
+                                    )}
+                                  </div>
+                                  {template.description && (
+                                    <p className="text-xs text-muted-foreground truncate">{template.description}</p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs"
+                                  onClick={() => setSelectedChecklist(template)}
+                                >
+                                  <Eye className="h-3 w-3" />
+                                </Button>
+                                {isAdded ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                                    onClick={() => projectTemplate && removeTemplate(projectTemplate.id)}
+                                    disabled={isSaving}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    className="h-7 px-2 text-xs"
+                                    onClick={() => addChecklistTemplate(template.id)}
+                                    disabled={isSaving}
+                                  >
+                                    <Plus className="h-3 w-3 mr-1" />
+                                    Legg til
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                 );
               })}
             </div>
@@ -687,101 +663,48 @@ export default function Ks2Malbibliotek() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-0.5">
               {customChecklistTemplates.map((template) => (
-                <Card key={template.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-cyan-500/10">
-                          <ClipboardList className="h-5 w-5 text-cyan-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base truncate">{template.template_name}</CardTitle>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            <Badge variant="secondary">
-                              {allChecklistCategories[template.category] || template.category}
-                            </Badge>
-                            <Badge variant="outline" className="gap-1 text-cyan-600">
-                              <PenLine className="h-3 w-3" />
-                              Egendefinert
-                            </Badge>
-                          </div>
-                        </div>
+                <div
+                  key={template.id}
+                  className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md hover:bg-muted/50 transition-colors group"
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <PenLine className="h-4 w-4 text-cyan-500 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium truncate">{template.template_name}</span>
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">
+                          {allChecklistCategories[template.category] || template.category}
+                        </Badge>
                       </div>
+                      {template.description && (
+                        <p className="text-xs text-muted-foreground truncate">{template.description}</p>
+                      )}
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    {template.description && (
-                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                        {template.description}
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground mb-3">
-                      {template.checkpoints.length} sjekkpunkt
-                    </p>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="gap-1"
-                          onClick={() => openEditCustomChecklist(template)}
-                        >
-                          <Edit className="h-3 w-3" />
-                          Rediger
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="gap-1 text-destructive hover:text-destructive"
-                          onClick={() => handleDeleteCustomChecklist(template)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        className="gap-1"
-                        onClick={() => handleStartCustomChecklist(template)}
-                      >
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-xs text-muted-foreground mr-1">{template.checkpoints.length} pkt</span>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => handleStartCustomChecklist(template)}>
                         <Play className="h-3 w-3" />
-                        Bruk
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openEditCustomChecklist(template)}>
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive hover:text-destructive" onClick={() => handleDeleteCustomChecklist(template)}>
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Opprettet: {format(parseISO(template.created_at), "d. MMM yyyy", { locale: nb })}
-                    </p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           )}
         </TabsContent>
 
         {/* Routine Templates Tab */}
-        <TabsContent value="routines" className="space-y-4">
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={selectedRoutineCategory === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedRoutineCategory("all")}
-            >
-              Alle
-            </Button>
-            {routineCategoriesInUse.map((cat) => (
-              <Button
-                key={cat}
-                variant={selectedRoutineCategory === cat ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedRoutineCategory(cat)}
-              >
-                {ROUTINE_CATEGORIES[cat] || cat}
-              </Button>
-            ))}
-          </div>
-
+        <TabsContent value="routines" className="space-y-2">
           {filteredRoutines.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
@@ -790,138 +713,101 @@ export default function Ks2Malbibliotek() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredRoutines.map((routine) => {
-                const isAdded = addedRoutineIds.includes(routine.id);
-                const projectTemplate = projectRoutines.find(
-                  pt => pt.admin_routine_template_id === routine.id
-                );
+            <div className="space-y-1">
+              {routineCategoriesInUse.map((cat) => {
+                const categoryRoutines = filteredRoutines.filter(r => r.category === cat);
+                if (categoryRoutines.length === 0) return null;
+                const isCatExpanded = expandedDocCategories[`rt-${cat}`] ?? false;
 
                 return (
-                  <Card key={routine.id} className={cn(
-                    "hover:shadow-md transition-shadow relative",
-                    isAdded && "ring-2 ring-purple-500/50"
-                  )}>
-                    {isAdded && (
-                      <div className="absolute -top-2 -right-2 bg-purple-500 text-white rounded-full p-1">
-                        <Check className="h-3 w-3" />
-                      </div>
-                    )}
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-purple-500/10">
-                            <BookOpen className="h-5 w-5 text-purple-500" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <CardTitle className="text-base truncate">{routine.routine_name}</CardTitle>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              <Badge variant="secondary">
-                                {ROUTINE_CATEGORIES[routine.category] || routine.category}
-                              </Badge>
-                              {routine.is_mandatory && (
-                                <Badge variant="destructive" className="gap-1">
-                                  <AlertCircle className="h-3 w-3" />
-                                  Obligatorisk
-                                </Badge>
-                              )}
-                              {routine.is_locked && (
-                                <Badge variant="outline" className="gap-1">
-                                  <Lock className="h-3 w-3" />
-                                  Låst
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {routine.description && (
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                          {routine.description}
-                        </p>
-                      )}
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-col gap-1">
-                          {routine.file_path && (
-                            <Badge variant="outline" className="gap-1 text-xs">
-                              <FileText className="h-3 w-3" />
-                              Dokument
-                            </Badge>
-                          )}
-                          {routine.version && (
-                            <span className="text-xs text-muted-foreground">
-                              v{routine.version}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="gap-1"
-                            onClick={() => setSelectedRoutine(routine)}
-                          >
-                            <Eye className="h-3 w-3" />
-                            Les rutine
-                          </Button>
-                          {isAdded ? (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="gap-1 text-destructive hover:text-destructive"
-                              onClick={() => projectTemplate && removeTemplate(projectTemplate.id)}
-                              disabled={isSaving}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                  <Collapsible
+                    key={cat}
+                    open={isCatExpanded}
+                    onOpenChange={(open) => setExpandedDocCategories(prev => ({ ...prev, [`rt-${cat}`]: open }))}
+                  >
+                    <CollapsibleTrigger asChild>
+                      <div className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-2">
+                          {isCatExpanded ? (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
                           ) : (
-                            <Button 
-                              size="sm" 
-                              className="gap-1"
-                              onClick={() => addRoutineTemplate(routine.id)}
-                              disabled={isSaving}
-                            >
-                              <Plus className="h-3 w-3" />
-                              Legg til
-                            </Button>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                           )}
+                          <span className="font-medium text-sm">{ROUTINE_CATEGORIES[cat] || cat}</span>
                         </div>
+                        <Badge variant="secondary" className="text-xs">{categoryRoutines.length}</Badge>
                       </div>
-                      
-                      {/* Show implementation status if added */}
-                      {isAdded && projectTemplate && (
-                        <div className="mt-3 pt-3 border-t">
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              id={`impl-${routine.id}`}
-                              checked={projectTemplate.is_implemented}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  markAsImplemented(projectTemplate.id);
-                                } else {
-                                  unmarkAsImplemented(projectTemplate.id);
-                                }
-                              }}
-                            />
-                            <label 
-                              htmlFor={`impl-${routine.id}`}
-                              className="text-sm text-muted-foreground cursor-pointer"
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="ml-6 border-l pl-3 space-y-0.5 mb-2">
+                        {categoryRoutines.map((routine) => {
+                          const isAdded = addedRoutineIds.includes(routine.id);
+                          const projectTemplate = projectRoutines.find(
+                            pt => pt.admin_routine_template_id === routine.id
+                          );
+
+                          return (
+                            <div
+                              key={routine.id}
+                              className={cn(
+                                "flex items-center justify-between gap-3 px-3 py-2 rounded-md hover:bg-muted/50 transition-colors group",
+                                isAdded && "bg-purple-500/5"
+                              )}
                             >
-                              Rutinen er lest og implementert
-                            </label>
-                          </div>
-                          {projectTemplate.is_implemented && projectTemplate.implemented_at && (
-                            <p className="text-xs text-muted-foreground mt-1 ml-6">
-                              {format(parseISO(projectTemplate.implemented_at), "d. MMM yyyy", { locale: nb })}
-                              {projectTemplate.implemented_by_name && ` av ${projectTemplate.implemented_by_name}`}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
+                                {isAdded && <CheckCircle2 className="h-4 w-4 text-purple-500 shrink-0" />}
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium truncate">{routine.routine_name}</span>
+                                    {routine.is_mandatory && (
+                                      <Badge variant="destructive" className="text-[10px] px-1.5 py-0 shrink-0">Obl.</Badge>
+                                    )}
+                                    {routine.is_locked && (
+                                      <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
+                                    )}
+                                  </div>
+                                  {routine.description && (
+                                    <p className="text-xs text-muted-foreground truncate">{routine.description}</p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs"
+                                  onClick={() => setSelectedRoutine(routine)}
+                                >
+                                  <Eye className="h-3 w-3" />
+                                </Button>
+                                {isAdded ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                                    onClick={() => projectTemplate && removeTemplate(projectTemplate.id)}
+                                    disabled={isSaving}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    className="h-7 px-2 text-xs"
+                                    onClick={() => addRoutineTemplate(routine.id)}
+                                    disabled={isSaving}
+                                  >
+                                    <Plus className="h-3 w-3 mr-1" />
+                                    Legg til
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                 );
               })}
             </div>
@@ -949,60 +835,40 @@ export default function Ks2Malbibliotek() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-0.5">
               {filteredCustomRoutines.map((routine) => (
-                <Card key={routine.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-green-500/10">
-                          <PenLine className="h-5 w-5 text-green-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base truncate">{routine.name}</CardTitle>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            <Badge variant="secondary">
-                              {ROUTINE_CATEGORIES[routine.category || 'general'] || routine.category}
-                            </Badge>
-                            <Badge variant="outline" className="gap-1 text-green-600">
-                              <PenLine className="h-3 w-3" />
-                              Egendefinert
-                            </Badge>
-                          </div>
-                        </div>
+                <div
+                  key={routine.id}
+                  className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md hover:bg-muted/50 transition-colors group"
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <PenLine className="h-4 w-4 text-green-500 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium truncate">{routine.name}</span>
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">
+                          {ROUTINE_CATEGORIES[routine.category || 'general'] || routine.category}
+                        </Badge>
                       </div>
+                      {routine.description && (
+                        <p className="text-xs text-muted-foreground truncate">{routine.description}</p>
+                      )}
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    {routine.description && (
-                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                        {routine.description}
-                      </p>
-                    )}
-                    <div className="flex items-center justify-end gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="gap-1"
-                        onClick={() => openEditCustomRoutine(routine)}
-                      >
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-xs text-muted-foreground mr-1">
+                      {format(parseISO(routine.created_at), "dd.MM.yy", { locale: nb })}
+                    </span>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openEditCustomRoutine(routine)}>
                         <Edit className="h-3 w-3" />
-                        Rediger
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="gap-1 text-destructive hover:text-destructive"
-                        onClick={() => handleDeleteCustomRoutine(routine)}
-                      >
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive hover:text-destructive" onClick={() => handleDeleteCustomRoutine(routine)}>
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Opprettet: {format(parseISO(routine.created_at), "d. MMM yyyy", { locale: nb })}
-                    </p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           )}

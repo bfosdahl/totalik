@@ -132,7 +132,7 @@ export function RoutineLibraryDialog({
               {search ? "Ingen rutiner funnet" : "Ingen maler tilgjengelig for denne modulen ennå"}
             </p>
           ) : (
-            <div className="space-y-2 pr-4 pb-2">
+            <div className="space-y-0.5 pr-4 pb-2">
               {filtered.map((template) => {
                 const isAdopted = isTemplateAdopted(template.id);
                 const isExpanded = expandedId === template.id;
@@ -144,105 +144,96 @@ export function RoutineLibraryDialog({
                     open={isExpanded}
                     onOpenChange={() => setExpandedId(isExpanded ? null : template.id)}
                   >
-                    <Card className="border">
-                      <CollapsibleTrigger asChild>
-                        <CardHeader className="py-3 px-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 min-w-0">
-                              {isExpanded ? (
-                                <ChevronDown className="w-4 h-4 shrink-0 text-muted-foreground" />
-                              ) : (
-                                <ChevronRight className="w-4 h-4 shrink-0 text-muted-foreground" />
-                              )}
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  {template.template_number && (
-                                    <Badge variant="outline" className="text-xs font-mono shrink-0">
-                                      {template.template_number}
-                                    </Badge>
-                                  )}
-                                  <CardTitle className="text-sm font-medium truncate">{template.title}</CardTitle>
-                                </div>
-                                {template.description && (
-                                  <CardDescription className="text-xs line-clamp-1">{template.description}</CardDescription>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              {template.created_at && (
-                                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                  <Calendar className="w-3 h-3" />
-                                  {format(new Date(template.created_at), "dd.MM.yyyy", { locale: nb })}
-                                </span>
-                              )}
-                              {template.subcategory && (
-                                <Badge variant="outline" className="text-xs">{template.subcategory}</Badge>
-                              )}
-                              {template.frequency && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {FREQUENCY_LABELS[template.frequency] || template.frequency}
+                    <CollapsibleTrigger asChild>
+                      <div className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-md cursor-pointer hover:bg-muted/50 transition-colors ${isAdopted ? 'bg-primary/5' : ''}`}>
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          {isExpanded ? (
+                            <ChevronDown className="w-4 h-4 shrink-0 text-muted-foreground" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4 shrink-0 text-muted-foreground" />
+                          )}
+                          {isAdopted && <Check className="w-4 h-4 shrink-0 text-primary" />}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              {template.template_number && (
+                                <Badge variant="outline" className="text-[10px] font-mono shrink-0 px-1.5 py-0">
+                                  {template.template_number}
                                 </Badge>
                               )}
+                              <span className="text-sm font-medium truncate">{template.title}</span>
                             </div>
+                            {template.description && (
+                              <p className="text-xs text-muted-foreground truncate">{template.description}</p>
+                            )}
                           </div>
-                        </CardHeader>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <CardContent className="pt-0 pb-3 px-4 space-y-3">
-                          {template.purpose && (
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground mb-1">Formål</p>
-                              <p className="text-sm">{template.purpose}</p>
-                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {template.subcategory && (
+                            <Badge variant="outline" className="text-xs">{template.subcategory}</Badge>
                           )}
-                          {steps.length > 0 && (
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground mb-1">Sjekkliste</p>
-                              <ul className="space-y-1">
-                                {steps.map((step: any, i: number) => (
-                                  <li key={i} className="flex items-start gap-2 text-sm">
-                                    <span className="text-muted-foreground">•</span>
-                                    <span>{typeof step === "string" ? step : step.text || step.label || JSON.stringify(step)}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
+                          {template.frequency && (
+                            <Badge variant="secondary" className="text-xs">
+                              {FREQUENCY_LABELS[template.frequency] || template.frequency}
+                            </Badge>
                           )}
-                          {template.target_roles && template.target_roles.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
-                              {template.target_roles.map(role => (
-                                <Badge key={role} variant="outline" className="text-xs">{role}</Badge>
+                        </div>
+                      </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="ml-6 pl-4 border-l space-y-3 py-3 mb-2">
+                        {template.purpose && (
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-1">Formål</p>
+                            <p className="text-sm">{template.purpose}</p>
+                          </div>
+                        )}
+                        {steps.length > 0 && (
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-1">Sjekkliste</p>
+                            <ul className="space-y-1">
+                              {steps.map((step: any, i: number) => (
+                                <li key={i} className="flex items-start gap-2 text-sm">
+                                  <span className="text-muted-foreground">•</span>
+                                  <span>{typeof step === "string" ? step : step.text || step.label || JSON.stringify(step)}</span>
+                                </li>
                               ))}
-                            </div>
-                          )}
-                          <div className="pt-2 border-t">
-                            <Button
-                              size="sm"
-                              disabled={isAdopted || adopting}
-                              onClick={() => handleAdopt(template)}
-                              variant={isAdopted ? "secondary" : "default"}
-                            >
-                              {isAdopted ? (
-                                <>
-                                  <Check className="w-4 h-4 mr-1" />
-                                  Allerede lagt til
-                                </>
-                              ) : adopting ? (
-                                <>
-                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                                  Legger til...
-                                </>
-                              ) : (
-                                <>
-                                  <Download className="w-4 h-4 mr-1" />
-                                  Legg til rutine
-                                </>
-                              )}
-                            </Button>
+                            </ul>
                           </div>
-                        </CardContent>
-                      </CollapsibleContent>
-                    </Card>
+                        )}
+                        {template.target_roles && template.target_roles.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {template.target_roles.map(role => (
+                              <Badge key={role} variant="outline" className="text-xs">{role}</Badge>
+                            ))}
+                          </div>
+                        )}
+                        <div className="pt-2">
+                          <Button
+                            size="sm"
+                            disabled={isAdopted || adopting}
+                            onClick={() => handleAdopt(template)}
+                            variant={isAdopted ? "secondary" : "default"}
+                          >
+                            {isAdopted ? (
+                              <>
+                                <Check className="w-4 h-4 mr-1" />
+                                Allerede lagt til
+                              </>
+                            ) : adopting ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                Legger til...
+                              </>
+                            ) : (
+                              <>
+                                <Download className="w-4 h-4 mr-1" />
+                                Legg til rutine
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </CollapsibleContent>
                   </Collapsible>
                 );
               })}
