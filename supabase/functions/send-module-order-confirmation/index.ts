@@ -111,11 +111,7 @@ const handler = async (req: Request): Promise<Response> => {
                     <span>Brukernavn:</span>
                     <span><strong>${recipientEmail}</strong></span>
                   </div>
-                  <div class="order-row" style="border-color: #bfdbfe;">
-                    <span>Passord:</span>
-                    <span><strong>Abc_1234</strong></span>
-                  </div>
-                  <p style="font-size: 13px; color: #6b7280; margin-bottom: 0;">Vi anbefaler at du endrer passordet ditt etter første innlogging.</p>
+                  <p style="font-size: 13px; color: #6b7280; margin-bottom: 0;">Bruk «Glemt passord» på innloggingssiden for å sette ditt passord.</p>
                 </div>
 
                 <p>Du kan nå begynne å bruke ${moduleName} ved å logge inn i Total-IK.</p>

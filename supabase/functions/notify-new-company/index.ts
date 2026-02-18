@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
 
     // Send notification to Gard
     const adminEmailResponse = await resend.emails.send({
-      from: "Total-IK <noreply@athenahms.no>",
+      from: "Total-IK <noreply@totalik.no>",
       to: ["gard@athenahms.no"],
       subject: `🎉 Ny bedrift registrert: ${companyName}`,
       html: `

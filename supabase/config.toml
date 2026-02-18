@@ -74,3 +74,24 @@ verify_jwt = false
 
 [functions.parse-customer-pdf]
 verify_jwt = true
+
+[functions.notify-new-company]
+verify_jwt = true
+
+[functions.send-single-welcome-email]
+verify_jwt = true
+
+[functions.send-renewal-email]
+verify_jwt = true
+
+[functions.create-user-direct]
+verify_jwt = true
+
+[functions.notify-time-off-request]
+verify_jwt = true
+
+[functions.notify-time-off-approval]
+verify_jwt = true
+
+[functions.notify-work-schedule]
+verify_jwt = true
