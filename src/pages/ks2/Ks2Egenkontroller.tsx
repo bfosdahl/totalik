@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ClipboardCheck, Plus, Search, FileText, Calendar, User, ArrowRight, Library, Eye, Play, Download } from "lucide-react";
+import { ClipboardCheck, Plus, Search, FileText, Calendar, User, ArrowRight, Library, Eye, Play, Download, Image, X } from "lucide-react";
 import { useKsModule2ProjectTemplates, ProjectTemplate } from "@/hooks/useKsModule2ProjectTemplates";
 import { useKsModule2Checklists, KsModule2Checklist } from "@/hooks/useKsModule2Checklists";
 import { Ks2ChecklistWizard, PreSelectedTemplate } from "@/components/ks2/Ks2ChecklistWizard";
@@ -334,6 +334,23 @@ export default function Ks2Egenkontroller() {
                 </p>
               )}
               
+               {(() => {
+                const allPhotos = viewingChecklist.checklist_items
+                  ?.filter((item: any) => item.photos?.length > 0)
+                  .flatMap((item: any, idx: number) => 
+                    item.photos.map((p: string) => ({ url: p, itemText: item.text, itemIdx: idx }))
+                  ) || [];
+                return allPhotos.length > 0 ? (
+                  <Button variant="outline" size="sm" className="gap-2" onClick={() => {
+                    const el = document.getElementById('checklist-photos-section');
+                    el?.scrollIntoView({ behavior: 'smooth' });
+                  }}>
+                    <Image className="h-4 w-4" />
+                    Se bilder ({allPhotos.length})
+                  </Button>
+                ) : null;
+              })()}
+
               <div>
                 <h4 className="font-medium mb-2">Kontrollpunkter</h4>
                 <div className="space-y-2">
@@ -348,8 +365,26 @@ export default function Ks2Egenkontroller() {
                               {item.value === true ? 'OK' : item.value === false ? 'Ikke OK' : item.value}
                             </Badge>
                           )}
+                          {item.photos?.length > 0 && (
+                            <span className="ml-2 text-xs text-primary inline-flex items-center gap-1">
+                              <Image className="h-3 w-3" />
+                              {item.photos.length} bilde{item.photos.length > 1 ? 'r' : ''}
+                            </span>
+                          )}
                           {item.comment && (
                             <p className="text-xs text-muted-foreground mt-1">Kommentar: {item.comment}</p>
+                          )}
+                          {item.photos?.length > 0 && (
+                            <div className="flex gap-2 mt-2 flex-wrap">
+                              {item.photos.map((photo: string, pIdx: number) => {
+                                const url = photo.startsWith('http') ? photo : supabase.storage.from('ks-module2-checklist-photos').getPublicUrl(photo).data.publicUrl;
+                                return (
+                                  <a key={pIdx} href={url} target="_blank" rel="noopener noreferrer" className="block">
+                                    <img src={url} alt={`Bilde ${pIdx + 1}`} className="h-20 w-20 object-cover rounded border hover:opacity-80 transition-opacity" />
+                                  </a>
+                                );
+                              })}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -357,6 +392,33 @@ export default function Ks2Egenkontroller() {
                   }
                 </div>
               </div>
+
+              {(() => {
+                const allPhotos = viewingChecklist.checklist_items
+                  ?.filter((item: any) => item.photos?.length > 0)
+                  .flatMap((item: any) => 
+                    item.photos.map((p: string) => ({ url: p, itemText: item.text }))
+                  ) || [];
+                if (allPhotos.length === 0) return null;
+                return (
+                  <div id="checklist-photos-section">
+                    <h4 className="font-medium mb-2">Alle bilder ({allPhotos.length})</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {allPhotos.map((photo: any, pIdx: number) => {
+                        const url = photo.url.startsWith('http') ? photo.url : supabase.storage.from('ks-module2-checklist-photos').getPublicUrl(photo.url).data.publicUrl;
+                        return (
+                          <a key={pIdx} href={url} target="_blank" rel="noopener noreferrer" className="group relative">
+                            <img src={url} alt={photo.itemText} className="w-full h-32 object-cover rounded-lg border hover:opacity-90 transition-opacity" />
+                            <span className="absolute bottom-1 left-1 right-1 text-[10px] bg-black/60 text-white rounded px-1 py-0.5 truncate">
+                              {photo.itemText}
+                            </span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </DialogContent>
