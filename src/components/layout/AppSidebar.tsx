@@ -1062,7 +1062,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                                   : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                               )}
                             >
-                              Målsetting
+                              Målsetting & Kvalitetsmål
                             </NavLink>
                             <NavLink
                               to="/ks/ik-ks/organisering"
@@ -1085,17 +1085,6 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                               )}
                             >
                               Rutiner
-                            </NavLink>
-                            <NavLink
-                              to="/ks/ik-ks/maal"
-                              className={cn(
-                                "flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm",
-                                location.pathname === "/ks/ik-ks/maal"
-                                  ? "bg-sidebar-primary/80 text-sidebar-primary-foreground"
-                                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                              )}
-                            >
-                              Kvalitetsmål
                             </NavLink>
                             <NavLink
                               to="/ks/ik-ks/dokumenter"
