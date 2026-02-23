@@ -172,24 +172,22 @@ export function ExtendedContractDialog({
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
             {/* Tab navigation - horizontal scroll on mobile */}
-            <div className="border-b shrink-0 px-2">
-              <ScrollArea className="w-full">
-                <TabsList className="inline-flex w-max gap-1 p-1 bg-transparent h-auto">
-                  {sections.map((section) => {
-                    const Icon = section.icon;
-                    return (
-                      <TabsTrigger 
-                        key={section.id} 
-                        value={section.id}
-                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-3 py-2 text-xs whitespace-nowrap gap-1.5"
-                      >
-                        <Icon className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">{section.label}</span>
-                      </TabsTrigger>
-                    );
-                  })}
-                </TabsList>
-              </ScrollArea>
+            <div className="border-b shrink-0 px-2 overflow-x-auto">
+              <TabsList className="inline-flex w-max gap-1 p-1 bg-transparent h-auto">
+                {sections.map((section) => {
+                  const Icon = section.icon;
+                  return (
+                    <TabsTrigger 
+                      key={section.id} 
+                      value={section.id}
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-3 py-2 text-xs whitespace-nowrap gap-1.5"
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">{section.label}</span>
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
             </div>
 
             {/* Content area */}
