@@ -531,7 +531,7 @@ export default function AdminDocuments() {
           </div>
 
           {/* Main content */}
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col overflow-y-auto">
             {/* Header */}
             <div className="p-4 border-b bg-background">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -841,7 +841,7 @@ export default function AdminDocuments() {
             </div>
 
             {/* Documents */}
-            <ScrollArea className="flex-1 p-4">
+            <div className="p-4">
               {isLoading ? (
                 <div className="flex items-center justify-center h-32">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
@@ -1041,7 +1041,7 @@ export default function AdminDocuments() {
                   </CardContent>
                 </Card>
               )}
-            </ScrollArea>
+            </div>
           </div>
         </div>
       </div>
