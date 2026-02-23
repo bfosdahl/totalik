@@ -73,9 +73,17 @@ export function useKsModule2Routines(projectId?: string) {
     if (!profile?.company_id || !projectId) return;
 
     try {
+      // First get routine IDs for this project, then fetch their links
+      const routineIds = routines.map(r => r.id);
+      if (routineIds.length === 0) {
+        setLinks([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('ks_module2_routine_checklist_links')
-        .select('*');
+        .select('*')
+        .in('routine_id', routineIds);
 
       if (error) throw error;
       setLinks((data as RoutineChecklistLink[]) || []);
@@ -87,9 +95,17 @@ export function useKsModule2Routines(projectId?: string) {
   useEffect(() => {
     if (projectId) {
       fetchRoutines();
-      fetchLinks();
     }
   }, [profile?.company_id, projectId]);
+
+  // Fetch links after routines are loaded
+  useEffect(() => {
+    if (routines.length > 0) {
+      fetchLinks();
+    } else {
+      setLinks([]);
+    }
+  }, [routines]);
 
   const createRoutine = async (input: NewRoutineInput) => {
     if (!profile?.company_id) return null;
