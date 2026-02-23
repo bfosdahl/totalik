@@ -381,12 +381,30 @@ export default function IkKsHandbok() {
       addSectionTitle("Rutiner", sectionNum++);
       if (routines && routines.length > 0) {
         routines.forEach((routine: any, idx: number) => {
-          addPageIfNeeded(20);
-          doc.setFont("helvetica", "bold");
-          doc.text(`${idx + 1}. ${routine.routine_name}`, 25, y);
-          y += 6;
-          doc.setFont("helvetica", "normal");
+          addPageIfNeeded(30);
           
+          // Routine title with number
+          doc.setFont("helvetica", "bold");
+          const routineTitle = `${idx + 1}. ${routine.routine_name}`;
+          doc.text(routineTitle, 25, y);
+          y += 6;
+          
+          // Metadata line
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(120, 120, 120);
+          const metaParts: string[] = [];
+          if (routine.routine_number) metaParts.push(`Nr: ${routine.routine_number}`);
+          metaParts.push(`Kategori: ${routine.category || 'Generelt'}`);
+          if (routine.created_at) metaParts.push(`Opprettet: ${format(new Date(routine.created_at), "dd.MM.yyyy", { locale: nb })}`);
+          if (routine.updated_at && routine.updated_at !== routine.created_at) {
+            metaParts.push(`Revidert: ${format(new Date(routine.updated_at), "dd.MM.yyyy", { locale: nb })}`);
+          }
+          doc.text(metaParts.join("  |  "), 25, y);
+          y += 5;
+          doc.setTextColor(0, 0, 0);
+          doc.setFontSize(9);
+
           if (routine.description) {
             const descLines = doc.splitTextToSize(routine.description, pageWidth - 50);
             doc.text(descLines, 30, y);
