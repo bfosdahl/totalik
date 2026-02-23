@@ -180,7 +180,7 @@ export default function IkKsSjekklister() {
                     }}
                   />
                 </div>
-                <ScrollArea className="flex-1 min-h-0">
+                <ScrollArea className="flex-1 min-h-0 max-h-[60vh]">
                   <div className="space-y-0.5 pr-4">
                     {adminTemplates?.map(template => {
                       const isSelected = isAdminTemplateSelected("checklist", template.id);
