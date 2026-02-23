@@ -127,14 +127,20 @@ export function BulkCompanyImportDialog({
           const seenOrgNumbers = new Set<string>();
           const companies: ParsedCompany[] = [];
 
+          // Log first row keys for debugging column names
+          if ((jsonData as any[]).length > 0) {
+            console.log('Excel column names:', Object.keys((jsonData as any[])[0]));
+            console.log('First row data:', (jsonData as any[])[0]);
+          }
+
           for (const row of jsonData as any[]) {
             // Parse org number and pad with leading zeros if needed (Norwegian org numbers are 9 digits)
-            let orgNumber = String(row.Customer_OrgNumber || row["Customer_OrgNumber"] || "").replace(/\s/g, "");
+            let orgNumber = String(row.Customer_OrgNumber || row["Customer_OrgNumber"] || row.OrgNr || row["Org.nr"] || "").replace(/\s/g, "");
             // Pad with leading zeros to ensure 9 digits (Excel often strips leading zeros)
             if (orgNumber.length > 0 && orgNumber.length < 9) {
               orgNumber = orgNumber.padStart(9, '0');
             }
-            const name = String(row.Customer_Company || row["Customer_Company"] || "").trim();
+            const name = String(row.Customer_Company || row["Customer_Company"] || row["Kunde navn"] || row.Bedrift || "").trim();
             
             // Skip if no org number or company name
             if (!orgNumber || !name) continue;
@@ -153,11 +159,22 @@ export function BulkCompanyImportDialog({
 
             const postalCode = String(row.Customer_ZipCode || row["Customer_ZipCode"] || "").trim();
             const city = String(row.Customer_PostalArea || row["Customer_PostalArea"] || "").trim();
-            const email = String(row.Customer_Email || row["Customer_Email"] || "").trim().replace(/\\/g, "");
-            const phone = String(row.Customer_Phone || row.Customer_CellPhone || row["Customer_Phone"] || row["Customer_CellPhone"] || "").trim();
-            const contactFirstName = String(row.Customer_Name || row["Customer_Name"] || "").trim();
+            const email = String(row.Customer_Email || row["Customer_Email"] || row["E-post"] || "").trim().replace(/\\/g, "");
+            const phone = String(row.Customer_Phone || row.Customer_CellPhone || row["Customer_Phone"] || row["Customer_CellPhone"] || row["Kunde tlf"] || "").trim();
+            const contactFirstName = String(row.Customer_Name || row["Customer_Name"] || row.Selger || "").trim();
             const contactLastName = String(row.Customer_SecondName || row["Customer_SecondName"] || "").trim();
-            const productName = String(row.ProductName || row["ProductName"] || row.Produkter || row["Produkter"] || row.AllProducts || row["AllProducts"] || row.Products || row["Products"] || "").trim();
+            // Try all possible product column names
+            const productName = String(
+              row.ProductName || row["ProductName"] || 
+              row.Produkter || row["Produkter"] || 
+              row.AllProducts || row["AllProducts"] || 
+              row.Products || row["Products"] ||
+              row.Produkt || row["Produkt"] ||
+              row["Produktnavn"] || row.ProductDescription ||
+              ""
+            ).trim();
+            
+            console.log(`Row: ${name} | OrgNr: ${orgNumber} | Product: "${productName}"`);
 
             const isDuplicate = existingOrgs.has(orgNumber);
             
