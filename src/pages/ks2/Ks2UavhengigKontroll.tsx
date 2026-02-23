@@ -20,6 +20,7 @@ import {
   Trash2,
   Shield,
   FileDown,
+  ClipboardList,
 } from "lucide-react";
 import { useKsModule2Uk, KsModule2Uk } from "@/hooks/useKsModule2Uk";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +30,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { downloadKsModule2UkPdf } from "@/utils/ksModule2UkPdf";
 import { KsModule2Project } from "@/hooks/useKsModule2Projects";
+import UkChecklistExecution from "@/components/ks2/UkChecklistExecution";
 
 const CONTROL_AREAS = [
   { value: "konstruksjon", label: "Konstruksjonssikkerhet" },
@@ -56,6 +58,7 @@ export default function Ks2UavhengigKontroll() {
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [activeChecklistUk, setActiveChecklistUk] = useState<KsModule2Uk | null>(null);
   const [project, setProject] = useState<KsModule2Project | null>(null);
   
   const [newUk, setNewUk] = useState({
@@ -128,6 +131,14 @@ export default function Ks2UavhengigKontroll() {
       ? `${profile.first_name} ${profile.last_name}` 
       : profile?.email || "Ukjent";
     approveUk({ id: uk.id, approvedByName, result: "Godkjent uten anmerkninger" });
+    setActiveChecklistUk(null);
+  };
+
+  const handleStartKontroll = (uk: KsModule2Uk) => {
+    if (uk.status === "pending") {
+      updateUk({ id: uk.id, status: "in_progress" });
+    }
+    setActiveChecklistUk(uk);
   };
 
   const handleDeleteUk = (id: string) => {
@@ -157,6 +168,18 @@ export default function Ks2UavhengigKontroll() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-muted-foreground">Laster uavhengig kontroll...</div>
+      </div>
+    );
+  }
+
+  if (activeChecklistUk) {
+    return (
+      <div className="space-y-6">
+        <UkChecklistExecution
+          uk={activeChecklistUk}
+          onBack={() => setActiveChecklistUk(null)}
+          onApprove={handleApproveUk}
+        />
       </div>
     );
   }
@@ -381,7 +404,7 @@ export default function Ks2UavhengigKontroll() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => updateUk({ id: uk.id, status: "in_progress" })}
+                        onClick={() => handleStartKontroll(uk)}
                       >
                         <Shield className="h-4 w-4 mr-1" />
                         Start kontroll
@@ -391,10 +414,10 @@ export default function Ks2UavhengigKontroll() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleApproveUk(uk)}
+                        onClick={() => setActiveChecklistUk(uk)}
                       >
-                        <CheckCircle2 className="h-4 w-4 mr-1" />
-                        Godkjenn
+                        <ClipboardList className="h-4 w-4 mr-1" />
+                        Gjennomfør
                       </Button>
                     )}
                     <Button
