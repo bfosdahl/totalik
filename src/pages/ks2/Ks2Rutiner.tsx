@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { BookOpen, Plus, Search, Library, Check, ExternalLink, Eye, UserCheck, Link2, X, ClipboardList, PenLine, Edit, Trash2 } from "lucide-react";
+import { BookOpen, Plus, Search, Library, Check, ExternalLink, Eye, UserCheck, Link2, X, ClipboardList, PenLine, Edit, Trash2, Calendar, Hash } from "lucide-react";
 import { useKsModule2ProjectTemplates } from "@/hooks/useKsModule2ProjectTemplates";
 import { useKsModule2Routines, KsModule2Routine } from "@/hooks/useKsModule2Routines";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
 import {
   Dialog,
   DialogContent,
@@ -319,11 +321,20 @@ export default function Ks2Rutiner() {
                         <p className="text-sm text-muted-foreground line-clamp-2">
                           {pt.routine_template?.description || "Ingen beskrivelse"}
                         </p>
-                        {pt.approved_by && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Godkjent av: {pt.approved_by}
-                          </p>
-                        )}
+                        <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground flex-wrap">
+                          {pt.created_at && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              Opprettet {format(new Date(pt.created_at), "dd.MM.yyyy", { locale: nb })}
+                            </span>
+                          )}
+                          {pt.updated_at && pt.updated_at !== pt.created_at && (
+                            <span>• Revidert {format(new Date(pt.updated_at), "dd.MM.yyyy", { locale: nb })}</span>
+                          )}
+                          {pt.approved_by && (
+                            <span>• Godkjent av: {pt.approved_by}</span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-3 flex-wrap">
                         <Button
@@ -372,6 +383,11 @@ export default function Ks2Rutiner() {
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            {routine.routine_number && (
+                              <Badge variant="outline" className="font-mono text-xs">
+                                {routine.routine_number}
+                              </Badge>
+                            )}
                             <h4 className="font-medium">{routine.name}</h4>
                             <Badge variant="outline">
                               {ROUTINE_CATEGORIES[routine.category || 'general'] || routine.category}
@@ -396,11 +412,20 @@ export default function Ks2Rutiner() {
                           <p className="text-sm text-muted-foreground line-clamp-2">
                             {routine.description || "Ingen beskrivelse"}
                           </p>
-                          {routine.approved_by && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Godkjent av: {routine.approved_by}
-                            </p>
-                          )}
+                          <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground flex-wrap">
+                            {routine.created_at && (
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                Opprettet {format(new Date(routine.created_at), "dd.MM.yyyy", { locale: nb })}
+                              </span>
+                            )}
+                            {routine.updated_at && routine.updated_at !== routine.created_at && (
+                              <span>• Revidert {format(new Date(routine.updated_at), "dd.MM.yyyy", { locale: nb })}</span>
+                            )}
+                            {routine.approved_by && (
+                              <span>• Godkjent av: {routine.approved_by}</span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
                           <Button
@@ -463,20 +488,40 @@ export default function Ks2Rutiner() {
             
             <ScrollArea className="flex-1 min-h-0 mt-4">
               <TabsContent value="content" className="mt-0 space-y-4">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="outline">{viewingRoutine?.routine_template?.category}</Badge>
-                  {viewingRoutine?.is_implemented && (
-                    <Badge className="bg-green-500/10 text-green-500">
-                      <Check className="h-3 w-3 mr-1" />
-                      Implementert
-                    </Badge>
-                  )}
-                  {viewingRoutine?.approved_by && (
-                    <Badge variant="secondary">
-                      <UserCheck className="h-3 w-3 mr-1" />
-                      Godkjent av {viewingRoutine.approved_by}
-                    </Badge>
-                  )}
+                {/* Metadata info box */}
+                <div className="bg-muted/50 rounded-lg p-3 space-y-2 text-sm">
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <span className="font-medium text-foreground">Kategori:</span>
+                      {viewingRoutine?.routine_template?.category}
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <span className="font-medium text-foreground">Versjon:</span>
+                      v{viewingRoutine?.routine_template?.version || "1"}
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <span className="font-medium text-foreground">Opprettet:</span>
+                      {viewingRoutine?.created_at ? format(new Date(viewingRoutine.created_at), "dd.MM.yyyy", { locale: nb }) : "—"}
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <span className="font-medium text-foreground">Sist revidert:</span>
+                      {viewingRoutine?.updated_at ? format(new Date(viewingRoutine.updated_at), "dd.MM.yyyy", { locale: nb }) : "—"}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap pt-1">
+                    {viewingRoutine?.is_implemented && (
+                      <Badge className="bg-green-500/10 text-green-500">
+                        <Check className="h-3 w-3 mr-1" />
+                        Implementert
+                      </Badge>
+                    )}
+                    {viewingRoutine?.approved_by && (
+                      <Badge variant="secondary">
+                        <UserCheck className="h-3 w-3 mr-1" />
+                        Godkjent av {viewingRoutine.approved_by}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 
                 {viewingRoutine?.routine_template?.description && (
@@ -700,20 +745,40 @@ export default function Ks2Rutiner() {
             
             <ScrollArea className="flex-1 min-h-0 mt-4">
               <TabsContent value="content" className="mt-0 space-y-4">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="outline">
-                    {ROUTINE_CATEGORIES[viewingCustomRoutine?.category || 'general'] || viewingCustomRoutine?.category}
-                  </Badge>
-                  <Badge variant="outline" className="gap-1 text-green-600 border-green-500/50">
-                    <PenLine className="h-3 w-3" />
-                    Egendefinert
-                  </Badge>
-                  {viewingCustomRoutine?.approved_by && (
-                    <Badge variant="secondary">
-                      <UserCheck className="h-3 w-3 mr-1" />
-                      Godkjent av {viewingCustomRoutine.approved_by}
+                {/* Metadata info box */}
+                <div className="bg-muted/50 rounded-lg p-3 space-y-2 text-sm">
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
+                    {viewingCustomRoutine?.routine_number && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <span className="font-medium text-foreground">Rutine nr:</span>
+                        <span className="font-mono">{viewingCustomRoutine.routine_number}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <span className="font-medium text-foreground">Kategori:</span>
+                      {ROUTINE_CATEGORIES[viewingCustomRoutine?.category || 'general'] || viewingCustomRoutine?.category}
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <span className="font-medium text-foreground">Opprettet:</span>
+                      {viewingCustomRoutine?.created_at ? format(new Date(viewingCustomRoutine.created_at), "dd.MM.yyyy", { locale: nb }) : "—"}
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <span className="font-medium text-foreground">Sist revidert:</span>
+                      {viewingCustomRoutine?.updated_at ? format(new Date(viewingCustomRoutine.updated_at), "dd.MM.yyyy", { locale: nb }) : "—"}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap pt-1">
+                    <Badge variant="outline" className="gap-1 text-green-600 border-green-500/50">
+                      <PenLine className="h-3 w-3" />
+                      Egendefinert
                     </Badge>
-                  )}
+                    {viewingCustomRoutine?.approved_by && (
+                      <Badge variant="secondary">
+                        <UserCheck className="h-3 w-3 mr-1" />
+                        Godkjent av {viewingCustomRoutine.approved_by}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 
                 {viewingCustomRoutine?.description && (
