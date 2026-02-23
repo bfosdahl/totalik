@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useKsDeclarations } from "@/hooks/useKsDeclarations";
 import { KsSelfDeclarationDialog } from "@/components/ks/KsSelfDeclarationDialog";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -125,19 +126,17 @@ export default function IkKsEgenerklaering() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-48 w-full" />
-      </div>
+      <AppLayout>
+        <div className="space-y-6">
+          <Skeleton className="h-48 w-full" />
+        </div>
+      </AppLayout>
     );
   }
 
   return (
+    <AppLayout>
     <div className="space-y-6">
-      {/* Back button */}
-      <Button variant="ghost" size="sm" onClick={() => navigate("/ks")} className="gap-2">
-        <ArrowLeft className="w-4 h-4" />
-        Tilbake
-      </Button>
 
       {/* Declaration Document */}
       <motion.div
@@ -270,5 +269,6 @@ export default function IkKsEgenerklaering() {
         />
       )}
     </div>
+    </AppLayout>
   );
 }
