@@ -162,7 +162,7 @@ export default function IkKsSjekklister() {
                   Velg fra maler
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+              <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
                 <DialogHeader>
                   <DialogTitle>Velg maler fra malbiblioteket</DialogTitle>
                 </DialogHeader>
@@ -180,7 +180,7 @@ export default function IkKsSjekklister() {
                     }}
                   />
                 </div>
-                <ScrollArea className="flex-1">
+                <ScrollArea className="flex-1 min-h-0">
                   <div className="space-y-0.5 pr-4">
                     {adminTemplates?.map(template => {
                       const isSelected = isAdminTemplateSelected("checklist", template.id);
