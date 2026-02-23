@@ -9947,6 +9947,63 @@ export type Database = {
           },
         ]
       }
+      ks_module2_uk_checklist_items: {
+        Row: {
+          checkpoint_text: string
+          company_id: string
+          created_at: string
+          created_by_name: string
+          id: string
+          notes: string | null
+          photo_paths: string[] | null
+          sort_order: number
+          status: string
+          uk_id: string
+          updated_at: string
+        }
+        Insert: {
+          checkpoint_text: string
+          company_id: string
+          created_at?: string
+          created_by_name?: string
+          id?: string
+          notes?: string | null
+          photo_paths?: string[] | null
+          sort_order?: number
+          status?: string
+          uk_id: string
+          updated_at?: string
+        }
+        Update: {
+          checkpoint_text?: string
+          company_id?: string
+          created_at?: string
+          created_by_name?: string
+          id?: string
+          notes?: string | null
+          photo_paths?: string[] | null
+          sort_order?: number
+          status?: string
+          uk_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_uk_checklist_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_uk_checklist_items_uk_id_fkey"
+            columns: ["uk_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_uk"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_vernerunde_templates: {
         Row: {
           checkpoints: Json
