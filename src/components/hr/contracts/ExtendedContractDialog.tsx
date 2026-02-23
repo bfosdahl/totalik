@@ -193,7 +193,7 @@ export function ExtendedContractDialog({
             </div>
 
             {/* Content area */}
-            <ScrollArea className="flex-1 min-h-0">
+            <ScrollArea className="flex-1 min-h-0 max-h-[60vh]">
               <div className="p-6">
                 <TabsContent value="basic" className="mt-0">
                   <BasicInfoSection 
