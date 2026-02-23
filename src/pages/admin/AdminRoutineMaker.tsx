@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import {
   Plus, Search, Sparkles, FileText, Edit, Trash2, Eye, Copy,
-  CheckCircle2, Archive, Send, Loader2, X, GripVertical,
+  CheckCircle2, Archive, Send, Loader2, X, GripVertical, ClipboardList,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -331,10 +331,13 @@ export default function AdminRoutineMaker() {
       toast.error("Skriv inn et tema");
       return;
     }
+    const includeChecklist = aiNivaa === "detaljert_sjekkliste";
+    const effectiveNivaa = includeChecklist ? "detaljert" : aiNivaa;
+
     setAiLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-routine-template", {
-        body: { tema: aiTema, bransje: aiBransje, nivaa: aiNivaa },
+        body: { tema: aiTema, bransje: aiBransje, nivaa: effectiveNivaa },
       });
       if (error) throw error;
       if (data?.routine) {
@@ -359,12 +362,60 @@ export default function AdminRoutineMaker() {
         setShowAiDialog(false);
         setShowEditor(true);
         toast.success("AI-forslag generert – rediger og lagre!");
+
+        // Generate matching checklist if requested
+        if (includeChecklist) {
+          generateMatchingChecklist(r);
+        }
       }
     } catch (e) {
       console.error(e);
       toast.error("Kunne ikke generere rutine med AI");
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  const generateMatchingChecklist = async (routine: any) => {
+    try {
+      toast.info("Genererer tilhørende sjekkliste...", { duration: 5000 });
+      const { data, error } = await supabase.functions.invoke("generate-checklist-template", {
+        body: {
+          tema: `Sjekkliste for: ${routine.title}`,
+          kategori: routine.subcategory || routine.module || "Generell egenkontroll",
+          trade: routine.subcategory || "",
+          detaljer: routine.description || "",
+          rutine_referanse: routine.title,
+        },
+      });
+      if (error) throw error;
+      if (data?.checklist) {
+        const cl = data.checklist;
+        const checkpoints = (cl.checkpoints || []).map((cp: any) => ({
+          checkpoint_text: cp.checkpoint_text || cp.text || "",
+          help_text: cp.help_text || "",
+        }));
+
+        const { error: insertError } = await supabase
+          .from("admin_checklist_templates")
+          .insert({
+            template_name: cl.template_name || `Sjekkliste – ${routine.title}`,
+            description: `${cl.description || ""}\n\nTilknyttet rutine: ${routine.title}`,
+            category: cl.category || "Generell egenkontroll",
+            trade: cl.trade || null,
+            checkpoints: checkpoints,
+            is_active: true,
+          });
+
+        if (insertError) throw insertError;
+        toast.success("Tilhørende sjekkliste opprettet i Dokumentsenter!", {
+          icon: <ClipboardList className="w-4 h-4" />,
+          duration: 6000,
+        });
+      }
+    } catch (e) {
+      console.error("Checklist generation error:", e);
+      toast.error("Rutinen ble opprettet, men sjekkliste-generering feilet");
     }
   };
 
@@ -676,8 +727,19 @@ export default function AdminRoutineMaker() {
                   <SelectItem value="kort">Kort – få punkter</SelectItem>
                   <SelectItem value="standard">Standard – balansert</SelectItem>
                   <SelectItem value="detaljert">Detaljert – grundig</SelectItem>
+                  <SelectItem value="detaljert_sjekkliste">
+                    <span className="flex items-center gap-1.5">
+                      <ClipboardList className="w-3.5 h-3.5 text-primary" />
+                      Detaljert grundig – ink. sjekkliste
+                    </span>
+                  </SelectItem>
                 </SelectContent>
               </Select>
+              {aiNivaa === "detaljert_sjekkliste" && (
+                <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+                  Genererer en detaljert rutine <strong>pluss</strong> en tilhørende sjekklistemal som lagres automatisk i Dokumentsenter (Sjekklistemaler).
+                </p>
+              )}
             </div>
             <Button onClick={handleAiGenerate} disabled={aiLoading || !aiTema.trim()} className="w-full">
               {aiLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
