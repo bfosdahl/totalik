@@ -504,7 +504,7 @@ export default function AdminRoutineMaker() {
           <DialogHeader>
             <DialogTitle>{editingId ? "Rediger rutinemal" : "Ny rutinemal"}</DialogTitle>
           </DialogHeader>
-          <ScrollArea className="flex-1 overflow-y-auto pr-4" style={{ maxHeight: 'calc(90vh - 140px)' }}>
+          <ScrollArea className="flex-1 min-h-0 overflow-y-auto pr-4" style={{ maxHeight: 'calc(90vh - 140px)' }}>
             <div className="space-y-6 pb-4">
               {/* Basic info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -694,7 +694,7 @@ export default function AdminRoutineMaker() {
             <DialogTitle>Forhåndsvisning</DialogTitle>
           </DialogHeader>
           {showPreview && (
-            <ScrollArea className="flex-1 overflow-y-auto pr-4" style={{ maxHeight: "calc(90vh - 120px)" }}>
+            <ScrollArea className="flex-1 min-h-0 overflow-y-auto pr-4" style={{ maxHeight: "calc(90vh - 120px)" }}>
               <div className="space-y-4 pb-4">
                 <div className="flex items-center gap-2 flex-wrap">
                   {showPreview.template_number && (

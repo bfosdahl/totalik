@@ -452,7 +452,7 @@ export default function Ks2Rutiner() {
             </DialogTitle>
           </DialogHeader>
           
-          <Tabs defaultValue="content" className="flex-1 overflow-hidden flex flex-col">
+           <Tabs defaultValue="content" className="flex-1 overflow-hidden flex flex-col min-h-0">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="content">Innhold</TabsTrigger>
               <TabsTrigger value="approval">Godkjenning</TabsTrigger>
@@ -461,7 +461,7 @@ export default function Ks2Rutiner() {
               </TabsTrigger>
             </TabsList>
             
-            <ScrollArea className="flex-1 mt-4">
+            <ScrollArea className="flex-1 min-h-0 mt-4">
               <TabsContent value="content" className="mt-0 space-y-4">
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="outline">{viewingRoutine?.routine_template?.category}</Badge>
@@ -689,7 +689,7 @@ export default function Ks2Rutiner() {
             </DialogTitle>
           </DialogHeader>
           
-          <Tabs defaultValue="content" className="flex-1 overflow-hidden flex flex-col">
+          <Tabs defaultValue="content" className="flex-1 overflow-hidden flex flex-col min-h-0">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="content">Innhold</TabsTrigger>
               <TabsTrigger value="approval">Godkjenning</TabsTrigger>
@@ -698,7 +698,7 @@ export default function Ks2Rutiner() {
               </TabsTrigger>
             </TabsList>
             
-            <ScrollArea className="flex-1 mt-4">
+            <ScrollArea className="flex-1 min-h-0 mt-4">
               <TabsContent value="content" className="mt-0 space-y-4">
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="outline">

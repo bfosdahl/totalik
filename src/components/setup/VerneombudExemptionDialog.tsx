@@ -245,7 +245,7 @@ export function VerneombudExemptionDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-4">
+        <ScrollArea className="flex-1 min-h-0 pr-4">
           {step === "info" && (
             <div className="space-y-4">
               <Card className="p-4 bg-muted/50">

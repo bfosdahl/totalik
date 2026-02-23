@@ -690,7 +690,7 @@ export default function Ks2Motereferater() {
           </DialogHeader>
 
           {selectedMeeting && (
-            <ScrollArea className="flex-1 pr-4">
+            <ScrollArea className="flex-1 min-h-0 pr-4">
               <div className="space-y-6">
                 {/* Meeting info */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
