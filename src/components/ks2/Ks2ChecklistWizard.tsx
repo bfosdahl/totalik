@@ -140,6 +140,17 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
     }
   }, [existingChecklist]);
 
+  // Auto-select logged-in user as responsible
+  useEffect(() => {
+    if (!existingChecklist && profile && users.length > 0 && !responsibleUserId) {
+      const currentUser = users.find(u => u.id === profile.id);
+      if (currentUser) {
+        setResponsibleUserId(currentUser.id);
+        setResponsibleUserName(`${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim());
+      }
+    }
+  }, [profile, users, existingChecklist, responsibleUserId]);
+
   // Initialize with pre-selected template if provided
   useEffect(() => {
     if (preSelectedTemplate && !existingChecklist) {
