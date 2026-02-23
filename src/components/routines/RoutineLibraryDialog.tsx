@@ -122,7 +122,7 @@ export function RoutineLibraryDialog({
           />
         </div>
 
-        <ScrollArea className="flex-1 overflow-y-auto" style={{ maxHeight: "calc(85vh - 180px)" }}>
+        <ScrollArea className="flex-1 min-h-0 overflow-y-auto" style={{ maxHeight: "calc(85vh - 180px)" }}>
           {isLoading ? (
             <div className="flex justify-center p-8">
               <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />

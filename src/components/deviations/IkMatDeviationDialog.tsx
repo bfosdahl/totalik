@@ -417,7 +417,7 @@ export function IkMatDeviationDialog({
             Registrer avvik relatert til matsikkerhet
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="flex-1 pr-4 -mr-4 overflow-y-auto">
+        <ScrollArea className="flex-1 min-h-0 pr-4 -mr-4 overflow-y-auto">
           {formContent}
         </ScrollArea>
         <DialogFooter>
