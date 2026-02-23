@@ -157,7 +157,7 @@ export function BulkCompanyImportDialog({
             const phone = String(row.Customer_Phone || row.Customer_CellPhone || row["Customer_Phone"] || row["Customer_CellPhone"] || "").trim();
             const contactFirstName = String(row.Customer_Name || row["Customer_Name"] || "").trim();
             const contactLastName = String(row.Customer_SecondName || row["Customer_SecondName"] || "").trim();
-            const productName = String(row.ProductName || row["ProductName"] || row.AllProducts || row["AllProducts"] || "").trim();
+            const productName = String(row.ProductName || row["ProductName"] || row.Produkter || row["Produkter"] || row.AllProducts || row["AllProducts"] || row.Products || row["Products"] || "").trim();
 
             const isDuplicate = existingOrgs.has(orgNumber);
             
@@ -167,10 +167,13 @@ export function BulkCompanyImportDialog({
             const isIkProduct = 
               productNameLower.includes("ik/hms") ||
               productNameLower.includes("ik/mat") ||
+              productNameLower.includes("ik-mat") ||
               productNameLower.includes("ik-bygg") ||
               productNameLower.includes("ik/bygg") ||
               productNameLower.includes("ik/khms") ||
               productNameLower.includes("ik-system") ||
+              productNameLower.includes("hms/mat") ||
+              productNameLower.includes("hms system") ||
               productNameLower.includes("internkontroll") ||
               productNameLower.includes("internkontrollsystem") ||
               productNameLower.includes("total-ik") ||
