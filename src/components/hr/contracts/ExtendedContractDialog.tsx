@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -62,6 +62,17 @@ export function ExtendedContractDialog({
 
   const [formData, setFormData] = useState<ExtendedContractFormData>(getDefaultFormData());
   const [activeTab, setActiveTab] = useState('basic');
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
+
+  const scrollActiveTabIntoView = useCallback((tabId: string) => {
+    requestAnimationFrame(() => {
+      const container = tabsContainerRef.current;
+      if (!container) return;
+      const activeButton = container.querySelector(`[data-state="active"]`) as HTMLElement;
+      if (!activeButton) return;
+      activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    });
+  }, []);
 
   const isEditing = !!editingContract;
 
@@ -145,15 +156,20 @@ export function ExtendedContractDialog({
   const canGoNext = currentIndex < sections.length - 1;
   const canGoPrev = currentIndex > 0;
 
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    scrollActiveTabIntoView(tabId);
+  };
+
   const goNext = () => {
     if (canGoNext) {
-      setActiveTab(sections[currentIndex + 1].id);
+      handleTabChange(sections[currentIndex + 1].id);
     }
   };
 
   const goPrev = () => {
     if (canGoPrev) {
-      setActiveTab(sections[currentIndex - 1].id);
+      handleTabChange(sections[currentIndex - 1].id);
     }
   };
 
@@ -170,9 +186,9 @@ export function ExtendedContractDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="flex flex-col flex-1 min-h-0">
             {/* Tab navigation - horizontal scroll on mobile */}
-            <div className="border-b shrink-0 px-2 overflow-x-auto">
+            <div ref={tabsContainerRef} className="border-b shrink-0 px-2 overflow-x-auto">
               <TabsList className="inline-flex w-max gap-1 p-1 bg-transparent h-auto">
                 {sections.map((section) => {
                   const Icon = section.icon;
