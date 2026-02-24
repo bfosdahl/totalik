@@ -46,6 +46,35 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateProjectReportPdf, ReportSections, KsHandbokData } from "@/utils/ksModule2ProjectReport";
 import { toast } from "sonner";
 
+// Helper to re-sign expired storage URLs before PDF generation
+const reSignStorageUrl = async (url: string): Promise<string> => {
+  if (!url) return url;
+  try {
+    // Extract bucket and path from signed URL
+    // Format: .../storage/v1/object/sign/{bucket}/{path}?token=...
+    const signMatch = url.match(/\/storage\/v1\/object\/sign\/([^/]+)\/(.+?)(?:\?|$)/);
+    if (signMatch) {
+      const bucket = signMatch[1];
+      const filePath = decodeURIComponent(signMatch[2]);
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(filePath, 3600); // 1 hour
+      if (!error && data?.signedUrl) return data.signedUrl;
+    }
+    // Also handle public URLs with /object/public/
+    const publicMatch = url.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+?)(?:\?|$)/);
+    if (publicMatch) return url; // Public URLs don't expire
+  } catch (e) {
+    console.error("Failed to re-sign URL:", e);
+  }
+  return url; // Return original as fallback
+};
+
+const reSignPhotos = async (photos: string[]): Promise<string[]> => {
+  if (!photos || photos.length === 0) return [];
+  return Promise.all(photos.map(reSignStorageUrl));
+};
+
 interface ProjectData {
   id: string;
   project_name: string;
@@ -190,23 +219,23 @@ export default function Ks2Prosjektrapport() {
           end_date: project.end_date,
           status: project.status,
         },
-        checklists: checklists.map(c => ({
+        checklists: await Promise.all(checklists.map(async (c) => ({
           id: c.id,
           title: c.title,
           template_name: c.template_name || "Egendefinert",
           status: c.status,
           completed_at: c.completed_at,
           completed_by_name: c.responsible_user_name,
-          checkpoints: c.status === "completed" && c.checklist_items?.length 
-            ? c.checklist_items.map((item: any) => ({
+          checkpoints: (sections.includeChecklistDetails || sections.includeChecklistPhotos) && c.checklist_items?.length 
+            ? await Promise.all(c.checklist_items.map(async (item: any) => ({
                 label: item.text || "Sjekkpunkt",
                 response: item.value === true ? "OK" : item.value === false ? "Nei" : item.value?.toString() || "-",
                 comment: item.comment,
-                photos: item.photos || [],
-              }))
+                photos: sections.includeChecklistPhotos ? await reSignPhotos(item.photos || []) : [],
+              })))
             : undefined,
-        })),
-        avvik: avvikList.map(a => ({
+        }))),
+        avvik: await Promise.all(avvikList.map(async (a) => ({
           avvik_number: a.avvik_number,
           title: a.title,
           category: a.category,
@@ -218,8 +247,8 @@ export default function Ks2Prosjektrapport() {
           corrective_action: a.corrective_action,
           closed_date: a.closed_at,
           closed_by_name: (a as any).closed_by_name,
-          photos: (a as any).photo_paths || [],
-        })),
+          photos: sections.includeAvvikPhotos ? await reSignPhotos((a as any).photo_paths || []) : [],
+        }))),
         ukControls: ukList.map(u => ({
           uk_number: u.uk_number,
           control_area: u.control_area,
