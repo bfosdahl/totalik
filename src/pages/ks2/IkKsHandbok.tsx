@@ -339,10 +339,91 @@ export default function IkKsHandbok() {
         if (roles.length > 0) {
           // Sort by sortOrder
           roles.sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
-          
-          doc.text("Virksomheten har definert følgende roller og ansvarsfordeling:", 25, y);
-          y += 7;
 
+          // --- Visual Org Chart ---
+          addPageIfNeeded(30);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10);
+          doc.text("Organisasjonskart", 25, y);
+          y += 8;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9);
+
+          // Build hierarchy: find who reports to whom
+          const roleMap = new Map<string, any>();
+          roles.forEach((r: any) => roleMap.set(r.id, r));
+
+          // Build tree
+          const rootRoles = roles.filter((r: any) => !r.reportsTo || !roleMap.has(r.reportsTo));
+          const getChildren = (parentId: string) => roles.filter((r: any) => r.reportsTo === parentId);
+
+          // Draw org chart as indented boxes with connector lines
+          const BOX_HEIGHT = 14;
+          const BOX_MIN_WIDTH = 60;
+          const INDENT = 20;
+          const START_X = 25;
+
+          const drawOrgNode = (role: any, depth: number) => {
+            addPageIfNeeded(BOX_HEIGHT + 6);
+            const x = START_X + depth * INDENT;
+            const title = role.title || "Ukjent rolle";
+            const person = role.personName || "";
+            const titleWidth = doc.getTextWidth(title) + 10;
+            const personWidth = person ? doc.getTextWidth(person) + 10 : 0;
+            const boxWidth = Math.max(BOX_MIN_WIDTH, titleWidth, personWidth);
+
+            // Connector line from left
+            if (depth > 0) {
+              doc.setDrawColor(...COLORS.medGray);
+              doc.setLineWidth(0.5);
+              doc.line(x - INDENT / 2, y + BOX_HEIGHT / 2, x, y + BOX_HEIGHT / 2);
+              // Vertical line segment
+              doc.line(x - INDENT / 2, y - 2, x - INDENT / 2, y + BOX_HEIGHT / 2);
+            }
+
+            // Box
+            doc.setFillColor(...COLORS.lightGray);
+            doc.setDrawColor(...COLORS.darkBlue);
+            doc.setLineWidth(0.3);
+            doc.roundedRect(x, y, boxWidth, BOX_HEIGHT, 1.5, 1.5, 'FD');
+
+            // Title text
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(8);
+            doc.setTextColor(...COLORS.darkBlue);
+            doc.text(title, x + 5, y + 5.5);
+
+            // Person name
+            if (person) {
+              doc.setFont("helvetica", "normal");
+              doc.setFontSize(7);
+              doc.setTextColor(100, 100, 100);
+              doc.text(person, x + 5, y + 10.5);
+            }
+
+            doc.setTextColor(...COLORS.textDark);
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
+            y += BOX_HEIGHT + 4;
+
+            // Draw children
+            const children = getChildren(role.id);
+            children.sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+            children.forEach((child: any) => drawOrgNode(child, depth + 1));
+          };
+
+          rootRoles.forEach((root: any) => drawOrgNode(root, 0));
+          y += 5;
+
+          // --- Role descriptions ---
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10);
+          addPageIfNeeded(12);
+          doc.text("Roller og ansvarsbeskrivelser", 25, y);
+          y += 7;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9);
+          
           roles.forEach((role: any) => {
             addPageIfNeeded(18);
             doc.setFont("helvetica", "bold");
