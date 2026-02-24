@@ -497,7 +497,8 @@ const FysiskeArbeidsforholdForm = () => {
   };
 
   const handleSaveDraft = async () => {
-    await saveFormResponse(
+    console.log("[FysiskeArbeidsforhold] handleSaveDraft triggered, existingId:", existingId, "isSaving:", isSaving);
+    const result = await saveFormResponse(
       "fysiske_forhold",
       formData as unknown as Json,
       {
