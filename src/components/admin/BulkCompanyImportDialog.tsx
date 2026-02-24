@@ -123,7 +123,53 @@ export function BulkCompanyImportDialog({
           );
           setExistingOrgNumbers(existingOrgs);
 
-          // Parse and deduplicate by org number
+          // Helper to check if a product name is an IK product
+          const checkIsIkProduct = (pName: string): boolean => {
+            const p = pName.toLowerCase();
+            return (
+              p.includes("ik/hms") ||
+              p.includes("ik/mat") ||
+              p.includes("ik-mat") ||
+              p.includes("ik-bygg") ||
+              p.includes("ik/bygg") ||
+              p.includes("ik/khms") ||
+              p.includes("ik-system") ||
+              p.includes("hms/mat") ||
+              p.includes("hms system") ||
+              p.includes("internkontroll") ||
+              p.includes("internkontrollsystem") ||
+              p.includes("total-ik") ||
+              p.includes("total ik")
+            );
+          };
+
+          // First pass: group all rows by org number to check ALL products per company
+          const orgProductMap = new Map<string, { hasIkProduct: boolean; allProducts: string[] }>();
+          
+          for (const row of jsonData as any[]) {
+            let orgNumber = String(row.Customer_OrgNumber || row["Customer_OrgNumber"] || row.OrgNr || row["Org.nr"] || "").replace(/\s/g, "");
+            if (orgNumber.length > 0 && orgNumber.length < 9) {
+              orgNumber = orgNumber.padStart(9, '0');
+            }
+            if (!orgNumber) continue;
+
+            const productName = String(
+              row.ProductName || row["ProductName"] || 
+              row.Produkter || row["Produkter"] || 
+              row.AllProducts || row["AllProducts"] || 
+              row.Products || row["Products"] ||
+              row.Produkt || row["Produkt"] ||
+              row["Produktnavn"] || row.ProductDescription ||
+              ""
+            ).trim();
+
+            const existing = orgProductMap.get(orgNumber) || { hasIkProduct: false, allProducts: [] };
+            if (productName) existing.allProducts.push(productName);
+            if (checkIsIkProduct(productName)) existing.hasIkProduct = true;
+            orgProductMap.set(orgNumber, existing);
+          }
+
+          // Second pass: deduplicate by org number and use aggregated product info
           const seenOrgNumbers = new Set<string>();
           const companies: ParsedCompany[] = [];
 
@@ -134,22 +180,16 @@ export function BulkCompanyImportDialog({
           }
 
           for (const row of jsonData as any[]) {
-            // Parse org number and pad with leading zeros if needed (Norwegian org numbers are 9 digits)
             let orgNumber = String(row.Customer_OrgNumber || row["Customer_OrgNumber"] || row.OrgNr || row["Org.nr"] || "").replace(/\s/g, "");
-            // Pad with leading zeros to ensure 9 digits (Excel often strips leading zeros)
             if (orgNumber.length > 0 && orgNumber.length < 9) {
               orgNumber = orgNumber.padStart(9, '0');
             }
             const name = String(row.Customer_Company || row["Customer_Company"] || row["Kunde navn"] || row.Bedrift || "").trim();
             
-            // Skip if no org number or company name
             if (!orgNumber || !name) continue;
-            
-            // Skip if we've already seen this org number in the file
             if (seenOrgNumbers.has(orgNumber)) continue;
             seenOrgNumbers.add(orgNumber);
 
-            // Build address from components
             const addressParts = [
               row.Customer_Adress || row["Customer_Adress"] || "",
               row.Customer_HouseNumber || row["Customer_HouseNumber"] || "",
@@ -163,44 +203,19 @@ export function BulkCompanyImportDialog({
             const phone = String(row.Customer_Phone || row.Customer_CellPhone || row["Customer_Phone"] || row["Customer_CellPhone"] || row["Kunde tlf"] || "").trim();
             const contactFirstName = String(row.Customer_Name || row["Customer_Name"] || row.Selger || "").trim();
             const contactLastName = String(row.Customer_SecondName || row["Customer_SecondName"] || "").trim();
-            // Try all possible product column names
-            const productName = String(
-              row.ProductName || row["ProductName"] || 
-              row.Produkter || row["Produkter"] || 
-              row.AllProducts || row["AllProducts"] || 
-              row.Products || row["Products"] ||
-              row.Produkt || row["Produkt"] ||
-              row["Produktnavn"] || row.ProductDescription ||
-              ""
-            ).trim();
+
+            // Use aggregated product info across ALL rows for this org number
+            const orgInfo = orgProductMap.get(orgNumber);
+            const productName = orgInfo?.allProducts.join(", ") || "";
+            const hasIkProduct = orgInfo?.hasIkProduct || false;
             
-            console.log(`Row: ${name} | OrgNr: ${orgNumber} | Product: "${productName}"`);
+            console.log(`Row: ${name} | OrgNr: ${orgNumber} | Products: "${productName}" | HasIK: ${hasIkProduct}`);
 
             const isDuplicate = existingOrgs.has(orgNumber);
-            
-            // Check if this is a kurslisens-only order (no IK system)
-            // Only IK products should be imported - everything else is blocked
-            const productNameLower = productName.toLowerCase();
-            const isIkProduct = 
-              productNameLower.includes("ik/hms") ||
-              productNameLower.includes("ik/mat") ||
-              productNameLower.includes("ik-mat") ||
-              productNameLower.includes("ik-bygg") ||
-              productNameLower.includes("ik/bygg") ||
-              productNameLower.includes("ik/khms") ||
-              productNameLower.includes("ik-system") ||
-              productNameLower.includes("hms/mat") ||
-              productNameLower.includes("hms system") ||
-              productNameLower.includes("internkontroll") ||
-              productNameLower.includes("internkontrollsystem") ||
-              productNameLower.includes("total-ik") ||
-              productNameLower.includes("total ik");
-            
-            // If the product is NOT an IK product, it should be blocked
-            const isKurslisensOnly = !isIkProduct;
+            const isKurslisensOnly = !hasIkProduct;
 
-            // Check if this is a renewal order (only for IK products, not kurslisens)
-            const isRenewal = isIkProduct && (
+            const productNameLower = productName.toLowerCase();
+            const isRenewal = hasIkProduct && (
               productNameLower.includes("fornyelse") || 
               productNameLower.includes("renewal")
             );
