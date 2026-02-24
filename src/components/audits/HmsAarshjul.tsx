@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,9 +20,12 @@ import {
   ChevronRight,
   Check,
   CheckCircle2,
+  Pencil,
+  Star,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import AarshjulEditDialog from "./AarshjulEditDialog";
 
 // Map activity IDs to their corresponding routes/form types
 const activityRoutes: Record<string, { route: string; formType?: string }> = {
@@ -214,12 +217,22 @@ interface CompletedActivity {
   year: number;
 }
 
+interface CustomDbActivity {
+  id: string;
+  name: string;
+  description: string | null;
+  responsible: string | null;
+  month: number;
+}
+
 const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   const navigate = useNavigate();
   const { company } = useAuth();
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
   const [completedActivities, setCompletedActivities] = useState<CompletedActivity[]>([]);
+  const [customActivities, setCustomActivities] = useState<CustomDbActivity[]>([]);
+  const [editMonth, setEditMonth] = useState<number | null>(null);
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
@@ -251,6 +264,22 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
     
     fetchCompletedActivities();
   }, [company?.id]);
+
+  // Fetch custom activities
+  const fetchCustomActivities = useCallback(async () => {
+    if (!company?.id) return;
+    const { data, error } = await supabase
+      .from("company_aarshjul_activities")
+      .select("id, name, description, responsible, month")
+      .eq("company_id", company.id);
+    if (!error && data) {
+      setCustomActivities(data as CustomDbActivity[]);
+    }
+  }, [company?.id]);
+
+  useEffect(() => {
+    fetchCustomActivities();
+  }, [fetchCustomActivities]);
 
   // Check if an activity is completed for current year
   const isActivityCompleted = (activityId: string): boolean => {
@@ -294,10 +323,23 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   const activitiesByMonth = useMemo(() => {
     const map: Record<number, Activity[]> = {};
     months.forEach((m) => {
-      map[m.id] = defaultActivities.filter((a) => a.months.includes(m.id));
+      const defaults = defaultActivities.filter((a) => a.months.includes(m.id));
+      const custom: Activity[] = customActivities
+        .filter((c) => c.month === m.id)
+        .map((c) => ({
+          id: `custom-${c.id}`,
+          name: c.name,
+          description: c.description || "",
+          icon: <Star className="w-4 h-4" />,
+          color: "bg-violet-500 text-white",
+          months: [c.month],
+          frequency: "Egendefinert",
+          responsible: c.responsible || undefined,
+        }));
+      map[m.id] = [...defaults, ...custom];
     });
     return map;
-  }, []);
+  }, [customActivities]);
 
   const currentMonthActivities = activitiesByMonth[currentMonth] || [];
 
@@ -638,6 +680,15 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                         {months.find((m) => m.id === displayMonth)?.fullName}
                       </h3>
                       <Badge variant="outline">{displayActivities.length} aktiviteter</Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 ml-auto"
+                        onClick={() => setEditMonth(displayMonth)}
+                        title="Rediger aktiviteter"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                     </div>
                     {displayActivities.length > 0 ? (
                       <div className="space-y-3">
@@ -695,6 +746,15 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                       <div className="text-center py-8 text-muted-foreground">
                         <Calendar className="w-10 h-10 mx-auto mb-2 opacity-50" />
                         <p className="text-sm">Ingen planlagte aktiviteter denne måneden</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-3"
+                          onClick={() => setEditMonth(displayMonth)}
+                        >
+                          <Pencil className="h-3.5 w-3.5 mr-1" />
+                          Legg til aktivitet
+                        </Button>
                       </div>
                     )}
                   </>
@@ -771,6 +831,16 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
           </div>
         </CardContent>
       </Card>
+      {company?.id && editMonth && (
+        <AarshjulEditDialog
+          open={!!editMonth}
+          onOpenChange={(open) => { if (!open) setEditMonth(null); }}
+          month={editMonth}
+          monthName={months.find((m) => m.id === editMonth)?.fullName || ""}
+          companyId={company.id}
+          onSaved={fetchCustomActivities}
+        />
+      )}
     </div>
   );
 };
