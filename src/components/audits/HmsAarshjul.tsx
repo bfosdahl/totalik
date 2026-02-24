@@ -22,9 +22,13 @@ import {
   CheckCircle2,
   Pencil,
   Star,
+  EyeOff,
+  Eye,
+  Trash2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import AarshjulEditDialog from "./AarshjulEditDialog";
 
 // Map activity IDs to their corresponding routes/form types
@@ -232,6 +236,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
   const [completedActivities, setCompletedActivities] = useState<CompletedActivity[]>([]);
   const [customActivities, setCustomActivities] = useState<CustomDbActivity[]>([]);
+  const [hiddenDefaults, setHiddenDefaults] = useState<string[]>([]);
   const [editMonth, setEditMonth] = useState<number | null>(null);
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
@@ -281,6 +286,52 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
     fetchCustomActivities();
   }, [fetchCustomActivities]);
 
+  // Fetch hidden default activities
+  const fetchHiddenDefaults = useCallback(async () => {
+    if (!company?.id) return;
+    const { data, error } = await supabase
+      .from("company_aarshjul_hidden_defaults")
+      .select("activity_id")
+      .eq("company_id", company.id);
+    if (!error && data) {
+      setHiddenDefaults(data.map((d: any) => d.activity_id));
+    }
+  }, [company?.id]);
+
+  useEffect(() => {
+    fetchHiddenDefaults();
+  }, [fetchHiddenDefaults]);
+
+  // Hide a default activity
+  const handleHideDefault = async (activityId: string) => {
+    if (!company?.id) return;
+    const { error } = await supabase
+      .from("company_aarshjul_hidden_defaults")
+      .insert({ company_id: company.id, activity_id: activityId });
+    if (error) {
+      toast.error("Kunne ikke skjule aktiviteten");
+    } else {
+      toast.success("Aktivitet skjult fra årshjulet");
+      setHiddenDefaults((prev) => [...prev, activityId]);
+    }
+  };
+
+  // Unhide a default activity
+  const handleUnhideDefault = async (activityId: string) => {
+    if (!company?.id) return;
+    const { error } = await supabase
+      .from("company_aarshjul_hidden_defaults")
+      .delete()
+      .eq("company_id", company.id)
+      .eq("activity_id", activityId);
+    if (error) {
+      toast.error("Kunne ikke gjenopprette aktiviteten");
+    } else {
+      toast.success("Aktivitet gjenopprettet i årshjulet");
+      setHiddenDefaults((prev) => prev.filter((id) => id !== activityId));
+    }
+  };
+
   // Check if an activity is completed for current year
   const isActivityCompleted = (activityId: string): boolean => {
     // Find form types that match this activity
@@ -323,7 +374,9 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   const activitiesByMonth = useMemo(() => {
     const map: Record<number, Activity[]> = {};
     months.forEach((m) => {
-      const defaults = defaultActivities.filter((a) => a.months.includes(m.id));
+      const defaults = defaultActivities
+        .filter((a) => a.months.includes(m.id))
+        .filter((a) => !hiddenDefaults.includes(a.id));
       const custom: Activity[] = customActivities
         .filter((c) => c.month === m.id)
         .map((c) => ({
@@ -339,7 +392,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
       map[m.id] = [...defaults, ...custom];
     });
     return map;
-  }, [customActivities]);
+  }, [customActivities, hiddenDefaults]);
 
   const currentMonthActivities = activitiesByMonth[currentMonth] || [];
 
@@ -737,7 +790,26 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                                   )}
                                 </div>
                               </div>
-                              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
+                              <div className="flex items-center gap-1 shrink-0 mt-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                  title="Fjern fra årshjulet"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (activity.id.startsWith("custom-")) {
+                                      // Custom activities are deleted via the edit dialog
+                                      setEditMonth(displayMonth);
+                                    } else {
+                                      handleHideDefault(activity.id);
+                                    }
+                                  }}
+                                >
+                                  <EyeOff className="w-3.5 h-3.5" />
+                                </Button>
+                                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                              </div>
                             </motion.div>
                           );
                         })}
@@ -762,7 +834,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Alle aktiviteter</h3>
                     <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
-                      {defaultActivities.map((activity) => {
+                      {defaultActivities.filter(a => !hiddenDefaults.includes(a.id)).map((activity) => {
                         const completed = isActivityCompleted(activity.id);
                         const completionDate = getCompletionDate(activity.id);
                         return (
@@ -793,13 +865,56 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                                 {completed ? `Fullført ${completionDate}` : activity.frequency}
                               </p>
                             </div>
-                            {!completed && (
-                              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                              title="Fjern fra årshjulet"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleHideDefault(activity.id);
+                              }}
+                            >
+                              <EyeOff className="w-3.5 h-3.5" />
+                            </Button>
                           </div>
                         );
                       })}
                     </div>
+                    {/* Hidden activities restore section */}
+                    {hiddenDefaults.length > 0 && (
+                      <div className="mt-4 pt-4 border-t">
+                        <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+                          <EyeOff className="w-3.5 h-3.5" />
+                          Skjulte aktiviteter ({hiddenDefaults.length})
+                        </h4>
+                        <div className="space-y-1">
+                          {defaultActivities.filter(a => hiddenDefaults.includes(a.id)).map((activity) => (
+                            <div
+                              key={activity.id}
+                              className="flex items-center gap-3 p-2 rounded-lg bg-muted/30 opacity-60 hover:opacity-100 transition-opacity"
+                            >
+                              <div className={cn("p-1.5 rounded shrink-0", activity.color)}>
+                                {activity.icon}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{activity.name}</p>
+                                <p className="text-xs text-muted-foreground">{activity.frequency}</p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs text-muted-foreground hover:text-foreground shrink-0"
+                                onClick={() => handleUnhideDefault(activity.id)}
+                              >
+                                <Eye className="w-3.5 h-3.5 mr-1" />
+                                Gjenopprett
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

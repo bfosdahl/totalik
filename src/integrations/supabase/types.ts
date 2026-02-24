@@ -1104,6 +1104,35 @@ export type Database = {
           },
         ]
       }
+      company_aarshjul_hidden_defaults: {
+        Row: {
+          activity_id: string
+          company_id: string
+          hidden_at: string
+          id: string
+        }
+        Insert: {
+          activity_id: string
+          company_id: string
+          hidden_at?: string
+          id?: string
+        }
+        Update: {
+          activity_id?: string
+          company_id?: string
+          hidden_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_aarshjul_hidden_defaults_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_action_plans: {
         Row: {
           actions: Json
