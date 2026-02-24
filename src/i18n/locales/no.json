@@ -140,7 +140,10 @@
     "total": "Totalt",
     "expiring": "Forfallende",
     "next7Days": "Neste 7 dager",
-    "requiresAction": "Krever handling"
+    "requiresAction": "Krever handling",
+    "welcomeMessage": "Vi hjelper deg i gang med å sette opp systemet ditt. Følg stegene for å komme raskt i gang!",
+    "startSetup": "Start oppsett",
+    "later": "Senere"
   },
   "deviations": {
     "title": "Avvik",

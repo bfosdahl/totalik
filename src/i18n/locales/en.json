@@ -140,7 +140,10 @@
     "total": "Total",
     "expiring": "Expiring",
     "next7Days": "Next 7 days",
-    "requiresAction": "Requires action"
+    "requiresAction": "Requires action",
+    "welcomeMessage": "We'll help you get started setting up your system. Follow the steps to get up and running quickly!",
+    "startSetup": "Start setup",
+    "later": "Later"
   },
   "deviations": {
     "title": "Deviations",
