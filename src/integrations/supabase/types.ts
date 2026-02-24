@@ -1104,6 +1104,41 @@ export type Database = {
           },
         ]
       }
+      company_aarshjul_default_overrides: {
+        Row: {
+          activity_id: string
+          company_id: string
+          created_at: string
+          custom_months: number[]
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          activity_id: string
+          company_id: string
+          created_at?: string
+          custom_months: number[]
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          activity_id?: string
+          company_id?: string
+          created_at?: string
+          custom_months?: number[]
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_aarshjul_default_overrides_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_aarshjul_hidden_defaults: {
         Row: {
           activity_id: string

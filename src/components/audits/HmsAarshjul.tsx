@@ -237,6 +237,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   const [completedActivities, setCompletedActivities] = useState<CompletedActivity[]>([]);
   const [customActivities, setCustomActivities] = useState<CustomDbActivity[]>([]);
   const [hiddenDefaults, setHiddenDefaults] = useState<string[]>([]);
+  const [monthOverrides, setMonthOverrides] = useState<Record<string, number[]>>({});
   const [editMonth, setEditMonth] = useState<number | null>(null);
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
@@ -301,6 +302,26 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   useEffect(() => {
     fetchHiddenDefaults();
   }, [fetchHiddenDefaults]);
+
+  // Fetch month overrides for default activities
+  const fetchMonthOverrides = useCallback(async () => {
+    if (!company?.id) return;
+    const { data, error } = await supabase
+      .from("company_aarshjul_default_overrides")
+      .select("activity_id, custom_months")
+      .eq("company_id", company.id);
+    if (!error && data) {
+      const overrides: Record<string, number[]> = {};
+      data.forEach((d: any) => {
+        overrides[d.activity_id] = d.custom_months;
+      });
+      setMonthOverrides(overrides);
+    }
+  }, [company?.id]);
+
+  useEffect(() => {
+    fetchMonthOverrides();
+  }, [fetchMonthOverrides]);
 
   // Hide a default activity
   const handleHideDefault = async (activityId: string) => {
@@ -374,9 +395,17 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   const activitiesByMonth = useMemo(() => {
     const map: Record<number, Activity[]> = {};
     months.forEach((m) => {
+      // For each default activity, check if it has custom months (override) or use original
       const defaults = defaultActivities
-        .filter((a) => a.months.includes(m.id))
-        .filter((a) => !hiddenDefaults.includes(a.id));
+        .filter((a) => {
+          const effectiveMonths = monthOverrides[a.id] || a.months;
+          return effectiveMonths.includes(m.id);
+        })
+        .filter((a) => !hiddenDefaults.includes(a.id))
+        .map((a) => ({
+          ...a,
+          months: monthOverrides[a.id] || a.months,
+        }));
       const custom: Activity[] = customActivities
         .filter((c) => c.month === m.id)
         .map((c) => ({
@@ -392,7 +421,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
       map[m.id] = [...defaults, ...custom];
     });
     return map;
-  }, [customActivities, hiddenDefaults]);
+  }, [customActivities, hiddenDefaults, monthOverrides]);
 
   const currentMonthActivities = activitiesByMonth[currentMonth] || [];
 
@@ -953,7 +982,13 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
           month={editMonth}
           monthName={months.find((m) => m.id === editMonth)?.fullName || ""}
           companyId={company.id}
-          onSaved={fetchCustomActivities}
+          monthOverrides={monthOverrides}
+          hiddenDefaults={hiddenDefaults}
+          onSaved={() => {
+            fetchCustomActivities();
+            fetchMonthOverrides();
+            fetchHiddenDefaults();
+          }}
         />
       )}
     </div>
