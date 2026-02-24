@@ -65,13 +65,13 @@ export function ExtendedContractDialog({
   const tabsContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollActiveTabIntoView = useCallback((tabId: string) => {
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       const container = tabsContainerRef.current;
       if (!container) return;
-      const activeButton = container.querySelector(`[data-state="active"]`) as HTMLElement;
-      if (!activeButton) return;
-      activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    });
+      const btn = container.querySelector(`[data-value="${tabId}"]`) as HTMLElement;
+      if (!btn) return;
+      btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }, 50);
   }, []);
 
   const isEditing = !!editingContract;
@@ -196,6 +196,7 @@ export function ExtendedContractDialog({
                     <TabsTrigger 
                       key={section.id} 
                       value={section.id}
+                      data-value={section.id}
                       className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-3 py-2 text-xs whitespace-nowrap gap-1.5"
                     >
                       <Icon className="h-3.5 w-3.5" />
