@@ -83,7 +83,11 @@ export default function IkHmsDokumentsenter() {
   };
 
   // Get company documents by category (for "Mine dokumenter" tab)
+  // "Generelt" documents are shown under "Diverse & Egendefinerte"
   const getDocumentsByCategory = (categoryName: string) => {
+    if (categoryName === "Diverse & Egendefinerte") {
+      return documents.filter(doc => doc.category === categoryName || doc.category === "Generelt");
+    }
     return documents.filter(doc => doc.category === categoryName);
   };
 
