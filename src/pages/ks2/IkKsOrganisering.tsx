@@ -289,20 +289,21 @@ export default function IkKsOrganisering() {
                 <CardDescription>Velg en forhåndsdefinert rolle for KS-prosjektstyring</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2">
                   {PREDEFINED_ROLES.map((role) => {
                     const isAlreadyAdded = data.roles.some(r => r.title === role.title);
+                    const isSingleOnly = role.title === "Daglig leder";
                     return (
                       <Button
                         key={role.title}
-                        variant={isAlreadyAdded ? "secondary" : "outline"}
+                        variant={isAlreadyAdded && isSingleOnly ? "secondary" : "outline"}
                         size="sm"
                         onClick={() => handleAddRole(role.title)}
-                        disabled={isAlreadyAdded && role.title !== "Egendefinert rolle"}
+                        disabled={isAlreadyAdded && isSingleOnly}
                       >
                         <Plus className="h-3 w-3 mr-1" />
                         {role.title}
-                        {isAlreadyAdded && role.title !== "Egendefinert rolle" && " ✓"}
+                        {isAlreadyAdded && isSingleOnly && " ✓"}
                       </Button>
                     );
                   })}
