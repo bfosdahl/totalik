@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Send, Bot, User, Sparkles, RefreshCcw, ClipboardPaste } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -802,7 +803,13 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
                     </div>
                   )}
                   <div className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-3 sm:p-4 ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
-                    <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                    {msg.role === "assistant" ? (
+                      <div className="text-xs sm:text-sm prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:mb-2 [&>ol]:mb-2">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                    ) : (
+                      <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                    )}
                   </div>
                   {msg.role === "user" && (
                     <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center">
