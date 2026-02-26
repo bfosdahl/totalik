@@ -3053,6 +3053,70 @@ export type Database = {
           },
         ]
       }
+      employee_messages: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          read_at: string | null
+          recipient_id: string
+          recipient_name: string
+          sender_id: string
+          sender_name: string
+          subject: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          read_at?: string | null
+          recipient_id: string
+          recipient_name: string
+          sender_id: string
+          sender_name: string
+          subject?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          read_at?: string | null
+          recipient_id?: string
+          recipient_name?: string
+          sender_id?: string
+          sender_name?: string
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_messages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_messages_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_surveys: {
         Row: {
           company_id: string

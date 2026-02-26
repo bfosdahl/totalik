@@ -44,6 +44,7 @@ import {
   Wheat,
   Handshake,
   Search,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -120,6 +121,7 @@ const personaladministrasjonItems = {
     { icon: CalendarDays, label: "Min ferie", path: "/time-off", color: "text-orange-500" },
     { icon: HeartPulse, label: "Mitt fravær", path: "/my/absence", color: "text-rose-500" },
     { icon: BarChart3, label: "Min respons", path: "/my/surveys", color: "text-purple-500" },
+    { icon: Mail, label: "Meldinger", path: "/my/messages", color: "text-blue-500" },
     { icon: ShieldCheck, label: "Send anonym melding", path: "/anonymous-message", isAction: true, color: "text-teal-500" },
   ],
 };
