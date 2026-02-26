@@ -341,6 +341,37 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    // Fetch company employees for the current user
+    let employeeListPrompt = "";
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('company_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (profile?.company_id) {
+        const { data: employees } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, email, is_hms_responsible, is_verneombud')
+          .eq('company_id', profile.company_id)
+          .eq('is_active', true);
+
+        if (employees && employees.length > 0) {
+          const empLines = employees.map((e: any) => {
+            const name = `${e.first_name || ''} ${e.last_name || ''}`.trim() || e.email || 'Ukjent';
+            const tags: string[] = [];
+            if (e.is_hms_responsible) tags.push('HMS-ansvarlig');
+            if (e.is_verneombud) tags.push('Verneombud');
+            return `- ${name}${tags.length ? ` (${tags.join(', ')})` : ''}`;
+          });
+          employeeListPrompt = `\n\n===== ANSATTE I BEDRIFTEN =====\nDette er de faktiske ansatte. BRUK DISSE NAVNENE - ALDRI DIKT OPP NAVN!\n${empLines.join('\n')}\n\nKRITISK: Når du tildeler roller (Daglig leder, HMS-ansvarlig, Verneombud), BRUK KUN navn fra listen over. Hvis noen allerede er markert som HMS-ansvarlig eller Verneombud, bruk dem i riktig rolle.\n`;
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching employees:", err);
+    }
+
     // Build step-specific prompt
     const stepPrompt = getStepSystemPrompt(
       currentStep || 4,
@@ -393,7 +424,7 @@ serve(async (req) => {
     }
 
     const systemMessages: ChatMsg[] = [
-      { role: "system", content: baseSystemPrompt + popularSuggestionsPrompt },
+      { role: "system", content: baseSystemPrompt + employeeListPrompt + popularSuggestionsPrompt },
       { role: "system", content: stepPrompt },
     ];
 
