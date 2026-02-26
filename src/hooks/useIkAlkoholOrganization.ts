@@ -107,6 +107,59 @@ export const ROLE_TYPES = [
       'Samarbeid med politi ved behov',
     ]
   },
+  { 
+    value: 'bartender', 
+    label: 'Bartender', 
+    description: 'Hovedansvarlig for bardrift og drinktilberedning',
+    responsibilities: [
+      'Blande drinker og ta imot bestillinger',
+      'Anbefale drikkevarer til gjester',
+      'Sørge for at baren er ren og ryddig',
+      'Gjennomføre alderskontroll ved servering',
+    ]
+  },
+  { 
+    value: 'barback', 
+    label: 'Barback (Assistent)', 
+    description: 'Støtterolle som sikrer effektiv bardrift',
+    responsibilities: [
+      'Sørge for at bartenderne har nok is, glass, garnityr og drikkevarer',
+      'Rydde glass og assistere med oppvask',
+      'Etterfylle forsyninger under travle perioder',
+    ]
+  },
+  { 
+    value: 'servitor', 
+    label: 'Servitør / Bar Staff', 
+    description: 'Ansvarlig for bordbetjening og servering',
+    responsibilities: [
+      'Ta imot bestillinger ved bordene',
+      'Servere drikke og mat',
+      'Rydde bord og holde serveringsområdet rent',
+      'Gjennomføre alderskontroll ved bestilling',
+    ]
+  },
+  { 
+    value: 'barsjef', 
+    label: 'Barsjef / Bar Manager', 
+    description: 'Overordnet ansvar for barens drift',
+    responsibilities: [
+      'Utarbeide og administrere vaktlister',
+      'Bestilling av varer og lagerstyring',
+      'Menyutvikling og sortimentsplanlegging',
+      'Personalansvar og opplæring av ansatte',
+    ]
+  },
+  { 
+    value: 'oppvaskhjelp', 
+    label: 'Oppvaskhjelp / Glassvasker', 
+    description: 'Ansvarlig for rent glass og utstyr',
+    responsibilities: [
+      'Holde glass og utstyr rent til enhver tid',
+      'Sikre god flyt i glasshåndtering under travle perioder',
+      'Sortere og vedlikeholde glassvaskmaskin',
+    ]
+  },
 ];
 
 export const useIkAlkoholOrganization = () => {
