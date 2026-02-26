@@ -372,6 +372,9 @@ export function useIkAlkohol() {
       queryClient.invalidateQueries({ queryKey: ["ik-alkohol-risk-controls"] });
       toast({ title: "Tiltak lagret" });
     },
+    onError: (error: any) => {
+      toast({ title: "Feil ved lagring", description: error.message, variant: "destructive" });
+    },
   });
 
   // Training
