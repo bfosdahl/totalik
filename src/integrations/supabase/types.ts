@@ -5759,6 +5759,56 @@ export type Database = {
           },
         ]
       }
+      ik_alkohol_training_records: {
+        Row: {
+          company_id: string
+          created_at: string
+          employee_name: string
+          employee_user_id: string | null
+          id: string
+          signature_data: string | null
+          signed_at: string | null
+          signed_digitally: boolean
+          training_description: string | null
+          training_topic: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          employee_name: string
+          employee_user_id?: string | null
+          id?: string
+          signature_data?: string | null
+          signed_at?: string | null
+          signed_digitally?: boolean
+          training_description?: string | null
+          training_topic?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          employee_name?: string
+          employee_user_id?: string | null
+          id?: string
+          signature_data?: string | null
+          signed_at?: string | null
+          signed_digitally?: boolean
+          training_description?: string | null
+          training_topic?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_training_records_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_hms_company_documents: {
         Row: {
           category: string | null

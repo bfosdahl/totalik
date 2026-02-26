@@ -10,19 +10,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, Users, Calendar, Phone, Mail, Check, Trash2, Loader2, ChevronsUpDown, UserPlus, Pencil } from "lucide-react";
+import { Plus, Users, Calendar, Phone, Mail, Check, Trash2, Loader2, ChevronsUpDown, UserPlus, Pencil, GraduationCap, PenTool } from "lucide-react";
 import { useIkAlkoholOrganization, ROLE_TYPES } from "@/hooks/useIkAlkoholOrganization";
+import { useIkAlkoholTraining } from "@/hooks/useIkAlkoholTraining";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const IkAlkoholOrganisering = () => {
   const navigate = useNavigate();
   const { modules, isLoading: modulesLoading } = useCompanyModules();
   const { users: companyUsers, isLoading: usersLoading, getUserDisplayName } = useCompanyUsers();
   const { organization, shifts, isLoading, createRole, updateRole, deleteRole, confirmRole, createShift, deleteShift } = useIkAlkoholOrganization();
+  const { trainingRecords, isLoading: trainingLoading, createRecord, signRecord, deleteRecord } = useIkAlkoholTraining();
   
   const [activeTab, setActiveTab] = useState('roles');
   const [showRoleDialog, setShowRoleDialog] = useState(false);
@@ -40,7 +43,7 @@ const IkAlkoholOrganisering = () => {
 
   const hasIkAlkohol = modules?.some(m => m.module_type === 'IK_ALKOHOL' && m.is_active);
   
-  if (modulesLoading || isLoading || usersLoading) {
+  if (modulesLoading || isLoading || usersLoading || trainingLoading) {
     return <AppLayout><div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div></AppLayout>;
   }
 
@@ -108,6 +111,7 @@ const IkAlkoholOrganisering = () => {
           <TabsList className="mb-6">
             <TabsTrigger value="roles"><Users className="h-4 w-4 mr-2" />Roller og ansvar</TabsTrigger>
             <TabsTrigger value="shifts"><Calendar className="h-4 w-4 mr-2" />Vaktplan</TabsTrigger>
+            <TabsTrigger value="training"><GraduationCap className="h-4 w-4 mr-2" />Opplæring</TabsTrigger>
           </TabsList>
 
           <TabsContent value="roles">
@@ -206,6 +210,104 @@ const IkAlkoholOrganisering = () => {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* Training Tab */}
+          <TabsContent value="training">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold">Opplæringsbekreftelse</h2>
+                  <p className="text-sm text-muted-foreground">Alle ansatte skal signere at de har mottatt opplæring i alkohollovgivning og internkontroll</p>
+                </div>
+                <Button onClick={() => {
+                  // Add all company users that don't already have a record
+                  const existingUserIds = trainingRecords.map(r => r.employee_user_id).filter(Boolean);
+                  const newUsers = companyUsers.filter(u => !existingUserIds.includes(u.user_id));
+                  if (newUsers.length === 0) {
+                    toast.info("Alle ansatte er allerede lagt til");
+                    return;
+                  }
+                  newUsers.forEach(user => {
+                    createRecord.mutate({
+                      employee_user_id: user.user_id,
+                      employee_name: getUserDisplayName(user),
+                    });
+                  });
+                }}>
+                  <Plus className="h-4 w-4 mr-2" />Legg til alle ansatte
+                </Button>
+              </div>
+
+              {trainingRecords.length === 0 ? (
+                <Card>
+                  <CardContent className="py-8 text-center text-muted-foreground">
+                    Ingen opplæringsregistreringer. Klikk "Legg til alle ansatte" for å opprette.
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-3">
+                  {trainingRecords.map(record => (
+                    <Card key={record.id}>
+                      <CardContent className="py-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={cn(
+                              "w-10 h-10 rounded-full flex items-center justify-center",
+                              record.signed_at ? "bg-green-100" : "bg-amber-100"
+                            )}>
+                              {record.signed_at ? (
+                                <Check className="h-5 w-5 text-green-600" />
+                              ) : (
+                                <PenTool className="h-5 w-5 text-amber-600" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-medium">{record.employee_name}</p>
+                              <p className="text-sm text-muted-foreground">{record.training_topic}</p>
+                              {record.signed_at && (
+                                <p className="text-xs text-green-600">
+                                  Signert digitalt {format(new Date(record.signed_at), "d. MMM yyyy 'kl.' HH:mm", { locale: nb })}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {!record.signed_at && (
+                              <Button
+                                size="sm"
+                                onClick={() => signRecord.mutate({ id: record.id })}
+                              >
+                                <PenTool className="h-4 w-4 mr-1" />Signer
+                              </Button>
+                            )}
+                            {record.signed_at && (
+                              <Badge className="bg-green-100 text-green-800">Signert</Badge>
+                            )}
+                            <Button size="sm" variant="ghost" onClick={() => deleteRecord.mutate(record.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+
+                  <Card className="bg-muted/50">
+                    <CardContent className="py-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">
+                          Status: {trainingRecords.filter(r => r.signed_at).length} av {trainingRecords.length} har signert
+                        </span>
+                        <Badge variant={trainingRecords.every(r => r.signed_at) ? "default" : "secondary"}>
+                          {trainingRecords.every(r => r.signed_at) ? "Komplett" : "Ufullstendig"}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
 
