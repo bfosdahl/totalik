@@ -63,16 +63,28 @@ export function useEmployeeMessages() {
       message: string;
     }) => {
       if (!profile || !company?.id) throw new Error("Mangler brukerdata");
+      const senderName = `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email || "Ukjent";
       const { error } = await supabase.from("employee_messages").insert({
         company_id: company.id,
         sender_id: profile.id,
-        sender_name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email || "Ukjent",
+        sender_name: senderName,
         recipient_id: data.recipient_id,
         recipient_name: data.recipient_name,
         subject: data.subject || null,
         message: data.message,
       });
       if (error) throw error;
+
+      // Also create a notification for the recipient
+      await supabase.from("notification_log").insert({
+        user_id: data.recipient_id,
+        company_id: company.id,
+        notification_type: "message",
+        title: `Ny melding fra ${senderName}`,
+        body: data.subject || data.message.substring(0, 100),
+        link: "/my/messages",
+        is_read: false,
+      });
     },
     onSuccess: () => {
       toast.success("Melding sendt!");

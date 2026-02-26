@@ -17,12 +17,14 @@ const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
   deadline: "Frist",
   assignment: "Tildeling",
   status_change: "Statusendring",
+  message: "Melding",
 };
 
 const NOTIFICATION_TYPE_COLORS: Record<string, string> = {
   deadline: "bg-amber-100 text-amber-800",
   assignment: "bg-blue-100 text-blue-800",
   status_change: "bg-green-100 text-green-800",
+  message: "bg-purple-100 text-purple-800",
 };
 
 export function NotificationBell() {
