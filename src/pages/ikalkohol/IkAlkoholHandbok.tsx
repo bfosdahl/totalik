@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useIkAlkoholLovverk } from "@/hooks/useIkAlkoholLovverk";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -39,6 +40,7 @@ const handbookSections = [
   { id: "routines", title: "4. Rutiner", icon: FileText, description: "Skriftlige rutiner" },
   { id: "controls", title: "5. Kontroll", icon: ClipboardList, description: "Kontrollrutiner" },
   { id: "regulations", title: "6. Regelverk", icon: Scale, description: "Lover og forskrifter" },
+  { id: "compliance", title: "7. Samsvarssjekkliste", icon: CheckCircle2, description: "Dokumentasjonskrav" },
 ];
 
 export default function IkAlkoholHandbok() {
@@ -48,17 +50,19 @@ export default function IkAlkoholHandbok() {
   const { risks, isLoading: risksLoading } = useIkAlkoholRisks();
   const { routines, isLoading: routinesLoading } = useIkAlkoholRoutines();
   const { controls, isLoading: controlsLoading } = useIkAlkoholControls();
+  const { lovverk, complianceChecklist, isLoading: lovverkLoading } = useIkAlkoholLovverk();
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
-  const isLoading = goalsLoading || orgLoading || risksLoading || routinesLoading || controlsLoading;
+  const isLoading = goalsLoading || orgLoading || risksLoading || routinesLoading || controlsLoading || lovverkLoading;
 
   const completionStatus = {
     goals: goals.length > 0,
     organization: organization.length > 0,
     risks: risks.length > 0,
     routines: routines.length > 0,
-    controls: true, // Always "complete" since control templates are predefined
-    regulations: true, // Always complete - static content
+    controls: true,
+    regulations: lovverk.length > 0,
+    compliance: complianceChecklist.length > 0 && complianceChecklist.some(c => c.is_fulfilled),
   };
 
   const completedCount = Object.values(completionStatus).filter(Boolean).length;
@@ -397,33 +401,111 @@ export default function IkAlkoholHandbok() {
         doc.text(`Gjennomførte kontroller: ${completedControls.length}`, margin, y);
       }
 
-      // ========== 6. REGELVERK ==========
+      // ========== 6. REGELVERK (dynamic from ik_alkohol_lovverk) ==========
       y = addPageHeader("6. Relevant regelverk");
-      const regulations = [
-        { name: "Alkoholloven", desc: "Lov om omsetning av alkoholholdig drikk", link: "lovdata.no/lov/1989-06-02-27" },
-        { name: "Alkoholforskriften", desc: "Forskrift om omsetning av alkoholholdig drikk", link: "lovdata.no/forskrift/2005-06-08-538" },
-        { name: "Serveringsforskriften", desc: "Krav til serveringsbevillingens innhold", link: "" },
-        { name: "Prikksystemet", desc: "Kommunalt prikksystem for brudd på alkoholloven", link: "" },
-      ];
 
-      regulations.forEach((reg) => {
+      const categoryLabels: Record<string, string> = {
+        nasjonal: "Nasjonalt lovverk",
+        kommunal: "Kommunale retningslinjer",
+        veileder: "Veiledere og ressurser",
+      };
+
+      const activeLovverk = lovverk.filter(l => l.is_active);
+      const groupedLovverk = activeLovverk.reduce((acc, l) => {
+        if (!acc[l.category]) acc[l.category] = [];
+        acc[l.category].push(l);
+        return acc;
+      }, {} as Record<string, typeof lovverk>);
+
+      if (activeLovverk.length > 0) {
+        ["nasjonal", "kommunal", "veileder"].forEach((cat) => {
+          const items = groupedLovverk[cat];
+          if (!items || items.length === 0) return;
+
+          y = checkPageBreak(y, 20);
+          doc.setFontSize(12);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(120, 53, 15);
+          doc.text(categoryLabels[cat] || cat, margin, y);
+          doc.setTextColor(0, 0, 0);
+          y += 8;
+
+          items.forEach((item) => {
+            y = checkPageBreak(y, 18);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text(item.title, margin + 3, y);
+            y += 5;
+            if (item.description) {
+              doc.setFont("helvetica", "normal");
+              doc.setFontSize(9);
+              const descLines = doc.splitTextToSize(item.description, contentWidth - 10);
+              doc.text(descLines, margin + 3, y);
+              y += descLines.length * 4 + 2;
+            }
+            if (item.url) {
+              doc.setFontSize(8);
+              doc.setTextColor(0, 0, 200);
+              doc.text(item.url, margin + 3, y);
+              doc.setTextColor(0, 0, 0);
+              y += 5;
+            }
+            y += 3;
+          });
+        });
+      } else {
+        doc.setFontSize(10);
+        doc.text("Ingen lovverk er registrert.", margin, y);
+      }
+
+      // ========== 7. SAMSVARSSJEKKLISTE ==========
+      y = addPageHeader("7. Samsvarssjekkliste – Dokumentasjonskrav");
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text("Oversikt over lovpålagte dokumentasjonskrav og status:", margin, y);
+      y += 8;
+
+      if (complianceChecklist.length > 0) {
+        const checklistData = complianceChecklist.map((item) => [
+          item.is_fulfilled ? "✓" : "✗",
+          item.requirement_text,
+          item.is_fulfilled && item.fulfilled_at
+            ? format(new Date(item.fulfilled_at), "dd.MM.yyyy", { locale: nb })
+            : "-",
+          item.fulfilled_by_name || "-",
+        ]);
+
+        autoTable(doc, {
+          startY: y,
+          head: [["Status", "Krav", "Oppfylt dato", "Oppfylt av"]],
+          body: checklistData,
+          margin: { left: margin, right: margin },
+          styles: { fontSize: 8, cellPadding: 3 },
+          headStyles: { fillColor: [120, 53, 15], textColor: [255, 255, 255] },
+          columnStyles: {
+            0: { cellWidth: 12, halign: "center", fontStyle: "bold" },
+            1: { cellWidth: 80 },
+            2: { cellWidth: 25, halign: "center" },
+            3: { cellWidth: 30 },
+          },
+          didParseCell: (data) => {
+            if (data.section === "body" && data.column.index === 0) {
+              const fulfilled = complianceChecklist[data.row.index]?.is_fulfilled;
+              data.cell.styles.textColor = fulfilled ? [34, 197, 94] : [239, 68, 68];
+            }
+          },
+        });
+
+        const fulfilledCount = complianceChecklist.filter(c => c.is_fulfilled).length;
+        y = (doc as any).lastAutoTable?.finalY + 10 || y + 50;
         y = checkPageBreak(y, 15);
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
-        doc.text(reg.name, margin, y);
-        y += 5;
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-        doc.text(reg.desc, margin + 3, y);
-        y += 5;
-        if (reg.link) {
-          doc.setTextColor(0, 0, 200);
-          doc.text(reg.link, margin + 3, y);
-          doc.setTextColor(0, 0, 0);
-          y += 5;
-        }
-        y += 3;
-      });
+        doc.text(`Oppfylt: ${fulfilledCount} av ${complianceChecklist.length} krav (${Math.round((fulfilledCount / complianceChecklist.length) * 100)}%)`, margin, y);
+      } else {
+        doc.setFontSize(10);
+        doc.text("Ingen samsvarssjekkliste er initialisert.", margin, y);
+      }
 
       // ========== FOOTER on all pages ==========
       const totalPages = doc.getNumberOfPages();
@@ -446,7 +528,7 @@ export default function IkAlkoholHandbok() {
     } finally {
       setIsGeneratingPdf(false);
     }
-  }, [company, goals, organization, risks, routines, controls]);
+  }, [company, goals, organization, risks, routines, controls, lovverk, complianceChecklist]);
 
   return (
     <AppLayout>
