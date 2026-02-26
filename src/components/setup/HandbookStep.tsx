@@ -869,8 +869,8 @@ export function HandbookStep({
           margin: { left: margin, right: margin },
           didDrawCell: (data) => {
             if (data.section === "body" && data.column.index === 3) {
-              const priority = actionPlan.actions[data.row.index].priority;
-              const color = getPriorityColor(priority);
+              const action = sanitizedActions[data.row.index];
+              const color = getPriorityColor(action?.priority || "medium");
               doc.setTextColor(color[0], color[1], color[2]);
             }
           },
