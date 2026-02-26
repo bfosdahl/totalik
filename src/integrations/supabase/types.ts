@@ -4753,6 +4753,75 @@ export type Database = {
           },
         ]
       }
+      ik_alkohol_compliance_checklist: {
+        Row: {
+          category: string
+          company_id: string
+          created_at: string
+          evidence_description: string | null
+          evidence_link: string | null
+          fulfilled_at: string | null
+          fulfilled_by_id: string | null
+          fulfilled_by_name: string | null
+          id: string
+          is_fulfilled: boolean | null
+          notes: string | null
+          requirement_key: string
+          requirement_text: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          company_id: string
+          created_at?: string
+          evidence_description?: string | null
+          evidence_link?: string | null
+          fulfilled_at?: string | null
+          fulfilled_by_id?: string | null
+          fulfilled_by_name?: string | null
+          id?: string
+          is_fulfilled?: boolean | null
+          notes?: string | null
+          requirement_key: string
+          requirement_text: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          created_at?: string
+          evidence_description?: string | null
+          evidence_link?: string | null
+          fulfilled_at?: string | null
+          fulfilled_by_id?: string | null
+          fulfilled_by_name?: string | null
+          id?: string
+          is_fulfilled?: boolean | null
+          notes?: string | null
+          requirement_key?: string
+          requirement_text?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_compliance_checklist_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_alkohol_compliance_checklist_fulfilled_by_id_fkey"
+            columns: ["fulfilled_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_alkohol_compliance_items: {
         Row: {
           category: string | null
@@ -5094,6 +5163,62 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "ik_alkohol_licenses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_alkohol_lovverk: {
+        Row: {
+          category: string
+          company_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          municipality: string | null
+          sort_order: number | null
+          source: string | null
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          category?: string
+          company_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          municipality?: string | null
+          sort_order?: number | null
+          source?: string | null
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          municipality?: string | null
+          sort_order?: number | null
+          source?: string | null
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_alkohol_lovverk_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
