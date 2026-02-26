@@ -350,8 +350,50 @@ serve(async (req) => {
       hasVerneombudExemption || false
     );
 
+    // Fetch top accepted suggestions from the database for this industry
+    let popularSuggestionsPrompt = "";
+    if (industry && currentStep) {
+      try {
+        const stepTypeMap: Record<number, string> = { 4: 'maal', 5: 'organisering', 6: 'risiko', 7: 'handlingsplan', 8: 'rutine' };
+        const suggestionType = stepTypeMap[currentStep];
+        if (suggestionType) {
+          const { data: topSuggestions } = await supabase
+            .from('ai_setup_suggestion_stats')
+            .select('suggestion_text, times_accepted, times_suggested')
+            .eq('industry', industry)
+            .eq('suggestion_type', suggestionType)
+            .gt('times_accepted', 0)
+            .order('times_accepted', { ascending: false })
+            .limit(10);
+
+          if (topSuggestions && topSuggestions.length > 0) {
+            const lines = topSuggestions.map((s: any) => 
+              `- "${s.suggestion_text}" (godkjent ${s.times_accepted} av ${s.times_suggested} ganger)`
+            );
+            popularSuggestionsPrompt = `\n\n===== POPULÆRE FORSLAG FOR DENNE BRANSJEN =====\nDisse forslagene har blitt godkjent av andre bedrifter i samme bransje. PRIORITER disse i dine forslag:\n${lines.join('\n')}\n`;
+          }
+
+          // Also check industry templates (option 3)
+          const { data: templates } = await supabase
+            .from('ai_setup_industry_templates')
+            .select('suggestions')
+            .eq('industry', industry)
+            .eq('template_type', suggestionType)
+            .eq('is_active', true)
+            .maybeSingle();
+
+          if (templates?.suggestions && Array.isArray(templates.suggestions) && templates.suggestions.length > 0) {
+            const templateLines = templates.suggestions.map((s: any) => `- "${typeof s === 'string' ? s : s.text || s.name || JSON.stringify(s)}"`);
+            popularSuggestionsPrompt += `\n\n===== BRANSJEMAL-FORSLAG =====\nDisse er forhåndsdefinerte forslag for bransjen:\n${templateLines.join('\n')}\n`;
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching suggestion stats:", err);
+      }
+    }
+
     const systemMessages: ChatMsg[] = [
-      { role: "system", content: baseSystemPrompt },
+      { role: "system", content: baseSystemPrompt + popularSuggestionsPrompt },
       { role: "system", content: stepPrompt },
     ];
 

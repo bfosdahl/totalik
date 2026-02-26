@@ -540,6 +540,72 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_setup_industry_templates: {
+        Row: {
+          created_at: string
+          id: string
+          industry: string
+          is_active: boolean
+          suggestions: Json
+          template_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          industry: string
+          is_active?: boolean
+          suggestions?: Json
+          template_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          industry?: string
+          is_active?: boolean
+          suggestions?: Json
+          template_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_setup_suggestion_stats: {
+        Row: {
+          company_size_category: string | null
+          created_at: string
+          id: string
+          industry: string
+          suggestion_text: string
+          suggestion_type: string
+          times_accepted: number
+          times_suggested: number
+          updated_at: string
+        }
+        Insert: {
+          company_size_category?: string | null
+          created_at?: string
+          id?: string
+          industry: string
+          suggestion_text: string
+          suggestion_type: string
+          times_accepted?: number
+          times_suggested?: number
+          updated_at?: string
+        }
+        Update: {
+          company_size_category?: string | null
+          created_at?: string
+          id?: string
+          industry?: string
+          suggestion_text?: string
+          suggestion_type?: string
+          times_accepted?: number
+          times_suggested?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       anonymous_message_discussions: {
         Row: {
           comment: string
