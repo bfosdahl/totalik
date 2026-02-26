@@ -31,6 +31,8 @@ export const ROUTINE_CATEGORIES = [
   { value: 'dokumentasjon', label: 'Dokumentasjon og revisjon', icon: 'ClipboardList' },
 ];
 
+export const CUSTOM_CATEGORY_VALUE = '__custom__';
+
 export const VENUE_TYPES = [
   { value: 'restaurant', label: 'Restaurant' },
   { value: 'bar', label: 'Bar' },

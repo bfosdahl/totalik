@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Plus, FileText, ChevronDown, Edit, Trash2, Loader2, Check } from "lucide-react";
 import { RoutineLibraryDialog } from "@/components/routines/RoutineLibraryDialog";
-import { useIkAlkoholRoutines, ROUTINE_CATEGORIES, VENUE_TYPES } from "@/hooks/useIkAlkoholRoutines";
+import { useIkAlkoholRoutines, ROUTINE_CATEGORIES, VENUE_TYPES, CUSTOM_CATEGORY_VALUE } from "@/hooks/useIkAlkoholRoutines";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
@@ -29,6 +29,7 @@ const IkAlkoholRutiner = () => {
   const [showDialog, setShowDialog] = useState(false);
   const [editingRoutine, setEditingRoutine] = useState<any>(null);
   const [expandedRoutines, setExpandedRoutines] = useState<string[]>([]);
+  const [customCategoryInput, setCustomCategoryInput] = useState('');
   
   const [formData, setFormData] = useState({
     routine_name: '',
@@ -38,6 +39,11 @@ const IkAlkoholRutiner = () => {
     venue_type: '',
     is_mandatory: false,
   });
+
+  // Derive custom categories from existing routines
+  const predefinedValues = new Set(ROUTINE_CATEGORIES.map(c => c.value));
+  const customCategories = [...new Set(routines.map(r => r.category).filter(c => !predefinedValues.has(c)))];
+  const allCategories = [...ROUTINE_CATEGORIES, ...customCategories.map(c => ({ value: c, label: c, icon: 'Tag' }))];
 
   const hasIkAlkohol = modules?.some(m => m.module_type === 'IK_ALKOHOL' && m.is_active);
 
@@ -52,6 +58,8 @@ const IkAlkoholRutiner = () => {
   }
 
   const filteredRoutines = activeCategory === 'alle' ? routines : routines.filter(r => r.category === activeCategory);
+
+  const isCustomSelected = formData.category === CUSTOM_CATEGORY_VALUE;
 
   const handleAdoptFromLibrary = async (template: RoutineTemplate) => {
     if (!profile?.company_id) return;
@@ -72,30 +80,39 @@ const IkAlkoholRutiner = () => {
   const handleSave = async () => {
     if (!formData.routine_name || !formData.content) return;
     
+    const finalCategory = isCustomSelected ? customCategoryInput.trim() : formData.category;
+    if (!finalCategory) return;
+
+    const payload = {
+      ...formData,
+      category: finalCategory,
+      company_id: profile!.company_id!,
+      venue_type: formData.venue_type || null,
+    };
+
     if (editingRoutine) {
-      await updateRoutine.mutateAsync({ id: editingRoutine.id, ...formData });
+      await updateRoutine.mutateAsync({ id: editingRoutine.id, ...payload });
     } else {
-      await createRoutine.mutateAsync({
-        ...formData,
-        company_id: profile!.company_id!,
-        venue_type: formData.venue_type || null,
-      });
+      await createRoutine.mutateAsync(payload);
     }
     setShowDialog(false);
     setEditingRoutine(null);
+    setCustomCategoryInput('');
     setFormData({ routine_name: '', description: '', content: '', category: 'alderskontroll', venue_type: '', is_mandatory: false });
   };
 
   const openEdit = (routine: any) => {
     setEditingRoutine(routine);
+    const isPredefined = predefinedValues.has(routine.category);
     setFormData({
       routine_name: routine.routine_name,
       description: routine.description || '',
       content: routine.content,
-      category: routine.category,
+      category: isPredefined ? routine.category : CUSTOM_CATEGORY_VALUE,
       venue_type: routine.venue_type || '',
       is_mandatory: routine.is_mandatory,
     });
+    setCustomCategoryInput(isPredefined ? '' : routine.category);
     setShowDialog(true);
   };
 
@@ -124,7 +141,7 @@ const IkAlkoholRutiner = () => {
             <TabsTrigger value="alle" className="text-xs sm:text-sm">
               Alle
             </TabsTrigger>
-            {ROUTINE_CATEGORIES.map(cat => (
+            {allCategories.map(cat => (
               <TabsTrigger key={cat.value} value={cat.value} className="text-xs sm:text-sm">
                 {cat.label}
               </TabsTrigger>
@@ -166,7 +183,7 @@ const IkAlkoholRutiner = () => {
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline">{ROUTINE_CATEGORIES.find(c => c.value === routine.category)?.label || routine.category}</Badge>
+                            <Badge variant="outline">{allCategories.find(c => c.value === routine.category)?.label || routine.category}</Badge>
                             {routine.is_mandatory && <Badge variant="secondary">Obligatorisk</Badge>}
                             {routine.venue_type && <Badge variant="outline">{VENUE_TYPES.find(v => v.value === routine.venue_type)?.label}</Badge>}
                             <ChevronDown className="h-4 w-4" />
@@ -215,7 +232,7 @@ const IkAlkoholRutiner = () => {
             )}
           </TabsContent>
 
-          {ROUTINE_CATEGORIES.map(cat => (
+          {allCategories.map(cat => (
             <TabsContent key={cat.value} value={cat.value}>
               {isLoading ? (
                 <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
@@ -308,17 +325,32 @@ const IkAlkoholRutiner = () => {
             </DialogHeader>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Kategori</label>
-                  <Select value={formData.category} onValueChange={(v) => setFormData({ ...formData, category: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {ROUTINE_CATEGORIES.map(cat => (
-                        <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                 <div>
+                   <label className="text-sm font-medium">Kategori</label>
+                   <Select value={formData.category} onValueChange={(v) => {
+                     setFormData({ ...formData, category: v });
+                     if (v !== CUSTOM_CATEGORY_VALUE) setCustomCategoryInput('');
+                   }}>
+                     <SelectTrigger><SelectValue /></SelectTrigger>
+                     <SelectContent>
+                       {ROUTINE_CATEGORIES.map(cat => (
+                         <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                       ))}
+                       {customCategories.map(c => (
+                         <SelectItem key={c} value={c}>{c}</SelectItem>
+                       ))}
+                       <SelectItem value={CUSTOM_CATEGORY_VALUE}>+ Egendefinert kategori</SelectItem>
+                     </SelectContent>
+                   </Select>
+                   {isCustomSelected && (
+                     <Input 
+                       className="mt-2" 
+                       placeholder="Skriv inn kategorinavn, f.eks. Opplæring" 
+                       value={customCategoryInput} 
+                       onChange={(e) => setCustomCategoryInput(e.target.value)} 
+                     />
+                   )}
+                 </div>
                 <div>
                   <label className="text-sm font-medium">Stedstype (valgfritt)</label>
                   <Select value={formData.venue_type || '_all'} onValueChange={(v) => setFormData({ ...formData, venue_type: v === '_all' ? '' : v })}>
