@@ -751,6 +751,68 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
         queryClient.invalidateQueries({ queryKey: ["company-modules"] });
         queryClient.invalidateQueries({ queryKey: ["company-laws-regulations"] });
 
+        // Track accepted suggestions for learning (option 2)
+        try {
+          const industryForStats = data.industry || selectedIndustry || "";
+          if (industryForStats) {
+            const sizeCat = (confirmedEmployeeCount || 0) <= 10 ? 'small' : (confirmedEmployeeCount || 0) <= 50 ? 'medium' : 'large';
+            
+            const statsEntries: Array<{ industry: string; suggestion_type: string; suggestion_text: string; company_size_category: string }> = [];
+            
+            if (data.goals && Array.isArray(data.goals)) {
+              data.goals.forEach((g: string) => statsEntries.push({ industry: industryForStats, suggestion_type: 'maal', suggestion_text: g, company_size_category: sizeCat }));
+            }
+            if (data.risks && Array.isArray(data.risks)) {
+              data.risks.forEach((r: any) => {
+                const desc = r.hazard_source_custom || r.hazard_source || r.description || '';
+                if (desc) statsEntries.push({ industry: industryForStats, suggestion_type: 'risiko', suggestion_text: desc, company_size_category: sizeCat });
+              });
+            }
+            if (data.routines && Array.isArray(data.routines)) {
+              data.routines.forEach((r: any) => {
+                const name = r.routine_name || r.name || '';
+                if (name) statsEntries.push({ industry: industryForStats, suggestion_type: 'rutine', suggestion_text: name, company_size_category: sizeCat });
+              });
+            }
+            if (data.actions && Array.isArray(data.actions)) {
+              data.actions.forEach((a: any) => {
+                const desc = a.action_description || '';
+                if (desc) statsEntries.push({ industry: industryForStats, suggestion_type: 'handlingsplan', suggestion_text: desc, company_size_category: sizeCat });
+              });
+            }
+
+            // Upsert stats - increment times_accepted for existing, insert new
+            for (const entry of statsEntries) {
+              const { data: existing } = await supabase
+                .from('ai_setup_suggestion_stats')
+                .select('id, times_suggested, times_accepted')
+                .eq('industry', entry.industry)
+                .eq('suggestion_type', entry.suggestion_type)
+                .eq('suggestion_text', entry.suggestion_text)
+                .maybeSingle();
+
+              if (existing) {
+                await supabase.from('ai_setup_suggestion_stats').update({
+                  times_accepted: existing.times_accepted + 1,
+                  times_suggested: existing.times_suggested + 1,
+                  company_size_category: entry.company_size_category,
+                }).eq('id', existing.id);
+              } else {
+                await supabase.from('ai_setup_suggestion_stats').insert({
+                  industry: entry.industry,
+                  suggestion_type: entry.suggestion_type,
+                  suggestion_text: entry.suggestion_text,
+                  times_suggested: 1,
+                  times_accepted: 1,
+                  company_size_category: entry.company_size_category,
+                });
+              }
+            }
+          }
+        } catch (statsError) {
+          console.error("Failed to track suggestion stats (non-critical):", statsError);
+        }
+
         toast.success("HMS-oppsett fullført! 🎉");
         setIsSaving(false);
         clearChatState(companyId, departmentId);
