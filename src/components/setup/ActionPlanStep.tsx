@@ -467,7 +467,8 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
               const originalIndex = actions.findIndex(a => a.id === action.id);
               const isExpanded = expandedActions.has(action.id);
               const isEditing = editingId === action.id;
-              const StatusIcon = statusConfig[action.status].icon;
+              const statusEntry = statusConfig[action.status as keyof typeof statusConfig] ?? statusConfig.ikke_startet;
+              const StatusIcon = statusEntry.icon;
 
               return (
                 <Collapsible
@@ -490,12 +491,12 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
                                 <span className="text-sm font-medium">
                                   Tiltak #{originalIndex + 1}
                                 </span>
-                                <Badge variant="outline" className={priorityConfig[action.priority].color}>
-                                  {priorityConfig[action.priority].label}
+                                <Badge variant="outline" className={(priorityConfig[action.priority as keyof typeof priorityConfig] ?? priorityConfig.lav).color}>
+                                  {(priorityConfig[action.priority as keyof typeof priorityConfig] ?? priorityConfig.lav).label}
                                 </Badge>
-                                <Badge variant="outline" className={statusConfig[action.status].bg}>
-                                  <StatusIcon className={`w-3 h-3 mr-1 ${statusConfig[action.status].color}`} />
-                                  {statusConfig[action.status].label}
+                                <Badge variant="outline" className={statusEntry.bg}>
+                                  <StatusIcon className={`w-3 h-3 mr-1 ${statusEntry.color}`} />
+                                  {statusEntry.label}
                                 </Badge>
                                 {action.risk_id && (
                                   <Badge variant="outline" className="text-xs">
