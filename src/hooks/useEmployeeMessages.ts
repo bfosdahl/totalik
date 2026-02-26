@@ -75,16 +75,24 @@ export function useEmployeeMessages() {
       });
       if (error) throw error;
 
-      // Also create a notification for the recipient
-      await supabase.from("notification_log").insert({
-        user_id: data.recipient_id,
-        company_id: company.id,
-        notification_type: "message",
-        title: `Ny melding fra ${senderName}`,
-        body: data.subject || data.message.substring(0, 100),
-        link: "/my/messages",
-        is_read: false,
-      });
+      // Look up the recipient's auth user_id from their profile
+      const { data: recipientProfile } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("id", data.recipient_id)
+        .single();
+
+      if (recipientProfile?.user_id) {
+        await supabase.from("notification_log").insert({
+          user_id: recipientProfile.user_id,
+          company_id: company.id,
+          notification_type: "message",
+          title: `Ny melding fra ${senderName}`,
+          body: data.subject || data.message.substring(0, 100),
+          link: "/my/messages",
+          is_read: false,
+        });
+      }
     },
     onSuccess: () => {
       toast.success("Melding sendt!");
