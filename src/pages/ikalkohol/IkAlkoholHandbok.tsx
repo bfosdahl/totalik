@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useIkAlkoholLovverk } from "@/hooks/useIkAlkoholLovverk";
+import { useIkAlkoholTraining } from "@/hooks/useIkAlkoholTraining";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -41,6 +42,7 @@ const handbookSections = [
   { id: "controls", title: "5. Kontroll", icon: ClipboardList, description: "Kontrollrutiner" },
   { id: "regulations", title: "6. Regelverk", icon: Scale, description: "Lover og forskrifter" },
   { id: "compliance", title: "7. Samsvarssjekkliste", icon: CheckCircle2, description: "Dokumentasjonskrav" },
+  { id: "training", title: "8. Opplæring", icon: Users, description: "Signering av opplæring" },
 ];
 
 export default function IkAlkoholHandbok() {
@@ -51,9 +53,10 @@ export default function IkAlkoholHandbok() {
   const { routines, isLoading: routinesLoading } = useIkAlkoholRoutines();
   const { controls, isLoading: controlsLoading } = useIkAlkoholControls();
   const { lovverk, complianceChecklist, isLoading: lovverkLoading } = useIkAlkoholLovverk();
+  const { trainingRecords, isLoading: trainingLoading } = useIkAlkoholTraining();
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
-  const isLoading = goalsLoading || orgLoading || risksLoading || routinesLoading || controlsLoading || lovverkLoading;
+  const isLoading = goalsLoading || orgLoading || risksLoading || routinesLoading || controlsLoading || lovverkLoading || trainingLoading;
 
   const completionStatus = {
     goals: goals.length > 0,
@@ -63,6 +66,7 @@ export default function IkAlkoholHandbok() {
     controls: true,
     regulations: lovverk.length > 0,
     compliance: complianceChecklist.length > 0 && complianceChecklist.some(c => c.is_fulfilled),
+    training: trainingRecords.length > 0 && trainingRecords.some(r => r.signed_at),
   };
 
   const completedCount = Object.values(completionStatus).filter(Boolean).length;
@@ -507,6 +511,88 @@ export default function IkAlkoholHandbok() {
         doc.text("Ingen samsvarssjekkliste er initialisert.", margin, y);
       }
 
+      // ========== 8. OPPLÆRING (med analog signatur-linjer) ==========
+      y = addPageHeader("8. Opplæring – Bekreftelse på mottatt opplæring");
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text("Alle ansatte skal bekrefte at de har mottatt opplæring i alkohollovgivning og internkontroll.", margin, y);
+      y += 6;
+      doc.text("Ansatte som har signert digitalt er markert med dato. Øvrige kan signere i feltet nedenfor.", margin, y);
+      y += 10;
+
+      // Build combined list: digital records + remaining company users for blank lines
+      const allTrainingRows: { name: string; signedAt: string | null; digital: boolean }[] = [];
+      trainingRecords.forEach(r => {
+        allTrainingRows.push({ name: r.employee_name, signedAt: r.signed_at, digital: r.signed_digitally });
+      });
+
+      if (allTrainingRows.length > 0) {
+        const trainingTableData = allTrainingRows.map(row => [
+          row.name,
+          row.digital && row.signedAt
+            ? format(new Date(row.signedAt), "dd.MM.yyyy", { locale: nb })
+            : "",
+          row.digital ? "Digital" : "",
+          "", // blank signature column for analog
+        ]);
+
+        autoTable(doc, {
+          startY: y,
+          head: [["Ansatt", "Dato", "Type", "Signatur"]],
+          body: trainingTableData,
+          margin: { left: margin, right: margin },
+          styles: { fontSize: 9, cellPadding: 4, minCellHeight: 12 },
+          headStyles: { fillColor: [120, 53, 15], textColor: [255, 255, 255] },
+          columnStyles: {
+            0: { cellWidth: 50 },
+            1: { cellWidth: 30, halign: "center" },
+            2: { cellWidth: 25, halign: "center" },
+            3: { cellWidth: 60 }, // wide for handwritten signature
+          },
+          didDrawCell: (data) => {
+            // Draw a signature line in the signature column for unsigned rows
+            if (data.section === "body" && data.column.index === 3) {
+              const row = allTrainingRows[data.row.index];
+              if (!row?.digital || !row?.signedAt) {
+                const lineY = data.cell.y + data.cell.height - 4;
+                doc.setDrawColor(180, 180, 180);
+                doc.line(data.cell.x + 3, lineY, data.cell.x + data.cell.width - 3, lineY);
+              }
+            }
+          },
+        });
+
+        y = (doc as any).lastAutoTable?.finalY + 10 || y + 50;
+      } else {
+        doc.setFontSize(10);
+        doc.text("Ingen ansatte er registrert for opplæring.", margin, y);
+        y += 8;
+      }
+
+      // Add extra blank signature rows for paper-based workflow
+      y = checkPageBreak(y, 30);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "italic");
+      doc.text("Ekstra signeringslinjer for nye ansatte:", margin, y);
+      y += 8;
+
+      for (let row = 0; row < 6; row++) {
+        y = checkPageBreak(y, 14);
+        doc.setDrawColor(200, 200, 200);
+        // Name line
+        doc.line(margin, y, margin + 60, y);
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "normal");
+        doc.text("Navn", margin, y + 4);
+        // Date line
+        doc.line(margin + 65, y, margin + 95, y);
+        doc.text("Dato", margin + 65, y + 4);
+        // Signature line
+        doc.line(margin + 100, y, margin + contentWidth, y);
+        doc.text("Signatur", margin + 100, y + 4);
+        y += 14;
+      }
+
       // ========== FOOTER on all pages ==========
       const totalPages = doc.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
@@ -528,7 +614,7 @@ export default function IkAlkoholHandbok() {
     } finally {
       setIsGeneratingPdf(false);
     }
-  }, [company, goals, organization, risks, routines, controls, lovverk, complianceChecklist]);
+  }, [company, goals, organization, risks, routines, controls, lovverk, complianceChecklist, trainingRecords]);
 
   return (
     <AppLayout>
