@@ -22,7 +22,9 @@ Eksempler på hva du kan gjøre:
 Når du bruker et verktøy, forklar kort hva du gjør og bekreft når det er utført.
 
 **DU KAN HJELPE MED NAVIGASJON!**
-Når brukeren spør hvor de finner noe, bruk get_navigation_help verktøyet for å gi presis veiledning.
+Når brukeren spør hvor de finner noe, eller lurer på hvor en funksjon er, BRUK ALLTID get_navigation_help verktøyet.
+Gi KONKRET veiledning om hvor i menyen de skal klikke - ikke bare forklar hva funksjonen gjør.
+Eksempel: "Du finner Avvik i menyen til venstre under «IK/HMS». Klikk på «Avvik» for å se og registrere avvik."
 
 **SYSTEMETS NAVIGASJON OG SIDER:**
 
@@ -350,44 +352,45 @@ async function executeToolCall(
       case "get_navigation_help": {
         const searchTerm = args.search_term.toLowerCase();
         
-        // Navigation map with keywords
+        // Navigation map with keywords and menu location
         const navigationMap = [
-          { keywords: ["dashbord", "hjem", "oversikt", "start", "forside"], path: "/", name: "Dashbord", description: "Hovedoversikten med statistikk, snarveier og varsler" },
-          { keywords: ["håndbok", "handbok", "hms-håndbok", "hms handbok"], path: "/handbook", name: "HMS-håndboken", description: "Oversikt over hele HMS-systemet ditt" },
-          { keywords: ["mål", "målsetting", "hms-mål", "hms mål"], path: "/ik-hms/maal", name: "Målsetting", description: "HMS-mål for bedriften" },
-          { keywords: ["risiko", "risikovurdering", "risikoanalyse", "farekilder", "sja", "handlingsplan"], path: "/risikoanalyse", name: "Risikoanalyse", description: "Risikovurderinger, SJA, handlingsplan og rutiner" },
-          { keywords: ["organisering", "organisasjon", "organisasjonskart", "roller", "ansvar", "verneombud"], path: "/ik-hms/organisering", name: "Organisering", description: "Organisasjonskart, roller og ansvar" },
-          { keywords: ["rutine", "rutiner", "prosedyre", "prosedyrer"], path: "/ik-hms/rutiner", name: "Rutiner", description: "HMS-rutiner og prosedyrer" },
-          { keywords: ["dokument", "dokumenter", "dokumentsenter", "filer", "opplasting"], path: "/ik-hms/dokumenter", name: "Dokumentsenter", description: "Opplastede dokumenter og maler" },
-          { keywords: ["stoff", "stoffkartotek", "kjemikalie", "kjemikalier", "sikkerhetsdatablad", "sds"], path: "/ik-hms/stoffkartotek", name: "Stoffkartotek", description: "Kjemikalier og sikkerhetsdatablader" },
-          { keywords: ["lov", "lover", "forskrift", "forskrifter", "regelverk"], path: "/lover-og-forskrifter", name: "Lover og forskrifter", description: "Relevante lover og forskrifter for din bedrift" },
-          { keywords: ["ansatt", "ansatte", "medarbeider", "personale", "kurs", "hms-kort", "sertifikat"], path: "/employees", name: "Ansatte", description: "Ansattoversikt med kurs, HMS-kort og dokumenter" },
-          { keywords: ["time", "timer", "timeregistrering", "timeføring", "timeliste"], path: "/time-registration", name: "Timeregistrering", description: "Timeføring for ansatte" },
-          { keywords: ["stempl", "stemplingsur", "qr", "inn/ut", "innsjekk"], path: "/time-clock", name: "Stemplingsur", description: "QR-kode stempling inn/ut" },
-          { keywords: ["fravær", "sykefravær", "sykdom", "sykemelding"], path: "/hr/absence", name: "Fravær", description: "Fraværsregistrering og sykefravær" },
-          { keywords: ["ferie", "fri", "permisjon", "feriesøknad"], path: "/time-off", name: "Ferie og fri", description: "Feriesøknader og godkjenning" },
-          { keywords: ["arbeidsplan", "vaktplan", "turnus", "arbeidstid"], path: "/work-schedule", name: "Arbeidsplan", description: "Vaktplaner og arbeidstid" },
-          { keywords: ["møte", "møter", "møtereferat"], path: "/hr/meetings", name: "Møter", description: "Møteplanlegging og referater" },
-          { keywords: ["avvik", "ruh", "uønsket hendelse", "kvalitetsavvik", "melding"], path: "/deviations", name: "Avvik", description: "Kvalitetsavvik og RUH (Rapport Uønsket Hendelse)" },
-          { keywords: ["revisjon", "internrevisjon", "vernerunde", "hms-aktivitet", "el-kontroll", "elektro"], path: "/audits", name: "Revisjoner", description: "HMS-aktiviteter, vernerunder, internrevisjoner" },
-          { keywords: ["ks", "kvalitetssystem", "bygg", "prosjekt", "byggeprosjekt"], path: "/ks2", name: "KS-modul", description: "Kvalitetssystem for bygg og anlegg" },
-          { keywords: ["sjekkliste", "egenkontroll", "kontrollpunkt"], path: "/ks2/sjekklister", name: "Sjekklister", description: "KS-sjekklister for egenkontroll" },
-          { keywords: ["underleverandør", "ue", "underentreprenør"], path: "/ks2/underleverandorer", name: "Underleverandører", description: "UE-register og dokumentasjon" },
-          { keywords: ["sha", "sha-plan", "sikkerhet helse arbeidsmiljø"], path: "/ks2/sha-plan", name: "SHA-plan", description: "Sikkerhet, helse og arbeidsmiljø på byggeplass" },
-          { keywords: ["økonomi", "budsjett", "faktura", "endringsmelding"], path: "/ks2/okonomi", name: "Økonomi", description: "Prosjektøkonomi og endringsmeldinger" },
-          { keywords: ["byggesak", "byggesøknad", "blankett", "skjema"], path: "/ks2/byggesak", name: "Byggesak", description: "Byggesøknader og blanketter" },
-          { keywords: ["mat", "ik-mat", "næringsmiddel", "restaurant", "kjøkken"], path: "/ik-mat/dashboard", name: "IK-Mat", description: "Internkontroll for næringsmiddelbedrifter" },
-          { keywords: ["haccp", "farepunkt", "kritisk kontrollpunkt"], path: "/ik-mat/haccp", name: "HACCP", description: "Farepunkter og kritiske kontrollpunkter" },
-          { keywords: ["sporbarhet", "råvare", "ingrediens"], path: "/ik-mat/sporbarhet", name: "Sporbarhet", description: "Sporbarhet av råvarer" },
-          { keywords: ["renhold", "renholdsplan", "hygiene"], path: "/ik-mat/renholdsplan", name: "Renholdsplan", description: "Renholdsrutiner" },
-          { keywords: ["allergen", "allergener", "allergi"], path: "/ik-mat/allergener", name: "Allergener", description: "Allergenoversikt" },
-          { keywords: ["innstilling", "innstillinger", "oppsett", "konfigurasjon", "bedriftsinfo"], path: "/settings", name: "Innstillinger", description: "Bedriftsinformasjon, brukere, varsler" },
-          { keywords: ["bruker", "brukere", "brukeradministrasjon", "tilgang", "rettigheter"], path: "/settings?tab=users", name: "Brukeradministrasjon", description: "Legge til og fjerne brukere" },
-          { keywords: ["avdeling", "avdelinger", "filial"], path: "/settings?tab=departments", name: "Avdelinger", description: "Opprette og administrere avdelinger" },
-          { keywords: ["varsel", "varsler", "e-post", "påminnelse", "notifikasjon"], path: "/settings?tab=notifications", name: "Varsler", description: "E-postvarsler for frister og påminnelser" },
-          { keywords: ["anonym", "varsling", "si fra", "melde fra"], path: "/anonymous-messages", name: "Anonyme meldinger", description: "Varsling uten avsender" },
-          { keywords: ["kursbevis", "mitt kurs", "mine kurs"], path: "/my-course-card", name: "Mitt kursbevis", description: "Din personlige kursoversikt" },
-          { keywords: ["installer", "app", "pwa", "mobil"], path: "/install-app", name: "Installer app", description: "Installer appen på telefonen" },
+          { keywords: ["dashbord", "hjem", "oversikt", "start", "forside"], path: "/", name: "Dashbord", menuLocation: "Øverst i menyen til venstre", description: "Hovedoversikten med statistikk, snarveier og varsler" },
+          { keywords: ["håndbok", "handbok", "hms-håndbok", "hms handbok"], path: "/handbook", name: "HMS-håndboken", menuLocation: "I menyen til venstre under «IK/HMS»", description: "Oversikt over hele HMS-systemet ditt" },
+          { keywords: ["mål", "målsetting", "hms-mål", "hms mål"], path: "/ik-hms/maal", name: "Målsetting", menuLocation: "I menyen til venstre under «IK/HMS»", description: "HMS-mål for bedriften" },
+          { keywords: ["risiko", "risikovurdering", "risikoanalyse", "farekilder", "sja", "handlingsplan"], path: "/risikoanalyse", name: "Risikoanalyse", menuLocation: "I menyen til venstre under «IK/HMS»", description: "Risikovurderinger, SJA, handlingsplan og rutiner" },
+          { keywords: ["organisering", "organisasjon", "organisasjonskart", "roller", "ansvar", "verneombud"], path: "/ik-hms/organisering", name: "Organisering", menuLocation: "I menyen til venstre under «IK/HMS»", description: "Organisasjonskart, roller og ansvar" },
+          { keywords: ["rutine", "rutiner", "prosedyre", "prosedyrer"], path: "/ik-hms/rutiner", name: "Rutiner", menuLocation: "I menyen til venstre under «IK/HMS»", description: "HMS-rutiner og prosedyrer" },
+          { keywords: ["dokument", "dokumenter", "dokumentsenter", "filer", "opplasting"], path: "/ik-hms/dokumenter", name: "Dokumentsenter", menuLocation: "I menyen til venstre under «IK/HMS»", description: "Opplastede dokumenter og maler" },
+          { keywords: ["stoff", "stoffkartotek", "kjemikalie", "kjemikalier", "sikkerhetsdatablad", "sds"], path: "/ik-hms/stoffkartotek", name: "Stoffkartotek", menuLocation: "I menyen til venstre under «IK/HMS»", description: "Kjemikalier og sikkerhetsdatablader" },
+          { keywords: ["lov", "lover", "forskrift", "forskrifter", "regelverk"], path: "/lover-og-forskrifter", name: "Lover og forskrifter", menuLocation: "I menyen til venstre under «IK/HMS»", description: "Relevante lover og forskrifter for din bedrift" },
+          { keywords: ["ansatt", "ansatte", "medarbeider", "personale", "kurs", "hms-kort", "sertifikat"], path: "/employees", name: "Ansatte", menuLocation: "I menyen til venstre under «HR / Ansatte»", description: "Ansattoversikt med kurs, HMS-kort og dokumenter" },
+          { keywords: ["time", "timer", "timeregistrering", "timeføring", "timeliste"], path: "/time-registration", name: "Timeregistrering", menuLocation: "I menyen til venstre under «HR / Ansatte»", description: "Timeføring for ansatte" },
+          { keywords: ["stempl", "stemplingsur", "qr", "inn/ut", "innsjekk"], path: "/time-clock", name: "Stemplingsur", menuLocation: "I menyen til venstre under «HR / Ansatte»", description: "QR-kode stempling inn/ut" },
+          { keywords: ["fravær", "sykefravær", "sykdom", "sykemelding"], path: "/hr/absence", name: "Fravær", menuLocation: "I menyen til venstre under «HR / Ansatte»", description: "Fraværsregistrering og sykefravær" },
+          { keywords: ["ferie", "fri", "permisjon", "feriesøknad"], path: "/time-off", name: "Ferie og fri", menuLocation: "I menyen til venstre under «HR / Ansatte»", description: "Feriesøknader og godkjenning" },
+          { keywords: ["arbeidsplan", "vaktplan", "turnus", "arbeidstid"], path: "/work-schedule", name: "Arbeidsplan", menuLocation: "I menyen til venstre under «HR / Ansatte»", description: "Vaktplaner og arbeidstid" },
+          { keywords: ["møte", "møter", "møtereferat"], path: "/hr/meetings", name: "Møter", menuLocation: "I menyen til venstre under «HR / Ansatte»", description: "Møteplanlegging og referater" },
+          { keywords: ["avvik", "ruh", "uønsket hendelse", "kvalitetsavvik", "hendelse", "rapportere"], path: "/deviations", name: "Avvik", menuLocation: "I menyen til venstre – klikk på «Avvik» (under «IK/HMS» eller som eget punkt)", description: "Her registrerer og følger du opp kvalitetsavvik og uønskede hendelser (RUH). Du kan opprette nye avvik, tildele ansvarlig og sette frist." },
+          { keywords: ["revisjon", "internrevisjon", "vernerunde", "hms-aktivitet", "el-kontroll", "elektro"], path: "/audits", name: "Revisjoner", menuLocation: "I menyen til venstre under «IK/HMS»", description: "HMS-aktiviteter, vernerunder, internrevisjoner" },
+          { keywords: ["ks", "kvalitetssystem", "bygg", "prosjekt", "byggeprosjekt"], path: "/ks2", name: "KS-modul", menuLocation: "I menyen til venstre under «KS-modul»", description: "Kvalitetssystem for bygg og anlegg" },
+          { keywords: ["sjekkliste", "egenkontroll", "kontrollpunkt"], path: "/ks2/sjekklister", name: "Sjekklister", menuLocation: "I menyen til venstre under «KS-modul»", description: "KS-sjekklister for egenkontroll" },
+          { keywords: ["underleverandør", "ue", "underentreprenør"], path: "/ks2/underleverandorer", name: "Underleverandører", menuLocation: "I menyen til venstre under «KS-modul»", description: "UE-register og dokumentasjon" },
+          { keywords: ["sha", "sha-plan", "sikkerhet helse arbeidsmiljø"], path: "/ks2/sha-plan", name: "SHA-plan", menuLocation: "I menyen til venstre under «KS-modul»", description: "Sikkerhet, helse og arbeidsmiljø på byggeplass" },
+          { keywords: ["økonomi", "budsjett", "faktura", "endringsmelding"], path: "/ks2/okonomi", name: "Økonomi", menuLocation: "I menyen til venstre under «KS-modul»", description: "Prosjektøkonomi og endringsmeldinger" },
+          { keywords: ["byggesak", "byggesøknad", "blankett", "skjema"], path: "/ks2/byggesak", name: "Byggesak", menuLocation: "I menyen til venstre under «KS-modul»", description: "Byggesøknader og blanketter" },
+          { keywords: ["mat", "ik-mat", "næringsmiddel", "restaurant", "kjøkken"], path: "/ik-mat/dashboard", name: "IK-Mat", menuLocation: "I menyen til venstre under «IK-Mat»", description: "Internkontroll for næringsmiddelbedrifter" },
+          { keywords: ["haccp", "farepunkt", "kritisk kontrollpunkt"], path: "/ik-mat/haccp", name: "HACCP", menuLocation: "I menyen til venstre under «IK-Mat»", description: "Farepunkter og kritiske kontrollpunkter" },
+          { keywords: ["sporbarhet", "råvare", "ingrediens"], path: "/ik-mat/sporbarhet", name: "Sporbarhet", menuLocation: "I menyen til venstre under «IK-Mat»", description: "Sporbarhet av råvarer" },
+          { keywords: ["renhold", "renholdsplan", "hygiene"], path: "/ik-mat/renholdsplan", name: "Renholdsplan", menuLocation: "I menyen til venstre under «IK-Mat»", description: "Renholdsrutiner" },
+          { keywords: ["allergen", "allergener", "allergi"], path: "/ik-mat/allergener", name: "Allergener", menuLocation: "I menyen til venstre under «IK-Mat»", description: "Allergenoversikt" },
+          { keywords: ["innstilling", "innstillinger", "oppsett", "konfigurasjon", "bedriftsinfo"], path: "/settings", name: "Innstillinger", menuLocation: "Helt nederst i menyen til venstre (tannhjul-ikon ⚙️)", description: "Bedriftsinformasjon, brukere, varsler" },
+          { keywords: ["bruker", "brukere", "brukeradministrasjon", "tilgang", "rettigheter"], path: "/settings?tab=users", name: "Brukeradministrasjon", menuLocation: "Under «Innstillinger» (⚙️ nederst i menyen) → fanen «Brukere»", description: "Legge til og fjerne brukere" },
+          { keywords: ["avdeling", "avdelinger", "filial"], path: "/settings?tab=departments", name: "Avdelinger", menuLocation: "Under «Innstillinger» (⚙️ nederst i menyen) → fanen «Avdelinger»", description: "Opprette og administrere avdelinger" },
+          { keywords: ["varsel", "varsler", "e-post", "påminnelse", "notifikasjon"], path: "/settings?tab=notifications", name: "Varsler", menuLocation: "Under «Innstillinger» (⚙️ nederst i menyen) → fanen «Varsler»", description: "E-postvarsler for frister og påminnelser" },
+          { keywords: ["anonym", "varsling", "si fra", "melde fra"], path: "/anonymous-messages", name: "Anonyme meldinger", menuLocation: "I menyen til venstre under «Annet»", description: "Varsling uten avsender" },
+          { keywords: ["kursbevis", "mitt kurs", "mine kurs"], path: "/my-course-card", name: "Mitt kursbevis", menuLocation: "I menyen til venstre under «Mitt arbeidsforhold»", description: "Din personlige kursoversikt" },
+          { keywords: ["melding", "meldinger", "intern melding", "sende melding"], path: "/my/messages", name: "Meldinger", menuLocation: "I menyen til venstre under «Mitt arbeidsforhold»", description: "Send og motta interne meldinger til kollegaer" },
+          { keywords: ["installer", "app", "pwa", "mobil"], path: "/install-app", name: "Installer app", menuLocation: "I menyen til venstre under «Annet»", description: "Installer appen på telefonen" },
         ];
 
         // Find matching pages
@@ -401,11 +404,11 @@ async function executeToolCall(
 
         if (matches.length === 1) {
           const match = matches[0];
-          return `📍 **${match.name}**\n\nDu finner dette under: **${match.path}**\n\n${match.description}\n\nKlikk på "${match.name}" i menyen til venstre for å komme dit!`;
+          return `📍 **${match.name}**\n\n👉 ${match.menuLocation}\n\n${match.description}`;
         }
 
         // Multiple matches
-        const list = matches.slice(0, 4).map(m => `• **${m.name}** (${m.path}) - ${m.description}`).join("\n");
+        const list = matches.slice(0, 4).map(m => `• **${m.name}** — ${m.menuLocation}\n  _${m.description}_`).join("\n\n");
         return `🔍 Jeg fant flere relevante steder:\n\n${list}\n\nHvilken av disse leter du etter?`;
       }
 
