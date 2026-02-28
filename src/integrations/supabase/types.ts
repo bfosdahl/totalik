@@ -2734,6 +2734,90 @@ export type Database = {
           },
         ]
       }
+      driving_log_entries: {
+        Row: {
+          company_id: string
+          created_at: string
+          distance_km: number | null
+          end_location: string
+          id: string
+          notes: string | null
+          odometer_end: number
+          odometer_start: number
+          passenger_count: number | null
+          passengers: string | null
+          purpose: string
+          start_location: string
+          trip_date: string
+          trip_type: string
+          updated_at: string
+          user_id: string
+          vehicle_description: string | null
+          vehicle_registration: string | null
+          vehicle_type: string
+          via_locations: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          distance_km?: number | null
+          end_location: string
+          id?: string
+          notes?: string | null
+          odometer_end: number
+          odometer_start: number
+          passenger_count?: number | null
+          passengers?: string | null
+          purpose: string
+          start_location: string
+          trip_date?: string
+          trip_type?: string
+          updated_at?: string
+          user_id: string
+          vehicle_description?: string | null
+          vehicle_registration?: string | null
+          vehicle_type?: string
+          via_locations?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          distance_km?: number | null
+          end_location?: string
+          id?: string
+          notes?: string | null
+          odometer_end?: number
+          odometer_start?: number
+          passenger_count?: number | null
+          passengers?: string | null
+          purpose?: string
+          start_location?: string
+          trip_date?: string
+          trip_type?: string
+          updated_at?: string
+          user_id?: string
+          vehicle_description?: string | null
+          vehicle_registration?: string | null
+          vehicle_type?: string
+          via_locations?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driving_log_entries_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driving_log_entries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_absence: {
         Row: {
           absence_type: string
