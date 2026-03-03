@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,12 +16,13 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ClipboardList } from "lucide-react";
+import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ChevronRight, ClipboardList, Receipt } from "lucide-react";
 import { useDrivingLog } from "@/hooks/useDrivingLog";
 import { AddTripDialog } from "@/components/driving-log/AddTripDialog";
 import { StartTripDialog } from "@/components/driving-log/StartTripDialog";
 import { CompleteTripDialog } from "@/components/driving-log/CompleteTripDialog";
 import { ActiveTripCard } from "@/components/driving-log/ActiveTripCard";
+import { TripExpenses } from "@/components/driving-log/TripExpenses";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -51,6 +52,7 @@ export default function MyDrivingLog() {
   const [fullDialogOpen, setFullDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [monthFilter, setMonthFilter] = useState("all");
+  const [expandedTrip, setExpandedTrip] = useState<string | null>(null);
 
   const currentYear = new Date().getFullYear();
   const months = Array.from({ length: 12 }, (_, i) => ({
@@ -224,39 +226,51 @@ export default function MyDrivingLog() {
                   </TableHeader>
                   <TableBody>
                     {filteredEntries.map((entry) => (
-                      <TableRow key={entry.id}>
-                        <TableCell className="whitespace-nowrap">
-                          {format(parseISO(entry.trip_date), "dd.MM.yyyy")}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={tripTypeBadgeVariant[entry.trip_type] || "outline"}>
-                            {tripTypeLabels[entry.trip_type] || entry.trip_type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="max-w-[200px] truncate">{entry.purpose || "—"}</TableCell>
-                        <TableCell className="whitespace-nowrap text-sm">
-                          {entry.start_location} → {entry.end_location || "—"}
-                        </TableCell>
-                        <TableCell className="text-right font-mono text-sm">{Number(entry.odometer_start).toFixed(0)}</TableCell>
-                        <TableCell className="text-right font-mono text-sm">{entry.odometer_end ? Number(entry.odometer_end).toFixed(0) : "—"}</TableCell>
-                        <TableCell className="text-right font-bold">{Number(entry.distance_km).toFixed(1)} km</TableCell>
-                        <TableCell>
-                          <span className="text-sm text-muted-foreground">
-                            {vehicleTypeLabels[entry.vehicle_type] || entry.vehicle_type}
-                            {entry.vehicle_registration ? ` (${entry.vehicle_registration})` : ""}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive"
-                            onClick={() => setDeleteId(entry.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
+                      <React.Fragment key={entry.id}>
+                        <TableRow key={entry.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setExpandedTrip(expandedTrip === entry.id ? null : entry.id)}>
+                          <TableCell className="whitespace-nowrap">
+                            <div className="flex items-center gap-1">
+                              {expandedTrip === entry.id ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                              {format(parseISO(entry.trip_date), "dd.MM.yyyy")}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={tripTypeBadgeVariant[entry.trip_type] || "outline"}>
+                              {tripTypeLabels[entry.trip_type] || entry.trip_type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[200px] truncate">{entry.purpose || "—"}</TableCell>
+                          <TableCell className="whitespace-nowrap text-sm">
+                            {entry.start_location} → {entry.end_location || "—"}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-sm">{Number(entry.odometer_start).toFixed(0)}</TableCell>
+                          <TableCell className="text-right font-mono text-sm">{entry.odometer_end ? Number(entry.odometer_end).toFixed(0) : "—"}</TableCell>
+                          <TableCell className="text-right font-bold">{Number(entry.distance_km).toFixed(1)} km</TableCell>
+                          <TableCell>
+                            <span className="text-sm text-muted-foreground">
+                              {vehicleTypeLabels[entry.vehicle_type] || entry.vehicle_type}
+                              {entry.vehicle_registration ? ` (${entry.vehicle_registration})` : ""}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={(e) => { e.stopPropagation(); setDeleteId(entry.id); }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                        {expandedTrip === entry.id && (
+                          <TableRow key={`${entry.id}-expenses`}>
+                            <TableCell colSpan={9} className="bg-muted/30 p-4">
+                              <TripExpenses tripId={entry.id} />
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </React.Fragment>
                     ))}
                   </TableBody>
                 </Table>

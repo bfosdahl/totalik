@@ -2853,6 +2853,60 @@ export type Database = {
           },
         ]
       }
+      driving_log_expenses: {
+        Row: {
+          amount: number
+          category: string
+          company_id: string
+          created_at: string
+          description: string
+          id: string
+          receipt_path: string | null
+          trip_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          company_id: string
+          created_at?: string
+          description: string
+          id?: string
+          receipt_path?: string | null
+          trip_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          company_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          receipt_path?: string | null
+          trip_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driving_log_expenses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driving_log_expenses_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "driving_log_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_absence: {
         Row: {
           absence_type: string
