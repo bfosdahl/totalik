@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MyDocumentsTab } from "@/components/documents/MyDocumentsTab";
+import { OrderPostersTab } from "@/components/documents/OrderPostersTab";
 
 interface AdminDocument {
   id: string;
@@ -272,9 +273,10 @@ export default function IkMatDokumentsenter() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-lg grid-cols-3">
             <TabsTrigger value="maler">Maler</TabsTrigger>
             <TabsTrigger value="mine">Mine dokumenter</TabsTrigger>
+            <TabsTrigger value="bestill">Bestill plakater</TabsTrigger>
           </TabsList>
 
           <TabsContent value="maler" className="mt-6">
@@ -314,6 +316,10 @@ export default function IkMatDokumentsenter() {
 
           <TabsContent value="mine" className="mt-6">
             <MyDocumentsTab moduleType="ik-mat" accentColor="orange" />
+          </TabsContent>
+
+          <TabsContent value="bestill" className="mt-6">
+            <OrderPostersTab />
           </TabsContent>
         </Tabs>
       </div>
