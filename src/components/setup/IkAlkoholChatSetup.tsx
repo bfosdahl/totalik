@@ -7,6 +7,7 @@ import { Loader2, Send, Bot, User, Sparkles, RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { checkFallbackResponse } from "@/lib/aiSetupFallback";
 
 interface Message {
   role: "user" | "assistant";
@@ -116,6 +117,39 @@ export function IkAlkoholChatSetup({ companyId, onComplete }: IkAlkoholChatSetup
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // When interrupted, check DB for completed fallback response
+  useEffect(() => {
+    if (!wasInterrupted || isLoading) return;
+    
+    const checkForFallback = async () => {
+      const fallbackContent = await checkFallbackResponse('ik-alkohol-chat', companyId, messages);
+      if (fallbackContent) {
+        console.log("Found fallback response in DB, recovering...");
+        const displayContent = getDisplayContent(fallbackContent);
+        setMessages((prev) => {
+          const newMessages = [...prev];
+          const lastMsg = newMessages[newMessages.length - 1];
+          if (lastMsg?.role === 'assistant') {
+            newMessages[newMessages.length - 1] = { role: "assistant", content: displayContent };
+          } else {
+            newMessages.push({ role: "assistant", content: displayContent });
+          }
+          return newMessages;
+        });
+        setWasInterrupted(false);
+        
+        // Check if the fallback contains JSON (setup complete)
+        const jsonContent = extractJsonFromContent(fallbackContent);
+        if (jsonContent) {
+          clearChatState(companyId);
+          await saveSetupData(jsonContent);
+        }
+      }
+    };
+    
+    checkForFallback();
+  }, [wasInterrupted, isLoading, companyId]);
 
   const retryLastMessage = useCallback(() => {
     if (!lastUserMessage) return;

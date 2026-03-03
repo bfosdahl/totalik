@@ -9,6 +9,80 @@ const corsHeaders = {
 const RATE_LIMIT_MAX_REQUESTS = 10;
 const RATE_LIMIT_WINDOW_MINUTES = 1;
 
+// Simple hash for message matching
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36);
+}
+
+function createMessageHash(messages: any[]): string {
+  const userMessages = messages.filter((m: any) => m.role === 'user').map((m: any) => m.content).join('|');
+  return simpleHash(userMessages + '|' + messages.length);
+}
+
+async function saveResponseToDb(supabase: any, companyId: string, messageHash: string, responseContent: string) {
+  try {
+    await supabase.from('ai_setup_responses').upsert({
+      company_id: companyId,
+      function_name: 'ik-hms-chat',
+      message_hash: messageHash,
+      response_content: responseContent,
+    }, { onConflict: 'company_id,function_name,message_hash' });
+  } catch (err) {
+    console.error("Error saving response to DB:", err);
+  }
+}
+
+function createStreamWithFallback(
+  originalBody: ReadableStream<Uint8Array>,
+  supabase: any,
+  companyId: string,
+  messageHash: string
+): ReadableStream<Uint8Array> {
+  const decoder = new TextDecoder();
+  let fullContent = "";
+
+  return new ReadableStream({
+    async start(controller) {
+      const reader = originalBody.getReader();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          controller.enqueue(value);
+          const text = decoder.decode(value, { stream: true });
+          const lines = text.split('\n');
+          for (const line of lines) {
+            if (!line.startsWith('data: ') || line.trim() === '') continue;
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === '[DONE]') continue;
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.choices?.[0]?.delta?.content;
+              if (content) fullContent += content;
+            } catch { /* skip */ }
+          }
+        }
+        controller.close();
+        if (fullContent.length > 0) {
+          await saveResponseToDb(supabase, companyId, messageHash, fullContent);
+        }
+      } catch (err) {
+        console.error("Stream processing error:", err);
+        controller.error(err);
+        if (fullContent.length > 0) {
+          await saveResponseToDb(supabase, companyId, messageHash, fullContent);
+        }
+      }
+    }
+  });
+}
+
 async function fetchBrregInfo(orgNumber: string) {
   try {
     const cleanOrgNr = orgNumber.replace(/[\s.]/g, '');
@@ -300,7 +374,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { messages, lookupOrgNumber, currentStep, industry, employeeCount, verneombudName, hasVerneombudExemption } = body;
+    const { messages, lookupOrgNumber, currentStep, industry, employeeCount, verneombudName, hasVerneombudExemption, companyId: clientCompanyId, checkFallback, messageHash: clientMessageHash } = body;
     
     // Handle Brreg lookup
     if (lookupOrgNumber) {
@@ -330,6 +404,24 @@ serve(async (req) => {
       });
     }
 
+    // Handle fallback check
+    if (checkFallback && clientMessageHash && clientCompanyId) {
+      const { data } = await supabase
+        .from('ai_setup_responses')
+        .select('response_content')
+        .eq('company_id', clientCompanyId)
+        .eq('function_name', 'ik-hms-chat')
+        .eq('message_hash', clientMessageHash)
+        .maybeSingle();
+      
+      return new Response(JSON.stringify({ 
+        found: !!data, 
+        response_content: data?.response_content || null 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Rate limit
     const isAllowed = await checkRateLimit(supabase, user.id, 'ik-hms-chat');
     if (!isAllowed) {
@@ -341,15 +433,18 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    // Get company_id
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('company_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    
+    const companyId = clientCompanyId || profile?.company_id;
+
     // Fetch company employees for the current user
     let employeeListPrompt = "";
     try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('company_id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
       if (profile?.company_id) {
         const { data: employees } = await supabase
           .from('profiles')
@@ -404,7 +499,7 @@ serve(async (req) => {
             popularSuggestionsPrompt = `\n\n===== POPULÆRE FORSLAG FOR DENNE BRANSJEN =====\nDisse forslagene har blitt godkjent av andre bedrifter i samme bransje. PRIORITER disse i dine forslag:\n${lines.join('\n')}\n`;
           }
 
-          // Also check industry templates (option 3)
+          // Also check industry templates
           const { data: templates } = await supabase
             .from('ai_setup_industry_templates')
             .select('suggestions')
@@ -433,6 +528,8 @@ serve(async (req) => {
       systemMessages.push({ role: "system", content: knownFacts });
     }
 
+    const messageHash = createMessageHash(messages);
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -454,7 +551,11 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "AI-tjenesten er utilgjengelig." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    return new Response(response.body, {
+    const streamWithFallback = companyId && response.body
+      ? createStreamWithFallback(response.body, supabase, companyId, messageHash)
+      : response.body;
+
+    return new Response(streamWithFallback, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Connection": "keep-alive" },
     });
   } catch (error) {

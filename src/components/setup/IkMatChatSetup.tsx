@@ -7,6 +7,7 @@ import { Loader2, Send, Bot, User, Sparkles, RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getSafeModuleSettings } from "@/lib/moduleDefaults";
+import { checkFallbackResponse } from "@/lib/aiSetupFallback";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -224,12 +225,43 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
     }
   };
 
+  // When interrupted, check DB for completed fallback response
+  useEffect(() => {
+    if (!wasInterrupted || isLoading) return;
+    
+    const checkForFallback = async () => {
+      const fallbackContent = await checkFallbackResponse('ik-mat-chat', companyId, messages);
+      if (fallbackContent) {
+        console.log("Found fallback response in DB, recovering...");
+        const displayContent = getDisplayContent(fallbackContent);
+        setMessages((prev) => {
+          const newMessages = [...prev];
+          const lastMsg = newMessages[newMessages.length - 1];
+          if (lastMsg?.role === 'assistant') {
+            newMessages[newMessages.length - 1] = { role: "assistant", content: displayContent };
+          } else {
+            newMessages.push({ role: "assistant", content: displayContent });
+          }
+          return newMessages;
+        });
+        setWasInterrupted(false);
+        
+        const jsonContent = extractJsonFromContent(fallbackContent);
+        if (jsonContent) {
+          clearChatState(companyId);
+          await saveGeneratedContent(jsonContent);
+        }
+      }
+    };
+    
+    checkForFallback();
+  }, [wasInterrupted, isLoading, companyId]);
+
   const retryLastMessage = useCallback(async () => {
     if (!lastUserMessage) return;
     
     setWasInterrupted(false);
     
-    // Remove any incomplete assistant message
     setMessages((prev) => {
       const newMessages = [...prev];
       const lastMsg = newMessages[newMessages.length - 1];
@@ -239,7 +271,6 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
       return newMessages;
     });
     
-    // Re-send the last user message
     await sendMessageInternal(lastUserMessage);
   }, [lastUserMessage]);
 

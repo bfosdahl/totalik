@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SetupStepIndicator, HMS_SETUP_STEPS } from "./SetupStepIndicator";
 import { InlineHmsDeclaration } from "./InlineHmsDeclaration";
 import { InlineVerneombudStep } from "./InlineVerneombudStep";
+import { checkFallbackResponse } from "@/lib/aiSetupFallback";
 
 interface Message {
   role: "user" | "assistant";
@@ -164,6 +165,38 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
   useEffect(() => {
     return () => { abortControllerRef.current?.abort(); };
   }, []);
+
+  // When interrupted, check DB for completed fallback response
+  useEffect(() => {
+    if (!wasInterrupted || isLoading) return;
+    
+    const checkForFallback = async () => {
+      const fallbackContent = await checkFallbackResponse('ik-hms-chat', companyId, messages);
+      if (fallbackContent) {
+        console.log("Found fallback response in DB, recovering...");
+        const displayContent = getDisplayContent(fallbackContent);
+        setMessages((prev) => {
+          const newMessages = [...prev];
+          const lastMsg = newMessages[newMessages.length - 1];
+          if (lastMsg?.role === 'assistant') {
+            newMessages[newMessages.length - 1] = { role: "assistant", content: displayContent };
+          } else {
+            newMessages.push({ role: "assistant", content: displayContent });
+          }
+          return newMessages;
+        });
+        setWasInterrupted(false);
+        
+        const jsonContent = extractJsonFromContent(fallbackContent);
+        if (jsonContent) {
+          clearChatState(companyId, departmentId);
+          await saveSetupData(jsonContent);
+        }
+      }
+    };
+    
+    checkForFallback();
+  }, [wasInterrupted, isLoading, companyId]);
 
   const completeStep = (stepId: string) => {
     setCompletedSteps(prev => new Set([...prev, stepId]));

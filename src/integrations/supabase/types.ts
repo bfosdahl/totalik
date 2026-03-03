@@ -570,6 +570,41 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_setup_responses: {
+        Row: {
+          company_id: string
+          created_at: string
+          function_name: string
+          id: string
+          message_hash: string
+          response_content: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          function_name: string
+          id?: string
+          message_hash: string
+          response_content: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          function_name?: string
+          id?: string
+          message_hash?: string
+          response_content?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_setup_responses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_setup_suggestion_stats: {
         Row: {
           company_size_category: string | null

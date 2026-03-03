@@ -6,8 +6,82 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const RATE_LIMIT_MAX_REQUESTS = 10; // Max 10 requests
-const RATE_LIMIT_WINDOW_MINUTES = 1; // Per minute
+const RATE_LIMIT_MAX_REQUESTS = 10;
+const RATE_LIMIT_WINDOW_MINUTES = 1;
+
+// Simple hash for message matching
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36);
+}
+
+function createMessageHash(messages: any[]): string {
+  const userMessages = messages.filter((m: any) => m.role === 'user').map((m: any) => m.content).join('|');
+  return simpleHash(userMessages + '|' + messages.length);
+}
+
+async function saveResponseToDb(supabase: any, companyId: string, messageHash: string, responseContent: string) {
+  try {
+    await supabase.from('ai_setup_responses').upsert({
+      company_id: companyId,
+      function_name: 'ik-mat-chat',
+      message_hash: messageHash,
+      response_content: responseContent,
+    }, { onConflict: 'company_id,function_name,message_hash' });
+  } catch (err) {
+    console.error("Error saving response to DB:", err);
+  }
+}
+
+function createStreamWithFallback(
+  originalBody: ReadableStream<Uint8Array>,
+  supabase: any,
+  companyId: string,
+  messageHash: string
+): ReadableStream<Uint8Array> {
+  const decoder = new TextDecoder();
+  let fullContent = "";
+
+  return new ReadableStream({
+    async start(controller) {
+      const reader = originalBody.getReader();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          controller.enqueue(value);
+          const text = decoder.decode(value, { stream: true });
+          const lines = text.split('\n');
+          for (const line of lines) {
+            if (!line.startsWith('data: ') || line.trim() === '') continue;
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === '[DONE]') continue;
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.choices?.[0]?.delta?.content;
+              if (content) fullContent += content;
+            } catch { /* skip */ }
+          }
+        }
+        controller.close();
+        if (fullContent.length > 0) {
+          await saveResponseToDb(supabase, companyId, messageHash, fullContent);
+        }
+      } catch (err) {
+        console.error("Stream processing error:", err);
+        controller.error(err);
+        if (fullContent.length > 0) {
+          await saveResponseToDb(supabase, companyId, messageHash, fullContent);
+        }
+      }
+    }
+  });
+}
 
 const systemPrompt = `Du er MAT Proffen, en vennlig norsk IK-MAT-rådgiver som hjelper virksomheter å sette opp et komplett matsikkerhetssystem i tråd med Mattilsynets krav og HACCP-prinsippene.
 
@@ -291,7 +365,6 @@ function buildMatKnownFacts(messages: ChatMsg[] | undefined): string | null {
   lines.push("KRITISK: Bruk denne informasjonen. ALDRI spør om noe som er besvart!");
   lines.push("");
 
-  // Track confirmed items
   let businessType: string | null = null;
   let setupConfirmed = false;
   
@@ -299,7 +372,6 @@ function buildMatKnownFacts(messages: ChatMsg[] | undefined): string | null {
     const msg = messages[i];
     if (msg.role === "user") {
       const text = msg.content.toLowerCase();
-      // Check for business type
       const types = ["restaurant", "kafé", "kafe", "catering", "bakeri", "butikk", "barnehage", "kantine", "hotell", "produksjon"];
       for (const t of types) {
         if (text.includes(t)) {
@@ -308,9 +380,7 @@ function buildMatKnownFacts(messages: ChatMsg[] | undefined): string | null {
         }
       }
       
-      // Check for confirmation
       if (isAffirmative(msg.content)) {
-        // Look at what was being asked
         if (i > 0 && messages[i-1].role === "assistant") {
           const assistantText = messages[i-1].content.toLowerCase();
           if (assistantText.includes("rutine") || assistantText.includes("haccp") || assistantText.includes("foreslår")) {
@@ -348,7 +418,7 @@ async function checkRateLimit(supabase: any, userId: string, functionName: strin
     
     if (error) {
       console.error("Rate limit check error:", error);
-      return true; // Fail open
+      return true;
     }
     
     return data === true;
@@ -364,7 +434,6 @@ serve(async (req) => {
   }
 
   try {
-    // Get auth token from request
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Autentisering kreves" }), {
@@ -373,12 +442,10 @@ serve(async (req) => {
       });
     }
 
-    // Create Supabase client with service role
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
-    // Get user from token
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     
@@ -389,10 +456,29 @@ serve(async (req) => {
       });
     }
 
-    // Check rate limit
+    const body = await req.json();
+    const { messages, companyId: clientCompanyId, checkFallback, messageHash: clientMessageHash } = body;
+
+    // Handle fallback check
+    if (checkFallback && clientMessageHash && clientCompanyId) {
+      const { data } = await supabase
+        .from('ai_setup_responses')
+        .select('response_content')
+        .eq('company_id', clientCompanyId)
+        .eq('function_name', 'ik-mat-chat')
+        .eq('message_hash', clientMessageHash)
+        .maybeSingle();
+      
+      return new Response(JSON.stringify({ 
+        found: !!data, 
+        response_content: data?.response_content || null 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const isAllowed = await checkRateLimit(supabase, user.id, 'ik-mat-chat');
     if (!isAllowed) {
-      console.log(`Rate limit exceeded for user ${user.id} on ik-mat-chat`);
       return new Response(JSON.stringify({ 
         error: "Du har sendt for mange forespørsler. Vennligst vent et minutt og prøv igjen." 
       }), {
@@ -401,14 +487,23 @@ serve(async (req) => {
       });
     }
 
-    const { messages } = await req.json();
     console.log(`User ${user.id} making ik-mat-chat request, messages: ${messages?.length}`);
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    // Get company_id
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('company_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
     
+    const companyId = clientCompanyId || profile?.company_id;
+
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
+
+    const messageHash = createMessageHash(messages);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -448,7 +543,11 @@ serve(async (req) => {
       });
     }
 
-    return new Response(response.body, {
+    const streamWithFallback = companyId && response.body
+      ? createStreamWithFallback(response.body, supabase, companyId, messageHash)
+      : response.body;
+
+    return new Response(streamWithFallback, {
       headers: { 
         ...corsHeaders, 
         "Content-Type": "text/event-stream",
