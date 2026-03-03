@@ -2774,14 +2774,14 @@ export type Database = {
           company_id: string
           created_at: string
           distance_km: number | null
-          end_location: string
+          end_location: string | null
           id: string
           notes: string | null
-          odometer_end: number
+          odometer_end: number | null
           odometer_start: number
           passenger_count: number | null
           passengers: string | null
-          purpose: string
+          purpose: string | null
           start_location: string
           trip_date: string
           trip_type: string
@@ -2796,14 +2796,14 @@ export type Database = {
           company_id: string
           created_at?: string
           distance_km?: number | null
-          end_location: string
+          end_location?: string | null
           id?: string
           notes?: string | null
-          odometer_end: number
+          odometer_end?: number | null
           odometer_start: number
           passenger_count?: number | null
           passengers?: string | null
-          purpose: string
+          purpose?: string | null
           start_location: string
           trip_date?: string
           trip_type?: string
@@ -2818,14 +2818,14 @@ export type Database = {
           company_id?: string
           created_at?: string
           distance_km?: number | null
-          end_location?: string
+          end_location?: string | null
           id?: string
           notes?: string | null
-          odometer_end?: number
+          odometer_end?: number | null
           odometer_start?: number
           passenger_count?: number | null
           passengers?: string | null
-          purpose?: string
+          purpose?: string | null
           start_location?: string
           trip_date?: string
           trip_type?: string

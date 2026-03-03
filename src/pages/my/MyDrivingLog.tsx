@@ -4,41 +4,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ClipboardList } from "lucide-react";
 import { useDrivingLog } from "@/hooks/useDrivingLog";
 import { AddTripDialog } from "@/components/driving-log/AddTripDialog";
+import { StartTripDialog } from "@/components/driving-log/StartTripDialog";
+import { CompleteTripDialog } from "@/components/driving-log/CompleteTripDialog";
+import { ActiveTripCard } from "@/components/driving-log/ActiveTripCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { nb } from "date-fns/locale";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const tripTypeLabels: Record<string, string> = {
   business: "Yrkeskjøring",
@@ -58,8 +45,10 @@ const vehicleTypeLabels: Record<string, string> = {
 };
 
 export default function MyDrivingLog() {
-  const { entries, createEntry, deleteEntry, stats } = useDrivingLog();
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const { entries, activeTrip, startTrip, completeTrip, createEntry, deleteEntry, stats } = useDrivingLog();
+  const [startDialogOpen, setStartDialogOpen] = useState(false);
+  const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
+  const [fullDialogOpen, setFullDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [monthFilter, setMonthFilter] = useState("all");
 
@@ -69,15 +58,17 @@ export default function MyDrivingLog() {
     label: format(new Date(currentYear, i, 1), "MMMM", { locale: nb }),
   }));
 
-  const filteredEntries = entries.data?.filter(entry => {
+  const completedEntries = entries.data?.filter(e => e.status === "completed") ?? [];
+
+  const filteredEntries = completedEntries.filter(entry => {
     if (monthFilter === "all") return true;
     const date = parseISO(entry.trip_date);
     const monthStart = startOfMonth(new Date(currentYear, parseInt(monthFilter)));
     const monthEnd = endOfMonth(monthStart);
     return isWithinInterval(date, { start: monthStart, end: monthEnd });
-  }) || [];
+  });
 
-  const lastOdometerEnd = entries.data?.[0]?.odometer_end ?? null;
+  const lastOdometerEnd = completedEntries[0]?.odometer_end ?? null;
 
   return (
     <AppLayout>
@@ -100,11 +91,46 @@ export default function MyDrivingLog() {
               Dokumenter all kjøring i henhold til skattemyndighetenes krav
             </p>
           </div>
-          <Button className="gap-2" onClick={() => setDialogOpen(true)}>
-            <Plus className="w-4 h-4" />
-            Registrer tur
-          </Button>
+          {activeTrip ? (
+            <Button onClick={() => setCompleteDialogOpen(true)} className="gap-2">
+              <Play className="w-4 h-4" />
+              Fullfør aktiv tur
+            </Button>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Registrer tur
+                  <ChevronDown className="w-3 h-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setStartDialogOpen(true)}>
+                  <Play className="w-4 h-4 mr-2" />
+                  Start tur (fullfør senere)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFullDialogOpen(true)}>
+                  <ClipboardList className="w-4 h-4 mr-2" />
+                  Registrer fullstendig tur
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
+
+        {/* Active Trip */}
+        {activeTrip && (
+          <ActiveTripCard
+            trip={activeTrip}
+            onComplete={() => setCompleteDialogOpen(true)}
+            onCancel={() => {
+              if (confirm("Er du sikker på at du vil avbryte denne turen?")) {
+                deleteEntry.mutate(activeTrip.id);
+              }
+            }}
+          />
+        )}
 
         {/* Stats */}
         {entries.isLoading ? (
@@ -207,12 +233,12 @@ export default function MyDrivingLog() {
                             {tripTypeLabels[entry.trip_type] || entry.trip_type}
                           </Badge>
                         </TableCell>
-                        <TableCell className="max-w-[200px] truncate">{entry.purpose}</TableCell>
+                        <TableCell className="max-w-[200px] truncate">{entry.purpose || "—"}</TableCell>
                         <TableCell className="whitespace-nowrap text-sm">
-                          {entry.start_location} → {entry.end_location}
+                          {entry.start_location} → {entry.end_location || "—"}
                         </TableCell>
                         <TableCell className="text-right font-mono text-sm">{Number(entry.odometer_start).toFixed(0)}</TableCell>
-                        <TableCell className="text-right font-mono text-sm">{Number(entry.odometer_end).toFixed(0)}</TableCell>
+                        <TableCell className="text-right font-mono text-sm">{entry.odometer_end ? Number(entry.odometer_end).toFixed(0) : "—"}</TableCell>
                         <TableCell className="text-right font-bold">{Number(entry.distance_km).toFixed(1)} km</TableCell>
                         <TableCell>
                           <span className="text-sm text-muted-foreground">
@@ -254,9 +280,27 @@ export default function MyDrivingLog() {
         </Card>
       </div>
 
+      <StartTripDialog
+        open={startDialogOpen}
+        onOpenChange={setStartDialogOpen}
+        onSubmit={(data) => startTrip.mutate(data)}
+        isPending={startTrip.isPending}
+        lastOdometerEnd={lastOdometerEnd}
+      />
+
+      {activeTrip && (
+        <CompleteTripDialog
+          open={completeDialogOpen}
+          onOpenChange={setCompleteDialogOpen}
+          onSubmit={(data) => completeTrip.mutate(data)}
+          isPending={completeTrip.isPending}
+          activeTrip={activeTrip}
+        />
+      )}
+
       <AddTripDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        open={fullDialogOpen}
+        onOpenChange={setFullDialogOpen}
         onSubmit={(data) => createEntry.mutate(data)}
         isPending={createEntry.isPending}
         lastOdometerEnd={lastOdometerEnd}
