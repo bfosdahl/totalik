@@ -137,20 +137,16 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
     });
   }, [messages, lastUserMessage, companyId]);
 
-  // Handle visibility change (tab switching)
+  // Handle visibility change (tab switching) - save state but DON'T abort stream
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden && isStreamingRef.current) {
-        // User switched away while streaming - save state and abort
+      if (document.hidden) {
+        // Save state when user switches away, but let stream continue in background
         saveChatState(companyId, {
           messages,
           lastUserMessage,
-          wasStreaming: true,
+          wasStreaming: isStreamingRef.current,
         });
-        // Abort the ongoing request so user can retry when they return
-        if (abortControllerRef.current) {
-          abortControllerRef.current.abort();
-        }
       }
     };
 

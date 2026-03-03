@@ -98,14 +98,11 @@ export function IkAlkoholChatSetup({ companyId, onComplete }: IkAlkoholChatSetup
     saveChatState(companyId, { messages, lastUserMessage, wasStreaming: isStreamingRef.current });
   }, [messages, lastUserMessage, companyId]);
 
-  // Handle tab switch
+  // Handle tab switch - save state but DON'T abort stream (let it continue in background)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         saveChatState(companyId, { messages, lastUserMessage, wasStreaming: isStreamingRef.current });
-        if (isStreamingRef.current && abortControllerRef.current) {
-          abortControllerRef.current.abort();
-        }
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
