@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -18,6 +18,7 @@ export function useCompanyModules(companyId?: string) {
   const { profile, isLoading: authLoading } = useAuth();
   const [modules, setModules] = useState<CompanyModule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const hasLoadedOnce = useRef(false);
 
   // Only use profile.company_id if we're not given a specific companyId
   const targetCompanyId = companyId || profile?.company_id;
@@ -31,8 +32,11 @@ export function useCompanyModules(companyId?: string) {
     }
 
     // Auth is done. If no targetCompanyId, user has no company - stop loading
+    // But only clear modules if we've never loaded before (prevents flicker during token refresh)
     if (!targetCompanyId) {
-      setModules([]);
+      if (!hasLoadedOnce.current) {
+        setModules([]);
+      }
       setIsLoading(false);
       return;
     }
@@ -48,9 +52,13 @@ export function useCompanyModules(companyId?: string) {
 
         if (error) throw error;
         setModules(data || []);
+        hasLoadedOnce.current = true;
       } catch (error) {
         console.error("Error fetching company modules:", error);
-        setModules([]);
+        // Don't clear modules on fetch error if we had them before
+        if (!hasLoadedOnce.current) {
+          setModules([]);
+        }
       } finally {
         setIsLoading(false);
       }
