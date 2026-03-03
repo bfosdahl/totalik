@@ -46,6 +46,7 @@ import {
   Search,
   Mail,
   Car,
+  Printer,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -101,6 +102,7 @@ const ikMatItems = [
   { icon: Wheat, label: "Allergener", path: "/ik-mat/allergener", color: "text-amber-500" },
   { icon: Handshake, label: "Faste avtaler", path: "/ik-mat/faste-avtaler", color: "text-indigo-500" },
   { icon: FolderOpen, label: "Dokumentsenter", path: "/ik-mat/dokumentsenter", color: "text-slate-500" },
+  { icon: Printer, label: "Bestill plakater", path: "/ik-mat/bestill-plakater", color: "text-pink-500" },
 ];
 
 // Personaladministrasjon items - standard for all companies

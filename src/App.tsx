@@ -84,6 +84,7 @@ import IkMatRisikoOgTiltak from "./pages/IkMatRisikoOgTiltak";
 import IkMatDokumentsenter from "./pages/IkMatDokumentsenter";
 import IkMatAvvik from "./pages/IkMatAvvik";
 import IkMatTemperaturlogg from "./pages/IkMatTemperaturlogg";
+import IkMatBestillPlakater from "./pages/IkMatBestillPlakater";
 import IkAlkoholDashboard from "./pages/ikalkohol/IkAlkoholDashboard";
 import IkAlkoholInternkontroll from "./pages/ikalkohol/IkAlkoholInternkontroll";
 import IkAlkoholHendelser from "./pages/ikalkohol/IkAlkoholHendelser";
@@ -191,6 +192,7 @@ const App = () => (
                   <Route path="/ik-mat/faste-avtaler" element={<ProtectedRoute><IkMatFasteAvtaler /></ProtectedRoute>} />
                   <Route path="/ik-mat/dokumentsenter" element={<ProtectedRoute><IkMatDokumentsenter /></ProtectedRoute>} />
                   <Route path="/ik-mat/avvik" element={<ProtectedRoute><IkMatAvvik /></ProtectedRoute>} />
+                  <Route path="/ik-mat/bestill-plakater" element={<ProtectedRoute><IkMatBestillPlakater /></ProtectedRoute>} />
                   {/* IK Alkohol routes */}
                   <Route path="/ik-alkohol" element={<ProtectedRoute><IkAlkoholDashboard /></ProtectedRoute>} />
                   <Route path="/ik-alkohol/internkontroll" element={<ProtectedRoute><IkAlkoholInternkontroll /></ProtectedRoute>} />
