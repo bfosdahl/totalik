@@ -1,0 +1,2 @@
+ALTER TABLE public.deviations DROP CONSTRAINT deviations_type_check;
+ALTER TABLE public.deviations ADD CONSTRAINT deviations_type_check CHECK (type = ANY (ARRAY['avvik'::text, 'ruh'::text, 'ik_mat'::text]));
