@@ -11,7 +11,7 @@ import { DeviationCategory } from '@/hooks/useDeviations';
 export type DeviationType = 'deviation' | 'observation' | 'improvement' | 'work_accident';
 
 // Valid categories that match database constraints
-const VALID_CATEGORIES: DeviationCategory[] = ['quality', 'safety', 'environment', 'documentation', 'other', 'process', 'equipment', 'personnel'];
+const VALID_CATEGORIES: DeviationCategory[] = ['quality', 'safety', 'environment', 'documentation', 'other', 'process', 'equipment', 'personnel', 'temperature', 'cleaning', 'pest_control', 'allergen', 'traceability', 'hygiene', 'storage', 'pests', 'expiry', 'contamination', 'receiving', 'other_food'];
 const VALID_TYPES: DeviationType[] = ['deviation', 'observation', 'improvement', 'work_accident'];
 const VALID_PRIORITIES = ['low', 'medium', 'high', 'critical'] as const;
 const VALID_STATUSES = ['open', 'in_progress', 'closed', 'cancelled'] as const;
@@ -342,6 +342,18 @@ export const getCategoryLabel = (category: DeviationCategory): string => {
     equipment: 'Utstyr',
     personnel: 'Personell',
     other: 'Annet',
+    temperature: 'Temperaturavvik',
+    cleaning: 'Renhold',
+    pest_control: 'Skadedyr',
+    allergen: 'Allergenhåndtering',
+    traceability: 'Sporbarhet',
+    hygiene: 'Hygiene',
+    storage: 'Lagring',
+    pests: 'Skadedyr',
+    expiry: 'Utgått holdbarhet',
+    contamination: 'Krysskontaminering',
+    receiving: 'Varemottak',
+    other_food: 'Annet matsikkerhet',
   };
   return labels[category] || 'Annet';
 };

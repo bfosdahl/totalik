@@ -13,7 +13,7 @@ import {
 } from "@/utils/deviationSanitizer";
 
 // Valid database category values
-export type DeviationCategory = "quality" | "safety" | "environment" | "documentation" | "other" | "process" | "equipment" | "personnel";
+export type DeviationCategory = "quality" | "safety" | "environment" | "documentation" | "other" | "process" | "equipment" | "personnel" | "temperature" | "cleaning" | "pest_control" | "allergen" | "traceability" | "hygiene" | "storage" | "pests" | "expiry" | "contamination" | "receiving" | "other_food";
 
 export interface Deviation {
   id: string;

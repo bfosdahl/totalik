@@ -53,8 +53,8 @@ const statusConfig = {
   closed: { label: "Lukket", color: "bg-success/10 text-success" },
 };
 
-// Valid database category values
-type DeviationCategory = "quality" | "safety" | "environment" | "documentation" | "other" | "process" | "equipment" | "personnel";
+// Use the shared DeviationCategory type from useDeviations
+import type { DeviationCategory } from "@/hooks/useDeviations";
 
 const categoryConfig: Record<DeviationCategory, { label: string; color: string }> = {
   safety: { label: "HMS / Sikkerhet", color: "bg-primary/10 text-primary" },
@@ -65,6 +65,18 @@ const categoryConfig: Record<DeviationCategory, { label: string; color: string }
   personnel: { label: "Personell", color: "bg-pink-500/10 text-pink-600" },
   documentation: { label: "Dokumentasjon", color: "bg-slate-500/10 text-slate-600" },
   other: { label: "Annet", color: "bg-muted text-muted-foreground" },
+  temperature: { label: "Temperaturavvik", color: "bg-red-500/10 text-red-600" },
+  cleaning: { label: "Renhold", color: "bg-yellow-500/10 text-yellow-600" },
+  pest_control: { label: "Skadedyr", color: "bg-orange-500/10 text-orange-600" },
+  allergen: { label: "Allergenhåndtering", color: "bg-purple-500/10 text-purple-600" },
+  traceability: { label: "Sporbarhet", color: "bg-cyan-500/10 text-cyan-600" },
+  hygiene: { label: "Hygiene", color: "bg-pink-500/10 text-pink-600" },
+  storage: { label: "Lagring", color: "bg-blue-500/10 text-blue-600" },
+  pests: { label: "Skadedyr", color: "bg-orange-500/10 text-orange-600" },
+  expiry: { label: "Utgått holdbarhet", color: "bg-amber-500/10 text-amber-600" },
+  contamination: { label: "Krysskontaminering", color: "bg-rose-500/10 text-rose-600" },
+  receiving: { label: "Varemottak", color: "bg-teal-500/10 text-teal-600" },
+  other_food: { label: "Annet matsikkerhet", color: "bg-muted text-muted-foreground" },
 };
 
 // Helper type for the detail dialog - includes all RUH fields
