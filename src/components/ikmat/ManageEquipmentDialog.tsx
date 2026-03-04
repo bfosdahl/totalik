@@ -232,16 +232,18 @@ export function ManageEquipmentDialog({
                         <TableCell>
                           <div className="flex gap-1">
                             <Button
-                              variant="ghost"
-                              size="icon"
+                              variant="outline"
+                              size="sm"
+                              className="h-8 px-2.5 text-xs gap-1.5"
                               onClick={() => handleStartEdit(equip)}
-                              title="Rediger"
                             >
-                              <Pencil className="h-4 w-4" />
+                              <Pencil className="h-3.5 w-3.5" />
+                              Rediger
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
+                              className="h-8 w-8"
                               onClick={() => setQrEquipment(equip)}
                               title="QR-kode"
                             >
@@ -250,6 +252,7 @@ export function ManageEquipmentDialog({
                             <Button
                               variant="ghost"
                               size="icon"
+                              className="h-8 w-8"
                               onClick={() => handleDelete(equip.id, equip.name)}
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
