@@ -103,9 +103,11 @@ export const useIkMatScheduledTasks = () => {
     enabled: !!company?.id,
   });
 
+  // IK-MAT module (used for generated cleaning plan + creation date)
+  const ikMatModule = modules?.find(m => m.module_type === 'IK_MAT');
+
   // Get generated cleaning plan from module settings
   const generatedCleaningPlan = (() => {
-    const ikMatModule = modules?.find(m => m.module_type === 'IK_MAT');
     if (ikMatModule?.settings) {
       const settings = ikMatModule.settings as any;
       return settings.generatedContent?.cleaningPlan || [];
@@ -187,6 +189,22 @@ export const useIkMatScheduledTasks = () => {
     enabled: !!company?.id,
   });
 
+  const buildCalendarDismissKey = (eventType: CalendarEvent['type'], title: string, date: Date) =>
+    `calendar::${eventType}::${format(date, 'yyyy-MM-dd')}::${title}`;
+
+  const isCalendarEventDismissed = (
+    eventType: CalendarEvent['type'],
+    title: string,
+    date: Date,
+    legacyDeviationTitle?: string,
+  ) => {
+    if (!dismissedTitles) return false;
+    const calendarKey = buildCalendarDismissKey(eventType, title, date);
+    if (dismissedTitles.has(calendarKey)) return true;
+    if (legacyDeviationTitle && dismissedTitles.has(legacyDeviationTitle)) return true;
+    return false;
+  };
+
   // Get all calendar events for a date range
   const useCalendarEvents = (startDate: Date, endDate: Date) => {
     return useQuery({
@@ -206,13 +224,22 @@ export const useIkMatScheduledTasks = () => {
         // Add task completions
         completions.forEach((completion) => {
           const scheduledDate = parseISO(completion.scheduled_date);
+          const status = completion.status === 'completed'
+            ? 'completed'
+            : (isBefore(scheduledDate, startOfDay(new Date())) ? 'overdue' : 'pending');
+
+          const title = completion.task?.title || 'Oppgave';
+          const isPastUncompleted = status !== 'completed' && isBefore(scheduledDate, startOfDay(new Date()));
+          if (isPastUncompleted && isCalendarEventDismissed('task', title, scheduledDate)) {
+            return;
+          }
+
           events.push({
             id: completion.id,
-            title: completion.task?.title || 'Oppgave',
+            title,
             date: scheduledDate,
             type: 'task',
-            status: completion.status === 'completed' ? 'completed' : 
-                   (isBefore(scheduledDate, startOfDay(new Date())) ? 'overdue' : 'pending'),
+            status,
             taskId: completion.task_id,
             sourceId: completion.id,
             details: completion,
@@ -221,12 +248,20 @@ export const useIkMatScheduledTasks = () => {
 
         // Add temperature logs (completed measurements)
         tempLogs.forEach((log: any) => {
+          const eventDate = new Date(log.measured_at);
+          const title = `Temp: ${log.equipment?.name || 'Ukjent'} (${log.temperature}°C)`;
+          const status = log.is_acceptable ? 'completed' : 'overdue';
+
+          if (status === 'overdue' && isCalendarEventDismissed('temperature', title, eventDate)) {
+            return;
+          }
+
           events.push({
             id: `temp-${log.id}`,
-            title: `Temp: ${log.equipment?.name || 'Ukjent'} (${log.temperature}°C)`,
-            date: new Date(log.measured_at),
+            title,
+            date: eventDate,
             type: 'temperature',
-            status: log.is_acceptable ? 'completed' : 'overdue',
+            status,
             sourceId: log.id,
             details: log,
           });
@@ -265,11 +300,12 @@ export const useIkMatScheduledTasks = () => {
 
                 if (!alreadyLogged) {
                   const isPast = isBefore(startOfDay(currentDate), startOfDay(new Date()));
+                  const eventTitle = `🌡️ ${equip.name}`;
+                  const legacyDeviationTitle = `Temperaturlogg ikke utført: ${equip.name} (${dateStr})`;
                   
                   // Check if this overdue event was dismissed
-                  if (isPast && dismissedTitles) {
-                    const dismissTitle = `Temperaturlogg ikke utført: ${equip.name} (${dateStr})`;
-                    if (dismissedTitles.has(dismissTitle)) return;
+                  if (isPast && isCalendarEventDismissed('temperature', eventTitle, currentDate, legacyDeviationTitle)) {
+                    return;
                   }
 
                   events.push({
@@ -305,12 +341,21 @@ export const useIkMatScheduledTasks = () => {
 
         // Add cleaning responses (completed)
         cleaning.forEach((response: any) => {
+          const eventDate = new Date(response.created_at);
+          const status = response.status === 'completed' ? 'completed' : 'pending';
+          const title = 'Renhold utført';
+          const isPastUncompleted = status !== 'completed' && isBefore(startOfDay(eventDate), startOfDay(new Date()));
+
+          if (isPastUncompleted && isCalendarEventDismissed('cleaning', title, eventDate)) {
+            return;
+          }
+
           events.push({
             id: `clean-${response.id}`,
-            title: 'Renhold utført',
-            date: new Date(response.created_at),
+            title,
+            date: eventDate,
             type: 'cleaning',
-            status: response.status === 'completed' ? 'completed' : 'pending',
+            status,
             sourceId: response.id,
             details: response,
           });
@@ -321,9 +366,13 @@ export const useIkMatScheduledTasks = () => {
         if (allCleaningTasks.length > 0) {
           // Determine earliest cleaning task creation date (only check from the day after)
           const customTaskDates = (cleaningTasks || []).map((t: any) => new Date(t.created_at).getTime());
-          const earliestCleaningDate = customTaskDates.length > 0
+          const customStartDate = customTaskDates.length > 0
             ? startOfDay(addDays(new Date(Math.min(...customTaskDates)), 1))
             : null;
+          const moduleStartDate = ikMatModule?.created_at
+            ? startOfDay(addDays(new Date(ikMatModule.created_at), 1))
+            : null;
+          const earliestCleaningDate = customStartDate || moduleStartDate;
 
           let currentDate = earliestCleaningDate && isBefore(startOfDay(startDate), earliestCleaningDate)
             ? new Date(earliestCleaningDate)
@@ -365,11 +414,12 @@ export const useIkMatScheduledTasks = () => {
 
                 if (!alreadyLogged) {
                   const isPast = isBefore(startOfDay(currentDate), startOfDay(new Date()));
+                  const eventTitle = `🧹 Renhold (${allCleaningTasks.filter((t: any) => (t.frequency || 'daglig').toLowerCase() === freqLower).length} oppgaver)`;
+                  const legacyDeviationTitle = `Renhold ikke utført (${dateStr})`;
 
                   // Check if this overdue event was dismissed
-                  if (isPast && dismissedTitles) {
-                    const dismissTitle = `Renhold ikke utført (${dateStr})`;
-                    if (dismissedTitles.has(dismissTitle)) return;
+                  if (isPast && isCalendarEventDismissed('cleaning', eventTitle, currentDate, legacyDeviationTitle)) {
+                    return;
                   }
 
                   const taskCount = allCleaningTasks.filter((t: any) => 
@@ -577,11 +627,11 @@ export const useIkMatScheduledTasks = () => {
           if (taskCreatedDate && isBefore(currentDate, taskCreatedDate)) return;
 
           const isPast = isBefore(currentDate, startOfDay(new Date()));
+          const legacyDeviationTitle = `Oppgave ikke utført: ${task.title} (${dateStr})`;
           
           // Check if this overdue event was dismissed
-          if (isPast && dismissedTitles) {
-            const dismissTitle = `Oppgave ikke utført: ${task.title} (${dateStr})`;
-            if (dismissedTitles.has(dismissTitle)) return;
+          if (isPast && isCalendarEventDismissed('task', task.title, currentDate, legacyDeviationTitle)) {
+            return;
           }
 
           events.push({
@@ -607,45 +657,57 @@ export const useIkMatScheduledTasks = () => {
     mutationFn: async (overdueEvents: CalendarEvent[]) => {
       if (!company?.id || !profile) throw new Error('Mangler info');
 
-      // Build dismiss titles from overdue events
-      const titles: string[] = [];
+      const dismissEntries = new Set<string>();
+      const autoDeviationTitles = new Set<string>();
+
       for (const event of overdueEvents) {
         const dateStr = format(event.date, 'yyyy-MM-dd');
-        if (event.type === 'temperature') {
+
+        // Always add a calendar-specific dismiss key so the exact event is hidden in Kontroll
+        dismissEntries.add(buildCalendarDismissKey(event.type, event.title, event.date));
+
+        // Add legacy auto-deviation titles so auto-sync doesn't re-create deviations
+        if (event.type === 'temperature' && event.title.startsWith('🌡️ ')) {
           const equipName = event.title.replace('🌡️ ', '');
-          titles.push(`Temperaturlogg ikke utført: ${equipName} (${dateStr})`);
-        } else if (event.type === 'cleaning') {
-          titles.push(`Renhold ikke utført (${dateStr})`);
+          autoDeviationTitles.add(`Temperaturlogg ikke utført: ${equipName} (${dateStr})`);
+        } else if (event.type === 'cleaning' && event.title.startsWith('🧹')) {
+          autoDeviationTitles.add(`Renhold ikke utført (${dateStr})`);
         } else if (event.type === 'task' && event.details?.title) {
-          titles.push(`Oppgave ikke utført: ${event.details.title} (${dateStr})`);
+          autoDeviationTitles.add(`Oppgave ikke utført: ${event.details.title} (${dateStr})`);
         }
       }
 
-      if (titles.length > 0) {
-        // Batch upsert dismissed titles
+      // Persist all dismiss keys/titles
+      const allTitles = [...dismissEntries, ...autoDeviationTitles];
+      if (allTitles.length > 0) {
         const batchSize = 50;
-        for (let i = 0; i < titles.length; i += batchSize) {
-          const batch = titles.slice(i, i + batchSize).map(title => ({
+        for (let i = 0; i < allTitles.length; i += batchSize) {
+          const batch = allTitles.slice(i, i + batchSize).map((title) => ({
             company_id: company.id,
             deviation_title: title,
             dismissed_by_id: profile.user_id || null,
           }));
-          await supabase.from('ik_mat_dismissed_auto_deviations').upsert(
-            batch,
-            { onConflict: 'company_id,deviation_title' }
-          );
+
+          const { error: dismissError } = await supabase
+            .from('ik_mat_dismissed_auto_deviations')
+            .upsert(batch, { onConflict: 'company_id,deviation_title' });
+
+          if (dismissError) throw dismissError;
         }
       }
 
-      // Also delete matching deviations from the deviations table
-      const { error } = await supabase
-        .from('deviations')
-        .delete()
-        .eq('company_id', company.id)
-        .eq('type', 'ik_mat')
-        .in('status', ['open', 'in-progress']);
+      // Delete matching auto-generated IK-MAT deviations from deviation register
+      if (autoDeviationTitles.size > 0) {
+        const { error: deleteError } = await supabase
+          .from('deviations')
+          .delete()
+          .eq('company_id', company.id)
+          .eq('type', 'ik_mat')
+          .in('status', ['open', 'in-progress'])
+          .in('title', [...autoDeviationTitles]);
 
-      if (error) throw error;
+        if (deleteError) throw deleteError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ik-mat-calendar-events'] });
