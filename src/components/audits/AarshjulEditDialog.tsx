@@ -286,7 +286,7 @@ export default function AarshjulEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-lg max-h-[85vh] sm:max-h-[85vh] h-[100dvh] sm:h-auto overflow-hidden flex flex-col sm:rounded-lg rounded-none">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
@@ -313,7 +313,7 @@ export default function AarshjulEditDialog({
                           <p className="text-[10px] text-muted-foreground">Tilpasset plassering</p>
                         )}
                       </div>
-                      <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         {isOverridden && (
                           <Button
                             variant="ghost"
@@ -364,7 +364,7 @@ export default function AarshjulEditDialog({
                         <Badge variant="secondary" className="text-xs mt-1">{a.responsible}</Badge>
                       )}
                     </div>
-                    <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(a)}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>

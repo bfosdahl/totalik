@@ -25,8 +25,10 @@ import {
   EyeOff,
   Eye,
   Trash2,
+  Plus,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AarshjulEditDialog from "./AarshjulEditDialog";
@@ -232,6 +234,7 @@ interface CustomDbActivity {
 const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   const navigate = useNavigate();
   const { company } = useAuth();
+  const isMobile = useIsMobile();
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
   const [completedActivities, setCompletedActivities] = useState<CompletedActivity[]>([]);
@@ -630,7 +633,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
           <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Circular Wheel */}
-              <div className="flex justify-center items-center">
+              <div className="flex flex-col justify-center items-center">
                 <div className="relative">
                   <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
                     {/* Background circle */}
@@ -751,6 +754,21 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                     </text>
                   </svg>
                 </div>
+                {/* Mobile: Edit button below wheel */}
+                {isMobile && selectedMonth && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="mt-3 w-full max-w-[280px]"
+                    onClick={() => setEditMonth(selectedMonth)}
+                  >
+                    <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                    Rediger {months.find((m) => m.id === selectedMonth)?.fullName}
+                  </Button>
+                )}
+                {isMobile && !selectedMonth && (
+                  <p className="text-xs text-muted-foreground mt-2">Trykk på en måned for å se aktiviteter</p>
+                )}
               </div>
 
               {/* Month details / Activity list */}
@@ -763,13 +781,13 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                       </h3>
                       <Badge variant="outline">{displayActivities.length} aktiviteter</Badge>
                       <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 ml-auto"
+                        variant="outline"
+                        size="sm"
+                        className="ml-auto"
                         onClick={() => setEditMonth(displayMonth)}
-                        title="Rediger aktiviteter"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                        Rediger
                       </Button>
                     </div>
                     {displayActivities.length > 0 ? (
@@ -819,7 +837,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                                   )}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1 shrink-0 mt-1">
+                              <div className="flex items-center gap-1 shrink-0 mt-1 opacity-100 sm:opacity-70 sm:hover:opacity-100 transition-opacity">
                                 <Button
                                   variant="ghost"
                                   size="icon"
@@ -828,7 +846,6 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     if (activity.id.startsWith("custom-")) {
-                                      // Custom activities are deleted via the edit dialog
                                       setEditMonth(displayMonth);
                                     } else {
                                       handleHideDefault(activity.id);
