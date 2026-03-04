@@ -53,6 +53,7 @@ export interface NewDeviationInput {
   title: string;
   description: string;
   category: DeviationCategory;
+  type?: string;
   priority: "low" | "medium" | "high" | "critical";
   assignee_id?: string | null;
   assignee_name: string | null;
@@ -187,6 +188,8 @@ export function useDeviations() {
         notify_insurance: safeBoolean(input.notify_insurance),
         // Set department_id from user's profile (for department-specific deviations)
         department_id: departmentId || null,
+        // Set type if provided (e.g., 'ik_mat' for food safety deviations)
+        ...(input.type ? { type: input.type } : {}),
       };
 
       const { data, error } = await supabase

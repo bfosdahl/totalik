@@ -211,6 +211,7 @@ const IkMatAvvik = () => {
       description: input.description,
       category: input.category,
       priority: input.priority,
+      type: 'ik_mat',
       assignee_id: assigneeUser?.id || null,
       assignee_name: input.assignee,
       due_date: input.dueDate,
