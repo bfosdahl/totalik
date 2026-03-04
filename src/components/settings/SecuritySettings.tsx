@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Shield, ArrowLeft, Key, Smartphone, Loader2, Eye, EyeOff, Check, X, Copy } from "lucide-react";
+import { Shield, ArrowLeft, Key, Smartphone, Loader2, Eye, EyeOff, Check, X, Copy, Mail, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -27,6 +28,15 @@ const passwordSchema = z.object({
 });
 
 export function SecuritySettings({ onBack }: SecuritySettingsProps) {
+  const { profile, refreshProfile } = useAuth();
+
+  // Profile edit state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+
   // Password state
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -46,6 +56,15 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
   const [verifying, setVerifying] = useState(false);
   const [disabling, setDisabling] = useState(false);
   const [loadingMfa, setLoadingMfa] = useState(true);
+
+  // Load profile data
+  useEffect(() => {
+    if (profile) {
+      setFirstName(profile.first_name || "");
+      setLastName(profile.last_name || "");
+      setNewEmail(profile.email || "");
+    }
+  }, [profile]);
 
   // Check MFA status on mount
   useEffect(() => {
@@ -70,6 +89,38 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
       console.error("Error checking MFA status:", error);
     } finally {
       setLoadingMfa(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    try {
+      if (profile?.id) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({ first_name: firstName, last_name: lastName })
+          .eq("id", profile.id);
+        if (profileError) throw profileError;
+      }
+
+      const currentEmail = profile?.email || "";
+      if (newEmail && newEmail !== currentEmail) {
+        const { error: emailError } = await supabase.auth.updateUser({
+          email: newEmail,
+        });
+        if (emailError) throw emailError;
+        toast.success("En bekreftelseslenke er sendt til din nye e-postadresse. Sjekk innboksen.");
+      } else {
+        toast.success("Profil oppdatert!");
+      }
+
+      setEditingProfile(false);
+      refreshProfile?.();
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      toast.error(error.message || "Kunne ikke oppdatere profil");
+    } finally {
+      setSavingProfile(false);
     }
   };
 
@@ -241,6 +292,103 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
             </p>
           </div>
         </div>
+      </motion.div>
+
+      {/* Profile / Email Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="bg-card rounded-xl border border-border shadow-card p-6"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <User className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold">Brukernavn og e-post</h3>
+          </div>
+          {!editingProfile && (
+            <Button variant="outline" size="sm" onClick={() => setEditingProfile(true)}>
+              Rediger
+            </Button>
+          )}
+        </div>
+
+        {editingProfile ? (
+          <div className="space-y-4 max-w-md">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="first-name">Fornavn</Label>
+                <Input
+                  id="first-name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Fornavn"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="last-name">Etternavn</Label>
+                <Input
+                  id="last-name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Etternavn"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">E-postadresse</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="din@epost.no"
+                  className="pl-10"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Ved endring av e-post vil du motta en bekreftelseslenke på den nye adressen.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleSaveProfile} disabled={savingProfile}>
+                {savingProfile ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Lagrer...
+                  </>
+                ) : (
+                  "Lagre endringer"
+                )}
+              </Button>
+              <Button variant="outline" onClick={() => {
+                setEditingProfile(false);
+                setFirstName(profile?.first_name || "");
+                setLastName(profile?.last_name || "");
+                setNewEmail(profile?.email || "");
+              }}>
+                Avbryt
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3 max-w-md">
+            <div className="flex justify-between py-2 border-b border-border">
+              <span className="text-muted-foreground">Navn</span>
+              <span className="font-medium">
+                {profile?.first_name || profile?.last_name
+                  ? `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim()
+                  : "Ikke angitt"}
+              </span>
+            </div>
+            <div className="flex justify-between py-2">
+              <span className="text-muted-foreground">E-post</span>
+              <span className="font-medium">{profile?.email || "Ikke angitt"}</span>
+            </div>
+          </div>
+        )}
       </motion.div>
 
       {/* Password Section */}
