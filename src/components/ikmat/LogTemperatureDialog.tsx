@@ -17,8 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useIkMatTemperature } from "@/hooks/useIkMatTemperature";
-import { Thermometer, AlertTriangle, CheckCircle2, AlertCircle } from "lucide-react";
+import { useIkMatTemperature, TemperatureLog } from "@/hooks/useIkMatTemperature";
+import { Thermometer, AlertTriangle, CheckCircle2, AlertCircle, Pencil } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   getTemperatureGuideline,
@@ -33,14 +33,16 @@ interface LogTemperatureDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   preSelectedEquipmentId?: string | null;
+  editLog?: TemperatureLog | null;
 }
 
 export function LogTemperatureDialog({
   open,
   onOpenChange,
   preSelectedEquipmentId,
+  editLog,
 }: LogTemperatureDialogProps) {
-  const { equipment, logTemperature } = useIkMatTemperature();
+  const { equipment, logTemperature, updateTemperatureLog } = useIkMatTemperature();
   
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string>("");
   const [temperature, setTemperature] = useState<string>("");
@@ -48,25 +50,31 @@ export function LogTemperatureDialog({
   const [correctiveAction, setCorrectiveAction] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const isEditMode = !!editLog;
+
   useEffect(() => {
-    if (open && preSelectedEquipmentId) {
+    if (open && editLog) {
+      setSelectedEquipmentId(editLog.equipment_id);
+      setTemperature(String(editLog.temperature));
+      setNotes(editLog.notes || "");
+      setCorrectiveAction(editLog.corrective_action || "");
+    } else if (open && preSelectedEquipmentId) {
       setSelectedEquipmentId(preSelectedEquipmentId);
     }
-  }, [open, preSelectedEquipmentId]);
+  }, [open, preSelectedEquipmentId, editLog]);
 
-  // Auto-add minus for freezer when equipment changes
+  // Auto-add minus for freezer when equipment changes (only in create mode)
   useEffect(() => {
-    if (selectedEquipmentId && temperature === '') {
+    if (!isEditMode && selectedEquipmentId && temperature === '') {
       const equip = equipment.find(e => e.id === selectedEquipmentId);
       if (equip?.equipment_type === 'freezer') {
         setTemperature('-');
       }
     }
-  }, [selectedEquipmentId, equipment]);
+  }, [selectedEquipmentId, equipment, isEditMode]);
 
   const selectedEquip = equipment.find(e => e.id === selectedEquipmentId);
 
-  // Calculate traffic light status based on equipment type and temperature
   const guideline = useMemo(() => {
     if (!selectedEquip || !temperature) return null;
     const temp = parseFloat(temperature);
@@ -81,12 +89,22 @@ export function LogTemperatureDialog({
 
     setIsSubmitting(true);
     try {
-      await logTemperature.mutateAsync({
-        equipment_id: selectedEquipmentId,
-        temperature: parseFloat(temperature),
-        notes: notes || undefined,
-        corrective_action: correctiveAction || undefined,
-      });
+      if (isEditMode && editLog) {
+        await updateTemperatureLog.mutateAsync({
+          id: editLog.id,
+          equipment_id: selectedEquipmentId,
+          temperature: parseFloat(temperature),
+          notes: notes || undefined,
+          corrective_action: correctiveAction || undefined,
+        });
+      } else {
+        await logTemperature.mutateAsync({
+          equipment_id: selectedEquipmentId,
+          temperature: parseFloat(temperature),
+          notes: notes || undefined,
+          corrective_action: correctiveAction || undefined,
+        });
+      }
       
       // Reset form
       setSelectedEquipmentId(preSelectedEquipmentId || "");
@@ -115,15 +133,15 @@ export function LogTemperatureDialog({
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Thermometer className="h-5 w-5" />
-            Registrer temperatur
+            {isEditMode ? <Pencil className="h-5 w-5" /> : <Thermometer className="h-5 w-5" />}
+            {isEditMode ? "Rediger måling" : "Registrer temperatur"}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="equipment">Velg utstyr</Label>
-            <Select value={selectedEquipmentId} onValueChange={setSelectedEquipmentId}>
+            <Select value={selectedEquipmentId} onValueChange={setSelectedEquipmentId} disabled={isEditMode}>
               <SelectTrigger>
                 <SelectValue placeholder="Velg utstyr..." />
               </SelectTrigger>
@@ -179,7 +197,6 @@ export function LogTemperatureDialog({
                 placeholder="f.eks. -20 eller 3.5"
                 value={temperature}
                 onChange={(e) => {
-                  // Allow negative numbers, digits, and decimal point
                   const value = e.target.value;
                   if (value === '' || value === '-' || /^-?\d*\.?\d*$/.test(value)) {
                     setTemperature(value);
@@ -253,7 +270,7 @@ export function LogTemperatureDialog({
             onClick={handleSubmit} 
             disabled={!selectedEquipmentId || !temperature || isSubmitting || (showCorrectiveAction && !correctiveAction)}
           >
-            {isSubmitting ? "Lagrer..." : "Registrer"}
+            {isSubmitting ? "Lagrer..." : isEditMode ? "Oppdater" : "Registrer"}
           </Button>
         </DialogFooter>
       </DialogContent>
