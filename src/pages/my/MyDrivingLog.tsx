@@ -16,13 +16,14 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ChevronRight, ClipboardList, Receipt } from "lucide-react";
+import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ChevronRight, ClipboardList, Receipt, Pencil } from "lucide-react";
 import { useDrivingLog } from "@/hooks/useDrivingLog";
 import { AddTripDialog } from "@/components/driving-log/AddTripDialog";
 import { StartTripDialog } from "@/components/driving-log/StartTripDialog";
 import { CompleteTripDialog } from "@/components/driving-log/CompleteTripDialog";
 import { ActiveTripCard } from "@/components/driving-log/ActiveTripCard";
 import { TripExpenses } from "@/components/driving-log/TripExpenses";
+import { EditTripDialog } from "@/components/driving-log/EditTripDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -46,11 +47,12 @@ const vehicleTypeLabels: Record<string, string> = {
 };
 
 export default function MyDrivingLog() {
-  const { entries, activeTrip, startTrip, completeTrip, createEntry, deleteEntry, stats } = useDrivingLog();
+  const { entries, activeTrip, startTrip, completeTrip, createEntry, updateEntry, deleteEntry, stats } = useDrivingLog();
   const [startDialogOpen, setStartDialogOpen] = useState(false);
   const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
   const [fullDialogOpen, setFullDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editTrip, setEditTrip] = useState<any>(null);
   const [monthFilter, setMonthFilter] = useState("all");
   const [expandedTrip, setExpandedTrip] = useState<string | null>(null);
 
@@ -253,14 +255,25 @@ export default function MyDrivingLog() {
                             </span>
                           </TableCell>
                           <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive hover:text-destructive"
-                              onClick={(e) => { e.stopPropagation(); setDeleteId(entry.id); }}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={(e) => { e.stopPropagation(); setEditTrip(entry); }}
+                                title="Rediger tur"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:text-destructive"
+                                onClick={(e) => { e.stopPropagation(); setDeleteId(entry.id); }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                         {expandedTrip === entry.id && (
@@ -318,6 +331,14 @@ export default function MyDrivingLog() {
         onSubmit={(data) => createEntry.mutate(data)}
         isPending={createEntry.isPending}
         lastOdometerEnd={lastOdometerEnd}
+      />
+
+      <EditTripDialog
+        open={!!editTrip}
+        onOpenChange={(open) => { if (!open) setEditTrip(null); }}
+        onSubmit={(data) => updateEntry.mutate(data)}
+        isPending={updateEntry.isPending}
+        trip={editTrip}
       />
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
