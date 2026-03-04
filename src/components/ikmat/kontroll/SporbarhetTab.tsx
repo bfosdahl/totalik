@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, FileText, Package, Calendar, Thermometer, Download } from "lucide-react";
+import { Plus, Search, FileText, Package, Calendar, Thermometer, Download, QrCode } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIkMatTraceability, TraceabilityRecord } from "@/hooks/useIkMatTraceability";
 import { NewTraceabilityDialog } from "@/components/ikmat/NewTraceabilityDialog";
+import { VaremottakQRCodeDialog } from "@/components/ikmat/VaremottakQRCodeDialog";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -168,10 +170,20 @@ function RecordCard({
 }
 
 export const SporbarhetTab = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { profile } = useAuth();
   const { records, isLoading, getDocumentUrl } = useIkMatTraceability(profile?.company_id);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("action") === "ny") {
+      setIsDialogOpen(true);
+      searchParams.delete("action");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const filteredRecords = records.filter((record) => {
     const search = searchQuery.toLowerCase();
@@ -198,12 +210,17 @@ export const SporbarhetTab = () => {
             Registrer og dokumenter varemottak for sporbarhet
           </p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nytt varemottak
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setIsQrDialogOpen(true)}>
+            <QrCode className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">QR-kode</span>
+          </Button>
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nytt varemottak
+          </Button>
+        </div>
       </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Søk i mottaksregistre</CardTitle>
@@ -253,6 +270,10 @@ export const SporbarhetTab = () => {
       <NewTraceabilityDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
+      />
+      <VaremottakQRCodeDialog
+        open={isQrDialogOpen}
+        onOpenChange={setIsQrDialogOpen}
       />
     </div>
   );
