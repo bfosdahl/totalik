@@ -92,6 +92,38 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
     }
   };
 
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    try {
+      if (profile?.id) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({ first_name: firstName, last_name: lastName })
+          .eq("id", profile.id);
+        if (profileError) throw profileError;
+      }
+
+      const currentEmail = profile?.email || "";
+      if (newEmail && newEmail !== currentEmail) {
+        const { error: emailError } = await supabase.auth.updateUser({
+          email: newEmail,
+        });
+        if (emailError) throw emailError;
+        toast.success("En bekreftelseslenke er sendt til din nye e-postadresse. Sjekk innboksen.");
+      } else {
+        toast.success("Profil oppdatert!");
+      }
+
+      setEditingProfile(false);
+      refreshProfile?.();
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      toast.error(error.message || "Kunne ikke oppdatere profil");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   const handlePasswordChange = async () => {
     setPasswordErrors([]);
 
