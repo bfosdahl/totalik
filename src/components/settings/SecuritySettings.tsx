@@ -57,6 +57,15 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
   const [disabling, setDisabling] = useState(false);
   const [loadingMfa, setLoadingMfa] = useState(true);
 
+  // Load profile data
+  useEffect(() => {
+    if (profile) {
+      setFirstName(profile.first_name || "");
+      setLastName(profile.last_name || "");
+      setNewEmail(profile.email || "");
+    }
+  }, [profile]);
+
   // Check MFA status on mount
   useEffect(() => {
     checkMfaStatus();
