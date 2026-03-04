@@ -28,6 +28,15 @@ const passwordSchema = z.object({
 });
 
 export function SecuritySettings({ onBack }: SecuritySettingsProps) {
+  const { profile, refreshProfile } = useAuth();
+
+  // Profile edit state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+
   // Password state
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
