@@ -228,6 +228,10 @@ export const useIkMatScheduledTasks = () => {
             const dateStr = format(currentDate, 'yyyy-MM-dd');
 
             temperatureEquipment.forEach((equip: any) => {
+              // Only show tasks from the day AFTER equipment was created
+              const equipCreatedDate = equip.created_at ? startOfDay(addDays(new Date(equip.created_at), 1)) : null;
+              if (equipCreatedDate && isBefore(currentDate, equipCreatedDate)) return;
+
               let shouldShow = false;
 
               // Check frequency
@@ -533,6 +537,10 @@ export const useIkMatScheduledTasks = () => {
         }
 
         if (shouldShow) {
+          // Only show tasks from the day AFTER task was created
+          const taskCreatedDate = task.created_at ? startOfDay(addDays(new Date(task.created_at), 1)) : null;
+          if (taskCreatedDate && isBefore(currentDate, taskCreatedDate)) return;
+
           events.push({
             id: `scheduled-${task.id}-${format(currentDate, 'yyyy-MM-dd')}`,
             title: task.title,

@@ -94,6 +94,13 @@ export function useIkMatOverdueSync() {
           const dayOfWeek = currentDate.getDay();
 
           for (const equip of equipment) {
+            // Only check from the day AFTER equipment was created
+            const equipCreatedAt = (equip as any).created_at;
+            if (equipCreatedAt) {
+              const equipStartDate = startOfDay(new Date(new Date(equipCreatedAt).getTime() + 86400000));
+              if (currentDate < equipStartDate) continue;
+            }
+
             let shouldCheck = false;
             const freq = (equip as any).measurement_frequency;
             if (freq === 'daily' || freq === 'twice_daily') shouldCheck = true;
@@ -159,7 +166,12 @@ export function useIkMatOverdueSync() {
           (cleaningResponses || []).map((c: any) => format(new Date(c.created_at), 'yyyy-MM-dd'))
         );
 
-        let currentDate = new Date(lookbackStart);
+        // Determine earliest cleaning task creation date (only check from the day after)
+        const earliestCleaningDate = customCleaningTasks && customCleaningTasks.length > 0
+          ? startOfDay(new Date(Math.min(...customCleaningTasks.map((t: any) => new Date(t.created_at).getTime())) + 86400000))
+          : moduleData?.settings ? startOfDay(new Date()) : lookbackStart;
+        
+        let currentDate = new Date(Math.max(lookbackStart.getTime(), earliestCleaningDate.getTime()));
         while (currentDate < today) {
           const dateStr = format(currentDate, 'yyyy-MM-dd');
           const dayOfWeek = currentDate.getDay();
@@ -221,7 +233,13 @@ export function useIkMatOverdueSync() {
         );
 
         for (const task of scheduledTasks) {
-          let currentDate = new Date(lookbackStart);
+          // Only check from the day AFTER task was created
+          const taskCreatedAt = (task as any).created_at;
+          const taskStartDate = taskCreatedAt 
+            ? startOfDay(new Date(new Date(taskCreatedAt).getTime() + 86400000))
+            : lookbackStart;
+
+          let currentDate = new Date(Math.max(lookbackStart.getTime(), taskStartDate.getTime()));
           while (currentDate < today) {
             const dateStr = format(currentDate, 'yyyy-MM-dd');
             const dayOfWeek = currentDate.getDay();
