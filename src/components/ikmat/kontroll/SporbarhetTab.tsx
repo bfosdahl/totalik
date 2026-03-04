@@ -210,7 +210,7 @@ export const SporbarhetTab = () => {
             Nytt varemottak
           </Button>
         </div>
-
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Søk i mottaksregistre</CardTitle>
