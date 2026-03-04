@@ -191,6 +191,16 @@ const IkMatAvvik = () => {
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
+  // Reset scope follows active status/category filters.
+  // If no status is selected, default scope is open + in-progress.
+  const resetScopedDeviations = foodSafetyDeviations.filter((dev) => {
+    const matchesCategory = !filterCategory || dev.category === filterCategory;
+    const matchesStatus = filterStatus
+      ? dev.status === filterStatus
+      : dev.status === "open" || dev.status === "in-progress";
+    return matchesCategory && matchesStatus;
+  });
+
   const stats = {
     total: foodSafetyDeviations.length,
     open: foodSafetyDeviations.filter((d) => d.status === "open").length,
@@ -382,41 +392,89 @@ const IkMatAvvik = () => {
     if (success && dev) await dismissAutoDeviation(dev);
   };
 
-  // Delete all open IK-MAT deviations (for system startup/reset)
+  // Reset deviations in current status/category scope
   const handleDeleteAllOpenDeviations = async () => {
-    const openDeviations = foodSafetyDeviations.filter(d => d.status === "open" || d.status === "in-progress");
-    
-    if (openDeviations.length === 0) {
+    if (!company?.id) return;
+
+    const deviationsToDelete = resetScopedDeviations;
+
+    if (deviationsToDelete.length === 0) {
       toast({
-        title: "Ingen åpne avvik",
-        description: "Det finnes ingen åpne avvik å slette.",
+        title: "Ingen avvik å nullstille",
+        description: "Ingen avvik matcher valgt status/kategori.",
       });
       return;
     }
 
-    if (!confirm(`Er du sikker på at du vil slette ${openDeviations.length} åpne avvik? Dette kan ikke angres.\n\nDette er nyttig hvis bedriften ikke har tatt systemet i bruk ennå.`)) {
+    const statusLabel = filterStatus
+      ? (statusConfig[filterStatus as keyof typeof statusConfig]?.label || filterStatus)
+      : "Åpen + Under arbeid";
+    const categoryLabel = filterCategory
+      ? (ikMatCategoryConfig[filterCategory as IkMatCategory]?.label || filterCategory)
+      : "Alle kategorier";
+
+    if (!confirm(`Er du sikker på at du vil nullstille ${deviationsToDelete.length} avvik?\n\nStatus: ${statusLabel}\nKategori: ${categoryLabel}`)) {
       return;
     }
 
     setIsDeletingAll(true);
-    let successCount = 0;
-    
-    for (const deviation of openDeviations) {
-      const success = await deleteDeviation(deviation.id);
-      if (success) {
-        await dismissAutoDeviation(deviation);
-        successCount++;
+
+    try {
+      const autoCreatedTitles = deviationsToDelete
+        .filter((d) => d.additional_info === 'Automatisk opprettet fra Kontroll')
+        .map((d) => d.title);
+
+      if (autoCreatedTitles.length > 0) {
+        await supabase.from('ik_mat_dismissed_auto_deviations').upsert(
+          autoCreatedTitles.map((title) => ({
+            company_id: company.id,
+            deviation_title: title,
+            dismissed_by_id: profile?.user_id || null,
+          })),
+          { onConflict: 'company_id,deviation_title' }
+        );
       }
+
+      let deleteQuery = supabase
+        .from('deviations')
+        .delete()
+        .eq('company_id', company.id)
+        .eq('type', 'ik_mat');
+
+      if (filterCategory) {
+        deleteQuery = deleteQuery.eq('category', filterCategory);
+      }
+
+      if (filterStatus) {
+        deleteQuery = deleteQuery.eq('status', filterStatus);
+      } else {
+        deleteQuery = deleteQuery.in('status', ['open', 'in-progress']);
+      }
+
+      const { error } = await deleteQuery;
+      if (error) throw error;
+
+      if (selectedDeviation && deviationsToDelete.some(d => d.id === selectedDeviation.id)) {
+        setIsDetailOpen(false);
+        setSelectedDeviation(null);
+      }
+
+      toast({
+        title: "Avvik nullstilt",
+        description: `${deviationsToDelete.length} avvik ble slettet fra valgt visning.`,
+      });
+
+      await refetch();
+    } catch (error) {
+      console.error('Error resetting deviations:', error);
+      toast({
+        title: "Feil ved nullstilling",
+        description: "Kunne ikke nullstille avvik. Prøv igjen.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingAll(false);
     }
-    
-    setIsDeletingAll(false);
-    
-    toast({
-      title: "Avvik nullstilt",
-      description: `${successCount} av ${openDeviations.length} åpne avvik ble slettet.`,
-    });
-    
-    refetch();
   };
 
   if (isLoading || modulesLoading) {
@@ -451,8 +509,8 @@ const IkMatAvvik = () => {
               </div>
             </div>
             <div className="flex gap-2 flex-wrap">
-              {/* Reset button for startup - only show if there are open deviations */}
-              {stats.open > 0 && (
+              {/* Reset button follows current status/category filter scope */}
+              {resetScopedDeviations.length > 0 && (
                 <Button 
                   variant="outline" 
                   size="sm" 
