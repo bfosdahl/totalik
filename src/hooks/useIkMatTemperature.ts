@@ -251,6 +251,48 @@ export function useIkMatTemperature() {
     },
   });
 
+  // Update temperature log
+  const updateTemperatureLog = useMutation({
+    mutationFn: async (data: {
+      id: string;
+      equipment_id: string;
+      temperature: number;
+      notes?: string;
+      corrective_action?: string;
+    }) => {
+      if (!company?.id || !profile) throw new Error('Ikke logget inn');
+
+      const equip = equipment.find(e => e.id === data.equipment_id);
+      let isAcceptable = true;
+
+      if (equip) {
+        if (equip.min_temp !== null && data.temperature < equip.min_temp) isAcceptable = false;
+        if (equip.max_temp !== null && data.temperature > equip.max_temp) isAcceptable = false;
+      }
+
+      const { error } = await supabase
+        .from('ik_mat_temperature_logs')
+        .update({
+          temperature: data.temperature,
+          is_acceptable: isAcceptable,
+          notes: data.notes || null,
+          corrective_action: data.corrective_action || null,
+          corrective_action_by: data.corrective_action ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : null,
+        })
+        .eq('id', data.id);
+
+      if (error) throw error;
+      return { isAcceptable };
+    },
+    onSuccess: ({ isAcceptable }) => {
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-temperature-logs-today'] });
+      toast.success(isAcceptable ? 'Måling oppdatert' : 'Måling oppdatert - Avvik');
+    },
+    onError: (error) => {
+      toast.error('Kunne ikke oppdatere måling: ' + error.message);
+    },
+  });
+
   // Check which equipment needs logging today
   const getEquipmentNeedingLog = () => {
     return equipment.filter(equip => {
@@ -275,6 +317,7 @@ export function useIkMatTemperature() {
     updateEquipment,
     deleteEquipment,
     logTemperature,
+    updateTemperatureLog,
     fetchLogs,
     getEquipmentNeedingLog,
     isDailyLogComplete,

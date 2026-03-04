@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Thermometer, Plus, CheckCircle2, AlertTriangle, History, Settings, Clock } from "lucide-react";
-import { useIkMatTemperature } from "@/hooks/useIkMatTemperature";
+import { Thermometer, Plus, CheckCircle2, AlertTriangle, History, Settings, Clock, Pencil } from "lucide-react";
+import { useIkMatTemperature, TemperatureLog } from "@/hooks/useIkMatTemperature";
 import { LogTemperatureDialog } from "@/components/ikmat/LogTemperatureDialog";
 import { ManageEquipmentDialog } from "@/components/ikmat/ManageEquipmentDialog";
 import { TemperatureHistoryDialog } from "@/components/ikmat/TemperatureHistoryDialog";
@@ -31,6 +31,7 @@ export const TemperaturloggTab = () => {
   const [equipmentDialogOpen, setEquipmentDialogOpen] = useState(false);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
+  const [editingLog, setEditingLog] = useState<TemperatureLog | null>(null);
 
   // Handle QR code deep-link: open log dialog automatically if equipment param is present
   useEffect(() => {
@@ -62,6 +63,13 @@ export const TemperaturloggTab = () => {
 
   const handleLogClick = (equipmentId?: string) => {
     setSelectedEquipment(equipmentId || null);
+    setEditingLog(null);
+    setLogDialogOpen(true);
+  };
+
+  const handleEditLog = (log: TemperatureLog) => {
+    setEditingLog(log);
+    setSelectedEquipment(null);
     setLogDialogOpen(true);
   };
 
@@ -209,6 +217,9 @@ export const TemperaturloggTab = () => {
                         {log.corrective_action && (
                           <p className="mt-2 text-xs text-orange-600">Tiltak: {log.corrective_action}</p>
                         )}
+                        <Button variant="ghost" size="sm" className="mt-2 h-7 text-xs" onClick={() => handleEditLog(log)}>
+                          <Pencil className="h-3 w-3 mr-1" />Rediger
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -224,6 +235,7 @@ export const TemperaturloggTab = () => {
                           <TableHead>Registrert av</TableHead>
                           <TableHead>Tidspunkt</TableHead>
                           <TableHead>Merknad</TableHead>
+                          <TableHead className="w-[80px]"></TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -263,6 +275,12 @@ export const TemperaturloggTab = () => {
                                 </span>
                               )}
                               {log.notes && !log.corrective_action && log.notes}
+                            </TableCell>
+                            <TableCell>
+                              <Button variant="ghost" size="sm" className="h-8" onClick={() => handleEditLog(log)}>
+                                <Pencil className="h-3.5 w-3.5 mr-1" />
+                                Rediger
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -381,8 +399,12 @@ export const TemperaturloggTab = () => {
       {/* Dialogs */}
       <LogTemperatureDialog
         open={logDialogOpen}
-        onOpenChange={setLogDialogOpen}
+        onOpenChange={(open) => {
+          setLogDialogOpen(open);
+          if (!open) setEditingLog(null);
+        }}
         preSelectedEquipmentId={selectedEquipment}
+        editLog={editingLog}
       />
 
       <ManageEquipmentDialog
