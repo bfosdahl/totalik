@@ -45,8 +45,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import UserSelect from "@/components/audits/UserSelect";
 import { DeviationFileUpload, PendingFile } from "./DeviationFileUpload";
 
-// Valid database category values
-export type DeviationCategory = "quality" | "safety" | "environment" | "documentation" | "other" | "process" | "equipment" | "personnel";
+// Use shared type
+import type { DeviationCategory } from "@/hooks/useDeviations";
 
 export interface NewDeviation {
   title: string;

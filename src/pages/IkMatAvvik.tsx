@@ -36,6 +36,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useIkMatOverdueSync } from "@/hooks/useIkMatOverdueSync";
 
 const priorityConfig = {
   low: { label: "Lav", color: "bg-muted text-muted-foreground" },
@@ -82,8 +83,8 @@ const ikMatCategoryConfig: Record<IkMatCategory, { label: string; color: string;
   other_food: { label: "Annet", color: "bg-muted text-muted-foreground" },
 };
 
-// Keep original for compatibility with dialog
-type DeviationCategory = "quality" | "safety" | "environment" | "documentation" | "other" | "process" | "equipment" | "personnel";
+// Use shared type from useDeviations
+import type { DeviationCategory } from "@/hooks/useDeviations";
 
 interface DeviationForDialog {
   id: string;
@@ -120,6 +121,8 @@ const IkMatAvvik = () => {
   const navigate = useNavigate();
   const { hasModule, isLoading: modulesLoading } = useCompanyModules();
   const { deviations, isLoading, createDeviation, updateDeviation, deleteDeviation, refetch } = useDeviations();
+  // Auto-sync overdue Kontroll tasks as deviations
+  useIkMatOverdueSync();
   const { users, getUserDisplayName } = useCompanyUsers();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
