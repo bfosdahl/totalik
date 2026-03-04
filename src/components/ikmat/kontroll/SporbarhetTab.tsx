@@ -261,6 +261,10 @@ export const SporbarhetTab = () => {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
       />
+      <VaremottakQRCodeDialog
+        open={isQrDialogOpen}
+        onOpenChange={setIsQrDialogOpen}
+      />
     </div>
   );
 };
