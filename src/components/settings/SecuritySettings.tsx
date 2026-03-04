@@ -294,6 +294,103 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
         </div>
       </motion.div>
 
+      {/* Profile / Email Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="bg-card rounded-xl border border-border shadow-card p-6"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <User className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold">Brukernavn og e-post</h3>
+          </div>
+          {!editingProfile && (
+            <Button variant="outline" size="sm" onClick={() => setEditingProfile(true)}>
+              Rediger
+            </Button>
+          )}
+        </div>
+
+        {editingProfile ? (
+          <div className="space-y-4 max-w-md">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="first-name">Fornavn</Label>
+                <Input
+                  id="first-name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Fornavn"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="last-name">Etternavn</Label>
+                <Input
+                  id="last-name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Etternavn"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">E-postadresse</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="din@epost.no"
+                  className="pl-10"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Ved endring av e-post vil du motta en bekreftelseslenke på den nye adressen.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleSaveProfile} disabled={savingProfile}>
+                {savingProfile ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Lagrer...
+                  </>
+                ) : (
+                  "Lagre endringer"
+                )}
+              </Button>
+              <Button variant="outline" onClick={() => {
+                setEditingProfile(false);
+                setFirstName(profile?.first_name || "");
+                setLastName(profile?.last_name || "");
+                setNewEmail(profile?.email || "");
+              }}>
+                Avbryt
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3 max-w-md">
+            <div className="flex justify-between py-2 border-b border-border">
+              <span className="text-muted-foreground">Navn</span>
+              <span className="font-medium">
+                {profile?.first_name || profile?.last_name
+                  ? `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim()
+                  : "Ikke angitt"}
+              </span>
+            </div>
+            <div className="flex justify-between py-2">
+              <span className="text-muted-foreground">E-post</span>
+              <span className="font-medium">{profile?.email || "Ikke angitt"}</span>
+            </div>
+          </div>
+        )}
+      </motion.div>
+
       {/* Password Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
