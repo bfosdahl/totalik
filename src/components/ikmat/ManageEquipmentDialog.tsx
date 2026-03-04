@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/table";
 import { useIkMatTemperature, type TemperatureEquipment } from "@/hooks/useIkMatTemperature";
 import { EQUIPMENT_TYPE_DEFAULTS } from "@/lib/temperatureGuidelines";
-import { Plus, Trash2, Settings, QrCode } from "lucide-react";
+import { Plus, Trash2, Settings, QrCode, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { EquipmentQRCodeDialog } from "./EquipmentQRCodeDialog";
 
@@ -38,9 +38,10 @@ export function ManageEquipmentDialog({
   open,
   onOpenChange,
 }: ManageEquipmentDialogProps) {
-  const { equipment, addEquipment, deleteEquipment } = useIkMatTemperature();
+  const { equipment, addEquipment, updateEquipment, deleteEquipment } = useIkMatTemperature();
   
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingEquipment, setEditingEquipment] = useState<TemperatureEquipment | null>(null);
   const [qrEquipment, setQrEquipment] = useState<TemperatureEquipment | null>(null);
   const [newEquipment, setNewEquipment] = useState({
     name: "",
@@ -87,6 +88,51 @@ export function ManageEquipmentDialog({
     setShowAddForm(false);
   };
 
+  const handleStartEdit = (equip: TemperatureEquipment) => {
+    setEditingEquipment(equip);
+    setNewEquipment({
+      name: equip.name,
+      equipment_type: equip.equipment_type,
+      location: equip.location || "",
+      min_temp: equip.min_temp?.toString() || "",
+      max_temp: equip.max_temp?.toString() || "",
+      measurement_frequency: equip.measurement_frequency,
+    });
+    setShowAddForm(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingEquipment || !newEquipment.name) {
+      toast.error("Navn er påkrevd");
+      return;
+    }
+
+    await updateEquipment.mutateAsync({
+      id: editingEquipment.id,
+      name: newEquipment.name,
+      equipment_type: newEquipment.equipment_type as TemperatureEquipment['equipment_type'],
+      location: newEquipment.location || null,
+      min_temp: newEquipment.min_temp ? parseFloat(newEquipment.min_temp) : null,
+      max_temp: newEquipment.max_temp ? parseFloat(newEquipment.max_temp) : null,
+      measurement_frequency: newEquipment.measurement_frequency,
+    });
+
+    cancelForm();
+  };
+
+  const cancelForm = () => {
+    setEditingEquipment(null);
+    setShowAddForm(false);
+    setNewEquipment({
+      name: "",
+      equipment_type: "fridge",
+      location: "",
+      min_temp: "",
+      max_temp: "",
+      measurement_frequency: "daily",
+    });
+  };
+
   const handleDelete = async (id: string, name: string) => {
     if (confirm(`Er du sikker på at du vil fjerne "${name}"?`)) {
       await deleteEquipment.mutateAsync(id);
@@ -119,6 +165,15 @@ export function ManageEquipmentDialog({
                         </p>
                       </div>
                       <div className="flex gap-1 flex-shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleStartEdit(equip)}
+                          title="Rediger"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -179,6 +234,14 @@ export function ManageEquipmentDialog({
                             <Button
                               variant="ghost"
                               size="icon"
+                              onClick={() => handleStartEdit(equip)}
+                              title="Rediger"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={() => setQrEquipment(equip)}
                               title="QR-kode"
                             >
@@ -204,7 +267,9 @@ export function ManageEquipmentDialog({
           {/* Add form */}
           {showAddForm ? (
             <div className="border rounded-lg p-3 sm:p-4 space-y-3 sm:space-y-4">
-              <h4 className="font-medium text-sm sm:text-base">Legg til nytt utstyr</h4>
+              <h4 className="font-medium text-sm sm:text-base">
+                {editingEquipment ? "Rediger utstyr" : "Legg til nytt utstyr"}
+              </h4>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-1.5">
@@ -287,10 +352,16 @@ export function ManageEquipmentDialog({
               </div>
 
               <div className="flex gap-2 pt-2">
-                <Button size="sm" onClick={handleAdd} disabled={addEquipment.isPending}>
-                  {addEquipment.isPending ? "Legger til..." : "Legg til"}
+                <Button 
+                  size="sm" 
+                  onClick={editingEquipment ? handleSaveEdit : handleAdd} 
+                  disabled={addEquipment.isPending || updateEquipment.isPending}
+                >
+                  {editingEquipment
+                    ? (updateEquipment.isPending ? "Lagrer..." : "Lagre endringer")
+                    : (addEquipment.isPending ? "Legger til..." : "Legg til")}
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => setShowAddForm(false)}>
+                <Button size="sm" variant="outline" onClick={cancelForm}>
                   Avbryt
                 </Button>
               </div>
