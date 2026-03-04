@@ -62,6 +62,7 @@ const ikMatCategories = [
   "hygiene",         // Personlig hygiene
   "contamination",   // Krysskontaminering
   "receiving",       // Varemottak
+  "traceability",    // Sporbarhet/varemottak (fra kontroll)
   "other_food",      // Annet matsikkerhet
 ] as const;
 
@@ -77,6 +78,7 @@ const ikMatCategoryConfig: Record<IkMatCategory, { label: string; color: string;
   hygiene: { label: "Personlig hygiene", color: "bg-pink-500/10 text-pink-600" },
   contamination: { label: "Krysskontaminering", color: "bg-rose-500/10 text-rose-600" },
   receiving: { label: "Varemottak", color: "bg-teal-500/10 text-teal-600" },
+  traceability: { label: "Sporbarhet", color: "bg-cyan-500/10 text-cyan-600" },
   other_food: { label: "Annet", color: "bg-muted text-muted-foreground" },
 };
 
@@ -321,15 +323,40 @@ const IkMatAvvik = () => {
     return success;
   };
 
+  // Update deviation fields (title, description, priority etc.)
+  const handleUpdateDeviation = async (
+    id: string, 
+    updates: { title?: string; description?: string; category?: string; priority?: string; due_date?: string }
+  ): Promise<boolean> => {
+    const success = await updateDeviation(id, updates as any);
+    if (success) {
+      setSelectedDeviation(prev => prev ? {
+        ...prev,
+        ...(updates.title && { title: updates.title }),
+        ...(updates.description !== undefined && { description: updates.description }),
+        ...(updates.priority && { priority: updates.priority as DeviationForDialog["priority"] }),
+      } : null);
+      refetch();
+    }
+    return success;
+  };
+
   // Delete a single deviation
   const handleDeleteDeviation = async (id: string) => {
-    if (!confirm("Er du sikker på at du vil slette dette avviket?")) return;
+    if (!confirm("Er du sikker på at du vil slette dette avviket? Dette kan ikke angres.")) return;
     
     const success = await deleteDeviation(id);
     if (success) {
       setIsDetailOpen(false);
       setSelectedDeviation(null);
     }
+  };
+
+  // Quick delete from list (without opening detail)
+  const handleQuickDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (!confirm("Er du sikker på at du vil slette dette avviket?")) return;
+    await deleteDeviation(id);
   };
 
   // Delete all open IK-MAT deviations (for system startup/reset)
@@ -598,9 +625,19 @@ const IkMatAvvik = () => {
                         </span>
                       </div>
                     </div>
-                    <Badge className={cn("text-xs whitespace-nowrap", statusConfig[deviation.status]?.color || "")}>
-                      {statusConfig[deviation.status]?.label || deviation.status}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge className={cn("text-xs whitespace-nowrap", statusConfig[deviation.status]?.color || "")}>
+                        {statusConfig[deviation.status]?.label || deviation.status}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive flex-shrink-0"
+                        onClick={(e) => handleQuickDelete(e, deviation.id)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 </motion.div>
               );
@@ -625,6 +662,7 @@ const IkMatAvvik = () => {
           onAssigneeChange={handleAssigneeChange}
           onFollowUpChange={handleFollowUpChange}
           onDelete={handleDeleteDeviation}
+          onUpdate={handleUpdateDeviation}
         />
       )}
     </AppLayout>

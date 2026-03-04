@@ -12,7 +12,9 @@ import {
   ClipboardCheck,
   Save,
   Loader2,
-  Trash2
+  Trash2,
+  Pencil,
+  X
 } from "lucide-react";
 import {
   Dialog,
@@ -22,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -112,6 +115,13 @@ interface DeviationDetailDialogProps {
     preventive_measures?: string;
   }) => Promise<boolean>;
   onDelete?: (id: string) => void;
+  onUpdate?: (id: string, updates: { 
+    title?: string; 
+    description?: string; 
+    category?: string; 
+    priority?: string;
+    due_date?: string;
+  }) => Promise<boolean>;
 }
 
 export function DeviationDetailDialog({ 
@@ -121,7 +131,8 @@ export function DeviationDetailDialog({
   onStatusChange,
   onAssigneeChange,
   onFollowUpChange,
-  onDelete
+  onDelete,
+  onUpdate
 }: DeviationDetailDialogProps) {
   const { users, getUserDisplayName } = useCompanyUsers();
   const { company } = useAuth();
@@ -130,6 +141,13 @@ export function DeviationDetailDialog({
   const { comments } = useDeviationComments(deviation?.id || null);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [isSavingFollowUp, setIsSavingFollowUp] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  
+  // Edit state
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPriority, setEditPriority] = useState<Deviation["priority"]>("medium");
   
   // Local state for follow-up fields
   const [immediateActions, setImmediateActions] = useState("");
@@ -139,13 +157,17 @@ export function DeviationDetailDialog({
   // Track if any follow-up field has been modified
   const [hasFollowUpChanges, setHasFollowUpChanges] = useState(false);
 
-  // Initialize follow-up fields when deviation changes
+  // Initialize fields when deviation changes
   useEffect(() => {
     if (deviation) {
       setImmediateActions(deviation.immediate_actions || "");
       setRootCauseAnalysis(deviation.root_cause_analysis || "");
       setPreventiveMeasures(deviation.preventive_measures || "");
       setHasFollowUpChanges(false);
+      setEditTitle(deviation.title);
+      setEditDescription(deviation.description || "");
+      setEditPriority(deviation.priority);
+      setIsEditing(false);
     }
   }, [deviation]);
   
@@ -179,6 +201,27 @@ export function DeviationDetailDialog({
       }
     } finally {
       setIsSavingFollowUp(false);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!onUpdate) return;
+    setIsSavingEdit(true);
+    try {
+      const success = await onUpdate(deviation.id, {
+        title: editTitle.trim(),
+        description: editDescription.trim(),
+        priority: editPriority,
+      });
+      if (success) {
+        setIsEditing(false);
+        toast({
+          title: "Avvik oppdatert",
+          description: "Endringene ble lagret.",
+        });
+      }
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
@@ -335,23 +378,72 @@ export function DeviationDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1 flex-wrap">
-            <span className="font-mono text-xs">{deviation.id}</span>
-            {deviation.category && categoryConfig[deviation.category] && (
-              <Badge className={categoryConfig[deviation.category].color}>
-                {deviation.category}
-              </Badge>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1 flex-wrap">
+              <span className="font-mono text-xs">{deviation.deviation_number || deviation.id}</span>
+              {!isEditing && deviation.priority && priorityConfig[deviation.priority] && (
+                <Badge className={priorityConfig[deviation.priority].color}>
+                  {priorityConfig[deviation.priority].label}
+                </Badge>
+              )}
+            </div>
+            {onUpdate && !isEditing && (
+              <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)} className="gap-1.5">
+                <Pencil className="w-3.5 h-3.5" />
+                Rediger
+              </Button>
             )}
-            {deviation.priority && priorityConfig[deviation.priority] && (
-              <Badge className={priorityConfig[deviation.priority].color}>
-                {priorityConfig[deviation.priority].label}
-              </Badge>
+            {isEditing && (
+              <div className="flex gap-1.5">
+                <Button variant="ghost" size="sm" onClick={() => {
+                  setIsEditing(false);
+                  setEditTitle(deviation.title);
+                  setEditDescription(deviation.description || "");
+                  setEditPriority(deviation.priority);
+                }}>
+                  <X className="w-3.5 h-3.5" />
+                </Button>
+                <Button size="sm" onClick={handleSaveEdit} disabled={isSavingEdit} className="gap-1.5">
+                  {isSavingEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                  Lagre
+                </Button>
+              </div>
             )}
           </div>
-          <DialogTitle className="text-lg sm:text-xl">{deviation.title}</DialogTitle>
+          {isEditing ? (
+            <Input
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className="text-lg font-semibold"
+              placeholder="Tittel"
+            />
+          ) : (
+            <DialogTitle className="text-lg sm:text-xl">{deviation.title}</DialogTitle>
+          )}
         </DialogHeader>
 
         <div className="space-y-4 sm:space-y-6 overflow-y-auto flex-1 min-h-0 pr-1">
+          {/* Priority selector in edit mode */}
+          {isEditing && (
+            <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Flag className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Prioritet</span>
+              </div>
+              <Select value={editPriority} onValueChange={(v) => setEditPriority(v as Deviation["priority"])}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Lav</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">Høy</SelectItem>
+                  <SelectItem value="critical">Kritisk</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Status selector */}
           <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
             <div className="flex items-center gap-2">
@@ -380,9 +472,18 @@ export function DeviationDetailDialog({
               <FileText className="w-4 h-4 text-muted-foreground" />
               Beskrivelse
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed pl-6">
-              {deviation.description || "Ingen beskrivelse"}
-            </p>
+            {isEditing ? (
+              <Textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                className="min-h-[80px] text-sm"
+                placeholder="Beskrivelse av avviket..."
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground leading-relaxed pl-6 whitespace-pre-wrap">
+                {deviation.description || "Ingen beskrivelse"}
+              </p>
+            )}
           </div>
 
           <Separator />
