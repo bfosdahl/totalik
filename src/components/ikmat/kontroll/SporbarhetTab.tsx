@@ -170,11 +170,20 @@ function RecordCard({
 }
 
 export const SporbarhetTab = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { profile } = useAuth();
   const { records, isLoading, getDocumentUrl } = useIkMatTraceability(profile?.company_id);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("action") === "ny") {
+      setIsDialogOpen(true);
+      searchParams.delete("action");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const filteredRecords = records.filter((record) => {
     const search = searchQuery.toLowerCase();
