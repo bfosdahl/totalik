@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { 
   AlertTriangle, 
@@ -117,6 +118,7 @@ interface DeviationForDialog {
 
 const IkMatAvvik = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { profile, company } = useAuth();
   const navigate = useNavigate();
   const { hasModule, isLoading: modulesLoading } = useCompanyModules();
@@ -378,6 +380,8 @@ const IkMatAvvik = () => {
     const success = await deleteDeviation(id);
     if (success) {
       if (dev) await dismissAutoDeviation(dev);
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-calendar-events'] });
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-dismissed-auto-deviations'] });
       setIsDetailOpen(false);
       setSelectedDeviation(null);
     }
@@ -389,7 +393,11 @@ const IkMatAvvik = () => {
     if (!confirm("Er du sikker på at du vil slette dette avviket?")) return;
     const dev = foodSafetyDeviations.find(d => d.id === id);
     const success = await deleteDeviation(id);
-    if (success && dev) await dismissAutoDeviation(dev);
+    if (success && dev) {
+      await dismissAutoDeviation(dev);
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-calendar-events'] });
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-dismissed-auto-deviations'] });
+    }
   };
 
   // Reset deviations in current status/category scope
@@ -463,6 +471,10 @@ const IkMatAvvik = () => {
         title: "Avvik nullstilt",
         description: `${deviationsToDelete.length} avvik ble slettet fra valgt visning.`,
       });
+
+      // Invalidate calendar queries so Kontroll tab updates
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-calendar-events'] });
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-dismissed-auto-deviations'] });
 
       await refetch();
     } catch (error) {

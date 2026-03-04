@@ -25,7 +25,8 @@ import {
   ListTodo,
   ChevronLeft,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  RotateCcw
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIkMatScheduledTasks, CalendarEvent } from "@/hooks/useIkMatScheduledTasks";
@@ -37,7 +38,7 @@ import { nb } from "date-fns/locale";
 export const KalenderTab = () => {
   const { company } = useAuth();
   const navigate = useNavigate();
-  const { tasks, tasksLoading, useCalendarEvents, generateTaskInstances, completeTask } = useIkMatScheduledTasks();
+  const { tasks, tasksLoading, useCalendarEvents, generateTaskInstances, completeTask, dismissOverdueEvents } = useIkMatScheduledTasks();
   
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
@@ -197,6 +198,23 @@ export const KalenderTab = () => {
               <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-red-500" />
                 Avvik
+                {overdueTasks.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs ml-auto text-muted-foreground hover:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (overdueTasks.length === 0) return;
+                      if (!confirm(`Er du sikker på at du vil nullstille ${overdueTasks.length} avvik fra kalenderen? Dette fjerner også tilhørende avvik fra avvikregisteret.`)) return;
+                      dismissOverdueEvents.mutate(overdueTasks);
+                    }}
+                    disabled={dismissOverdueEvents.isPending}
+                  >
+                    <RotateCcw className="h-3 w-3 mr-1" />
+                    Nullstill
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="py-2 px-3 sm:px-6">

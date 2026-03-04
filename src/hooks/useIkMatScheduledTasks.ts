@@ -173,10 +173,24 @@ export const useIkMatScheduledTasks = () => {
     return data || [];
   };
 
+  // Fetch dismissed auto-deviations to filter calendar overdue events
+  const { data: dismissedTitles } = useQuery({
+    queryKey: ['ik-mat-dismissed-auto-deviations', company?.id],
+    queryFn: async () => {
+      if (!company?.id) return new Set<string>();
+      const { data } = await supabase
+        .from('ik_mat_dismissed_auto_deviations')
+        .select('deviation_title')
+        .eq('company_id', company.id);
+      return new Set((data || []).map(d => d.deviation_title));
+    },
+    enabled: !!company?.id,
+  });
+
   // Get all calendar events for a date range
   const useCalendarEvents = (startDate: Date, endDate: Date) => {
     return useQuery({
-      queryKey: ['ik-mat-calendar-events', company?.id, format(startDate, 'yyyy-MM-dd'), format(endDate, 'yyyy-MM-dd'), temperatureEquipment?.length, cleaningTasks?.length, generatedCleaningPlan?.length],
+      queryKey: ['ik-mat-calendar-events', company?.id, format(startDate, 'yyyy-MM-dd'), format(endDate, 'yyyy-MM-dd'), temperatureEquipment?.length, cleaningTasks?.length, generatedCleaningPlan?.length, dismissedTitles?.size],
       queryFn: async (): Promise<CalendarEvent[]> => {
         if (!company?.id) return [];
 
@@ -251,6 +265,13 @@ export const useIkMatScheduledTasks = () => {
 
                 if (!alreadyLogged) {
                   const isPast = isBefore(startOfDay(currentDate), startOfDay(new Date()));
+                  
+                  // Check if this overdue event was dismissed
+                  if (isPast && dismissedTitles) {
+                    const dismissTitle = `Temperaturlogg ikke utført: ${equip.name} (${dateStr})`;
+                    if (dismissedTitles.has(dismissTitle)) return;
+                  }
+
                   events.push({
                     id: `temp-pending-${equip.id}-${dateStr}`,
                     title: `🌡️ ${equip.name}`,
@@ -298,7 +319,15 @@ export const useIkMatScheduledTasks = () => {
         // Generate pending cleaning tasks
         const allCleaningTasks = [...(cleaningTasks || []), ...generatedCleaningPlan];
         if (allCleaningTasks.length > 0) {
-          let currentDate = startOfDay(startDate);
+          // Determine earliest cleaning task creation date (only check from the day after)
+          const customTaskDates = (cleaningTasks || []).map((t: any) => new Date(t.created_at).getTime());
+          const earliestCleaningDate = customTaskDates.length > 0
+            ? startOfDay(addDays(new Date(Math.min(...customTaskDates)), 1))
+            : null;
+
+          let currentDate = earliestCleaningDate && isBefore(startOfDay(startDate), earliestCleaningDate)
+            ? new Date(earliestCleaningDate)
+            : startOfDay(startDate);
           const end = startOfDay(endDate);
 
           while (currentDate <= end) {
@@ -321,8 +350,6 @@ export const useIkMatScheduledTasks = () => {
               }
 
               if (shouldShow) {
-                // Check if cleaning was logged for this frequency this day
-                // Need to normalize frequency comparison (daglig/daily, ukentlig/weekly, etc.)
                 const normalizeFreq = (f: string) => {
                   const lower = (f || '').toLowerCase();
                   if (lower === 'daglig' || lower === 'daily') return 'daily';
@@ -338,6 +365,13 @@ export const useIkMatScheduledTasks = () => {
 
                 if (!alreadyLogged) {
                   const isPast = isBefore(startOfDay(currentDate), startOfDay(new Date()));
+
+                  // Check if this overdue event was dismissed
+                  if (isPast && dismissedTitles) {
+                    const dismissTitle = `Renhold ikke utført (${dateStr})`;
+                    if (dismissedTitles.has(dismissTitle)) return;
+                  }
+
                   const taskCount = allCleaningTasks.filter((t: any) => 
                     (t.frequency || 'daglig').toLowerCase() === freqLower
                   ).length;
@@ -519,6 +553,7 @@ export const useIkMatScheduledTasks = () => {
     while (currentDate <= end) {
       const dayOfWeek = currentDate.getDay();
       const dayOfMonth = currentDate.getDate();
+      const dateStr = format(currentDate, 'yyyy-MM-dd');
 
       scheduledTasks.forEach((task) => {
         let shouldShow = false;
@@ -541,12 +576,20 @@ export const useIkMatScheduledTasks = () => {
           const taskCreatedDate = task.created_at ? startOfDay(addDays(new Date(task.created_at), 1)) : null;
           if (taskCreatedDate && isBefore(currentDate, taskCreatedDate)) return;
 
+          const isPast = isBefore(currentDate, startOfDay(new Date()));
+          
+          // Check if this overdue event was dismissed
+          if (isPast && dismissedTitles) {
+            const dismissTitle = `Oppgave ikke utført: ${task.title} (${dateStr})`;
+            if (dismissedTitles.has(dismissTitle)) return;
+          }
+
           events.push({
             id: `scheduled-${task.id}-${format(currentDate, 'yyyy-MM-dd')}`,
             title: task.title,
             date: new Date(currentDate),
             type: 'task',
-            status: isBefore(currentDate, startOfDay(new Date())) ? 'overdue' : 'pending',
+            status: isPast ? 'overdue' : 'pending',
             taskId: task.id,
             details: task,
           });
@@ -559,6 +602,63 @@ export const useIkMatScheduledTasks = () => {
     return events;
   };
 
+  // Dismiss all overdue events (used by Kontroll "Nullstill" button)
+  const dismissOverdueEvents = useMutation({
+    mutationFn: async (overdueEvents: CalendarEvent[]) => {
+      if (!company?.id || !profile) throw new Error('Mangler info');
+
+      // Build dismiss titles from overdue events
+      const titles: string[] = [];
+      for (const event of overdueEvents) {
+        const dateStr = format(event.date, 'yyyy-MM-dd');
+        if (event.type === 'temperature') {
+          const equipName = event.title.replace('🌡️ ', '');
+          titles.push(`Temperaturlogg ikke utført: ${equipName} (${dateStr})`);
+        } else if (event.type === 'cleaning') {
+          titles.push(`Renhold ikke utført (${dateStr})`);
+        } else if (event.type === 'task' && event.details?.title) {
+          titles.push(`Oppgave ikke utført: ${event.details.title} (${dateStr})`);
+        }
+      }
+
+      if (titles.length > 0) {
+        // Batch upsert dismissed titles
+        const batchSize = 50;
+        for (let i = 0; i < titles.length; i += batchSize) {
+          const batch = titles.slice(i, i + batchSize).map(title => ({
+            company_id: company.id,
+            deviation_title: title,
+            dismissed_by_id: profile.user_id || null,
+          }));
+          await supabase.from('ik_mat_dismissed_auto_deviations').upsert(
+            batch,
+            { onConflict: 'company_id,deviation_title' }
+          );
+        }
+      }
+
+      // Also delete matching deviations from the deviations table
+      const { error } = await supabase
+        .from('deviations')
+        .delete()
+        .eq('company_id', company.id)
+        .eq('type', 'ik_mat')
+        .in('status', ['open', 'in-progress']);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-calendar-events'] });
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-dismissed-auto-deviations'] });
+      queryClient.invalidateQueries({ queryKey: ['deviations'] });
+      toast.success('Avvik nullstilt fra kalenderen');
+    },
+    onError: (error: Error) => {
+      console.error('Error dismissing overdue events:', error);
+      toast.error('Kunne ikke nullstille avvik');
+    },
+  });
+
   return {
     tasks,
     tasksLoading,
@@ -568,5 +668,6 @@ export const useIkMatScheduledTasks = () => {
     completeTask,
     useCalendarEvents,
     generateTaskInstances,
+    dismissOverdueEvents,
   };
 };
