@@ -345,12 +345,29 @@ const IkMatAvvik = () => {
     return success;
   };
 
+  // Track dismissed auto-deviations so sync doesn't re-create them
+  const dismissAutoDeviation = async (deviation: DeviationType) => {
+    if (deviation.additional_info === 'Automatisk opprettet fra Kontroll' && company?.id) {
+      try {
+        await supabase.from('ik_mat_dismissed_auto_deviations').upsert({
+          company_id: company.id,
+          deviation_title: deviation.title,
+          dismissed_by_id: profile?.user_id || null,
+        }, { onConflict: 'company_id,deviation_title' });
+      } catch (e) {
+        console.error('Failed to track dismissed deviation:', e);
+      }
+    }
+  };
+
   // Delete a single deviation
   const handleDeleteDeviation = async (id: string) => {
     if (!confirm("Er du sikker på at du vil slette dette avviket? Dette kan ikke angres.")) return;
     
+    const dev = foodSafetyDeviations.find(d => d.id === id);
     const success = await deleteDeviation(id);
     if (success) {
+      if (dev) await dismissAutoDeviation(dev);
       setIsDetailOpen(false);
       setSelectedDeviation(null);
     }
@@ -360,7 +377,9 @@ const IkMatAvvik = () => {
   const handleQuickDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!confirm("Er du sikker på at du vil slette dette avviket?")) return;
-    await deleteDeviation(id);
+    const dev = foodSafetyDeviations.find(d => d.id === id);
+    const success = await deleteDeviation(id);
+    if (success && dev) await dismissAutoDeviation(dev);
   };
 
   // Delete all open IK-MAT deviations (for system startup/reset)
@@ -384,7 +403,10 @@ const IkMatAvvik = () => {
     
     for (const deviation of openDeviations) {
       const success = await deleteDeviation(deviation.id);
-      if (success) successCount++;
+      if (success) {
+        await dismissAutoDeviation(deviation);
+        successCount++;
+      }
     }
     
     setIsDeletingAll(false);
