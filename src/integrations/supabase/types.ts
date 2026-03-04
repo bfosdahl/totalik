@@ -6474,6 +6474,38 @@ export type Database = {
           },
         ]
       }
+      ik_mat_dismissed_auto_deviations: {
+        Row: {
+          company_id: string
+          deviation_title: string
+          dismissed_at: string
+          dismissed_by_id: string | null
+          id: string
+        }
+        Insert: {
+          company_id: string
+          deviation_title: string
+          dismissed_at?: string
+          dismissed_by_id?: string | null
+          id?: string
+        }
+        Update: {
+          company_id?: string
+          deviation_title?: string
+          dismissed_at?: string
+          dismissed_by_id?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_dismissed_auto_deviations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_mat_poster_catalog: {
         Row: {
           category: string

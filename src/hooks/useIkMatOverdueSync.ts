@@ -47,6 +47,16 @@ export function useIkMatOverdueSync() {
         .eq('type', 'ik_mat')
         .gte('created_at', lookbackStart.toISOString());
 
+      // 3b. Get dismissed auto-deviations (deleted by user, should not be re-created)
+      const { data: dismissedItems } = await supabase
+        .from('ik_mat_dismissed_auto_deviations')
+        .select('deviation_title')
+        .eq('company_id', company.id);
+
+      const dismissedTitles = new Set(
+        (dismissedItems || []).map(d => d.deviation_title)
+      );
+
       const existingTitles = new Set(
         (existingDeviations || []).map(d => `${d.title}__${format(new Date(d.created_at), 'yyyy-MM-dd')}`)
       );
@@ -94,7 +104,7 @@ export function useIkMatOverdueSync() {
               if (!tempLogSet.has(key)) {
                 const title = `Temperaturlogg ikke utført: ${(equip as any).name} (${dateStr})`;
                 const dedupeKey = `${title}__${dateStr}`;
-                if (!existingTitles.has(dedupeKey)) {
+                if (!existingTitles.has(dedupeKey) && !dismissedTitles.has(title)) {
                   existingTitles.add(dedupeKey);
                   maxNum++;
                   const dueDate = new Date(currentDate);
@@ -163,7 +173,7 @@ export function useIkMatOverdueSync() {
           if (hasDailyTasks && !cleaningLogSet.has(dateStr)) {
             const title = `Renhold ikke utført (${dateStr})`;
             const dedupeKey = `${title}__${dateStr}`;
-            if (!existingTitles.has(dedupeKey)) {
+            if (!existingTitles.has(dedupeKey) && !dismissedTitles.has(title)) {
               existingTitles.add(dedupeKey);
               maxNum++;
               const dueDate = new Date(currentDate);
@@ -230,7 +240,7 @@ export function useIkMatOverdueSync() {
               if (!completedSet.has(key)) {
                 const title = `Oppgave ikke utført: ${task.title} (${dateStr})`;
                 const dedupeKey = `${title}__${dateStr}`;
-                if (!existingTitles.has(dedupeKey)) {
+                if (!existingTitles.has(dedupeKey) && !dismissedTitles.has(title)) {
                   existingTitles.add(dedupeKey);
                   maxNum++;
                   const dueDate = new Date(currentDate);
