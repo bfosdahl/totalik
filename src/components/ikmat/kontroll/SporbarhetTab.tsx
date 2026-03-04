@@ -173,6 +173,7 @@ export const SporbarhetTab = () => {
   const { records, isLoading, getDocumentUrl } = useIkMatTraceability(profile?.company_id);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
 
   const filteredRecords = records.filter((record) => {
     const search = searchQuery.toLowerCase();
@@ -199,11 +200,16 @@ export const SporbarhetTab = () => {
             Registrer og dokumenter varemottak for sporbarhet
           </p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nytt varemottak
-        </Button>
-      </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setIsQrDialogOpen(true)}>
+            <QrCode className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">QR-kode</span>
+          </Button>
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nytt varemottak
+          </Button>
+        </div>
 
       <Card>
         <CardHeader>
