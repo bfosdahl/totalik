@@ -3,10 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, FileText, Package, Calendar, Thermometer, Download } from "lucide-react";
+import { Plus, Search, FileText, Package, Calendar, Thermometer, Download, QrCode } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIkMatTraceability, TraceabilityRecord } from "@/hooks/useIkMatTraceability";
 import { NewTraceabilityDialog } from "@/components/ikmat/NewTraceabilityDialog";
+import { VaremottakQRCodeDialog } from "@/components/ikmat/VaremottakQRCodeDialog";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
