@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,24 +17,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CreateDrivingLogInput } from "@/hooks/useDrivingLog";
-import { format } from "date-fns";
+import { DrivingLogEntry } from "@/hooks/useDrivingLog";
+import { format, parseISO } from "date-fns";
 
-interface AddTripDialogProps {
+interface EditTripDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: CreateDrivingLogInput) => void;
+  onSubmit: (data: { id: string } & Record<string, any>) => void;
   isPending: boolean;
-  lastOdometerEnd?: number | null;
+  trip: DrivingLogEntry | null;
 }
 
-export function AddTripDialog({ open, onOpenChange, onSubmit, isPending, lastOdometerEnd }: AddTripDialogProps) {
-  const [tripDate, setTripDate] = useState(format(new Date(), "yyyy-MM-dd"));
+export function EditTripDialog({ open, onOpenChange, onSubmit, isPending, trip }: EditTripDialogProps) {
+  const [tripDate, setTripDate] = useState("");
   const [purpose, setPurpose] = useState("");
   const [startLocation, setStartLocation] = useState("");
   const [endLocation, setEndLocation] = useState("");
   const [viaLocations, setViaLocations] = useState("");
-  const [odometerStart, setOdometerStart] = useState(lastOdometerEnd?.toString() || "");
+  const [odometerStart, setOdometerStart] = useState("");
   const [odometerEnd, setOdometerEnd] = useState("");
   const [vehicleType, setVehicleType] = useState("company");
   const [vehicleRegistration, setVehicleRegistration] = useState("");
@@ -44,27 +44,41 @@ export function AddTripDialog({ open, onOpenChange, onSubmit, isPending, lastOdo
   const [passengers, setPassengers] = useState("");
   const [notes, setNotes] = useState("");
 
+  useEffect(() => {
+    if (trip && open) {
+      setTripDate(format(parseISO(trip.trip_date), "yyyy-MM-dd"));
+      setPurpose(trip.purpose || "");
+      setStartLocation(trip.start_location);
+      setEndLocation(trip.end_location || "");
+      setViaLocations(trip.via_locations || "");
+      setOdometerStart(trip.odometer_start?.toString() || "");
+      setOdometerEnd(trip.odometer_end?.toString() || "");
+      setVehicleType(trip.vehicle_type);
+      setVehicleRegistration(trip.vehicle_registration || "");
+      setVehicleDescription(trip.vehicle_description || "");
+      setTripType(trip.trip_type);
+      setPassengerCount(trip.passenger_count?.toString() || "0");
+      setPassengers(trip.passengers || "");
+      setNotes(trip.notes || "");
+    }
+  }, [trip, open]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const start = odometerStart ? parseFloat(odometerStart) : 0;
+    if (!trip) return;
+
+    const start = parseFloat(odometerStart);
     const end = odometerEnd ? parseFloat(odometerEnd) : undefined;
-    
-    // Only validate km if both are provided
-    if (odometerStart && odometerEnd) {
-      const s = parseFloat(odometerStart);
-      const e = parseFloat(odometerEnd);
-      if (isNaN(s) || isNaN(e) || e <= s) return;
-    }
 
     onSubmit({
+      id: trip.id,
       trip_date: tripDate,
-      purpose: purpose || "Ikke angitt ennå",
+      purpose: purpose || undefined,
       start_location: startLocation,
-      end_location: endLocation || startLocation,
+      end_location: endLocation || undefined,
       via_locations: viaLocations || undefined,
-      odometer_start: start,
-      odometer_end: end ?? start,
+      odometer_start: isNaN(start) ? undefined : start,
+      odometer_end: end && !isNaN(end) ? end : undefined,
       vehicle_type: vehicleType,
       vehicle_registration: vehicleRegistration || undefined,
       vehicle_description: vehicleDescription || undefined,
@@ -74,16 +88,6 @@ export function AddTripDialog({ open, onOpenChange, onSubmit, isPending, lastOdo
       notes: notes || undefined,
     });
 
-    // Reset form
-    setPurpose("");
-    setStartLocation("");
-    setEndLocation("");
-    setViaLocations("");
-    setOdometerStart(odometerEnd || odometerStart);
-    setOdometerEnd("");
-    setPassengerCount("0");
-    setPassengers("");
-    setNotes("");
     onOpenChange(false);
   };
 
@@ -98,16 +102,16 @@ export function AddTripDialog({ open, onOpenChange, onSubmit, isPending, lastOdo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Registrer ny tur</DialogTitle>
+          <DialogTitle>Rediger tur</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="tripDate">Dato *</Label>
-              <Input id="tripDate" type="date" value={tripDate} onChange={e => setTripDate(e.target.value)} required />
+              <Label htmlFor="editTripDate">Dato *</Label>
+              <Input id="editTripDate" type="date" value={tripDate} onChange={e => setTripDate(e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tripType">Type kjøring *</Label>
+              <Label htmlFor="editTripType">Type kjøring *</Label>
               <Select value={tripType} onValueChange={setTripType}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -120,34 +124,34 @@ export function AddTripDialog({ open, onOpenChange, onSubmit, isPending, lastOdo
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="purpose">Formål med turen</Label>
-            <Input id="purpose" value={purpose} onChange={e => setPurpose(e.target.value)} placeholder="F.eks. Kundemøte hos Bygg AS (kan fylles inn senere)" />
+            <Label htmlFor="editPurpose">Formål med turen</Label>
+            <Input id="editPurpose" value={purpose} onChange={e => setPurpose(e.target.value)} placeholder="F.eks. Kundemøte hos Bygg AS" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startLocation">Fra (startsted) *</Label>
-              <Input id="startLocation" value={startLocation} onChange={e => setStartLocation(e.target.value)} placeholder="F.eks. Kontoret, Oslo" required />
+              <Label htmlFor="editStartLocation">Fra (startsted) *</Label>
+              <Input id="editStartLocation" value={startLocation} onChange={e => setStartLocation(e.target.value)} placeholder="F.eks. Kontoret, Oslo" required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="endLocation">Til (sluttsted)</Label>
-              <Input id="endLocation" value={endLocation} onChange={e => setEndLocation(e.target.value)} placeholder="Kan fylles inn etter turen" />
+              <Label htmlFor="editEndLocation">Til (sluttsted)</Label>
+              <Input id="editEndLocation" value={endLocation} onChange={e => setEndLocation(e.target.value)} placeholder="F.eks. Byggeplass, Drammen" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="viaLocations">Via / stoppesteder</Label>
-            <Input id="viaLocations" value={viaLocations} onChange={e => setViaLocations(e.target.value)} placeholder="Evt. mellomlandinger" />
+            <Label htmlFor="editViaLocations">Via / stoppesteder</Label>
+            <Input id="editViaLocations" value={viaLocations} onChange={e => setViaLocations(e.target.value)} placeholder="Evt. mellomlandinger" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="odometerStart">Km-stand start</Label>
-              <Input id="odometerStart" type="number" step="0.1" value={odometerStart} onChange={e => setOdometerStart(e.target.value)} placeholder="Kan fylles inn senere" />
+              <Label htmlFor="editOdometerStart">Km-stand start</Label>
+              <Input id="editOdometerStart" type="number" step="0.1" value={odometerStart} onChange={e => setOdometerStart(e.target.value)} placeholder="F.eks. 45230" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="odometerEnd">Km-stand slutt</Label>
-              <Input id="odometerEnd" type="number" step="0.1" value={odometerEnd} onChange={e => setOdometerEnd(e.target.value)} placeholder="Kan fylles inn senere" />
+              <Label htmlFor="editOdometerEnd">Km-stand slutt</Label>
+              <Input id="editOdometerEnd" type="number" step="0.1" value={odometerEnd} onChange={e => setOdometerEnd(e.target.value)} placeholder="F.eks. 45280" />
             </div>
           </div>
 
@@ -159,7 +163,7 @@ export function AddTripDialog({ open, onOpenChange, onSubmit, isPending, lastOdo
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="vehicleType">Biltype *</Label>
+              <Label htmlFor="editVehicleType">Biltype *</Label>
               <Select value={vehicleType} onValueChange={setVehicleType}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -169,36 +173,36 @@ export function AddTripDialog({ open, onOpenChange, onSubmit, isPending, lastOdo
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="vehicleRegistration">Reg.nr</Label>
-              <Input id="vehicleRegistration" value={vehicleRegistration} onChange={e => setVehicleRegistration(e.target.value)} placeholder="F.eks. AB 12345" />
+              <Label htmlFor="editVehicleRegistration">Reg.nr</Label>
+              <Input id="editVehicleRegistration" value={vehicleRegistration} onChange={e => setVehicleRegistration(e.target.value)} placeholder="F.eks. AB 12345" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="vehicleDescription">Bilbeskrivelse</Label>
-            <Input id="vehicleDescription" value={vehicleDescription} onChange={e => setVehicleDescription(e.target.value)} placeholder="F.eks. Toyota Hilux 2023" />
+            <Label htmlFor="editVehicleDescription">Bilbeskrivelse</Label>
+            <Input id="editVehicleDescription" value={vehicleDescription} onChange={e => setVehicleDescription(e.target.value)} placeholder="F.eks. Toyota Hilux 2023" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="passengerCount">Antall passasjerer</Label>
-              <Input id="passengerCount" type="number" min="0" value={passengerCount} onChange={e => setPassengerCount(e.target.value)} />
+              <Label htmlFor="editPassengerCount">Antall passasjerer</Label>
+              <Input id="editPassengerCount" type="number" min="0" value={passengerCount} onChange={e => setPassengerCount(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="passengers">Passasjerer (navn)</Label>
-              <Input id="passengers" value={passengers} onChange={e => setPassengers(e.target.value)} placeholder="Navn på passasjerer" />
+              <Label htmlFor="editPassengers">Passasjerer (navn)</Label>
+              <Input id="editPassengers" value={passengers} onChange={e => setPassengers(e.target.value)} placeholder="Navn på passasjerer" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Merknader</Label>
-            <Textarea id="notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Eventuelle merknader..." rows={2} />
+            <Label htmlFor="editNotes">Merknader</Label>
+            <Textarea id="editNotes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Eventuelle merknader..." rows={2} />
           </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Avbryt</Button>
             <Button type="submit" disabled={isPending || !startLocation}>
-              {isPending ? "Lagrer..." : "Registrer tur"}
+              {isPending ? "Lagrer..." : "Lagre endringer"}
             </Button>
           </DialogFooter>
         </form>
