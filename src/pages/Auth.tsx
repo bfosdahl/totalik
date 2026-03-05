@@ -302,9 +302,61 @@ export default function Auth() {
 
         {/* Auth card */}
         <div className="bg-card rounded-2xl shadow-xl p-8">
+          {isPasswordRecovery ? (
+            <>
+              <div className="flex justify-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <KeyRound className="w-6 h-6 text-primary" />
+                </div>
+              </div>
+              <h2 className="text-xl font-semibold text-center mb-2">Sett nytt passord</h2>
+              <p className="text-sm text-muted-foreground text-center mb-6">Velg et nytt passord for kontoen din.</p>
+              <form onSubmit={handleSetNewPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">Nytt passord</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="pl-10"
+                      placeholder="Minst 6 tegn"
+                      autoFocus
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Bekreft passord</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="pl-10"
+                      placeholder="Gjenta passordet"
+                    />
+                  </div>
+                </div>
+                <Button type="submit" className="w-full" disabled={isUpdatingPassword}>
+                  {isUpdatingPassword ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Oppdaterer...
+                    </>
+                  ) : "Lagre nytt passord"}
+                </Button>
+              </form>
+            </>
+          ) : (
+            <>
           <h1 className="sr-only">{t("auth.login")}</h1>
           <h2 className="text-xl font-semibold text-center mb-6">
             {isLogin ? t("auth.login") : t("auth.createCompanyAccount") || "Opprett bedriftskonto"}
+          </h2>
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
