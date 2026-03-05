@@ -27,9 +27,12 @@ export default function InstallApp() {
       setIsInstalled(true);
     }
 
-    // Check if iOS
+    // Check if iOS - use multiple detection methods for reliability
     const userAgent = window.navigator.userAgent.toLowerCase();
-    setIsIOS(/iphone|ipad|ipod/.test(userAgent));
+    const isIOSDevice = /iphone|ipad|ipod/.test(userAgent) || 
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) ||
+      (/macintosh/.test(userAgent) && navigator.maxTouchPoints > 1);
+    setIsIOS(isIOSDevice);
 
     // Listen for install prompt
     const handleBeforeInstallPrompt = (e: Event) => {
