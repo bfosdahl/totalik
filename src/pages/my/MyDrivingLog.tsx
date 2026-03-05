@@ -18,7 +18,8 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ChevronRight, ClipboardList, Receipt, Pencil, Download, Upload } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ChevronRight, ClipboardList, Receipt, Pencil, Download, Upload, X } from "lucide-react";
 import { useDrivingLog } from "@/hooks/useDrivingLog";
 import { AddTripDialog } from "@/components/driving-log/AddTripDialog";
 import { StartTripDialog } from "@/components/driving-log/StartTripDialog";
@@ -62,6 +63,9 @@ export default function MyDrivingLog() {
   const [expandedTrip, setExpandedTrip] = useState<string | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importPending, setImportPending] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const handleBulkImport = async (inputs: CreateDrivingLogInput[]) => {
     setImportPending(true);
@@ -72,6 +76,28 @@ export default function MyDrivingLog() {
     } finally {
       setImportPending(false);
     }
+  };
+
+  const handleBulkDelete = async () => {
+    setBulkDeleting(true);
+    try {
+      for (const id of selectedIds) {
+        await deleteEntry.mutateAsync(id);
+      }
+      setSelectedIds(new Set());
+      setBulkDeleteOpen(false);
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
   const currentYear = new Date().getFullYear();
@@ -89,6 +115,24 @@ export default function MyDrivingLog() {
     const monthEnd = endOfMonth(monthStart);
     return isWithinInterval(date, { start: monthStart, end: monthEnd });
   });
+
+  const allFilteredSelected = filteredEntries.length > 0 && filteredEntries.every(e => selectedIds.has(e.id));
+
+  const toggleSelectAll = () => {
+    if (allFilteredSelected) {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        filteredEntries.forEach(e => next.delete(e.id));
+        return next;
+      });
+    } else {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        filteredEntries.forEach(e => next.add(e.id));
+        return next;
+      });
+    }
+  };
 
   const lastOdometerEnd = completedEntries[0]?.odometer_end ?? null;
 
@@ -262,6 +306,33 @@ export default function MyDrivingLog() {
           </span>
         </div>
 
+        {/* Bulk action bar */}
+        {selectedIds.size > 0 && (
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+            <span className="text-sm font-medium">
+              {selectedIds.size} {selectedIds.size === 1 ? "tur" : "turer"} valgt
+            </span>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setBulkDeleteOpen(true)}
+              className="gap-1"
+            >
+              <Trash2 className="w-4 h-4" />
+              Slett valgte
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedIds(new Set())}
+              className="gap-1"
+            >
+              <X className="w-4 h-4" />
+              Avmerk alle
+            </Button>
+          </div>
+        )}
+
         {/* Table */}
         <Card>
           <CardContent className="p-0">
@@ -280,6 +351,13 @@ export default function MyDrivingLog() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10">
+                        <Checkbox
+                          checked={allFilteredSelected}
+                          onCheckedChange={toggleSelectAll}
+                          aria-label="Velg alle"
+                        />
+                      </TableHead>
                       <TableHead>Dato</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Formål</TableHead>
@@ -294,7 +372,13 @@ export default function MyDrivingLog() {
                   <TableBody>
                     {filteredEntries.map((entry) => (
                       <React.Fragment key={entry.id}>
-                        <TableRow key={entry.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setExpandedTrip(expandedTrip === entry.id ? null : entry.id)}>
+                        <TableRow className={`cursor-pointer hover:bg-muted/50 ${selectedIds.has(entry.id) ? "bg-primary/5" : ""}`} onClick={() => setExpandedTrip(expandedTrip === entry.id ? null : entry.id)}>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <Checkbox
+                              checked={selectedIds.has(entry.id)}
+                              onCheckedChange={() => toggleSelected(entry.id)}
+                            />
+                          </TableCell>
                           <TableCell className="whitespace-nowrap">
                             <div className="flex items-center gap-1">
                               {expandedTrip === entry.id ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
@@ -343,7 +427,7 @@ export default function MyDrivingLog() {
                         </TableRow>
                         {expandedTrip === entry.id && (
                           <TableRow key={`${entry.id}-expenses`}>
-                            <TableCell colSpan={9} className="bg-muted/30 p-4">
+                            <TableCell colSpan={10} className="bg-muted/30 p-4">
                               <TripExpenses tripId={entry.id} />
                             </TableCell>
                           </TableRow>
@@ -424,6 +508,27 @@ export default function MyDrivingLog() {
               }}
             >
               Slett
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Slett {selectedIds.size} turer</AlertDialogTitle>
+            <AlertDialogDescription>
+              Er du sikker på at du vil slette {selectedIds.size} valgte turer fra kjøreboken? Dette kan ikke angres.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleting}>Avbryt</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+            >
+              {bulkDeleting ? "Sletter..." : `Slett ${selectedIds.size} turer`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
