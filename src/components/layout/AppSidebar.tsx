@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useTranslate } from "@/hooks/useTranslate";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -60,73 +61,73 @@ import { useDepartmentContext } from "@/contexts/DepartmentContext";
 
 // Standard navigation items - always visible
 const standardNavItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/", color: "text-sky-500" },
-  { icon: HelpCircle, label: "Brukerveiledning", path: "/brukerveiledning", color: "text-blue-500" },
-  { icon: Settings, label: "Innstillinger", path: "/settings", color: "text-slate-400" },
+  { icon: LayoutDashboard, labelKey: "nav.dashboard", path: "/", color: "text-sky-500" },
+  { icon: HelpCircle, labelKey: "nav.userGuide", path: "/brukerveiledning", color: "text-blue-500" },
+  { icon: Settings, labelKey: "nav.settings", path: "/settings", color: "text-slate-400" },
 ];
 
 // IK/HMS module items - shown in collapsible section
 const ikHmsItems = [
-  { icon: ClipboardList, label: "Oppsett", path: "/setup", color: "text-emerald-500" },
-  { icon: Target, label: "Målsetting", path: "/maalsetting", color: "text-yellow-500" },
-  { icon: Building2, label: "Organisering", path: "/organisering", color: "text-sky-500" },
+  { icon: ClipboardList, labelKey: "nav.setup", path: "/setup", color: "text-emerald-500" },
+  { icon: Target, labelKey: "nav.targetSetting", path: "/maalsetting", color: "text-yellow-500" },
+  { icon: Building2, labelKey: "nav.organization", path: "/organisering", color: "text-sky-500" },
   { 
     icon: AlertTriangle, 
-    label: "Risikoanalyse", 
+    labelKey: "nav.riskAnalysis", 
     path: "/risikoanalyse", 
     color: "text-orange-500",
     children: [
-      { icon: ClipboardList, label: "Risikovurdering & Handlingsplan", path: "/risikoanalyse", color: "text-orange-500" },
-      { icon: CalendarDays, label: "Oppfølging", path: "/risikoanalyse?tab=oppfolging", color: "text-teal-500" },
-      { icon: FileCheck, label: "SJA", path: "/risikoanalyse?tab=sja", color: "text-blue-500" },
+      { icon: ClipboardList, labelKey: "nav.riskAssessmentAndActionPlan", path: "/risikoanalyse", color: "text-orange-500" },
+      { icon: CalendarDays, labelKey: "nav.followUp", path: "/risikoanalyse?tab=oppfolging", color: "text-teal-500" },
+      { icon: FileCheck, labelKey: "nav.sja", path: "/risikoanalyse?tab=sja", color: "text-blue-500" },
     ]
   },
-  { icon: ListChecks, label: "Rutiner", path: "/rutiner", color: "text-teal-500" },
-  { icon: FlaskConical, label: "Stoffkartotek", path: "/stoffkartotek", color: "text-purple-500" },
-  { icon: Scale, label: "Lover og forskrifter", path: "/lover-og-forskrifter", color: "text-indigo-500" },
-  { icon: AlertTriangle, label: "Avvik", path: "/deviations", color: "text-red-500" },
-  { icon: FileCheck, label: "HMS aktiviteter", path: "/audits", color: "text-blue-500" },
-  { icon: BookOpen, label: "Handbok", path: "/handbook", color: "text-cyan-500" },
-  { icon: FolderOpen, label: "Dokumentsenter", path: "/dokumentsenter", color: "text-amber-500" },
-  { icon: MessageCircle, label: "HMS Assistent", path: "/hms-chat", color: "text-violet-500" },
+  { icon: ListChecks, labelKey: "nav.routines", path: "/rutiner", color: "text-teal-500" },
+  { icon: FlaskConical, labelKey: "nav.chemicalRegistry", path: "/stoffkartotek", color: "text-purple-500" },
+  { icon: Scale, labelKey: "nav.laws", path: "/lover-og-forskrifter", color: "text-indigo-500" },
+  { icon: AlertTriangle, labelKey: "nav.deviations", path: "/deviations", color: "text-red-500" },
+  { icon: FileCheck, labelKey: "nav.hmsActivities", path: "/audits", color: "text-blue-500" },
+  { icon: BookOpen, labelKey: "nav.handbook", path: "/handbook", color: "text-cyan-500" },
+  { icon: FolderOpen, labelKey: "nav.documentCenter", path: "/dokumentsenter", color: "text-amber-500" },
+  { icon: MessageCircle, labelKey: "nav.hmsAssistant", path: "/hms-chat", color: "text-violet-500" },
 ];
 
 // IK/MAT module items - shown in collapsible section
 const ikMatItems = [
-  { icon: BookOpen, label: "Håndbok", path: "/ik-mat/handbok", color: "text-cyan-500" },
-  { icon: Target, label: "Målsetting", path: "/ik-mat/maal", color: "text-yellow-500" },
-  { icon: Building2, label: "Organisasjonskart", path: "/ik-mat/organisasjon", color: "text-sky-500" },
-  { icon: AlertTriangle, label: "Risiko & tiltak", path: "/ik-mat/risiko-og-tiltak", color: "text-orange-500" },
-  { icon: ListChecks, label: "Rutiner", path: "/ik-mat/rutiner", color: "text-teal-500" },
-  { icon: ClipboardCheck, label: "Kontroll", path: "/ik-mat/kontroll", color: "text-emerald-500" },
-  { icon: AlertTriangle, label: "Avvik", path: "/ik-mat/avvik", color: "text-red-500" },
-  { icon: Wheat, label: "Allergener", path: "/ik-mat/allergener", color: "text-amber-500" },
-  { icon: Handshake, label: "Faste avtaler", path: "/ik-mat/faste-avtaler", color: "text-indigo-500" },
-  { icon: FolderOpen, label: "Dokumentsenter", path: "/ik-mat/dokumentsenter", color: "text-slate-500" },
+  { icon: BookOpen, labelKey: "nav.handbookIkMat", path: "/ik-mat/handbok", color: "text-cyan-500" },
+  { icon: Target, labelKey: "nav.targetSetting", path: "/ik-mat/maal", color: "text-yellow-500" },
+  { icon: Building2, labelKey: "nav.orgChart", path: "/ik-mat/organisasjon", color: "text-sky-500" },
+  { icon: AlertTriangle, labelKey: "nav.riskAndMeasures", path: "/ik-mat/risiko-og-tiltak", color: "text-orange-500" },
+  { icon: ListChecks, labelKey: "nav.routines", path: "/ik-mat/rutiner", color: "text-teal-500" },
+  { icon: ClipboardCheck, labelKey: "nav.control", path: "/ik-mat/kontroll", color: "text-emerald-500" },
+  { icon: AlertTriangle, labelKey: "nav.deviations", path: "/ik-mat/avvik", color: "text-red-500" },
+  { icon: Wheat, labelKey: "nav.allergens", path: "/ik-mat/allergener", color: "text-amber-500" },
+  { icon: Handshake, labelKey: "nav.fixedAgreements", path: "/ik-mat/faste-avtaler", color: "text-indigo-500" },
+  { icon: FolderOpen, labelKey: "nav.documentCenter", path: "/ik-mat/dokumentsenter", color: "text-slate-500" },
 ];
 
 // Personaladministrasjon items - standard for all companies
 const personaladministrasjonItems = {
   mineAnsatte: [
-    { icon: Users, label: "Ansattoversikt", path: "/employees", color: "text-blue-500" },
-    { icon: FileText, label: "Ansettelsesavtaler", path: "/hr/contracts", color: "text-slate-500" },
-    { icon: HeartPulse, label: "Fravær", path: "/hr/absence", color: "text-rose-500" },
-    { icon: UserCheck, label: "Medarbeidersamtaler", path: "/hr/meetings", color: "text-emerald-500" },
-    { icon: BarChart3, label: "Undersøkelser", path: "/hr/surveys", color: "text-purple-500" },
-    { icon: CalendarDays, label: "Godkjenn ferie", path: "/time-off?view=admin", color: "text-orange-500" },
-    { icon: Calendar, label: "Arbeidsplan", path: "/work-schedule", color: "text-cyan-500" },
-    { icon: Clock, label: "Godkjenn timer", path: "/time-registration?view=admin", color: "text-indigo-500" },
-    { icon: ShieldAlert, label: "Anonyme meldinger", path: "/anonymous-messages", color: "text-amber-500" },
+    { icon: Users, labelKey: "nav.employeeOverview", path: "/employees", color: "text-blue-500" },
+    { icon: FileText, labelKey: "nav.employmentContracts", path: "/hr/contracts", color: "text-slate-500" },
+    { icon: HeartPulse, labelKey: "nav.absence", path: "/hr/absence", color: "text-rose-500" },
+    { icon: UserCheck, labelKey: "nav.performanceReviews", path: "/hr/meetings", color: "text-emerald-500" },
+    { icon: BarChart3, labelKey: "nav.surveys", path: "/hr/surveys", color: "text-purple-500" },
+    { icon: CalendarDays, labelKey: "nav.approveVacation", path: "/time-off?view=admin", color: "text-orange-500" },
+    { icon: Calendar, labelKey: "nav.workSchedule", path: "/work-schedule", color: "text-cyan-500" },
+    { icon: Clock, labelKey: "nav.approveHours", path: "/time-registration?view=admin", color: "text-indigo-500" },
+    { icon: ShieldAlert, labelKey: "nav.anonymousMessages", path: "/anonymous-messages", color: "text-amber-500" },
   ],
   mittArbeidsforhold: [
-    { icon: FileText, label: "Min arbeidsavtale", path: "/my/contract", color: "text-slate-500" },
-    { icon: Clock, label: "Mine timer", path: "/time-registration", color: "text-indigo-500" },
-    { icon: CalendarDays, label: "Min ferie", path: "/time-off", color: "text-orange-500" },
-    { icon: HeartPulse, label: "Mitt fravær", path: "/my/absence", color: "text-rose-500" },
-    { icon: BarChart3, label: "Min respons", path: "/my/surveys", color: "text-purple-500" },
-    { icon: Mail, label: "Meldinger", path: "/my/messages", color: "text-blue-500" },
-    { icon: ShieldCheck, label: "Send anonym melding", path: "/anonymous-message", isAction: true, color: "text-teal-500" },
-    { icon: Car, label: "Kjørebok", path: "/my/driving-log", color: "text-emerald-500" },
+    { icon: FileText, labelKey: "nav.myContract", path: "/my/contract", color: "text-slate-500" },
+    { icon: Clock, labelKey: "nav.myHours", path: "/time-registration", color: "text-indigo-500" },
+    { icon: CalendarDays, labelKey: "nav.myVacation", path: "/time-off", color: "text-orange-500" },
+    { icon: HeartPulse, labelKey: "nav.myAbsence", path: "/my/absence", color: "text-rose-500" },
+    { icon: BarChart3, labelKey: "nav.myResponses", path: "/my/surveys", color: "text-purple-500" },
+    { icon: Mail, labelKey: "nav.messages", path: "/my/messages", color: "text-blue-500" },
+    { icon: ShieldCheck, labelKey: "nav.sendAnonymousMessage", path: "/anonymous-message", isAction: true, color: "text-teal-500" },
+    { icon: Car, labelKey: "nav.drivingLog", path: "/my/driving-log", color: "text-emerald-500" },
   ],
 };
 
