@@ -351,6 +351,13 @@ export default function MyDrivingLog() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10">
+                        <Checkbox
+                          checked={allFilteredSelected}
+                          onCheckedChange={toggleSelectAll}
+                          aria-label="Velg alle"
+                        />
+                      </TableHead>
                       <TableHead>Dato</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Formål</TableHead>
@@ -365,7 +372,13 @@ export default function MyDrivingLog() {
                   <TableBody>
                     {filteredEntries.map((entry) => (
                       <React.Fragment key={entry.id}>
-                        <TableRow key={entry.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setExpandedTrip(expandedTrip === entry.id ? null : entry.id)}>
+                        <TableRow className={`cursor-pointer hover:bg-muted/50 ${selectedIds.has(entry.id) ? "bg-primary/5" : ""}`} onClick={() => setExpandedTrip(expandedTrip === entry.id ? null : entry.id)}>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <Checkbox
+                              checked={selectedIds.has(entry.id)}
+                              onCheckedChange={() => toggleSelected(entry.id)}
+                            />
+                          </TableCell>
                           <TableCell className="whitespace-nowrap">
                             <div className="flex items-center gap-1">
                               {expandedTrip === entry.id ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
