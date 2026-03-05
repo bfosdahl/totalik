@@ -44,8 +44,14 @@ export default function Auth() {
     orgNumber: z.string().regex(/^\d{9}$/, t("auth.orgNumberFormat") || "Org.nr må være 9 siffer"),
   });
 
-  // Listen for PASSWORD_RECOVERY event from Supabase
+  // Detect password recovery from URL hash (more reliable than event)
   useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && (hash.includes("type=recovery") || hash.includes("type%3Drecovery"))) {
+      console.info("[Auth] Recovery token detected in URL hash");
+      setIsPasswordRecovery(true);
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
         console.info("[Auth] PASSWORD_RECOVERY event detected");
