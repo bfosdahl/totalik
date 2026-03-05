@@ -240,7 +240,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   };
 
   // Get company name from context
-  const companyName = company?.name || "Ingen bedrift";
+  const companyName = company?.name || t("common.noCompany");
   const orgNumber = company?.org_number || null;
 
   // Close sidebar on route change (mobile)
@@ -319,7 +319,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                     {companyName}
                   </span>
                   <span className="text-xs text-sidebar-foreground/60">
-                    {orgNumber ? `Org: ${orgNumber}` : "Ikke tilknyttet"}
+                    {orgNumber ? `Org: ${orgNumber}` : t("common.notLinked")}
                   </span>
                 </motion.div>
               )}
@@ -547,7 +547,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                       className="font-medium text-sm flex-1 text-left flex items-center gap-2"
                     >
                       <span className="w-2 h-2 rounded-full bg-amber-500" />
-                      Personaladministrasjon
+                      {t("nav.personalAdmin")}
                     </motion.span>
                     {expandedSections.has('personal') ? (
                       <ChevronUp className="w-4 h-4" />
@@ -574,7 +574,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                       <>
                         <div className="py-1.5 px-3">
                           <span className="text-xs font-medium text-sidebar-foreground/50 uppercase">
-                            Mine ansatte
+                            {t("nav.myEmployees")}
                           </span>
                         </div>
                         {personaladministrasjonItems.mineAnsatte.map((item) => {
@@ -602,7 +602,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                     {/* Mitt arbeidsforhold section - for all employees */}
                     <div className="py-1.5 px-3">
                       <span className="text-xs font-medium text-sidebar-foreground/50 uppercase">
-                        Mitt arbeidsforhold
+                        {t("nav.myEmployment")}
                       </span>
                     </div>
                     {personaladministrasjonItems.mittArbeidsforhold.map((item) => {
