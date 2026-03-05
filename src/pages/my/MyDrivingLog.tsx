@@ -66,7 +66,6 @@ export default function MyDrivingLog() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
-  const [importPending, setImportPending] = useState(false);
 
   const handleBulkImport = async (inputs: CreateDrivingLogInput[]) => {
     setImportPending(true);
