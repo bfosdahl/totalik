@@ -513,6 +513,27 @@ export default function MyDrivingLog() {
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Slett {selectedIds.size} turer</AlertDialogTitle>
+            <AlertDialogDescription>
+              Er du sikker på at du vil slette {selectedIds.size} valgte turer fra kjøreboken? Dette kan ikke angres.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleting}>Avbryt</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+            >
+              {bulkDeleting ? "Sletter..." : `Slett ${selectedIds.size} turer`}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <ImportDrivingLogDialog
         open={importDialogOpen}
         onOpenChange={setImportDialogOpen}
