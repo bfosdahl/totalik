@@ -842,7 +842,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                       )}
                     >
-                      Dashboard
+                      {t("nav.dashboard")}
                     </NavLink>
                     <NavLink
                       to="/ik-alkohol/rutiner"
@@ -853,7 +853,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                       )}
                     >
-                      Rutiner
+                      {t("nav.routines")}
                     </NavLink>
                     <NavLink
                       to="/ik-alkohol/organisering"
@@ -864,7 +864,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                       )}
                     >
-                      Organisering
+                      {t("nav.organization")}
                     </NavLink>
                     <NavLink
                       to="/ik-alkohol/maal"
@@ -875,7 +875,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                       )}
                     >
-                      Målsetting
+                      {t("nav.targetSetting")}
                     </NavLink>
                     <NavLink
                       to="/ik-alkohol/risikoanalyse"
@@ -886,7 +886,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                       )}
                     >
-                      Risikoanalyse
+                      {t("nav.riskAnalysis")}
                     </NavLink>
                     <NavLink
                       to="/ik-alkohol/internkontroll"
@@ -908,7 +908,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                       )}
                     >
-                      Kontroll
+                      {t("nav.control")}
                     </NavLink>
                     <NavLink
                       to="/ik-alkohol/hendelser"
@@ -941,7 +941,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                       )}
                     >
-                      Dokumentsenter
+                      {t("nav.documentCenter")}
                     </NavLink>
                     <NavLink
                       to="/ik-alkohol/handbok"
@@ -952,7 +952,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                       )}
                     >
-                      Håndbok
+                      {t("nav.handbook")}
                     </NavLink>
                   </div>
                 </motion.div>
