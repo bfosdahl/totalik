@@ -428,6 +428,13 @@ export default function MyDrivingLog() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ImportDrivingLogDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onImport={handleBulkImport}
+        isPending={importPending}
+      />
     </AppLayout>
   );
 }
