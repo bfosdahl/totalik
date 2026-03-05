@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Shield, Mail, Lock, User, Loader2, Building2 } from "lucide-react";
+import { Shield, Mail, Lock, User, Loader2, Building2, KeyRound } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,10 @@ export default function Auth() {
   const [companyName, setCompanyName] = useState("");
   const [orgNumber, setOrgNumber] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   const { signIn, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -40,13 +44,52 @@ export default function Auth() {
     orgNumber: z.string().regex(/^\d{9}$/, t("auth.orgNumberFormat") || "Org.nr må være 9 siffer"),
   });
 
+  // Listen for PASSWORD_RECOVERY event from Supabase
   useEffect(() => {
-    // Avoid redirect loops during the brief period where auth is settled but
-    // profile/roles are still being fetched.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        console.info("[Auth] PASSWORD_RECOVERY event detected");
+        setIsPasswordRecovery(true);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Handle setting new password
+  const handleSetNewPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      toast.error("Passordet må være minst 6 tegn");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Passordene stemmer ikke overens");
+      return;
+    }
+    setIsUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Passordet er oppdatert! Du blir nå logget inn.");
+        setIsPasswordRecovery(false);
+        navigate("/", { replace: true });
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Kunne ikke oppdatere passordet");
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
+  useEffect(() => {
+    // Don't redirect if user is in password recovery mode
+    if (isPasswordRecovery) return;
     if (!authLoading && user) {
       navigate("/", { replace: true });
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, isPasswordRecovery]);
 
   const handleForgotPassword = async () => {
     const validation = z.string().email(t("auth.emailInvalid")).safeParse(email);
