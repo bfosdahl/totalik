@@ -18,7 +18,8 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ChevronRight, ClipboardList, Receipt, Pencil, Download, Upload } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ChevronRight, ClipboardList, Receipt, Pencil, Download, Upload, X } from "lucide-react";
 import { useDrivingLog } from "@/hooks/useDrivingLog";
 import { AddTripDialog } from "@/components/driving-log/AddTripDialog";
 import { StartTripDialog } from "@/components/driving-log/StartTripDialog";
