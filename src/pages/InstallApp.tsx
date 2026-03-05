@@ -71,7 +71,7 @@ export default function InstallApp() {
             </div>
             <CardTitle className="text-xl sm:text-2xl">Appen er installert!</CardTitle>
             <CardDescription className="text-base">
-              Du kan nå bruke Athena HMS direkte fra startskjermen din.
+              Du kan nå bruke Total-IK direkte fra startskjermen din.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -87,9 +87,9 @@ export default function InstallApp() {
           <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-primary flex items-center justify-center shadow-lg">
             <Smartphone className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground" />
           </div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold px-4">Installer Athena HMS</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold px-4">Installer Total-IK</h1>
           <p className="text-sm sm:text-base text-muted-foreground px-4">
-            Få rask tilgang til dine kursbevis og HMS-dokumenter
+            Få rask tilgang til internkontroll, HMS og dokumenter
           </p>
         </div>
 
@@ -234,7 +234,7 @@ export default function InstallApp() {
 
         {/* Footer */}
         <p className="text-center text-xs sm:text-sm text-muted-foreground pb-4 px-4">
-          Athena HMS fungerer best i Chrome (Android) eller Safari (iPhone)
+          Total-IK fungerer best i Chrome (Android) eller Safari (iPhone)
         </p>
       </div>
     </div>
