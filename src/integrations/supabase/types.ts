@@ -2783,6 +2783,7 @@ export type Database = {
           passengers: string | null
           purpose: string | null
           start_location: string
+          status: string
           trip_date: string
           trip_type: string
           updated_at: string
@@ -2805,6 +2806,7 @@ export type Database = {
           passengers?: string | null
           purpose?: string | null
           start_location: string
+          status?: string
           trip_date?: string
           trip_type?: string
           updated_at?: string
@@ -2827,6 +2829,7 @@ export type Database = {
           passengers?: string | null
           purpose?: string | null
           start_location?: string
+          status?: string
           trip_date?: string
           trip_type?: string
           updated_at?: string
