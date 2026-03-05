@@ -21,6 +21,7 @@ export interface ImportedRow {
 
 const tripTypeLabelToValue: Record<string, string> = {
   yrkeskjøring: "business",
+  yrke: "business",
   arbeidsreise: "commute",
   privat: "private",
 };
@@ -62,6 +63,78 @@ function parseNum(val: any): number {
   return isNaN(n) ? 0 : n;
 }
 
+function normalizeHeader(header: any): string {
+  if (!header) return "";
+  return String(header)
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+// Map of normalized aliases to canonical field names
+const headerAliases: Record<string, string> = {
+  "dato": "date",
+  "date": "date",
+  "formal": "purpose",
+  "formaal": "purpose",
+  "purpose": "purpose",
+  "turtype": "trip_type",
+  "type": "trip_type",
+  "type (yrke/privat)": "trip_type",
+  "startsted": "start_location",
+  "fra": "start_location",
+  "from": "start_location",
+  "sluttsted": "end_location",
+  "til": "end_location",
+  "to": "end_location",
+  "via (mellomstasjoner)": "via_locations",
+  "via": "via_locations",
+  "km.stand start": "odometer_start",
+  "km start": "odometer_start",
+  "kmstand start": "odometer_start",
+  "km.stand slutt": "odometer_end",
+  "km slutt": "odometer_end",
+  "kmstand slutt": "odometer_end",
+  "kjort (km)": "distance_km",
+  "km kjort": "distance_km",
+  "distanse": "distance_km",
+  "distance": "distance_km",
+  "kjoretoy": "vehicle_type",
+  "kjøretøy": "vehicle_type",
+  "regnr": "vehicle_registration",
+  "reg.nr": "vehicle_registration",
+  "registreringsnummer": "vehicle_registration",
+  "passasjerer": "passengers",
+  "ant. passasjerer": "passenger_count",
+  "antall passasjerer": "passenger_count",
+  "merknader": "notes",
+  "merknad": "notes",
+  "notat": "notes",
+  "notes": "notes",
+};
+
+function buildColumnMap(headers: string[]): Record<string, string> {
+  // Maps original header string -> canonical field name
+  const map: Record<string, string> = {};
+  for (const header of headers) {
+    const normalized = normalizeHeader(header);
+    // Try exact match first
+    if (headerAliases[normalized]) {
+      map[header] = headerAliases[normalized];
+      continue;
+    }
+    // Try partial match
+    for (const [alias, canonical] of Object.entries(headerAliases)) {
+      if (normalized.includes(alias) || alias.includes(normalized)) {
+        map[header] = canonical;
+        break;
+      }
+    }
+  }
+  return map;
+}
+
 export function parseExcelFile(file: File): Promise<ImportedRow[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -70,35 +143,53 @@ export function parseExcelFile(file: File): Promise<ImportedRow[]> {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: "array", cellDates: true });
 
-        // Use the first sheet (Kjørebok)
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const rows = XLSX.utils.sheet_to_json<any>(sheet);
 
+        if (rows.length === 0) {
+          resolve([]);
+          return;
+        }
+
+        // Build column mapping from actual headers
+        const headers = Object.keys(rows[0]);
+        const colMap = buildColumnMap(headers);
+
+        // Helper to get value by canonical field name
+        const getField = (row: any, canonical: string): any => {
+          for (const [originalHeader, mappedCanonical] of Object.entries(colMap)) {
+            if (mappedCanonical === canonical) {
+              return row[originalHeader];
+            }
+          }
+          return undefined;
+        };
+
         const imported: ImportedRow[] = [];
 
         for (const row of rows) {
-          const dateStr = parseDateStr(row["Dato"]);
-          if (!dateStr) continue; // skip rows without valid date
+          const dateStr = parseDateStr(getField(row, "date"));
+          if (!dateStr) continue;
 
-          const tripTypeRaw = cleanDash(row["Turtype"]).toLowerCase();
-          const vehicleRaw = cleanDash(row["Kjøretøy"]).toLowerCase();
+          const tripTypeRaw = cleanDash(getField(row, "trip_type")).toLowerCase();
+          const vehicleRaw = cleanDash(getField(row, "vehicle_type")).toLowerCase();
 
           imported.push({
             trip_date: dateStr,
-            purpose: cleanDash(row["Formål"]),
+            purpose: cleanDash(getField(row, "purpose")),
             trip_type: tripTypeLabelToValue[tripTypeRaw] || "business",
-            start_location: cleanDash(row["Startsted"]),
-            end_location: cleanDash(row["Sluttsted"]),
-            via_locations: cleanDash(row["Via (mellomstasjoner)"]),
-            odometer_start: parseNum(row["Km.stand start"]),
-            odometer_end: parseNum(row["Km.stand slutt"]),
-            distance_km: parseNum(row["Kjørt (km)"]),
+            start_location: cleanDash(getField(row, "start_location")),
+            end_location: cleanDash(getField(row, "end_location")),
+            via_locations: cleanDash(getField(row, "via_locations")),
+            odometer_start: parseNum(getField(row, "odometer_start")),
+            odometer_end: parseNum(getField(row, "odometer_end")),
+            distance_km: parseNum(getField(row, "distance_km")),
             vehicle_type: vehicleTypeLabelToValue[vehicleRaw] || "private",
-            vehicle_registration: cleanDash(row["Regnr"]),
-            passengers: cleanDash(row["Passasjerer"]),
-            passenger_count: parseNum(row["Ant. passasjerer"]),
-            notes: cleanDash(row["Merknader"]),
+            vehicle_registration: cleanDash(getField(row, "vehicle_registration")),
+            passengers: cleanDash(getField(row, "passengers")),
+            passenger_count: parseNum(getField(row, "passenger_count")),
+            notes: cleanDash(getField(row, "notes")),
           });
         }
 
