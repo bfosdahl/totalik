@@ -47,6 +47,7 @@ import {
   Mail,
   Car,
   Printer,
+  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -1676,6 +1677,23 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             </>
           )}
         </nav>
+
+        {/* Download app button */}
+        <div className="p-3 border-t border-sidebar-border">
+          <NavLink to="/install">
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                "w-full gap-2 text-sidebar-foreground/70 hover:text-sidebar-foreground border-sidebar-border hover:bg-sidebar-accent",
+                collapsed && "px-0"
+              )}
+            >
+              <Download className="w-4 h-4 shrink-0" />
+              {!collapsed && <span className="text-sm">Last ned app</span>}
+            </Button>
+          </NavLink>
+        </div>
 
         {/* Collapse toggle - hidden on mobile */}
         <div className="p-3 border-t border-sidebar-border hidden lg:block">
