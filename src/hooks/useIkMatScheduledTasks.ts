@@ -202,6 +202,14 @@ export const useIkMatScheduledTasks = () => {
     const calendarKey = buildCalendarDismissKey(eventType, title, date);
     if (dismissedTitles.has(calendarKey)) return true;
     if (legacyDeviationTitle && dismissedTitles.has(legacyDeviationTitle)) return true;
+    // Also check partial match for cleaning events (calendar key includes task count which may vary)
+    if (eventType === 'cleaning') {
+      const dateStr = format(date, 'yyyy-MM-dd');
+      const cleaningPrefix = `calendar::cleaning::${dateStr}::`;
+      for (const dismissed of dismissedTitles) {
+        if (dismissed.startsWith(cleaningPrefix)) return true;
+      }
+    }
     return false;
   };
 
