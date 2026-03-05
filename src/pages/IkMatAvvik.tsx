@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { format, parseISO } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { 
@@ -357,18 +358,59 @@ const IkMatAvvik = () => {
     return success;
   };
 
-  // Track dismissed auto-deviations so sync doesn't re-create them
+  // Build calendar dismiss keys from a deviation title
+  const buildCalendarDismissKeys = (title: string): string[] => {
+    const keys: string[] = [];
+    // Parse temperature deviation: "Temperaturlogg ikke utført: EquipName (2026-03-01)"
+    const tempMatch = title.match(/^Temperaturlogg ikke utført: (.+?) \((\d{4}-\d{2}-\d{2})\)$/);
+    if (tempMatch) {
+      keys.push(`calendar::temperature::${tempMatch[2]}::🌡️ ${tempMatch[1]}`);
+    }
+    // Parse cleaning deviation: "Renhold ikke utført (2026-03-01)"
+    const cleanMatch = title.match(/^Renhold ikke utført \((\d{4}-\d{2}-\d{2})\)$/);
+    if (cleanMatch) {
+      // We can't know the exact cleaning title format, but add the legacy title
+      keys.push(`calendar::cleaning::${cleanMatch[1]}::🧹 Renhold`);
+    }
+    // Parse task deviation: "Oppgave ikke utført: TaskTitle (2026-03-01)"
+    const taskMatch = title.match(/^Oppgave ikke utført: (.+?) \((\d{4}-\d{2}-\d{2})\)$/);
+    if (taskMatch) {
+      keys.push(`calendar::task::${taskMatch[2]}::${taskMatch[1]}`);
+    }
+    return keys;
+  };
+
+  // Track dismissed auto-deviations so sync doesn't re-create them AND calendar hides them
   const dismissAutoDeviation = async (deviation: DeviationType) => {
-    if (deviation.additional_info === 'Automatisk opprettet fra Kontroll' && company?.id) {
-      try {
-        await supabase.from('ik_mat_dismissed_auto_deviations').upsert({
+    if (!company?.id) return;
+    try {
+      const entries: { company_id: string; deviation_title: string; dismissed_by_id: string | null }[] = [];
+      
+      // Always add the deviation title itself
+      entries.push({
+        company_id: company.id,
+        deviation_title: deviation.title,
+        dismissed_by_id: profile?.user_id || null,
+      });
+
+      // Also add calendar-specific dismiss keys so calendar hides these events
+      const calendarKeys = buildCalendarDismissKeys(deviation.title);
+      for (const key of calendarKeys) {
+        entries.push({
           company_id: company.id,
-          deviation_title: deviation.title,
+          deviation_title: key,
           dismissed_by_id: profile?.user_id || null,
-        }, { onConflict: 'company_id,deviation_title' });
-      } catch (e) {
-        console.error('Failed to track dismissed deviation:', e);
+        });
       }
+
+      if (entries.length > 0) {
+        await supabase.from('ik_mat_dismissed_auto_deviations').upsert(
+          entries,
+          { onConflict: 'company_id,deviation_title' }
+        );
+      }
+    } catch (e) {
+      console.error('Failed to track dismissed deviation:', e);
     }
   };
 
@@ -428,19 +470,29 @@ const IkMatAvvik = () => {
     setIsDeletingAll(true);
 
     try {
-      const autoCreatedTitles = deviationsToDelete
-        .filter((d) => d.additional_info === 'Automatisk opprettet fra Kontroll')
-        .map((d) => d.title);
+      // Collect ALL titles to dismiss (not just auto-created) so calendar also hides them
+      const allTitlesToDismiss: string[] = [];
+      
+      for (const d of deviationsToDelete) {
+        allTitlesToDismiss.push(d.title);
+        // Add calendar-specific dismiss keys
+        const calendarKeys = buildCalendarDismissKeys(d.title);
+        allTitlesToDismiss.push(...calendarKeys);
+      }
 
-      if (autoCreatedTitles.length > 0) {
-        await supabase.from('ik_mat_dismissed_auto_deviations').upsert(
-          autoCreatedTitles.map((title) => ({
+      if (allTitlesToDismiss.length > 0) {
+        const batchSize = 50;
+        for (let i = 0; i < allTitlesToDismiss.length; i += batchSize) {
+          const batch = allTitlesToDismiss.slice(i, i + batchSize).map((title) => ({
             company_id: company.id,
             deviation_title: title,
             dismissed_by_id: profile?.user_id || null,
-          })),
-          { onConflict: 'company_id,deviation_title' }
-        );
+          }));
+          await supabase.from('ik_mat_dismissed_auto_deviations').upsert(
+            batch,
+            { onConflict: 'company_id,deviation_title' }
+          );
+        }
       }
 
       let deleteQuery = supabase
