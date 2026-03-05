@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { exportDrivingLogToExcel } from "@/utils/drivingLogExport";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +18,7 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ChevronRight, ClipboardList, Receipt, Pencil } from "lucide-react";
+import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ChevronRight, ClipboardList, Receipt, Pencil, Download } from "lucide-react";
 import { useDrivingLog } from "@/hooks/useDrivingLog";
 import { AddTripDialog } from "@/components/driving-log/AddTripDialog";
 import { StartTripDialog } from "@/components/driving-log/StartTripDialog";
@@ -47,6 +49,7 @@ const vehicleTypeLabels: Record<string, string> = {
 };
 
 export default function MyDrivingLog() {
+  const { profile } = useAuth();
   const { entries, activeTrip, startTrip, completeTrip, createEntry, updateEntry, deleteEntry, stats } = useDrivingLog();
   const [startDialogOpen, setStartDialogOpen] = useState(false);
   const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
@@ -94,6 +97,21 @@ export default function MyDrivingLog() {
             <p className="text-muted-foreground mt-1">
               Dokumenter all kjøring i henhold til skattemyndighetenes krav
             </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {completedEntries.length > 0 && (
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={() => {
+                  const userName = `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || "Ansatt";
+                  exportDrivingLogToExcel(entries.data || [], userName, currentYear);
+                }}
+              >
+                <Download className="w-4 h-4" />
+                Last ned Excel
+              </Button>
+            )}
           </div>
           {activeTrip ? (
             <Button onClick={() => setCompleteDialogOpen(true)} className="gap-2">
