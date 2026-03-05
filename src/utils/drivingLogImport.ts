@@ -21,6 +21,7 @@ export interface ImportedRow {
 
 const tripTypeLabelToValue: Record<string, string> = {
   yrkeskjøring: "business",
+  yrke: "business",
   arbeidsreise: "commute",
   privat: "private",
 };
