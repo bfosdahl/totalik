@@ -18,7 +18,7 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ChevronRight, ClipboardList, Receipt, Pencil, Download } from "lucide-react";
+import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ChevronRight, ClipboardList, Receipt, Pencil, Download, Upload } from "lucide-react";
 import { useDrivingLog } from "@/hooks/useDrivingLog";
 import { AddTripDialog } from "@/components/driving-log/AddTripDialog";
 import { StartTripDialog } from "@/components/driving-log/StartTripDialog";
@@ -26,6 +26,8 @@ import { CompleteTripDialog } from "@/components/driving-log/CompleteTripDialog"
 import { ActiveTripCard } from "@/components/driving-log/ActiveTripCard";
 import { TripExpenses } from "@/components/driving-log/TripExpenses";
 import { EditTripDialog } from "@/components/driving-log/EditTripDialog";
+import { ImportDrivingLogDialog } from "@/components/driving-log/ImportDrivingLogDialog";
+import { CreateDrivingLogInput } from "@/hooks/useDrivingLog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -58,6 +60,19 @@ export default function MyDrivingLog() {
   const [editTrip, setEditTrip] = useState<any>(null);
   const [monthFilter, setMonthFilter] = useState("all");
   const [expandedTrip, setExpandedTrip] = useState<string | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importPending, setImportPending] = useState(false);
+
+  const handleBulkImport = async (inputs: CreateDrivingLogInput[]) => {
+    setImportPending(true);
+    try {
+      for (const input of inputs) {
+        await createEntry.mutateAsync(input);
+      }
+    } finally {
+      setImportPending(false);
+    }
+  };
 
   const currentYear = new Date().getFullYear();
   const months = Array.from({ length: 12 }, (_, i) => ({
@@ -99,6 +114,10 @@ export default function MyDrivingLog() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => setImportDialogOpen(true)}>
+              <Upload className="w-4 h-4" />
+              Importer
+            </Button>
             {completedEntries.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -409,6 +428,13 @@ export default function MyDrivingLog() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ImportDrivingLogDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onImport={handleBulkImport}
+        isPending={importPending}
+      />
     </AppLayout>
   );
 }
