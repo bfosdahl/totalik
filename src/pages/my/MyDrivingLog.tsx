@@ -427,7 +427,7 @@ export default function MyDrivingLog() {
                         </TableRow>
                         {expandedTrip === entry.id && (
                           <TableRow key={`${entry.id}-expenses`}>
-                            <TableCell colSpan={9} className="bg-muted/30 p-4">
+                            <TableCell colSpan={10} className="bg-muted/30 p-4">
                               <TripExpenses tripId={entry.id} />
                             </TableCell>
                           </TableRow>
