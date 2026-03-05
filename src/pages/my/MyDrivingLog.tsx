@@ -306,6 +306,33 @@ export default function MyDrivingLog() {
           </span>
         </div>
 
+        {/* Bulk action bar */}
+        {selectedIds.size > 0 && (
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+            <span className="text-sm font-medium">
+              {selectedIds.size} {selectedIds.size === 1 ? "tur" : "turer"} valgt
+            </span>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setBulkDeleteOpen(true)}
+              className="gap-1"
+            >
+              <Trash2 className="w-4 h-4" />
+              Slett valgte
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedIds(new Set())}
+              className="gap-1"
+            >
+              <X className="w-4 h-4" />
+              Avmerk alle
+            </Button>
+          </div>
+        )}
+
         {/* Table */}
         <Card>
           <CardContent className="p-0">
