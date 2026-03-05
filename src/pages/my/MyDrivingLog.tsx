@@ -100,17 +100,45 @@ export default function MyDrivingLog() {
           </div>
           <div className="flex items-center gap-2">
             {completedEntries.length > 0 && (
-              <Button
-                variant="outline"
-                className="gap-2"
-                onClick={() => {
-                  const userName = `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || "Ansatt";
-                  exportDrivingLogToExcel(entries.data || [], userName, currentYear);
-                }}
-              >
-                <Download className="w-4 h-4" />
-                Last ned Excel
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <Download className="w-4 h-4" />
+                    Last ned Excel
+                    <ChevronDown className="w-3 h-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => {
+                    const userName = `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || "Ansatt";
+                    exportDrivingLogToExcel(entries.data || [], userName, currentYear);
+                  }}>
+                    {currentYear} (valgt år)
+                  </DropdownMenuItem>
+                  {(() => {
+                    const allYears = [...new Set((entries.data || [])
+                      .filter(e => e.status === "completed")
+                      .map(e => new Date(e.trip_date).getFullYear())
+                    )].sort((a, b) => b - a);
+                    return allYears
+                      .filter(y => y !== currentYear)
+                      .map(y => (
+                        <DropdownMenuItem key={y} onClick={() => {
+                          const userName = `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || "Ansatt";
+                          exportDrivingLogToExcel(entries.data || [], userName, y);
+                        }}>
+                          {y}
+                        </DropdownMenuItem>
+                      ));
+                  })()}
+                  <DropdownMenuItem onClick={() => {
+                    const userName = `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || "Ansatt";
+                    exportDrivingLogToExcel(entries.data || [], userName);
+                  }}>
+                    Alle år samlet
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
           {activeTrip ? (
