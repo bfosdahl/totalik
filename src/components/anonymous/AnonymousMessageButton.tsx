@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck } from "lucide-react";
 import { SubmitAnonymousMessageDialog } from "./SubmitAnonymousMessageDialog";
+import { useTranslate } from "@/hooks/useTranslate";
 
 interface Props {
   variant?: "default" | "outline" | "ghost" | "secondary";
@@ -17,6 +18,7 @@ export function AnonymousMessageButton({
   showLabel = true 
 }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const { t } = useTranslate();
 
   return (
     <>
@@ -27,7 +29,7 @@ export function AnonymousMessageButton({
         className={className}
       >
         <ShieldCheck className="h-4 w-4" />
-        {showLabel && <span className="ml-2">Send anonym melding</span>}
+        {showLabel && <span className="ml-2">{t("dashboard.sendAnonymousMessage")}</span>}
       </Button>
       
       <SubmitAnonymousMessageDialog 

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslate } from "@/hooks/useTranslate";
 
 interface ExpiryData {
   expiredCourses: number;
@@ -15,6 +16,7 @@ interface ExpiryData {
 export function ExpiryAlerts() {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslate();
 
   const { data, isLoading } = useQuery({
     queryKey: ["expiry-alerts", profile?.company_id],
@@ -28,7 +30,6 @@ export function ExpiryAlerts() {
       thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
       const thirtyDaysDate = thirtyDaysFromNow.toISOString().split('T')[0];
 
-      // Fetch expired courses
       const { count: expiredCoursesCount } = await supabase
         .from("employee_courses")
         .select("*", { count: "exact", head: true })
@@ -36,7 +37,6 @@ export function ExpiryAlerts() {
         .lt("expiry_date", today)
         .not("expiry_date", "is", null);
 
-      // Fetch courses expiring within 30 days
       const { count: expiringCoursesCount } = await supabase
         .from("employee_courses")
         .select("*", { count: "exact", head: true })
@@ -44,7 +44,6 @@ export function ExpiryAlerts() {
         .gte("expiry_date", today)
         .lte("expiry_date", thirtyDaysDate);
 
-      // Fetch expired HMS cards
       const { count: expiredHmsCount } = await supabase
         .from("profiles")
         .select("*", { count: "exact", head: true })
@@ -54,7 +53,6 @@ export function ExpiryAlerts() {
         .lt("hms_card_expiry_date", today)
         .not("hms_card_expiry_date", "is", null);
 
-      // Fetch HMS cards expiring within 30 days
       const { count: expiringHmsCount } = await supabase
         .from("profiles")
         .select("*", { count: "exact", head: true })
@@ -92,14 +90,13 @@ export function ExpiryAlerts() {
         <div className="p-1.5 md:p-2 rounded-lg bg-warning/10">
           <AlertTriangle className="w-4 h-4 md:w-5 md:h-5 text-warning" />
         </div>
-        <h3 className="text-base md:text-lg font-semibold">Kompetansevarsler</h3>
+        <h3 className="text-base md:text-lg font-semibold">{t("dashboard.competenceAlerts")}</h3>
       </div>
 
       <div className="space-y-3">
-        {/* Expired items */}
         {hasExpired && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-            <p className="text-sm font-medium text-destructive mb-2">Utgått</p>
+            <p className="text-sm font-medium text-destructive mb-2">{t("dashboard.expired")}</p>
             <div className="space-y-2">
               {(data?.expiredCourses || 0) > 0 && (
                 <div 
@@ -108,7 +105,7 @@ export function ExpiryAlerts() {
                 >
                   <div className="flex items-center gap-2">
                     <GraduationCap className="w-4 h-4 text-destructive" />
-                    <span className="text-sm">{data?.expiredCourses} utgåtte kurs</span>
+                    <span className="text-sm">{t("dashboard.expiredCourses", { count: data?.expiredCourses })}</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </div>
@@ -120,7 +117,7 @@ export function ExpiryAlerts() {
                 >
                   <div className="flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-destructive" />
-                    <span className="text-sm">{data?.expiredHmsCards} utgåtte HMS-kort</span>
+                    <span className="text-sm">{t("dashboard.expiredHmsCards", { count: data?.expiredHmsCards })}</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </div>
@@ -129,10 +126,9 @@ export function ExpiryAlerts() {
           </div>
         )}
 
-        {/* Expiring soon */}
         {hasExpiringSoon && (
           <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
-            <p className="text-sm font-medium text-warning mb-2">Utløper innen 30 dager</p>
+            <p className="text-sm font-medium text-warning mb-2">{t("dashboard.expiresWithin30Days")}</p>
             <div className="space-y-2">
               {(data?.expiringCoursesSoon || 0) > 0 && (
                 <div 
@@ -141,7 +137,7 @@ export function ExpiryAlerts() {
                 >
                   <div className="flex items-center gap-2">
                     <GraduationCap className="w-4 h-4 text-warning" />
-                    <span className="text-sm">{data?.expiringCoursesSoon} kurs utløper snart</span>
+                    <span className="text-sm">{t("dashboard.coursesExpiringSoon", { count: data?.expiringCoursesSoon })}</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </div>
@@ -153,7 +149,7 @@ export function ExpiryAlerts() {
                 >
                   <div className="flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-warning" />
-                    <span className="text-sm">{data?.expiringHmsCardsSoon} HMS-kort utløper snart</span>
+                    <span className="text-sm">{t("dashboard.hmsCardsExpiringSoon", { count: data?.expiringHmsCardsSoon })}</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </div>
