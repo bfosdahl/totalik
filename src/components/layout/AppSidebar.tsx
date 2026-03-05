@@ -1692,7 +1692,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               )}
             >
               <Download className="w-4 h-4 shrink-0" />
-              {!collapsed && <span className="text-sm">Last ned app</span>}
+              {!collapsed && <span className="text-sm">{t("auth.downloadApp")}</span>}
             </Button>
           </NavLink>
         </div>
@@ -1713,7 +1713,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             ) : (
               <>
                 <ChevronLeft className="w-4 h-4" />
-                <span>Minimer</span>
+                <span>{t("nav.minimize")}</span>
               </>
             )}
           </Button>
