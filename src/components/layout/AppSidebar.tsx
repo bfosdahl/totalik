@@ -160,6 +160,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslate();
   const { profile, company, isSystemAdmin, isCompanyAdmin } = useAuth();
   const { hasModule } = useCompanyModules();
   
