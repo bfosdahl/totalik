@@ -501,6 +501,8 @@ export default function Auth() {
               {isLogin ? t("auth.dontHaveAccount") + " " + t("auth.signUp") : t("auth.alreadyHaveAccount") + " " + t("auth.login")}
             </button>
           </div>
+            </>
+          )}
         </div>
       </motion.div>
     </div>
