@@ -7,48 +7,48 @@ import {
   Download,
   Users
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { useTranslate } from "@/hooks/useTranslate";
 
 interface QuickAction {
   icon: typeof Plus;
-  label: string;
-  description: string;
+  labelKey: string;
+  descriptionKey: string;
   variant: "primary" | "accent" | "secondary";
   path?: string;
-  action?: string;
 }
 
 export function QuickActions() {
   const navigate = useNavigate();
+  const { t } = useTranslate();
 
   const actions: QuickAction[] = [
     {
       icon: AlertTriangle,
-      label: "Registrer avvik",
-      description: "Logg nytt avvik",
+      labelKey: "dashboard.registerDeviation",
+      descriptionKey: "dashboard.logNewDeviation",
       variant: "primary",
       path: "/deviations",
     },
     {
       icon: ClipboardCheck,
-      label: "Start revisjon",
-      description: "Intern gjennomgang",
+      labelKey: "dashboard.startAudit",
+      descriptionKey: "dashboard.internalReview",
       variant: "accent",
       path: "/audits",
     },
     {
       icon: FileText,
-      label: "Ny rutine",
-      description: "Legg til prosedyre",
+      labelKey: "dashboard.newRoutine",
+      descriptionKey: "dashboard.addProcedure",
       variant: "secondary",
       path: "/setup?step=routines",
     },
     {
       icon: Download,
-      label: "Eksporter handbok",
-      description: "Last ned PDF",
+      labelKey: "dashboard.exportHandbook",
+      descriptionKey: "dashboard.downloadPdf",
       variant: "secondary",
       path: "/handbook",
     },
@@ -73,12 +73,12 @@ export function QuickActions() {
       transition={{ duration: 0.4, delay: 0.4 }}
       className="bg-card rounded-xl border border-border p-4 md:p-6 shadow-card"
     >
-      <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Hurtighandlinger</h3>
+      <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">{t("dashboard.quickActions")}</h3>
       
       <div className="grid grid-cols-2 gap-2 md:gap-3">
         {actions.map((action, index) => (
           <motion.button
-            key={action.label}
+            key={action.labelKey}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.2, delay: 0.5 + index * 0.1 }}
@@ -89,8 +89,8 @@ export function QuickActions() {
             )}
           >
             <action.icon className="w-4 h-4 md:w-5 md:h-5 mb-1.5 md:mb-2" />
-            <span className="font-medium text-xs md:text-sm">{action.label}</span>
-            <span className="text-xs opacity-80 hidden sm:block">{action.description}</span>
+            <span className="font-medium text-xs md:text-sm">{t(action.labelKey)}</span>
+            <span className="text-xs opacity-80 hidden sm:block">{t(action.descriptionKey)}</span>
           </motion.button>
         ))}
       </div>

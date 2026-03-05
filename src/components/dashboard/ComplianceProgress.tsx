@@ -4,101 +4,65 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useSetupWizard } from "@/hooks/useSetupWizard";
 import { useHmsDeclarations } from "@/hooks/useHmsDeclarations";
+import { useTranslate } from "@/hooks/useTranslate";
 
 interface ComplianceStep {
   id: string;
-  title: string;
-  description: string;
+  titleKey: string;
+  descriptionKey: string;
   status: "completed" | "in-progress" | "pending";
   stepIndex: number;
 }
 
-const baseSteps = [
-  {
-    id: "goals",
-    title: "Mål for internkontroll",
-    description: "Definer bedriftens HMS-mål",
-    stepIndex: 0,
-  },
-  {
-    id: "organization",
-    title: "Organisering",
-    description: "Dokumenter ansvarsforhold",
-    stepIndex: 1,
-  },
-  {
-    id: "risk",
-    title: "Risikovurdering",
-    description: "Kartlegg farer og tiltak",
-    stepIndex: 2,
-  },
-  {
-    id: "actions",
-    title: "Handlingsplan",
-    description: "Planlegg forbedringstiltak",
-    stepIndex: 3,
-  },
-  {
-    id: "routines",
-    title: "Rutiner",
-    description: "Etabler sikre arbeidsrutiner",
-    stepIndex: 4,
-  },
-  {
-    id: "handbook",
-    title: "Handbok",
-    description: "Generer IK-dokumentasjon",
-    stepIndex: 5,
-  },
-];
-
-const statusConfig = {
-  completed: {
-    icon: CheckCircle2,
-    color: "text-success",
-    bg: "bg-success",
-    label: "Fullført",
-  },
-  "in-progress": {
-    icon: Clock,
-    color: "text-warning",
-    bg: "bg-warning",
-    label: "Pågår",
-  },
-  pending: {
-    icon: Circle,
-    color: "text-muted-foreground",
-    bg: "bg-muted",
-    label: "Venter",
-  },
-};
-
 export function ComplianceProgress() {
   const navigate = useNavigate();
+  const { t } = useTranslate();
   const { progress, goals, organization, riskAssessment, actionPlan, routines, isLoading } = useSetupWizard();
   const { hasSelfDeclaration } = useHmsDeclarations();
 
-  // Check if wizard is completed - this determines if we should count predefined data
+  const baseSteps = [
+    { id: "goals", titleKey: "dashboard.goalsForInternalControl", descriptionKey: "dashboard.defineHmsGoals", stepIndex: 0 },
+    { id: "organization", titleKey: "dashboard.organizationStep", descriptionKey: "dashboard.documentResponsibilities", stepIndex: 1 },
+    { id: "risk", titleKey: "dashboard.riskAssessmentStep", descriptionKey: "dashboard.mapHazards", stepIndex: 2 },
+    { id: "actions", titleKey: "dashboard.actionPlanStep", descriptionKey: "dashboard.planImprovements", stepIndex: 3 },
+    { id: "routines", titleKey: "dashboard.routinesStep", descriptionKey: "dashboard.establishRoutines", stepIndex: 4 },
+    { id: "handbook", titleKey: "dashboard.handbookStep", descriptionKey: "dashboard.generateDocumentation", stepIndex: 5 },
+  ];
+
+  const statusConfig = {
+    completed: {
+      icon: CheckCircle2,
+      color: "text-success",
+      bg: "bg-success",
+      labelKey: "dashboard.statusCompleted",
+    },
+    "in-progress": {
+      icon: Clock,
+      color: "text-warning",
+      bg: "bg-warning",
+      labelKey: "dashboard.statusInProgress",
+    },
+    pending: {
+      icon: Circle,
+      color: "text-muted-foreground",
+      bg: "bg-muted",
+      labelKey: "dashboard.statusPending",
+    },
+  };
+
+  // Check if wizard is completed
   const wizardCompleted = progress?.is_completed ?? false;
   const completedStepsList = progress?.completed_steps ?? [];
 
-  // Helper function to check if a step was completed via wizard or has non-predefined data
   const isStepCompleted = (stepId: string, hasData: boolean, hasNonPredefinedData: boolean): boolean => {
-    // If wizard is completed, trust the completed_steps list
     if (wizardCompleted) {
       return completedStepsList.includes(stepId) || hasData;
     }
-    // Otherwise, only count steps with non-predefined data (user actually set it up)
-    // OR if the step is in completed_steps (user went through wizard manually)
     return completedStepsList.includes(stepId) || hasNonPredefinedData;
   };
 
-  // Calculate step status based on ACTUAL DATA PRESENCE and wizard completion
-  // Standard data from applyDefaultHmsSetup should NOT count unless wizard is completed
   const steps: ComplianceStep[] = baseSteps.map((step) => {
     let status: "completed" | "in-progress" | "pending";
-    
-    // Check if there's actual data present for this step
     let hasData = false;
     let hasNonPredefinedData = false;
     
@@ -109,17 +73,14 @@ export function ComplianceProgress() {
         break;
       case "organization":
         hasData = !!(organization && (organization.roles?.length > 0 || (organization.description && organization.description.trim().length > 0)));
-        // Organization doesn't have is_predefined on individual items, so check if user customized
-        hasNonPredefinedData = hasData; // Assume if organization has roles, user set it up
+        hasNonPredefinedData = hasData;
         break;
       case "risk":
         hasData = !!(riskAssessment && riskAssessment.risks && riskAssessment.risks.length > 0);
-        // RiskItem doesn't have is_predefined, but the risks array elements might
-        hasNonPredefinedData = false; // Will be checked via completed_steps
+        hasNonPredefinedData = false;
         break;
       case "actions":
         hasData = !!(actionPlan && actionPlan.actions && actionPlan.actions.length > 0);
-        // Check if any action has been modified (status changed from ikke_startet)
         hasNonPredefinedData = actionPlan?.actions?.some(a => a.status && a.status !== 'ikke_startet') ?? false;
         break;
       case "routines":
@@ -127,19 +88,16 @@ export function ComplianceProgress() {
         hasNonPredefinedData = routines?.routines?.some(r => !r.is_predefined) ?? false;
         break;
       case "handbook":
-        // Handbook is considered complete if HMS self-declaration is signed
         hasData = hasSelfDeclaration;
-        hasNonPredefinedData = hasSelfDeclaration; // User action required
+        hasNonPredefinedData = hasSelfDeclaration;
         break;
     }
     
-    // Determine if step is completed based on wizard status and data
     const stepCompleted = isStepCompleted(step.id, hasData, hasNonPredefinedData);
     
     if (stepCompleted) {
       status = "completed";
     } else if (step.stepIndex === (progress?.current_step || 0)) {
-      // Current step is in-progress
       status = "in-progress";
     } else {
       status = "pending";
@@ -164,9 +122,9 @@ export function ComplianceProgress() {
     >
       <div className="flex items-center justify-between mb-4 md:mb-6">
         <div>
-          <h3 className="text-base md:text-lg font-semibold">Oppsett-fremgang</h3>
+          <h3 className="text-base md:text-lg font-semibold">{t("dashboard.setupProgress")}</h3>
           <p className="text-xs md:text-sm text-muted-foreground">
-            {completedCount} av {steps.length} steg fullført
+            {t("dashboard.stepsCompleted", { completed: completedCount, total: steps.length })}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -208,9 +166,9 @@ export function ComplianceProgress() {
                 <Icon className={cn("w-4 h-4 md:w-5 md:h-5", config.color)} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-xs md:text-sm">{step.title}</p>
+                <p className="font-medium text-xs md:text-sm">{t(step.titleKey)}</p>
                 <p className="text-xs text-muted-foreground truncate hidden sm:block">
-                  {step.description}
+                  {t(step.descriptionKey)}
                 </p>
               </div>
               <span
@@ -221,7 +179,7 @@ export function ComplianceProgress() {
                   step.status === "pending" && "bg-muted text-muted-foreground"
                 )}
               >
-                {config.label}
+                {t(config.labelKey)}
               </span>
             </motion.div>
           );

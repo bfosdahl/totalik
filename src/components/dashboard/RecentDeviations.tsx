@@ -5,27 +5,27 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useDeviations } from "@/hooks/useDeviations";
-import { useEffect } from "react";
-
-const priorityConfig = {
-  low: { label: "Lav", variant: "muted" as const },
-  medium: { label: "Medium", variant: "warning" as const },
-  high: { label: "Høy", variant: "destructive" as const },
-  critical: { label: "Kritisk", variant: "destructive" as const },
-};
-
-const statusConfig = {
-  open: { label: "Åpen", color: "text-destructive" },
-  "in-progress": { label: "Under arbeid", color: "text-warning" },
-  resolved: { label: "Løst", color: "text-success" },
-  closed: { label: "Lukket", color: "text-muted-foreground" },
-};
+import { useTranslate } from "@/hooks/useTranslate";
 
 export function RecentDeviations() {
   const navigate = useNavigate();
   const { deviations, isLoading } = useDeviations();
+  const { t } = useTranslate();
 
-  // Get recent deviations (max 3, excluding resolved/closed)
+  const priorityConfig: Record<string, { labelKey: string; variant: "muted" | "warning" | "destructive" }> = {
+    low: { labelKey: "deviations.priorities.low", variant: "muted" },
+    medium: { labelKey: "deviations.priorities.medium", variant: "warning" },
+    high: { labelKey: "deviations.priorities.high", variant: "destructive" },
+    critical: { labelKey: "deviations.priorities.critical", variant: "destructive" },
+  };
+
+  const statusConfig: Record<string, { labelKey: string; color: string }> = {
+    open: { labelKey: "deviations.statuses.open", color: "text-destructive" },
+    "in-progress": { labelKey: "common.inProgress", color: "text-warning" },
+    resolved: { labelKey: "common.completed", color: "text-success" },
+    closed: { labelKey: "common.closed", color: "text-muted-foreground" },
+  };
+
   const recentDeviations = deviations
     .filter((d) => d.status !== "resolved" && d.status !== "closed")
     .slice(0, 3);
@@ -53,14 +53,14 @@ export function RecentDeviations() {
             <AlertTriangle className="w-4 h-4 md:w-5 md:h-5 text-destructive" />
           </div>
           <div>
-            <h3 className="text-base md:text-lg font-semibold">Nylige avvik</h3>
+            <h3 className="text-base md:text-lg font-semibold">{t("dashboard.recentDeviations")}</h3>
             <p className="text-xs md:text-sm text-muted-foreground">
-              {openCount} åpne avvik
+              {t("dashboard.openDeviationsCount", { count: openCount })}
             </p>
           </div>
         </div>
         <Button variant="outline" size="sm" className="gap-1 text-xs md:text-sm" onClick={handleViewAll}>
-          Se alle
+          {t("common.seeAll")}
           <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
         </Button>
       </div>
@@ -68,11 +68,11 @@ export function RecentDeviations() {
       <div className="space-y-2 md:space-y-3">
         {isLoading ? (
           <div className="text-center py-4 text-muted-foreground text-sm">
-            Laster avvik...
+            {t("dashboard.loadingDeviations")}
           </div>
         ) : recentDeviations.length === 0 ? (
           <div className="text-center py-4 text-muted-foreground text-sm">
-            Ingen åpne avvik
+            {t("dashboard.noOpenDeviations")}
           </div>
         ) : (
           recentDeviations.map((deviation, index) => (
@@ -90,8 +90,8 @@ export function RecentDeviations() {
                     <span className="text-xs font-mono text-muted-foreground">
                       {deviation.deviation_number}
                     </span>
-                    <Badge variant={priorityConfig[deviation.priority as keyof typeof priorityConfig]?.variant || "muted"} className="text-xs">
-                      {priorityConfig[deviation.priority as keyof typeof priorityConfig]?.label || deviation.priority}
+                    <Badge variant={priorityConfig[deviation.priority as string]?.variant || "muted"} className="text-xs">
+                      {t(priorityConfig[deviation.priority as string]?.labelKey || "deviations.priorities.low")}
                     </Badge>
                     <Badge variant="outline" className="text-xs hidden sm:inline-flex">{deviation.category}</Badge>
                   </div>
@@ -101,7 +101,7 @@ export function RecentDeviations() {
                   <div className="flex items-center gap-2 md:gap-4 mt-1.5 md:mt-2 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1 truncate">
                       <User className="w-3 h-3 flex-shrink-0" />
-                      <span className="truncate">{deviation.assignee_name || "Ikke tildelt"}</span>
+                      <span className="truncate">{deviation.assignee_name || t("common.notAssigned")}</span>
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
@@ -109,8 +109,8 @@ export function RecentDeviations() {
                     </span>
                   </div>
                 </div>
-                <span className={cn("text-xs font-medium whitespace-nowrap", statusConfig[deviation.status as keyof typeof statusConfig]?.color || "text-muted-foreground")}>
-                  {statusConfig[deviation.status as keyof typeof statusConfig]?.label || deviation.status}
+                <span className={cn("text-xs font-medium whitespace-nowrap", statusConfig[deviation.status as string]?.color || "text-muted-foreground")}>
+                  {t(statusConfig[deviation.status as string]?.labelKey || "common.open")}
                 </span>
               </div>
             </motion.div>
