@@ -357,7 +357,6 @@ export default function Auth() {
           <h2 className="text-xl font-semibold text-center mb-6">
             {isLogin ? t("auth.login") : t("auth.createCompanyAccount") || "Opprett bedriftskonto"}
           </h2>
-          </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
