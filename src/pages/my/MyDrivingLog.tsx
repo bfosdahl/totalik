@@ -78,6 +78,28 @@ export default function MyDrivingLog() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    setBulkDeleting(true);
+    try {
+      for (const id of selectedIds) {
+        await deleteEntry.mutateAsync(id);
+      }
+      setSelectedIds(new Set());
+      setBulkDeleteOpen(false);
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const currentYear = new Date().getFullYear();
   const months = Array.from({ length: 12 }, (_, i) => ({
     value: String(i),
@@ -93,6 +115,24 @@ export default function MyDrivingLog() {
     const monthEnd = endOfMonth(monthStart);
     return isWithinInterval(date, { start: monthStart, end: monthEnd });
   });
+
+  const allFilteredSelected = filteredEntries.length > 0 && filteredEntries.every(e => selectedIds.has(e.id));
+
+  const toggleSelectAll = () => {
+    if (allFilteredSelected) {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        filteredEntries.forEach(e => next.delete(e.id));
+        return next;
+      });
+    } else {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        filteredEntries.forEach(e => next.add(e.id));
+        return next;
+      });
+    }
+  };
 
   const lastOdometerEnd = completedEntries[0]?.odometer_end ?? null;
 
