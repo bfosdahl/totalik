@@ -359,7 +359,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                       exit={{ opacity: 0, x: -10 }}
                       className="font-medium text-sm"
                     >
-                      {item.label}
+                      {t(item.labelKey)}
                     </motion.span>
                   )}
                 </AnimatePresence>
@@ -453,7 +453,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                               )}
                             >
                               <item.icon className={cn("w-4 h-4 flex-shrink-0", !isActive && item.color)} />
-                              <span>{item.label}</span>
+                              <span>{t(item.labelKey)}</span>
                             </NavLink>
                             {/* Sub-items */}
                             {location.pathname.startsWith("/risikoanalyse") && (
@@ -490,7 +490,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                                       )}
                                     >
                                       <child.icon className={cn("w-3 h-3 flex-shrink-0", !childIsActive && child.color)} />
-                                      <span>{child.label}</span>
+                                      <span>{t(child.labelKey)}</span>
                                     </NavLink>
                                   );
                                 })}
@@ -513,7 +513,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           )}
                         >
                           <item.icon className={cn("w-4 h-4 flex-shrink-0", !isActive && item.color)} />
-                          <span>{item.label}</span>
+                          <span>{t(item.labelKey)}</span>
                         </NavLink>
                       );
                     })}
@@ -592,7 +592,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                               )}
                             >
                               <item.icon className={cn("w-4 h-4 flex-shrink-0", !isActive && item.color)} />
-                              <span>{item.label}</span>
+                              <span>{t(item.labelKey)}</span>
                             </NavLink>
                           );
                         })}
@@ -620,7 +620,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                             )}
                           >
                             <item.icon className={cn("w-4 h-4 flex-shrink-0", item.color)} />
-                            <span>{item.label}</span>
+                            <span>{t(item.labelKey)}</span>
                           </button>
                         );
                       }
@@ -637,7 +637,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           )}
                         >
                           <item.icon className={cn("w-4 h-4 flex-shrink-0", !isActive && item.color)} />
-                          <span>{item.label}</span>
+                          <span>{t(item.labelKey)}</span>
                         </NavLink>
                       );
                     })}
@@ -742,7 +742,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           )}
                         >
                           <item.icon className={cn("w-4 h-4 flex-shrink-0", !isActive && item.color)} />
-                          <span>{item.label}</span>
+                          <span>{t(item.labelKey)}</span>
                         </NavLink>
                       );
                     })}
