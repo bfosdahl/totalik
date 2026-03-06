@@ -60,6 +60,8 @@ export default function MyDrivingLog() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editTrip, setEditTrip] = useState<any>(null);
   const [monthFilter, setMonthFilter] = useState("all");
+  const [yearFilter, setYearFilter] = useState(String(new Date().getFullYear()));
+  const [tripTypeFilter, setTripTypeFilter] = useState("all");
   const [expandedTrip, setExpandedTrip] = useState<string | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importPending, setImportPending] = useState(false);
@@ -108,12 +110,22 @@ export default function MyDrivingLog() {
 
   const completedEntries = entries.data?.filter(e => e.status === "completed") ?? [];
 
+  const availableYears = [...new Set(completedEntries.map(e => new Date(e.trip_date).getFullYear()))].sort((a, b) => b - a);
+
   const filteredEntries = completedEntries.filter(entry => {
-    if (monthFilter === "all") return true;
     const date = parseISO(entry.trip_date);
-    const monthStart = startOfMonth(new Date(currentYear, parseInt(monthFilter)));
-    const monthEnd = endOfMonth(monthStart);
-    return isWithinInterval(date, { start: monthStart, end: monthEnd });
+    // Year filter
+    if (yearFilter !== "all" && date.getFullYear() !== parseInt(yearFilter)) return false;
+    // Month filter
+    if (monthFilter !== "all") {
+      const selectedYear = yearFilter !== "all" ? parseInt(yearFilter) : currentYear;
+      const monthStart = startOfMonth(new Date(selectedYear, parseInt(monthFilter)));
+      const monthEnd = endOfMonth(monthStart);
+      if (!isWithinInterval(date, { start: monthStart, end: monthEnd })) return false;
+    }
+    // Trip type filter
+    if (tripTypeFilter !== "all" && entry.trip_type !== tripTypeFilter) return false;
+    return true;
   });
 
   const allFilteredSelected = filteredEntries.length > 0 && filteredEntries.every(e => selectedIds.has(e.id));
@@ -289,10 +301,21 @@ export default function MyDrivingLog() {
         ) : null}
 
         {/* Filter */}
-        <div className="flex items-center gap-4">
-          <Select value={monthFilter} onValueChange={setMonthFilter}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filtrer på måned" />
+        <div className="flex flex-wrap items-center gap-3">
+          <Select value={yearFilter} onValueChange={(v) => { setYearFilter(v); setSelectedIds(new Set()); }}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="År" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle år</SelectItem>
+              {availableYears.map(y => (
+                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={monthFilter} onValueChange={(v) => { setMonthFilter(v); setSelectedIds(new Set()); }}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Måned" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Alle måneder</SelectItem>
@@ -301,9 +324,31 @@ export default function MyDrivingLog() {
               ))}
             </SelectContent>
           </Select>
+          <Select value={tripTypeFilter} onValueChange={(v) => { setTripTypeFilter(v); setSelectedIds(new Set()); }}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Turtype" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle turtyper</SelectItem>
+              <SelectItem value="business">Yrkeskjøring</SelectItem>
+              <SelectItem value="commute">Arbeidsreise</SelectItem>
+              <SelectItem value="private">Privat</SelectItem>
+            </SelectContent>
+          </Select>
           <span className="text-sm text-muted-foreground">
             {filteredEntries.length} {filteredEntries.length === 1 ? "tur" : "turer"}
           </span>
+          {(yearFilter !== String(currentYear) || monthFilter !== "all" || tripTypeFilter !== "all") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-muted-foreground"
+              onClick={() => { setYearFilter(String(currentYear)); setMonthFilter("all"); setTripTypeFilter("all"); setSelectedIds(new Set()); }}
+            >
+              <X className="w-3 h-3" />
+              Nullstill
+            </Button>
+          )}
         </div>
 
         {/* Bulk action bar */}
