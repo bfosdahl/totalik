@@ -60,6 +60,8 @@ export default function MyDrivingLog() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editTrip, setEditTrip] = useState<any>(null);
   const [monthFilter, setMonthFilter] = useState("all");
+  const [yearFilter, setYearFilter] = useState(String(new Date().getFullYear()));
+  const [tripTypeFilter, setTripTypeFilter] = useState("all");
   const [expandedTrip, setExpandedTrip] = useState<string | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importPending, setImportPending] = useState(false);
