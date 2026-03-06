@@ -4939,6 +4939,89 @@ export type Database = {
           },
         ]
       }
+      hr_meetings: {
+        Row: {
+          company_id: string
+          completed_at: string | null
+          completed_by_id: string | null
+          created_at: string
+          created_by: string | null
+          employee_id: string | null
+          employee_name: string
+          id: string
+          location: string | null
+          meeting_type: string
+          notes: string | null
+          scheduled_date: string
+          scheduled_time: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string | null
+          employee_name: string
+          id?: string
+          location?: string | null
+          meeting_type?: string
+          notes?: string | null
+          scheduled_date: string
+          scheduled_time?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          completed_at?: string | null
+          completed_by_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string | null
+          employee_name?: string
+          id?: string
+          location?: string | null
+          meeting_type?: string
+          notes?: string | null
+          scheduled_date?: string
+          scheduled_time?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_meetings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_meetings_completed_by_id_fkey"
+            columns: ["completed_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_meetings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_meetings_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_alkohol_attachments: {
         Row: {
           category: string
