@@ -301,10 +301,21 @@ export default function MyDrivingLog() {
         ) : null}
 
         {/* Filter */}
-        <div className="flex items-center gap-4">
-          <Select value={monthFilter} onValueChange={setMonthFilter}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filtrer på måned" />
+        <div className="flex flex-wrap items-center gap-3">
+          <Select value={yearFilter} onValueChange={(v) => { setYearFilter(v); setSelectedIds(new Set()); }}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="År" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle år</SelectItem>
+              {availableYears.map(y => (
+                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={monthFilter} onValueChange={(v) => { setMonthFilter(v); setSelectedIds(new Set()); }}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Måned" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Alle måneder</SelectItem>
@@ -313,9 +324,31 @@ export default function MyDrivingLog() {
               ))}
             </SelectContent>
           </Select>
+          <Select value={tripTypeFilter} onValueChange={(v) => { setTripTypeFilter(v); setSelectedIds(new Set()); }}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Turtype" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle turtyper</SelectItem>
+              <SelectItem value="business">Yrkeskjøring</SelectItem>
+              <SelectItem value="commute">Arbeidsreise</SelectItem>
+              <SelectItem value="private">Privat</SelectItem>
+            </SelectContent>
+          </Select>
           <span className="text-sm text-muted-foreground">
             {filteredEntries.length} {filteredEntries.length === 1 ? "tur" : "turer"}
           </span>
+          {(yearFilter !== String(currentYear) || monthFilter !== "all" || tripTypeFilter !== "all") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-muted-foreground"
+              onClick={() => { setYearFilter(String(currentYear)); setMonthFilter("all"); setTripTypeFilter("all"); setSelectedIds(new Set()); }}
+            >
+              <X className="w-3 h-3" />
+              Nullstill
+            </Button>
+          )}
         </div>
 
         {/* Bulk action bar */}
