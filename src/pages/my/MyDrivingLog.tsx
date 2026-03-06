@@ -110,12 +110,22 @@ export default function MyDrivingLog() {
 
   const completedEntries = entries.data?.filter(e => e.status === "completed") ?? [];
 
+  const availableYears = [...new Set(completedEntries.map(e => new Date(e.trip_date).getFullYear()))].sort((a, b) => b - a);
+
   const filteredEntries = completedEntries.filter(entry => {
-    if (monthFilter === "all") return true;
     const date = parseISO(entry.trip_date);
-    const monthStart = startOfMonth(new Date(currentYear, parseInt(monthFilter)));
-    const monthEnd = endOfMonth(monthStart);
-    return isWithinInterval(date, { start: monthStart, end: monthEnd });
+    // Year filter
+    if (yearFilter !== "all" && date.getFullYear() !== parseInt(yearFilter)) return false;
+    // Month filter
+    if (monthFilter !== "all") {
+      const selectedYear = yearFilter !== "all" ? parseInt(yearFilter) : currentYear;
+      const monthStart = startOfMonth(new Date(selectedYear, parseInt(monthFilter)));
+      const monthEnd = endOfMonth(monthStart);
+      if (!isWithinInterval(date, { start: monthStart, end: monthEnd })) return false;
+    }
+    // Trip type filter
+    if (tripTypeFilter !== "all" && entry.trip_type !== tripTypeFilter) return false;
+    return true;
   });
 
   const allFilteredSelected = filteredEntries.length > 0 && filteredEntries.every(e => selectedIds.has(e.id));
