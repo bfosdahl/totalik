@@ -607,6 +607,18 @@ export default function MyDrivingLog() {
         onImport={handleBulkImport}
         isPending={importPending}
       />
+
+      <CreateTravelExpenseDialog
+        open={travelExpenseDialogOpen}
+        onOpenChange={setTravelExpenseDialogOpen}
+        onSubmit={(data) => {
+          createReport.mutate(data, {
+            onSuccess: () => setTravelExpenseDialogOpen(false),
+          });
+        }}
+        isPending={createReport.isPending}
+        completedTrips={completedEntries}
+      />
     </AppLayout>
   );
 }
