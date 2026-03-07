@@ -19,8 +19,9 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ChevronRight, ClipboardList, Receipt, Pencil, Download, Upload, X } from "lucide-react";
+import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ChevronRight, ClipboardList, Receipt, Pencil, Download, Upload, X, FileText } from "lucide-react";
 import { useDrivingLog } from "@/hooks/useDrivingLog";
+import { useTravelExpenseReports } from "@/hooks/useTravelExpenseReports";
 import { AddTripDialog } from "@/components/driving-log/AddTripDialog";
 import { StartTripDialog } from "@/components/driving-log/StartTripDialog";
 import { CompleteTripDialog } from "@/components/driving-log/CompleteTripDialog";
@@ -28,6 +29,8 @@ import { ActiveTripCard } from "@/components/driving-log/ActiveTripCard";
 import { TripExpenses } from "@/components/driving-log/TripExpenses";
 import { EditTripDialog } from "@/components/driving-log/EditTripDialog";
 import { ImportDrivingLogDialog } from "@/components/driving-log/ImportDrivingLogDialog";
+import { CreateTravelExpenseDialog } from "@/components/driving-log/CreateTravelExpenseDialog";
+import { TravelExpenseList } from "@/components/driving-log/TravelExpenseList";
 import { CreateDrivingLogInput } from "@/hooks/useDrivingLog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
