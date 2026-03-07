@@ -311,6 +311,17 @@ export default function MyDrivingLog() {
           </div>
         ) : null}
 
+        {/* Travel Expense Reports */}
+        <TravelExpenseList
+          reports={reports.data || []}
+          isLoading={reports.isLoading}
+          onSubmit={(id) => submitReport.mutate(id)}
+          onApprove={(id) => approveReport.mutate(id)}
+          onReject={(data) => rejectReport.mutate(data)}
+          onDelete={(id) => deleteReport.mutate(id)}
+          isAdmin={isAdmin}
+        />
+
         {/* Filter */}
         <div className="flex flex-wrap items-center gap-3">
           <Select value={yearFilter} onValueChange={(v) => { setYearFilter(v); setSelectedIds(new Set()); }}>
