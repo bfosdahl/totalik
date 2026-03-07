@@ -246,6 +246,10 @@ export default function MyDrivingLog() {
                   <ClipboardList className="w-4 h-4 mr-2" />
                   Registrer fullstendig tur
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTravelExpenseDialogOpen(true)}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Ny reiseregning
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
