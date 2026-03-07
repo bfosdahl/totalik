@@ -14291,6 +14291,171 @@ export type Database = {
           },
         ]
       }
+      travel_expense_items: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          date: string
+          description: string
+          id: string
+          receipt_path: string | null
+          report_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          date: string
+          description: string
+          id?: string
+          receipt_path?: string | null
+          report_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          receipt_path?: string | null
+          report_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "travel_expense_items_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "travel_expense_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      travel_expense_reports: {
+        Row: {
+          accommodation_amount: number | null
+          accommodation_days: number
+          accommodation_rate: number
+          approved_at: string | null
+          approved_by_id: string | null
+          approved_by_name: string | null
+          company_id: string
+          created_at: string
+          departure_date: string
+          departure_location: string
+          destination: string
+          diet_amount: number | null
+          diet_days: number
+          diet_rate: number
+          id: string
+          linked_trip_ids: string[] | null
+          mileage_amount: number | null
+          mileage_rate: number
+          notes: string | null
+          other_expenses_total: number
+          passenger_supplement: number
+          purpose: string
+          rejection_reason: string | null
+          report_number: string
+          return_date: string
+          status: string
+          submitted_at: string | null
+          total_amount: number
+          total_km: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accommodation_amount?: number | null
+          accommodation_days?: number
+          accommodation_rate?: number
+          approved_at?: string | null
+          approved_by_id?: string | null
+          approved_by_name?: string | null
+          company_id: string
+          created_at?: string
+          departure_date: string
+          departure_location?: string
+          destination: string
+          diet_amount?: number | null
+          diet_days?: number
+          diet_rate?: number
+          id?: string
+          linked_trip_ids?: string[] | null
+          mileage_amount?: number | null
+          mileage_rate?: number
+          notes?: string | null
+          other_expenses_total?: number
+          passenger_supplement?: number
+          purpose: string
+          rejection_reason?: string | null
+          report_number: string
+          return_date: string
+          status?: string
+          submitted_at?: string | null
+          total_amount?: number
+          total_km?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accommodation_amount?: number | null
+          accommodation_days?: number
+          accommodation_rate?: number
+          approved_at?: string | null
+          approved_by_id?: string | null
+          approved_by_name?: string | null
+          company_id?: string
+          created_at?: string
+          departure_date?: string
+          departure_location?: string
+          destination?: string
+          diet_amount?: number | null
+          diet_days?: number
+          diet_rate?: number
+          id?: string
+          linked_trip_ids?: string[] | null
+          mileage_amount?: number | null
+          mileage_rate?: number
+          notes?: string | null
+          other_expenses_total?: number
+          passenger_supplement?: number
+          purpose?: string
+          rejection_reason?: string | null
+          report_number?: string
+          return_date?: string
+          status?: string
+          submitted_at?: string | null
+          total_amount?: number
+          total_km?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "travel_expense_reports_approved_by_id_fkey"
+            columns: ["approved_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "travel_expense_reports_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "travel_expense_reports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_departments: {
         Row: {
           created_at: string
@@ -14702,6 +14867,7 @@ export type Database = {
         Args: { p_module: string }
         Returns: string
       }
+      generate_travel_expense_report_number: { Args: never; Returns: string }
       get_admin_department_ids: {
         Args: { _user_id: string }
         Returns: string[]

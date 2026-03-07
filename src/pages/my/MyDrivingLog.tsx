@@ -19,8 +19,9 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ChevronRight, ClipboardList, Receipt, Pencil, Download, Upload, X } from "lucide-react";
+import { Plus, Car, TrendingUp, Briefcase, Home, Route, Trash2, Info, Play, ChevronDown, ChevronRight, ClipboardList, Receipt, Pencil, Download, Upload, X, FileText } from "lucide-react";
 import { useDrivingLog } from "@/hooks/useDrivingLog";
+import { useTravelExpenseReports } from "@/hooks/useTravelExpenseReports";
 import { AddTripDialog } from "@/components/driving-log/AddTripDialog";
 import { StartTripDialog } from "@/components/driving-log/StartTripDialog";
 import { CompleteTripDialog } from "@/components/driving-log/CompleteTripDialog";
@@ -28,6 +29,8 @@ import { ActiveTripCard } from "@/components/driving-log/ActiveTripCard";
 import { TripExpenses } from "@/components/driving-log/TripExpenses";
 import { EditTripDialog } from "@/components/driving-log/EditTripDialog";
 import { ImportDrivingLogDialog } from "@/components/driving-log/ImportDrivingLogDialog";
+import { CreateTravelExpenseDialog } from "@/components/driving-log/CreateTravelExpenseDialog";
+import { TravelExpenseList } from "@/components/driving-log/TravelExpenseList";
 import { CreateDrivingLogInput } from "@/hooks/useDrivingLog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
@@ -52,11 +55,13 @@ const vehicleTypeLabels: Record<string, string> = {
 };
 
 export default function MyDrivingLog() {
-  const { profile } = useAuth();
+  const { profile, roles } = useAuth();
   const { entries, activeTrip, startTrip, completeTrip, createEntry, updateEntry, deleteEntry, stats } = useDrivingLog();
+  const { reports, createReport, submitReport, approveReport, rejectReport, deleteReport } = useTravelExpenseReports();
   const [startDialogOpen, setStartDialogOpen] = useState(false);
   const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
   const [fullDialogOpen, setFullDialogOpen] = useState(false);
+  const [travelExpenseDialogOpen, setTravelExpenseDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editTrip, setEditTrip] = useState<any>(null);
   const [monthFilter, setMonthFilter] = useState("all");
@@ -68,6 +73,8 @@ export default function MyDrivingLog() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  const isAdmin = roles.includes("company_admin") || roles.includes("system_admin");
 
   const handleBulkImport = async (inputs: CreateDrivingLogInput[]) => {
     setImportPending(true);
@@ -239,6 +246,10 @@ export default function MyDrivingLog() {
                   <ClipboardList className="w-4 h-4 mr-2" />
                   Registrer fullstendig tur
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTravelExpenseDialogOpen(true)}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Ny reiseregning
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -299,6 +310,17 @@ export default function MyDrivingLog() {
             </Card>
           </div>
         ) : null}
+
+        {/* Travel Expense Reports */}
+        <TravelExpenseList
+          reports={reports.data || []}
+          isLoading={reports.isLoading}
+          onSubmit={(id) => submitReport.mutate(id)}
+          onApprove={(id) => approveReport.mutate(id)}
+          onReject={(data) => rejectReport.mutate(data)}
+          onDelete={(id) => deleteReport.mutate(id)}
+          isAdmin={isAdmin}
+        />
 
         {/* Filter */}
         <div className="flex flex-wrap items-center gap-3">
@@ -584,6 +606,18 @@ export default function MyDrivingLog() {
         onOpenChange={setImportDialogOpen}
         onImport={handleBulkImport}
         isPending={importPending}
+      />
+
+      <CreateTravelExpenseDialog
+        open={travelExpenseDialogOpen}
+        onOpenChange={setTravelExpenseDialogOpen}
+        onSubmit={(data) => {
+          createReport.mutate(data, {
+            onSuccess: () => setTravelExpenseDialogOpen(false),
+          });
+        }}
+        isPending={createReport.isPending}
+        completedTrips={completedEntries}
       />
     </AppLayout>
   );
