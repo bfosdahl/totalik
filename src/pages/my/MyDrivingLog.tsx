@@ -55,7 +55,7 @@ const vehicleTypeLabels: Record<string, string> = {
 };
 
 export default function MyDrivingLog() {
-  const { profile } = useAuth();
+  const { profile, roles } = useAuth();
   const { entries, activeTrip, startTrip, completeTrip, createEntry, updateEntry, deleteEntry, stats } = useDrivingLog();
   const { reports, createReport, submitReport, approveReport, rejectReport, deleteReport } = useTravelExpenseReports();
   const [startDialogOpen, setStartDialogOpen] = useState(false);
@@ -74,7 +74,7 @@ export default function MyDrivingLog() {
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
-  const isAdmin = profile?.is_hms_responsible || false;
+  const isAdmin = roles.includes("company_admin") || roles.includes("system_admin");
 
   const handleBulkImport = async (inputs: CreateDrivingLogInput[]) => {
     setImportPending(true);
