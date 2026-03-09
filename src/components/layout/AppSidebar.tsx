@@ -208,6 +208,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const hasIkFdv = hasModule("IK_FDV");
   const hasGdpr = hasModule("GDPR");
   const hasApenhetsloven = hasModule("APENHETSLOVEN");
+  const hasPersonalhandbok = hasModule("PERSONALHANDBOK");
   
   // Module pricing for ordering
   const { getPricing, isLoading: pricingLoading } = useModulePricing();
