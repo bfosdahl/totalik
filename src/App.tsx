@@ -106,6 +106,7 @@ import AnonymousMessages from "./pages/AnonymousMessages";
 import Risikoanalyse from "./pages/Risikoanalyse";
 import IkHmsRutiner from "./pages/IkHmsRutiner";
 import Brukerveiledning from "./pages/Brukerveiledning";
+import PersonalhandbokPage from "./pages/personalhandbok/PersonalhandbokPage";
 import NotFound from "./pages/NotFound";
 import DepartmentGoals from "./pages/department/DepartmentGoals";
 import DepartmentOrganization from "./pages/department/DepartmentOrganization";
@@ -239,6 +240,9 @@ const App = () => (
                   {/* Småprosjekter routes */}
                   <Route path="/ks/smaaprosjekter" element={<ProtectedRoute><MineProsjekterDashboard /></ProtectedRoute>} />
                   <Route path="/ks/smaaprosjekter/:projectId" element={<ProtectedRoute><SimpleProjectDetail /></ProtectedRoute>} />
+                  
+                  {/* Personalhåndbok routes */}
+                  <Route path="/personalhandbok" element={<ProtectedRoute><PersonalhandbokPage /></ProtectedRoute>} />
                   
                   {/* Admin routes - require system_admin role */}
                   <Route path="/admin" element={<ProtectedRoute requireSystemAdmin><AdminDashboard /></ProtectedRoute>} />
