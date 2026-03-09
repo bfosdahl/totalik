@@ -241,6 +241,9 @@ const App = () => (
                   <Route path="/ks/smaaprosjekter" element={<ProtectedRoute><MineProsjekterDashboard /></ProtectedRoute>} />
                   <Route path="/ks/smaaprosjekter/:projectId" element={<ProtectedRoute><SimpleProjectDetail /></ProtectedRoute>} />
                   
+                  {/* Personalhåndbok routes */}
+                  <Route path="/personalhandbok" element={<ProtectedRoute><PersonalhandbokPage /></ProtectedRoute>} />
+                  
                   {/* Admin routes - require system_admin role */}
                   <Route path="/admin" element={<ProtectedRoute requireSystemAdmin><AdminDashboard /></ProtectedRoute>} />
                   <Route path="/admin/companies" element={<ProtectedRoute requireSystemAdmin><AdminCompanies /></ProtectedRoute>} />
