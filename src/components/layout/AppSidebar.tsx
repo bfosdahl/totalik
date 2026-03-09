@@ -132,7 +132,7 @@ const personaladministrasjonItems = {
 };
 
 // Route detection helper
-type SectionKey = 'ks' | 'ikMat' | 'ikAlkohol' | 'ikHms' | 'ikFdv' | 'personal' | 'gdpr' | 'apenhetsloven' | 'none';
+type SectionKey = 'ks' | 'ikMat' | 'ikAlkohol' | 'ikHms' | 'ikFdv' | 'personal' | 'gdpr' | 'apenhetsloven' | 'personalhandbok' | 'none';
 
 const detectActiveSection = (pathname: string): SectionKey => {
   if (pathname.startsWith('/ks')) return 'ks';
