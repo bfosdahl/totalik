@@ -13331,6 +13331,117 @@ export type Database = {
           },
         ]
       }
+      personalhandbok_chapters: {
+        Row: {
+          company_id: string
+          content: string
+          created_at: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          is_default: boolean
+          last_edited_by_id: string | null
+          last_edited_by_name: string | null
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          company_id: string
+          content?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          last_edited_by_id?: string | null
+          last_edited_by_name?: string | null
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          company_id?: string
+          content?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          last_edited_by_id?: string | null
+          last_edited_by_name?: string | null
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personalhandbok_chapters_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personalhandbok_chapters_last_edited_by_id_fkey"
+            columns: ["last_edited_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      personalhandbok_confirmations: {
+        Row: {
+          company_id: string
+          confirmed_at: string
+          created_at: string
+          handbook_version: number
+          id: string
+          ip_address: string | null
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          confirmed_at?: string
+          created_at?: string
+          handbook_version?: number
+          id?: string
+          ip_address?: string | null
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          confirmed_at?: string
+          created_at?: string
+          handbook_version?: number
+          id?: string
+          ip_address?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personalhandbok_confirmations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personalhandbok_confirmations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
