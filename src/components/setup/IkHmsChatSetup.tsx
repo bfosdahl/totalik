@@ -456,17 +456,48 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
 
     // Step 1: Check for Brreg confirmation or org number
     if (currentStep === 0) {
-      const isConfirming = pendingBrregInfo && (userInput.toLowerCase() === 'ja' || userInput.toLowerCase().includes('stemmer'));
+      // Smart matching for Brreg confirmation - accept various positive responses
+      const lowerInput = userInput.toLowerCase();
+      const isPositive = /^(ja|japp|jepp|ok|okei|fint|bra|stemmer|supert|korrekt|riktig|yes|yep|bekreft)$/i.test(lowerInput) 
+        || lowerInput.includes('stemmer');
+      const isNegative = /^(nei|nope|feil)$/i.test(lowerInput) 
+        || lowerInput.includes('stemmer ikke') 
+        || lowerInput.includes('er feil');
       
-      if (isConfirming && pendingBrregInfo) {
+      if (pendingBrregInfo && isPositive) {
         await handleBrregConfirmed(pendingBrregInfo);
         return;
       }
 
       // Declining Brreg
-      if (pendingBrregInfo && (userInput.toLowerCase() === 'nei' || userInput.toLowerCase().includes('stemmer ikke'))) {
+      if (pendingBrregInfo && isNegative) {
         setPendingBrregInfo(null);
         setMessages(prev => [...prev, { role: "assistant", content: "OK! Skriv inn riktig organisasjonsnummer:" }]);
+        setIsLoading(false);
+        return;
+      }
+
+      // If Brreg info is pending and user provides additional info (e.g. employee count correction),
+      // treat it as confirmation with a note
+      if (pendingBrregInfo) {
+        // Check if user is providing employee count info
+        const employeeMatch = userInput.match(/(\d+)\s*(ansatt|person|stk|mann)/i);
+        if (employeeMatch) {
+          const correctedCount = parseInt(employeeMatch[1]);
+          setPendingBrregInfo(prev => prev ? { ...prev, employees: correctedCount } : prev);
+          setMessages(prev => [...prev, { 
+            role: "assistant", 
+            content: `Takk! Jeg oppdaterer antall ansatte til ${correctedCount}. Ellers stemmer informasjonen?\n\n📋 **Firmanavn:** ${pendingBrregInfo.name}\n📍 **Adresse:** ${pendingBrregInfo.address}\n🏭 **Bransje:** ${pendingBrregInfo.industry}\n👥 **Ansatte:** ${correctedCount}\n\nStemmer dette nå? (Ja/Nei)` 
+          }]);
+          setIsLoading(false);
+          return;
+        }
+
+        // Unrecognized input while Brreg is pending - re-prompt
+        setMessages(prev => [...prev, { 
+          role: "assistant", 
+          content: `Jeg trenger en bekreftelse på bedriftsinformasjonen over. Stemmer det? Svar **Ja** for å bekrefte, eller **Nei** for å endre.` 
+        }]);
         setIsLoading(false);
         return;
       }
@@ -499,6 +530,11 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
         return;
       }
 
+      // Fallback: prompt for org number
+      setMessages(prev => [...prev, { 
+        role: "assistant", 
+        content: "Vennligst skriv inn organisasjonsnummeret ditt (9 siffer) for å komme i gang:" 
+      }]);
       setIsLoading(false);
       return;
     }
