@@ -106,6 +106,7 @@ import AnonymousMessages from "./pages/AnonymousMessages";
 import Risikoanalyse from "./pages/Risikoanalyse";
 import IkHmsRutiner from "./pages/IkHmsRutiner";
 import Brukerveiledning from "./pages/Brukerveiledning";
+import PersonalhandbokPage from "./pages/personalhandbok/PersonalhandbokPage";
 import NotFound from "./pages/NotFound";
 import DepartmentGoals from "./pages/department/DepartmentGoals";
 import DepartmentOrganization from "./pages/department/DepartmentOrganization";
