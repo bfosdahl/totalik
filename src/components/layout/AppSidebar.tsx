@@ -141,6 +141,7 @@ const detectActiveSection = (pathname: string): SectionKey => {
   if (pathname.startsWith('/ik-mat')) return 'ikMat';
   if (pathname.startsWith('/gdpr')) return 'gdpr';
   if (pathname.startsWith('/apenhetsloven')) return 'apenhetsloven';
+  if (pathname.startsWith('/personalhandbok')) return 'personalhandbok';
   
   const personalPaths = ['/employees', '/hr/', '/time-registration', '/time-off', '/work-schedule', '/my/'];
   if (personalPaths.some(p => pathname === p || pathname.startsWith(p))) return 'personal';
