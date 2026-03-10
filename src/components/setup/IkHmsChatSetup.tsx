@@ -456,20 +456,41 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
 
     // Step 1: Check for Brreg confirmation or org number
     if (currentStep === 0) {
-      // Smart matching for Brreg confirmation - accept various positive responses
       const lowerInput = userInput.toLowerCase();
-      const isPositive = /^(ja|japp|jepp|ok|okei|fint|bra|stemmer|supert|korrekt|riktig|yes|yep|bekreft)$/i.test(lowerInput) 
-        || lowerInput.includes('stemmer');
+      
+      // Check negative FIRST to avoid "stemmer ikke" matching positive "stemmer"
       const isNegative = /^(nei|nope|feil)$/i.test(lowerInput) 
         || lowerInput.includes('stemmer ikke') 
-        || lowerInput.includes('er feil');
+        || lowerInput.includes('er feil')
+        || lowerInput.includes('ikke riktig');
+      
+      const isPositive = !isNegative && (
+        /^(ja|japp|jepp|ok|okei|fint|bra|stemmer|supert|korrekt|riktig|yes|yep|bekreft)$/i.test(lowerInput) 
+        || lowerInput.includes('stemmer')
+        || lowerInput.includes('det er riktig')
+      );
+
+      // Check employee count correction BEFORE positive/negative (handles "vi er 4 ansatte")
+      if (pendingBrregInfo) {
+        const employeeMatch = userInput.match(/(\d+)\s*(ansatt[e]?|person[e]?[r]?|stk|mann|stykk)/i);
+        if (employeeMatch) {
+          const correctedCount = parseInt(employeeMatch[1]);
+          const updatedInfo = { ...pendingBrregInfo, employees: correctedCount };
+          setPendingBrregInfo(updatedInfo);
+          setMessages(prev => [...prev, { 
+            role: "assistant", 
+            content: `Takk! Jeg oppdaterer antall ansatte til ${correctedCount}. Ellers stemmer informasjonen?\n\n📋 **Firmanavn:** ${updatedInfo.name}\n📍 **Adresse:** ${updatedInfo.address}\n🏭 **Bransje:** ${updatedInfo.industry}\n👥 **Ansatte:** ${correctedCount}\n\nStemmer dette nå? (Ja/Nei)` 
+          }]);
+          setIsLoading(false);
+          return;
+        }
+      }
       
       if (pendingBrregInfo && isPositive) {
         await handleBrregConfirmed(pendingBrregInfo);
         return;
       }
 
-      // Declining Brreg
       if (pendingBrregInfo && isNegative) {
         setPendingBrregInfo(null);
         setMessages(prev => [...prev, { role: "assistant", content: "OK! Skriv inn riktig organisasjonsnummer:" }]);
@@ -477,23 +498,7 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
         return;
       }
 
-      // If Brreg info is pending and user provides additional info (e.g. employee count correction),
-      // treat it as confirmation with a note
       if (pendingBrregInfo) {
-        // Check if user is providing employee count info
-        const employeeMatch = userInput.match(/(\d+)\s*(ansatt|person|stk|mann)/i);
-        if (employeeMatch) {
-          const correctedCount = parseInt(employeeMatch[1]);
-          setPendingBrregInfo(prev => prev ? { ...prev, employees: correctedCount } : prev);
-          setMessages(prev => [...prev, { 
-            role: "assistant", 
-            content: `Takk! Jeg oppdaterer antall ansatte til ${correctedCount}. Ellers stemmer informasjonen?\n\n📋 **Firmanavn:** ${pendingBrregInfo.name}\n📍 **Adresse:** ${pendingBrregInfo.address}\n🏭 **Bransje:** ${pendingBrregInfo.industry}\n👥 **Ansatte:** ${correctedCount}\n\nStemmer dette nå? (Ja/Nei)` 
-          }]);
-          setIsLoading(false);
-          return;
-        }
-
-        // Unrecognized input while Brreg is pending - re-prompt
         setMessages(prev => [...prev, { 
           role: "assistant", 
           content: `Jeg trenger en bekreftelse på bedriftsinformasjonen over. Stemmer det? Svar **Ja** for å bekrefte, eller **Nei** for å endre.` 
