@@ -46,6 +46,7 @@ import { format, differenceInDays, isPast } from "date-fns";
 import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useDepartments, useUserDepartments } from "@/hooks/useDepartments";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface EmployeeDetailDialogProps {
   employee: Employee;
@@ -61,6 +62,7 @@ export function EmployeeDetailDialog({
   canManage 
 }: EmployeeDetailDialogProps) {
   const { profile, company } = useAuth();
+  const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     phone: employee.phone || "",
@@ -471,6 +473,7 @@ export function EmployeeDetailDialog({
                                 
                                 if (error) throw error;
                                 setIsAssignedToMain(newValue);
+                                queryClient.invalidateQueries({ queryKey: ["my-employee-card"] });
                                 toast.success(isAssignedToMain ? "Fjernet fra hovedenheten" : "Lagt til i hovedenheten");
                               } catch (err) {
                                 console.error("Error updating main company assignment:", err);
@@ -540,6 +543,7 @@ export function EmployeeDetailDialog({
                                       await assignUserToDepartment(employee.id, dept.id, false);
                                     }
                                     await refetchUserDepts();
+                                    queryClient.invalidateQueries({ queryKey: ["my-employee-card"] });
                                   } finally {
                                     setAssigningDept(null);
                                   }

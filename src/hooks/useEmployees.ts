@@ -155,7 +155,8 @@ export function useEmployeeDocuments(employeeId: string | null) {
     }) => {
       if (!company?.id) throw new Error("Ingen bedrift valgt");
 
-      const filePath = `${company.id}/${employeeId}/${Date.now()}_${file.name}`;
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const filePath = `${company.id}/${employeeId}/${Date.now()}_${safeName}`;
       
       const { error: uploadError } = await supabase.storage
         .from("employee-documents")
