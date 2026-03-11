@@ -68,7 +68,7 @@ import MySurveys from "./pages/my/MySurveys";
 import MyMessages from "./pages/my/MyMessages";
 import MyContract from "./pages/hr/MyContract";
 import MyDrivingLog from "./pages/my/MyDrivingLog";
-import MyCompetence from "./pages/my/MyCompetence";
+import MyEmployeeCard from "./pages/my/MyEmployeeCard";
 import InstallApp from "./pages/InstallApp";
 import InstallAvvikApp from "./pages/InstallAvvikApp";
 import IkMatHandbok from "./pages/IkMatHandbok";
@@ -175,7 +175,7 @@ const App = () => (
                   <Route path="/my/surveys" element={<ProtectedRoute><MySurveys /></ProtectedRoute>} />
                   <Route path="/my/messages" element={<ProtectedRoute><MyMessages /></ProtectedRoute>} />
                   <Route path="/my/driving-log" element={<ProtectedRoute><MyDrivingLog /></ProtectedRoute>} />
-                  <Route path="/my/competence" element={<ProtectedRoute><MyCompetence /></ProtectedRoute>} />
+                  <Route path="/my/employee-card" element={<ProtectedRoute><MyEmployeeCard /></ProtectedRoute>} />
                   
                   <Route path="/ik-mat/handbok" element={<ProtectedRoute><IkMatHandbok /></ProtectedRoute>} />
                   <Route path="/ik-mat/oppsett" element={<ProtectedRoute><IkMatOppsett /></ProtectedRoute>} />
