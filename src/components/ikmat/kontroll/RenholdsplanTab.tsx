@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Sparkles, ClipboardCheck, Download, FileText, Trash2, Plus, Pencil, Calendar, CalendarDays, CalendarRange } from "lucide-react";
+import { Sparkles, ClipboardCheck, Download, FileText, Trash2, Plus, Pencil, Calendar, CalendarDays, CalendarRange, QrCode } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,6 +13,7 @@ import { useIkMatCleaningPlan } from "@/hooks/useIkMatCleaningPlan";
 import { useCustomCleaningTasks } from "@/hooks/useCustomCleaningTasks";
 import { FillCleaningPlanDialog } from "@/components/ikmat/FillCleaningPlanDialog";
 import { EditCleaningTaskDialog } from "@/components/ikmat/EditCleaningTaskDialog";
+import { RenholdQRCodeDialog } from "@/components/ikmat/RenholdQRCodeDialog";
 import { generateCleaningPlanPdf } from "@/utils/ikMatCleaningPlanPdf";
 import { format } from 'date-fns';
 import { nb } from 'date-fns/locale';
@@ -57,6 +59,7 @@ const normalizeFrequency = (freq: string): FrequencyType => {
 export const RenholdsplanTab = () => {
   const { company } = useAuth();
   const { modules, isLoading } = useCompanyModules();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [cleaningPlan, setCleaningPlan] = useState<CleaningTask[]>([]);
   const { responses, isLoading: isLoadingResponses, createResponse, updateResponse, deleteResponse } = useIkMatCleaningPlan();
   const { tasks: customTasks, isLoading: customTasksLoading, createTask, updateTask, deleteTask } = useCustomCleaningTasks();
@@ -65,6 +68,8 @@ export const RenholdsplanTab = () => {
   const [editingResponse, setEditingResponse] = useState<any>(null);
   const [editingTask, setEditingTask] = useState<any>(null);
   const [selectedFrequency, setSelectedFrequency] = useState<FrequencyType | null>(null);
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const [qrAutoTriggered, setQrAutoTriggered] = useState(false);
 
   useEffect(() => {
     if (!isLoading && modules.length > 0) {
@@ -80,6 +85,20 @@ export const RenholdsplanTab = () => {
 
   const allTasks = [...cleaningPlan, ...(customTasks || [])];
 
+  // Auto-open cleaning dialog when coming from QR code
+  useEffect(() => {
+    if (qrAutoTriggered || isLoading || isLoadingResponses) return;
+    const freqParam = searchParams.get('frequency');
+    if (freqParam && ['daily', 'weekly', 'monthly', 'periodic'].includes(freqParam)) {
+      setSelectedFrequency(freqParam as FrequencyType);
+      setEditingResponse(null);
+      setFillDialogOpen(true);
+      setQrAutoTriggered(true);
+      // Clean up URL param
+      searchParams.delete('frequency');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, isLoading, isLoadingResponses, qrAutoTriggered]);
   // Group tasks by frequency
   const tasksByFrequency = useMemo(() => {
     const grouped: Record<FrequencyType, CleaningTask[]> = {
@@ -340,7 +359,11 @@ export const RenholdsplanTab = () => {
         </TabsList>
 
         <TabsContent value="template" className="space-y-4">
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setQrDialogOpen(true)}>
+              <QrCode className="h-4 w-4 mr-2" />
+              QR-koder
+            </Button>
             <Button variant="outline" onClick={handleAddTask}>
               <Plus className="h-4 w-4 mr-2" />
               Legg til oppgave
@@ -454,6 +477,11 @@ export const RenholdsplanTab = () => {
         onOpenChange={setEditTaskDialogOpen}
         task={editingTask}
         onSave={handleSaveTask}
+      />
+
+      <RenholdQRCodeDialog
+        open={qrDialogOpen}
+        onOpenChange={setQrDialogOpen}
       />
     </div>
   );
