@@ -342,7 +342,11 @@ export const RenholdsplanTab = () => {
         </TabsList>
 
         <TabsContent value="template" className="space-y-4">
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setQrDialogOpen(true)}>
+              <QrCode className="h-4 w-4 mr-2" />
+              QR-koder
+            </Button>
             <Button variant="outline" onClick={handleAddTask}>
               <Plus className="h-4 w-4 mr-2" />
               Legg til oppgave
