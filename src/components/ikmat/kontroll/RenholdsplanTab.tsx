@@ -59,6 +59,7 @@ const normalizeFrequency = (freq: string): FrequencyType => {
 export const RenholdsplanTab = () => {
   const { company } = useAuth();
   const { modules, isLoading } = useCompanyModules();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [cleaningPlan, setCleaningPlan] = useState<CleaningTask[]>([]);
   const { responses, isLoading: isLoadingResponses, createResponse, updateResponse, deleteResponse } = useIkMatCleaningPlan();
   const { tasks: customTasks, isLoading: customTasksLoading, createTask, updateTask, deleteTask } = useCustomCleaningTasks();
@@ -68,6 +69,7 @@ export const RenholdsplanTab = () => {
   const [editingTask, setEditingTask] = useState<any>(null);
   const [selectedFrequency, setSelectedFrequency] = useState<FrequencyType | null>(null);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const [qrAutoTriggered, setQrAutoTriggered] = useState(false);
 
   useEffect(() => {
     if (!isLoading && modules.length > 0) {
