@@ -473,6 +473,7 @@ export function EmployeeDetailDialog({
                                 
                                 if (error) throw error;
                                 setIsAssignedToMain(newValue);
+                                queryClient.invalidateQueries({ queryKey: ["my-employee-card"] });
                                 toast.success(isAssignedToMain ? "Fjernet fra hovedenheten" : "Lagt til i hovedenheten");
                               } catch (err) {
                                 console.error("Error updating main company assignment:", err);
