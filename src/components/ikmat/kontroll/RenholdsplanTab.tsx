@@ -461,6 +461,11 @@ export const RenholdsplanTab = () => {
         task={editingTask}
         onSave={handleSaveTask}
       />
+
+      <RenholdQRCodeDialog
+        open={qrDialogOpen}
+        onOpenChange={setQrDialogOpen}
+      />
     </div>
   );
 };
