@@ -85,6 +85,20 @@ export const RenholdsplanTab = () => {
 
   const allTasks = [...cleaningPlan, ...(customTasks || [])];
 
+  // Auto-open cleaning dialog when coming from QR code
+  useEffect(() => {
+    if (qrAutoTriggered || isLoading || isLoadingResponses) return;
+    const freqParam = searchParams.get('frequency');
+    if (freqParam && ['daily', 'weekly', 'monthly', 'periodic'].includes(freqParam)) {
+      setSelectedFrequency(freqParam as FrequencyType);
+      setEditingResponse(null);
+      setFillDialogOpen(true);
+      setQrAutoTriggered(true);
+      // Clean up URL param
+      searchParams.delete('frequency');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, isLoading, isLoadingResponses, qrAutoTriggered]);
   // Group tasks by frequency
   const tasksByFrequency = useMemo(() => {
     const grouped: Record<FrequencyType, CleaningTask[]> = {
