@@ -543,6 +543,7 @@ export function EmployeeDetailDialog({
                                       await assignUserToDepartment(employee.id, dept.id, false);
                                     }
                                     await refetchUserDepts();
+                                    queryClient.invalidateQueries({ queryKey: ["my-employee-card"] });
                                   } finally {
                                     setAssigningDept(null);
                                   }
