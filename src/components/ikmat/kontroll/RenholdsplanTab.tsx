@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Sparkles, ClipboardCheck, Download, FileText, Trash2, Plus, Pencil, Calendar, CalendarDays, CalendarRange } from "lucide-react";
+import { Sparkles, ClipboardCheck, Download, FileText, Trash2, Plus, Pencil, Calendar, CalendarDays, CalendarRange, QrCode } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
