@@ -66,6 +66,7 @@ export const RenholdsplanTab = () => {
   const [editingResponse, setEditingResponse] = useState<any>(null);
   const [editingTask, setEditingTask] = useState<any>(null);
   const [selectedFrequency, setSelectedFrequency] = useState<FrequencyType | null>(null);
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && modules.length > 0) {
