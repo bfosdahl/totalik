@@ -12,6 +12,7 @@ import { useIkMatCleaningPlan } from "@/hooks/useIkMatCleaningPlan";
 import { useCustomCleaningTasks } from "@/hooks/useCustomCleaningTasks";
 import { FillCleaningPlanDialog } from "@/components/ikmat/FillCleaningPlanDialog";
 import { EditCleaningTaskDialog } from "@/components/ikmat/EditCleaningTaskDialog";
+import { RenholdQRCodeDialog } from "@/components/ikmat/RenholdQRCodeDialog";
 import { generateCleaningPlanPdf } from "@/utils/ikMatCleaningPlanPdf";
 import { format } from 'date-fns';
 import { nb } from 'date-fns/locale';
