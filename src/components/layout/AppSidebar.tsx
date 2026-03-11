@@ -49,6 +49,7 @@ import {
   Car,
   Printer,
   Download,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -128,6 +129,7 @@ const personaladministrasjonItems = {
     { icon: Mail, labelKey: "nav.messages", path: "/my/messages", color: "text-blue-500" },
     { icon: ShieldCheck, labelKey: "nav.sendAnonymousMessage", path: "/anonymous-message", isAction: true, color: "text-teal-500" },
     { icon: Car, labelKey: "nav.drivingLog", path: "/my/driving-log", color: "text-emerald-500" },
+    { icon: Award, labelKey: "nav.myCompetence", path: "/my/competence", color: "text-amber-500" },
   ],
 };
 
