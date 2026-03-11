@@ -175,6 +175,7 @@ const App = () => (
                   <Route path="/my/surveys" element={<ProtectedRoute><MySurveys /></ProtectedRoute>} />
                   <Route path="/my/messages" element={<ProtectedRoute><MyMessages /></ProtectedRoute>} />
                   <Route path="/my/driving-log" element={<ProtectedRoute><MyDrivingLog /></ProtectedRoute>} />
+                  <Route path="/my/competence" element={<ProtectedRoute><MyCompetence /></ProtectedRoute>} />
                   
                   <Route path="/ik-mat/handbok" element={<ProtectedRoute><IkMatHandbok /></ProtectedRoute>} />
                   <Route path="/ik-mat/oppsett" element={<ProtectedRoute><IkMatOppsett /></ProtectedRoute>} />
