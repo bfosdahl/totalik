@@ -242,9 +242,11 @@ export function useEmploymentContracts() {
 
   const updateContract = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<EmploymentContract> & { id: string }) => {
+      // Remove joined relation fields that are not actual columns
+      const { employee, created_at, updated_at, ...cleanUpdates } = updates as any;
       const { data, error } = await supabase
         .from('employment_contracts')
-        .update(updates)
+        .update(cleanUpdates)
         .eq('id', id)
         .select()
         .single();
