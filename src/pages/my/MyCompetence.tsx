@@ -169,7 +169,8 @@ export default function MyCompetence() {
       let certificate_file_path: string | undefined;
 
       if (certificateFile) {
-        const filePath = `${company.id}/${profile.id}/${Date.now()}_${certificateFile.name}`;
+        const safeName = certificateFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const filePath = `${company.id}/${profile.id}/${Date.now()}_${safeName}`;
         const { error: uploadError } = await supabase.storage
           .from("course-certificates")
           .upload(filePath, certificateFile);
