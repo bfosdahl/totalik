@@ -243,7 +243,18 @@ export function useEmploymentContracts() {
   const updateContract = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<EmploymentContract> & { id: string }) => {
       // Remove joined relation fields that are not actual columns
-      const { employee, created_at, updated_at, ...cleanUpdates } = updates as any;
+      const { employee, created_at, updated_at, ...rawUpdates } = updates as any;
+      
+      // Sanitize: convert empty strings to null for nullable fields
+      const cleanUpdates: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(rawUpdates)) {
+        if (typeof value === 'string' && value.trim() === '') {
+          cleanUpdates[key] = null;
+        } else {
+          cleanUpdates[key] = value;
+        }
+      }
+      
       const { data, error } = await supabase
         .from('employment_contracts')
         .update(cleanUpdates)
