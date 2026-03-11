@@ -267,7 +267,8 @@ export function useEmployeeCourses(employeeId: string | null) {
       // Upload certificate file if provided
       if (courseData.certificate_file) {
         const file = courseData.certificate_file;
-        const filePath = `${company.id}/${employeeId}/${Date.now()}_${file.name}`;
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const filePath = `${company.id}/${employeeId}/${Date.now()}_${safeName}`;
         
         const { error: uploadError } = await supabase.storage
           .from("course-certificates")
