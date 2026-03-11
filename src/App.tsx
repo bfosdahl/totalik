@@ -68,7 +68,7 @@ import MySurveys from "./pages/my/MySurveys";
 import MyMessages from "./pages/my/MyMessages";
 import MyContract from "./pages/hr/MyContract";
 import MyDrivingLog from "./pages/my/MyDrivingLog";
-import MyCompetence from "./pages/my/MyCompetence";
+import MyEmployeeCard from "./pages/my/MyEmployeeCard";
 import InstallApp from "./pages/InstallApp";
 import InstallAvvikApp from "./pages/InstallAvvikApp";
 import IkMatHandbok from "./pages/IkMatHandbok";
