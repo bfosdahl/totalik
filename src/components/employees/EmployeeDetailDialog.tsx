@@ -46,6 +46,7 @@ import { format, differenceInDays, isPast } from "date-fns";
 import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useDepartments, useUserDepartments } from "@/hooks/useDepartments";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface EmployeeDetailDialogProps {
   employee: Employee;
