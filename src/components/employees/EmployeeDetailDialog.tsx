@@ -62,6 +62,7 @@ export function EmployeeDetailDialog({
   canManage 
 }: EmployeeDetailDialogProps) {
   const { profile, company } = useAuth();
+  const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     phone: employee.phone || "",
