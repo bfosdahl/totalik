@@ -166,12 +166,27 @@ serve(async (req) => {
             results.errors.push({ email: emp.email, error: profileError.message });
           } else {
             // Add employee role
-            await supabaseAdmin
+            const { error: roleError } = await supabaseAdmin
               .from('user_roles')
               .insert({
                 user_id: authUser.user.id,
                 role: 'employee',
               });
+
+            // Log provisioning
+            await supabaseAdmin.from("user_provisioning_log").insert({
+              email: emp.email,
+              company_id: company_id,
+              role: "employee",
+              auth_created: true,
+              profile_updated: true,
+              role_assigned: !roleError,
+              email_sent: false,
+              reset_link_generated: false,
+              all_verified: !roleError,
+              error_message: roleError ? roleError.message : null,
+              source: "sync-employees",
+            });
 
             results.created.push(emp.email);
             console.log(`Created employee: ${emp.email}`);
