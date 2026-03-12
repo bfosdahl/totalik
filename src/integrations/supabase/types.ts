@@ -14653,6 +14653,65 @@ export type Database = {
           },
         ]
       }
+      user_provisioning_log: {
+        Row: {
+          all_verified: boolean | null
+          auth_created: boolean | null
+          company_id: string | null
+          created_at: string | null
+          created_by_id: string | null
+          email: string
+          email_sent: boolean | null
+          error_message: string | null
+          id: string
+          profile_updated: boolean | null
+          reset_link_generated: boolean | null
+          role: string
+          role_assigned: boolean | null
+          source: string
+        }
+        Insert: {
+          all_verified?: boolean | null
+          auth_created?: boolean | null
+          company_id?: string | null
+          created_at?: string | null
+          created_by_id?: string | null
+          email: string
+          email_sent?: boolean | null
+          error_message?: string | null
+          id?: string
+          profile_updated?: boolean | null
+          reset_link_generated?: boolean | null
+          role?: string
+          role_assigned?: boolean | null
+          source?: string
+        }
+        Update: {
+          all_verified?: boolean | null
+          auth_created?: boolean | null
+          company_id?: string | null
+          created_at?: string | null
+          created_by_id?: string | null
+          email?: string
+          email_sent?: boolean | null
+          error_message?: string | null
+          id?: string
+          profile_updated?: boolean | null
+          reset_link_generated?: boolean | null
+          role?: string
+          role_assigned?: boolean | null
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_provisioning_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
