@@ -29,6 +29,7 @@ import AdminByggesakTemplates from "./pages/admin/AdminByggesakTemplates";
 import AdminCustomerImport from "./pages/admin/AdminCustomerImport";
 import AdminStoffkartotek from "./pages/admin/AdminStoffkartotek";
 import AdminRoutineMaker from "./pages/admin/AdminRoutineMaker";
+import AdminEmailLog from "./pages/admin/AdminEmailLog";
 import SetupSystemAdmin from "./pages/admin/SetupSystemAdmin";
 import Ks2Dashboard from "./pages/ks2/Ks2Dashboard";
 import Ks2ProjectDetail from "./pages/ks2/Ks2ProjectDetail";
