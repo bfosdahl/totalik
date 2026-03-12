@@ -200,6 +200,7 @@ serve(async (req) => {
       })
       .eq("user_id", newUser.user.id);
 
+    const profileUpdated = !profileError;
     if (profileError) {
       console.error("Error updating profile:", profileError);
     }
@@ -212,6 +213,7 @@ serve(async (req) => {
         role: "company_admin",
       });
 
+    const roleAssigned = !roleError;
     if (roleError) {
       console.error("Error adding role:", roleError);
     }
@@ -222,6 +224,7 @@ serve(async (req) => {
       email,
     });
 
+    const resetLinkGenerated = !resetError && !!resetData?.properties?.action_link;
     if (resetError) {
       console.error("Error generating recovery link:", resetError);
     }
@@ -310,12 +313,49 @@ serve(async (req) => {
       }
     }
 
+    // === VERIFICATION: Read back from DB to confirm everything ===
+    const { data: verifyProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("id, user_id, email, company_id")
+      .eq("user_id", newUser.user.id)
+      .single();
+
+    const { data: verifyRole } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", newUser.user.id);
+
+    const profileVerified = verifyProfile?.company_id === companyId;
+    const roleVerified = verifyRole?.some((r: any) => r.role === "company_admin") || false;
+    const allVerified = profileVerified && roleVerified && emailSent;
+
+    // Log to provisioning table
+    await supabaseAdmin.from("user_provisioning_log").insert({
+      email,
+      company_id: companyId,
+      role: "company_admin",
+      created_by_id: requestingUser.id,
+      auth_created: true,
+      profile_updated: profileUpdated,
+      role_assigned: roleAssigned,
+      email_sent: emailSent,
+      reset_link_generated: resetLinkGenerated,
+      all_verified: allVerified,
+      error_message: !allVerified 
+        ? `Profile: ${profileVerified}, Role: ${roleVerified}, Email: ${emailSent}` 
+        : null,
+      source: "create-company-admin",
+    });
+
+    console.log(`PROVISIONING ${allVerified ? '✅ COMPLETE' : '⚠️ PARTIAL'} for ${email} | Profile: ${profileVerified}, Role: ${roleVerified}, Email: ${emailSent}`);
+
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: emailSent ? "Company admin created and email sent" : "Company admin created (email not sent)",
         userId: newUser.user.id,
-        emailSent
+        emailSent,
+        verification: { profileVerified, roleVerified, emailSent, allVerified }
       }),
       {
         status: 200,

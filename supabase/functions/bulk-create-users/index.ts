@@ -282,8 +282,46 @@ Deno.serve(async (req) => {
           );
         }
 
+        // === VERIFICATION: Read back from DB ===
+        const { data: verifyProfile } = await supabaseAdmin
+          .from("profiles")
+          .select("company_id")
+          .eq("user_id", authData.user.id)
+          .single();
+
+        const { data: verifyRole } = await supabaseAdmin
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", authData.user.id);
+
+        const profileVerified = verifyProfile?.company_id === user.companyId;
+        const roleVerified = verifyRole?.some((r: any) => r.role === (user.role || "user")) || false;
+        const allVerified = profileVerified && roleVerified && emailSent;
+
+        // Log to provisioning table
+        await supabaseAdmin.from("user_provisioning_log").insert({
+          email: user.email,
+          company_id: user.companyId,
+          role: user.role || "user",
+          created_by_id: requestingUser.id,
+          auth_created: true,
+          profile_updated: !profileError,
+          role_assigned: !roleError,
+          email_sent: emailSent,
+          reset_link_generated: emailSent,
+          all_verified: allVerified,
+          error_message: !allVerified 
+            ? `Profile: ${profileVerified}, Role: ${roleVerified}, Email: ${emailSent}` 
+            : null,
+          source: "bulk-create-users",
+        });
+
+        if (!allVerified) {
+          console.warn(`⚠️ PARTIAL provisioning for ${user.email}: Profile=${profileVerified}, Role=${roleVerified}, Email=${emailSent}`);
+        }
+
         results.push({ email: user.email, success: true, emailSent });
-        console.log(`Successfully created user: ${user.email}, email sent: ${emailSent}`);
+        console.log(`Successfully created user: ${user.email}, email sent: ${emailSent}, fully verified: ${allVerified}`);
       } catch (error) {
         console.error(`Unexpected error for ${user.email}:`, error);
         results.push({ email: user.email, success: false, error: "Uventet feil" });
