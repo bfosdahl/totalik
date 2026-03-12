@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    const { email, firstName, lastName, companyId, role } = await req.json();
+    // email, firstName, lastName, companyId, role already destructured above
 
     if (!email || !companyId) {
       return new Response(
