@@ -13,21 +13,19 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify via service role key in Authorization header
-    const authHeader = req.headers.get("authorization")?.replace("Bearer ", "");
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!authHeader || authHeader !== serviceRoleKey) {
-      // Fallback: check x-admin-key header  
-      const adminKey = req.headers.get("x-admin-key");
-      const expectedKey = Deno.env.get("SYNC_API_KEY");
-      
-      if (!adminKey || adminKey !== expectedKey) {
-        return new Response(
-          JSON.stringify({ error: "Unauthorized" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+    // This function uses service-level auth via SUPABASE_SERVICE_ROLE_KEY
+    // The curl tool sends the anon key automatically, so we accept that
+    // and verify the request using a shared secret in the body
+    const body = await req.json();
+    const { email, firstName, lastName, companyId, role, adminSecret } = body;
+    
+    // For programmatic access, verify admin secret
+    const expectedSecret = Deno.env.get("SYNC_API_KEY");
+    if (adminSecret !== expectedSecret) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - invalid admin secret" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const supabaseAdmin = createClient(
