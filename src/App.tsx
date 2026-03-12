@@ -29,6 +29,7 @@ import AdminByggesakTemplates from "./pages/admin/AdminByggesakTemplates";
 import AdminCustomerImport from "./pages/admin/AdminCustomerImport";
 import AdminStoffkartotek from "./pages/admin/AdminStoffkartotek";
 import AdminRoutineMaker from "./pages/admin/AdminRoutineMaker";
+import AdminEmailLog from "./pages/admin/AdminEmailLog";
 import SetupSystemAdmin from "./pages/admin/SetupSystemAdmin";
 import Ks2Dashboard from "./pages/ks2/Ks2Dashboard";
 import Ks2ProjectDetail from "./pages/ks2/Ks2ProjectDetail";
@@ -258,6 +259,7 @@ const App = () => (
                   <Route path="/admin/customer-import" element={<ProtectedRoute requireSystemAdmin><AdminCustomerImport /></ProtectedRoute>} />
                   <Route path="/admin/stoffkartotek" element={<ProtectedRoute requireSystemAdmin><AdminStoffkartotek /></ProtectedRoute>} />
                   <Route path="/admin/routine-maker" element={<ProtectedRoute requireSystemAdmin><AdminRoutineMaker /></ProtectedRoute>} />
+                  <Route path="/admin/email-log" element={<ProtectedRoute requireSystemAdmin><AdminEmailLog /></ProtectedRoute>} />
                   
                   {/* 404 */}
                   <Route path="*" element={<NotFound />} />

@@ -17,6 +17,7 @@ import {
   BookOpen,
   Leaf,
   Sparkles,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ const adminNavItems = [
   { icon: FolderOpen, label: "Dokumentsenter", path: "/admin/documents", color: "text-primary" },
   { icon: Leaf, label: "Stoffkartotek", path: "/admin/stoffkartotek", color: "text-primary" },
   { icon: BookOpen, label: "Rutine Maker", path: "/admin/routine-maker", color: "text-primary" },
+  { icon: Mail, label: "E-postlogg", path: "/admin/email-log", color: undefined },
 ];
 
 interface SidebarContentProps {
