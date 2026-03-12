@@ -13,15 +13,21 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify admin API key (service-level auth)
-    const adminKey = req.headers.get("x-admin-key");
-    const expectedKey = Deno.env.get("SYNC_API_KEY");
+    // Verify via service role key in Authorization header
+    const authHeader = req.headers.get("authorization")?.replace("Bearer ", "");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!adminKey || adminKey !== expectedKey) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (!authHeader || authHeader !== serviceRoleKey) {
+      // Fallback: check x-admin-key header  
+      const adminKey = req.headers.get("x-admin-key");
+      const expectedKey = Deno.env.get("SYNC_API_KEY");
+      
+      if (!adminKey || adminKey !== expectedKey) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     const supabaseAdmin = createClient(
