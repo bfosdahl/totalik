@@ -95,3 +95,6 @@ verify_jwt = true
 
 [functions.notify-work-schedule]
 verify_jwt = true
+
+[functions.resend-webhook]
+verify_jwt = false
