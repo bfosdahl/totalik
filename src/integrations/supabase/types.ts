@@ -2910,6 +2910,63 @@ export type Database = {
           },
         ]
       }
+      email_logs: {
+        Row: {
+          bounced_at: string | null
+          clicked_at: string | null
+          company_name: string | null
+          created_at: string
+          delivered_at: string | null
+          email_type: string
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          opened_at: string | null
+          recipient_email: string
+          recipient_name: string | null
+          resend_email_id: string | null
+          sent_by: string | null
+          status: string
+          subject: string | null
+        }
+        Insert: {
+          bounced_at?: string | null
+          clicked_at?: string | null
+          company_name?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          email_type?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          opened_at?: string | null
+          recipient_email: string
+          recipient_name?: string | null
+          resend_email_id?: string | null
+          sent_by?: string | null
+          status?: string
+          subject?: string | null
+        }
+        Update: {
+          bounced_at?: string | null
+          clicked_at?: string | null
+          company_name?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          email_type?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          opened_at?: string | null
+          recipient_email?: string
+          recipient_name?: string | null
+          resend_email_id?: string | null
+          sent_by?: string | null
+          status?: string
+          subject?: string | null
+        }
+        Relationships: []
+      }
       employee_absence: {
         Row: {
           absence_type: string
