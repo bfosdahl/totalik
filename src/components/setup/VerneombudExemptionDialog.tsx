@@ -634,13 +634,16 @@ export function VerneombudExemptionDialog({
                         className: "w-full h-32 touch-none",
                       }}
                       backgroundColor="white"
+                      onBegin={() => setEmployeeSigEmpty(false)}
                     />
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <p className="text-muted-foreground text-sm">Tegn signaturen her</p>
-                    </div>
+                    {employeeSigEmpty && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <p className="text-muted-foreground text-sm">Tegn signaturen her</p>
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => employeeSigRef.current?.clear()}>
+                    <Button variant="outline" size="sm" onClick={() => { employeeSigRef.current?.clear(); setEmployeeSigEmpty(true); }}>
                       Tøm
                     </Button>
                   </div>
