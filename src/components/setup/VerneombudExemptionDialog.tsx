@@ -30,6 +30,7 @@ interface EmployeeSignatureEntry {
   name: string;
   signature: string;
   signed_at: string;
+  [key: string]: string; // Index signature for Json compatibility
 }
 
 type Step = "info" | "employer" | "employees" | "complete";
