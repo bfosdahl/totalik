@@ -1,30 +1,35 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { motion } from "framer-motion";
-import { Check, Info, Plus, Building2, ChevronUp, ChevronDown, Trash2, Users } from "lucide-react";
+import { Check, Info, Plus, ChevronUp, ChevronDown, Trash2, Users, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import UserSelect from "@/components/audits/UserSelect";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { PREDEFINED_ORG_ROLES } from "@/hooks/useOrgChart";
+import { toast } from "sonner";
 
 export interface OrganizationStepRef {
   save: () => Promise<void>;
   hasData: () => boolean;
 }
 
-interface OrganizationRole {
-  id: string;
+interface SetupRole {
+  id: string; // org_chart_nodes id or temp id
+  nodeId?: string; // actual DB id if exists
   title: string;
   personName: string;
   description: string;
   sortOrder: number;
-  electionDate?: string;
-  electedBy?: string;
+  parentNodeId: string | null;
+  isNew?: boolean;
 }
 
 export interface OrganizationData {
-  roles: OrganizationRole[];
+  roles: { id: string; title: string; personName: string; description: string; sortOrder: number }[];
   description: string;
 }
 
@@ -35,29 +40,10 @@ interface LegacyOrganizationData {
   is_custom: boolean;
 }
 
-// Predefined role templates with standard HMS responsibilities
-const PREDEFINED_ROLES = [
-  {
-    title: "Daglig leder",
-    description: "Daglig leder har det overordnede ansvaret for at gjeldende lover, forskrifter og interne retningslinjer etterleves. Daglig leder skal sørge for at HMS-arbeidet er en integrert del av virksomhetens drift."
-  },
-  {
-    title: "HMS-ansvarlig",
-    description: "HMS-ansvarlig koordinerer det daglige HMS-arbeidet og har ansvar for å følge opp at rutiner og tiltak gjennomføres i henhold til HMS-systemet."
-  },
-  {
-    title: "Arbeidsleder",
-    description: "Arbeidsleder har ansvar for å iverksette og følge opp nødvendige tiltak innen sine ansvarsområder, og rapporterer fortløpende til daglig leder."
-  },
-  {
-    title: "Verneombud",
-    description: "Verneombudet fungerer som arbeidstakernes valgte representant i spørsmål knyttet til arbeidsmiljø og sikkerhet. Verneombudet skal påse at arbeidsgiver følger arbeidsmiljølovens bestemmelser."
-  },
-  {
-    title: "Øvrige ansatte",
-    description: "Alle ansatte har en plikt til å informere nærmeste leder om forhold som kan påvirke helse, miljø eller sikkerhet, dersom dette ikke kan løses direkte. Ansatte skal følge virksomhetens HMS-rutiner og bidra aktivt til et trygt arbeidsmiljø."
-  }
-];
+// Use the same predefined roles as the Organisering page
+const SETUP_PREDEFINED_ROLES = PREDEFINED_ORG_ROLES.filter(r => 
+  ["Daglig leder", "HMS-ansvarlig", "Arbeidsleder", "Verneombud", "Øvrige ansatte"].includes(r.title)
+);
 
 interface OrganizationStepProps {
   existingData?: OrganizationData | LegacyOrganizationData;
@@ -67,60 +53,137 @@ interface OrganizationStepProps {
 
 export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStepProps>(
   function OrganizationStep({ existingData, onSave, isSaving }, ref) {
-    const [roles, setRoles] = useState<OrganizationRole[]>([]);
+    const { profile } = useAuth();
+    const companyId = profile?.company_id;
+    const [roles, setRoles] = useState<SetupRole[]>([]);
     const [hasChanges, setHasChanges] = useState(false);
+    const [isLoadingNodes, setIsLoadingNodes] = useState(true);
+    const [loadedFromNodes, setLoadedFromNodes] = useState(false);
 
-    // Initialize from existing data
+    // Load from org_chart_nodes (the real source of truth)
     useEffect(() => {
-      if (existingData) {
-        // Handle new format with roles array
-        if ('roles' in existingData && Array.isArray(existingData.roles)) {
-          setRoles(existingData.roles);
-        }
-        // Handle legacy format - try to parse JSON from custom_content
-        else if ('custom_content' in existingData && existingData.custom_content) {
-          try {
-            const parsed = JSON.parse(existingData.custom_content);
-            if (parsed.roles && Array.isArray(parsed.roles)) {
-              setRoles(parsed.roles);
-            }
-          } catch {
-            // If not parseable, start fresh
-            setRoles([]);
-          }
-        }
+      if (!companyId) {
+        setIsLoadingNodes(false);
+        return;
       }
-    }, [existingData]);
+
+      const loadFromOrgChart = async () => {
+        setIsLoadingNodes(true);
+        try {
+          const { data: nodesData, error: nodesError } = await supabase
+            .from('org_chart_nodes')
+            .select('*')
+            .eq('company_id', companyId)
+            .order('sort_order');
+
+          if (nodesError) throw nodesError;
+
+          if (nodesData && nodesData.length > 0) {
+            // Load persons
+            const { data: personsData } = await supabase
+              .from('org_chart_node_persons')
+              .select('*')
+              .in('node_id', nodesData.map(n => n.id))
+              .order('sort_order');
+
+            // Build flat ordered list by traversing tree
+            const nodeMap = new Map(nodesData.map(n => [n.id, n]));
+            const childrenMap = new Map<string | null, typeof nodesData>();
+            nodesData.forEach(n => {
+              const key = n.parent_node_id;
+              if (!childrenMap.has(key)) childrenMap.set(key, []);
+              childrenMap.get(key)!.push(n);
+            });
+
+            const flatRoles: SetupRole[] = [];
+            const traverse = (parentId: string | null, depth: number) => {
+              const children = childrenMap.get(parentId) || [];
+              children.sort((a, b) => a.sort_order - b.sort_order);
+              for (const node of children) {
+                const persons = personsData?.filter(p => p.node_id === node.id) || [];
+                flatRoles.push({
+                  id: node.id,
+                  nodeId: node.id,
+                  title: node.role_title,
+                  personName: persons.map(p => p.person_name).join(', '),
+                  description: node.role_description || '',
+                  sortOrder: flatRoles.length,
+                  parentNodeId: node.parent_node_id,
+                });
+                traverse(node.id, depth + 1);
+              }
+            };
+            traverse(null, 0);
+
+            setRoles(flatRoles);
+            setLoadedFromNodes(true);
+          } else if (existingData) {
+            // Fallback: load from legacy company_organization data
+            if ('roles' in existingData && Array.isArray(existingData.roles)) {
+              setRoles(existingData.roles.map((r, i) => ({
+                ...r,
+                parentNodeId: null,
+                isNew: true,
+                sortOrder: i,
+              })));
+            } else if ('custom_content' in existingData && existingData.custom_content) {
+              try {
+                const parsed = JSON.parse(existingData.custom_content);
+                if (parsed.roles && Array.isArray(parsed.roles)) {
+                  setRoles(parsed.roles.map((r: any, i: number) => ({
+                    id: r.id || `role-${Date.now()}-${i}`,
+                    title: r.title || '',
+                    personName: r.personName || '',
+                    description: r.description || '',
+                    sortOrder: i,
+                    parentNodeId: null,
+                    isNew: true,
+                  })));
+                }
+              } catch { /* ignore */ }
+            }
+          }
+        } catch (error) {
+          console.error("Error loading org chart nodes:", error);
+        } finally {
+          setIsLoadingNodes(false);
+        }
+      };
+
+      loadFromOrgChart();
+    }, [companyId]);
 
     const handleAddRole = (predefinedTitle?: string) => {
-      const predefined = predefinedTitle 
-        ? PREDEFINED_ROLES.find(r => r.title === predefinedTitle) 
+      const predefined = predefinedTitle
+        ? PREDEFINED_ORG_ROLES.find(r => r.title === predefinedTitle)
         : null;
-      
-      const newRole: OrganizationRole = {
-        id: `role-${Date.now()}`,
+
+      const newRole: SetupRole = {
+        id: `new-${Date.now()}`,
         title: predefined?.title || "",
         personName: "",
         description: predefined?.description || "",
         sortOrder: roles.length,
+        parentNodeId: roles.length > 0 ? (roles[0].nodeId || roles[0].id) : null,
+        isNew: true,
       };
       setRoles([...roles, newRole]);
       setHasChanges(true);
     };
 
     const handleSelectPredefinedRole = (roleId: string, predefinedTitle: string) => {
-      const predefined = PREDEFINED_ROLES.find(r => r.title === predefinedTitle);
+      const predefined = PREDEFINED_ORG_ROLES.find(r => r.title === predefinedTitle);
       if (predefined) {
-        setRoles(roles.map(r => 
-          r.id === roleId 
-            ? { ...r, title: predefined.title, description: predefined.description } 
+        setRoles(roles.map(r =>
+          r.id === roleId
+            ? { ...r, title: predefined.title, description: predefined.description }
             : r
         ));
         setHasChanges(true);
       }
     };
 
-    const handleUpdateRole = (id: string, field: keyof OrganizationRole, value: string) => {
+    const handleUpdateRole = (id: string, field: keyof SetupRole, value: string) => {
       setRoles(roles.map(r => r.id === id ? { ...r, [field]: value } : r));
       setHasChanges(true);
     };
@@ -140,38 +203,129 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
       const newRoles = [...roles];
       const swapIndex = direction === "up" ? index - 1 : index + 1;
       [newRoles[index], newRoles[swapIndex]] = [newRoles[swapIndex], newRoles[index]];
-      
       setRoles(newRoles);
       setHasChanges(true);
     };
 
     const handleSave = async () => {
-      // Save in new format (same as IkHmsOrganisering)
-      const data: OrganizationData = {
-        roles: roles,
-        description: generateDescriptionFromRoles(),
-      };
-      await onSave(data);
-      setHasChanges(false);
-    };
+      if (!companyId) return;
 
-    // Generate automatic description from roles
-    const generateDescriptionFromRoles = (): string => {
-      if (roles.length === 0) return "";
-      
-      return roles
-        .filter(r => r.title && r.description)
-        .map(r => `**${r.title}${r.personName ? ` (${r.personName})` : ''}:** ${r.description}`)
-        .join('\n\n');
+      try {
+        // 1. Delete all existing org_chart_nodes for this company and recreate
+        // This ensures the setup wizard and org chart page stay in sync
+        const { data: existingNodes } = await supabase
+          .from('org_chart_nodes')
+          .select('id')
+          .eq('company_id', companyId);
+
+        if (existingNodes && existingNodes.length > 0) {
+          // Delete persons first (foreign key)
+          await supabase
+            .from('org_chart_node_persons')
+            .delete()
+            .in('node_id', existingNodes.map(n => n.id));
+          
+          await supabase
+            .from('org_chart_nodes')
+            .delete()
+            .eq('company_id', companyId);
+        }
+
+        // 2. Create new nodes in hierarchical order (first = root, rest = children of root)
+        const createdNodeIds: string[] = [];
+        let rootNodeId: string | null = null;
+
+        for (let i = 0; i < roles.length; i++) {
+          const role = roles[i];
+          const parentId = i === 0 ? null : rootNodeId;
+
+          const { data: newNode, error } = await supabase
+            .from('org_chart_nodes')
+            .insert({
+              company_id: companyId,
+              role_title: role.title,
+              role_description: role.description || null,
+              parent_node_id: parentId,
+              is_root: i === 0,
+              sort_order: i,
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+          createdNodeIds.push(newNode.id);
+          if (i === 0) rootNodeId = newNode.id;
+
+          // Add person if specified
+          if (role.personName) {
+            const personNames = role.personName.split(',').map(n => n.trim()).filter(Boolean);
+            for (let j = 0; j < personNames.length; j++) {
+              await supabase
+                .from('org_chart_node_persons')
+                .insert({
+                  node_id: newNode.id,
+                  person_name: personNames[j],
+                  sort_order: j,
+                });
+            }
+          }
+        }
+
+        // 3. Also sync to company_organization for handbook compatibility
+        const rolesForHandbook = roles.map((r, i) => ({
+          title: r.title,
+          personName: r.personName,
+          description: r.description,
+          depth: i === 0 ? 0 : 1,
+          childCount: i === 0 ? roles.length - 1 : 0,
+        }));
+
+        const description = roles
+          .filter(r => r.title && r.description)
+          .map(r => `**${r.title}${r.personName ? ` (${r.personName})` : ''}:** ${r.description}`)
+          .join('\n\n');
+
+        const content = JSON.stringify({ description, roles: rolesForHandbook });
+        await supabase
+          .from("company_organization")
+          .upsert({
+            company_id: companyId,
+            custom_content: content,
+            is_custom: true,
+          }, { onConflict: "company_id" });
+
+        // 4. Notify parent
+        const data: OrganizationData = { roles, description };
+        await onSave(data);
+        setHasChanges(false);
+
+        // Update roles with new IDs
+        setRoles(prev => prev.map((r, i) => ({
+          ...r,
+          nodeId: createdNodeIds[i],
+          id: createdNodeIds[i],
+          isNew: false,
+        })));
+      } catch (error) {
+        console.error("Error saving organization:", error);
+        toast.error("Kunne ikke lagre organisering");
+      }
     };
 
     const hasSelection = roles.length > 0;
 
-    // Expose save method to parent via ref
     useImperativeHandle(ref, () => ({
       save: handleSave,
       hasData: () => hasSelection,
     }));
+
+    if (isLoadingNodes) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      );
+    }
 
     return (
       <div className="space-y-6">
@@ -181,8 +335,9 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
           <div className="text-sm">
             <p className="font-medium text-info mb-1">Dokumenter virksomhetens organisering</p>
             <p className="text-muted-foreground">
-              Velg forhåndsdefinerte roller med standardbeskrivelser, eller lag egne. 
+              Velg forhåndsdefinerte roller med standardbeskrivelser, eller lag egne.
               Rollene vises i hierarkisk rekkefølge fra øverst til nederst.
+              Endringer her synkroniseres med organisasjonskartet under IK/HMS → Organisering.
             </p>
           </div>
         </div>
@@ -195,7 +350,7 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {PREDEFINED_ROLES.map((role) => {
+              {SETUP_PREDEFINED_ROLES.map((role) => {
                 const isAlreadyAdded = roles.some(r => r.title === role.title);
                 return (
                   <Button
@@ -305,7 +460,7 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
                           <Select
-                            value={PREDEFINED_ROLES.some(p => p.title === role.title) ? role.title : "custom"}
+                            value={PREDEFINED_ORG_ROLES.some(p => p.title === role.title) ? role.title : "custom"}
                             onValueChange={(value) => {
                               if (value === "custom") {
                                 handleUpdateRole(role.id, "title", "");
@@ -318,7 +473,7 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
                               <SelectValue placeholder="Velg rolletype" />
                             </SelectTrigger>
                             <SelectContent>
-                              {PREDEFINED_ROLES.map((predefined) => (
+                              {PREDEFINED_ORG_ROLES.map((predefined) => (
                                 <SelectItem key={predefined.title} value={predefined.title}>
                                   {predefined.title}
                                 </SelectItem>
@@ -333,8 +488,7 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
                           />
                         </div>
                       </div>
-                      {/* Custom title input if custom is selected */}
-                      {!PREDEFINED_ROLES.some(p => p.title === role.title) && (
+                      {!PREDEFINED_ORG_ROLES.some(p => p.title === role.title) && (
                         <div className="mt-3 pl-11">
                           <Input
                             value={role.title}

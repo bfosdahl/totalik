@@ -423,41 +423,12 @@ export function useSetupWizard() {
     }
   }, [companyId, toast]);
 
-  // Save organization
+  // Save organization - OrganizationStep now handles writing to org_chart_nodes
+  // and company_organization directly, so this just updates local state
   const saveOrganization = useCallback(async (data: OrganizationData) => {
     if (!companyId) return;
-
-    setIsSaving(true);
-    try {
-      // Store as JSON in custom_content (same format as IkHmsOrganisering)
-      const content = JSON.stringify(data);
-      
-      const { error } = await supabase
-        .from("company_organization")
-        .upsert({
-          company_id: companyId,
-          custom_content: content,
-          is_custom: true,
-        }, { onConflict: "company_id" });
-
-      if (error) throw error;
-      setOrganization(data);
-
-      toast({
-        title: "Lagret",
-        description: "Organiseringen er lagret.",
-      });
-    } catch (error) {
-      console.error("Error saving organization:", error);
-      toast({
-        title: "Feil ved lagring",
-        description: "Kunne ikke lagre organisering. Prøv igjen.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  }, [companyId, toast]);
+    setOrganization(data);
+  }, [companyId]);
 
   // Save risk assessment - converts flat format to nested format for RisikovurderingOgHandlingsplan
   const saveRiskAssessment = useCallback(async (data: RiskAssessmentData) => {
