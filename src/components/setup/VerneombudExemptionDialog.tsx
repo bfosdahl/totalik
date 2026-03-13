@@ -91,6 +91,7 @@ export function VerneombudExemptionDialog({
   const [currentEmployeeName, setCurrentEmployeeName] = useState("");
   const [selectedEmployeeUserId, setSelectedEmployeeUserId] = useState("");
   const employeeSigRef = useRef<SignatureCanvas | null>(null);
+  const [employeeSigEmpty, setEmployeeSigEmpty] = useState(true);
   
   const employerSigRef = useRef<SignatureCanvas | null>(null);
 
