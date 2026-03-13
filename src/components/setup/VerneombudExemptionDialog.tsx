@@ -91,6 +91,7 @@ export function VerneombudExemptionDialog({
   const [currentEmployeeName, setCurrentEmployeeName] = useState("");
   const [selectedEmployeeUserId, setSelectedEmployeeUserId] = useState("");
   const employeeSigRef = useRef<SignatureCanvas | null>(null);
+  const [employeeSigEmpty, setEmployeeSigEmpty] = useState(true);
   
   const employerSigRef = useRef<SignatureCanvas | null>(null);
 
@@ -186,12 +187,12 @@ export function VerneombudExemptionDialog({
       toast.error("Velg eller skriv inn ansattens navn");
       return;
     }
-    if (employeeSigRef.current?.isEmpty()) {
+    if (!employeeSigRef.current || employeeSigRef.current.isEmpty()) {
       toast.error("Den ansatte må signere før den kan legges til");
       return;
     }
 
-    const sig = employeeSigRef.current?.toDataURL() || "";
+    const sig = employeeSigRef.current.toDataURL();
     const newEntry: EmployeeSignatureEntry = {
       name: currentEmployeeName.trim(),
       signature: sig,
@@ -201,7 +202,11 @@ export function VerneombudExemptionDialog({
     setEmployeeSignatures(prev => [...prev, newEntry]);
     setCurrentEmployeeName("");
     setSelectedEmployeeUserId("");
-    employeeSigRef.current?.clear();
+    setEmployeeSigEmpty(true);
+    // Clear canvas after a short delay to ensure state updates first
+    setTimeout(() => {
+      employeeSigRef.current?.clear();
+    }, 50);
     toast.success(`${newEntry.name} har signert avtalen`);
   };
 
@@ -275,6 +280,7 @@ export function VerneombudExemptionDialog({
       setUsingSavedSignature(false);
       setCurrentEmployeeName("");
       setSelectedEmployeeUserId("");
+      setEmployeeSigEmpty(true);
       sessionStorage.removeItem(SESSION_STORAGE_KEY);
     }
   };
@@ -629,13 +635,16 @@ export function VerneombudExemptionDialog({
                         className: "w-full h-32 touch-none",
                       }}
                       backgroundColor="white"
+                      onBegin={() => setEmployeeSigEmpty(false)}
                     />
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <p className="text-muted-foreground text-sm">Tegn signaturen her</p>
-                    </div>
+                    {employeeSigEmpty && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <p className="text-muted-foreground text-sm">Tegn signaturen her</p>
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => employeeSigRef.current?.clear()}>
+                    <Button variant="outline" size="sm" onClick={() => { employeeSigRef.current?.clear(); setEmployeeSigEmpty(true); }}>
                       Tøm
                     </Button>
                   </div>
