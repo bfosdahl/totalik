@@ -187,12 +187,12 @@ export function VerneombudExemptionDialog({
       toast.error("Velg eller skriv inn ansattens navn");
       return;
     }
-    if (employeeSigRef.current?.isEmpty()) {
+    if (!employeeSigRef.current || employeeSigRef.current.isEmpty()) {
       toast.error("Den ansatte må signere før den kan legges til");
       return;
     }
 
-    const sig = employeeSigRef.current?.toDataURL() || "";
+    const sig = employeeSigRef.current.toDataURL();
     const newEntry: EmployeeSignatureEntry = {
       name: currentEmployeeName.trim(),
       signature: sig,
@@ -202,7 +202,11 @@ export function VerneombudExemptionDialog({
     setEmployeeSignatures(prev => [...prev, newEntry]);
     setCurrentEmployeeName("");
     setSelectedEmployeeUserId("");
-    employeeSigRef.current?.clear();
+    setEmployeeSigEmpty(true);
+    // Clear canvas after a short delay to ensure state updates first
+    setTimeout(() => {
+      employeeSigRef.current?.clear();
+    }, 50);
     toast.success(`${newEntry.name} har signert avtalen`);
   };
 
