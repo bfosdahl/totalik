@@ -23,8 +23,10 @@ import {
   Users,
   UserCheck,
   ShieldCheck,
-  FileCheck
+  FileCheck,
+  Download
 } from "lucide-react";
+import { generateVerneombudExemptionPdf } from "@/utils/generateVerneombudExemptionPdf";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
