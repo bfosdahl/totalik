@@ -94,18 +94,58 @@ export function BulkUserImportDialog({
     URL.revokeObjectURL(url);
   }, []);
 
+  // Normalize a header name for flexible matching
+  const normalizeHeader = (name: string): string =>
+    name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[_\s]+/g, " ").trim();
+
+  // Find column index by checking multiple aliases (exact → startsWith → includes)
+  const findColIndex = (headers: string[], aliases: string[]): number => {
+    const norm = headers.map(normalizeHeader);
+    const normAliases = aliases.map(normalizeHeader);
+    for (const a of normAliases) { const i = norm.indexOf(a); if (i !== -1) return i; }
+    for (const a of normAliases) { const i = norm.findIndex(h => h.startsWith(a)); if (i !== -1) return i; }
+    for (const a of normAliases) { const i = norm.findIndex(h => h.includes(a)); if (i !== -1) return i; }
+    return -1;
+  };
+
+  // Parse a single CSV line respecting quoted fields
+  const parseCSVLine = (line: string, delim: string): string[] => {
+    const values: string[] = [];
+    let current = "";
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQuotes && i + 1 < line.length && line[i + 1] === '"') { current += '"'; i++; }
+        else inQuotes = !inQuotes;
+      } else if (ch === delim && !inQuotes) { values.push(current.trim()); current = ""; }
+      else current += ch;
+    }
+    values.push(current.trim());
+    return values.map(v => v.replace(/^["']|["']$/g, ""));
+  };
+
+  // Auto-detect delimiter from first few lines
+  const detectDelimiter = (lines: string[]): string => {
+    const sample = lines.slice(0, 5).join("\n");
+    const counts: Record<string, number> = { ";": 0, ",": 0, "\t": 0 };
+    for (const ch of sample) { if (ch in counts) counts[ch]++; }
+    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+  };
+
   const parseCSV = useCallback((content: string): ParsedUser[] => {
     const lines = content.split(/\r?\n/).filter(line => line.trim());
     if (lines.length < 2) return [];
 
-    // Find header line
-    const headerLine = lines[0].toLowerCase();
-    const headers = headerLine.split(/[,;]/).map(h => h.trim());
-    
-    // Map headers to indices
-    const emailIndex = headers.findIndex(h => h.includes("email") || h.includes("e-post") || h.includes("epost"));
-    const firstNameIndex = headers.findIndex(h => h.includes("fornavn") || h.includes("first"));
-    const lastNameIndex = headers.findIndex(h => h.includes("etternavn") || h.includes("last"));
+    const delim = detectDelimiter(lines);
+    const headers = parseCSVLine(lines[0], delim);
+
+    // Flexible column matching with many aliases
+    const emailIndex = findColIndex(headers, ["email", "e-post", "epost", "customer_email", "e_post", "mail"]);
+    const firstNameIndex = findColIndex(headers, ["fornavn", "first_name", "firstname", "customer_name", "navn"]);
+    const lastNameIndex = findColIndex(headers, ["etternavn", "last_name", "lastname", "customer_secondname", "customer_second_name"]);
+    const phoneIndex = findColIndex(headers, ["telefon", "phone", "cellphone", "customer_cellphone", "customer_phone", "mobil"]);
+    const companyColIndex = findColIndex(headers, ["customer_company", "bedrift", "firma", "company"]);
 
     if (emailIndex === -1) {
       return [{ email: "", firstName: "", lastName: "", valid: false, error: "CSV mangler e-post-kolonne" }];
@@ -119,20 +159,25 @@ export function BulkUserImportDialog({
       const line = lines[i].trim();
       if (!line) continue;
 
-      const values = line.split(/[,;]/).map(v => v.trim().replace(/^["']|["']$/g, ""));
-      const email = values[emailIndex]?.toLowerCase() || "";
-      const firstName = firstNameIndex !== -1 ? values[firstNameIndex] || "" : "";
-      const lastName = lastNameIndex !== -1 ? values[lastNameIndex] || "" : "";
+      const values = parseCSVLine(line, delim);
+      const rawEmail = values[emailIndex]?.trim().toLowerCase() || "";
+      const firstName = firstNameIndex !== -1 ? values[firstNameIndex]?.trim() || "" : "";
+      const lastName = lastNameIndex !== -1 ? values[lastNameIndex]?.trim() || "" : "";
+      const phone = phoneIndex !== -1 ? values[phoneIndex]?.trim() || "" : "";
+      const companyName = companyColIndex !== -1 ? values[companyColIndex]?.trim() || "" : "";
 
       let valid = true;
       let error: string | undefined;
+      let email = rawEmail;
 
       if (!email) {
         valid = false;
         error = "Mangler e-post";
       } else if (!emailRegex.test(email)) {
         valid = false;
-        error = "Ugyldig e-postformat";
+        // Show helpful context: what was in the field + phone if available
+        const hint = phone ? ` (tlf: ${phone})` : "";
+        error = `Ugyldig e-postformat: "${rawEmail}"${hint}`;
       } else if (seenEmails.has(email)) {
         valid = false;
         error = "Duplikat e-post";
@@ -140,7 +185,7 @@ export function BulkUserImportDialog({
         seenEmails.add(email);
       }
 
-      users.push({ email, firstName, lastName, valid, error });
+      users.push({ email: emailRegex.test(email) ? email : rawEmail, firstName, lastName, valid, error });
     }
 
     return users;
