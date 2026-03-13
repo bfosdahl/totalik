@@ -280,6 +280,7 @@ export function VerneombudExemptionDialog({
       setUsingSavedSignature(false);
       setCurrentEmployeeName("");
       setSelectedEmployeeUserId("");
+      setEmployeeSigEmpty(true);
       sessionStorage.removeItem(SESSION_STORAGE_KEY);
     }
   };
