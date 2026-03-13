@@ -10,7 +10,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, FileText, CheckCircle2, User, UserPlus, Trash2 } from "lucide-react";
+import { Loader2, FileText, CheckCircle2, User, UserPlus, Trash2, Download } from "lucide-react";
+import { generateVerneombudExemptionPdf } from "@/utils/generateVerneombudExemptionPdf";
 import SignatureCanvas from "react-signature-canvas";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
@@ -677,13 +678,30 @@ export function VerneombudExemptionDialog({
                 Avtale om fritak fra verneombud er nå signert av arbeidsgiver og {employeeSignatures.length} ansatt{employeeSignatures.length !== 1 ? "e" : ""}, og lagret i systemet. 
                 Husk at avtalen må revurderes dersom dere får 5 eller flere ansatte.
               </p>
-              <div className="text-left max-w-sm mx-auto space-y-1">
+              <div className="text-left max-w-sm mx-auto space-y-1 mb-6">
                 <p className="text-sm font-medium">Signaturer:</p>
                 <p className="text-sm text-muted-foreground">✅ {employerName} (arbeidsgiver)</p>
                 {employeeSignatures.map((es, i) => (
                   <p key={i} className="text-sm text-muted-foreground">✅ {es.name} (ansatt)</p>
                 ))}
               </div>
+              <Button
+                variant="outline"
+                onClick={() => generateVerneombudExemptionPdf({
+                  companyName,
+                  orgNumber,
+                  companyAddress,
+                  totalEmployees,
+                  employerName,
+                  employerSignature,
+                  employerSignedAt: new Date().toISOString(),
+                  employeeSignatures,
+                  agreementDate: today,
+                })}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Last ned avtale (PDF)
+              </Button>
             </div>
           )}
         </ScrollArea>

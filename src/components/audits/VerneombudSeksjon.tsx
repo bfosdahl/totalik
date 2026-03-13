@@ -23,8 +23,10 @@ import {
   Users,
   UserCheck,
   ShieldCheck,
-  FileCheck
+  FileCheck,
+  Download
 } from "lucide-react";
+import { generateVerneombudExemptionPdf } from "@/utils/generateVerneombudExemptionPdf";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -354,6 +356,30 @@ export default function VerneombudSeksjon() {
                         >
                           <PenLine className="w-4 h-4 mr-2" />
                           Oppdater avtale
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            const empSigs = Array.isArray(verneombudExemption.employee_signatures) 
+                              ? (verneombudExemption.employee_signatures as Array<{ name: string; signature: string; signed_at: string }>)
+                              : [];
+                            generateVerneombudExemptionPdf({
+                              companyName: company?.name || "",
+                              orgNumber: company?.org_number || undefined,
+                              companyAddress: company?.address || undefined,
+                              totalEmployees: verneombudExemption.total_employees || employeeCount,
+                              employerName: verneombudExemption.employer_name || "",
+                              employerSignature: verneombudExemption.employer_signature || "",
+                              employerSignedAt: verneombudExemption.employer_signed_at || new Date().toISOString(),
+                              employeeSignatures: empSigs,
+                              agreementDate: verneombudExemption.agreement_date 
+                                ? new Date(verneombudExemption.agreement_date).toLocaleDateString("nb-NO", { day: "numeric", month: "long", year: "numeric" })
+                                : new Date().toLocaleDateString("nb-NO", { day: "numeric", month: "long", year: "numeric" }),
+                            });
+                          }}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Last ned PDF
                         </Button>
                       </div>
                     </>
