@@ -22,20 +22,33 @@ serve(async (req) => {
     // Get the authorization header to verify the requesting user
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
+      console.error("No authorization header found");
       return new Response(JSON.stringify({ error: "No authorization header" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Create a client with the user's token to verify permissions
-    const supabaseClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    // Extract the token - handle both "Bearer <token>" format and raw token
+    const token = authHeader.replace("Bearer ", "");
 
-    // Get the requesting user
-    const { data: { user: requestingUser }, error: userError } = await supabaseClient.auth.getUser();
+    // Use admin client to verify the JWT token directly
+    const { data: { user: requestingUser }, error: userError } = await supabaseAdmin.auth.admin.getUserById(
+      // First get user from token
+      await (async () => {
+        const { data: { user }, error } = await createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+          global: { headers: { Authorization: `Bearer ${token}` } },
+        }).auth.getUser();
+        if (error || !user) {
+          console.error("getUser failed:", error?.message);
+          throw new Error("Invalid token");
+        }
+        return user.id;
+      })()
+    );
+    
     if (userError || !requestingUser) {
+      console.error("User verification failed:", userError?.message);
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
