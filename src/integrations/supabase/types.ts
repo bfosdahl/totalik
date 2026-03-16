@@ -15264,6 +15264,10 @@ export type Database = {
       is_hms_responsible: { Args: { user_id: string }; Returns: boolean }
       is_leader_or_verneombud: { Args: { p_user_id: string }; Returns: boolean }
       is_system_admin: { Args: { _user_id: string }; Returns: boolean }
+      seed_hr_meeting_templates_for_company: {
+        Args: { p_company_id: string }
+        Returns: undefined
+      }
       user_can_manage_fdv: {
         Args: { _company_id: string; _user_id: string }
         Returns: boolean
