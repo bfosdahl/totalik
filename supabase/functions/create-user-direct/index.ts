@@ -21,36 +21,47 @@ serve(async (req) => {
 
     // Get the authorization header to verify the requesting user
     const authHeader = req.headers.get("Authorization");
+    console.log("Auth header present:", !!authHeader);
+    
     if (!authHeader) {
-      console.error("No authorization header found");
+      console.error("No authorization header found in request");
       return new Response(JSON.stringify({ error: "No authorization header" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Extract the token - handle both "Bearer <token>" format and raw token
-    const token = authHeader.replace("Bearer ", "");
+    // Create a client with the user's token to verify permissions
+    const supabaseClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
 
-    // Use admin client to verify the JWT token directly
-    const { data: { user: requestingUser }, error: userError } = await supabaseAdmin.auth.admin.getUserById(
-      // First get user from token
-      await (async () => {
-        const { data: { user }, error } = await createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-          global: { headers: { Authorization: `Bearer ${token}` } },
-        }).auth.getUser();
-        if (error || !user) {
-          console.error("getUser failed:", error?.message);
-          throw new Error("Invalid token");
-        }
-        return user.id;
-      })()
-    );
+    // Get the requesting user
+    const { data: { user: requestingUser }, error: userError } = await supabaseClient.auth.getUser();
     
     if (userError || !requestingUser) {
-      console.error("User verification failed:", userError?.message);
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      console.error("Auth verification failed:", userError?.message, "Status:", userError?.status);
+      return new Response(JSON.stringify({ error: "Unauthorized - session may have expired. Please log in again." }), {
         status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    console.log("Authenticated user:", requestingUser.id, requestingUser.email);
+
+    // Check if requesting user is a company admin or system admin
+    const { data: roles } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", requestingUser.id);
+
+    console.log("User roles:", JSON.stringify(roles));
+
+    const isAdmin = roles?.some(r => r.role === "company_admin" || r.role === "system_admin");
+    if (!isAdmin) {
+      console.error("User lacks admin role:", requestingUser.email);
+      return new Response(JSON.stringify({ error: "Insufficient permissions - admin role required" }), {
+        status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
