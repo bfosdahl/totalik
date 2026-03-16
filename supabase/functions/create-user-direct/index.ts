@@ -21,7 +21,10 @@ serve(async (req) => {
 
     // Get the authorization header to verify the requesting user
     const authHeader = req.headers.get("Authorization");
+    console.log("Auth header present:", !!authHeader);
+    
     if (!authHeader) {
+      console.error("No authorization header found in request");
       return new Response(JSON.stringify({ error: "No authorization header" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -35,9 +38,30 @@ serve(async (req) => {
 
     // Get the requesting user
     const { data: { user: requestingUser }, error: userError } = await supabaseClient.auth.getUser();
+    
     if (userError || !requestingUser) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      console.error("Auth verification failed:", userError?.message, "Status:", userError?.status);
+      return new Response(JSON.stringify({ error: "Unauthorized - session may have expired. Please log in again." }), {
         status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    console.log("Authenticated user:", requestingUser.id, requestingUser.email);
+
+    // Check if requesting user is a company admin or system admin
+    const { data: roles } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", requestingUser.id);
+
+    console.log("User roles:", JSON.stringify(roles));
+
+    const isAdmin = roles?.some(r => r.role === "company_admin" || r.role === "system_admin");
+    if (!isAdmin) {
+      console.error("User lacks admin role:", requestingUser.email);
+      return new Response(JSON.stringify({ error: "Insufficient permissions - admin role required" }), {
+        status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
