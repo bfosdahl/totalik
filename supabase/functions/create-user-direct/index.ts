@@ -66,20 +66,6 @@ serve(async (req) => {
       });
     }
 
-    // Check if requesting user is a company admin or system admin
-    const { data: roles } = await supabaseAdmin
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", requestingUser.id);
-
-    const isAdmin = roles?.some(r => r.role === "company_admin" || r.role === "system_admin");
-    if (!isAdmin) {
-      return new Response(JSON.stringify({ error: "Insufficient permissions" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     // Get the requesting user's company
     const { data: requestingProfile } = await supabaseAdmin
       .from("profiles")
