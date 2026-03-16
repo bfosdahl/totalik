@@ -42,24 +42,17 @@ Deno.serve(async (req) => {
     })
 
     // Verify the user's token
-    const token = authHeader.replace('Bearer ', '')
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token)
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser()
     
-    if (claimsError || !claimsData?.claims) {
-      console.error('Invalid or expired token:', claimsError)
+    if (userError || !userData?.user) {
+      console.error('Invalid or expired token:', userError)
       return new Response(JSON.stringify({ error: 'Unauthorized - invalid token' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
 
-    const userId = claimsData.claims.sub
-    if (!userId) {
-      return new Response(JSON.stringify({ error: 'Unauthorized - no user ID' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
+    const userId = userData.user.id
 
     // Create admin client for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
