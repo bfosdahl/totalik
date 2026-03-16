@@ -268,13 +268,24 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       });
 
       if (error) {
+        console.error("create-user-direct error:", error, "context:", error.context);
         let errorMessage = "Kunne ikke opprette bruker";
         try {
-          const errorData = await error.context?.json?.();
-          errorMessage = errorData?.error || error.message || errorMessage;
+          if (error.context && typeof error.context.json === 'function') {
+            const errorData = await error.context.json();
+            errorMessage = errorData?.error || error.message || errorMessage;
+          } else {
+            errorMessage = error.message || errorMessage;
+          }
         } catch {
           errorMessage = error.message || errorMessage;
         }
+        
+        // Check if it's a session/auth issue
+        if (errorMessage.includes("Unauthorized") || errorMessage.includes("session")) {
+          errorMessage = "Sesjonen din har utløpt. Vennligst last siden på nytt og prøv igjen.";
+        }
+        
         throw new Error(errorMessage);
       }
       if (data?.error) throw new Error(data.error);
