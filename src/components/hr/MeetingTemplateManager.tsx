@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, GripVertical, FileText, Pencil } from "lucide-react";
+import { Plus, Trash2, FileText, Pencil, Heading } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -41,6 +41,8 @@ const questionTypeLabels: Record<string, string> = {
   text: "Fritekst",
   rating: "Vurdering (1-5)",
   yes_no: "Ja/Nei",
+  multiple_choice: "Flervalg",
+  section_header: "Seksjonstittel",
 };
 
 export function MeetingTemplateManager() {
@@ -62,6 +64,7 @@ export function MeetingTemplateManager() {
   const [newQuestionText, setNewQuestionText] = useState("");
   const [newQuestionType, setNewQuestionType] = useState("text");
   const [newQuestionRequired, setNewQuestionRequired] = useState(false);
+  const [newQuestionOptions, setNewQuestionOptions] = useState("");
 
   const fetchTemplates = useCallback(async () => {
     if (!profile?.company_id) return;
@@ -150,17 +153,25 @@ export function MeetingTemplateManager() {
   const addQuestion = async () => {
     if (!selectedTemplate || !newQuestionText.trim()) return;
     try {
-      const { error } = await supabase.from("hr_meeting_template_questions").insert({
+      const insertData: any = {
         template_id: selectedTemplate.id,
         question_text: newQuestionText.trim(),
         question_type: newQuestionType,
-        is_required: newQuestionRequired,
+        is_required: newQuestionType === "section_header" ? false : newQuestionRequired,
         sort_order: questions.length,
-      });
+      };
+
+      if (newQuestionType === "multiple_choice" && newQuestionOptions.trim()) {
+        const opts = newQuestionOptions.split("\n").map((o) => o.trim()).filter(Boolean);
+        insertData.options = JSON.stringify(opts);
+      }
+
+      const { error } = await supabase.from("hr_meeting_template_questions").insert(insertData);
       if (error) throw error;
       setNewQuestionText("");
       setNewQuestionType("text");
       setNewQuestionRequired(false);
+      setNewQuestionOptions("");
       fetchQuestions(selectedTemplate.id);
     } catch (error) {
       console.error("Error adding question:", error);
@@ -177,6 +188,58 @@ export function MeetingTemplateManager() {
     } catch (error) {
       console.error("Error deleting question:", error);
     }
+  };
+
+  const parseOptions = (options: any): string[] => {
+    if (!options) return [];
+    if (Array.isArray(options)) return options;
+    try {
+      const parsed = typeof options === "string" ? JSON.parse(options) : options;
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const renderQuestionItem = (q: Question, i: number) => {
+    if (q.question_type === "section_header") {
+      return (
+        <div
+          key={q.id}
+          className="flex items-center gap-3 p-3 rounded-lg border-l-4 border-l-primary bg-primary/5"
+        >
+          <Heading className="w-4 h-4 text-primary shrink-0" />
+          <p className="text-sm font-semibold text-foreground flex-1">{q.question_text}</p>
+          <Button size="icon" variant="ghost" className="shrink-0" onClick={() => deleteQuestion(q.id)}>
+            <Trash2 className="w-4 h-4 text-destructive" />
+          </Button>
+        </div>
+      );
+    }
+
+    const opts = parseOptions(q.options);
+
+    return (
+      <div key={q.id} className="flex items-start gap-3 p-3 rounded-lg border bg-background">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium">{q.question_text}</p>
+          <div className="flex flex-wrap gap-2 mt-1">
+            <Badge variant="outline" className="text-xs">
+              {questionTypeLabels[q.question_type] || q.question_type}
+            </Badge>
+            {q.is_required && <Badge variant="secondary" className="text-xs">Påkrevd</Badge>}
+            {opts.length > 0 && (
+              <span className="text-xs text-muted-foreground">
+                Alternativer: {opts.join(", ")}
+              </span>
+            )}
+          </div>
+        </div>
+        <Button size="icon" variant="ghost" className="shrink-0" onClick={() => deleteQuestion(q.id)}>
+          <Trash2 className="w-4 h-4 text-destructive" />
+        </Button>
+      </div>
+    );
   };
 
   return (
@@ -288,7 +351,7 @@ export function MeetingTemplateManager() {
               <div>
                 <h3 className="font-semibold text-lg">{selectedTemplate.template_name}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {meetingTypeLabels[selectedTemplate.meeting_type]} · {questions.length} spørsmål
+                  {meetingTypeLabels[selectedTemplate.meeting_type]} · {questions.filter((q) => q.question_type !== "section_header").length} spørsmål
                 </p>
               </div>
 
@@ -299,33 +362,7 @@ export function MeetingTemplateManager() {
                 ) : questions.length === 0 ? (
                   <p className="text-sm text-muted-foreground italic">Ingen spørsmål ennå. Legg til nedenfor.</p>
                 ) : (
-                  questions.map((q, i) => (
-                    <div
-                      key={q.id}
-                      className="flex items-start gap-3 p-3 rounded-lg border bg-background"
-                    >
-                      <span className="text-sm text-muted-foreground font-mono mt-0.5">{i + 1}.</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{q.question_text}</p>
-                        <div className="flex gap-2 mt-1">
-                          <Badge variant="outline" className="text-xs">
-                            {questionTypeLabels[q.question_type] || q.question_type}
-                          </Badge>
-                          {q.is_required && (
-                            <Badge variant="secondary" className="text-xs">Påkrevd</Badge>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="shrink-0"
-                        onClick={() => deleteQuestion(q.id)}
-                      >
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </div>
-                  ))
+                  questions.map((q, i) => renderQuestionItem(q, i))
                 )}
               </div>
 
@@ -335,31 +372,51 @@ export function MeetingTemplateManager() {
                 <Textarea
                   value={newQuestionText}
                   onChange={(e) => setNewQuestionText(e.target.value)}
-                  placeholder="Skriv et spørsmål..."
+                  placeholder={newQuestionType === "section_header" ? "Skriv seksjonstittel..." : "Skriv et spørsmål..."}
                   rows={2}
                 />
+
+                {newQuestionType === "multiple_choice" && (
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Alternativer (ett per linje)</Label>
+                    <Textarea
+                      value={newQuestionOptions}
+                      onChange={(e) => setNewQuestionOptions(e.target.value)}
+                      placeholder={"Svært godt\nGodt\nGreit\nMindre bra"}
+                      rows={4}
+                    />
+                  </div>
+                )}
+
                 <div className="flex flex-wrap items-center gap-3">
-                  <Select value={newQuestionType} onValueChange={setNewQuestionType}>
-                    <SelectTrigger className="w-[160px]">
+                  <Select value={newQuestionType} onValueChange={(v) => {
+                    setNewQuestionType(v);
+                    if (v === "section_header") setNewQuestionRequired(false);
+                  }}>
+                    <SelectTrigger className="w-[180px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="section_header">📋 Seksjonstittel</SelectItem>
                       <SelectItem value="text">Fritekst</SelectItem>
                       <SelectItem value="rating">Vurdering (1-5)</SelectItem>
                       <SelectItem value="yes_no">Ja/Nei</SelectItem>
+                      <SelectItem value="multiple_choice">Flervalg</SelectItem>
                     </SelectContent>
                   </Select>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={newQuestionRequired}
-                      onCheckedChange={setNewQuestionRequired}
-                      id="required-switch"
-                    />
-                    <Label htmlFor="required-switch" className="text-sm">Påkrevd</Label>
-                  </div>
+                  {newQuestionType !== "section_header" && (
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={newQuestionRequired}
+                        onCheckedChange={setNewQuestionRequired}
+                        id="required-switch"
+                      />
+                      <Label htmlFor="required-switch" className="text-sm">Påkrevd</Label>
+                    </div>
+                  )}
                   <Button
                     onClick={addQuestion}
-                    disabled={!newQuestionText.trim()}
+                    disabled={!newQuestionText.trim() || (newQuestionType === "multiple_choice" && !newQuestionOptions.trim())}
                     size="sm"
                     className="ml-auto gap-1"
                   >
