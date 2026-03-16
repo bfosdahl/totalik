@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,13 @@ import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useCompanyUsers } from "@/hooks/useCompanyUsers";
+
+interface MeetingTemplate {
+  id: string;
+  template_name: string;
+  meeting_type: string;
+}
 
 interface ScheduleMeetingDialogProps {
   onCreated: () => void;
@@ -18,31 +25,52 @@ interface ScheduleMeetingDialogProps {
 export function ScheduleMeetingDialog({ onCreated, trigger }: ScheduleMeetingDialogProps) {
   const { profile } = useAuth();
   const { toast } = useToast();
+  const { users, getUserDisplayName } = useCompanyUsers();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [templates, setTemplates] = useState<MeetingTemplate[]>([]);
 
-  const [employeeName, setEmployeeName] = useState("");
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
   const [meetingType, setMeetingType] = useState("medarbeidersamtale");
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
+  const [templateId, setTemplateId] = useState<string>("none");
+
+  useEffect(() => {
+    if (open && profile?.company_id) {
+      supabase
+        .from("hr_meeting_templates")
+        .select("id, template_name, meeting_type")
+        .eq("company_id", profile.company_id)
+        .eq("is_active", true)
+        .then(({ data }) => {
+          if (data) setTemplates(data);
+        });
+    }
+  }, [open, profile?.company_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profile?.company_id || !employeeName || !scheduledDate) return;
+    if (!profile?.company_id || !selectedEmployeeId || !scheduledDate) return;
+
+    const selectedUser = users.find((u) => u.id === selectedEmployeeId);
+    if (!selectedUser) return;
 
     try {
       setSaving(true);
       const { error } = await supabase.from("hr_meetings").insert({
         company_id: profile.company_id,
-        employee_name: employeeName,
+        employee_name: getUserDisplayName(selectedUser),
+        employee_id: selectedUser.id,
         meeting_type: meetingType,
         scheduled_date: scheduledDate,
         scheduled_time: scheduledTime || null,
         location: location || null,
         notes: notes || null,
         created_by: profile.id,
+        template_id: templateId !== "none" ? templateId : null,
       });
 
       if (error) throw error;
@@ -60,12 +88,13 @@ export function ScheduleMeetingDialog({ onCreated, trigger }: ScheduleMeetingDia
   };
 
   const resetForm = () => {
-    setEmployeeName("");
+    setSelectedEmployeeId("");
     setMeetingType("medarbeidersamtale");
     setScheduledDate("");
     setScheduledTime("");
     setLocation("");
     setNotes("");
+    setTemplateId("none");
   };
 
   return (
@@ -85,12 +114,18 @@ export function ScheduleMeetingDialog({ onCreated, trigger }: ScheduleMeetingDia
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label>Ansatt *</Label>
-            <Input
-              value={employeeName}
-              onChange={(e) => setEmployeeName(e.target.value)}
-              placeholder="Navn på ansatt"
-              required
-            />
+            <Select value={selectedEmployeeId} onValueChange={setSelectedEmployeeId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Velg ansatt" />
+              </SelectTrigger>
+              <SelectContent>
+                {users.map((user) => (
+                  <SelectItem key={user.id} value={user.id}>
+                    {getUserDisplayName(user)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
@@ -107,6 +142,25 @@ export function ScheduleMeetingDialog({ onCreated, trigger }: ScheduleMeetingDia
               </SelectContent>
             </Select>
           </div>
+
+          {templates.length > 0 && (
+            <div className="space-y-2">
+              <Label>Spørsmålsmal</Label>
+              <Select value={templateId} onValueChange={setTemplateId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Velg mal (valgfritt)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Ingen mal</SelectItem>
+                  {templates.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.template_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -151,7 +205,7 @@ export function ScheduleMeetingDialog({ onCreated, trigger }: ScheduleMeetingDia
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Avbryt
             </Button>
-            <Button type="submit" disabled={saving}>
+            <Button type="submit" disabled={saving || !selectedEmployeeId}>
               {saving ? "Lagrer..." : "Planlegg"}
             </Button>
           </div>

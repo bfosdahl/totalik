@@ -4996,6 +4996,140 @@ export type Database = {
           },
         ]
       }
+      hr_meeting_responses: {
+        Row: {
+          answer_json: Json | null
+          answer_rating: number | null
+          answer_text: string | null
+          created_at: string
+          id: string
+          meeting_id: string
+          question_id: string
+        }
+        Insert: {
+          answer_json?: Json | null
+          answer_rating?: number | null
+          answer_text?: string | null
+          created_at?: string
+          id?: string
+          meeting_id: string
+          question_id: string
+        }
+        Update: {
+          answer_json?: Json | null
+          answer_rating?: number | null
+          answer_text?: string | null
+          created_at?: string
+          id?: string
+          meeting_id?: string
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_meeting_responses_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "hr_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_meeting_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "hr_meeting_template_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_meeting_template_questions: {
+        Row: {
+          created_at: string
+          id: string
+          is_required: boolean
+          options: Json | null
+          question_text: string
+          question_type: string
+          sort_order: number
+          template_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_required?: boolean
+          options?: Json | null
+          question_text: string
+          question_type?: string
+          sort_order?: number
+          template_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_required?: boolean
+          options?: Json | null
+          question_text?: string
+          question_type?: string
+          sort_order?: number
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_meeting_template_questions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "hr_meeting_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_meeting_templates: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          meeting_type: string
+          template_name: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          meeting_type?: string
+          template_name: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          meeting_type?: string
+          template_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_meeting_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_meeting_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hr_meetings: {
         Row: {
           company_id: string
@@ -5012,6 +5146,7 @@ export type Database = {
           scheduled_date: string
           scheduled_time: string | null
           status: string
+          template_id: string | null
           updated_at: string
         }
         Insert: {
@@ -5029,6 +5164,7 @@ export type Database = {
           scheduled_date: string
           scheduled_time?: string | null
           status?: string
+          template_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -5046,6 +5182,7 @@ export type Database = {
           scheduled_date?: string
           scheduled_time?: string | null
           status?: string
+          template_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -5075,6 +5212,13 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_meetings_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "hr_meeting_templates"
             referencedColumns: ["id"]
           },
         ]

@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { UserCheck, Calendar, CheckCircle2, Trash2 } from "lucide-react";
+import { UserCheck, Calendar, CheckCircle2, Trash2, PlayCircle, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { ScheduleMeetingDialog } from "@/components/hr/ScheduleMeetingDialog";
+import { ConductMeetingDialog } from "@/components/hr/ConductMeetingDialog";
+import { MeetingTemplateManager } from "@/components/hr/MeetingTemplateManager";
 import { format, parseISO, isAfter, addDays } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -22,6 +24,7 @@ interface HrMeeting {
   notes: string | null;
   status: string;
   completed_at: string | null;
+  template_id: string | null;
 }
 
 const meetingTypeLabels: Record<string, string> = {
@@ -36,6 +39,7 @@ export default function HrMeetings() {
   const { toast } = useToast();
   const [meetings, setMeetings] = useState<HrMeeting[]>([]);
   const [loading, setLoading] = useState(true);
+  const [conductMeeting, setConductMeeting] = useState<HrMeeting | null>(null);
 
   const fetchMeetings = useCallback(async () => {
     if (!profile?.company_id) return;
@@ -59,21 +63,6 @@ export default function HrMeetings() {
   useEffect(() => {
     fetchMeetings();
   }, [fetchMeetings]);
-
-  const markCompleted = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from("hr_meetings")
-        .update({ status: "completed", completed_at: new Date().toISOString() })
-        .eq("id", id);
-      if (error) throw error;
-      toast({ title: "Samtale markert som gjennomført" });
-      fetchMeetings();
-    } catch (error) {
-      console.error("Error completing meeting:", error);
-      toast({ title: "Feil", description: "Kunne ikke oppdatere", variant: "destructive" });
-    }
-  };
 
   const deleteMeeting = async (id: string) => {
     try {
@@ -121,8 +110,15 @@ export default function HrMeetings() {
       </div>
       <div className="flex gap-1 shrink-0">
         {meeting.status === "planned" && (
-          <Button size="icon" variant="ghost" onClick={() => markCompleted(meeting.id)} title="Marker som gjennomført">
-            <CheckCircle2 className="w-4 h-4 text-green-500" />
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            onClick={() => setConductMeeting(meeting)}
+            title="Gjennomfør samtale"
+          >
+            <PlayCircle className="w-4 h-4" />
+            Gjennomfør
           </Button>
         )}
         <Button size="icon" variant="ghost" onClick={() => deleteMeeting(meeting.id)} title="Slett">
@@ -154,7 +150,7 @@ export default function HrMeetings() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Medarbeidersamtaler</h1>
             <p className="text-muted-foreground mt-1">
-              Planlegg og følg opp medarbeidersamtaler og utviklingssamtaler
+              Planlegg, gjennomfør og følg opp medarbeidersamtaler
             </p>
           </div>
           <ScheduleMeetingDialog onCreated={fetchMeetings} />
@@ -188,6 +184,10 @@ export default function HrMeetings() {
             <TabsTrigger value="upcoming">Kommende</TabsTrigger>
             <TabsTrigger value="completed">Gjennomført</TabsTrigger>
             <TabsTrigger value="all">Alle</TabsTrigger>
+            <TabsTrigger value="templates" className="gap-1.5">
+              <FileText className="w-3.5 h-3.5" />
+              Spørsmålsmaler
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="upcoming" className="mt-4 space-y-3">
@@ -207,8 +207,26 @@ export default function HrMeetings() {
               ? emptyState("Ingen samtaler registrert")
               : meetings.map(renderMeetingCard)}
           </TabsContent>
+
+          <TabsContent value="templates" className="mt-4">
+            <MeetingTemplateManager />
+          </TabsContent>
         </Tabs>
       </div>
+
+      {conductMeeting && (
+        <ConductMeetingDialog
+          meetingId={conductMeeting.id}
+          meetingName={conductMeeting.employee_name}
+          templateId={conductMeeting.template_id}
+          open={!!conductMeeting}
+          onOpenChange={(open) => !open && setConductMeeting(null)}
+          onCompleted={() => {
+            setConductMeeting(null);
+            fetchMeetings();
+          }}
+        />
+      )}
     </AppLayout>
   );
 }
