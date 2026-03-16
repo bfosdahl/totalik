@@ -76,7 +76,23 @@ export function MeetingTemplateManager() {
         .eq("company_id", profile.company_id)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      setTemplates(data || []);
+      
+      // If no templates exist, seed default templates for this company
+      if (!data || data.length === 0) {
+        await supabase.rpc("seed_hr_meeting_templates_for_company", {
+          p_company_id: profile.company_id,
+        });
+        // Re-fetch after seeding
+        const { data: seededData, error: seededError } = await supabase
+          .from("hr_meeting_templates")
+          .select("*")
+          .eq("company_id", profile.company_id)
+          .order("created_at", { ascending: false });
+        if (seededError) throw seededError;
+        setTemplates(seededData || []);
+      } else {
+        setTemplates(data);
+      }
     } catch (error) {
       console.error("Error fetching templates:", error);
     } finally {
