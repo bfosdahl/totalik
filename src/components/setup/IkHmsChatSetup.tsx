@@ -738,6 +738,51 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
               })),
               description: data.organization.description || '',
             });
+            
+            // Also sync to org_chart_nodes so the Organisering page shows the data
+            try {
+              // Delete existing AI-generated org chart nodes
+              const { data: existingNodes } = await supabase
+                .from('org_chart_nodes')
+                .select('id')
+                .eq('company_id', companyId);
+              
+              if (existingNodes && existingNodes.length > 0) {
+                await supabase.from('org_chart_node_persons').delete().in('node_id', existingNodes.map(n => n.id));
+                await supabase.from('org_chart_nodes').delete().eq('company_id', companyId);
+              }
+              
+              // Insert new nodes from AI setup
+              let rootNodeId: string | null = null;
+              for (let idx = 0; idx < data.organization.roles.length; idx++) {
+                const role = data.organization.roles[idx] as Record<string, unknown>;
+                const { data: newNode } = await supabase
+                  .from('org_chart_nodes')
+                  .insert({
+                    company_id: companyId,
+                    role_title: (role.title as string) || '',
+                    role_description: (role.description as string) || '',
+                    parent_node_id: idx === 0 ? null : rootNodeId,
+                    is_root: idx === 0,
+                    sort_order: idx,
+                  })
+                  .select('id')
+                  .single();
+                
+                if (idx === 0 && newNode) rootNodeId = newNode.id;
+                
+                // If role has a person name, add to org_chart_node_persons
+                if (newNode && role.personName && (role.personName as string).trim()) {
+                  await supabase.from('org_chart_node_persons').insert({
+                    node_id: newNode.id,
+                    person_name: (role.personName as string).trim(),
+                    sort_order: 0,
+                  });
+                }
+              }
+            } catch (orgChartError) {
+              console.error("Failed to sync org_chart_nodes (non-critical):", orgChartError);
+            }
           } else { orgContent = typeof data.organization === 'string' ? data.organization : JSON.stringify(data.organization); }
           await supabase.from("company_organization").upsert({ company_id: companyId, custom_content: orgContent, is_custom: true }, { onConflict: "company_id" });
         }
