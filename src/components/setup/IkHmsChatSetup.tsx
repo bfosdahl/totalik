@@ -817,6 +817,32 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           }
         }
 
+        // Update setup_wizard_progress to mark all completed steps
+        // This syncs the AI chat setup with the dashboard progress indicator
+        const completedSteps: string[] = [];
+        if (data.goals?.length > 0) completedSteps.push('goals');
+        if (data.organization) completedSteps.push('organization');
+        if (data.risks?.length > 0) completedSteps.push('risk');
+        if (data.actions?.length > 0) completedSteps.push('actions');
+        if (data.routines?.length > 0) completedSteps.push('routines');
+        
+        // Merge with any existing completed steps
+        const { data: existingProgress } = await supabase
+          .from("setup_wizard_progress")
+          .select("completed_steps, is_completed")
+          .eq("company_id", companyId)
+          .maybeSingle();
+        
+        const existingSteps: string[] = (existingProgress?.completed_steps as string[]) || [];
+        const mergedSteps = [...new Set([...existingSteps, ...completedSteps])];
+        
+        await supabase.from("setup_wizard_progress").upsert({
+          company_id: companyId,
+          completed_steps: mergedSteps,
+          is_completed: true,
+          current_step: 8,
+        }, { onConflict: "company_id" });
+
         queryClient.invalidateQueries({ queryKey: ["company-goals"] });
         queryClient.invalidateQueries({ queryKey: ["company-organization"] });
         queryClient.invalidateQueries({ queryKey: ["company-risk-assessments"] });
@@ -824,6 +850,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
         queryClient.invalidateQueries({ queryKey: ["company-routines"] });
         queryClient.invalidateQueries({ queryKey: ["company-modules"] });
         queryClient.invalidateQueries({ queryKey: ["company-laws-regulations"] });
+        queryClient.invalidateQueries({ queryKey: ["setup-wizard"] });
 
         // Track accepted suggestions for learning (option 2)
         try {
