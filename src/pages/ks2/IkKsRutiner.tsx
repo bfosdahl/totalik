@@ -294,9 +294,6 @@ function RoutineCard({
                     )}
                     <CardTitle className="text-base">{routine.routine_name}</CardTitle>
                   </div>
-                  {routine.description && (
-                    <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{routine.description}</p>
-                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
@@ -352,6 +349,9 @@ function RoutineCard({
               </div>
             ) : (
               <>
+                {routine.description && (
+                  <p className="text-sm text-muted-foreground mb-4 italic">{routine.description}</p>
+                )}
                 <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap">
                   {routine.content || <span className="text-muted-foreground italic">Ingen innhold</span>}
                 </div>
