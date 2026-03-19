@@ -349,6 +349,9 @@ function RoutineCard({
               </div>
             ) : (
               <>
+                {routine.description && (
+                  <p className="text-sm text-muted-foreground mb-4 italic">{routine.description}</p>
+                )}
                 <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap">
                   {routine.content || <span className="text-muted-foreground italic">Ingen innhold</span>}
                 </div>
