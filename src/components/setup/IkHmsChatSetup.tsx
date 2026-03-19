@@ -738,6 +738,51 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
               })),
               description: data.organization.description || '',
             });
+            
+            // Also sync to org_chart_nodes so the Organisering page shows the data
+            try {
+              // Delete existing AI-generated org chart nodes
+              const { data: existingNodes } = await supabase
+                .from('org_chart_nodes')
+                .select('id')
+                .eq('company_id', companyId);
+              
+              if (existingNodes && existingNodes.length > 0) {
+                await supabase.from('org_chart_node_persons').delete().in('node_id', existingNodes.map(n => n.id));
+                await supabase.from('org_chart_nodes').delete().eq('company_id', companyId);
+              }
+              
+              // Insert new nodes from AI setup
+              let rootNodeId: string | null = null;
+              for (let idx = 0; idx < data.organization.roles.length; idx++) {
+                const role = data.organization.roles[idx] as Record<string, unknown>;
+                const { data: newNode } = await supabase
+                  .from('org_chart_nodes')
+                  .insert({
+                    company_id: companyId,
+                    role_title: (role.title as string) || '',
+                    role_description: (role.description as string) || '',
+                    parent_node_id: idx === 0 ? null : rootNodeId,
+                    is_root: idx === 0,
+                    sort_order: idx,
+                  })
+                  .select('id')
+                  .single();
+                
+                if (idx === 0 && newNode) rootNodeId = newNode.id;
+                
+                // If role has a person name, add to org_chart_node_persons
+                if (newNode && role.personName && (role.personName as string).trim()) {
+                  await supabase.from('org_chart_node_persons').insert({
+                    node_id: newNode.id,
+                    person_name: (role.personName as string).trim(),
+                    sort_order: 0,
+                  });
+                }
+              }
+            } catch (orgChartError) {
+              console.error("Failed to sync org_chart_nodes (non-critical):", orgChartError);
+            }
           } else { orgContent = typeof data.organization === 'string' ? data.organization : JSON.stringify(data.organization); }
           await supabase.from("company_organization").upsert({ company_id: companyId, custom_content: orgContent, is_custom: true }, { onConflict: "company_id" });
         }
@@ -817,6 +862,32 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           }
         }
 
+        // Update setup_wizard_progress to mark all completed steps
+        // This syncs the AI chat setup with the dashboard progress indicator
+        const completedSteps: string[] = [];
+        if (data.goals?.length > 0) completedSteps.push('goals');
+        if (data.organization) completedSteps.push('organization');
+        if (data.risks?.length > 0) completedSteps.push('risk');
+        if (data.actions?.length > 0) completedSteps.push('actions');
+        if (data.routines?.length > 0) completedSteps.push('routines');
+        
+        // Merge with any existing completed steps
+        const { data: existingProgress } = await supabase
+          .from("setup_wizard_progress")
+          .select("completed_steps, is_completed")
+          .eq("company_id", companyId)
+          .maybeSingle();
+        
+        const existingSteps: string[] = (existingProgress?.completed_steps as string[]) || [];
+        const mergedSteps = [...new Set([...existingSteps, ...completedSteps])];
+        
+        await supabase.from("setup_wizard_progress").upsert({
+          company_id: companyId,
+          completed_steps: mergedSteps,
+          is_completed: true,
+          current_step: 8,
+        }, { onConflict: "company_id" });
+
         queryClient.invalidateQueries({ queryKey: ["company-goals"] });
         queryClient.invalidateQueries({ queryKey: ["company-organization"] });
         queryClient.invalidateQueries({ queryKey: ["company-risk-assessments"] });
@@ -824,6 +895,8 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
         queryClient.invalidateQueries({ queryKey: ["company-routines"] });
         queryClient.invalidateQueries({ queryKey: ["company-modules"] });
         queryClient.invalidateQueries({ queryKey: ["company-laws-regulations"] });
+        queryClient.invalidateQueries({ queryKey: ["setup-wizard"] });
+        queryClient.invalidateQueries({ queryKey: ["org-chart-nodes"] });
 
         // Track accepted suggestions for learning (option 2)
         try {
