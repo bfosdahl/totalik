@@ -896,6 +896,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
         queryClient.invalidateQueries({ queryKey: ["company-modules"] });
         queryClient.invalidateQueries({ queryKey: ["company-laws-regulations"] });
         queryClient.invalidateQueries({ queryKey: ["setup-wizard"] });
+        queryClient.invalidateQueries({ queryKey: ["org-chart-nodes"] });
 
         // Track accepted suggestions for learning (option 2)
         try {
