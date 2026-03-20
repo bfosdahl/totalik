@@ -411,11 +411,95 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                         </div>
                       </SelectItem>
                     ))}
+                    {customTemplates.length > 0 && (
+                      <>
+                        <Separator className="my-1" />
+                        <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                          Egne maler
+                        </div>
+                        {customTemplates.map((template) => (
+                          <SelectItem key={template.id} value={template.id}>
+                            <div className="flex flex-col">
+                              <span>{template.template_name}</span>
+                              {template.description && (
+                                <span className="text-xs text-muted-foreground">{template.description}</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
-                  Malen forhåndsutfyller entreprenørform og beskrivelse. Du kan endre alle felt etterpå.
-                </p>
+                
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-muted-foreground flex-1">
+                    Malen forhåndsutfyller entreprenørform og beskrivelse.
+                  </p>
+                  {isCompanyAdmin && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs shrink-0"
+                      onClick={() => setShowSaveTemplateDialog(true)}
+                    >
+                      <Save className="w-3 h-3 mr-1" />
+                      Lagre som mal
+                    </Button>
+                  )}
+                </div>
+
+                {/* Save as template inline form */}
+                {showSaveTemplateDialog && (
+                  <div className="border rounded-lg p-3 space-y-2 bg-muted/30">
+                    <Label className="text-xs">Navn på ny mal</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={newTemplateName}
+                        onChange={(e) => setNewTemplateName(e.target.value)}
+                        placeholder="F.eks. Tilbygg garasje"
+                        className="text-sm"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleSaveAsTemplate}
+                        disabled={!newTemplateName.trim()}
+                      >
+                        Lagre
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setShowSaveTemplateDialog(false)}
+                      >
+                        Avbryt
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Lagrer nåværende entreprenørform og beskrivelse som gjenbrukbar mal.
+                    </p>
+                  </div>
+                )}
+
+                {/* Delete custom template */}
+                {isCompanyAdmin && customTemplates.find(t => t.id === selectedTemplate) && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-destructive"
+                    onClick={() => {
+                      deleteTemplate(selectedTemplate);
+                      setSelectedTemplate("blank");
+                    }}
+                  >
+                    <Trash2 className="w-3 h-3 mr-1" />
+                    Slett denne malen
+                  </Button>
+                )}
               </div>
             </div>
 
