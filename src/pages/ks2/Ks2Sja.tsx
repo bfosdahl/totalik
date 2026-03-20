@@ -505,15 +505,15 @@ export default function Ks2Sja() {
   const getRiskBadge = (level: string) => {
     switch (level) {
       case "high": return <Badge variant="destructive">Høy risiko</Badge>;
-      case "medium": return <Badge className="bg-amber-500 hover:bg-amber-600">Middels risiko</Badge>;
-      case "low": return <Badge className="bg-emerald-500 hover:bg-emerald-600">Lav risiko</Badge>;
+      case "medium": return <Badge className="bg-warning text-warning-foreground">Middels risiko</Badge>;
+      case "low": return <Badge className="bg-success text-success-foreground">Lav risiko</Badge>;
       default: return <Badge variant="secondary">Ikke vurdert</Badge>;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "completed": return <Badge className="bg-emerald-500 hover:bg-emerald-600">Fullført</Badge>;
+      case "completed": return <Badge className="bg-success text-success-foreground">Fullført</Badge>;
       case "active": return <Badge>Aktiv</Badge>;
       case "draft": return <Badge variant="secondary">Utkast</Badge>;
       default: return <Badge variant="secondary">{status}</Badge>;
