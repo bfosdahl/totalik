@@ -2142,6 +2142,72 @@ export type Database = {
           },
         ]
       }
+      company_project_templates: {
+        Row: {
+          company_id: string
+          contractor_type: string | null
+          created_at: string | null
+          created_by: string | null
+          default_checklists: Json | null
+          default_description: string | null
+          default_routines: Json | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          sort_order: number | null
+          template_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          contractor_type?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          default_checklists?: Json | null
+          default_description?: string | null
+          default_routines?: Json | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          sort_order?: number | null
+          template_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          contractor_type?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          default_checklists?: Json | null
+          default_description?: string | null
+          default_routines?: Json | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          sort_order?: number | null
+          template_name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_project_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_project_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_risk_assessments: {
         Row: {
           company_id: string
