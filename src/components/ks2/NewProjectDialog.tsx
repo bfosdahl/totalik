@@ -125,7 +125,7 @@ const PROJECT_TEMPLATES = [
 interface NewProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: NewKsModule2ProjectInput) => Promise<void>;
+  onSubmit: (data: NewKsModule2ProjectInput) => Promise<any>;
   isSaving: boolean;
 }
 

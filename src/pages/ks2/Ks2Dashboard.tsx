@@ -114,7 +114,8 @@ export default function Ks2Dashboard() {
   }, [projects, searchQuery, activeFilter, profile?.user_id, profile?.id, projectDeviationCounts]);
 
   const handleCreateProject = async (data: NewKsModule2ProjectInput) => {
-    await createProject(data);
+    const result = await createProject(data);
+    return result;
   };
 
   const handleProjectClick = (projectId: string) => {
