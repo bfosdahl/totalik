@@ -469,7 +469,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                     <Button
                       onClick={handleComplete}
                       disabled={completeSja.isPending}
-                      className="bg-emerald-600 hover:bg-emerald-700"
+                      className="bg-success hover:bg-success/90"
                     >
                       <CheckCircle2 className="h-4 w-4 mr-2" />
                       {completeSja.isPending ? "Fullfører..." : "Fullfør og signer SJA"}
