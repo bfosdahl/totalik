@@ -258,15 +258,45 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
             <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
               <ScrollArea className="flex-1 pr-4">
                 <div className="space-y-6 pb-4">
+            {/* Project Name - First and prominent */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                Prosjektnavn
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="project_name">Prosjektnavn *</Label>
+                  <Input
+                    id="project_name"
+                    value={formData.project_name}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, project_name: e.target.value }))}
+                    placeholder="Skriv inn prosjektnavn, f.eks. Tilbygg Storgata 5"
+                    required
+                    autoFocus
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="project_number">Prosjektnummer</Label>
+                  <Input
+                    id="project_number"
+                    value={formData.project_number}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, project_number: e.target.value }))}
+                    placeholder="Auto-genereres hvis tom"
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Project Template Selection */}
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
                 <FileText className="w-4 h-4" />
-                Prosjektmal
+                Prosjektmal (valgfritt)
               </h3>
               
               <div className="space-y-2">
-                <Label>Velg prosjekttype</Label>
+                <Label>Forhåndsutfyll med mal</Label>
                 <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Velg en mal" />
@@ -282,42 +312,17 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                     ))}
                   </SelectContent>
                 </Select>
-                {selectedTemplate !== "blank" && (
-                  <p className="text-xs text-muted-foreground">
-                    Malen forhåndsutfyller entreprenørform og beskrivelse. Du kan endre alle felt.
-                  </p>
-                )}
+                <p className="text-xs text-muted-foreground">
+                  Malen forhåndsutfyller entreprenørform og beskrivelse. Du kan endre alle felt etterpå.
+                </p>
               </div>
             </div>
 
-            {/* Basic Info */}
+            {/* Address */}
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                 Grunnleggende informasjon
               </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="project_name">Prosjektnavn *</Label>
-                  <Input
-                    id="project_name"
-                    value={formData.project_name}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, project_name: e.target.value }))}
-                    placeholder="F.eks. Nybygg Majorstuveien 12"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="project_number">Prosjektnummer</Label>
-                  <Input
-                    id="project_number"
-                    value={formData.project_number}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, project_number: e.target.value }))}
-                    placeholder="Auto-genereres hvis tom"
-                  />
-                </div>
-              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
