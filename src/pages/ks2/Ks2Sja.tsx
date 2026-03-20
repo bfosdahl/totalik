@@ -170,20 +170,20 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onClose}>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-3 min-w-0">
+          <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="outline">{sja.sja_number}</Badge>
-              {isCompleted && <Badge className="bg-emerald-100 text-emerald-700">Fullført</Badge>}
+              {isCompleted && <Badge className="bg-success/20 text-success">Fullført</Badge>}
             </div>
-            <h1 className="text-xl font-bold">{sja.title}</h1>
+            <h1 className="text-xl font-bold truncate">{sja.title}</h1>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 shrink-0">
           <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
             <Download className="h-4 w-4 mr-2" />
             PDF
@@ -197,28 +197,28 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
         </div>
       </div>
 
-      {/* Steps */}
-      <div className="flex items-center justify-between">
+      {/* Steps - horizontal scroll on mobile */}
+      <div className="flex items-center gap-1 overflow-x-auto pb-2 -mx-1 px-1">
         {steps.map((s, idx) => {
           const Icon = s.icon;
           const isActive = step === s.n;
           const isDone = step > s.n;
           return (
-            <div key={s.n} className="flex items-center">
+            <div key={s.n} className="flex items-center shrink-0">
               <button
                 onClick={() => setStep(s.n)}
                 className={cn(
                   "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors",
                   isActive && "bg-primary text-primary-foreground",
-                  isDone && "bg-emerald-100 text-emerald-700",
+                  isDone && "bg-success/20 text-success",
                   !isActive && !isDone && "bg-muted text-muted-foreground hover:bg-muted/80"
                 )}
               >
                 <Icon className="h-4 w-4" />
-                <span className="hidden sm:inline text-sm font-medium">{s.title}</span>
+                <span className="hidden sm:inline text-sm font-medium whitespace-nowrap">{s.title}</span>
               </button>
               {idx < steps.length - 1 && (
-                <div className={cn("w-8 h-0.5 mx-1", isDone ? "bg-emerald-500" : "bg-muted")} />
+                <div className={cn("w-8 h-0.5 mx-1", isDone ? "bg-success" : "bg-muted")} />
               )}
             </div>
           );
