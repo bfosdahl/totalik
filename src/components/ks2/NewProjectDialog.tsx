@@ -5,13 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, FileText, Sparkles, ClipboardList } from "lucide-react";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { NewKsModule2ProjectInput } from "@/hooks/useKsModule2Projects";
 import { Ks2ProjectSetupChat } from "./Ks2ProjectSetupChat";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Prosjektmaler med forhåndsdefinert informasjon
 const PROJECT_TEMPLATES = [
