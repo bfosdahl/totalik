@@ -270,7 +270,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
           {step === 2 && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-500" /> Identifiser risikoer
+                <AlertTriangle className="h-5 w-5 text-warning" /> Identifiser risikoer
               </h2>
 
               {!isCompleted && (
