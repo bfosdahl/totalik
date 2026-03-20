@@ -420,13 +420,13 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
           {step === 4 && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-500" /> Signering og godkjenning
+                <CheckCircle2 className="h-5 w-5 text-success" /> Signering og godkjenning
               </h2>
 
               {isCompleted ? (
                 <div className="space-y-4">
-                  <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                    <div className="flex items-center gap-2 text-emerald-700 mb-2">
+                  <div className="p-4 bg-success/10 rounded-lg border border-success/30">
+                    <div className="flex items-center gap-2 text-success mb-2">
                       <CheckCircle2 className="h-5 w-5" />
                       <span className="font-medium">SJA er fullført og signert</span>
                     </div>
@@ -445,7 +445,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
               ) : (
                 <>
                   {/* Summary */}
-                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 text-sm space-y-1">
+                  <div className="p-4 bg-info/10 rounded-lg border border-info/30 text-sm space-y-1">
                     <p><strong>Risikoer:</strong> {risks.length} identifisert</p>
                     <p><strong>Tiltak:</strong> {measures.length} definert</p>
                     <p>Ved å signere bekrefter du at alle har forstått risikoene og tiltakene.</p>
