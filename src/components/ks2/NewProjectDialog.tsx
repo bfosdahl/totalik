@@ -155,21 +155,50 @@ const getEmptyFormData = (): NewKsModule2ProjectInput => ({
 
 export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: NewProjectDialogProps) {
   const { users } = useCompanyUsers();
-  const { profile } = useAuth();
+  const { profile, isCompanyAdmin } = useAuth();
+  const { templates: customTemplates, createTemplate, deleteTemplate } = useCompanyProjectTemplates();
   const [selectedTemplate, setSelectedTemplate] = useState<string>("blank");
   const [formData, setFormData] = useState<NewKsModule2ProjectInput>(getEmptyFormData());
   const [activeTab, setActiveTab] = useState<string>("manual");
+  const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState("");
 
   const handleTemplateChange = (templateId: string) => {
     setSelectedTemplate(templateId);
-    const template = PROJECT_TEMPLATES.find(t => t.id === templateId);
-    if (template) {
+    
+    // Check built-in templates first
+    const builtIn = PROJECT_TEMPLATES.find(t => t.id === templateId);
+    if (builtIn) {
       setFormData(prev => ({
         ...getEmptyFormData(),
-        ...template.defaults,
+        ...builtIn.defaults,
+        project_name: prev.project_name,
+      }));
+      return;
+    }
+    
+    // Check custom templates
+    const custom = customTemplates.find(t => t.id === templateId);
+    if (custom) {
+      setFormData(prev => ({
+        ...getEmptyFormData(),
+        description: custom.default_description || "",
+        contractor_type: custom.contractor_type as any || undefined,
         project_name: prev.project_name,
       }));
     }
+  };
+
+  const handleSaveAsTemplate = async () => {
+    if (!newTemplateName.trim()) return;
+    await createTemplate({
+      template_name: newTemplateName,
+      description: formData.description || undefined,
+      contractor_type: formData.contractor_type || undefined,
+      default_description: formData.description || undefined,
+    });
+    setNewTemplateName("");
+    setShowSaveTemplateDialog(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
