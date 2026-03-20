@@ -743,7 +743,7 @@ export default function Ks2Sja() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNewDialog(false)}>Avbryt</Button>
             <Button
-              className="bg-emerald-500 hover:bg-emerald-600"
+              className="bg-success hover:bg-success/90 text-success-foreground"
               onClick={handleCreate}
               disabled={!formData.title || !formData.responsible_name || !formData.planned_date || createSja.isPending}
             >
