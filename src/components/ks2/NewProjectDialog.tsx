@@ -230,13 +230,13 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="max-w-2xl max-h-[90vh] h-[90vh] flex flex-col overflow-hidden p-0">
+        <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-2">
           <DialogTitle className="text-xl font-semibold">Opprett nytt prosjekt</DialogTitle>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col min-h-0">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col min-h-0 px-6">
+          <TabsList className="grid w-full grid-cols-2 mb-4 flex-shrink-0">
             <TabsTrigger value="manual" className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
               Manuelt oppsett
@@ -247,7 +247,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="ai" className="mt-0">
+          <TabsContent value="ai" className="mt-0 flex-1 min-h-0">
             <Ks2ProjectSetupChat 
               onComplete={handleAiComplete}
               onCancel={() => setActiveTab("manual")}
@@ -256,7 +256,8 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
 
           <TabsContent value="manual" className="mt-0 flex-1 flex flex-col min-h-0">
             <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-              <ScrollArea className="flex-1 pr-4">
+              <div className="flex-1 overflow-y-auto pr-2"
+                style={{ WebkitOverflowScrolling: 'touch' }}>
                 <div className="space-y-6 pb-4">
             {/* Project Name - First and prominent */}
             <div className="space-y-4">
