@@ -170,20 +170,20 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onClose}>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-3 min-w-0">
+          <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="outline">{sja.sja_number}</Badge>
-              {isCompleted && <Badge className="bg-emerald-100 text-emerald-700">Fullført</Badge>}
+              {isCompleted && <Badge className="bg-success/20 text-success">Fullført</Badge>}
             </div>
-            <h1 className="text-xl font-bold">{sja.title}</h1>
+            <h1 className="text-xl font-bold truncate">{sja.title}</h1>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 shrink-0">
           <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
             <Download className="h-4 w-4 mr-2" />
             PDF
@@ -197,28 +197,28 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
         </div>
       </div>
 
-      {/* Steps */}
-      <div className="flex items-center justify-between">
+      {/* Steps - horizontal scroll on mobile */}
+      <div className="flex items-center gap-1 overflow-x-auto pb-2 -mx-1 px-1">
         {steps.map((s, idx) => {
           const Icon = s.icon;
           const isActive = step === s.n;
           const isDone = step > s.n;
           return (
-            <div key={s.n} className="flex items-center">
+            <div key={s.n} className="flex items-center shrink-0">
               <button
                 onClick={() => setStep(s.n)}
                 className={cn(
                   "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors",
                   isActive && "bg-primary text-primary-foreground",
-                  isDone && "bg-emerald-100 text-emerald-700",
+                  isDone && "bg-success/20 text-success",
                   !isActive && !isDone && "bg-muted text-muted-foreground hover:bg-muted/80"
                 )}
               >
                 <Icon className="h-4 w-4" />
-                <span className="hidden sm:inline text-sm font-medium">{s.title}</span>
+                <span className="hidden sm:inline text-sm font-medium whitespace-nowrap">{s.title}</span>
               </button>
               {idx < steps.length - 1 && (
-                <div className={cn("w-8 h-0.5 mx-1", isDone ? "bg-emerald-500" : "bg-muted")} />
+                <div className={cn("w-8 h-0.5 mx-1", isDone ? "bg-success" : "bg-muted")} />
               )}
             </div>
           );
@@ -270,7 +270,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
           {step === 2 && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-500" /> Identifiser risikoer
+                <AlertTriangle className="h-5 w-5 text-warning" /> Identifiser risikoer
               </h2>
 
               {!isCompleted && (
@@ -355,7 +355,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
           {step === 3 && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Shield className="h-5 w-5 text-emerald-500" /> Risikoreduserende tiltak
+                <Shield className="h-5 w-5 text-success" /> Risikoreduserende tiltak
               </h2>
 
               {risks.map((risk, rIdx) => {
@@ -420,13 +420,13 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
           {step === 4 && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-500" /> Signering og godkjenning
+                <CheckCircle2 className="h-5 w-5 text-success" /> Signering og godkjenning
               </h2>
 
               {isCompleted ? (
                 <div className="space-y-4">
-                  <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                    <div className="flex items-center gap-2 text-emerald-700 mb-2">
+                  <div className="p-4 bg-success/10 rounded-lg border border-success/30">
+                    <div className="flex items-center gap-2 text-success mb-2">
                       <CheckCircle2 className="h-5 w-5" />
                       <span className="font-medium">SJA er fullført og signert</span>
                     </div>
@@ -445,7 +445,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
               ) : (
                 <>
                   {/* Summary */}
-                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 text-sm space-y-1">
+                  <div className="p-4 bg-info/10 rounded-lg border border-info/30 text-sm space-y-1">
                     <p><strong>Risikoer:</strong> {risks.length} identifisert</p>
                     <p><strong>Tiltak:</strong> {measures.length} definert</p>
                     <p>Ved å signere bekrefter du at alle har forstått risikoene og tiltakene.</p>
@@ -469,7 +469,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                     <Button
                       onClick={handleComplete}
                       disabled={completeSja.isPending}
-                      className="bg-emerald-600 hover:bg-emerald-700"
+                      className="bg-success hover:bg-success/90"
                     >
                       <CheckCircle2 className="h-4 w-4 mr-2" />
                       {completeSja.isPending ? "Fullfører..." : "Fullfør og signer SJA"}
@@ -505,15 +505,15 @@ export default function Ks2Sja() {
   const getRiskBadge = (level: string) => {
     switch (level) {
       case "high": return <Badge variant="destructive">Høy risiko</Badge>;
-      case "medium": return <Badge className="bg-amber-500 hover:bg-amber-600">Middels risiko</Badge>;
-      case "low": return <Badge className="bg-emerald-500 hover:bg-emerald-600">Lav risiko</Badge>;
+      case "medium": return <Badge className="bg-warning text-warning-foreground">Middels risiko</Badge>;
+      case "low": return <Badge className="bg-success text-success-foreground">Lav risiko</Badge>;
       default: return <Badge variant="secondary">Ikke vurdert</Badge>;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "completed": return <Badge className="bg-emerald-500 hover:bg-emerald-600">Fullført</Badge>;
+      case "completed": return <Badge className="bg-success text-success-foreground">Fullført</Badge>;
       case "active": return <Badge>Aktiv</Badge>;
       case "draft": return <Badge variant="secondary">Utkast</Badge>;
       default: return <Badge variant="secondary">{status}</Badge>;
@@ -562,7 +562,7 @@ export default function Ks2Sja() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-success" />
       </div>
     );
   }
@@ -577,15 +577,15 @@ export default function Ks2Sja() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-emerald-500/10">
-            <ClipboardCheck className="h-6 w-6 text-emerald-500" />
+          <div className="p-2 rounded-lg bg-success/10">
+            <ClipboardCheck className="h-6 w-6 text-success" />
           </div>
           <div>
             <h2 className="text-2xl font-bold">SJA - Sikker Jobb Analyse</h2>
             <p className="text-muted-foreground">Risikovurdering før arbeid starter</p>
           </div>
         </div>
-        <Button className="bg-emerald-500 hover:bg-emerald-600" onClick={() => setShowNewDialog(true)}>
+        <Button className="bg-success hover:bg-success/90 text-success-foreground" onClick={() => setShowNewDialog(true)}>
           <Plus className="h-4 w-4 mr-2" /> Ny SJA
         </Button>
       </div>
@@ -602,7 +602,7 @@ export default function Ks2Sja() {
           {filteredRecords.map((sja) => (
             <Card
               key={sja.id}
-              className="hover:border-emerald-500/50 transition-colors cursor-pointer"
+              className="hover:border-success/50 transition-colors cursor-pointer"
               onClick={() => setSelectedSja(sja)}
             >
               <CardHeader className="pb-2">
@@ -667,7 +667,7 @@ export default function Ks2Sja() {
             <p className="text-muted-foreground text-center mb-4">
               {searchQuery ? "Ingen treff på søket ditt" : "Opprett din første SJA for dette prosjektet"}
             </p>
-            <Button className="bg-emerald-500 hover:bg-emerald-600" onClick={() => setShowNewDialog(true)}>
+            <Button className="bg-success hover:bg-success/90 text-success-foreground" onClick={() => setShowNewDialog(true)}>
               <Plus className="h-4 w-4 mr-2" /> Ny SJA
             </Button>
           </CardContent>
@@ -676,10 +676,10 @@ export default function Ks2Sja() {
 
       {/* New SJA Dialog */}
       <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              <AlertTriangle className="h-5 w-5 text-warning" />
               Ny Sikker Jobb Analyse
             </DialogTitle>
             <DialogDescription>Opprett en ny SJA for å vurdere risiko før arbeid starter</DialogDescription>
@@ -743,7 +743,7 @@ export default function Ks2Sja() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNewDialog(false)}>Avbryt</Button>
             <Button
-              className="bg-emerald-500 hover:bg-emerald-600"
+              className="bg-success hover:bg-success/90 text-success-foreground"
               onClick={handleCreate}
               disabled={!formData.title || !formData.responsible_name || !formData.planned_date || createSja.isPending}
             >
