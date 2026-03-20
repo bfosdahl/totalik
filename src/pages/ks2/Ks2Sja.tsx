@@ -577,8 +577,8 @@ export default function Ks2Sja() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-emerald-500/10">
-            <ClipboardCheck className="h-6 w-6 text-emerald-500" />
+          <div className="p-2 rounded-lg bg-success/10">
+            <ClipboardCheck className="h-6 w-6 text-success" />
           </div>
           <div>
             <h2 className="text-2xl font-bold">SJA - Sikker Jobb Analyse</h2>
