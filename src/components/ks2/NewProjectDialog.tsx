@@ -539,10 +539,10 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                   />
                 </div>
                 </div>
-              </ScrollArea>
+              </div>
 
-              {/* Submit - Outside ScrollArea for visibility */}
-              <div className="flex justify-end gap-3 pt-4 mt-4 border-t">
+              {/* Submit - Outside scroll area for visibility */}
+              <div className="flex justify-end gap-3 pt-4 mt-4 border-t flex-shrink-0 pb-6">
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                   Avbryt
                 </Button>
