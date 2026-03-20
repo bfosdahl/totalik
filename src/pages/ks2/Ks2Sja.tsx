@@ -602,7 +602,7 @@ export default function Ks2Sja() {
           {filteredRecords.map((sja) => (
             <Card
               key={sja.id}
-              className="hover:border-emerald-500/50 transition-colors cursor-pointer"
+              className="hover:border-success/50 transition-colors cursor-pointer"
               onClick={() => setSelectedSja(sja)}
             >
               <CardHeader className="pb-2">
