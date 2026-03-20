@@ -97,7 +97,15 @@ export function useCompanyKsDocuments() {
     
     setIsSaving(true);
     try {
-      const fileName = `${Date.now()}-${file.name}`;
+      const sanitizedName = file.name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/æ/gi, "ae")
+        .replace(/ø/gi, "o")
+        .replace(/å/gi, "a")
+        .replace(/[^a-zA-Z0-9._-]/g, "_")
+        .replace(/_+/g, "_");
+      const fileName = `${Date.now()}-${sanitizedName}`;
       const filePath = `${companyId}/ks-documents/${fileName}`;
       
       const { error: uploadError } = await supabase.storage
