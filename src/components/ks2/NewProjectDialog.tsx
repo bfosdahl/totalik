@@ -194,29 +194,38 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
     hms_focus?: any[];
     milestones?: any[];
   }) => {
-    
-    
-    // Update form with AI suggestions
-    setFormData(prev => ({
-      ...prev,
-      project_name: data.project_name || prev.project_name,
-      description: data.description || prev.description,
-      address: data.address || prev.address,
-      client_name: data.client_name || prev.client_name,
-      contractor_type: data.contractor_type || prev.contractor_type,
-    }));
-    
-    // Show what was generated
-    const checklistCount = data.recommended_checklists?.length || 0;
-    const routineCount = data.recommended_routines?.length || 0;
-    
-    toast.success(
-      `Prosjektforslag generert!`,
-      { description: `${checklistCount} sjekklister og ${routineCount} rutiner anbefalt. Skjemaet er fylt ut.` }
-    );
-    
-    // Switch to manual tab to show/edit the form
-    setActiveTab("manual");
+    // Build the project data from AI suggestions
+    const projectData: NewKsModule2ProjectInput = {
+      ...getEmptyFormData(),
+      project_name: data.project_name || "",
+      description: data.description || "",
+      address: data.address || "",
+      client_name: data.client_name || "",
+      contractor_type: data.contractor_type || undefined,
+    };
+
+    if (!projectData.project_name.trim()) {
+      toast.error("AI-en genererte ikke et prosjektnavn. Prøv igjen.");
+      return;
+    }
+
+    // Auto-submit the project
+    try {
+      await onSubmit(projectData);
+      toast.success(
+        `Prosjekt opprettet!`,
+        { description: `${data.recommended_checklists?.length || 0} sjekklister og ${data.recommended_routines?.length || 0} rutiner anbefalt.` }
+      );
+      setFormData(getEmptyFormData());
+      setSelectedTemplate("blank");
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error creating project from AI:", error);
+      // Fallback: fill the form and let user submit manually
+      setFormData(projectData);
+      setActiveTab("manual");
+      toast.error("Kunne ikke opprette prosjektet automatisk. Sjekk skjemaet og prøv igjen.");
+    }
   };
 
   return (
