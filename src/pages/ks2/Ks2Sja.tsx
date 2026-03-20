@@ -355,7 +355,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
           {step === 3 && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Shield className="h-5 w-5 text-emerald-500" /> Risikoreduserende tiltak
+                <Shield className="h-5 w-5 text-success" /> Risikoreduserende tiltak
               </h2>
 
               {risks.map((risk, rIdx) => {
