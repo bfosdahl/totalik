@@ -585,7 +585,7 @@ export default function Ks2Sja() {
             <p className="text-muted-foreground">Risikovurdering før arbeid starter</p>
           </div>
         </div>
-        <Button className="bg-emerald-500 hover:bg-emerald-600" onClick={() => setShowNewDialog(true)}>
+        <Button className="bg-success hover:bg-success/90 text-success-foreground" onClick={() => setShowNewDialog(true)}>
           <Plus className="h-4 w-4 mr-2" /> Ny SJA
         </Button>
       </div>
