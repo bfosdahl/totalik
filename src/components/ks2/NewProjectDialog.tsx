@@ -5,13 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, FileText, Sparkles, ClipboardList } from "lucide-react";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { NewKsModule2ProjectInput } from "@/hooks/useKsModule2Projects";
 import { Ks2ProjectSetupChat } from "./Ks2ProjectSetupChat";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Prosjektmaler med forhåndsdefinert informasjon
 const PROJECT_TEMPLATES = [
@@ -125,7 +126,7 @@ const PROJECT_TEMPLATES = [
 interface NewProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: NewKsModule2ProjectInput) => Promise<void>;
+  onSubmit: (data: NewKsModule2ProjectInput) => Promise<any>;
   isSaving: boolean;
 }
 
@@ -152,6 +153,7 @@ const getEmptyFormData = (): NewKsModule2ProjectInput => ({
 
 export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: NewProjectDialogProps) {
   const { users } = useCompanyUsers();
+  const { profile } = useAuth();
   const [selectedTemplate, setSelectedTemplate] = useState<string>("blank");
   const [formData, setFormData] = useState<NewKsModule2ProjectInput>(getEmptyFormData());
   const [activeTab, setActiveTab] = useState<string>("manual");
@@ -163,7 +165,6 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
       setFormData(prev => ({
         ...getEmptyFormData(),
         ...template.defaults,
-        // Behold prosjektnavn hvis allerede fylt ut
         project_name: prev.project_name,
       }));
     }
@@ -188,13 +189,69 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
     }));
   };
 
+  const saveAiRecommendations = async (
+    projectId: string,
+    companyId: string,
+    checklists: any[],
+    routines: any[]
+  ) => {
+    try {
+      // Save checklists
+      if (checklists.length > 0) {
+        const checklistInserts = checklists.map((cl) => ({
+          project_id: projectId,
+          company_id: companyId,
+          title: cl.name,
+          template_name: cl.name,
+          checklist_items: (cl.checkpoints || []).map((cp: string, idx: number) => ({
+            id: `item-${idx}`,
+            checkpoint: cp,
+            value: null,
+            comment: "",
+          })),
+          status: "not_started",
+          progress_percent: 0,
+        }));
+
+        const { error: clError } = await (supabase
+          .from("ks_module2_checklists" as any)
+          .insert(checklistInserts) as any);
+
+        if (clError) {
+          console.error("Error saving AI checklists:", clError);
+        }
+      }
+
+      // Save routines
+      if (routines.length > 0) {
+        const routineInserts = routines.map((r) => ({
+          project_id: projectId,
+          company_id: companyId,
+          name: r.name,
+          description: r.description || null,
+          category: r.category || "general",
+          routine_number: "",
+        }));
+
+        const { error: rError } = await supabase
+          .from("ks_module2_routines")
+          .insert(routineInserts);
+
+        if (rError) {
+          console.error("Error saving AI routines:", rError);
+        }
+      }
+    } catch (error) {
+      console.error("Error saving AI recommendations:", error);
+    }
+  };
+
   const handleAiComplete = async (data: Partial<NewKsModule2ProjectInput> & {
     recommended_checklists?: any[];
     recommended_routines?: any[];
     hms_focus?: any[];
     milestones?: any[];
   }) => {
-    // Build the project data from AI suggestions
     const projectData: NewKsModule2ProjectInput = {
       ...getEmptyFormData(),
       project_name: data.project_name || "",
@@ -209,19 +266,31 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
       return;
     }
 
-    // Auto-submit the project
     try {
-      await onSubmit(projectData);
+      const createdProject = await onSubmit(projectData);
+      
+      // Save AI-generated checklists and routines to the new project
+      if (createdProject?.id && profile?.company_id) {
+        await saveAiRecommendations(
+          createdProject.id,
+          profile.company_id,
+          data.recommended_checklists || [],
+          data.recommended_routines || []
+        );
+      }
+
+      const checklistCount = data.recommended_checklists?.length || 0;
+      const routineCount = data.recommended_routines?.length || 0;
+      
       toast.success(
         `Prosjekt opprettet!`,
-        { description: `${data.recommended_checklists?.length || 0} sjekklister og ${data.recommended_routines?.length || 0} rutiner anbefalt.` }
+        { description: `${checklistCount} sjekklister og ${routineCount} rutiner lagt til.` }
       );
       setFormData(getEmptyFormData());
       setSelectedTemplate("blank");
       onOpenChange(false);
     } catch (error) {
       console.error("Error creating project from AI:", error);
-      // Fallback: fill the form and let user submit manually
       setFormData(projectData);
       setActiveTab("manual");
       toast.error("Kunne ikke opprette prosjektet automatisk. Sjekk skjemaet og prøv igjen.");
