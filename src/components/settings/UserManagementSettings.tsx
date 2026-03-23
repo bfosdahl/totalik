@@ -713,7 +713,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                             Godkjenn bruker
                           </DropdownMenuItem>
                         )}
-                        {companyUser.status === "suspended" ? (
+                        {(companyUser.status === "suspended" || companyUser.status === "deleted") ? (
                           <DropdownMenuItem onClick={() => handleReactivateUser(companyUser)}>
                             <Check className="w-4 h-4 mr-2" />
                             Reaktiver
