@@ -103,9 +103,6 @@ export default function (data) {
       ['GET', BASE_URL + '/rest/v1/deviations?select=id,status&limit=100', null, {
         headers: hdrs, tags: { name: 'dashboard_deviations' },
       }],
-      ['GET', BASE_URL + '/rest/v1/company_action_plans?select=id,actions&limit=10', null, {
-        headers: hdrs, tags: { name: 'dashboard_actions' },
-      }],
     ]);
 
     var maxDuration = 0;
