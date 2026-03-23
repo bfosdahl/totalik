@@ -46,7 +46,7 @@ import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
 import { useToast } from "@/hooks/use-toast";
 
 // Use shared DeviationCategory type
-import type { DeviationCategory } from "@/hooks/useDeviations";
+import type { DeviationCategory, DeviationStatus } from "@/hooks/useDeviations";
 
 interface Deviation {
   id: string;
