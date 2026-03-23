@@ -87,7 +87,7 @@ interface DeviationForDialog {
   description: string;
   category: DeviationCategory;
   priority: "low" | "medium" | "high" | "critical";
-  status: "open" | "in-progress" | "resolved" | "closed";
+  status: DeviationStatus;
   assignee: string;
   reporter: string;
   createdAt: string;
