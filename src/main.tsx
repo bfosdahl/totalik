@@ -1,9 +1,32 @@
 import { createRoot } from "react-dom/client";
 import { registerSW } from "virtual:pwa-register";
 import { toast } from "sonner";
+import { logClientError } from "@/utils/logClientError";
 import App from "./App.tsx";
 import "./index.css";
 import "./i18n"; // Initialize i18n
+
+// Global handlers for uncaught errors
+window.addEventListener("error", (event) => {
+  logClientError({
+    error_message: event.message || "Unknown error",
+    error_stack: event.error?.stack ?? null,
+    url: window.location.href,
+    user_agent: navigator.userAgent,
+    source: "window_error",
+  });
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+  const reason = event.reason;
+  logClientError({
+    error_message: reason?.message || String(reason) || "Unhandled promise rejection",
+    error_stack: reason?.stack ?? null,
+    url: window.location.href,
+    user_agent: navigator.userAgent,
+    source: "unhandled_rejection",
+  });
+});
 
 createRoot(document.getElementById("root")!).render(<App />);
 
