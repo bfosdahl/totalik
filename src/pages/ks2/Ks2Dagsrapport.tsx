@@ -384,11 +384,79 @@ function DailyReportForm({
   );
 }
 
+function generateReportEmailHtml(report: DailyReport): string {
+  const reportDate = format(new Date(report.report_date), "EEEE d. MMMM yyyy", { locale: nb });
+  const sections: string[] = [];
+
+  sections.push(`
+    <div style="border-bottom:2px solid #2563eb;padding-bottom:12px;margin-bottom:20px;">
+      <h1 style="margin:0;font-size:20px;color:#1e293b;">Dagsrapport ${report.report_number}</h1>
+      <p style="margin:4px 0 0;color:#64748b;font-size:14px;">${reportDate} — ${report.user_name}</p>
+    </div>
+  `);
+
+  // Weather
+  if (report.weather_conditions || report.temperature_celsius != null) {
+    const parts = [
+      report.weather_conditions,
+      report.temperature_celsius != null ? `${report.temperature_celsius}°C` : null,
+      report.wind_conditions,
+      report.precipitation,
+    ].filter(Boolean);
+    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">Vær</h3><p style="margin:0;font-size:14px;">${parts.join(" · ")}</p>`);
+  }
+
+  // Crew
+  if (report.own_crew_count > 0) {
+    let crewHtml = `<p style="margin:0;font-size:14px;">Eget mannskap: ${report.own_crew_count}</p>`;
+    if (report.subcontractor_attendance?.length > 0) {
+      crewHtml += report.subcontractor_attendance.map((s: any) => `<p style="margin:0;font-size:14px;">UE ${s.name}: ${s.count} pers</p>`).join("");
+    }
+    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">Mannskap</h3>${crewHtml}`);
+  }
+
+  // Work
+  if (report.work_description) {
+    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">Utført arbeid</h3><p style="margin:0;font-size:14px;white-space:pre-wrap;">${report.work_description}</p>`);
+    if (report.work_areas) sections.push(`<p style="margin:4px 0 0;font-size:13px;color:#64748b;">Områder: ${report.work_areas}</p>`);
+  }
+
+  // Progress
+  if (report.progress_description) {
+    let progHtml = `<p style="margin:0;font-size:14px;">${report.progress_description}</p>`;
+    if (report.progress_percentage != null) progHtml += `<p style="margin:4px 0 0;font-size:13px;">Fremdrift: ${report.progress_percentage}%</p>`;
+    progHtml += `<p style="margin:4px 0 0;font-size:13px;font-weight:600;color:${report.on_schedule ? '#16a34a' : '#dc2626'};">${report.on_schedule ? 'I rute' : 'Forsinket'}</p>`;
+    if (report.delay_reason) progHtml += `<p style="margin:2px 0 0;font-size:13px;color:#dc2626;">Årsak: ${report.delay_reason}</p>`;
+    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">Fremdrift</h3>${progHtml}`);
+  }
+
+  // HMS
+  if (report.hms_incidents?.length > 0 || report.hms_observations || report.safety_meeting_held) {
+    let hmsHtml = "";
+    if (report.safety_meeting_held) hmsHtml += `<p style="margin:0;font-size:14px;">✅ Sikkerhetsmøte avholdt</p>`;
+    if (report.hms_incidents?.length > 0) {
+      hmsHtml += report.hms_incidents.map((h: any) => `<p style="margin:4px 0 0;font-size:14px;color:#dc2626;">⚠️ ${h.description || h}</p>`).join("");
+    }
+    if (report.hms_observations) hmsHtml += `<p style="margin:4px 0 0;font-size:14px;">${report.hms_observations}</p>`;
+    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">HMS</h3>${hmsHtml}`);
+  }
+
+  // Notes
+  if (report.notes) {
+    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">Merknader</h3><p style="margin:0;font-size:14px;white-space:pre-wrap;">${report.notes}</p>`);
+  }
+
+  return `<div style="max-width:600px;margin:0 auto;font-family:Arial,sans-serif;color:#1e293b;">${sections.join("")}</div>`;
+}
+
 export default function Ks2Dagsrapport() {
   const { projectId } = useParams();
   const { reports, isLoading, createReport, deleteReport, submitReport, isCreating } = useKsDailyReports(projectId);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [expandedReport, setExpandedReport] = useState<string | null>(null);
+  const [emailReport, setEmailReport] = useState<DailyReport | null>(null);
+  const { users } = useCompanyUsers();
+  const { profile } = useAuth();
 
   const handleSubmit = async (data: CreateDailyReport, asDraft: boolean) => {
     await createReport({
