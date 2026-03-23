@@ -46,7 +46,7 @@ const priorityConfig = {
   critical: { label: "Kritisk", color: "bg-destructive text-destructive-foreground" },
 };
 
-const statusConfig = {
+const statusConfig: Record<DeviationStatus, { label: string; color: string }> = {
   open: { label: "Åpen", color: "bg-destructive/10 text-destructive" },
   "in-progress": { label: "Under arbeid", color: "bg-warning/10 text-warning" },
   resolved: { label: "Løst", color: "bg-success/10 text-success" },
