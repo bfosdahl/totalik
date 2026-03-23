@@ -86,6 +86,16 @@ export class ErrorBoundary extends Component<Props, State> {
     }
     
     console.groupEnd();
+
+    // Send to server
+    logClientError({
+      error_message: error.message,
+      error_stack: error.stack ?? null,
+      component_stack: errorInfo.componentStack ?? null,
+      url: window.location.href,
+      user_agent: navigator.userAgent,
+      source: "error_boundary",
+    });
   }
 
   private handleReload = () => {
