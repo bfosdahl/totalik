@@ -35,6 +35,7 @@ const adminNavItems = [
   { icon: Leaf, label: "Stoffkartotek", path: "/admin/stoffkartotek", color: "text-primary" },
   { icon: BookOpen, label: "Rutine Maker", path: "/admin/routine-maker", color: "text-primary" },
   { icon: Mail, label: "E-postlogg", path: "/admin/email-log", color: undefined },
+  { icon: Activity, label: "Monitoring", path: "/admin/monitoring", color: "text-warning" },
 ];
 
 interface SidebarContentProps {
