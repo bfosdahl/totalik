@@ -695,6 +695,10 @@ export default function Ks2Dagsrapport() {
                           Send inn
                         </Button>
                       )}
+                      <Button size="sm" variant="outline" onClick={() => setEmailReport(report)}>
+                        <Mail className="h-3.5 w-3.5 mr-1" />
+                        Send på e-post
+                      </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button size="sm" variant="ghost" className="text-destructive">
