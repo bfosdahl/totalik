@@ -24,6 +24,7 @@ import Ks2Fremdriftsplan from "./Ks2Fremdriftsplan";
 import Ks2Reklamasjoner from "./Ks2Reklamasjoner";
 import Ks2Okonomi from "./Ks2Okonomi";
 import Ks2Motereferater from "./Ks2Motereferater";
+import Ks2Dagsrapport from "./Ks2Dagsrapport";
 // HMS Module imports
 import Ks2HmsDashboard from "./Ks2HmsDashboard";
 import Ks2HmsPlan from "./Ks2HmsPlan";
