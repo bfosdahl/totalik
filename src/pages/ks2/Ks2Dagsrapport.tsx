@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
