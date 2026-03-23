@@ -285,7 +285,8 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               alt="Total-IK" 
               className={cn(
                 "transition-all duration-200",
-                collapsed ? "h-8" : "h-10"
+                collapsed ? "h-8" : "h-10",
+                "mix-blend-multiply dark:mix-blend-screen dark:invert"
               )}
             />
           </div>
