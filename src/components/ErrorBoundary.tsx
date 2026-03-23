@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { AlertTriangle, RefreshCw, Home, Bug, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { logClientError } from "@/utils/logClientError";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Props {
@@ -86,6 +87,16 @@ export class ErrorBoundary extends Component<Props, State> {
     }
     
     console.groupEnd();
+
+    // Send to server
+    logClientError({
+      error_message: error.message,
+      error_stack: error.stack ?? null,
+      component_stack: errorInfo.componentStack ?? null,
+      url: window.location.href,
+      user_agent: navigator.userAgent,
+      source: "error_boundary",
+    });
   }
 
   private handleReload = () => {
