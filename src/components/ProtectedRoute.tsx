@@ -74,25 +74,33 @@ export function ProtectedRoute({
     );
   }
 
-  // Guest user restrictions - only allow KS project routes
-  if (isGuestUser && guestProjects.length > 0) {
+  // Guest-only users (no company roles) are restricted to their project routes
+  const isGuestOnly = isGuestUser && guestProjects.length > 0 && roles.length === 0;
+  if (isGuestOnly) {
     const currentPath = location.pathname;
     const allowedProjectIds = guestProjects.map(p => p.project_id);
     
-    // Check if current route is an allowed KS project route
     const isAllowedRoute = allowedProjectIds.some(projectId => 
       currentPath.startsWith(`/ks/project/${projectId}`)
     );
     
-    // If not on allowed route, redirect to first project dashboard
     if (!isAllowedRoute) {
       const firstProject = guestProjects[0];
       return <Navigate to={`/ks/project/${firstProject.project_id}`} replace />;
     }
   }
 
+  // Wait for profile to load — guards against trigger-race where auth exists but profile is not yet created
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   // If user has no roles and no company, wait for guest check to complete
-  if (roles.length === 0 && !profile?.company_id && !guestCheckComplete) {
+  if (roles.length === 0 && !profile.company_id && !guestCheckComplete) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
