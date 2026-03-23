@@ -993,10 +993,11 @@ const Handbook = () => {
                         )}
                         <Badge variant="outline" className={cn(
                           deviation.status === "closed" ? "border-success text-success" :
+                          deviation.status === "resolved" ? "border-primary text-primary" :
                           deviation.status === "in-progress" ? "border-info text-info" :
                           "border-muted-foreground text-muted-foreground"
                         )}>
-                          {deviation.status === "closed" ? "Lukket" : deviation.status === "in-progress" ? "Pågår" : "Åpen"}
+                          {deviation.status === "closed" ? "Lukket" : deviation.status === "resolved" ? "Løst" : deviation.status === "in-progress" ? "Pågår" : "Åpen"}
                         </Badge>
                       </div>
                     </div>
