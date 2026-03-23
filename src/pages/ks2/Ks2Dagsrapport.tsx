@@ -40,7 +40,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
-import { useKsDailyReports, CreateDailyReport } from "@/hooks/useKsDailyReports";
+import { useKsDailyReports, CreateDailyReport, DailyReport } from "@/hooks/useKsDailyReports";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,6 +52,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
+import { useCompanyUsers } from "@/hooks/useCompanyUsers";
+import { useAuth } from "@/contexts/AuthContext";
 
 const weatherIcons: Record<string, React.ReactNode> = {
   sol: <Sun className="h-4 w-4 text-amber-500" />,
