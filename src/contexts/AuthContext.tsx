@@ -82,7 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Ref to deduplicate concurrent fetchUserData calls (e.g. token refresh + onAuthStateChange)
   const fetchingRef = useRef(false);
-  const lastFetchedUserIdRef = useRef<string | null>(null);
+  // Tracks in-flight fetch — used to queue a retry if a call arrives while one is running
+  const pendingRefetchRef = useRef<{ userId: string; email: string } | null>(null);
 
   const isSystemAdmin = roles.includes("system_admin");
   const isCompanyAdmin = roles.includes("company_admin");
@@ -177,12 +178,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const fetchUserData = async (userId: string, userEmail: string) => {
-    // Deduplicate: skip if already fetching for this user
-    if (fetchingRef.current && lastFetchedUserIdRef.current === userId) {
+    // Deduplicate: if already fetching, queue a retry instead of running in parallel
+    if (fetchingRef.current) {
+      pendingRefetchRef.current = { userId, email: userEmail };
       return;
     }
     fetchingRef.current = true;
-    lastFetchedUserIdRef.current = userId;
 
     try {
       // Fetch profile
@@ -229,6 +230,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("Error fetching user data:", error);
     } finally {
       fetchingRef.current = false;
+
+      // If another call came in while we were fetching, run it now
+      const pending = pendingRefetchRef.current;
+      pendingRefetchRef.current = null;
+      if (pending) {
+        fetchUserData(pending.userId, pending.email);
+      }
     }
   };
 
