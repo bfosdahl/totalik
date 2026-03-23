@@ -167,18 +167,19 @@ export function useDeviations() {
 
       const { data, error } = await supabase
         .from("deviations")
-        .insert(sanitizedData)
+        .insert(sanitizedData as any)
         .select()
         .single();
 
       if (error) throw error;
 
+      const result = data as Deviation;
       await fetchDeviations();
       toast({
         title: "Avvik registrert",
-        description: `${deviationNumber}: ${sanitizedData.title}`,
+        description: `${result.deviation_number}: ${result.title}`,
       });
-      return data as Deviation;
+      return result;
     } catch (error) {
       console.error("Error creating deviation:", error);
       toast({
@@ -190,7 +191,7 @@ export function useDeviations() {
     } finally {
       setIsSaving(false);
     }
-  }, [companyId, profile, getNextDeviationNumber, fetchDeviations, toast]);
+  }, [companyId, profile, departmentId, fetchDeviations, toast]);
 
   // Update deviation - supports all editable fields
   const updateDeviation = useCallback(async (
