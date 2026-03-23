@@ -153,9 +153,9 @@ export default function () {
         .toISOString()
         .slice(0, 10);
 
-      const payload = {
+      var payload = {
         company_id: companyId,
-        title: `k6 load test ${Date.now()}`,
+        title: 'k6 load test ' + Date.now(),
         description: 'Automatisk generert av k6 load test — kan slettes',
         category: 'HMS',
         priority: 'medium',
