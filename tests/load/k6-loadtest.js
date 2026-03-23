@@ -40,10 +40,9 @@ const baseHeaders = {
 };
 
 function authHeaders(token) {
-  return {
-    ...baseHeaders,
-    'Authorization': `Bearer ${token}`,
-  };
+  return Object.assign({}, baseHeaders, {
+    'Authorization': 'Bearer ' + token,
+  });
 }
 
 // ─── Main test ────────────────────────────────────────────────────
