@@ -6,6 +6,36 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+/**
+ * Poll for profile existence after auth user creation.
+ * The handle_new_user trigger creates the profile asynchronously.
+ * Returns true if profile found within the retry window.
+ */
+async function waitForProfile(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  userId: string,
+  maxAttempts = 5,
+  intervalMs = 400
+): Promise<boolean> {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const { data } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (data?.id) {
+      console.log(`[register-company] Profile found on attempt ${attempt}`);
+      return true;
+    }
+
+    if (attempt < maxAttempts) {
+      await new Promise((r) => setTimeout(r, intervalMs));
+    }
+  }
+  return false;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -73,7 +103,18 @@ serve(async (req) => {
 
     const userId = authData.user.id;
 
-    // --- 2. Create company ---
+    // --- 2. Wait for profile trigger ---
+    const profileExists = await waitForProfile(supabaseAdmin, userId);
+
+    if (!profileExists) {
+      console.error(`[register-company] Profile never created for user ${userId} — rolling back auth user`);
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+      return new Response(JSON.stringify({ error: "Kunne ikke opprette brukerprofil. Prøv igjen." }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // --- 3. Create company ---
     const { data: newCompany, error: companyError } = await supabaseAdmin
       .from("companies")
       .insert({
@@ -85,15 +126,14 @@ serve(async (req) => {
 
     if (companyError || !newCompany) {
       console.error("Company create error:", companyError);
-      // Rollback: delete the auth user
       await supabaseAdmin.auth.admin.deleteUser(userId);
       return new Response(JSON.stringify({ error: "Kunne ikke opprette bedrift" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // --- 3. Update profile with company_id ---
-    const { error: profileError } = await supabaseAdmin
+    // --- 4. Update profile with company_id + verify ---
+    const { error: profileUpdateError } = await supabaseAdmin
       .from("profiles")
       .update({
         company_id: newCompany.id,
@@ -103,17 +143,33 @@ serve(async (req) => {
       })
       .eq("user_id", userId);
 
-    if (profileError) {
-      console.error("Profile update error:", profileError);
-      // Not fatal — profile trigger may not have fired yet, retry once
-      await new Promise((r) => setTimeout(r, 500));
-      await supabaseAdmin
-        .from("profiles")
-        .update({ company_id: newCompany.id, status: "active" })
-        .eq("user_id", userId);
+    if (profileUpdateError) {
+      console.error("Profile update error:", profileUpdateError);
+      // Rollback company + auth user
+      await supabaseAdmin.from("companies").delete().eq("id", newCompany.id);
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+      return new Response(JSON.stringify({ error: "Kunne ikke knytte profil til bedrift" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // --- 4. Assign company_admin role ---
+    // Verify the update actually took effect (catches 0-row update)
+    const { data: verifiedProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("company_id")
+      .eq("user_id", userId)
+      .single();
+
+    if (verifiedProfile?.company_id !== newCompany.id) {
+      console.error(`[register-company] Profile update verification failed: expected ${newCompany.id}, got ${verifiedProfile?.company_id}`);
+      await supabaseAdmin.from("companies").delete().eq("id", newCompany.id);
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+      return new Response(JSON.stringify({ error: "Kunne ikke knytte profil til bedrift. Prøv igjen." }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // --- 5. Assign company_admin role ---
     const { error: roleError } = await supabaseAdmin
       .from("user_roles")
       .insert({ user_id: userId, role: "company_admin" });
@@ -122,7 +178,7 @@ serve(async (req) => {
       console.error("Role assignment error:", roleError);
     }
 
-    // --- 5. Send welcome email (best-effort) ---
+    // --- 6. Send welcome email (best-effort) ---
     try {
       const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
       const welcomeClient = createClient(supabaseUrl, anonKey);
@@ -133,7 +189,7 @@ serve(async (req) => {
       console.error("Welcome email error:", emailErr);
     }
 
-    // --- 6. Notify admin (best-effort) ---
+    // --- 7. Notify admin (best-effort) ---
     try {
       const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
       const notifyClient = createClient(supabaseUrl, anonKey);
