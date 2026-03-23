@@ -203,8 +203,9 @@ export default function Auth() {
         navigate("/setup/ai");
       }
     } catch (error: any) {
-      if (error.message?.includes("already registered")) {
-        toast.error(t("auth.emailAlreadyRegistered") || "Denne e-postadressen er allerede registrert");
+      if (error.message?.includes("already registered") || error.message?.includes("allerede registrert")) {
+        // Could be email or org number duplicate
+        toast.error(error.message || t("auth.emailAlreadyRegistered") || "Denne e-postadressen er allerede registrert");
       } else {
         toast.error(error.message || t("errors.somethingWentWrong"));
       }

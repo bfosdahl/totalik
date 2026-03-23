@@ -83,6 +83,19 @@ serve(async (req) => {
       });
     }
 
+    // --- Check existing org number ---
+    const { data: existingCompany } = await supabaseAdmin
+      .from("companies")
+      .select("id")
+      .eq("org_number", orgNumber.trim())
+      .maybeSingle();
+
+    if (existingCompany) {
+      return new Response(JSON.stringify({ error: "En bedrift med dette organisasjonsnummeret er allerede registrert" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // --- 1. Create auth user ---
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
