@@ -3,6 +3,9 @@
  * 
  * Ensures all deviation data is properly formatted before database operations.
  * Prevents null/undefined errors and ensures type safety.
+ * 
+ * CANONICAL STATUS VALUES (used everywhere: DB, UI, sanitizer):
+ *   "open" | "in-progress" | "resolved" | "closed"
  */
 
 import { DeviationCategory } from '@/hooks/useDeviations';
@@ -10,14 +13,16 @@ import { DeviationCategory } from '@/hooks/useDeviations';
 // Deviation type values
 export type DeviationType = 'deviation' | 'observation' | 'improvement' | 'work_accident';
 
+// Canonical status type — single source of truth
+export type DeviationStatus = 'open' | 'in-progress' | 'resolved' | 'closed';
+
 // Valid categories that match database constraints
 const VALID_CATEGORIES: DeviationCategory[] = ['quality', 'safety', 'environment', 'documentation', 'other', 'process', 'equipment', 'personnel', 'temperature', 'cleaning', 'pest_control', 'allergen', 'traceability', 'hygiene', 'storage', 'pests', 'expiry', 'contamination', 'receiving', 'other_food'];
 const VALID_TYPES: DeviationType[] = ['deviation', 'observation', 'improvement', 'work_accident'];
 const VALID_PRIORITIES = ['low', 'medium', 'high', 'critical'] as const;
-const VALID_STATUSES = ['open', 'in_progress', 'closed', 'cancelled'] as const;
+const VALID_STATUSES: DeviationStatus[] = ['open', 'in-progress', 'resolved', 'closed'];
 
 type Priority = typeof VALID_PRIORITIES[number];
-type Status = typeof VALID_STATUSES[number];
 
 /**
  * Safely converts any value to a string, returning empty string for null/undefined
@@ -120,25 +125,29 @@ export const safePriority = (value: unknown): Priority => {
 };
 
 /**
- * Validates and returns a valid status
+ * Validates and returns a valid status.
+ * Maps legacy DB values (in_progress, cancelled) to canonical UI values.
  */
-export const safeStatus = (value: unknown): Status => {
+export const safeStatus = (value: unknown): DeviationStatus => {
   const strValue = safeString(value, 'open').toLowerCase();
   
-  if (VALID_STATUSES.includes(strValue as Status)) {
-    return strValue as Status;
+  if (VALID_STATUSES.includes(strValue as DeviationStatus)) {
+    return strValue as DeviationStatus;
   }
   
-  // Map Norwegian values
-  const statusMap: Record<string, Status> = {
+  // Map legacy DB values and Norwegian values to canonical status
+  const statusMap: Record<string, DeviationStatus> = {
+    'in_progress': 'in-progress',
     'åpen': 'open',
     'apen': 'open',
-    'pågår': 'in_progress',
-    'pagar': 'in_progress',
-    'under_behandling': 'in_progress',
+    'pågår': 'in-progress',
+    'pagar': 'in-progress',
+    'under_behandling': 'in-progress',
     'lukket': 'closed',
     'avsluttet': 'closed',
-    'kansellert': 'cancelled',
+    'resolved': 'resolved',
+    'cancelled': 'closed',
+    'kansellert': 'closed',
   };
   
   return statusMap[strValue] || 'open';
@@ -153,8 +162,6 @@ export const safeTimeFormat = (value: unknown): string | null => {
   
   // Handle Date object
   if (value instanceof Date) {
-    // If it's a Date object, we don't have a specific time - return null
-    // (Dates from calendar pickers typically represent just a date, not a specific time)
     return null;
   }
   
@@ -247,7 +254,7 @@ export interface SanitizedDeviation {
   category: DeviationCategory;
   type: DeviationType;
   priority: string;
-  status: string;
+  status: DeviationStatus;
   due_date: string;
   reporter_name: string;
   reporter_id: string | null;
