@@ -271,7 +271,7 @@ const Handbook = () => {
   };
 
   // Avvik and other ongoing sections use "ongoing" status instead of complete/incomplete
-  const openDeviationsCount = deviations.filter(d => d.status === "open" || d.status === "in-progress").length;
+  const openDeviationsCount = deviations.filter(d => d.status === "open" || d.status === "in-progress" || d.status === "resolved").length;
 
   // Audits - these are also ongoing activities
   const completedAuditsCount = audits.filter(a => a.status === "completed").length;
