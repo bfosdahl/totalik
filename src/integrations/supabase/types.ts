@@ -14432,6 +14432,59 @@ export type Database = {
           },
         ]
       }
+      system_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          id: string
+          message: string
+          metric_value: number | null
+          resolved_at: string | null
+          resolved_by_id: string | null
+          severity: string
+          status: string
+          threshold_value: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          id?: string
+          message: string
+          metric_value?: number | null
+          resolved_at?: string | null
+          resolved_by_id?: string | null
+          severity?: string
+          status?: string
+          threshold_value?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          id?: string
+          message?: string
+          metric_value?: number | null
+          resolved_at?: string | null
+          resolved_by_id?: string | null
+          severity?: string
+          status?: string
+          threshold_value?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_alerts_resolved_by_id_fkey"
+            columns: ["resolved_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       time_clock_entries: {
         Row: {
           approval_status: string | null
