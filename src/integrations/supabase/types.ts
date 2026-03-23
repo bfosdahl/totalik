@@ -7537,6 +7537,132 @@ export type Database = {
           },
         ]
       }
+      ks_daily_reports: {
+        Row: {
+          company_id: string
+          created_at: string
+          delay_reason: string | null
+          deviations_today: Json | null
+          equipment_used: Json | null
+          hms_incidents: Json | null
+          hms_observations: string | null
+          id: string
+          materials_received: Json | null
+          notes: string | null
+          on_schedule: boolean | null
+          own_crew_count: number | null
+          photos: Json | null
+          precipitation: string | null
+          progress_description: string | null
+          progress_percentage: number | null
+          project_id: string | null
+          quality_controls: Json | null
+          report_date: string
+          report_number: string
+          safety_meeting_held: boolean | null
+          status: string
+          subcontractor_attendance: Json | null
+          subcontractor_crew: Json | null
+          submitted_at: string | null
+          temperature_celsius: number | null
+          total_crew_count: number | null
+          updated_at: string
+          user_id: string
+          user_name: string
+          weather_conditions: string | null
+          wind_conditions: string | null
+          work_areas: string | null
+          work_description: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          delay_reason?: string | null
+          deviations_today?: Json | null
+          equipment_used?: Json | null
+          hms_incidents?: Json | null
+          hms_observations?: string | null
+          id?: string
+          materials_received?: Json | null
+          notes?: string | null
+          on_schedule?: boolean | null
+          own_crew_count?: number | null
+          photos?: Json | null
+          precipitation?: string | null
+          progress_description?: string | null
+          progress_percentage?: number | null
+          project_id?: string | null
+          quality_controls?: Json | null
+          report_date?: string
+          report_number?: string
+          safety_meeting_held?: boolean | null
+          status?: string
+          subcontractor_attendance?: Json | null
+          subcontractor_crew?: Json | null
+          submitted_at?: string | null
+          temperature_celsius?: number | null
+          total_crew_count?: number | null
+          updated_at?: string
+          user_id: string
+          user_name: string
+          weather_conditions?: string | null
+          wind_conditions?: string | null
+          work_areas?: string | null
+          work_description?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          delay_reason?: string | null
+          deviations_today?: Json | null
+          equipment_used?: Json | null
+          hms_incidents?: Json | null
+          hms_observations?: string | null
+          id?: string
+          materials_received?: Json | null
+          notes?: string | null
+          on_schedule?: boolean | null
+          own_crew_count?: number | null
+          photos?: Json | null
+          precipitation?: string | null
+          progress_description?: string | null
+          progress_percentage?: number | null
+          project_id?: string | null
+          quality_controls?: Json | null
+          report_date?: string
+          report_number?: string
+          safety_meeting_held?: boolean | null
+          status?: string
+          subcontractor_attendance?: Json | null
+          subcontractor_crew?: Json | null
+          submitted_at?: string | null
+          temperature_celsius?: number | null
+          total_crew_count?: number | null
+          updated_at?: string
+          user_id?: string
+          user_name?: string
+          weather_conditions?: string | null
+          wind_conditions?: string | null
+          work_areas?: string | null
+          work_description?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_daily_reports_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_daily_reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_hazardous_conditions: {
         Row: {
           closed_date: string | null
@@ -15292,6 +15418,7 @@ export type Database = {
         Args: { p_company_id: string }
         Returns: string
       }
+      generate_ks_daily_report_number: { Args: never; Returns: string }
       generate_ks_module2_avvik_number: { Args: never; Returns: string }
       generate_ks_module2_change_order_number: { Args: never; Returns: string }
       generate_ks_module2_claim_number: { Args: never; Returns: string }
