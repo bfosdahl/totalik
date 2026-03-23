@@ -165,14 +165,15 @@ export default function () {
         due_date: dueDate,
       };
 
-      const res = http.post(
-        `${BASE_URL}/rest/v1/deviations`,
+      var insertHeaders = Object.assign({}, authHeaders(accessToken), {
+        'Prefer': 'return=minimal',
+      });
+
+      var res = http.post(
+        BASE_URL + '/rest/v1/deviations',
         JSON.stringify(payload),
         {
-          headers: {
-            ...authHeaders(accessToken),
-            'Prefer': 'return=minimal',
-          },
+          headers: insertHeaders,
           tags: { name: 'deviation_insert' },
         }
       );
