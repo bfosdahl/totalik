@@ -120,6 +120,9 @@ export default function (data) {
       var success = check(responses[j], {
         'dashboard query: status 200': function (r) { return r.status === 200; },
       });
+      if (responses[j].status !== 200) {
+        console.error('Dashboard query ' + j + ' failed: ' + responses[j].status + ' ' + responses[j].body.substring(0, 200));
+      }
       errorRate.add(!success);
     }
   });
