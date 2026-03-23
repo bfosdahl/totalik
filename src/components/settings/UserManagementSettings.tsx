@@ -66,7 +66,7 @@ interface UserManagementSettingsProps {
   onBack: () => void;
 }
 
-type UserStatus = "pending_approval" | "active" | "suspended";
+type UserStatus = "pending_approval" | "active" | "suspended" | "deleted";
 
 interface CompanyUser {
   id: string;
