@@ -302,7 +302,7 @@ export default function Auth() {
           <img 
             src="/total-ik-logo.png" 
             alt="Total-IK" 
-            className="h-16 mx-auto"
+            className="h-16 mx-auto mix-blend-multiply dark:mix-blend-screen dark:invert"
           />
         </div>
 
