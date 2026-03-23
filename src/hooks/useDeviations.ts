@@ -120,33 +120,8 @@ export function useDeviations() {
     fetchDeviations();
   }, [fetchDeviations]);
 
-  // Generate next deviation number
-  const getNextDeviationNumber = useCallback(async (): Promise<string> => {
-    if (!companyId) return "DEV-001";
-
-    try {
-      const { data } = await supabase
-        .from("deviations")
-        .select("deviation_number")
-        .eq("company_id", companyId)
-        .like("deviation_number", "DEV-%");
-
-      if (data && data.length > 0) {
-        let maxNum = 0;
-        data.forEach((row) => {
-          const match = row.deviation_number.match(/DEV-(\d+)/);
-          if (match) {
-            const num = parseInt(match[1], 10);
-            if (num > maxNum) maxNum = num;
-          }
-        });
-        return `DEV-${String(maxNum + 1).padStart(3, "0")}`;
-      }
-      return "DEV-001";
-    } catch {
-      return "DEV-001";
-    }
-  }, [companyId]);
+  // Deviation number is now generated atomically by database trigger (set_deviation_number)
+  // No client-side number generation needed
 
   // Create deviation with sanitized data
   const createDeviation = useCallback(async (input: NewDeviationInput): Promise<Deviation | null> => {
