@@ -1985,7 +1985,7 @@ const Handbook = () => {
           d.deviation_number || "-",
           (d.title || "").substring(0, 40) + ((d.title?.length || 0) > 40 ? "..." : ""),
           d.category || "-",
-          d.status === "closed" ? "Lukket" : d.status === "in-progress" ? "Pågår" : "Åpen",
+          d.status === "closed" ? "Lukket" : d.status === "resolved" ? "Løst" : d.status === "in-progress" ? "Pågår" : "Åpen",
           d.created_at ? format(new Date(d.created_at), "dd.MM.yy") : "-",
         ]);
         
