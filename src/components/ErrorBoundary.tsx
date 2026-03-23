@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { AlertTriangle, RefreshCw, Home, Bug, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { logClientError } from "@/utils/logClientError";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
