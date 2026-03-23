@@ -82,7 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Ref to deduplicate concurrent fetchUserData calls (e.g. token refresh + onAuthStateChange)
   const fetchingRef = useRef(false);
-  const lastFetchedUserIdRef = useRef<string | null>(null);
+  // Tracks in-flight fetch — used to queue a retry if a call arrives while one is running
+  const pendingRefetchRef = useRef<{ userId: string; email: string } | null>(null);
 
   const isSystemAdmin = roles.includes("system_admin");
   const isCompanyAdmin = roles.includes("company_admin");
