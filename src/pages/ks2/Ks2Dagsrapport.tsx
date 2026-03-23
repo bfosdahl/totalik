@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Camera,
   Send,
+  Mail,
   Pencil,
   Trash2,
   ChevronDown,
