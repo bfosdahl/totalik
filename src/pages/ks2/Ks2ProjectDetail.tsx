@@ -123,6 +123,8 @@ export default function Ks2ProjectDetail() {
         return <Ks2Endringsmeldinger />;
       case "/motereferater":
         return <Ks2Motereferater />;
+      case "/dagsrapport":
+        return <Ks2Dagsrapport />;
       case "/timeregistrering":
         return <Ks2Timeregistrering />;
       case "/fremdriftsplan":

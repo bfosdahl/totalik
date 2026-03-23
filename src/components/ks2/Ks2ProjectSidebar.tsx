@@ -76,6 +76,7 @@ const byggesakItems = [
 const prosjektstyringItems = [
   { id: "prosjektinfo", label: "Prosjektinfo", icon: Info, path: "/prosjektinfo", guestAllowed: false },
   { id: "fremdriftsplan", label: "Fremdriftsplan", icon: GanttChart, path: "/fremdriftsplan", guestAllowed: false },
+  { id: "dagsrapport", label: "Dagsrapporter", icon: FileText, path: "/dagsrapport", guestAllowed: false },
   { id: "timeregistrering", label: "Timeregistrering", icon: Clock, path: "/timeregistrering", guestAllowed: false },
   { id: "motereferater", label: "Møtereferater", icon: Users, path: "/motereferater", guestAllowed: false },
 ];
