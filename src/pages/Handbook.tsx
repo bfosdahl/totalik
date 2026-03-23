@@ -271,7 +271,7 @@ const Handbook = () => {
   };
 
   // Avvik and other ongoing sections use "ongoing" status instead of complete/incomplete
-  const openDeviationsCount = deviations.filter(d => d.status === "open" || d.status === "in-progress").length;
+  const openDeviationsCount = deviations.filter(d => d.status === "open" || d.status === "in-progress" || d.status === "resolved").length;
 
   // Audits - these are also ongoing activities
   const completedAuditsCount = audits.filter(a => a.status === "completed").length;
@@ -993,10 +993,11 @@ const Handbook = () => {
                         )}
                         <Badge variant="outline" className={cn(
                           deviation.status === "closed" ? "border-success text-success" :
+                          deviation.status === "resolved" ? "border-primary text-primary" :
                           deviation.status === "in-progress" ? "border-info text-info" :
                           "border-muted-foreground text-muted-foreground"
                         )}>
-                          {deviation.status === "closed" ? "Lukket" : deviation.status === "in-progress" ? "Pågår" : "Åpen"}
+                          {deviation.status === "closed" ? "Lukket" : deviation.status === "resolved" ? "Løst" : deviation.status === "in-progress" ? "Pågår" : "Åpen"}
                         </Badge>
                       </div>
                     </div>
@@ -1984,7 +1985,7 @@ const Handbook = () => {
           d.deviation_number || "-",
           (d.title || "").substring(0, 40) + ((d.title?.length || 0) > 40 ? "..." : ""),
           d.category || "-",
-          d.status === "closed" ? "Lukket" : d.status === "in-progress" ? "Pågår" : "Åpen",
+          d.status === "closed" ? "Lukket" : d.status === "resolved" ? "Løst" : d.status === "in-progress" ? "Pågår" : "Åpen",
           d.created_at ? format(new Date(d.created_at), "dd.MM.yy") : "-",
         ]);
         
