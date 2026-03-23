@@ -118,114 +118,42 @@ export default function Auth() {
   };
 
   const handleSignUp = async () => {
-    const redirectUrl = `${window.location.origin}/`;
-
-    // Create user in auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          first_name: firstName,
-          last_name: lastName,
-        },
+    // Atomic signup via edge function — creates user, company, profile, role in one call
+    const { data, error: fnError } = await supabase.functions.invoke("register-company", {
+      body: {
+        email,
+        password,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        companyName: companyName.trim(),
+        orgNumber: orgNumber.trim(),
       },
     });
 
-    if (authError) throw authError;
-    if (!authData.user) throw new Error(t("auth.userNotCreated") || "Bruker ble ikke opprettet");
-
-    // Ensure we have an active session (session can be null if email confirmation is required)
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (signInError) {
-        throw new Error(
-          t("auth.accountCreatedNeedConfirm") || "Konto opprettet, men du må bekrefte e-post/eller logge inn før bedrift kan opprettes."
-        );
-      }
+    if (fnError) {
+      throw new Error(fnError.message || "Registrering feilet");
     }
 
-    // Wait a moment for the profile trigger to create the profile
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    // Create the company
-    const { data: newCompany, error: companyError } = await supabase
-      .from("companies")
-      .insert({
-        name: companyName.trim(),
-        org_number: orgNumber.trim(),
-      })
-      .select()
-      .maybeSingle();
-
-    if (companyError || !newCompany) {
-      console.error("Error creating company:", companyError);
-      throw new Error(
-        companyError?.message || t("auth.companyCreateError") || "Kunne ikke opprette bedrift (mangler tilgang/innlogging)"
-      );
+    if (data?.error) {
+      throw new Error(data.error);
     }
 
-    // Update user profile with company_id
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .update({
-        company_id: newCompany.id,
-        status: "active",
-      })
-      .eq("user_id", authData.user.id);
-
-    if (profileError) {
-      console.error("Error updating profile:", profileError);
+    if (!data?.success) {
+      throw new Error("Ukjent feil ved registrering");
     }
 
-    // Add user as company_admin
-    const { error: roleError } = await supabase
-      .from("user_roles")
-      .insert({
-        user_id: authData.user.id,
-        role: "company_admin",
-      });
+    // Auto-login with the newly created credentials
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    if (roleError && !roleError.message.includes("duplicate")) {
-      console.error("Error adding role:", roleError);
+    if (signInError) {
+      // User was created but auto-login failed — tell them to log in manually
+      toast.info("Konto opprettet! Logg inn med din e-post og passord.");
+      setIsLogin(true);
+      return;
     }
-
-    // NOTE: IK_HMS module is NOT created here anymore
-    // Users must accept subscription terms in Setup page first
-    // This ensures proper consent before activating the module
-
-    // Send welcome email
-    try {
-      await supabase.functions.invoke("send-welcome-email", {
-        body: {
-          userId: authData.user.id,
-          email: email,
-          firstName: firstName,
-        },
-      });
-    } catch (emailError) {
-      console.error("Error sending welcome email:", emailError);
-    }
-
-    // Notify admin (Gard) about new company registration
-    try {
-      await supabase.functions.invoke("notify-new-company", {
-        body: {
-          companyName: companyName.trim(),
-          contactPerson: `${firstName} ${lastName}`,
-          contactEmail: email,
-        },
-      });
-    } catch (notifyError) {
-      console.error("Error sending admin notification:", notifyError);
-    }
-
-    return { error: null };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
