@@ -727,6 +727,24 @@ export default function Ks2Dagsrapport() {
           })}
         </div>
       )}
+
+      {/* Email dialog */}
+      {emailReport && (
+        <EmailSendDialog
+          open={!!emailReport}
+          onOpenChange={(open) => !open && setEmailReport(null)}
+          documentType="deviation"
+          subject={`Dagsrapport ${emailReport.report_number} — ${format(new Date(emailReport.report_date), "d. MMMM yyyy", { locale: nb })}`}
+          htmlContent={generateReportEmailHtml(emailReport)}
+          users={users.map((u) => ({
+            id: u.id,
+            email: u.email || "",
+            first_name: u.first_name || "",
+            last_name: u.last_name || "",
+          }))}
+          companyName={profile?.company_id ? undefined : undefined}
+        />
+      )}
     </div>
   );
 }
