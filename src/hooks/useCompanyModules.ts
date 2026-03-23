@@ -19,6 +19,7 @@ export function useCompanyModules(companyId?: string) {
   const [modules, setModules] = useState<CompanyModule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const hasLoadedOnce = useRef(false);
+  const lastLoadedCompanyId = useRef<string | null>(null);
 
   // Only use profile.company_id if we're not given a specific companyId
   const targetCompanyId = companyId || profile?.company_id;
@@ -31,12 +32,16 @@ export function useCompanyModules(companyId?: string) {
       return;
     }
 
+    // Company changed — clear stale modules immediately so UI never shows wrong company's modules
+    if (targetCompanyId !== lastLoadedCompanyId.current) {
+      setModules([]);
+      hasLoadedOnce.current = false;
+      lastLoadedCompanyId.current = targetCompanyId ?? null;
+    }
+
     // Auth is done. If no targetCompanyId, user has no company - stop loading
-    // But only clear modules if we've never loaded before (prevents flicker during token refresh)
     if (!targetCompanyId) {
-      if (!hasLoadedOnce.current) {
-        setModules([]);
-      }
+      setModules([]);
       setIsLoading(false);
       return;
     }
