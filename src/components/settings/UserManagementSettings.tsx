@@ -497,14 +497,14 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
 
   const handleReactivateUser = async (companyUser: CompanyUser) => {
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ status: "active", is_active: true })
-        .eq("id", companyUser.id);
+      const { data, error } = await supabase.functions.invoke("reactivate-user", {
+        body: { userId: companyUser.user_id, role: "user" },
+      });
 
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
-      toast.success("Bruker reaktivert");
+      toast.success("Bruker reaktivert. Husk å tildele avdeling og eventuell rolle.");
       loadUsers();
     } catch (error: any) {
       console.error("Error reactivating user:", error);
