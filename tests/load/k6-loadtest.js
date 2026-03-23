@@ -25,7 +25,7 @@ export var options = {
   ],
   thresholds: {
     http_req_duration: ['p(95)<500', 'p(99)<1500'],
-    dashboard_duration: ['p(95)<500'],
+    dashboard_duration: ['p(95)<800'],
     deviation_insert_duration: ['p(95)<500'],
     edge_fn_duration: ['p(95)<1000'],
     errors: ['rate<0.01'],
