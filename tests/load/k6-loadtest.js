@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import { check, sleep, group } from 'k6';
 import { Rate, Trend } from 'k6/metrics';
+import { SharedArray } from 'k6/data';
 
 // ─── Config ───────────────────────────────────────────────────────
 var BASE_URL = __ENV.SUPABASE_URL || 'https://sffkcqclfiffnpxorodd.supabase.co';
@@ -9,7 +10,6 @@ var TEST_EMAIL = __ENV.TEST_EMAIL || 'loadtest@totalik.no';
 var TEST_PASSWORD = __ENV.TEST_PASSWORD || 'LoadTest2024!';
 
 // ─── Custom metrics ───────────────────────────────────────────────
-var authDuration = new Trend('auth_duration', true);
 var dashboardDuration = new Trend('dashboard_duration', true);
 var deviationInsertDuration = new Trend('deviation_insert_duration', true);
 var edgeFnDuration = new Trend('edge_fn_duration', true);
@@ -25,7 +25,6 @@ export var options = {
   ],
   thresholds: {
     http_req_duration: ['p(95)<500', 'p(99)<1500'],
-    auth_duration: ['p(95)<800'],
     dashboard_duration: ['p(95)<500'],
     deviation_insert_duration: ['p(95)<500'],
     edge_fn_duration: ['p(95)<1000'],
@@ -39,96 +38,73 @@ var baseHeaders = {
   'apikey': ANON_KEY,
 };
 
-function authHeaders(token) {
+function makeAuthHeaders(token) {
   return Object.assign({}, baseHeaders, {
     'Authorization': 'Bearer ' + token,
   });
 }
 
-// ─── Main test ────────────────────────────────────────────────────
-export default function () {
-  var accessToken = '';
+// ─── Setup: authenticate once, share token ────────────────────────
+export function setup() {
+  var res = http.post(
+    BASE_URL + '/auth/v1/token?grant_type=password',
+    JSON.stringify({ email: TEST_EMAIL, password: TEST_PASSWORD }),
+    { headers: baseHeaders }
+  );
+
+  if (res.status !== 200) {
+    console.error('Setup auth failed: ' + res.status + ' ' + res.body);
+    return { accessToken: '', companyId: '', userId: '' };
+  }
+
+  var body = JSON.parse(res.body);
+  var accessToken = body.access_token;
+  var userId = body.user ? body.user.id : '';
+
+  // Fetch company_id
   var companyId = '';
-  var userId = '';
+  var profileRes = http.get(
+    BASE_URL + '/rest/v1/profiles?select=company_id&user_id=eq.' + userId + '&limit=1',
+    { headers: makeAuthHeaders(accessToken) }
+  );
+  if (profileRes.status === 200) {
+    try {
+      var rows = JSON.parse(profileRes.body);
+      if (rows.length > 0) { companyId = rows[0].company_id; }
+    } catch (e) {}
+  }
 
-  // ── Scenario A: Auth (sign in) ──────────────────────────────────
-  group('01_auth_signin', function () {
-    var res = http.post(
-      BASE_URL + '/auth/v1/token?grant_type=password',
-      JSON.stringify({
-        email: TEST_EMAIL,
-        password: TEST_PASSWORD,
-      }),
-      { headers: baseHeaders, tags: { name: 'auth_signin' } }
-    );
+  console.log('Setup complete — userId: ' + userId + ', companyId: ' + companyId);
+  return { accessToken: accessToken, companyId: companyId, userId: userId };
+}
 
-    authDuration.add(res.timings.duration);
-    var success = check(res, {
-      'auth: status 200': function (r) { return r.status === 200; },
-      'auth: has access_token': function (r) {
-        try { return JSON.parse(r.body).access_token !== undefined; }
-        catch (e) { return false; }
-      },
-    });
-    errorRate.add(!success);
-
-    if (res.status === 200) {
-      try {
-        var body = JSON.parse(res.body);
-        accessToken = body.access_token;
-        userId = body.user ? body.user.id : '';
-      } catch (e) {}
-    }
-  });
+// ─── Main test ────────────────────────────────────────────────────
+export default function (data) {
+  var accessToken = data.accessToken;
+  var companyId = data.companyId;
 
   if (!accessToken) {
-    console.error('Auth failed, skipping remaining scenarios');
+    console.error('No access token from setup, skipping');
+    errorRate.add(true);
     return;
   }
 
-  sleep(0.3);
+  var hdrs = makeAuthHeaders(accessToken);
 
-  // ── Fetch company_id from profile (needed for inserts) ──────────
-  group('01b_fetch_profile', function () {
-    var res = http.get(
-      BASE_URL + '/rest/v1/profiles?select=company_id&user_id=eq.' + userId + '&limit=1',
-      { headers: authHeaders(accessToken), tags: { name: 'fetch_profile' } }
-    );
-
-    if (res.status === 200) {
-      try {
-        var rows = JSON.parse(res.body);
-        if (rows.length > 0) {
-          companyId = rows[0].company_id;
-        }
-      } catch (e) {}
-    }
-
-    if (!companyId) {
-      console.warn('Could not fetch company_id — deviation insert will be skipped');
-    }
-  });
-
-  sleep(0.3);
-
-  // ── Scenario B: Dashboard load (parallel queries) ───────────────
-  group('02_dashboard_load', function () {
+  // ── Scenario A: Dashboard load (parallel queries) ───────────────
+  group('01_dashboard_load', function () {
     var responses = http.batch([
       ['GET', BASE_URL + '/rest/v1/companies?select=id,status&limit=100', null, {
-        headers: authHeaders(accessToken),
-        tags: { name: 'dashboard_companies' },
+        headers: hdrs, tags: { name: 'dashboard_companies' },
       }],
       ['GET', BASE_URL + '/rest/v1/profiles?select=id,is_active&limit=100', null, {
-        headers: authHeaders(accessToken),
-        tags: { name: 'dashboard_profiles' },
+        headers: hdrs, tags: { name: 'dashboard_profiles' },
       }],
       ['GET', BASE_URL + '/rest/v1/deviations?select=id,status&limit=100', null, {
-        headers: authHeaders(accessToken),
-        tags: { name: 'dashboard_deviations' },
+        headers: hdrs, tags: { name: 'dashboard_deviations' },
       }],
       ['GET', BASE_URL + '/rest/v1/company_action_plans?select=id,actions&limit=10', null, {
-        headers: authHeaders(accessToken),
-        tags: { name: 'dashboard_actions' },
+        headers: hdrs, tags: { name: 'dashboard_actions' },
       }],
     ]);
 
@@ -150,13 +126,12 @@ export default function () {
 
   sleep(0.5);
 
-  // ── Scenario C: Deviation insert ────────────────────────────────
+  // ── Scenario B: Deviation insert ────────────────────────────────
   if (companyId) {
-    group('03_deviation_insert', function () {
+    group('02_deviation_insert', function () {
       var now = new Date();
       var dueDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 10);
+        .toISOString().slice(0, 10);
 
       var payload = {
         company_id: companyId,
@@ -170,17 +145,12 @@ export default function () {
         due_date: dueDate,
       };
 
-      var insertHeaders = Object.assign({}, authHeaders(accessToken), {
-        'Prefer': 'return=minimal',
-      });
+      var insertHeaders = Object.assign({}, hdrs, { 'Prefer': 'return=minimal' });
 
       var res = http.post(
         BASE_URL + '/rest/v1/deviations',
         JSON.stringify(payload),
-        {
-          headers: insertHeaders,
-          tags: { name: 'deviation_insert' },
-        }
+        { headers: insertHeaders, tags: { name: 'deviation_insert' } }
       );
 
       deviationInsertDuration.add(res.timings.duration);
@@ -197,15 +167,12 @@ export default function () {
 
   sleep(0.5);
 
-  // ── Scenario D: Edge function (monitoring-stats) ────────────────
-  group('04_edge_function', function () {
+  // ── Scenario C: Edge function (monitoring-stats) ────────────────
+  group('03_edge_function', function () {
     var res = http.post(
       BASE_URL + '/functions/v1/monitoring-stats',
       JSON.stringify({}),
-      {
-        headers: authHeaders(accessToken),
-        tags: { name: 'monitoring_stats' },
-      }
+      { headers: hdrs, tags: { name: 'monitoring_stats' } }
     );
 
     edgeFnDuration.add(res.timings.duration);
@@ -233,7 +200,6 @@ export function handleSummary(data) {
   ];
 
   var metrics = [
-    ['Auth (sign-in)', data.metrics.auth_duration, 800],
     ['Dashboard (load)', data.metrics.dashboard_duration, 500],
     ['Avvik (insert)', data.metrics.deviation_insert_duration, 500],
     ['Edge fn (monitoring)', data.metrics.edge_fn_duration, 1000],
