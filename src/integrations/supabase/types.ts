@@ -13879,6 +13879,7 @@ export type Database = {
           avatar_url: string | null
           company_id: string | null
           created_at: string
+          deleted_at: string | null
           email: string | null
           first_name: string | null
           hms_card_expiry_date: string | null
@@ -13910,6 +13911,7 @@ export type Database = {
           avatar_url?: string | null
           company_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           email?: string | null
           first_name?: string | null
           hms_card_expiry_date?: string | null
@@ -13941,6 +13943,7 @@ export type Database = {
           avatar_url?: string | null
           company_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           email?: string | null
           first_name?: string | null
           hms_card_expiry_date?: string | null

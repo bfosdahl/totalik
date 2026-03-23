@@ -2,12 +2,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
@@ -22,17 +23,15 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Create client with user's token for auth check
     const supabaseUser = createClient(supabaseUrl, supabaseServiceKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
-    // Create admin client for user deletion
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Get the requesting user
+    // Verify requesting user
     const { data: { user: requestingUser }, error: userError } = await supabaseUser.auth.getUser();
     if (userError || !requestingUser) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -70,10 +69,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get the user's profile to find their company
+    // Get the user's profile
     const { data: userProfile, error: profileError } = await supabaseAdmin
       .from("profiles")
-      .select("id, company_id")
+      .select("id, company_id, first_name, last_name, email")
       .eq("user_id", userId)
       .single();
 
@@ -85,138 +84,57 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Find the company admin to reassign deviations to
-    let companyAdminId: string | null = null;
-    if (userProfile.company_id) {
-      const { data: companyAdmin } = await supabaseAdmin
-        .from("user_roles")
-        .select("user_id, profiles!inner(id)")
-        .eq("role", "company_admin")
-        .eq("profiles.company_id", userProfile.company_id)
-        .neq("user_id", userId)
-        .limit(1)
-        .single();
-
-      if (companyAdmin) {
-        // Get the profile id for the company admin
-        const { data: adminProfile } = await supabaseAdmin
-          .from("profiles")
-          .select("id")
-          .eq("user_id", companyAdmin.user_id)
-          .single();
-        
-        if (adminProfile) {
-          companyAdminId = adminProfile.id;
-        }
-      }
-    }
-
-    // Reassign deviations where the user is assignee
-    const { error: reassignAssigneeError } = await supabaseAdmin
-      .from("deviations")
-      .update({ assignee_id: companyAdminId, assignee_name: companyAdminId ? null : null })
-      .eq("assignee_id", userProfile.id);
-
-    if (reassignAssigneeError) {
-      console.error("Error reassigning deviations (assignee):", reassignAssigneeError);
-    }
-
-    // Reassign deviations where the user is reporter
-    const { error: reassignReporterError } = await supabaseAdmin
-      .from("deviations")
-      .update({ reporter_id: companyAdminId })
-      .eq("reporter_id", userProfile.id);
-
-    if (reassignReporterError) {
-      console.error("Error reassigning deviations (reporter):", reassignReporterError);
-    }
-
-    // Update deviation attachments to remove uploaded_by reference
-    const { error: attachmentsError } = await supabaseAdmin
-      .from("deviation_attachments")
-      .update({ uploaded_by: null })
-      .eq("uploaded_by", userProfile.id);
-
-    if (attachmentsError) {
-      console.error("Error updating deviation attachments:", attachmentsError);
-    }
-
-    // Update deviation comments to remove user_id reference
-    const { error: commentsError } = await supabaseAdmin
-      .from("deviation_comments")
-      .update({ user_id: null })
-      .eq("user_id", userProfile.id);
-
-    if (commentsError) {
-      console.error("Error updating deviation comments:", commentsError);
-    }
-
-    // Update audits where user is responsible
-    const { error: auditsError } = await supabaseAdmin
-      .from("audits")
-      .update({ responsible_id: null })
-      .eq("responsible_id", userProfile.id);
-
-    if (auditsError) {
-      console.error("Error updating audits:", auditsError);
-    }
-
-    // Update audit_form_responses
-    const { error: auditFormError } = await supabaseAdmin
-      .from("audit_form_responses")
-      .update({ completed_by_id: null })
-      .eq("completed_by_id", userProfile.id);
-
-    if (auditFormError) {
-      console.error("Error updating audit form responses:", auditFormError);
-    }
-
-    // Update action_plan_followups
-    const { error: followupsError } = await supabaseAdmin
-      .from("action_plan_followups")
-      .update({ completed_by_id: null })
-      .eq("completed_by_id", userProfile.id);
-
-    if (followupsError) {
-      console.error("Error updating action plan followups:", followupsError);
-    }
-
-    // Update ks_module2_checklists where user is responsible
-    const { error: checklistsError } = await supabaseAdmin
-      .from("ks_module2_checklists")
-      .update({ responsible_user_id: null })
-      .eq("responsible_user_id", userProfile.id);
-
-    if (checklistsError) {
-      console.error("Error updating ks_module2_checklists:", checklistsError);
-    }
-
-    // Now delete the profile (this will cascade to related tables if configured)
-    const { error: profileDeleteError } = await supabaseAdmin
+    // --- SOFT DELETE: deactivate profile, preserve all data ---
+    const { error: softDeleteError } = await supabaseAdmin
       .from("profiles")
+      .update({
+        is_active: false,
+        deleted_at: new Date().toISOString(),
+        status: "deleted",
+      })
+      .eq("user_id", userId);
+
+    if (softDeleteError) {
+      console.error("Error soft-deleting profile:", softDeleteError);
+      return new Response(JSON.stringify({ error: softDeleteError.message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Remove user roles so they can't access anything
+    const { error: rolesError } = await supabaseAdmin
+      .from("user_roles")
       .delete()
       .eq("user_id", userId);
 
-    if (profileDeleteError) {
-      console.error("Error deleting profile:", profileDeleteError);
-      return new Response(JSON.stringify({ error: profileDeleteError.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (rolesError) {
+      console.error("Error removing user roles:", rolesError);
     }
 
-    // Now delete the auth user
-    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    // Remove department assignments
+    const { error: deptError } = await supabaseAdmin
+      .from("user_departments")
+      .delete()
+      .eq("user_id", userId);
 
-    if (deleteError) {
-      console.error("Error deleting user:", deleteError);
-      return new Response(JSON.stringify({ error: deleteError.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (deptError) {
+      console.error("Error removing department assignments:", deptError);
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    // Disable the auth user (ban instead of delete — preserves audit trail)
+    const { error: banError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+      ban_duration: "876600h", // ~100 years
+    });
+
+    if (banError) {
+      console.error("Error banning auth user:", banError);
+      // Non-fatal — profile is already deactivated
+    }
+
+    console.log(`[delete-user] Soft-deleted user ${userId} (${userProfile.email})`);
+
+    return new Response(JSON.stringify({ success: true, softDeleted: true }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
