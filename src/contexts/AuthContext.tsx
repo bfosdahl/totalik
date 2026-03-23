@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -80,6 +80,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [guestCheckComplete, setGuestCheckComplete] = useState(false);
   const [adminDepartmentIds, setAdminDepartmentIds] = useState<string[]>([]);
 
+  // Ref to deduplicate concurrent fetchUserData calls (e.g. token refresh + onAuthStateChange)
+  const fetchingRef = useRef(false);
+  const lastFetchedUserIdRef = useRef<string | null>(null);
+
   const isSystemAdmin = roles.includes("system_admin");
   const isCompanyAdmin = roles.includes("company_admin");
   const isDepartmentAdmin = adminDepartmentIds.length > 0;
@@ -102,7 +106,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const fetchGuestAccess = async (userId: string) => {
+  // Accept userEmail as parameter to avoid stale closure over `user`
+  const fetchGuestAccess = async (userId: string, userEmail: string) => {
     try {
       const { data: accessData, error: accessError } = await supabase
         .from("ks_module2_project_access")
@@ -145,18 +150,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               .from("ks_module2_project_access")
               .update({ 
                 last_login: new Date().toISOString(),
-                login_count: supabase.rpc ? undefined : 1 // Will be incremented
+                login_count: supabase.rpc ? undefined : 1
               })
               .eq("project_id", access.project_id)
               .eq("user_id", userId);
           }
           
-          // Log access
+          // Log access — use parameter instead of stale `user?.email`
           await supabase.from("ks_module2_access_log").insert({
-            access_id: access.project_id, // Use project_id as reference
+            access_id: access.project_id,
             project_id: access.project_id,
             user_id: userId,
-            email: user?.email || '',
+            email: userEmail,
             action: 'login',
           });
         }
@@ -171,7 +176,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const fetchUserData = async (userId: string) => {
+  const fetchUserData = async (userId: string, userEmail: string) => {
+    // Deduplicate: skip if already fetching for this user
+    if (fetchingRef.current && lastFetchedUserIdRef.current === userId) {
+      return;
+    }
+    fetchingRef.current = true;
+    lastFetchedUserIdRef.current = userId;
+
     try {
       // Fetch profile
       const { data: profileData } = await supabase
@@ -205,17 +217,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (rolesData && rolesData.length > 0) {
         setRoles(rolesData.map((r) => r.role as AppRole));
-        // Mark guest check as complete for users with roles
         setGuestCheckComplete(true);
       } else {
-        // If no roles, check if this is a guest user
-        await fetchGuestAccess(userId);
+        // If no roles, check if this is a guest user — pass email to avoid stale closure
+        await fetchGuestAccess(userId, userEmail);
       }
 
       // Always fetch admin department IDs
       await fetchAdminDepartments(userId);
     } catch (error) {
       console.error("Error fetching user data:", error);
+    } finally {
+      fetchingRef.current = false;
     }
   };
 
@@ -223,7 +236,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        // Debugging: track auth state changes that may cause unexpected redirects
         console.info("[Auth] onAuthStateChange", {
           event,
           hasSession: !!session,
@@ -237,12 +249,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Defer Supabase calls with setTimeout to prevent deadlock
         if (session?.user) {
           setTimeout(() => {
-            fetchUserData(session.user.id);
+            fetchUserData(session.user.id, session.user.email || '');
           }, 0);
         } else {
-          // If session disappears, clear app state.
           console.warn("[Auth] Session missing - clearing local auth state", { event });
           setProfile(null);
+          setCompany(null);
           setRoles([]);
           setIsGuestUser(false);
           setGuestProjects([]);
@@ -264,7 +276,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        fetchUserData(session.user.id).finally(() => {
+        fetchUserData(session.user.id, session.user.email || '').finally(() => {
           setIsLoading(false);
         });
       } else {
@@ -275,15 +287,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     return { error: error as Error | null };
-  };
+  }, []);
 
-  const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
+  const signUp = useCallback(async (email: string, password: string, firstName?: string, lastName?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { data, error } = await supabase.auth.signUp({
@@ -298,7 +310,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     });
 
-    // Send welcome email via edge function
     if (!error && data.user) {
       try {
         await supabase.functions.invoke("send-welcome-email", {
@@ -310,14 +321,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } catch (emailError) {
         console.error("Error sending welcome email:", emailError);
-        // Don't fail signup if email fails
       }
     }
 
     return { error: error as Error | null };
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
@@ -326,9 +336,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRoles([]);
     setIsGuestUser(false);
     setGuestProjects([]);
-  };
+  }, []);
 
-  const refreshCompany = async () => {
+  const refreshCompany = useCallback(async () => {
     if (!profile?.company_id) return;
     
     try {
@@ -344,9 +354,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Error refreshing company:", error);
     }
-  };
+  }, [profile?.company_id]);
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -362,33 +372,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Error refreshing profile:", error);
     }
-  };
+  }, [user]);
+
+  // Memoize context value to prevent unnecessary re-renders of all consumers
+  const contextValue = useMemo<AuthContextType>(() => ({
+    user,
+    session,
+    profile,
+    company,
+    roles,
+    isLoading,
+    isSystemAdmin,
+    isCompanyAdmin,
+    isDepartmentAdmin,
+    adminDepartmentIds,
+    isGuestUser,
+    guestProjects,
+    guestCheckComplete,
+    isPendingApproval,
+    isSuspended,
+    signIn,
+    signUp,
+    signOut,
+    refreshCompany,
+    refreshProfile,
+  }), [
+    user,
+    session,
+    profile,
+    company,
+    roles,
+    isLoading,
+    isSystemAdmin,
+    isCompanyAdmin,
+    isDepartmentAdmin,
+    adminDepartmentIds,
+    isGuestUser,
+    guestProjects,
+    guestCheckComplete,
+    isPendingApproval,
+    isSuspended,
+    signIn,
+    signUp,
+    signOut,
+    refreshCompany,
+    refreshProfile,
+  ]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        profile,
-        company,
-        roles,
-        isLoading,
-        isSystemAdmin,
-        isCompanyAdmin,
-        isDepartmentAdmin,
-        adminDepartmentIds,
-        isGuestUser,
-        guestProjects,
-        guestCheckComplete,
-        isPendingApproval,
-        isSuspended,
-        signIn,
-        signUp,
-        signOut,
-        refreshCompany,
-        refreshProfile,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
