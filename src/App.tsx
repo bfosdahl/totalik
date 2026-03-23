@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,111 +11,142 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AccentColorProvider } from "@/components/AccentColorProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Loader2 } from "lucide-react";
+
+// Static imports — critical path (auth + dashboard)
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Setup from "./pages/Setup";
-import Employees from "./pages/Employees";
-import Deviations from "./pages/Deviations";
-import Audits from "./pages/Audits";
-import Handbook from "./pages/Handbook";
-import Settings from "./pages/Settings";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminCompanies from "./pages/admin/AdminCompanies";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminHmsRequests from "./pages/admin/AdminHmsRequests";
-import AdminSgRegister from "./pages/admin/AdminSgRegister";
-import AdminDocuments from "./pages/admin/AdminDocuments";
-import AdminKsPanel from "./pages/admin/AdminKsPanel";
-import AdminByggesakTemplates from "./pages/admin/AdminByggesakTemplates";
-import AdminCustomerImport from "./pages/admin/AdminCustomerImport";
-import AdminStoffkartotek from "./pages/admin/AdminStoffkartotek";
-import AdminRoutineMaker from "./pages/admin/AdminRoutineMaker";
-import AdminEmailLog from "./pages/admin/AdminEmailLog";
-import SetupSystemAdmin from "./pages/admin/SetupSystemAdmin";
-import Ks2Dashboard from "./pages/ks2/Ks2Dashboard";
-import Ks2ProjectDetail from "./pages/ks2/Ks2ProjectDetail";
-import Ks2Admin from "./pages/ks2/Ks2Admin";
-import Ks2Statistikk from "./pages/ks2/Ks2Statistikk";
-import Ks2Befaring from "./pages/ks2/Ks2Befaring";
-import KsKalkyler from "./pages/ks2/KsKalkyler";
-import IkKsRutiner from "./pages/ks2/IkKsRutiner";
-import IkKsMaal from "./pages/ks2/IkKsMaal";
-import IkKsDokumenter from "./pages/ks2/IkKsDokumenter";
-import IkKsSjekklister from "./pages/ks2/IkKsSjekklister";
-import IkKsMaalsetting from "@/pages/ks2/IkKsMaalsetting";
-import IkKsOrganisering from "@/pages/ks2/IkKsOrganisering";
-import IkKsEgenerklaering from "./pages/ks2/IkKsEgenerklaering";
-import IkKsHandbok from "./pages/ks2/IkKsHandbok";
-import MineProsjekterDashboard from "./pages/mineprosjekter/MineProsjekterDashboard";
-import SimpleProjectDetail from "./pages/mineprosjekter/SimpleProjectDetail";
-import HmsChat from "./pages/HmsChat";
-import MyCourseCard from "./pages/MyCourseCard";
-import TimeRegistration from "./pages/TimeRegistration";
-import TimeClock from "./pages/TimeClock";
-import TimeOff from "./pages/TimeOff";
-import WorkSchedule from "./pages/WorkSchedule";
-// FDV Module
-import FdvDashboard from "./pages/fdv/FdvDashboard";
-import FdvBuildings from "./pages/fdv/FdvBuildings";
-import FdvControls from "./pages/fdv/FdvControls";
-import FdvRisks from "./pages/fdv/FdvRisks";
-import FdvRegulations from "./pages/fdv/FdvRegulations";
-import FdvFloorPlans from "./pages/fdv/FdvFloorPlans";
-import HrContracts from "./pages/hr/HrContracts";
-import HrAbsence from "./pages/hr/HrAbsence";
-import HrMeetings from "./pages/hr/HrMeetings";
-import HrSurveys from "./pages/hr/HrSurveys";
-import MyAbsence from "./pages/my/MyAbsence";
-import MySurveys from "./pages/my/MySurveys";
-import MyMessages from "./pages/my/MyMessages";
-import MyContract from "./pages/hr/MyContract";
-import MyDrivingLog from "./pages/my/MyDrivingLog";
-import MyEmployeeCard from "./pages/my/MyEmployeeCard";
-import InstallApp from "./pages/InstallApp";
-import InstallAvvikApp from "./pages/InstallAvvikApp";
-import IkMatHandbok from "./pages/IkMatHandbok";
-import IkMatOppsett from "./pages/IkMatOppsett";
-import IkMatHaccp from "./pages/IkMatHaccp";
-import IkMatRisikovurdering from "./pages/IkMatRisikovurdering";
-import IkMatAllergener from "./pages/IkMatAllergener";
-import IkMatFasteAvtaler from "./pages/IkMatFasteAvtaler";
-import IkMatKontroll from "./pages/IkMatKontroll";
-import IkMatMaal from "./pages/IkMatMaal";
-import IkMatOrganisasjon from "./pages/IkMatOrganisasjon";
-import IkMatRutiner from "./pages/IkMatRutiner";
-import IkMatRisikoOgTiltak from "./pages/IkMatRisikoOgTiltak";
-import IkMatDokumentsenter from "./pages/IkMatDokumentsenter";
-import IkMatAvvik from "./pages/IkMatAvvik";
-import IkMatTemperaturlogg from "./pages/IkMatTemperaturlogg";
-
-import IkAlkoholDashboard from "./pages/ikalkohol/IkAlkoholDashboard";
-import IkAlkoholInternkontroll from "./pages/ikalkohol/IkAlkoholInternkontroll";
-import IkAlkoholHendelser from "./pages/ikalkohol/IkAlkoholHendelser";
-import IkAlkoholRutiner from "./pages/ikalkohol/IkAlkoholRutiner";
-import IkAlkoholOrganisering from "./pages/ikalkohol/IkAlkoholOrganisering";
-import IkAlkoholMaal from "./pages/ikalkohol/IkAlkoholMaal";
-import IkAlkoholRisikoanalyse from "./pages/ikalkohol/IkAlkoholRisikoanalyse";
-import IkAlkoholDokumentsenter from "./pages/ikalkohol/IkAlkoholDokumentsenter";
-import IkAlkoholKontroll from "./pages/ikalkohol/IkAlkoholKontroll";
-import IkAlkoholHandbok from "./pages/ikalkohol/IkAlkoholHandbok";
-import IkAlkoholLovverk from "./pages/ikalkohol/IkAlkoholLovverk";
-import IkHmsOppsett from "./pages/IkHmsOppsett";
-import IkHmsMaal from "./pages/IkHmsMaal";
-import IkHmsOrganisering from "./pages/IkHmsOrganisering";
-import IkHmsStoffkartotek from "./pages/IkHmsStoffkartotek";
-import IkHmsDokumentsenter from "./pages/IkHmsDokumentsenter";
-import LoverOgForskrifter from "./pages/LoverOgForskrifter";
-import AnonymousMessages from "./pages/AnonymousMessages";
-import Risikoanalyse from "./pages/Risikoanalyse";
-import IkHmsRutiner from "./pages/IkHmsRutiner";
-import Brukerveiledning from "./pages/Brukerveiledning";
-import PersonalhandbokPage from "./pages/personalhandbok/PersonalhandbokPage";
 import NotFound from "./pages/NotFound";
-import DepartmentGoals from "./pages/department/DepartmentGoals";
-import DepartmentOrganization from "./pages/department/DepartmentOrganization";
-import DepartmentRoutines from "./pages/department/DepartmentRoutines";
-import DepartmentAiSetup from "./pages/department/DepartmentAiSetup";
-import DepartmentDashboard from "./pages/DepartmentDashboard";
+
+// Lazy imports — all other pages
+const Setup = lazy(() => import("./pages/Setup"));
+const Employees = lazy(() => import("./pages/Employees"));
+const Deviations = lazy(() => import("./pages/Deviations"));
+const Audits = lazy(() => import("./pages/Audits"));
+const Handbook = lazy(() => import("./pages/Handbook"));
+const Settings = lazy(() => import("./pages/Settings"));
+const HmsChat = lazy(() => import("./pages/HmsChat"));
+const MyCourseCard = lazy(() => import("./pages/MyCourseCard"));
+const TimeRegistration = lazy(() => import("./pages/TimeRegistration"));
+const TimeClock = lazy(() => import("./pages/TimeClock"));
+const TimeOff = lazy(() => import("./pages/TimeOff"));
+const WorkSchedule = lazy(() => import("./pages/WorkSchedule"));
+const InstallApp = lazy(() => import("./pages/InstallApp"));
+const InstallAvvikApp = lazy(() => import("./pages/InstallAvvikApp"));
+const AnonymousMessages = lazy(() => import("./pages/AnonymousMessages"));
+const Risikoanalyse = lazy(() => import("./pages/Risikoanalyse"));
+const Brukerveiledning = lazy(() => import("./pages/Brukerveiledning"));
+const LoverOgForskrifter = lazy(() => import("./pages/LoverOgForskrifter"));
+const DepartmentDashboard = lazy(() => import("./pages/DepartmentDashboard"));
+
+// IK HMS
+const IkHmsOppsett = lazy(() => import("./pages/IkHmsOppsett"));
+const IkHmsMaal = lazy(() => import("./pages/IkHmsMaal"));
+const IkHmsOrganisering = lazy(() => import("./pages/IkHmsOrganisering"));
+const IkHmsStoffkartotek = lazy(() => import("./pages/IkHmsStoffkartotek"));
+const IkHmsDokumentsenter = lazy(() => import("./pages/IkHmsDokumentsenter"));
+const IkHmsRutiner = lazy(() => import("./pages/IkHmsRutiner"));
+
+// Department
+const DepartmentGoals = lazy(() => import("./pages/department/DepartmentGoals"));
+const DepartmentOrganization = lazy(() => import("./pages/department/DepartmentOrganization"));
+const DepartmentRoutines = lazy(() => import("./pages/department/DepartmentRoutines"));
+const DepartmentAiSetup = lazy(() => import("./pages/department/DepartmentAiSetup"));
+
+// IK Mat
+const IkMatHandbok = lazy(() => import("./pages/IkMatHandbok"));
+const IkMatOppsett = lazy(() => import("./pages/IkMatOppsett"));
+const IkMatHaccp = lazy(() => import("./pages/IkMatHaccp"));
+const IkMatRisikovurdering = lazy(() => import("./pages/IkMatRisikovurdering"));
+const IkMatAllergener = lazy(() => import("./pages/IkMatAllergener"));
+const IkMatFasteAvtaler = lazy(() => import("./pages/IkMatFasteAvtaler"));
+const IkMatKontroll = lazy(() => import("./pages/IkMatKontroll"));
+const IkMatMaal = lazy(() => import("./pages/IkMatMaal"));
+const IkMatOrganisasjon = lazy(() => import("./pages/IkMatOrganisasjon"));
+const IkMatRutiner = lazy(() => import("./pages/IkMatRutiner"));
+const IkMatRisikoOgTiltak = lazy(() => import("./pages/IkMatRisikoOgTiltak"));
+const IkMatDokumentsenter = lazy(() => import("./pages/IkMatDokumentsenter"));
+const IkMatAvvik = lazy(() => import("./pages/IkMatAvvik"));
+const IkMatTemperaturlogg = lazy(() => import("./pages/IkMatTemperaturlogg"));
+
+// IK Alkohol
+const IkAlkoholDashboard = lazy(() => import("./pages/ikalkohol/IkAlkoholDashboard"));
+const IkAlkoholInternkontroll = lazy(() => import("./pages/ikalkohol/IkAlkoholInternkontroll"));
+const IkAlkoholHendelser = lazy(() => import("./pages/ikalkohol/IkAlkoholHendelser"));
+const IkAlkoholRutiner = lazy(() => import("./pages/ikalkohol/IkAlkoholRutiner"));
+const IkAlkoholOrganisering = lazy(() => import("./pages/ikalkohol/IkAlkoholOrganisering"));
+const IkAlkoholMaal = lazy(() => import("./pages/ikalkohol/IkAlkoholMaal"));
+const IkAlkoholRisikoanalyse = lazy(() => import("./pages/ikalkohol/IkAlkoholRisikoanalyse"));
+const IkAlkoholDokumentsenter = lazy(() => import("./pages/ikalkohol/IkAlkoholDokumentsenter"));
+const IkAlkoholKontroll = lazy(() => import("./pages/ikalkohol/IkAlkoholKontroll"));
+const IkAlkoholHandbok = lazy(() => import("./pages/ikalkohol/IkAlkoholHandbok"));
+const IkAlkoholLovverk = lazy(() => import("./pages/ikalkohol/IkAlkoholLovverk"));
+
+// KS Bygg
+const Ks2Dashboard = lazy(() => import("./pages/ks2/Ks2Dashboard"));
+const Ks2ProjectDetail = lazy(() => import("./pages/ks2/Ks2ProjectDetail"));
+const Ks2Admin = lazy(() => import("./pages/ks2/Ks2Admin"));
+const Ks2Statistikk = lazy(() => import("./pages/ks2/Ks2Statistikk"));
+const Ks2Befaring = lazy(() => import("./pages/ks2/Ks2Befaring"));
+const KsKalkyler = lazy(() => import("./pages/ks2/KsKalkyler"));
+const IkKsRutiner = lazy(() => import("./pages/ks2/IkKsRutiner"));
+const IkKsMaal = lazy(() => import("./pages/ks2/IkKsMaal"));
+const IkKsDokumenter = lazy(() => import("./pages/ks2/IkKsDokumenter"));
+const IkKsSjekklister = lazy(() => import("./pages/ks2/IkKsSjekklister"));
+const IkKsMaalsetting = lazy(() => import("./pages/ks2/IkKsMaalsetting"));
+const IkKsOrganisering = lazy(() => import("./pages/ks2/IkKsOrganisering"));
+const IkKsEgenerklaering = lazy(() => import("./pages/ks2/IkKsEgenerklaering"));
+const IkKsHandbok = lazy(() => import("./pages/ks2/IkKsHandbok"));
+
+// Mine prosjekter
+const MineProsjekterDashboard = lazy(() => import("./pages/mineprosjekter/MineProsjekterDashboard"));
+const SimpleProjectDetail = lazy(() => import("./pages/mineprosjekter/SimpleProjectDetail"));
+
+// FDV
+const FdvDashboard = lazy(() => import("./pages/fdv/FdvDashboard"));
+const FdvBuildings = lazy(() => import("./pages/fdv/FdvBuildings"));
+const FdvControls = lazy(() => import("./pages/fdv/FdvControls"));
+const FdvRisks = lazy(() => import("./pages/fdv/FdvRisks"));
+const FdvRegulations = lazy(() => import("./pages/fdv/FdvRegulations"));
+const FdvFloorPlans = lazy(() => import("./pages/fdv/FdvFloorPlans"));
+
+// HR
+const HrContracts = lazy(() => import("./pages/hr/HrContracts"));
+const HrAbsence = lazy(() => import("./pages/hr/HrAbsence"));
+const HrMeetings = lazy(() => import("./pages/hr/HrMeetings"));
+const HrSurveys = lazy(() => import("./pages/hr/HrSurveys"));
+const MyContract = lazy(() => import("./pages/hr/MyContract"));
+
+// My pages
+const MyAbsence = lazy(() => import("./pages/my/MyAbsence"));
+const MySurveys = lazy(() => import("./pages/my/MySurveys"));
+const MyMessages = lazy(() => import("./pages/my/MyMessages"));
+const MyDrivingLog = lazy(() => import("./pages/my/MyDrivingLog"));
+const MyEmployeeCard = lazy(() => import("./pages/my/MyEmployeeCard"));
+
+// Personalhandbok
+const PersonalhandbokPage = lazy(() => import("./pages/personalhandbok/PersonalhandbokPage"));
+
+// Admin
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminCompanies = lazy(() => import("./pages/admin/AdminCompanies"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminHmsRequests = lazy(() => import("./pages/admin/AdminHmsRequests"));
+const AdminSgRegister = lazy(() => import("./pages/admin/AdminSgRegister"));
+const AdminDocuments = lazy(() => import("./pages/admin/AdminDocuments"));
+const AdminKsPanel = lazy(() => import("./pages/admin/AdminKsPanel"));
+const AdminByggesakTemplates = lazy(() => import("./pages/admin/AdminByggesakTemplates"));
+const AdminCustomerImport = lazy(() => import("./pages/admin/AdminCustomerImport"));
+const AdminStoffkartotek = lazy(() => import("./pages/admin/AdminStoffkartotek"));
+const AdminRoutineMaker = lazy(() => import("./pages/admin/AdminRoutineMaker"));
+const AdminEmailLog = lazy(() => import("./pages/admin/AdminEmailLog"));
+const SetupSystemAdmin = lazy(() => import("./pages/admin/SetupSystemAdmin"));
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+  </div>
+);
 
 const queryClient = new QueryClient();
 
@@ -130,6 +162,7 @@ const App = () => (
                   <Toaster />
                 <Sonner />
                 <BrowserRouter>
+                <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Public routes */}
                   <Route path="/auth" element={<Auth />} />
@@ -264,6 +297,7 @@ const App = () => (
                   {/* 404 */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                </Suspense>
                   </BrowserRouter>
                 </TooltipProvider>
               </AccentColorProvider>
