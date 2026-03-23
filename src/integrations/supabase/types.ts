@@ -15408,6 +15408,10 @@ export type Database = {
         Args: { p_category: string }
         Returns: string
       }
+      generate_deviation_number: {
+        Args: { p_prefix?: string }
+        Returns: string
+      }
       generate_document_template_number: {
         Args: { p_category: string }
         Returns: string
