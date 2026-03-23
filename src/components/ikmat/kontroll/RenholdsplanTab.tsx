@@ -42,7 +42,8 @@ const FREQUENCY_ICONS: Record<FrequencyType, typeof Calendar> = {
   periodic: CalendarRange,
 };
 
-const normalizeFrequency = (freq: string): FrequencyType => {
+const normalizeFrequency = (freq: string | undefined | null): FrequencyType => {
+  if (!freq) return 'periodic';
   const lower = freq.toLowerCase();
   if (lower.includes('daglig') || lower.includes('daily') || lower.includes('hver dag')) {
     return 'daily';
