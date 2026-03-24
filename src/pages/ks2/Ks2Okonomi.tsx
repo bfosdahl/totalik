@@ -83,6 +83,11 @@ export default function Ks2Okonomi() {
   const [costDialogOpen, setCostDialogOpen] = useState(false);
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
   const [deleteType, setDeleteType] = useState<{ type: "cost" | "invoice"; id: string } | null>(null);
+  const [costFile, setCostFile] = useState<File | null>(null);
+  const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const costFileRef = useRef<HTMLInputElement>(null);
+  const invoiceFileRef = useRef<HTMLInputElement>(null);
 
   const [budgetForm, setBudgetForm] = useState({
     contract_sum: "",
@@ -109,6 +114,31 @@ export default function Ks2Okonomi() {
     due_date: "",
     status: "sent",
   });
+
+  const uploadFile = async (file: File, prefix: string): Promise<{ path: string; name: string } | null> => {
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const filePath = `${projectId}/${prefix}/${Date.now()}_${sanitizedName}`;
+    
+    const { error } = await supabase.storage
+      .from("ks-module2-files")
+      .upload(filePath, file);
+
+    if (error) {
+      console.error("Upload error:", error);
+      toast.error("Kunne ikke laste opp fil");
+      return null;
+    }
+    return { path: filePath, name: file.name };
+  };
+
+  const viewFile = async (filePath: string) => {
+    const { data } = await supabase.storage
+      .from("ks-module2-files")
+      .createSignedUrl(filePath, 3600);
+    if (data?.signedUrl) {
+      window.open(data.signedUrl, "_blank");
+    }
+  };
 
   // Calculate totals
   const totals = useMemo(() => {
