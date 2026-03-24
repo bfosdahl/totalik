@@ -53,8 +53,8 @@ export default function KsUtfylteSjekklister() {
   useEffect(() => {
     if (!profile?.company_id) return;
     
-    const fetchData = async () => {
-      setIsLoading(true);
+    const fetchData = async (showLoader = true) => {
+      if (showLoader) setIsLoading(true);
       
       const [checklistRes, projectRes] = await Promise.all([
         supabase
