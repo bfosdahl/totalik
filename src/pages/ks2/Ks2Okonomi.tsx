@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,11 +39,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, DollarSign, TrendingUp, TrendingDown, Receipt, FileText, Trash2, CheckCircle2, Clock, Save } from "lucide-react";
+import { Plus, DollarSign, TrendingUp, TrendingDown, Receipt, FileText, Trash2, CheckCircle2, Clock, Save, Upload, Paperclip, Eye } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useKsModule2Finances, Invoice, CostEntry } from "@/hooks/useKsModule2Finances";
+import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
+import { toast } from "sonner";
 
 const COST_CATEGORIES = [
   { value: "materials", label: "Materialer" },
