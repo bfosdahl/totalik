@@ -344,6 +344,15 @@ export default function KsUtfylteSjekklister() {
           </div>
         )}
       </div>
+
+      {continueChecklist && (
+        <ContinueChecklistDialog
+          open={!!continueChecklist}
+          onOpenChange={(open) => { if (!open) setContinueChecklist(null); }}
+          checklist={continueChecklist}
+          onSaved={refetchData}
+        />
+      )}
     </AppLayout>
   );
 }
