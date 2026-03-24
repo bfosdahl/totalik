@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { 
   ClipboardCheck, Loader2, Search, Calendar, User, 
   CheckCircle2, Clock, AlertTriangle, ChevronDown, ChevronRight, 
-  Minus, Download, FolderOpen 
+  Minus, Download, FolderOpen, Play
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
