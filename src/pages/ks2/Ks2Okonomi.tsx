@@ -731,6 +731,16 @@ export default function Ks2Okonomi() {
                       <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
+                          {(invoice as any).file_path && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => viewFile((invoice as any).file_path)}
+                              title="Vis vedlegg"
+                            >
+                              <Paperclip className="h-4 w-4 text-blue-500" />
+                            </Button>
+                          )}
                           {invoice.status !== "paid" && (
                             <Button
                               size="sm"
