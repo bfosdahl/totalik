@@ -83,6 +83,19 @@ export default function KsUtfylteSjekklister() {
     fetchData();
   }, [profile?.company_id]);
 
+  const refetchData = () => {
+    if (!profile?.company_id) return;
+    const doRefetch = async () => {
+      const { data } = await (supabase
+        .from("ks_module2_checklists" as any)
+        .select("*")
+        .eq("company_id", profile.company_id)
+        .order("created_at", { ascending: false }) as any);
+      if (data) setChecklists(data as FilledChecklist[]);
+    };
+    doRefetch();
+  };
+
   const filtered = checklists.filter(c => 
     c.title.toLowerCase().includes(search.toLowerCase()) ||
     c.template_name.toLowerCase().includes(search.toLowerCase()) ||
