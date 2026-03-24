@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { 
   ClipboardCheck, Loader2, Search, Calendar, User, 
   CheckCircle2, Clock, AlertTriangle, ChevronDown, ChevronRight, 
-  Minus, Download, FolderOpen 
+  Minus, Download, FolderOpen, Play
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,6 +16,7 @@ import { nb } from "date-fns/locale";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { generateFilledChecklistPdf } from "@/utils/ksFilledChecklistPdf";
 import { toast } from "sonner";
+import { ContinueChecklistDialog } from "@/components/ks/ContinueChecklistDialog";
 
 interface FilledChecklist {
   id: string;
@@ -47,12 +48,13 @@ export default function KsUtfylteSjekklister() {
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadingProject, setDownloadingProject] = useState<string | null>(null);
+  const [continueChecklist, setContinueChecklist] = useState<FilledChecklist | null>(null);
 
   useEffect(() => {
     if (!profile?.company_id) return;
     
-    const fetchData = async () => {
-      setIsLoading(true);
+    const fetchData = async (showLoader = true) => {
+      if (showLoader) setIsLoading(true);
       
       const [checklistRes, projectRes] = await Promise.all([
         supabase
@@ -80,6 +82,19 @@ export default function KsUtfylteSjekklister() {
     };
     fetchData();
   }, [profile?.company_id]);
+
+  const refetchData = () => {
+    if (!profile?.company_id) return;
+    const doRefetch = async () => {
+      const { data } = await (supabase
+        .from("ks_module2_checklists" as any)
+        .select("*")
+        .eq("company_id", profile.company_id)
+        .order("created_at", { ascending: false }) as any);
+      if (data) setChecklists(data as FilledChecklist[]);
+    };
+    doRefetch();
+  };
 
   const filtered = checklists.filter(c => 
     c.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -182,6 +197,18 @@ export default function KsUtfylteSjekklister() {
               </div>
             </div>
           </CollapsibleTrigger>
+          {checklist.status !== "completed" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="shrink-0 text-xs"
+              onClick={(e) => { e.stopPropagation(); setContinueChecklist(checklist); }}
+              title="Fortsett utfylling"
+            >
+              <Play className="w-3 h-3 mr-1" />
+              Fortsett
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -317,6 +344,15 @@ export default function KsUtfylteSjekklister() {
           </div>
         )}
       </div>
+
+      {continueChecklist && (
+        <ContinueChecklistDialog
+          open={!!continueChecklist}
+          onOpenChange={(open) => { if (!open) setContinueChecklist(null); }}
+          checklist={continueChecklist}
+          onSaved={refetchData}
+        />
+      )}
     </AppLayout>
   );
 }
