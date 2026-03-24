@@ -27,7 +27,7 @@ interface ProjectInfo {
   project_number: string | null;
 }
 
-export function generateFilledChecklistPdf(
+export async function generateFilledChecklistPdf(
   checklist: FilledChecklist,
   project: ProjectInfo | null
 ) {
