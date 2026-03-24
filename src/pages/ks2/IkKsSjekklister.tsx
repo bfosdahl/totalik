@@ -39,6 +39,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { QuickFillChecklistDialog } from "@/components/ks/QuickFillChecklistDialog";
+import { PlayCircle } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -71,6 +73,7 @@ export default function IkKsSjekklister() {
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [showAdminDialog, setShowAdminDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [fillTemplate, setFillTemplate] = useState<typeof templates[0] | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [newTemplate, setNewTemplate] = useState({
     template_name: "",
@@ -353,12 +356,21 @@ export default function IkKsSjekklister() {
                 onCancelEdit={() => setEditingId(null)}
                 onUpdate={updateTemplate}
                 onDelete={deleteTemplate}
+                onFill={() => setFillTemplate(template)}
                 getCategoryLabel={getCategoryLabel}
                 isSaving={isSaving}
               />
             ))
           )}
         </div>
+
+        {fillTemplate && (
+          <QuickFillChecklistDialog
+            open={!!fillTemplate}
+            onOpenChange={(open) => { if (!open) setFillTemplate(null); }}
+            template={fillTemplate}
+          />
+        )}
       </div>
     </AppLayout>
   );
@@ -373,6 +385,7 @@ function TemplateCard({
   onCancelEdit,
   onUpdate,
   onDelete,
+  onFill,
   getCategoryLabel,
   isSaving,
 }: {
@@ -384,6 +397,7 @@ function TemplateCard({
   onCancelEdit: () => void;
   onUpdate: (id: string, updates: any) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onFill: () => void;
   getCategoryLabel: (value: string) => string;
   isSaving: boolean;
 }) {
@@ -550,6 +564,10 @@ function TemplateCard({
                   )}
                 </div>
                 <div className="flex justify-end gap-2 mt-4 pt-3 border-t">
+                  <Button variant="default" size="sm" onClick={(e) => { e.stopPropagation(); onFill(); }}>
+                    <PlayCircle className="w-3.5 h-3.5 mr-1" />
+                    Gjennomfør
+                  </Button>
                   <Button variant="outline" size="sm" onClick={startEdit}>
                     <Edit2 className="w-3.5 h-3.5 mr-1" />
                     Rediger

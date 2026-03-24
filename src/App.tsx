@@ -97,6 +97,7 @@ const IkKsMaalsetting = lazy(() => import("./pages/ks2/IkKsMaalsetting"));
 const IkKsOrganisering = lazy(() => import("./pages/ks2/IkKsOrganisering"));
 const IkKsEgenerklaering = lazy(() => import("./pages/ks2/IkKsEgenerklaering"));
 const IkKsHandbok = lazy(() => import("./pages/ks2/IkKsHandbok"));
+const KsUtfylteSjekklister = lazy(() => import("./pages/ks2/KsUtfylteSjekklister"));
 
 // Mine prosjekter
 const MineProsjekterDashboard = lazy(() => import("./pages/mineprosjekter/MineProsjekterDashboard"));
@@ -274,6 +275,8 @@ const App = () => (
                   <Route path="/ks/ik-ks/egenerklaering" element={<ProtectedRoute><IkKsEgenerklaering /></ProtectedRoute>} />
                   <Route path="/ks/ik-ks/handbok" element={<ProtectedRoute><IkKsHandbok /></ProtectedRoute>} />
                   
+                  <Route path="/ks/utfylte-sjekklister" element={<ProtectedRoute><KsUtfylteSjekklister /></ProtectedRoute>} />
+
                   {/* Småprosjekter routes */}
                   <Route path="/ks/smaaprosjekter" element={<ProtectedRoute><MineProsjekterDashboard /></ProtectedRoute>} />
                   <Route path="/ks/smaaprosjekter/:projectId" element={<ProtectedRoute><SimpleProjectDetail /></ProtectedRoute>} />
