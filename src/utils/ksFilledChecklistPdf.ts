@@ -7,6 +7,7 @@ interface ChecklistItem {
   text: string;
   value: boolean | string | null;
   comment?: string;
+  photos?: string[];
 }
 
 interface FilledChecklist {
