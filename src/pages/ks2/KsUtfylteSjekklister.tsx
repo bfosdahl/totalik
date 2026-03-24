@@ -14,7 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { generateFilledChecklistPdf, generateFilledChecklistPdfBlob } from "@/utils/ksFilledChecklistPdf";
+import { generateFilledChecklistPdf } from "@/utils/ksFilledChecklistPdf";
 import { toast } from "sonner";
 
 interface FilledChecklist {
