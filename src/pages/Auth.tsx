@@ -231,7 +231,7 @@ export default function Auth() {
           <img 
             src="/total-ik-logo-dark.png" 
             alt="Total-IK" 
-            className="h-20 mx-auto"
+            className="h-28 mx-auto mix-blend-screen"
           />
         </div>
 
