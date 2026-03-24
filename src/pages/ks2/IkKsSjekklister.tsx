@@ -39,6 +39,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { QuickFillChecklistDialog } from "@/components/ks/QuickFillChecklistDialog";
+import { PlayCircle } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
