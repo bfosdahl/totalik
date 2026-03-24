@@ -495,15 +495,34 @@ export default function Ks2Okonomi() {
                       />
                     </div>
                   </div>
+                  <div>
+                    <Label>Vedlegg (faktura-PDF, kvittering, etc.)</Label>
+                    <input
+                      ref={costFileRef}
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      className="hidden"
+                      onChange={(e) => setCostFile(e.target.files?.[0] || null)}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full mt-1"
+                      onClick={() => costFileRef.current?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {costFile ? costFile.name : "Last opp fil"}
+                    </Button>
+                  </div>
                   <div className="flex justify-end gap-2 pt-4">
-                    <Button variant="outline" onClick={() => setCostDialogOpen(false)}>
+                    <Button variant="outline" onClick={() => { setCostDialogOpen(false); setCostFile(null); }}>
                       Avbryt
                     </Button>
                     <Button
                       onClick={handleSaveCost}
-                      disabled={!costForm.description || !costForm.amount || createCostEntry.isPending}
+                      disabled={!costForm.description || !costForm.amount || createCostEntry.isPending || isUploading}
                     >
-                      Lagre
+                      {isUploading ? "Laster opp..." : "Lagre"}
                     </Button>
                   </div>
                 </div>
