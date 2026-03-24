@@ -514,12 +514,12 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
         <div className="flex items-center justify-between gap-3 px-5 h-16 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
             <img
-              src="/total-ik-logo.png"
+              src="/total-ik-logo-dark.png"
               alt="Total-IK"
               className={cn(
                 "transition-all duration-200",
                 collapsed ? "h-8" : "h-10",
-                "mix-blend-multiply dark:mix-blend-screen dark:invert"
+                "mix-blend-screen"
               )}
             />
           </div>
