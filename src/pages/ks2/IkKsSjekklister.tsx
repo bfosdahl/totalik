@@ -385,6 +385,7 @@ function TemplateCard({
   onCancelEdit,
   onUpdate,
   onDelete,
+  onFill,
   getCategoryLabel,
   isSaving,
 }: {
@@ -396,6 +397,7 @@ function TemplateCard({
   onCancelEdit: () => void;
   onUpdate: (id: string, updates: any) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onFill: () => void;
   getCategoryLabel: (value: string) => string;
   isSaving: boolean;
 }) {
