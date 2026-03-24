@@ -518,7 +518,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               alt="Total-IK"
               className={cn(
                 "transition-all duration-200 object-contain",
-                collapsed ? "h-8" : "h-20"
+                collapsed ? "h-10" : "h-28"
               )}
             />
           </div>
