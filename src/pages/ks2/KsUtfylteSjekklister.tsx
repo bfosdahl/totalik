@@ -48,6 +48,7 @@ export default function KsUtfylteSjekklister() {
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadingProject, setDownloadingProject] = useState<string | null>(null);
+  const [continueChecklist, setContinueChecklist] = useState<FilledChecklist | null>(null);
 
   useEffect(() => {
     if (!profile?.company_id) return;
