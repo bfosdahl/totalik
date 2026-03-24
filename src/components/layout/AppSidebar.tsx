@@ -511,8 +511,8 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
         )}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-sidebar-border">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between px-5 py-2 border-b border-sidebar-border">
+          <div className="flex items-center justify-center flex-1">
             <img
               src="/total-ik-logo-light.png"
               alt="Total-IK"
