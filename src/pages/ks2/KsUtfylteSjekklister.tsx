@@ -197,6 +197,18 @@ export default function KsUtfylteSjekklister() {
               </div>
             </div>
           </CollapsibleTrigger>
+          {checklist.status !== "completed" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="shrink-0 text-xs"
+              onClick={(e) => { e.stopPropagation(); setContinueChecklist(checklist); }}
+              title="Fortsett utfylling"
+            >
+              <Play className="w-3 h-3 mr-1" />
+              Fortsett
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
