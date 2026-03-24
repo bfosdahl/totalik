@@ -106,7 +106,7 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
   };
 
   const handleSubmit = async () => {
-    const result = await createInternalPlan(projectData);
+    const result = await createInternalPlan(projectData, riskAreas, changeRoutineText);
     if (result) {
       // The hook will refetch and update the parent state
     }

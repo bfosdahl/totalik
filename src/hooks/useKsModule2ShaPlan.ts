@@ -186,14 +186,14 @@ export function useKsModule2ShaPlan(projectId: string) {
     contractor_type: string | null;
     planned_start_date: string | null;
     planned_end_date: string | null;
-  }) => {
+  }, riskAreas?: RiskArea[], changeRoutineText?: string) => {
     if (!profile?.company_id || !user?.id) return null;
 
     try {
       setIsSaving(true);
 
-      // Initialize risk areas with default values
-      const riskAreas: RiskArea[] = DEFAULT_RISK_AREAS.map((ra, index) => ({
+      // Use provided risk areas or initialize with defaults
+      const finalRiskAreas: RiskArea[] = riskAreas || DEFAULT_RISK_AREAS.map((ra, index) => ({
         id: `risk-${index}`,
         ...ra,
         checked: false,
@@ -209,8 +209,8 @@ export function useKsModule2ShaPlan(projectId: string) {
           status: "draft",
           created_by: user.id,
           ...projectData,
-          risk_areas: riskAreas as unknown as any,
-          change_routine_text: "Ved endringer i prosjektet som påvirker sikkerhet, helse og arbeidsmiljø, skal SHA-planen revideres. Alle parter skal varsles om endringer.",
+          risk_areas: finalRiskAreas as unknown as any,
+          change_routine_text: changeRoutineText || "Ved endringer i prosjektet som påvirker sikkerhet, helse og arbeidsmiljø, skal SHA-planen revideres. Alle parter skal varsles om endringer.",
         }])
         .select()
         .single();

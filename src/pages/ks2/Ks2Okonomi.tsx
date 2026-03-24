@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,11 +39,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, DollarSign, TrendingUp, TrendingDown, Receipt, FileText, Trash2, CheckCircle2, Clock, Save } from "lucide-react";
+import { Plus, DollarSign, TrendingUp, TrendingDown, Receipt, FileText, Trash2, CheckCircle2, Clock, Save, Upload, Paperclip, Eye } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useKsModule2Finances, Invoice, CostEntry } from "@/hooks/useKsModule2Finances";
+import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
+import { toast } from "sonner";
 
 const COST_CATEGORIES = [
   { value: "materials", label: "Materialer" },
@@ -81,6 +83,11 @@ export default function Ks2Okonomi() {
   const [costDialogOpen, setCostDialogOpen] = useState(false);
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
   const [deleteType, setDeleteType] = useState<{ type: "cost" | "invoice"; id: string } | null>(null);
+  const [costFile, setCostFile] = useState<File | null>(null);
+  const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const costFileRef = useRef<HTMLInputElement>(null);
+  const invoiceFileRef = useRef<HTMLInputElement>(null);
 
   const [budgetForm, setBudgetForm] = useState({
     contract_sum: "",
@@ -107,6 +114,31 @@ export default function Ks2Okonomi() {
     due_date: "",
     status: "sent",
   });
+
+  const uploadFile = async (file: File, prefix: string): Promise<{ path: string; name: string } | null> => {
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const filePath = `${projectId}/${prefix}/${Date.now()}_${sanitizedName}`;
+    
+    const { error } = await supabase.storage
+      .from("ks-module2-files")
+      .upload(filePath, file);
+
+    if (error) {
+      console.error("Upload error:", error);
+      toast.error("Kunne ikke laste opp fil");
+      return null;
+    }
+    return { path: filePath, name: file.name };
+  };
+
+  const viewFile = async (filePath: string) => {
+    const { data } = await supabase.storage
+      .from("ks-module2-files")
+      .createSignedUrl(filePath, 3600);
+    if (data?.signedUrl) {
+      window.open(data.signedUrl, "_blank");
+    }
+  };
 
   // Calculate totals
   const totals = useMemo(() => {
@@ -170,6 +202,13 @@ export default function Ks2Okonomi() {
   const handleSaveCost = async () => {
     if (!projectId || !company?.id) return;
 
+    setIsUploading(true);
+    let fileData: { path: string; name: string } | null = null;
+    if (costFile) {
+      fileData = await uploadFile(costFile, "costs");
+      if (!fileData) { setIsUploading(false); return; }
+    }
+
     await createCostEntry.mutateAsync({
       project_id: projectId,
       company_id: company.id,
@@ -180,9 +219,12 @@ export default function Ks2Okonomi() {
       supplier: costForm.supplier || null,
       invoice_number: costForm.invoice_number || null,
       created_by: profile ? `${profile.first_name} ${profile.last_name}` : null,
-    });
+      ...(fileData ? { file_path: fileData.path, file_name: fileData.name } : {}),
+    } as any);
 
+    setIsUploading(false);
     setCostDialogOpen(false);
+    setCostFile(null);
     setCostForm({
       category: "materials",
       description: "",
@@ -196,6 +238,13 @@ export default function Ks2Okonomi() {
   const handleSaveInvoice = async () => {
     if (!projectId || !company?.id) return;
 
+    setIsUploading(true);
+    let fileData: { path: string; name: string } | null = null;
+    if (invoiceFile) {
+      fileData = await uploadFile(invoiceFile, "invoices");
+      if (!fileData) { setIsUploading(false); return; }
+    }
+
     await createInvoice.mutateAsync({
       project_id: projectId,
       company_id: company.id,
@@ -206,9 +255,12 @@ export default function Ks2Okonomi() {
       due_date: invoiceForm.due_date || null,
       paid_date: null,
       status: invoiceForm.status,
-    });
+      ...(fileData ? { file_path: fileData.path, file_name: fileData.name } : {}),
+    } as any);
 
+    setIsUploading(false);
     setInvoiceDialogOpen(false);
+    setInvoiceFile(null);
     setInvoiceForm({
       invoice_number: "",
       description: "",
@@ -443,15 +495,34 @@ export default function Ks2Okonomi() {
                       />
                     </div>
                   </div>
+                  <div>
+                    <Label>Vedlegg (faktura-PDF, kvittering, etc.)</Label>
+                    <input
+                      ref={costFileRef}
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      className="hidden"
+                      onChange={(e) => setCostFile(e.target.files?.[0] || null)}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full mt-1"
+                      onClick={() => costFileRef.current?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {costFile ? costFile.name : "Last opp fil"}
+                    </Button>
+                  </div>
                   <div className="flex justify-end gap-2 pt-4">
-                    <Button variant="outline" onClick={() => setCostDialogOpen(false)}>
+                    <Button variant="outline" onClick={() => { setCostDialogOpen(false); setCostFile(null); }}>
                       Avbryt
                     </Button>
                     <Button
                       onClick={handleSaveCost}
-                      disabled={!costForm.description || !costForm.amount || createCostEntry.isPending}
+                      disabled={!costForm.description || !costForm.amount || createCostEntry.isPending || isUploading}
                     >
-                      Lagre
+                      {isUploading ? "Laster opp..." : "Lagre"}
                     </Button>
                   </div>
                 </div>
@@ -481,13 +552,25 @@ export default function Ks2Okonomi() {
                       <TableCell>{entry.supplier || "-"}</TableCell>
                       <TableCell className="text-right font-medium">{formatCurrency(entry.amount)}</TableCell>
                       <TableCell>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setDeleteType({ type: "cost", id: entry.id })}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        <div className="flex gap-1">
+                          {(entry as any).file_path && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => viewFile((entry as any).file_path)}
+                              title="Vis vedlegg"
+                            >
+                              <Paperclip className="h-4 w-4 text-blue-500" />
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setDeleteType({ type: "cost", id: entry.id })}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -586,15 +669,34 @@ export default function Ks2Okonomi() {
                       />
                     </div>
                   </div>
+                  <div>
+                    <Label>Vedlegg (faktura-PDF)</Label>
+                    <input
+                      ref={invoiceFileRef}
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      className="hidden"
+                      onChange={(e) => setInvoiceFile(e.target.files?.[0] || null)}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full mt-1"
+                      onClick={() => invoiceFileRef.current?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {invoiceFile ? invoiceFile.name : "Last opp faktura-fil"}
+                    </Button>
+                  </div>
                   <div className="flex justify-end gap-2 pt-4">
-                    <Button variant="outline" onClick={() => setInvoiceDialogOpen(false)}>
+                    <Button variant="outline" onClick={() => { setInvoiceDialogOpen(false); setInvoiceFile(null); }}>
                       Avbryt
                     </Button>
                     <Button
                       onClick={handleSaveInvoice}
-                      disabled={!invoiceForm.invoice_number || !invoiceForm.amount || createInvoice.isPending}
+                      disabled={!invoiceForm.invoice_number || !invoiceForm.amount || createInvoice.isPending || isUploading}
                     >
-                      Opprett
+                      {isUploading ? "Laster opp..." : "Opprett"}
                     </Button>
                   </div>
                 </div>
@@ -629,6 +731,16 @@ export default function Ks2Okonomi() {
                       <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
+                          {(invoice as any).file_path && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => viewFile((invoice as any).file_path)}
+                              title="Vis vedlegg"
+                            >
+                              <Paperclip className="h-4 w-4 text-blue-500" />
+                            </Button>
+                          )}
                           {invoice.status !== "paid" && (
                             <Button
                               size="sm"
