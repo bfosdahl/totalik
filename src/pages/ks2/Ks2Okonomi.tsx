@@ -657,15 +657,34 @@ export default function Ks2Okonomi() {
                       />
                     </div>
                   </div>
+                  <div>
+                    <Label>Vedlegg (faktura-PDF)</Label>
+                    <input
+                      ref={invoiceFileRef}
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      className="hidden"
+                      onChange={(e) => setInvoiceFile(e.target.files?.[0] || null)}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full mt-1"
+                      onClick={() => invoiceFileRef.current?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {invoiceFile ? invoiceFile.name : "Last opp faktura-fil"}
+                    </Button>
+                  </div>
                   <div className="flex justify-end gap-2 pt-4">
-                    <Button variant="outline" onClick={() => setInvoiceDialogOpen(false)}>
+                    <Button variant="outline" onClick={() => { setInvoiceDialogOpen(false); setInvoiceFile(null); }}>
                       Avbryt
                     </Button>
                     <Button
                       onClick={handleSaveInvoice}
-                      disabled={!invoiceForm.invoice_number || !invoiceForm.amount || createInvoice.isPending}
+                      disabled={!invoiceForm.invoice_number || !invoiceForm.amount || createInvoice.isPending || isUploading}
                     >
-                      Opprett
+                      {isUploading ? "Laster opp..." : "Opprett"}
                     </Button>
                   </div>
                 </div>
