@@ -552,13 +552,25 @@ export default function Ks2Okonomi() {
                       <TableCell>{entry.supplier || "-"}</TableCell>
                       <TableCell className="text-right font-medium">{formatCurrency(entry.amount)}</TableCell>
                       <TableCell>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setDeleteType({ type: "cost", id: entry.id })}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        <div className="flex gap-1">
+                          {(entry as any).file_path && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => viewFile((entry as any).file_path)}
+                              title="Vis vedlegg"
+                            >
+                              <Paperclip className="h-4 w-4 text-blue-500" />
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setDeleteType({ type: "cost", id: entry.id })}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
