@@ -202,6 +202,13 @@ export default function Ks2Okonomi() {
   const handleSaveCost = async () => {
     if (!projectId || !company?.id) return;
 
+    setIsUploading(true);
+    let fileData: { path: string; name: string } | null = null;
+    if (costFile) {
+      fileData = await uploadFile(costFile, "costs");
+      if (!fileData) { setIsUploading(false); return; }
+    }
+
     await createCostEntry.mutateAsync({
       project_id: projectId,
       company_id: company.id,
@@ -212,9 +219,12 @@ export default function Ks2Okonomi() {
       supplier: costForm.supplier || null,
       invoice_number: costForm.invoice_number || null,
       created_by: profile ? `${profile.first_name} ${profile.last_name}` : null,
-    });
+      ...(fileData ? { file_path: fileData.path, file_name: fileData.name } : {}),
+    } as any);
 
+    setIsUploading(false);
     setCostDialogOpen(false);
+    setCostFile(null);
     setCostForm({
       category: "materials",
       description: "",
@@ -228,6 +238,13 @@ export default function Ks2Okonomi() {
   const handleSaveInvoice = async () => {
     if (!projectId || !company?.id) return;
 
+    setIsUploading(true);
+    let fileData: { path: string; name: string } | null = null;
+    if (invoiceFile) {
+      fileData = await uploadFile(invoiceFile, "invoices");
+      if (!fileData) { setIsUploading(false); return; }
+    }
+
     await createInvoice.mutateAsync({
       project_id: projectId,
       company_id: company.id,
@@ -238,9 +255,12 @@ export default function Ks2Okonomi() {
       due_date: invoiceForm.due_date || null,
       paid_date: null,
       status: invoiceForm.status,
-    });
+      ...(fileData ? { file_path: fileData.path, file_name: fileData.name } : {}),
+    } as any);
 
+    setIsUploading(false);
     setInvoiceDialogOpen(false);
+    setInvoiceFile(null);
     setInvoiceForm({
       invoice_number: "",
       description: "",
