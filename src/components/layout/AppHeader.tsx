@@ -83,7 +83,7 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
         <img
           src="/total-ik-logo-dark.png"
           alt="Total-IK"
-          className="h-8 hidden lg:block"
+          className="h-9 hidden lg:block mix-blend-multiply dark:mix-blend-screen"
         />
       </div>
 
