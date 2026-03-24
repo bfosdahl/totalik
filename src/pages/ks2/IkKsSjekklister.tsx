@@ -356,12 +356,21 @@ export default function IkKsSjekklister() {
                 onCancelEdit={() => setEditingId(null)}
                 onUpdate={updateTemplate}
                 onDelete={deleteTemplate}
+                onFill={() => setFillTemplate(template)}
                 getCategoryLabel={getCategoryLabel}
                 isSaving={isSaving}
               />
             ))
           )}
         </div>
+
+        {fillTemplate && (
+          <QuickFillChecklistDialog
+            open={!!fillTemplate}
+            onOpenChange={(open) => { if (!open) setFillTemplate(null); }}
+            template={fillTemplate}
+          />
+        )}
       </div>
     </AppLayout>
   );
