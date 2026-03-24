@@ -16,6 +16,7 @@ import { nb } from "date-fns/locale";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { generateFilledChecklistPdf } from "@/utils/ksFilledChecklistPdf";
 import { toast } from "sonner";
+import { ContinueChecklistDialog } from "@/components/ks/ContinueChecklistDialog";
 
 interface FilledChecklist {
   id: string;
