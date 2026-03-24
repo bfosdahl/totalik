@@ -108,7 +108,7 @@ export default function KsUtfylteSjekklister() {
     setDownloadingId(checklist.id);
     try {
       const projectInfo = projects[checklist.project_id];
-      generateFilledChecklistPdf(checklist, projectInfo || null);
+      await generateFilledChecklistPdf(checklist, projectInfo || null);
       toast.success("PDF lastet ned");
     } catch {
       toast.error("Kunne ikke generere PDF");
