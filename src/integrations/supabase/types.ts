@@ -8741,6 +8741,8 @@ export type Database = {
           created_by: string | null
           date: string
           description: string
+          file_name: string | null
+          file_path: string | null
           id: string
           invoice_number: string | null
           project_id: string
@@ -8755,6 +8757,8 @@ export type Database = {
           created_by?: string | null
           date?: string
           description: string
+          file_name?: string | null
+          file_path?: string | null
           id?: string
           invoice_number?: string | null
           project_id: string
@@ -8769,6 +8773,8 @@ export type Database = {
           created_by?: string | null
           date?: string
           description?: string
+          file_name?: string | null
+          file_path?: string | null
           id?: string
           invoice_number?: string | null
           project_id?: string
@@ -9220,6 +9226,8 @@ export type Database = {
           created_at: string
           description: string | null
           due_date: string | null
+          file_name: string | null
+          file_path: string | null
           id: string
           invoice_date: string
           invoice_number: string
@@ -9234,6 +9242,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          file_name?: string | null
+          file_path?: string | null
           id?: string
           invoice_date: string
           invoice_number: string
@@ -9248,6 +9258,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          file_name?: string | null
+          file_path?: string | null
           id?: string
           invoice_date?: string
           invoice_number?: string
