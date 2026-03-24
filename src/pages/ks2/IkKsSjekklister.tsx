@@ -73,6 +73,7 @@ export default function IkKsSjekklister() {
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [showAdminDialog, setShowAdminDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [fillTemplate, setFillTemplate] = useState<typeof templates[0] | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [newTemplate, setNewTemplate] = useState({
     template_name: "",
