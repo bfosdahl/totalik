@@ -79,6 +79,12 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
         >
           <Menu className="w-5 h-5" />
         </Button>
+        {/* Logo */}
+        <img
+          src="/total-ik-logo-dark.png"
+          alt="Total-IK"
+          className="h-8 hidden lg:block"
+        />
       </div>
 
       <div className="flex items-center gap-2 md:gap-3">
