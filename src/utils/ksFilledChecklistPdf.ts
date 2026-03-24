@@ -7,6 +7,7 @@ interface ChecklistItem {
   text: string;
   value: boolean | string | null;
   comment?: string;
+  photos?: string[];
 }
 
 interface FilledChecklist {
@@ -26,7 +27,7 @@ interface ProjectInfo {
   project_number: string | null;
 }
 
-export function generateFilledChecklistPdf(
+export async function generateFilledChecklistPdf(
   checklist: FilledChecklist,
   project: ProjectInfo | null
 ) {
@@ -122,6 +123,53 @@ export function generateFilledChecklistPdf(
   doc.text(`✓ OK: ${okCount}`, 65, y + 18);
   doc.text(`✗ Avvik: ${avvikCount}`, 105, y + 18);
   doc.text(`○ Ikke utfylt: ${pending}`, 145, y + 18);
+
+  // Photos section
+  const photosPerItem = items
+    .map((item, idx) => ({ item, idx, photos: item.photos }))
+    .filter(p => p.photos && p.photos.length > 0);
+
+  if (photosPerItem.length > 0) {
+    if (y > 250) { doc.addPage(); y = 20; }
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("BILDER", 15, y);
+    y += 8;
+
+    for (const { item, idx, photos } of photosPerItem) {
+      if (!photos) continue;
+      for (const photo of photos) {
+        if (y > 200) { doc.addPage(); y = 20; }
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100);
+        doc.text(`${idx + 1}. ${item.text}`, 15, y);
+        doc.setTextColor(0);
+        y += 5;
+
+        try {
+          const imgUrl = photo.startsWith("http")
+            ? photo
+            : `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/ks-module2-checklist-photos/${photo}`;
+          const response = await fetch(imgUrl);
+          if (response.ok) {
+            const blob = await response.blob();
+            const dataUrl = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(blob);
+            });
+            doc.addImage(dataUrl, "JPEG", 15, y, 80, 60);
+            y += 65;
+          }
+        } catch {
+          doc.setFontSize(8);
+          doc.text("[Bilde kunne ikke lastes]", 15, y);
+          y += 8;
+        }
+      }
+    }
+  }
 
   // Footer on all pages
   const pages = doc.getNumberOfPages();

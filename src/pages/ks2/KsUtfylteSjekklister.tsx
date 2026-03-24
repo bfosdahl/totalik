@@ -108,7 +108,7 @@ export default function KsUtfylteSjekklister() {
     setDownloadingId(checklist.id);
     try {
       const projectInfo = projects[checklist.project_id];
-      generateFilledChecklistPdf(checklist, projectInfo || null);
+      await generateFilledChecklistPdf(checklist, projectInfo || null);
       toast.success("PDF lastet ned");
     } catch {
       toast.error("Kunne ikke generere PDF");
@@ -123,7 +123,7 @@ export default function KsUtfylteSjekklister() {
     try {
       const projectInfo = projects[projectId];
       for (const checklist of items) {
-        generateFilledChecklistPdf(checklist, projectInfo || null);
+        await generateFilledChecklistPdf(checklist, projectInfo || null);
         await new Promise(r => setTimeout(r, 300)); // small delay between downloads
       }
       toast.success(`${items.length} PDF-er lastet ned`);
