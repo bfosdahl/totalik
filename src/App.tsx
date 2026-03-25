@@ -41,6 +41,7 @@ const DepartmentDashboard = lazy(() => import("./pages/DepartmentDashboard"));
 
 // IK HMS
 const IkHmsOppsett = lazy(() => import("./pages/IkHmsOppsett"));
+const IkHmsImportHandbook = lazy(() => import("./pages/IkHmsImportHandbook"));
 const IkHmsMaal = lazy(() => import("./pages/IkHmsMaal"));
 const IkHmsOrganisering = lazy(() => import("./pages/IkHmsOrganisering"));
 const IkHmsStoffkartotek = lazy(() => import("./pages/IkHmsStoffkartotek"));
@@ -182,6 +183,7 @@ const App = () => (
                   <Route path="/avdeling/:departmentId/oppsett/ai" element={<ProtectedRoute><DepartmentAiSetup /></ProtectedRoute>} />
                   <Route path="/setup" element={<ProtectedRoute><Setup /></ProtectedRoute>} />
                   <Route path="/setup/ai" element={<ProtectedRoute><IkHmsOppsett /></ProtectedRoute>} />
+                  <Route path="/setup/import-handbook" element={<ProtectedRoute><IkHmsImportHandbook /></ProtectedRoute>} />
                   <Route path="/maalsetting" element={<ProtectedRoute><IkHmsMaal /></ProtectedRoute>} />
                   <Route path="/organisering" element={<ProtectedRoute><IkHmsOrganisering /></ProtectedRoute>} />
                   <Route path="/risikoanalyse" element={<ProtectedRoute><Risikoanalyse /></ProtectedRoute>} />

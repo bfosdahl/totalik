@@ -2,10 +2,12 @@ import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useNavigate } from "react-router-dom";
 import { IkHmsChatSetup } from "@/components/setup/IkHmsChatSetup";
+import { HandbookImportUploader } from "@/components/setup/HandbookImportUploader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Building2, CheckCircle2, AlertTriangle, RefreshCw, Loader2, LogOut } from "lucide-react";
+import { Building2, CheckCircle2, AlertTriangle, RefreshCw, Loader2, LogOut, Upload, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAiSetupValidation } from "@/hooks/useAiSetupValidation";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useAuth } from "@/contexts/AuthContext";
@@ -145,10 +147,32 @@ const IkHmsOppsett = () => {
             </div>
           </div>
         ) : (
-          <IkHmsChatSetup
-            companyId={companyId!}
-            onComplete={handleSetupComplete}
-          />
+          <Tabs defaultValue="ai" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="ai" className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                AI-oppsett
+              </TabsTrigger>
+              <TabsTrigger value="import" className="flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                Importer håndbok
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="ai">
+              <IkHmsChatSetup
+                companyId={companyId!}
+                onComplete={handleSetupComplete}
+              />
+            </TabsContent>
+            <TabsContent value="import">
+              <HandbookImportUploader
+                companyId={companyId!}
+                onImportComplete={async () => {
+                  await handleSetupComplete();
+                }}
+              />
+            </TabsContent>
+          </Tabs>
         )}
 
         <AlertDialog open={showRestartDialog} onOpenChange={setShowRestartDialog}>
