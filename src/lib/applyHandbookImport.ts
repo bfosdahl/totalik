@@ -177,10 +177,10 @@ export async function applyHandbookImport(
         comments: '',
       }));
 
-      const { error } = await supabase.from("company_action_plans").insert({
+      const { error } = await supabase.from("company_action_plans").upsert({
         company_id: companyId,
         actions: JSON.parse(JSON.stringify(actions)),
-      });
+      }, { onConflict: 'company_id' });
       if (error) console.error("[Handbook-Import] Actions error:", error);
       else summary.actions = actions.length;
     } else {
