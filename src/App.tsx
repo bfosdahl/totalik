@@ -183,6 +183,7 @@ const App = () => (
                   <Route path="/avdeling/:departmentId/oppsett/ai" element={<ProtectedRoute><DepartmentAiSetup /></ProtectedRoute>} />
                   <Route path="/setup" element={<ProtectedRoute><Setup /></ProtectedRoute>} />
                   <Route path="/setup/ai" element={<ProtectedRoute><IkHmsOppsett /></ProtectedRoute>} />
+                  <Route path="/setup/import-handbook" element={<ProtectedRoute><IkHmsImportHandbook /></ProtectedRoute>} />
                   <Route path="/maalsetting" element={<ProtectedRoute><IkHmsMaal /></ProtectedRoute>} />
                   <Route path="/organisering" element={<ProtectedRoute><IkHmsOrganisering /></ProtectedRoute>} />
                   <Route path="/risikoanalyse" element={<ProtectedRoute><Risikoanalyse /></ProtectedRoute>} />
