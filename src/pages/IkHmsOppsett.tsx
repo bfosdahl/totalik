@@ -145,6 +145,19 @@ const IkHmsOppsett = () => {
                 Kjør oppsett på nytt
               </Button>
             </div>
+
+            <div className="mt-8 pt-6 border-t">
+              <h3 className="text-lg font-semibold mb-2">Importer fra eksisterende håndbok</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Har du en eksisterende HMS-håndbok? Last den opp for å importere mål, risikoer, rutiner og avvik automatisk.
+              </p>
+              <HandbookImportUploader
+                companyId={companyId!}
+                onImportComplete={async () => {
+                  await handleSetupComplete();
+                }}
+              />
+            </div>
           </div>
         ) : (
           <Tabs defaultValue="ai" className="w-full">
