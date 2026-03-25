@@ -185,7 +185,7 @@ export async function applyHandbookImport(
       else summary.actions = actions.length;
     } else {
       // Insert empty action plan
-      await supabase.from("company_action_plans").insert({ company_id: companyId, actions: [] });
+      await supabase.from("company_action_plans").upsert({ company_id: companyId, actions: [] }, { onConflict: 'company_id' });
     }
 
     // 5. Routines
