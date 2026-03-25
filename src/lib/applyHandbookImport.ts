@@ -108,6 +108,8 @@ export async function applyHandbookImport(
         is_predefined: false,
         sort_order: i,
       }));
+      // Delete existing goals first to avoid duplicates, then insert new ones
+      await supabase.from("company_goals").delete().eq("company_id", companyId);
       const { error } = await supabase.from("company_goals").insert(goalsToInsert);
       if (error) console.error("[Handbook-Import] Goals error:", error);
       else summary.goals = goalsToInsert.length;
@@ -124,12 +126,11 @@ export async function applyHandbookImport(
       });
       content += '\n</ul>';
 
-      await supabase.from("company_organization").insert({
+      await supabase.from("company_organization").upsert({
         company_id: companyId,
-        template_id: null,
         custom_content: content,
         is_custom: true,
-      });
+      }, { onConflict: 'company_id' });
     }
 
     // 3. Risk assessments
@@ -154,10 +155,10 @@ export async function applyHandbookImport(
         is_predefined: false,
       }));
 
-      const { error } = await supabase.from("company_risk_assessments").insert({
+      const { error } = await supabase.from("company_risk_assessments").upsert({
         company_id: companyId,
         risks: JSON.parse(JSON.stringify(nestedRisks)),
-      });
+      }, { onConflict: 'company_id' });
       if (error) console.error("[Handbook-Import] Risks error:", error);
       else summary.risks = nestedRisks.length;
     }
@@ -176,15 +177,15 @@ export async function applyHandbookImport(
         comments: '',
       }));
 
-      const { error } = await supabase.from("company_action_plans").insert({
+      const { error } = await supabase.from("company_action_plans").upsert({
         company_id: companyId,
         actions: JSON.parse(JSON.stringify(actions)),
-      });
+      }, { onConflict: 'company_id' });
       if (error) console.error("[Handbook-Import] Actions error:", error);
       else summary.actions = actions.length;
     } else {
       // Insert empty action plan
-      await supabase.from("company_action_plans").insert({ company_id: companyId, actions: [] });
+      await supabase.from("company_action_plans").upsert({ company_id: companyId, actions: [] }, { onConflict: 'company_id' });
     }
 
     // 5. Routines
@@ -197,10 +198,10 @@ export async function applyHandbookImport(
         content: `<p><strong>Ansvar:</strong> ${r.ansvar || 'Ikke spesifisert'}</p>\n<p><strong>Frekvens:</strong> ${r.frekvens || 'Ved behov'}</p>\n<p>${r.prosedyre || ''}</p>`,
       }));
 
-      const { error } = await supabase.from("company_routines").insert({
+      const { error } = await supabase.from("company_routines").upsert({
         company_id: companyId,
         routines: JSON.parse(JSON.stringify(routines)),
-      });
+      }, { onConflict: 'company_id' });
       if (error) console.error("[Handbook-Import] Routines error:", error);
       else summary.routines = routines.length;
     }
