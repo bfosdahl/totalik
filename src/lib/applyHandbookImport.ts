@@ -108,6 +108,8 @@ export async function applyHandbookImport(
         is_predefined: false,
         sort_order: i,
       }));
+      // Delete existing goals first to avoid duplicates, then insert new ones
+      await supabase.from("company_goals").delete().eq("company_id", companyId);
       const { error } = await supabase.from("company_goals").insert(goalsToInsert);
       if (error) console.error("[Handbook-Import] Goals error:", error);
       else summary.goals = goalsToInsert.length;
