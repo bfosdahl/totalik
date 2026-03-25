@@ -126,12 +126,11 @@ export async function applyHandbookImport(
       });
       content += '\n</ul>';
 
-      await supabase.from("company_organization").insert({
+      await supabase.from("company_organization").upsert({
         company_id: companyId,
-        template_id: null,
         custom_content: content,
         is_custom: true,
-      });
+      }, { onConflict: 'company_id' });
     }
 
     // 3. Risk assessments
