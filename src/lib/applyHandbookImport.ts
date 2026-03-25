@@ -155,10 +155,10 @@ export async function applyHandbookImport(
         is_predefined: false,
       }));
 
-      const { error } = await supabase.from("company_risk_assessments").insert({
+      const { error } = await supabase.from("company_risk_assessments").upsert({
         company_id: companyId,
         risks: JSON.parse(JSON.stringify(nestedRisks)),
-      });
+      }, { onConflict: 'company_id' });
       if (error) console.error("[Handbook-Import] Risks error:", error);
       else summary.risks = nestedRisks.length;
     }
