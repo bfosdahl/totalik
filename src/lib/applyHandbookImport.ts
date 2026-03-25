@@ -198,10 +198,10 @@ export async function applyHandbookImport(
         content: `<p><strong>Ansvar:</strong> ${r.ansvar || 'Ikke spesifisert'}</p>\n<p><strong>Frekvens:</strong> ${r.frekvens || 'Ved behov'}</p>\n<p>${r.prosedyre || ''}</p>`,
       }));
 
-      const { error } = await supabase.from("company_routines").insert({
+      const { error } = await supabase.from("company_routines").upsert({
         company_id: companyId,
         routines: JSON.parse(JSON.stringify(routines)),
-      });
+      }, { onConflict: 'company_id' });
       if (error) console.error("[Handbook-Import] Routines error:", error);
       else summary.routines = routines.length;
     }
