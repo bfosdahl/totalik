@@ -41,6 +41,7 @@ const DepartmentDashboard = lazy(() => import("./pages/DepartmentDashboard"));
 
 // IK HMS
 const IkHmsOppsett = lazy(() => import("./pages/IkHmsOppsett"));
+const IkHmsImportHandbook = lazy(() => import("./pages/IkHmsImportHandbook"));
 const IkHmsMaal = lazy(() => import("./pages/IkHmsMaal"));
 const IkHmsOrganisering = lazy(() => import("./pages/IkHmsOrganisering"));
 const IkHmsStoffkartotek = lazy(() => import("./pages/IkHmsStoffkartotek"));
