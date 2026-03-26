@@ -66,7 +66,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     const companyName = (profile.companies as any)?.name || "Total-IK";
     const firstName = profile.first_name || "";
-    const loginUrl = "https://totalik.no/auth";
+
+    // Generate password reset link so the user can actually set their password
+    const { data: resetData, error: resetError } = await supabase.auth.admin.generateLink({
+      type: "recovery",
+      email: profile.email,
+    });
+
+    if (resetError) {
+      console.error("Error generating recovery link:", resetError);
+    }
+
+    const resetLink = resetData?.properties?.action_link;
+    const fallbackLoginUrl = "https://totalik.no/auth";
 
     const resend = new Resend(resendApiKey);
 
@@ -92,7 +104,7 @@ const handler = async (req: Request): Promise<Response> => {
               <strong>Brukernavn:</strong> ${profile.email}
             </p>
             <p style="color: #555; margin: 0;">
-              Klikk på knappen nedenfor for å sette ditt passord.
+              ${resetLink ? 'Klikk på knappen nedenfor for å sette ditt passord.' : 'Bruk "Glemt passord" på innloggingssiden for å sette ditt passord.'}
             </p>
           </div>
           
@@ -101,10 +113,15 @@ const handler = async (req: Request): Promise<Response> => {
           </p>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${loginUrl}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
-              Logg inn nå
+            <a href="${resetLink || fallbackLoginUrl}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
+              ${resetLink ? 'Sett passord og logg inn' : 'Gå til innlogging'}
             </a>
           </div>
+          
+          ${resetLink ? `
+          <p style="color: #666; font-size: 14px;">Hvis knappen ikke fungerer, kopier og lim inn denne lenken i nettleseren din:</p>
+          <p style="color: #0066cc; font-size: 12px; word-break: break-all;">${resetLink}</p>
+          ` : ''}
           
           ${getTermsNoticeHtml()}
           
