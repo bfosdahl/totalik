@@ -401,7 +401,15 @@ const IkMatHandbok = () => {
     );
   }
 
-  if (!handbokData || handbokData.goals.length === 0) {
+  const hasAnyContent = handbokData && (
+    handbokData.goals.length > 0 || 
+    handbokData.organization?.roles?.length > 0 || 
+    handbokData.risks.length > 0 || 
+    handbokData.routines.length > 0 ||
+    handbokData.haccp.length > 0
+  );
+
+  if (!handbokData || !hasAnyContent) {
     return (
       <AppLayout>
         <div className="container max-w-6xl mx-auto py-8">
