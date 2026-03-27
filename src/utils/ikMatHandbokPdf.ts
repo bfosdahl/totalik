@@ -640,8 +640,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     // Contracts Section
     if (safeData.contracts.length > 0) {
       checkPageBreak(50);
-      addTocEntry('10. Faste Avtaler og Leverandører');
-      addSectionHeader('10. Faste Avtaler og Leverandører');
+      addTocEntry('11. Faste Avtaler og Leverandører');
+      addSectionHeader('11. Faste Avtaler og Leverandører');
       
       autoTable(doc, {
         startY: yPos,
