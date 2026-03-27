@@ -607,8 +607,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     // Allergens Section
     if (safeData.allergens.length > 0) {
       checkPageBreak(50);
-      addTocEntry('9. Allergenhåndtering');
-      addSectionHeader('9. Allergenhåndtering');
+      addTocEntry('10. Allergenhåndtering');
+      addSectionHeader('10. Allergenhåndtering');
       
       autoTable(doc, {
         startY: yPos,
