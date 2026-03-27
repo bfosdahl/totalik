@@ -543,8 +543,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     // Checklists Section
     if (safeData.checklists.length > 0) {
       checkPageBreak(30);
-      addTocEntry('7. Sjekklister');
-      addSectionHeader('7. Sjekklister');
+      addTocEntry('8. Sjekklister');
+      addSectionHeader('8. Sjekklister');
       
       safeData.checklists.forEach((checklist) => {
         checkPageBreak(35);
