@@ -584,8 +584,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     // Cleaning Plan Section
     if (safeData.cleaningPlan.length > 0) {
       checkPageBreak(50);
-      addTocEntry('8. Renholdsplan');
-      addSectionHeader('8. Renholdsplan');
+      addTocEntry('9. Renholdsplan');
+      addSectionHeader('9. Renholdsplan');
       
       autoTable(doc, {
         startY: yPos,
