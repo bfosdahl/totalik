@@ -161,20 +161,57 @@ const IkMatHandbok = () => {
         const generatedContent: any = settings?.generatedContent || {};
         const manualContent: any = settings?.manualContent || {};
 
+        // Pick from generatedContent first, fallback sources for each key
         const pickArray = <T,>(...keys: string[]): T[] => {
           for (const key of keys) {
             const value = generatedContent?.[key];
-            if (Array.isArray(value)) return value as T[];
+            if (Array.isArray(value) && value.length > 0) return value as T[];
           }
           return [];
         };
 
+        // For goals: manual goals (IkMatGoal[]) take priority, then generated (string[])
+        const manualGoals: string[] = Array.isArray(manualContent.goals) && manualContent.goals.length > 0
+          ? manualContent.goals.map((g: any) => typeof g === 'string' ? g : g.text || '')
+          : [];
+        const generatedGoals: string[] = pickArray<string>('goals', 'maal', 'målsettinger');
+        const finalGoals = manualGoals.length > 0 ? manualGoals : generatedGoals;
+
+        // For risks: manual risks take priority
+        const manualRisks = Array.isArray(manualContent.risks) && manualContent.risks.length > 0
+          ? manualContent.risks.map((r: any) => ({
+              hazard: r.hazard || '',
+              consequence: r.consequence?.toString() || '',
+              probability: r.probability?.toString() || '',
+              riskLevel: (r.riskLevel || (r.probability * r.consequence))?.toString() || '',
+              measures: r.measures || '',
+            }))
+          : [];
+        const generatedRisks = pickArray<HandbokData['risks'][number]>('risks', 'riskAssessment', 'risikovurdering');
+
+        // For routines: manual routines take priority
+        const manualRoutines = Array.isArray(manualContent.routines) && manualContent.routines.length > 0
+          ? manualContent.routines.map((r: any) => ({
+              name: r.name || r.routine_name || '',
+              description: r.description || r.procedure || '',
+              frequency: r.frequency || '',
+              responsible: r.responsible || '',
+            }))
+          : [];
+        const generatedRoutines = pickArray<HandbokData['routines'][number]>('routines', 'rutiner');
+
+        // For HACCP: manual takes priority
+        const manualHaccp = Array.isArray(manualContent.haccp) && manualContent.haccp.length > 0
+          ? manualContent.haccp
+          : [];
+        const generatedHaccp = pickArray<HandbokData['haccp'][number]>('haccp', 'haccpPlan', 'kkp');
+
         setHandbokData({
-          goals: pickArray<string>('goals', 'maal', 'målsettinger'),
+          goals: finalGoals,
           organization: manualContent.organization || { roles: [] },
-          haccp: pickArray<HandbokData['haccp'][number]>('haccp', 'haccpPlan', 'kkp'),
-          risks: pickArray<HandbokData['risks'][number]>('risks', 'riskAssessment', 'risikovurdering'),
-          routines: pickArray<HandbokData['routines'][number]>('routines', 'rutiner'),
+          haccp: manualHaccp.length > 0 ? manualHaccp : generatedHaccp,
+          risks: manualRisks.length > 0 ? manualRisks : generatedRisks,
+          routines: manualRoutines.length > 0 ? manualRoutines : generatedRoutines,
           checklists: pickArray<HandbokData['checklists'][number]>('checklists', 'sjekklister'),
           cleaningPlan: pickArray<HandbokData['cleaningPlan'][number]>('cleaningPlan', 'renholdsplan'),
           allergens: pickArray<HandbokData['allergens'][number]>('allergens', 'allergener'),
