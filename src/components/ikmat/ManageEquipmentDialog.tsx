@@ -327,6 +327,8 @@ export function ManageEquipmentDialog({
                       <SelectItem value="daily">Daglig</SelectItem>
                       <SelectItem value="twice_daily">2x daglig</SelectItem>
                       <SelectItem value="weekly">Ukentlig</SelectItem>
+                      <SelectItem value="monthly">Månedlig</SelectItem>
+                      <SelectItem value="on_demand">Ved behov</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
