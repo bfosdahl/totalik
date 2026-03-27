@@ -409,6 +409,13 @@ const IkMatHandbok = () => {
           riskLevel: pickString(r, 'riskLevel', 'risikonivå', 'nivå'),
           measures: pickString(r, 'measures', 'tiltak', 'forebyggende_tiltak'),
         })),
+        actionPlan: (Array.isArray(handbokData.actionPlan) ? handbokData.actionPlan : []).map((a) => ({
+          action: pickString(a, 'action', 'tiltak'),
+          responsible: pickString(a, 'responsible', 'ansvarlig'),
+          deadline: pickString(a, 'deadline', 'frist'),
+          status: pickString(a, 'status'),
+          actionType: pickString(a, 'actionType'),
+        })),
         routines: (Array.isArray(handbokData.routines) ? handbokData.routines : []).map((rt) => ({
           name: pickString(rt, 'name', 'routine_name', 'title', 'navn'),
           description: pickString(rt, 'description', 'procedure', 'purpose', 'beskrivelse', 'prosedyre'),
