@@ -98,6 +98,13 @@ interface HandbokData {
     riskLevel: string;
     measures: string;
   }>;
+  actionPlan: Array<{
+    action: string;
+    responsible: string;
+    deadline: string;
+    status: string;
+    actionType: string;
+  }>;
   routines: Array<{
     name: string;
     description: string;
@@ -264,6 +271,13 @@ const IkMatHandbok = () => {
           })),
           haccp: manualHaccp.length > 0 ? manualHaccp : generatedHaccp,
           risks: manualRisks.length > 0 ? manualRisks : generatedRisks,
+          actionPlan: (manualContent.actionPlan || []).map((a: any) => ({
+            action: a.action || '',
+            responsible: a.responsibleName || a.responsible || '',
+            deadline: a.deadline || '',
+            status: a.status || 'pending',
+            actionType: a.actionType || 'corrective',
+          })),
           routines: manualRoutines.length > 0 ? manualRoutines : generatedRoutines,
           checklists: pickArray<HandbokData['checklists'][number]>('checklists', 'sjekklister'),
           cleaningPlan: mergedCleaningPlan,
@@ -394,6 +408,13 @@ const IkMatHandbok = () => {
           probability: pickString(r, 'probability', 'sannsynlighet'),
           riskLevel: pickString(r, 'riskLevel', 'risikonivå', 'nivå'),
           measures: pickString(r, 'measures', 'tiltak', 'forebyggende_tiltak'),
+        })),
+        actionPlan: (Array.isArray(handbokData.actionPlan) ? handbokData.actionPlan : []).map((a) => ({
+          action: pickString(a, 'action', 'tiltak'),
+          responsible: pickString(a, 'responsible', 'ansvarlig'),
+          deadline: pickString(a, 'deadline', 'frist'),
+          status: pickString(a, 'status'),
+          actionType: pickString(a, 'actionType'),
         })),
         routines: (Array.isArray(handbokData.routines) ? handbokData.routines : []).map((rt) => ({
           name: pickString(rt, 'name', 'routine_name', 'title', 'navn'),

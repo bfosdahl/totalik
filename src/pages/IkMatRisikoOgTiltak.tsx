@@ -123,11 +123,18 @@ const IkMatRisikoOgTiltak = () => {
 
   useEffect(() => {
     if (!isLoading) {
-      // If no risks exist, show examples
-      const risksToUse = (content.risks || []).length > 0 ? content.risks : exampleRisks;
-      const actionsToUse = (content.actionPlan || []).length > 0 ? content.actionPlan : exampleActions;
-      setRisks(risksToUse);
-      setActionPlan(actionsToUse);
+      if ((content.risks || []).length > 0) {
+        setRisks(content.risks);
+        setActionPlan(content.actionPlan || []);
+      } else {
+        // Auto-save example risks on first visit so they appear in the handbook
+        setRisks(exampleRisks);
+        setActionPlan(exampleActions);
+        // Save examples to DB automatically
+        saveContent('risks', exampleRisks).then(() => {
+          saveContent('actionPlan', exampleActions);
+        });
+      }
     }
   }, [isLoading, content.risks, content.actionPlan]);
 

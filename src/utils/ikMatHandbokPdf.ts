@@ -48,6 +48,13 @@ interface HandbokPdfData {
     riskLevel: string;
     measures: string;
   }>;
+  actionPlan?: Array<{
+    action: string;
+    responsible: string;
+    deadline: string;
+    status: string;
+    actionType: string;
+  }>;
   routines: Array<{
     name: string;
     description: string;
@@ -152,6 +159,7 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
       cleaningPlan: ensureArray(data.cleaningPlan),
       allergens: ensureArray(data.allergens),
       contracts: ensureArray(data.contracts),
+      actionPlan: ensureArray(data.actionPlan),
     };
 
     // Load logo if available
@@ -442,11 +450,44 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
       yPos = (doc as any).lastAutoTable.finalY + 15;
     }
 
+    // Action Plan Section
+    if (safeData.actionPlan.length > 0) {
+      checkPageBreak(50);
+      addTocEntry('6. Handlingsplan / Tiltak');
+      addSectionHeader('6. Handlingsplan / Tiltak');
+
+      const statusLabel = (s: string) => {
+        switch (s) {
+          case 'completed': return 'Fullført';
+          case 'in_progress': return 'Pågår';
+          case 'overdue': return 'Forfalt';
+          default: return 'Planlagt';
+        }
+      };
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Tiltak', 'Type', 'Ansvarlig', 'Frist', 'Status']],
+        body: safeData.actionPlan.map((a: any) => [
+          toText(a.action),
+          a.actionType === 'preventive' ? 'Forebyggende' : 'Korrigerende',
+          toText(a.responsible) || 'Ikke tildelt',
+          toText(a.deadline) || '-',
+          statusLabel(a.status),
+        ]),
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 8, cellPadding: 3 },
+        headStyles: { fillColor: [34, 139, 34], textColor: 255 },
+        alternateRowStyles: { fillColor: [240, 255, 240] },
+      });
+      yPos = (doc as any).lastAutoTable.finalY + 15;
+    }
+
     // Routines Section
     if (safeData.routines.length > 0) {
       checkPageBreak(30);
-      addTocEntry('6. Rutiner og Prosedyrer');
-      addSectionHeader('6. Rutiner og Prosedyrer');
+      addTocEntry('7. Rutiner og Prosedyrer');
+      addSectionHeader('7. Rutiner og Prosedyrer');
       
       safeData.routines.forEach((routine) => {
         // Ensure at least header + a few lines fit; rest will page-break as needed
@@ -502,8 +543,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     // Checklists Section
     if (safeData.checklists.length > 0) {
       checkPageBreak(30);
-      addTocEntry('7. Sjekklister');
-      addSectionHeader('7. Sjekklister');
+      addTocEntry('8. Sjekklister');
+      addSectionHeader('8. Sjekklister');
       
       safeData.checklists.forEach((checklist) => {
         checkPageBreak(35);
@@ -543,8 +584,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     // Cleaning Plan Section
     if (safeData.cleaningPlan.length > 0) {
       checkPageBreak(50);
-      addTocEntry('8. Renholdsplan');
-      addSectionHeader('8. Renholdsplan');
+      addTocEntry('9. Renholdsplan');
+      addSectionHeader('9. Renholdsplan');
       
       autoTable(doc, {
         startY: yPos,
@@ -566,8 +607,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     // Allergens Section
     if (safeData.allergens.length > 0) {
       checkPageBreak(50);
-      addTocEntry('9. Allergenhåndtering');
-      addSectionHeader('9. Allergenhåndtering');
+      addTocEntry('10. Allergenhåndtering');
+      addSectionHeader('10. Allergenhåndtering');
       
       autoTable(doc, {
         startY: yPos,
@@ -599,8 +640,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
     // Contracts Section
     if (safeData.contracts.length > 0) {
       checkPageBreak(50);
-      addTocEntry('10. Faste Avtaler og Leverandører');
-      addSectionHeader('10. Faste Avtaler og Leverandører');
+      addTocEntry('11. Faste Avtaler og Leverandører');
+      addSectionHeader('11. Faste Avtaler og Leverandører');
       
       autoTable(doc, {
         startY: yPos,
