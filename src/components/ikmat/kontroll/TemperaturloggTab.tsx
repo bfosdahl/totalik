@@ -371,7 +371,9 @@ export const TemperaturloggTab = () => {
                             </TableCell>
                             <TableCell>
                               {equip.measurement_frequency === 'daily' ? 'Daglig' :
-                               equip.measurement_frequency === 'twice_daily' ? '2x daglig' : 'Ukentlig'}
+                               equip.measurement_frequency === 'twice_daily' ? '2x daglig' :
+                               equip.measurement_frequency === 'monthly' ? 'Månedlig' :
+                               equip.measurement_frequency === 'on_demand' ? 'Ved behov' : 'Ukentlig'}
                             </TableCell>
                             <TableCell>
                               {hasLogToday ? (
