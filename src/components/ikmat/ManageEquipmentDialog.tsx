@@ -227,7 +227,9 @@ export function ManageEquipmentDialog({
                         </TableCell>
                         <TableCell>
                           {equip.measurement_frequency === 'daily' ? 'Daglig' :
-                           equip.measurement_frequency === 'twice_daily' ? '2x daglig' : 'Ukentlig'}
+                           equip.measurement_frequency === 'twice_daily' ? '2x daglig' :
+                           equip.measurement_frequency === 'monthly' ? 'Månedlig' :
+                           equip.measurement_frequency === 'on_demand' ? 'Ved behov' : 'Ukentlig'}
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
@@ -327,6 +329,8 @@ export function ManageEquipmentDialog({
                       <SelectItem value="daily">Daglig</SelectItem>
                       <SelectItem value="twice_daily">2x daglig</SelectItem>
                       <SelectItem value="weekly">Ukentlig</SelectItem>
+                      <SelectItem value="monthly">Månedlig</SelectItem>
+                      <SelectItem value="on_demand">Ved behov</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
