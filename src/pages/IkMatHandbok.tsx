@@ -98,6 +98,13 @@ interface HandbokData {
     riskLevel: string;
     measures: string;
   }>;
+  actionPlan: Array<{
+    action: string;
+    responsible: string;
+    deadline: string;
+    status: string;
+    actionType: string;
+  }>;
   routines: Array<{
     name: string;
     description: string;
