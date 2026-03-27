@@ -75,6 +75,14 @@ interface HandbokData {
   organization: {
     roles: OrganizationRole[];
   };
+  equipment: Array<{
+    name: string;
+    equipmentType: string;
+    location: string;
+    minTemp: string;
+    maxTemp: string;
+    measurementFrequency: string;
+  }>;
   haccp: Array<{
     step: string;
     hazard: string;
@@ -206,14 +214,59 @@ const IkMatHandbok = () => {
           : [];
         const generatedHaccp = pickArray<HandbokData['haccp'][number]>('haccp', 'haccpPlan', 'kkp');
 
+        const manualOrganization = manualContent.organization?.roles?.length > 0
+          ? manualContent.organization
+          : null;
+        const generatedOrganization = generatedContent.organization?.roles?.length > 0
+          ? generatedContent.organization
+          : generatedContent.organizationChart?.roles?.length > 0
+            ? generatedContent.organizationChart
+            : { roles: [] };
+
+        const { data: equipmentData, error: equipmentError } = await supabase
+          .from('ik_mat_temperature_equipment')
+          .select('*')
+          .eq('company_id', company.id)
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true });
+
+        if (equipmentError) throw equipmentError;
+
+        const { data: customCleaningTasks, error: customCleaningError } = await supabase
+          .from('ik_mat_custom_cleaning_tasks')
+          .select('*')
+          .eq('company_id', company.id)
+          .order('sort_order', { ascending: true });
+
+        if (customCleaningError) throw customCleaningError;
+
+        const generatedCleaningPlan = pickArray<HandbokData['cleaningPlan'][number]>('cleaningPlan', 'renholdsplan');
+        const mergedCleaningPlan = [
+          ...generatedCleaningPlan,
+          ...((customCleaningTasks || []).map((task: any) => ({
+            area: task.area || '',
+            frequency: task.frequency || '',
+            method: task.method || '',
+            responsible: task.responsible || '',
+          }))),
+        ];
+
         setHandbokData({
           goals: finalGoals,
-          organization: manualContent.organization || { roles: [] },
+          organization: manualOrganization || generatedOrganization,
+          equipment: (equipmentData || []).map((item: any) => ({
+            name: item.name || '',
+            equipmentType: item.equipment_type || '',
+            location: item.location || '',
+            minTemp: item.min_temp?.toString() || '',
+            maxTemp: item.max_temp?.toString() || '',
+            measurementFrequency: item.measurement_frequency || '',
+          })),
           haccp: manualHaccp.length > 0 ? manualHaccp : generatedHaccp,
           risks: manualRisks.length > 0 ? manualRisks : generatedRisks,
           routines: manualRoutines.length > 0 ? manualRoutines : generatedRoutines,
           checklists: pickArray<HandbokData['checklists'][number]>('checklists', 'sjekklister'),
-          cleaningPlan: pickArray<HandbokData['cleaningPlan'][number]>('cleaningPlan', 'renholdsplan'),
+          cleaningPlan: mergedCleaningPlan,
           allergens: pickArray<HandbokData['allergens'][number]>('allergens', 'allergener'),
           contracts: pickArray<HandbokData['contracts'][number]>('contracts', 'avtaler'),
           setupAnswers: (settings?.setupAnswers || {}) as HandbokData['setupAnswers'],
@@ -319,6 +372,14 @@ const IkMatHandbok = () => {
         hasCleanZone: handbokData.setupAnswers?.hasCleanZone,
         goals: safeStringArray(handbokData.goals),
         organization: handbokData.organization,
+        equipment: (Array.isArray(handbokData.equipment) ? handbokData.equipment : []).map((item) => ({
+          name: pickString(item, 'name', 'navn'),
+          equipmentType: pickString(item, 'equipmentType', 'equipment_type', 'type'),
+          location: pickString(item, 'location', 'plassering'),
+          minTemp: pickString(item, 'minTemp', 'min_temp'),
+          maxTemp: pickString(item, 'maxTemp', 'max_temp'),
+          measurementFrequency: pickString(item, 'measurementFrequency', 'measurement_frequency', 'frequency', 'frekvens'),
+        })),
         haccp: (Array.isArray(handbokData.haccp) ? handbokData.haccp : []).map((h) => ({
           step: pickString(h, 'step', 'trinn', 'prosess'),
           hazard: pickString(h, 'hazard', 'fare'),
@@ -404,9 +465,11 @@ const IkMatHandbok = () => {
   const hasAnyContent = handbokData && (
     handbokData.goals.length > 0 || 
     handbokData.organization?.roles?.length > 0 || 
+    handbokData.equipment.length > 0 ||
     handbokData.risks.length > 0 || 
     handbokData.routines.length > 0 ||
-    handbokData.haccp.length > 0
+    handbokData.haccp.length > 0 ||
+    handbokData.cleaningPlan.length > 0
   );
 
   if (!handbokData || !hasAnyContent) {
@@ -552,6 +615,38 @@ const IkMatHandbok = () => {
                 </li>
               ))}
             </ul>
+          </CardContent>
+        </Card>
+
+        {/* Organization */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Organisasjonsplan
+            </CardTitle>
+            <CardDescription>Roller, ansvar og organisering i IK-MAT</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {handbokData.organization?.roles?.length > 0 ? handbokData.organization.roles.map((role, index) => (
+                <div key={role.id || index} className="border rounded-lg p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h4 className="font-semibold">{role.title}</h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Ansvarlig: {role.personName || 'Ikke tildelt'}
+                      </p>
+                    </div>
+                  </div>
+                  {role.description && (
+                    <p className="text-sm mt-3 whitespace-pre-wrap">{role.description}</p>
+                  )}
+                </div>
+              )) : (
+                <p className="text-sm text-muted-foreground">Ingen roller lagt inn ennå.</p>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -839,6 +934,48 @@ const IkMatHandbok = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Equipment */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Thermometer className="h-5 w-5" />
+              Utstyr og temperaturkontroll
+            </CardTitle>
+            <CardDescription>Registrert utstyr med grenser, plassering og kontrollfrekvens</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-2 font-semibold">Navn</th>
+                    <th className="text-left p-2 font-semibold">Type</th>
+                    <th className="text-left p-2 font-semibold">Plassering</th>
+                    <th className="text-left p-2 font-semibold">Temperaturgrenser</th>
+                    <th className="text-left p-2 font-semibold">Frekvens</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {handbokData.equipment.map((item, index) => (
+                    <tr key={`${item.name}-${index}`} className="border-b">
+                      <td className="p-2">{item.name}</td>
+                      <td className="p-2">{item.equipmentType || '-'}</td>
+                      <td className="p-2">{item.location || '-'}</td>
+                      <td className="p-2">
+                        {item.minTemp || item.maxTemp ? `${item.minTemp || '–'}°C til ${item.maxTemp || '–'}°C` : '-'}
+                      </td>
+                      <td className="p-2">{item.measurementFrequency || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {handbokData.equipment.length === 0 && (
+                <p className="text-sm text-muted-foreground py-2">Ingen utstyr registrert ennå.</p>
+              )}
             </div>
           </CardContent>
         </Card>
