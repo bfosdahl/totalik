@@ -449,7 +449,8 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
       addSectionHeader('6. Rutiner og Prosedyrer');
       
       safeData.routines.forEach((routine) => {
-        checkPageBreak(40);
+        // Ensure at least header + a few lines fit; rest will page-break as needed
+        checkPageBreak(30);
         
         // Routine header card
         doc.setFillColor(248, 250, 252);
@@ -467,11 +468,24 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
         const routineDesc = toText(routine.description);
         if (routineDesc) {
           const descLines = doc.splitTextToSize(routineDesc, contentWidth - 10);
-          doc.text(descLines, margin + 3, yPos);
-          yPos += descLines.length * 5 + 5;
+          const lineHeight = 5;
+          // Render line by line with page break checks
+          for (let i = 0; i < descLines.length; i++) {
+            if (checkPageBreak(lineHeight + 2)) {
+              // After page break, re-set font
+              doc.setFontSize(9);
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(0, 0, 0);
+            }
+            doc.text(descLines[i], margin + 3, yPos);
+            yPos += lineHeight;
+          }
+          yPos += 5;
         }
 
+        checkPageBreak(14);
         doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
         doc.text('Frekvens: ', margin + 3, yPos);
         doc.setFont('helvetica', 'normal');
         doc.text(toText(routine.frequency) || 'Ikke oppgitt', margin + 25, yPos);
