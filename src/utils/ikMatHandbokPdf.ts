@@ -159,6 +159,7 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
       cleaningPlan: ensureArray(data.cleaningPlan),
       allergens: ensureArray(data.allergens),
       contracts: ensureArray(data.contracts),
+      actionPlan: ensureArray(data.actionPlan),
     };
 
     // Load logo if available
