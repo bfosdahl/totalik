@@ -271,6 +271,13 @@ const IkMatHandbok = () => {
           })),
           haccp: manualHaccp.length > 0 ? manualHaccp : generatedHaccp,
           risks: manualRisks.length > 0 ? manualRisks : generatedRisks,
+          actionPlan: (manualContent.actionPlan || []).map((a: any) => ({
+            action: a.action || '',
+            responsible: a.responsibleName || a.responsible || '',
+            deadline: a.deadline || '',
+            status: a.status || 'pending',
+            actionType: a.actionType || 'corrective',
+          })),
           routines: manualRoutines.length > 0 ? manualRoutines : generatedRoutines,
           checklists: pickArray<HandbokData['checklists'][number]>('checklists', 'sjekklister'),
           cleaningPlan: mergedCleaningPlan,
