@@ -25,6 +25,7 @@ export default function WorkSchedule() {
   const [createDefaultDate, setCreateDefaultDate] = useState<string | undefined>();
   const [isStandardScheduleOpen, setIsStandardScheduleOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<WorkScheduleType | null>(null);
+  const [editingSchedule, setEditingSchedule] = useState<WorkScheduleType | null>(null);
   const [selectedWeek, setSelectedWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [selectedMonth, setSelectedMonth] = useState(startOfMonth(new Date()));
   const [viewMode, setViewMode] = useState<"week" | "month">("week");
@@ -324,13 +325,31 @@ export default function WorkSchedule() {
       </div>
 
       <CreateShiftDialog 
-        open={isCreateDialogOpen} 
+        open={isCreateDialogOpen || !!editingSchedule} 
         onOpenChange={(open) => {
-          setIsCreateDialogOpen(open);
-          if (!open) setCreateDefaultDate(undefined);
+          if (!open) {
+            setIsCreateDialogOpen(false);
+            setCreateDefaultDate(undefined);
+            setEditingSchedule(null);
+          } else {
+            setIsCreateDialogOpen(true);
+          }
         }}
         onSuccess={refetch}
         defaultDate={createDefaultDate}
+        editShift={editingSchedule ? {
+          id: editingSchedule.id,
+          employee_id: editingSchedule.employee_id,
+          employee_name: editingSchedule.employee_name,
+          schedule_date: editingSchedule.schedule_date,
+          start_time: editingSchedule.start_time,
+          end_time: editingSchedule.end_time,
+          schedule_type: editingSchedule.schedule_type,
+          location: editingSchedule.location,
+          shift_role: editingSchedule.shift_role,
+          is_responsible: editingSchedule.is_responsible,
+          notes: editingSchedule.notes,
+        } : undefined}
       />
 
       <StandardScheduleDialog 
@@ -347,6 +366,9 @@ export default function WorkSchedule() {
         onDelete={async (id) => {
           await deleteSchedule(id);
           refetch();
+        }}
+        onEdit={(schedule) => {
+          setEditingSchedule(schedule);
         }}
         isAdmin={isAdmin}
       />

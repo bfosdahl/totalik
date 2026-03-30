@@ -12,7 +12,8 @@ import {
   User, 
   Star, 
   Calendar,
-  Trash2
+  Trash2,
+  Pencil
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ interface ShiftDetailsDialogProps {
   onClose: () => void;
   onUpdate?: () => void;
   onDelete?: (id: string) => void;
+  onEdit?: (schedule: WorkSchedule) => void;
   isAdmin?: boolean;
 }
 
@@ -29,6 +31,7 @@ export function ShiftDetailsDialog({
   onClose, 
   onUpdate,
   onDelete,
+  onEdit,
   isAdmin = false 
 }: ShiftDetailsDialogProps) {
   if (!schedule) return null;
@@ -94,21 +97,36 @@ export function ShiftDetailsDialog({
           )}
 
           {/* Actions */}
-          {isAdmin && onDelete && (
+          {isAdmin && (
             <>
               <Separator />
-              <div className="flex justify-end">
-                <Button 
-                  variant="destructive" 
-                  size="sm"
-                  onClick={() => {
-                    onDelete(schedule.id);
-                    onClose();
-                  }}
-                >
-                  <Trash2 className="w-4 h-4 mr-1" />
-                  Slett vakt
-                </Button>
+              <div className="flex justify-end gap-2">
+                {onEdit && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      onEdit(schedule);
+                      onClose();
+                    }}
+                  >
+                    <Pencil className="w-4 h-4 mr-1" />
+                    Endre vakt
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={() => {
+                      onDelete(schedule.id);
+                      onClose();
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Slett vakt
+                  </Button>
+                )}
               </div>
             </>
           )}
