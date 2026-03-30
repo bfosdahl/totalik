@@ -31,6 +31,7 @@ export function ShiftDetailsDialog({
   onClose, 
   onUpdate,
   onDelete,
+  onEdit,
   isAdmin = false 
 }: ShiftDetailsDialogProps) {
   if (!schedule) return null;
