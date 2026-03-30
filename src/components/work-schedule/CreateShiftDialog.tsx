@@ -16,6 +16,7 @@ interface CreateShiftDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  defaultDate?: string;
 }
 
 export interface ShiftFormData {
