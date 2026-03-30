@@ -18,6 +18,7 @@ import {
   Leaf,
   Sparkles,
   Mail,
+  Trash2,
   Activity,
   UserCheck,
 } from "lucide-react";
