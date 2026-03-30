@@ -38,9 +38,18 @@ export default function WorkSchedule() {
     });
   };
 
+  const getMonthSchedules = () => {
+    const monthEnd = endOfMonth(selectedMonth);
+    return schedules.filter(schedule => {
+      const scheduleDate = new Date(schedule.schedule_date);
+      return scheduleDate >= selectedMonth && scheduleDate <= monthEnd;
+    });
+  };
+
   const weekSchedules = getWeekSchedules();
-  const plannedSchedules = weekSchedules.filter(s => s.schedule_type === "planned");
-  const actualSchedules = weekSchedules.filter(s => s.schedule_type === "actual");
+  const currentSchedules = viewMode === "week" ? weekSchedules : getMonthSchedules();
+  const plannedSchedules = currentSchedules.filter(s => s.schedule_type === "planned");
+  const actualSchedules = currentSchedules.filter(s => s.schedule_type === "actual");
 
   const calculateHours = (startTime: string, endTime: string) => {
     const [startHour, startMin] = startTime.split(":").map(Number);
