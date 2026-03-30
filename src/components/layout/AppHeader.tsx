@@ -166,6 +166,9 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
           </div>
         )}
 
+        {/* Support button */}
+        <SupportTicketDialog />
+
         {/* Language selector */}
         <LanguageSelector variant="icon" />
 
