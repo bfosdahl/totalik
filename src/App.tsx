@@ -303,6 +303,7 @@ const App = () => (
                   <Route path="/admin/email-log" element={<ProtectedRoute requireSystemAdmin><AdminEmailLog /></ProtectedRoute>} />
                   <Route path="/admin/monitoring" element={<ProtectedRoute requireSystemAdmin><AdminMonitoring /></ProtectedRoute>} />
                   <Route path="/admin/sellers" element={<ProtectedRoute requireSystemAdmin><AdminSellers /></ProtectedRoute>} />
+                  <Route path="/admin/trash" element={<ProtectedRoute requireSystemAdmin><AdminTrashBin /></ProtectedRoute>} />
                   
                   {/* 404 */}
                   <Route path="*" element={<NotFound />} />
