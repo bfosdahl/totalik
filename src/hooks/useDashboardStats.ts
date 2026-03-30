@@ -192,6 +192,7 @@ export function useDashboardStats(): DashboardStats {
           .from("deviations")
           .select("*", { count: "exact", head: true })
           .eq("company_id", companyId)
+          .eq("is_deleted", false)
           .in("status", ["open", "in-progress"]);
 
         // Fetch completed actions from action plans
