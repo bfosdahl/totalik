@@ -45,9 +45,11 @@ export interface ShiftFormData {
   notes: string;
 }
 
-export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate }: CreateShiftDialogProps) {
+export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, editShift }: CreateShiftDialogProps) {
   const { users } = useCompanyUsers();
-  const { createSchedule } = useWorkSchedules();
+  const { createSchedule, updateSchedule } = useWorkSchedules();
+  
+  const isEditMode = !!editShift;
   
   const [formData, setFormData] = useState<ShiftFormData>({
     employee_id: "",
@@ -64,10 +66,23 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate }
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (defaultDate) {
+    if (editShift) {
+      setFormData({
+        employee_id: editShift.employee_id,
+        employee_name: editShift.employee_name,
+        schedule_date: editShift.schedule_date,
+        start_time: editShift.start_time.substring(0, 5),
+        end_time: editShift.end_time.substring(0, 5),
+        schedule_type: editShift.schedule_type,
+        location: editShift.location || undefined,
+        shift_role: editShift.shift_role || undefined,
+        is_responsible: editShift.is_responsible || false,
+        notes: editShift.notes || "",
+      });
+    } else if (defaultDate) {
       setFormData(prev => ({ ...prev, schedule_date: defaultDate }));
     }
-  }, [defaultDate]);
+  }, [defaultDate, editShift]);
 
   const handleEmployeeChange = (userId: string) => {
     const user = users.find(u => u.id === userId);
