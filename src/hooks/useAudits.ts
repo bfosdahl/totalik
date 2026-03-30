@@ -162,7 +162,7 @@ export function useAudits() {
     async (id: string) => {
       try {
         setIsSaving(true);
-        const { error } = await supabase.from("audits").delete().eq("id", id);
+        const { error } = await supabase.from("audits").update({ is_deleted: true, deleted_at: new Date().toISOString() }).eq("id", id);
 
         if (error) throw error;
 

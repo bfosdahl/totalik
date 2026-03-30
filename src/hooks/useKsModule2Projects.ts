@@ -236,7 +236,7 @@ export function useKsModule2Projects() {
     try {
       const { error } = await supabase
         .from("ks_module2_projects")
-        .delete()
+        .update({ is_deleted: true, deleted_at: new Date().toISOString() })
         .eq("id", id);
 
       if (error) throw error;

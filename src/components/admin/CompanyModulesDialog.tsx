@@ -94,7 +94,8 @@ export function CompanyModulesDialog({
         const { data, error } = await supabase
           .from("company_modules")
           .select("*")
-          .eq("company_id", company.id);
+          .eq("company_id", company.id)
+          .eq("is_deleted", false);
 
         if (error) throw error;
 
