@@ -142,7 +142,7 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
       <DialogContent className="max-w-lg max-h-[90vh]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Ny vakt</DialogTitle>
+            <DialogTitle>{isEditMode ? "Endre vakt" : "Ny vakt"}</DialogTitle>
             <DialogDescription>
               Opprett en ny vakt med sted og rolle
             </DialogDescription>
