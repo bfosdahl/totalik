@@ -1149,6 +1149,7 @@ export type Database = {
           org_number: string | null
           phone: string | null
           postal_code: string | null
+          seller_id: string | null
           sg_approval_areas: string[] | null
           sg_approved: boolean | null
           sg_expiry_date: string | null
@@ -1170,6 +1171,7 @@ export type Database = {
           org_number?: string | null
           phone?: string | null
           postal_code?: string | null
+          seller_id?: string | null
           sg_approval_areas?: string[] | null
           sg_approved?: boolean | null
           sg_expiry_date?: string | null
@@ -1191,6 +1193,7 @@ export type Database = {
           org_number?: string | null
           phone?: string | null
           postal_code?: string | null
+          seller_id?: string | null
           sg_approval_areas?: string[] | null
           sg_approved?: boolean | null
           sg_expiry_date?: string | null
@@ -1198,7 +1201,15 @@ export type Database = {
           status?: Database["public"]["Enums"]["company_status"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "companies_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       company_aarshjul_activities: {
         Row: {
@@ -14041,6 +14052,36 @@ export type Database = {
           },
         ]
       }
+      sellers: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+          name: string
+          phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       setup_wizard_progress: {
         Row: {
           company_id: string
@@ -14388,6 +14429,53 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          id: string
+          message: string
+          status: string
+          subject: string
+          updated_at: string | null
+          user_email: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          id?: string
+          message: string
+          status?: string
+          subject: string
+          updated_at?: string | null
+          user_email: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          message?: string
+          status?: string
+          subject?: string
+          updated_at?: string | null
+          user_email?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]

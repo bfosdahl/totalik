@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Department } from "@/hooks/useDepartments";
 import { LanguageSelector } from "@/components/language/LanguageSelector";
 import { useTranslate } from "@/hooks/useTranslate";
+import { SupportTicketDialog } from "@/components/support/SupportTicketDialog";
 
 interface AppHeaderProps {
   onMenuClick?: () => void;
@@ -165,6 +166,9 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
             <span className="truncate max-w-[120px]">{userDepartments[0].name}</span>
           </div>
         )}
+
+        {/* Support button */}
+        <SupportTicketDialog />
 
         {/* Language selector */}
         <LanguageSelector variant="icon" />

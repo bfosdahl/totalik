@@ -19,6 +19,7 @@ import {
   Sparkles,
   Mail,
   Activity,
+  UserCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ const adminNavItems = [
   { icon: BookOpen, label: "Rutine Maker", path: "/admin/routine-maker", color: "text-primary" },
   { icon: Mail, label: "E-postlogg", path: "/admin/email-log", color: undefined },
   { icon: Activity, label: "Monitoring", path: "/admin/monitoring", color: "text-warning" },
+  { icon: UserCheck, label: "Selgere", path: "/admin/sellers", color: "text-accent" },
 ];
 
 interface SidebarContentProps {
