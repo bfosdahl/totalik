@@ -32,14 +32,14 @@ export interface ShiftFormData {
   notes: string;
 }
 
-export function CreateShiftDialog({ open, onOpenChange, onSuccess }: CreateShiftDialogProps) {
+export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate }: CreateShiftDialogProps) {
   const { users } = useCompanyUsers();
   const { createSchedule } = useWorkSchedules();
   
   const [formData, setFormData] = useState<ShiftFormData>({
     employee_id: "",
     employee_name: "",
-    schedule_date: "",
+    schedule_date: defaultDate || "",
     start_time: "",
     end_time: "",
     schedule_type: "planned",

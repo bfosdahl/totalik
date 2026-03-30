@@ -63,8 +63,9 @@ export function MonthCalendar({ selectedMonth, schedules, onScheduleClick, onDay
           return (
             <div
               key={index}
+              onClick={() => onDayClick?.(day)}
               className={cn(
-                "border-b border-r min-h-[80px] sm:min-h-[110px] p-1",
+                "border-b border-r min-h-[80px] sm:min-h-[110px] p-1 cursor-pointer hover:bg-muted/40 transition-colors",
                 !inMonth && "bg-muted/30",
                 today && "bg-primary/5"
               )}
