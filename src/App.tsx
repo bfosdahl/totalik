@@ -143,6 +143,7 @@ const AdminStoffkartotek = lazy(() => import("./pages/admin/AdminStoffkartotek")
 const AdminRoutineMaker = lazy(() => import("./pages/admin/AdminRoutineMaker"));
 const AdminEmailLog = lazy(() => import("./pages/admin/AdminEmailLog"));
 const AdminMonitoring = lazy(() => import("./pages/admin/AdminMonitoring"));
+const AdminSellers = lazy(() => import("./pages/admin/AdminSellers"));
 const SetupSystemAdmin = lazy(() => import("./pages/admin/SetupSystemAdmin"));
 
 const PageLoader = () => (
