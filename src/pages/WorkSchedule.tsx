@@ -7,23 +7,26 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Plus, Clock, User, Settings, MapPin, Shield, CheckSquare } from "lucide-react";
-import { format, startOfWeek, addDays } from "date-fns";
+import { Calendar, Plus, Clock, User, Settings, MapPin, Shield, CheckSquare, ChevronLeft, ChevronRight } from "lucide-react";
+import { format, startOfWeek, addDays, startOfMonth, addMonths, endOfMonth } from "date-fns";
 import { nb } from "date-fns/locale";
 import { ShiftCalendar } from "@/components/work-schedule/ShiftCalendar";
 import { ShiftDetailsDialog } from "@/components/work-schedule/ShiftDetailsDialog";
 import { CreateShiftDialog } from "@/components/work-schedule/CreateShiftDialog";
 import { StandardScheduleDialog } from "@/components/work-schedule/StandardScheduleDialog";
+import { MonthCalendar } from "@/components/work-schedule/MonthCalendar";
 import type { WorkSchedule as WorkScheduleType } from "@/hooks/useWorkSchedules";
 
 export default function WorkSchedule() {
   const { profile, isCompanyAdmin, isSystemAdmin } = useAuth();
-  const { schedules, isLoading, createSchedule, refetch } = useWorkSchedules();
+  const { schedules, isLoading, createSchedule, deleteSchedule, refetch } = useWorkSchedules();
   const { users } = useCompanyUsers();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isStandardScheduleOpen, setIsStandardScheduleOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<WorkScheduleType | null>(null);
   const [selectedWeek, setSelectedWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [selectedMonth, setSelectedMonth] = useState(startOfMonth(new Date()));
+  const [viewMode, setViewMode] = useState<"week" | "month">("week");
 
   const isAdmin = isCompanyAdmin || isSystemAdmin;
 
@@ -35,9 +38,18 @@ export default function WorkSchedule() {
     });
   };
 
+  const getMonthSchedules = () => {
+    const monthEnd = endOfMonth(selectedMonth);
+    return schedules.filter(schedule => {
+      const scheduleDate = new Date(schedule.schedule_date);
+      return scheduleDate >= selectedMonth && scheduleDate <= monthEnd;
+    });
+  };
+
   const weekSchedules = getWeekSchedules();
-  const plannedSchedules = weekSchedules.filter(s => s.schedule_type === "planned");
-  const actualSchedules = weekSchedules.filter(s => s.schedule_type === "actual");
+  const currentSchedules = viewMode === "week" ? weekSchedules : getMonthSchedules();
+  const plannedSchedules = currentSchedules.filter(s => s.schedule_type === "planned");
+  const actualSchedules = currentSchedules.filter(s => s.schedule_type === "actual");
 
   const calculateHours = (startTime: string, endTime: string) => {
     const [startHour, startMin] = startTime.split(":").map(Number);
@@ -87,28 +99,61 @@ export default function WorkSchedule() {
           )}
         </div>
 
+        {/* View mode toggle */}
+        <div className="flex gap-2">
+          <Button
+            variant={viewMode === "week" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("week")}
+          >
+            Uke
+          </Button>
+          <Button
+            variant={viewMode === "month" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("month")}
+          >
+            Måned
+          </Button>
+        </div>
+
+        {/* Navigation */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setSelectedWeek(addDays(selectedWeek, -7))}
+            onClick={() => viewMode === "week" 
+              ? setSelectedWeek(addDays(selectedWeek, -7))
+              : setSelectedMonth(addMonths(selectedMonth, -1))
+            }
             className="w-full sm:w-auto"
           >
-            Forrige uke
+            {viewMode === "week" ? "Forrige uke" : "Forrige måned"}
           </Button>
           <div className="flex-1 text-center font-medium text-sm sm:text-base py-2 sm:py-0">
-            <div className="sm:hidden">Uke {format(selectedWeek, "w, yyyy", { locale: nb })}</div>
-            <div className="hidden sm:block">
-              Uke {format(selectedWeek, "w, yyyy", { locale: nb })} ({format(selectedWeek, "d. MMM", { locale: nb })} - {format(addDays(selectedWeek, 6), "d. MMM", { locale: nb })})
-            </div>
+            {viewMode === "week" ? (
+              <>
+                <div className="sm:hidden">Uke {format(selectedWeek, "w, yyyy", { locale: nb })}</div>
+                <div className="hidden sm:block">
+                  Uke {format(selectedWeek, "w, yyyy", { locale: nb })} ({format(selectedWeek, "d. MMM", { locale: nb })} - {format(addDays(selectedWeek, 6), "d. MMM", { locale: nb })})
+                </div>
+              </>
+            ) : (
+              <div className="capitalize">
+                {format(selectedMonth, "MMMM yyyy", { locale: nb })}
+              </div>
+            )}
           </div>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setSelectedWeek(addDays(selectedWeek, 7))}
+            onClick={() => viewMode === "week"
+              ? setSelectedWeek(addDays(selectedWeek, 7))
+              : setSelectedMonth(addMonths(selectedMonth, 1))
+            }
             className="w-full sm:w-auto"
           >
-            Neste uke
+            {viewMode === "week" ? "Neste uke" : "Neste måned"}
           </Button>
         </div>
 
@@ -120,11 +165,19 @@ export default function WorkSchedule() {
           </TabsList>
 
           <TabsContent value="calendar">
-            <ShiftCalendar 
-              schedules={weekSchedules} 
-              selectedWeek={selectedWeek}
-              onScheduleClick={handleScheduleClick}
-            />
+            {viewMode === "week" ? (
+              <ShiftCalendar 
+                schedules={weekSchedules} 
+                selectedWeek={selectedWeek}
+                onScheduleClick={handleScheduleClick}
+              />
+            ) : (
+              <MonthCalendar
+                schedules={getMonthSchedules()}
+                selectedMonth={selectedMonth}
+                onScheduleClick={handleScheduleClick}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="planned">
@@ -280,6 +333,11 @@ export default function WorkSchedule() {
         schedule={selectedSchedule} 
         onClose={() => setSelectedSchedule(null)}
         onUpdate={refetch}
+        onDelete={async (id) => {
+          await deleteSchedule(id);
+          refetch();
+        }}
+        isAdmin={isAdmin}
       />
     </AppLayout>
   );
