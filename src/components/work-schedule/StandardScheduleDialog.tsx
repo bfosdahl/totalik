@@ -36,8 +36,8 @@ const DAY_NAMES = ["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag"
 
 export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSchedulesGenerated }: StandardScheduleDialogProps) {
   const { users } = useCompanyUsers();
+  const { profile } = useAuth();
   const { schedules, createSchedule, deleteSchedule, generateWeekSchedules, generateMonthSchedules, isLoading } = useStandardWorkSchedules();
-  const { createSchedule: createWorkSchedule } = useWorkSchedules();
   const [selectedEmployee, setSelectedEmployee] = useState<string>("");
   const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [newSchedule, setNewSchedule] = useState({
