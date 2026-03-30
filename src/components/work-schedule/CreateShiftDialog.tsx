@@ -50,6 +50,12 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate }
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (defaultDate) {
+      setFormData(prev => ({ ...prev, schedule_date: defaultDate }));
+    }
+  }, [defaultDate]);
+
   const handleEmployeeChange = (userId: string) => {
     const user = users.find(u => u.id === userId);
     if (user) {
