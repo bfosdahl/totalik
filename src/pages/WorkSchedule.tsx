@@ -22,6 +22,7 @@ export default function WorkSchedule() {
   const { schedules, isLoading, createSchedule, deleteSchedule, refetch } = useWorkSchedules();
   const { users } = useCompanyUsers();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [createDefaultDate, setCreateDefaultDate] = useState<string | undefined>();
   const [isStandardScheduleOpen, setIsStandardScheduleOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<WorkScheduleType | null>(null);
   const [selectedWeek, setSelectedWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
