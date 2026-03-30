@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,7 @@ interface CreateShiftDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  defaultDate?: string;
 }
 
 export interface ShiftFormData {
@@ -31,14 +32,14 @@ export interface ShiftFormData {
   notes: string;
 }
 
-export function CreateShiftDialog({ open, onOpenChange, onSuccess }: CreateShiftDialogProps) {
+export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate }: CreateShiftDialogProps) {
   const { users } = useCompanyUsers();
   const { createSchedule } = useWorkSchedules();
   
   const [formData, setFormData] = useState<ShiftFormData>({
     employee_id: "",
     employee_name: "",
-    schedule_date: "",
+    schedule_date: defaultDate || "",
     start_time: "",
     end_time: "",
     schedule_type: "planned",
@@ -48,6 +49,12 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess }: CreateShift
     notes: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (defaultDate) {
+      setFormData(prev => ({ ...prev, schedule_date: defaultDate }));
+    }
+  }, [defaultDate]);
 
   const handleEmployeeChange = (userId: string) => {
     const user = users.find(u => u.id === userId);

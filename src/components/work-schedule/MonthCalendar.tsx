@@ -11,9 +11,10 @@ interface MonthCalendarProps {
   selectedMonth: Date;
   schedules: WorkSchedule[];
   onScheduleClick?: (schedule: WorkSchedule) => void;
+  onDayClick?: (date: Date) => void;
 }
 
-export function MonthCalendar({ selectedMonth, schedules, onScheduleClick }: MonthCalendarProps) {
+export function MonthCalendar({ selectedMonth, schedules, onScheduleClick, onDayClick }: MonthCalendarProps) {
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(selectedMonth);
     const monthEnd = endOfMonth(selectedMonth);
@@ -62,8 +63,9 @@ export function MonthCalendar({ selectedMonth, schedules, onScheduleClick }: Mon
           return (
             <div
               key={index}
+              onClick={() => onDayClick?.(day)}
               className={cn(
-                "border-b border-r min-h-[80px] sm:min-h-[110px] p-1",
+                "border-b border-r min-h-[80px] sm:min-h-[110px] p-1 cursor-pointer hover:bg-muted/40 transition-colors",
                 !inMonth && "bg-muted/30",
                 today && "bg-primary/5"
               )}
@@ -82,7 +84,7 @@ export function MonthCalendar({ selectedMonth, schedules, onScheduleClick }: Mon
                   return (
                     <div
                       key={schedule.id}
-                      onClick={() => onScheduleClick?.(schedule)}
+                      onClick={(e) => { e.stopPropagation(); onScheduleClick?.(schedule); }}
                       className={cn(
                         "px-1 py-0.5 rounded text-[9px] sm:text-[10px] cursor-pointer truncate transition-all hover:shadow-sm",
                         schedule.schedule_type === "planned"

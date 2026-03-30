@@ -22,6 +22,7 @@ export default function WorkSchedule() {
   const { schedules, isLoading, createSchedule, deleteSchedule, refetch } = useWorkSchedules();
   const { users } = useCompanyUsers();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [createDefaultDate, setCreateDefaultDate] = useState<string | undefined>();
   const [isStandardScheduleOpen, setIsStandardScheduleOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<WorkScheduleType | null>(null);
   const [selectedWeek, setSelectedWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
@@ -176,6 +177,12 @@ export default function WorkSchedule() {
                 schedules={getMonthSchedules()}
                 selectedMonth={selectedMonth}
                 onScheduleClick={handleScheduleClick}
+                onDayClick={(date) => {
+                  if (isAdmin) {
+                    setCreateDefaultDate(format(date, "yyyy-MM-dd"));
+                    setIsCreateDialogOpen(true);
+                  }
+                }}
               />
             )}
           </TabsContent>
@@ -318,8 +325,12 @@ export default function WorkSchedule() {
 
       <CreateShiftDialog 
         open={isCreateDialogOpen} 
-        onOpenChange={setIsCreateDialogOpen}
+        onOpenChange={(open) => {
+          setIsCreateDialogOpen(open);
+          if (!open) setCreateDefaultDate(undefined);
+        }}
         onSuccess={refetch}
+        defaultDate={createDefaultDate}
       />
 
       <StandardScheduleDialog 
