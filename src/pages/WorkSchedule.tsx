@@ -177,6 +177,12 @@ export default function WorkSchedule() {
                 schedules={getMonthSchedules()}
                 selectedMonth={selectedMonth}
                 onScheduleClick={handleScheduleClick}
+                onDayClick={(date) => {
+                  if (isAdmin) {
+                    setCreateDefaultDate(format(date, "yyyy-MM-dd"));
+                    setIsCreateDialogOpen(true);
+                  }
+                }}
               />
             )}
           </TabsContent>
