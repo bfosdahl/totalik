@@ -11,6 +11,7 @@ interface MonthCalendarProps {
   selectedMonth: Date;
   schedules: WorkSchedule[];
   onScheduleClick?: (schedule: WorkSchedule) => void;
+  onDayClick?: (date: Date) => void;
 }
 
 export function MonthCalendar({ selectedMonth, schedules, onScheduleClick }: MonthCalendarProps) {
