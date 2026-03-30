@@ -18,7 +18,7 @@ import type { WorkSchedule as WorkScheduleType } from "@/hooks/useWorkSchedules"
 
 export default function WorkSchedule() {
   const { profile, isCompanyAdmin, isSystemAdmin } = useAuth();
-  const { schedules, isLoading, createSchedule, refetch } = useWorkSchedules();
+  const { schedules, isLoading, createSchedule, deleteSchedule, refetch } = useWorkSchedules();
   const { users } = useCompanyUsers();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isStandardScheduleOpen, setIsStandardScheduleOpen] = useState(false);
