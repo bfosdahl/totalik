@@ -144,6 +144,7 @@ const AdminRoutineMaker = lazy(() => import("./pages/admin/AdminRoutineMaker"));
 const AdminEmailLog = lazy(() => import("./pages/admin/AdminEmailLog"));
 const AdminMonitoring = lazy(() => import("./pages/admin/AdminMonitoring"));
 const AdminSellers = lazy(() => import("./pages/admin/AdminSellers"));
+const AdminTrashBin = lazy(() => import("./pages/admin/AdminTrashBin"));
 const SetupSystemAdmin = lazy(() => import("./pages/admin/SetupSystemAdmin"));
 
 const PageLoader = () => (
@@ -302,6 +303,7 @@ const App = () => (
                   <Route path="/admin/email-log" element={<ProtectedRoute requireSystemAdmin><AdminEmailLog /></ProtectedRoute>} />
                   <Route path="/admin/monitoring" element={<ProtectedRoute requireSystemAdmin><AdminMonitoring /></ProtectedRoute>} />
                   <Route path="/admin/sellers" element={<ProtectedRoute requireSystemAdmin><AdminSellers /></ProtectedRoute>} />
+                  <Route path="/admin/trash" element={<ProtectedRoute requireSystemAdmin><AdminTrashBin /></ProtectedRoute>} />
                   
                   {/* 404 */}
                   <Route path="*" element={<NotFound />} />

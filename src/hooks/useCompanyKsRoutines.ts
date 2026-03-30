@@ -46,6 +46,7 @@ export function useCompanyKsRoutines() {
         .from("company_ks_routines")
         .select("*")
         .eq("company_id", companyId)
+        .eq("is_deleted", false)
         .order("sort_order", { ascending: true });
 
       if (error) throw error;
@@ -124,7 +125,7 @@ export function useCompanyKsRoutines() {
     try {
       const { error } = await supabase
         .from("company_ks_routines")
-        .delete()
+        .update({ is_deleted: true, deleted_at: new Date().toISOString() })
         .eq("id", id);
 
       if (error) throw error;

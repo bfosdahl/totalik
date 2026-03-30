@@ -51,6 +51,7 @@ export function useAudits() {
         .from("audits")
         .select("*")
         .eq("company_id", companyId)
+        .eq("is_deleted", false)
         .order("scheduled_date", { ascending: true });
 
       if (error) throw error;
@@ -161,7 +162,7 @@ export function useAudits() {
     async (id: string) => {
       try {
         setIsSaving(true);
-        const { error } = await supabase.from("audits").delete().eq("id", id);
+        const { error } = await supabase.from("audits").update({ is_deleted: true, deleted_at: new Date().toISOString() }).eq("id", id);
 
         if (error) throw error;
 

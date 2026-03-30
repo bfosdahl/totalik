@@ -72,6 +72,7 @@ export function useKsModule2Projects() {
           .from("ks_module2_projects")
           .select("*")
           .in("id", projectIds)
+          .eq("is_deleted", false)
           .order("updated_at", { ascending: false });
 
         if (error) throw error;
@@ -101,6 +102,7 @@ export function useKsModule2Projects() {
         .from("ks_module2_projects")
         .select("*")
         .eq("company_id", profile.company_id)
+        .eq("is_deleted", false)
         .order("is_favorite", { ascending: false })
         .order("updated_at", { ascending: false });
 
@@ -234,7 +236,7 @@ export function useKsModule2Projects() {
     try {
       const { error } = await supabase
         .from("ks_module2_projects")
-        .delete()
+        .update({ is_deleted: true, deleted_at: new Date().toISOString() })
         .eq("id", id);
 
       if (error) throw error;

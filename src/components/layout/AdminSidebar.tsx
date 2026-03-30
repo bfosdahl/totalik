@@ -18,6 +18,7 @@ import {
   Leaf,
   Sparkles,
   Mail,
+  Trash2,
   Activity,
   UserCheck,
 } from "lucide-react";
@@ -38,6 +39,7 @@ const adminNavItems = [
   { icon: Mail, label: "E-postlogg", path: "/admin/email-log", color: undefined },
   { icon: Activity, label: "Monitoring", path: "/admin/monitoring", color: "text-warning" },
   { icon: UserCheck, label: "Selgere", path: "/admin/sellers", color: "text-accent" },
+  { icon: Trash2, label: "Papirkurv", path: "/admin/trash", color: "text-destructive" },
 ];
 
 interface SidebarContentProps {
