@@ -140,15 +140,15 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>{isEditMode ? "Endre vakt" : "Ny vakt"}</DialogTitle>
             <DialogDescription>
-              Opprett en ny vakt med sted og rolle
+              {isEditMode ? "Rediger vaktdetaljer" : "Opprett en ny vakt med sted og rolle"}
             </DialogDescription>
           </DialogHeader>
 
-          <ScrollArea className="max-h-[60vh] pr-4">
+          <ScrollArea className="flex-1 overflow-y-auto pr-4">
             <div className="space-y-4 py-4">
               {/* Employee */}
               <div className="space-y-2">
