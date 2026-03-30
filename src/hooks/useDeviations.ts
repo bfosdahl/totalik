@@ -297,7 +297,7 @@ export function useDeviations() {
     try {
       const { error } = await supabase
         .from("deviations")
-        .delete()
+        .update({ is_deleted: true, deleted_at: new Date().toISOString() })
         .eq("id", id);
 
       if (error) throw error;
