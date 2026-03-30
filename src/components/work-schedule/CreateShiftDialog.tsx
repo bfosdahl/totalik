@@ -112,10 +112,12 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
       notes: formData.notes,
     };
 
-    const result = await createSchedule(scheduleData);
+    const result = isEditMode
+      ? await updateSchedule(editShift!.id, scheduleData)
+      : await createSchedule(scheduleData);
     
     if (result) {
-      toast.success("Vakt opprettet");
+      toast.success(isEditMode ? "Vakt oppdatert" : "Vakt opprettet");
       setFormData({
         employee_id: "",
         employee_name: "",
