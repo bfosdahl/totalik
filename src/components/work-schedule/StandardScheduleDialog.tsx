@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useStandardWorkSchedules } from "@/hooks/useStandardWorkSchedules";
-import { useWorkSchedules } from "@/hooks/useWorkSchedules";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { LOCATIONS } from "./ShiftCalendar";
 import { Trash2, Plus, Loader2, CalendarPlus, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
