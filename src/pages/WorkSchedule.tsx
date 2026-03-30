@@ -25,6 +25,8 @@ export default function WorkSchedule() {
   const [isStandardScheduleOpen, setIsStandardScheduleOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<WorkScheduleType | null>(null);
   const [selectedWeek, setSelectedWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [selectedMonth, setSelectedMonth] = useState(startOfMonth(new Date()));
+  const [viewMode, setViewMode] = useState<"week" | "month">("week");
 
   const isAdmin = isCompanyAdmin || isSystemAdmin;
 
