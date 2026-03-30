@@ -1,0 +1,1 @@
+UPDATE profiles SET company_id = 'b99e1732-f71a-47ac-b617-b216446cc790', status = 'active' WHERE email = 'post@bego.no';
