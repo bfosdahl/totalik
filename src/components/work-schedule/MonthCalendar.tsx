@@ -14,7 +14,7 @@ interface MonthCalendarProps {
   onDayClick?: (date: Date) => void;
 }
 
-export function MonthCalendar({ selectedMonth, schedules, onScheduleClick }: MonthCalendarProps) {
+export function MonthCalendar({ selectedMonth, schedules, onScheduleClick, onDayClick }: MonthCalendarProps) {
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(selectedMonth);
     const monthEnd = endOfMonth(selectedMonth);
