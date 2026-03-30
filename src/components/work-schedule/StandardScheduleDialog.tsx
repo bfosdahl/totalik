@@ -154,32 +154,45 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
     const monthEnd = endOfMonth(targetMonth);
     const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-    // Filter to only selected weekdays
-    const daysToCreate = allDays.filter(day => {
-      const dow = getDay(day); // 0=Sun, 1=Mon, etc.
-      return quickPlan.selectedDays.includes(dow);
-    });
+    const daysToCreate = allDays.filter(day => quickPlan.selectedDays.includes(getDay(day)));
 
-    let created = 0;
-    let skipped = 0;
+    // Build all rows to insert at once
+    const rows = daysToCreate.map(day => ({
+      company_id: profile?.company_id,
+      employee_id: selectedEmployee,
+      employee_name: empName,
+      schedule_date: format(day, "yyyy-MM-dd"),
+      start_time: quickPlan.start_time,
+      end_time: quickPlan.end_time,
+      schedule_type: "planned" as const,
+      location: quickPlan.location || null,
+      created_by_id: profile?.id,
+      created_by_name: `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || profile?.email || "Ukjent",
+    }));
 
-    for (const day of daysToCreate) {
-      const dateStr = format(day, "yyyy-MM-dd");
-      const success = await createWorkSchedule({
-        employee_id: selectedEmployee,
-        employee_name: empName,
-        schedule_date: dateStr,
-        start_time: quickPlan.start_time,
-        end_time: quickPlan.end_time,
-        schedule_type: "planned",
-        location: quickPlan.location || undefined,
-      });
-      if (success) created++;
-      else skipped++;
+    try {
+      const { error, data } = await supabase
+        .from("work_schedules")
+        .upsert(rows, { onConflict: "company_id,employee_id,schedule_date,schedule_type", ignoreDuplicates: true })
+        .select();
+
+      if (error) throw error;
+
+      const created = data?.length || 0;
+      const skipped = rows.length - created;
+
+      if (created > 0) toast.success(`${created} vakter opprettet for ${format(targetMonth, "MMMM yyyy", { locale: nb })}`);
+      if (skipped > 0) toast.info(`${skipped} vakter hoppet over (finnes allerede)`);
+    } catch (error) {
+      console.error("Error bulk creating schedules:", error);
+      // Fallback: insert one by one
+      let created = 0;
+      for (const row of rows) {
+        const { error: insertError } = await supabase.from("work_schedules").insert(row);
+        if (!insertError) created++;
+      }
+      if (created > 0) toast.success(`${created} vakter opprettet for ${format(targetMonth, "MMMM yyyy", { locale: nb })}`);
     }
-
-    if (created > 0) toast.success(`${created} vakter opprettet for ${format(targetMonth, "MMMM yyyy", { locale: nb })}`);
-    if (skipped > 0) toast.info(`${skipped} vakter hoppet over`);
     
     onSchedulesGenerated?.();
     setIsBulkAdding(false);
