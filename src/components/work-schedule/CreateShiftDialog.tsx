@@ -299,7 +299,7 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
             </div>
           </ScrollArea>
 
-          <DialogFooter className="mt-4">
+          <DialogFooter className="mt-4 flex-shrink-0">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Avbryt
             </Button>
