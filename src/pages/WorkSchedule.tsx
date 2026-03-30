@@ -99,28 +99,61 @@ export default function WorkSchedule() {
           )}
         </div>
 
+        {/* View mode toggle */}
+        <div className="flex gap-2">
+          <Button
+            variant={viewMode === "week" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("week")}
+          >
+            Uke
+          </Button>
+          <Button
+            variant={viewMode === "month" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("month")}
+          >
+            Måned
+          </Button>
+        </div>
+
+        {/* Navigation */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setSelectedWeek(addDays(selectedWeek, -7))}
+            onClick={() => viewMode === "week" 
+              ? setSelectedWeek(addDays(selectedWeek, -7))
+              : setSelectedMonth(addMonths(selectedMonth, -1))
+            }
             className="w-full sm:w-auto"
           >
-            Forrige uke
+            {viewMode === "week" ? "Forrige uke" : "Forrige måned"}
           </Button>
           <div className="flex-1 text-center font-medium text-sm sm:text-base py-2 sm:py-0">
-            <div className="sm:hidden">Uke {format(selectedWeek, "w, yyyy", { locale: nb })}</div>
-            <div className="hidden sm:block">
-              Uke {format(selectedWeek, "w, yyyy", { locale: nb })} ({format(selectedWeek, "d. MMM", { locale: nb })} - {format(addDays(selectedWeek, 6), "d. MMM", { locale: nb })})
-            </div>
+            {viewMode === "week" ? (
+              <>
+                <div className="sm:hidden">Uke {format(selectedWeek, "w, yyyy", { locale: nb })}</div>
+                <div className="hidden sm:block">
+                  Uke {format(selectedWeek, "w, yyyy", { locale: nb })} ({format(selectedWeek, "d. MMM", { locale: nb })} - {format(addDays(selectedWeek, 6), "d. MMM", { locale: nb })})
+                </div>
+              </>
+            ) : (
+              <div className="capitalize">
+                {format(selectedMonth, "MMMM yyyy", { locale: nb })}
+              </div>
+            )}
           </div>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setSelectedWeek(addDays(selectedWeek, 7))}
+            onClick={() => viewMode === "week"
+              ? setSelectedWeek(addDays(selectedWeek, 7))
+              : setSelectedMonth(addMonths(selectedMonth, 1))
+            }
             className="w-full sm:w-auto"
           >
-            Neste uke
+            {viewMode === "week" ? "Neste uke" : "Neste måned"}
           </Button>
         </div>
 
@@ -132,11 +165,19 @@ export default function WorkSchedule() {
           </TabsList>
 
           <TabsContent value="calendar">
-            <ShiftCalendar 
-              schedules={weekSchedules} 
-              selectedWeek={selectedWeek}
-              onScheduleClick={handleScheduleClick}
-            />
+            {viewMode === "week" ? (
+              <ShiftCalendar 
+                schedules={weekSchedules} 
+                selectedWeek={selectedWeek}
+                onScheduleClick={handleScheduleClick}
+              />
+            ) : (
+              <MonthCalendar
+                schedules={getMonthSchedules()}
+                selectedMonth={selectedMonth}
+                onScheduleClick={handleScheduleClick}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="planned">
