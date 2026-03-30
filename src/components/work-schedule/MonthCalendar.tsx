@@ -84,7 +84,7 @@ export function MonthCalendar({ selectedMonth, schedules, onScheduleClick, onDay
                   return (
                     <div
                       key={schedule.id}
-                      onClick={() => onScheduleClick?.(schedule)}
+                      onClick={(e) => { e.stopPropagation(); onScheduleClick?.(schedule); }}
                       className={cn(
                         "px-1 py-0.5 rounded text-[9px] sm:text-[10px] cursor-pointer truncate transition-all hover:shadow-sm",
                         schedule.schedule_type === "planned"
