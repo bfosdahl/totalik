@@ -280,6 +280,11 @@ export default function WorkSchedule() {
         schedule={selectedSchedule} 
         onClose={() => setSelectedSchedule(null)}
         onUpdate={refetch}
+        onDelete={async (id) => {
+          await deleteSchedule(id);
+          refetch();
+        }}
+        isAdmin={isAdmin}
       />
     </AppLayout>
   );
