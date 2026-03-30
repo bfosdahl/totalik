@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Department } from "@/hooks/useDepartments";
 import { LanguageSelector } from "@/components/language/LanguageSelector";
 import { useTranslate } from "@/hooks/useTranslate";
+import { SupportTicketDialog } from "@/components/support/SupportTicketDialog";
 
 interface AppHeaderProps {
   onMenuClick?: () => void;
