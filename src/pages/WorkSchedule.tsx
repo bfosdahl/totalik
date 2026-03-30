@@ -325,13 +325,31 @@ export default function WorkSchedule() {
       </div>
 
       <CreateShiftDialog 
-        open={isCreateDialogOpen} 
+        open={isCreateDialogOpen || !!editingSchedule} 
         onOpenChange={(open) => {
-          setIsCreateDialogOpen(open);
-          if (!open) setCreateDefaultDate(undefined);
+          if (!open) {
+            setIsCreateDialogOpen(false);
+            setCreateDefaultDate(undefined);
+            setEditingSchedule(null);
+          } else {
+            setIsCreateDialogOpen(true);
+          }
         }}
         onSuccess={refetch}
         defaultDate={createDefaultDate}
+        editShift={editingSchedule ? {
+          id: editingSchedule.id,
+          employee_id: editingSchedule.employee_id,
+          employee_name: editingSchedule.employee_name,
+          schedule_date: editingSchedule.schedule_date,
+          start_time: editingSchedule.start_time,
+          end_time: editingSchedule.end_time,
+          schedule_type: editingSchedule.schedule_type,
+          location: editingSchedule.location,
+          shift_role: editingSchedule.shift_role,
+          is_responsible: editingSchedule.is_responsible,
+          notes: editingSchedule.notes,
+        } : undefined}
       />
 
       <StandardScheduleDialog 
