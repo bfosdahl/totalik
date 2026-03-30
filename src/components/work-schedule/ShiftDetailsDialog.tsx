@@ -12,7 +12,8 @@ import {
   User, 
   Star, 
   Calendar,
-  Trash2
+  Trash2,
+  Pencil
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
