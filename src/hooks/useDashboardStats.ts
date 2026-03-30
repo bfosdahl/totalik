@@ -216,6 +216,7 @@ export function useDashboardStats(): DashboardStats {
           .from("deviations")
           .select("*", { count: "exact", head: true })
           .eq("company_id", companyId)
+          .eq("is_deleted", false)
           .in("status", ["open", "in-progress"])
           .gte("due_date", today.toISOString().split("T")[0])
           .lte("due_date", sevenDaysFromNow.toISOString().split("T")[0]);
