@@ -14,6 +14,7 @@ import { ShiftCalendar } from "@/components/work-schedule/ShiftCalendar";
 import { ShiftDetailsDialog } from "@/components/work-schedule/ShiftDetailsDialog";
 import { CreateShiftDialog } from "@/components/work-schedule/CreateShiftDialog";
 import { StandardScheduleDialog } from "@/components/work-schedule/StandardScheduleDialog";
+import { MonthCalendar } from "@/components/work-schedule/MonthCalendar";
 import type { WorkSchedule as WorkScheduleType } from "@/hooks/useWorkSchedules";
 
 export default function WorkSchedule() {
