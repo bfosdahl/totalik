@@ -51,6 +51,7 @@ export function useAudits() {
         .from("audits")
         .select("*")
         .eq("company_id", companyId)
+        .eq("is_deleted", false)
         .order("scheduled_date", { ascending: true });
 
       if (error) throw error;
