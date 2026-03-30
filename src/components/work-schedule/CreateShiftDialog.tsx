@@ -139,7 +139,7 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh]">
+      <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{isEditMode ? "Endre vakt" : "Ny vakt"}</DialogTitle>
