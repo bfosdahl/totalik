@@ -819,6 +819,42 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          action: string
+          changed_by: string | null
+          company_id: string | null
+          created_at: string
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string
+          table_name: string
+        }
+        Insert: {
+          action: string
+          changed_by?: string | null
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id: string
+          table_name: string
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string
+          table_name?: string
+        }
+        Relationships: []
+      }
       audits: {
         Row: {
           area: string | null
@@ -827,10 +863,13 @@ export type Database = {
           checklist_total: number
           company_id: string
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           department_id: string | null
           description: string | null
           form_type: string | null
           id: string
+          is_deleted: boolean
           responsible_id: string | null
           responsible_name: string | null
           scheduled_date: string
@@ -846,10 +885,13 @@ export type Database = {
           checklist_total?: number
           company_id: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           department_id?: string | null
           description?: string | null
           form_type?: string | null
           id?: string
+          is_deleted?: boolean
           responsible_id?: string | null
           responsible_name?: string | null
           scheduled_date: string
@@ -865,10 +907,13 @@ export type Database = {
           checklist_total?: number
           company_id?: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           department_id?: string | null
           description?: string | null
           form_type?: string | null
           id?: string
+          is_deleted?: boolean
           responsible_id?: string | null
           responsible_name?: string | null
           scheduled_date?: string
@@ -1324,21 +1369,30 @@ export type Database = {
           actions: Json
           company_id: string
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           id: string
+          is_deleted: boolean
           updated_at: string
         }
         Insert: {
           actions?: Json
           company_id: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
+          is_deleted?: boolean
           updated_at?: string
         }
         Update: {
           actions?: Json
           company_id?: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
+          is_deleted?: boolean
           updated_at?: string
         }
         Relationships: [
@@ -1498,8 +1552,11 @@ export type Database = {
         Row: {
           company_id: string
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           goal_text: string
           id: string
+          is_deleted: boolean
           is_predefined: boolean | null
           sort_order: number | null
           updated_at: string
@@ -1507,8 +1564,11 @@ export type Database = {
         Insert: {
           company_id: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           goal_text: string
           id?: string
+          is_deleted?: boolean
           is_predefined?: boolean | null
           sort_order?: number | null
           updated_at?: string
@@ -1516,8 +1576,11 @@ export type Database = {
         Update: {
           company_id?: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           goal_text?: string
           id?: string
+          is_deleted?: boolean
           is_predefined?: boolean | null
           sort_order?: number | null
           updated_at?: string
@@ -1640,6 +1703,8 @@ export type Database = {
         Row: {
           company_id: string
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           document_name: string
           file_path: string
@@ -1647,6 +1712,7 @@ export type Database = {
           file_type: string | null
           folder_id: string | null
           id: string
+          is_deleted: boolean
           is_template: boolean | null
           project_id: string | null
           updated_at: string
@@ -1656,6 +1722,8 @@ export type Database = {
         Insert: {
           company_id: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           document_name: string
           file_path: string
@@ -1663,6 +1731,7 @@ export type Database = {
           file_type?: string | null
           folder_id?: string | null
           id?: string
+          is_deleted?: boolean
           is_template?: boolean | null
           project_id?: string | null
           updated_at?: string
@@ -1672,6 +1741,8 @@ export type Database = {
         Update: {
           company_id?: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           document_name?: string
           file_path?: string
@@ -1679,6 +1750,7 @@ export type Database = {
           file_type?: string | null
           folder_id?: string | null
           id?: string
+          is_deleted?: boolean
           is_template?: boolean | null
           project_id?: string | null
           updated_at?: string
@@ -1802,10 +1874,13 @@ export type Database = {
           company_id: string
           content: string
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           file_path: string | null
           id: string
           is_active: boolean | null
+          is_deleted: boolean
           routine_name: string
           routine_number: string | null
           sort_order: number | null
@@ -1818,10 +1893,13 @@ export type Database = {
           company_id: string
           content?: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           file_path?: string | null
           id?: string
           is_active?: boolean | null
+          is_deleted?: boolean
           routine_name: string
           routine_number?: string | null
           sort_order?: number | null
@@ -1834,10 +1912,13 @@ export type Database = {
           company_id?: string
           content?: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           file_path?: string | null
           id?: string
           is_active?: boolean | null
+          is_deleted?: boolean
           routine_name?: string
           routine_number?: string | null
           sort_order?: number | null
@@ -2061,8 +2142,11 @@ export type Database = {
         Row: {
           company_id: string
           created_at: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           id: string
           is_active: boolean | null
+          is_deleted: boolean
           module_type: string
           settings: Json | null
           updated_at: string | null
@@ -2070,8 +2154,11 @@ export type Database = {
         Insert: {
           company_id: string
           created_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           is_active?: boolean | null
+          is_deleted?: boolean
           module_type: string
           settings?: Json | null
           updated_at?: string | null
@@ -2079,8 +2166,11 @@ export type Database = {
         Update: {
           company_id?: string
           created_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           is_active?: boolean | null
+          is_deleted?: boolean
           module_type?: string
           settings?: Json | null
           updated_at?: string | null
@@ -2731,6 +2821,8 @@ export type Database = {
           company_id: string
           consequences: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           department_id: string | null
           description: string | null
           deviation_number: string
@@ -2743,6 +2835,7 @@ export type Database = {
           incident_time: string | null
           incident_type: string | null
           involved_persons: string | null
+          is_deleted: boolean
           notify_arbeidstilsynet: boolean | null
           notify_insurance: boolean | null
           preventive_measures: string | null
@@ -2770,6 +2863,8 @@ export type Database = {
           company_id: string
           consequences?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           department_id?: string | null
           description?: string | null
           deviation_number: string
@@ -2782,6 +2877,7 @@ export type Database = {
           incident_time?: string | null
           incident_type?: string | null
           involved_persons?: string | null
+          is_deleted?: boolean
           notify_arbeidstilsynet?: boolean | null
           notify_insurance?: boolean | null
           preventive_measures?: string | null
@@ -2809,6 +2905,8 @@ export type Database = {
           company_id?: string
           consequences?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           department_id?: string | null
           description?: string | null
           deviation_number?: string
@@ -2821,6 +2919,7 @@ export type Database = {
           incident_time?: string | null
           incident_type?: string | null
           involved_persons?: string | null
+          is_deleted?: boolean
           notify_arbeidstilsynet?: boolean | null
           notify_insurance?: boolean | null
           preventive_measures?: string | null
@@ -6529,7 +6628,10 @@ export type Database = {
           company_id: string
           created_at: string
           danger_classes: string[] | null
+          deleted_at: string | null
+          deleted_by: string | null
           id: string
+          is_deleted: boolean
           last_updated: string
           location: string | null
           manufacturer: string | null
@@ -6542,7 +6644,10 @@ export type Database = {
           company_id: string
           created_at?: string
           danger_classes?: string[] | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
+          is_deleted?: boolean
           last_updated?: string
           location?: string | null
           manufacturer?: string | null
@@ -6555,7 +6660,10 @@ export type Database = {
           company_id?: string
           created_at?: string
           danger_classes?: string[] | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
+          is_deleted?: boolean
           last_updated?: string
           location?: string | null
           manufacturer?: string | null
@@ -9946,9 +10054,12 @@ export type Database = {
           contractor_type: string | null
           created_at: string
           created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           gnr_bnr: string | null
           id: string
+          is_deleted: boolean
           is_favorite: boolean | null
           last_activity_date: string | null
           last_activity_description: string | null
@@ -9978,9 +10089,12 @@ export type Database = {
           contractor_type?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           gnr_bnr?: string | null
           id?: string
+          is_deleted?: boolean
           is_favorite?: boolean | null
           last_activity_date?: string | null
           last_activity_description?: string | null
@@ -10010,9 +10124,12 @@ export type Database = {
           contractor_type?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           gnr_bnr?: string | null
           id?: string
+          is_deleted?: boolean
           is_favorite?: boolean | null
           last_activity_date?: string | null
           last_activity_description?: string | null
