@@ -22,6 +22,7 @@ interface ShiftDetailsDialogProps {
   onClose: () => void;
   onUpdate?: () => void;
   onDelete?: (id: string) => void;
+  onEdit?: (schedule: WorkSchedule) => void;
   isAdmin?: boolean;
 }
 
