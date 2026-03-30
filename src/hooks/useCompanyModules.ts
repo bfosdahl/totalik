@@ -53,7 +53,8 @@ export function useCompanyModules(companyId?: string) {
         const { data, error } = await supabase
           .from("company_modules")
           .select("*")
-          .eq("company_id", targetCompanyId);
+          .eq("company_id", targetCompanyId)
+          .eq("is_deleted", false);
 
         if (error) throw error;
         setModules(data || []);
