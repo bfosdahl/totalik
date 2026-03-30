@@ -17,6 +17,19 @@ interface CreateShiftDialogProps {
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
   defaultDate?: string;
+  editShift?: {
+    id: string;
+    employee_id: string;
+    employee_name: string;
+    schedule_date: string;
+    start_time: string;
+    end_time: string;
+    schedule_type: "planned" | "actual";
+    location?: string | null;
+    shift_role?: string | null;
+    is_responsible?: boolean;
+    notes?: string | null;
+  };
 }
 
 export interface ShiftFormData {
