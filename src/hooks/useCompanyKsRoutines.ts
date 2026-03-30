@@ -46,6 +46,7 @@ export function useCompanyKsRoutines() {
         .from("company_ks_routines")
         .select("*")
         .eq("company_id", companyId)
+        .eq("is_deleted", false)
         .order("sort_order", { ascending: true });
 
       if (error) throw error;
