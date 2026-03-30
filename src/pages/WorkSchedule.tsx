@@ -325,8 +325,12 @@ export default function WorkSchedule() {
 
       <CreateShiftDialog 
         open={isCreateDialogOpen} 
-        onOpenChange={setIsCreateDialogOpen}
+        onOpenChange={(open) => {
+          setIsCreateDialogOpen(open);
+          if (!open) setCreateDefaultDate(undefined);
+        }}
         onSuccess={refetch}
+        defaultDate={createDefaultDate}
       />
 
       <StandardScheduleDialog 
