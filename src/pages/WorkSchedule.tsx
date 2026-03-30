@@ -367,6 +367,9 @@ export default function WorkSchedule() {
           await deleteSchedule(id);
           refetch();
         }}
+        onEdit={(schedule) => {
+          setEditingSchedule(schedule);
+        }}
         isAdmin={isAdmin}
       />
     </AppLayout>
