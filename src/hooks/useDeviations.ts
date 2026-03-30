@@ -125,6 +125,7 @@ export function useDeviations() {
         .from("deviations")
         .select("*")
         .eq("company_id", companyId)
+        .eq("is_deleted", false)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
