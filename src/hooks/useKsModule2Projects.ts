@@ -72,6 +72,7 @@ export function useKsModule2Projects() {
           .from("ks_module2_projects")
           .select("*")
           .in("id", projectIds)
+          .eq("is_deleted", false)
           .order("updated_at", { ascending: false });
 
         if (error) throw error;
