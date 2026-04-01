@@ -104,3 +104,6 @@ verify_jwt = false
 
 [functions.reactivate-user]
 verify_jwt = true
+
+[functions.create-company-from-crm]
+verify_jwt = false
