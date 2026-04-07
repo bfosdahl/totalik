@@ -48,6 +48,7 @@ interface Ks2ProjectSidebarProps {
 // Top-level standalone items
 const topMenuItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "", guestAllowed: true },
+  { id: "chat", label: "Prosjekt-assistent", icon: MessageSquare, path: "/chat", guestAllowed: false },
 ];
 
 // Grouped menu sections

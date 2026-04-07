@@ -165,6 +165,8 @@ export default function Ks2ProjectDetail() {
         return <Ks2ByggesakBlanketter />;
       case "/byggesak/epost":
         return <Ks2ByggesakEpost />;
+      case "/chat":
+        return <Ks2ProjectChat />;
       default:
         // Handle byggesak form route
         if (currentPath.startsWith("/byggesak/form/")) {
