@@ -11615,6 +11615,51 @@ export type Database = {
           },
         ]
       }
+      ks_project_chat_messages: {
+        Row: {
+          company_id: string
+          content: string
+          created_at: string
+          id: string
+          project_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          content: string
+          created_at?: string
+          id?: string
+          project_id: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          project_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_project_chat_messages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_project_chat_messages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_project_client: {
         Row: {
           address: string | null
