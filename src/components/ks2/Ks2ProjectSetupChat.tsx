@@ -55,12 +55,10 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [setupComplete, setSetupComplete] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSend = async () => {
