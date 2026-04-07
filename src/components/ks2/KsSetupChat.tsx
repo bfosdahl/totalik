@@ -42,21 +42,22 @@ interface KsSetupChatProps {
   onComplete: (result: KsSetupResult) => void;
 }
 
-const INITIAL_MESSAGE = `Hei! Jeg er KS Oppsett-hjelperen 👋
+const INITIAL_MESSAGE = `Hei! Jeg er KS Grunnlag-hjelperen 👋
 
-Jeg hjelper deg å tilpasse kvalitetssikringssystemet for din bedrift.
+Jeg hjelper deg å bygge opp bedriftens kvalitetssikringssystem (KS-grunnlag) i henhold til SAK10 §10-1 og plan- og bygningsloven.
 
-**Hva slags type bedrift driver dere?**
-- Totalentreprenør
-- Hovedentreprenør
-- Tømrer/snekker
-- Maler
-- Rørlegger
-- Elektriker
-- Betongarbeider
-- Annet
+**KS-grunnlaget dekker:**
+- Kvalitetsmål og målsettinger
+- Rutiner (avvik, egenkontroll, dokumenthåndtering, m.m.)
+- Sjekklistemaler for ditt fagområde
+- Organisasjonsplan
 
-Bare skriv hva dere jobber med! 🔨`;
+**For å tilpasse oppsettet trenger jeg å vite litt om bedriften:**
+- Hva slags fag jobber dere med? (tømrer, maler, rørlegger, osv.)
+- Ca. hvor mange ansatte har dere?
+- Bruker dere underleverandører?
+
+Bare fortell litt om bedriften, så setter vi i gang! 🔨`;
 
 function getDisplayContent(content: string): string {
   return content
