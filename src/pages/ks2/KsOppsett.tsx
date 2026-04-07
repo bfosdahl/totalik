@@ -181,10 +181,10 @@ const KsOppsett = () => {
         <div className="mb-4 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 flex items-center gap-3">
             <HardHat className="h-7 w-7 text-primary" />
-            KS Oppsett-hjelperen
+            KS Grunnlag – Oppsett-hjelper
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Tilpass kvalitetssikringssystemet for din bedrift
+            Sett opp bedriftens kvalitetssikringssystem iht. SAK10 §10-1
           </p>
         </div>
 
