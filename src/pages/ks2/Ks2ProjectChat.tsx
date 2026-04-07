@@ -1,0 +1,289 @@
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card } from "@/components/ui/card";
+import { Loader2, Send, User, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
+
+interface Message {
+  id?: string;
+  role: "user" | "assistant";
+  content: string;
+}
+
+function getDisplayContent(content: string): string {
+  return content
+    .replace(/\|\|\|JSON_START\|\|\|[\s\S]*?\|\|\|JSON_END\|\|\|/g, "")
+    .trim();
+}
+
+const WELCOME_MESSAGE = `Hei! Jeg er Prosjekt-assistenten 👋
+
+Jeg er her for å hjelpe deg gjennom hele prosjektet. Du kan spørre meg om:
+
+- **Sjekklister** – Hvilke bør du bruke? Hva betyr sjekkpunktene?
+- **Rutiner** – Avvikshåndtering, egenkontroll, dokumentasjon
+- **SAK10-krav** – Hva kreves for ditt prosjekt?
+- **HMS/SHA** – Risikovurderinger og sikkerhetstiltak
+- **Underleverandører** – Styring og oppfølging
+- **Generelle spørsmål** om kvalitetssikring i byggeprosjekter
+
+Bare skriv hva du lurer på! 🔨`;
+
+export default function Ks2ProjectChat() {
+  const { projectId } = useParams();
+  const { profile } = useAuth();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Load chat history from DB
+  useEffect(() => {
+    if (!projectId) return;
+
+    const loadHistory = async () => {
+      setIsLoadingHistory(true);
+      try {
+        const { data, error } = await supabase
+          .from("ks_project_chat_messages" as any)
+          .select("id, role, content, created_at")
+          .eq("project_id", projectId)
+          .order("created_at", { ascending: true });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          setMessages(data.map((m: any) => ({ id: m.id, role: m.role, content: m.content })));
+        } else {
+          setMessages([{ role: "assistant", content: WELCOME_MESSAGE }]);
+        }
+      } catch (err) {
+        console.error("Error loading chat history:", err);
+        setMessages([{ role: "assistant", content: WELCOME_MESSAGE }]);
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    };
+
+    loadHistory();
+  }, [projectId]);
+
+  // Auto-scroll
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const saveMessage = useCallback(async (role: string, content: string) => {
+    if (!projectId || !profile?.company_id || !profile?.user_id) return;
+    try {
+      await supabase
+        .from("ks_project_chat_messages" as any)
+        .insert({
+          project_id: projectId,
+          company_id: profile.company_id,
+          user_id: profile.user_id,
+          role,
+          content,
+        } as any);
+    } catch (err) {
+      console.error("Error saving message:", err);
+    }
+  }, [projectId, profile?.company_id, profile?.user_id]);
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = input.trim();
+    setInput("");
+    
+    const newMessages = [...messages, { role: "user" as const, content: userMessage }];
+    setMessages(newMessages);
+    
+    // Save user message to DB
+    await saveMessage("user", userMessage);
+    
+    setIsLoading(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Ikke logget inn");
+
+      // Build message history for AI (exclude welcome message if it's from DB)
+      const aiMessages = newMessages
+        .filter(m => m.content !== WELCOME_MESSAGE)
+        .map(m => ({ role: m.role, content: m.content }));
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ks-project-chat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ messages: aiMessages }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Feil ved kommunikasjon med AI");
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No reader");
+
+      const decoder = new TextDecoder();
+      let fullContent = "";
+      let textBuffer = "";
+
+      setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              fullContent += content;
+              setMessages(prev => {
+                const updated = [...prev];
+                updated[updated.length - 1] = { role: "assistant", content: fullContent };
+                return updated;
+              });
+            }
+          } catch {
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
+        }
+      }
+
+      // Save assistant response to DB
+      if (fullContent) {
+        await saveMessage("assistant", fullContent);
+      }
+    } catch (error) {
+      console.error("Project chat error:", error);
+      const errorMsg = "Beklager, det oppsto en feil. Prøv igjen.";
+      setMessages(prev => [...prev, { role: "assistant", content: errorMsg }]);
+      toast.error("Feil ved kommunikasjon med AI");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoadingHistory) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Laster chat...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-220px)] max-h-[800px]">
+      <div className="flex items-center gap-2 pb-4 border-b">
+        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+          <Sparkles className="w-5 h-5 text-primary" />
+        </div>
+        <div>
+          <h3 className="font-medium">Prosjekt-assistenten</h3>
+          <p className="text-xs text-muted-foreground">AI-hjelp for kvalitetssikring og prosjektstyring</p>
+        </div>
+      </div>
+
+      <ScrollArea className="flex-1 py-4" ref={scrollRef}>
+        <div className="space-y-4 pr-4">
+          {messages.map((msg, i) => {
+            const displayContent = getDisplayContent(msg.content);
+            if (!displayContent) return null;
+
+            return (
+              <div
+                key={msg.id || i}
+                className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                  msg.role === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted"
+                }`}>
+                  {msg.role === "user" ? <User className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+                </div>
+                <Card className={`p-3 max-w-[85%] ${
+                  msg.role === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/50"
+                }`}>
+                  <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+                    <ReactMarkdown>{displayContent}</ReactMarkdown>
+                  </div>
+                </Card>
+              </div>
+            );
+          })}
+
+          {isLoading && messages[messages.length - 1]?.role === "user" && (
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <Card className="p-3 bg-muted/50">
+                <Loader2 className="w-4 h-4 animate-spin" />
+              </Card>
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+
+      <div className="pt-4 border-t">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSend();
+          }}
+          className="flex gap-2"
+        >
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Spør om sjekklister, rutiner, SAK10-krav..."
+            disabled={isLoading}
+          />
+          <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          </Button>
+        </form>
+      </div>
+    </div>
+  );
+}

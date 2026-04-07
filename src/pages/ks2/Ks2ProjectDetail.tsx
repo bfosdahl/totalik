@@ -37,6 +37,8 @@ import Ks2ByggesakDashboard from "./Ks2ByggesakDashboard";
 import Ks2ByggesakBlanketter from "./Ks2ByggesakBlanketter";
 import Ks2ByggesakEpost from "./Ks2ByggesakEpost";
 import Ks2ByggesakForm from "./Ks2ByggesakForm";
+// AI Chat
+import Ks2ProjectChat from "./Ks2ProjectChat";
 
 export default function Ks2ProjectDetail() {
   const { projectId } = useParams();
@@ -163,6 +165,8 @@ export default function Ks2ProjectDetail() {
         return <Ks2ByggesakBlanketter />;
       case "/byggesak/epost":
         return <Ks2ByggesakEpost />;
+      case "/chat":
+        return <Ks2ProjectChat />;
       default:
         // Handle byggesak form route
         if (currentPath.startsWith("/byggesak/form/")) {
