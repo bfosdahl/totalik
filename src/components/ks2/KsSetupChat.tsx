@@ -71,13 +71,29 @@ function extractJsonFromContent(content: string): string | null {
 }
 
 export function KsSetupChat({ companyId, onComplete }: KsSetupChatProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: INITIAL_MESSAGE }
-  ]);
+  const storageKey = `ks-setup-chat-${companyId}`;
+
+  const [messages, setMessages] = useState<Message[]>(() => {
+    try {
+      const saved = sessionStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved) as Message[];
+        if (parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return [{ role: "assistant", content: INITIAL_MESSAGE }];
+  });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [setupComplete, setSetupComplete] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Persist messages to sessionStorage
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(storageKey, JSON.stringify(messages));
+    } catch {}
+  }, [messages, storageKey]);
 
   useEffect(() => {
     if (scrollRef.current) {
