@@ -78,6 +78,8 @@ Deno.serve(async (req) => {
       ? btoa(nextcomAuth)
       : nextcomAuth;
 
+    console.log(`[TotalIK NextCom Sync] Auth format: contains colon=${nextcomAuth.includes(":")}, length=${nextcomAuth.length}, encoded length=${basicAuthEncoded.length}`);
+
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
