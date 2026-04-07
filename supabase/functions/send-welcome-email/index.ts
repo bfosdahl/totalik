@@ -12,6 +12,7 @@ interface WelcomeEmailRequest {
   userId: string;
   email: string;
   firstName?: string;
+  source?: string; // 'crm' for NextCom orders, 'signup' for self-registration
 }
 
 const handler = async (req: Request): Promise<Response> => {
