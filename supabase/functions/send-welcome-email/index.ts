@@ -30,7 +30,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { userId, email, firstName }: WelcomeEmailRequest = await req.json();
+    const { userId, email, firstName, source }: WelcomeEmailRequest = await req.json();
 
     if (!userId || !email) {
       return new Response(
@@ -64,19 +64,21 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const loginUrl = "https://totalik.no/auth";
+    const isCrmOrder = source === "crm";
 
-    const emailResponse = await resend.emails.send({
-      from: `Total-IK <noreply@totalik.no>`,
-      to: [email],
-      subject: `Velkommen til ${companyName} - Konto opprettet`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #1a1a2e; margin: 0;">Velkommen til Total-IK!</h1>
+    // Different content for CRM customers (immediate access) vs self-signups (needs approval)
+    const bodyContent = isCrmOrder
+      ? `
+          <p style="color: #333; font-size: 16px;">
+            Din brukerkonto er opprettet og klar til bruk. Du kan logge inn med e-postadressen din og passordet du mottar i en egen e-post.
+          </p>
+          
+          <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #28a745;">
+            <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">✅ Kontoen din er aktiv</h3>
+            <p style="color: #555; margin: 0;">Du har full tilgang til ${companyName} sitt system i Total-IK. Logg inn for å komme i gang.</p>
           </div>
-          
-          <p style="color: #333; font-size: 16px;">Hei${firstName ? ` ${firstName}` : ''},</p>
-          
+        `
+      : `
           <p style="color: #333; font-size: 16px;">
             Din brukerkonto har blitt opprettet. For å få tilgang til systemet må kontoen din godkjennes av en administrator.
           </p>
@@ -93,6 +95,21 @@ const handler = async (req: Request): Promise<Response> => {
           <p style="color: #333; font-size: 16px;">
             Du kan allerede logge inn, men funksjonaliteten vil være begrenset til kontoen er godkjent.
           </p>
+        `;
+
+    const emailResponse = await resend.emails.send({
+      from: `Total-IK <noreply@totalik.no>`,
+      to: [email],
+      subject: `Velkommen til ${companyName} - Konto opprettet`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #1a1a2e; margin: 0;">Velkommen til Total-IK!</h1>
+          </div>
+          
+          <p style="color: #333; font-size: 16px;">Hei${firstName ? ` ${firstName}` : ''},</p>
+          
+          ${bodyContent}
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${loginUrl}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
