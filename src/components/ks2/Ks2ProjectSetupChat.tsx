@@ -211,7 +211,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 py-4" ref={scrollRef}>
+      <ScrollArea className="flex-1 py-4">
         <div className="space-y-4 pr-4">
           {messages.map((msg, i) => {
             const displayContent = getDisplayContent(msg.content);
