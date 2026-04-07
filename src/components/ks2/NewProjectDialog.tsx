@@ -330,7 +330,10 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] h-[90vh] flex flex-col overflow-hidden p-0">
+      <DialogContent 
+        className="max-w-2xl max-h-[90vh] h-[90vh] flex flex-col overflow-hidden p-0"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-2">
           <DialogTitle className="text-xl font-semibold">Opprett nytt prosjekt</DialogTitle>
         </DialogHeader>
