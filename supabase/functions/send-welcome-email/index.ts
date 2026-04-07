@@ -74,26 +74,26 @@ const handler = async (req: Request): Promise<Response> => {
           </p>
           
           <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #28a745;">
-            <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">✅ Kontoen din er aktiv</h3>
-            <p style="color: #555; margin: 0;">Du har full tilgang til ${companyName} sitt system i Total-IK. Logg inn for å komme i gang.</p>
+            <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">&#10004; Kontoen din er aktiv</h3>
+            <p style="color: #555; margin: 0;">Du har full tilgang til ${companyName} sitt system i Total-IK. Logg inn for &#229; komme i gang.</p>
           </div>
         `
       : `
           <p style="color: #333; font-size: 16px;">
-            Din brukerkonto har blitt opprettet. For å få tilgang til systemet må kontoen din godkjennes av en administrator.
+            Din brukerkonto har blitt opprettet. For &#229; f&#229; tilgang til systemet m&#229; kontoen din godkjennes av en administrator.
           </p>
           
           <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #0066cc;">
-            <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">📋 Hva skjer nå?</h3>
+            <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">Hva skjer n&#229;?</h3>
             <ol style="color: #555; margin: 0; padding-left: 20px;">
-              <li style="margin-bottom: 8px;">En administrator vil gjennomgå kontoen din</li>
-              <li style="margin-bottom: 8px;">Du vil få beskjed når kontoen er aktivert</li>
+              <li style="margin-bottom: 8px;">En administrator vil gjennomg&#229; kontoen din</li>
+              <li style="margin-bottom: 8px;">Du vil f&#229; beskjed n&#229;r kontoen er aktivert</li>
               <li>Deretter kan du logge inn og bruke systemet</li>
             </ol>
           </div>
           
           <p style="color: #333; font-size: 16px;">
-            Du kan allerede logge inn, men funksjonaliteten vil være begrenset til kontoen er godkjent.
+            Du kan allerede logge inn, men funksjonaliteten vil v&#230;re begrenset til kontoen er godkjent.
           </p>
         `;
 
@@ -101,7 +101,10 @@ const handler = async (req: Request): Promise<Response> => {
       from: `Total-IK <noreply@totalik.no>`,
       to: [email],
       subject: `Velkommen til ${companyName} - Konto opprettet`,
-      html: `
+      html: `<!DOCTYPE html>
+<html lang="no">
+<head><meta charset="utf-8"></head>
+<body>
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
             <h1 style="color: #1a1a2e; margin: 0;">Velkommen til Total-IK!</h1>
@@ -113,7 +116,7 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${loginUrl}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
-              Gå til innlogging
+              G&#229; til innlogging
             </a>
           </div>
           
@@ -123,7 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div style="background: #e8f4f8; border: 1px solid #b8daff; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
             <p style="margin: 0; color: #004085; font-size: 14px;">
-              <strong>Ved å logge inn bekrefter du at du har lest og godtar avtalevilkårene ovenfor.</strong>
+              <strong>Ved &#229; logge inn bekrefter du at du har lest og godtar avtalevilk&#229;rene ovenfor.</strong>
             </p>
           </div>
           
@@ -134,7 +137,8 @@ const handler = async (req: Request): Promise<Response> => {
             Hvis du ikke har opprettet denne kontoen, kan du ignorere denne e-posten.
           </p>
         </div>
-      `,
+</body>
+</html>`,
     });
 
     console.log("Welcome email sent successfully:", emailResponse);
