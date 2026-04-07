@@ -60,21 +60,48 @@ const KsOppsett = () => {
           description: `KS-systemet er tilpasset for ${result.company_type_label}`,
         });
 
-      // Save checklist templates
+      // Fetch existing admin checklist templates
+      const { data: adminChecklists } = await supabase
+        .from("admin_checklist_templates")
+        .select("id, template_name, category, description, checkpoints, trade, template_number")
+        .eq("is_active", true);
+
+      // Try to match AI-suggested checklists to admin templates
       for (const checklist of result.selected_checklists) {
-        await supabase
-          .from("company_ks_checklist_templates")
-          .insert({
-            company_id: companyId,
-            template_name: checklist.name,
-            category: checklist.category || "kvalitet",
-            description: checklist.description || null,
-            checkpoints: checklist.checkpoints.map((cp, idx) => ({
-              id: crypto.randomUUID(),
-              text: cp,
-              sort_order: idx,
-            })),
-          });
+        const nameL = checklist.name.toLowerCase();
+
+        const matchedChecklist = adminChecklists?.find(t => {
+          const titleL = t.template_name.toLowerCase();
+          const words = nameL.split(/\s+/).filter(w => w.length > 3);
+          const matchCount = words.filter(w => titleL.includes(w)).length;
+          return matchCount >= 2 || titleL.includes(nameL) || nameL.includes(titleL);
+        });
+
+        if (matchedChecklist) {
+          // Adopt admin template - link via selected_templates
+          await supabase
+            .from("company_ks_selected_templates")
+            .insert({
+              company_id: companyId,
+              admin_template_id: matchedChecklist.id,
+              template_type: "checklist",
+            });
+        } else {
+          // Create new company-specific checklist template
+          await supabase
+            .from("company_ks_checklist_templates")
+            .insert({
+              company_id: companyId,
+              template_name: checklist.name,
+              category: checklist.category || "kvalitet",
+              description: checklist.description || null,
+              checkpoints: checklist.checkpoints.map((cp, idx) => ({
+                id: crypto.randomUUID(),
+                text: cp,
+                sort_order: idx,
+              })),
+            });
+        }
       }
 
       // Fetch existing admin routine templates for KS
