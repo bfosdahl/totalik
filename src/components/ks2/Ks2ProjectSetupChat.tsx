@@ -267,8 +267,10 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.stopPropagation()}
             placeholder="Skriv her..."
             disabled={isLoading || setupComplete}
+            autoComplete="off"
           />
           <Button type="submit" size="icon" disabled={isLoading || !input.trim() || setupComplete}>
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
