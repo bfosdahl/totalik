@@ -83,7 +83,7 @@ Prisene økes årlig med 5 %. Andre prisjusteringer kan forekomme, men dersom ku
 export function getTermsHtml(): string {
   return `
     <div style="background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin: 20px 0; max-height: 400px; overflow-y: auto;">
-      <h2 style="color: #1a1a2e; margin: 0 0 16px 0; font-size: 18px; border-bottom: 2px solid #0066cc; padding-bottom: 8px;">📋 AVTALEVILKÅR</h2>
+      <h2 style="color: #1a1a2e; margin: 0 0 16px 0; font-size: 18px; border-bottom: 2px solid #0066cc; padding-bottom: 8px;">AVTALEVILK&#197;R</h2>
       
       <div style="font-size: 13px; line-height: 1.6; color: #333;">
         <h3 style="color: #1a1a2e; margin: 16px 0 8px 0; font-size: 14px;">DEFINISJONER</h3>
