@@ -223,7 +223,7 @@ serve(async (req) => {
       const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
       const welcomeClient = createClient(Deno.env.get('SUPABASE_URL')!, anonKey);
       await welcomeClient.functions.invoke('send-welcome-email', {
-        body: { userId, email, firstName: body.first_name || '' },
+        body: { userId, email, firstName: body.first_name || '', source: 'crm' },
       });
     } catch (e) {
       console.error('Welcome email error:', e);
