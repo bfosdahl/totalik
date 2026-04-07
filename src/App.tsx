@@ -281,6 +281,7 @@ const App = () => (
                   <Route path="/ks/ik-ks/handbok" element={<ProtectedRoute><IkKsHandbok /></ProtectedRoute>} />
                   
                   <Route path="/ks/utfylte-sjekklister" element={<ProtectedRoute><KsUtfylteSjekklister /></ProtectedRoute>} />
+                  <Route path="/ks/oppsett" element={<ProtectedRoute><KsOppsett /></ProtectedRoute>} />
 
                   {/* Småprosjekter routes */}
                   <Route path="/ks/smaaprosjekter" element={<ProtectedRoute><MineProsjekterDashboard /></ProtectedRoute>} />
