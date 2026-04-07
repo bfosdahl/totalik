@@ -101,7 +101,10 @@ const handler = async (req: Request): Promise<Response> => {
       from: `Total-IK <noreply@totalik.no>`,
       to: [email],
       subject: `Velkommen til ${companyName} - Konto opprettet`,
-      html: `
+      html: `<!DOCTYPE html>
+<html lang="no">
+<head><meta charset="utf-8"></head>
+<body>
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
             <h1 style="color: #1a1a2e; margin: 0;">Velkommen til Total-IK!</h1>
@@ -113,7 +116,7 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${loginUrl}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
-              Gå til innlogging
+              G&#229; til innlogging
             </a>
           </div>
           
@@ -123,7 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div style="background: #e8f4f8; border: 1px solid #b8daff; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
             <p style="margin: 0; color: #004085; font-size: 14px;">
-              <strong>Ved å logge inn bekrefter du at du har lest og godtar avtalevilkårene ovenfor.</strong>
+              <strong>Ved &#229; logge inn bekrefter du at du har lest og godtar avtalevilk&#229;rene ovenfor.</strong>
             </p>
           </div>
           
@@ -134,7 +137,8 @@ const handler = async (req: Request): Promise<Response> => {
             Hvis du ikke har opprettet denne kontoen, kan du ignorere denne e-posten.
           </p>
         </div>
-      `,
+</body>
+</html>`,
     });
 
     console.log("Welcome email sent successfully:", emailResponse);
