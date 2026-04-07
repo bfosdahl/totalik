@@ -74,11 +74,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    const basicAuthEncoded = nextcomAuth.includes(":")
-      ? btoa(nextcomAuth)
-      : nextcomAuth;
+    // If only password provided (no colon), prepend default username
+    const authString = nextcomAuth.includes(":") 
+      ? nextcomAuth 
+      : `kimiclaw:${nextcomAuth}`;
+    const basicAuthEncoded = btoa(authString);
 
-    console.log(`[TotalIK NextCom Sync] Auth format: contains colon=${nextcomAuth.includes(":")}, length=${nextcomAuth.length}, encoded length=${basicAuthEncoded.length}`);
+    console.log(`[TotalIK NextCom Sync] Auth: has colon=${nextcomAuth.includes(":")}, final length=${authString.length}`);
 
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
       auth: { autoRefreshToken: false, persistSession: false },
