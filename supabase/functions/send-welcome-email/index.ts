@@ -74,26 +74,26 @@ const handler = async (req: Request): Promise<Response> => {
           </p>
           
           <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #28a745;">
-            <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">✅ Kontoen din er aktiv</h3>
-            <p style="color: #555; margin: 0;">Du har full tilgang til ${companyName} sitt system i Total-IK. Logg inn for å komme i gang.</p>
+            <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">&#10004; Kontoen din er aktiv</h3>
+            <p style="color: #555; margin: 0;">Du har full tilgang til ${companyName} sitt system i Total-IK. Logg inn for &#229; komme i gang.</p>
           </div>
         `
       : `
           <p style="color: #333; font-size: 16px;">
-            Din brukerkonto har blitt opprettet. For å få tilgang til systemet må kontoen din godkjennes av en administrator.
+            Din brukerkonto har blitt opprettet. For &#229; f&#229; tilgang til systemet m&#229; kontoen din godkjennes av en administrator.
           </p>
           
           <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #0066cc;">
-            <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">📋 Hva skjer nå?</h3>
+            <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">Hva skjer n&#229;?</h3>
             <ol style="color: #555; margin: 0; padding-left: 20px;">
-              <li style="margin-bottom: 8px;">En administrator vil gjennomgå kontoen din</li>
-              <li style="margin-bottom: 8px;">Du vil få beskjed når kontoen er aktivert</li>
+              <li style="margin-bottom: 8px;">En administrator vil gjennomg&#229; kontoen din</li>
+              <li style="margin-bottom: 8px;">Du vil f&#229; beskjed n&#229;r kontoen er aktivert</li>
               <li>Deretter kan du logge inn og bruke systemet</li>
             </ol>
           </div>
           
           <p style="color: #333; font-size: 16px;">
-            Du kan allerede logge inn, men funksjonaliteten vil være begrenset til kontoen er godkjent.
+            Du kan allerede logge inn, men funksjonaliteten vil v&#230;re begrenset til kontoen er godkjent.
           </p>
         `;
 

@@ -144,7 +144,7 @@ export function getTermsNoticeHtml(): string {
   return `
     <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 16px; margin: 20px 0;">
       <p style="margin: 0; color: #856404; font-weight: bold; font-size: 14px;">
-        ⚠️ VIKTIG: Vennligst les avtalevilkårene nedenfor før du logger inn.
+        VIKTIG: Vennligst les avtalevilk&#229;rene nedenfor f&#248;r du logger inn.
       </p>
       <p style="margin: 8px 0 0 0; color: #856404; font-size: 13px;">
         Ved å logge inn bekrefter du at du har lest og godtar avtalevilkårene på vegne av din virksomhet.
