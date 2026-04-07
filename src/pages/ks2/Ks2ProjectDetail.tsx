@@ -37,6 +37,8 @@ import Ks2ByggesakDashboard from "./Ks2ByggesakDashboard";
 import Ks2ByggesakBlanketter from "./Ks2ByggesakBlanketter";
 import Ks2ByggesakEpost from "./Ks2ByggesakEpost";
 import Ks2ByggesakForm from "./Ks2ByggesakForm";
+// AI Chat
+import Ks2ProjectChat from "./Ks2ProjectChat";
 
 export default function Ks2ProjectDetail() {
   const { projectId } = useParams();
