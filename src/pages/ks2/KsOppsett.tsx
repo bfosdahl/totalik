@@ -60,34 +60,98 @@ const KsOppsett = () => {
           description: `KS-systemet er tilpasset for ${result.company_type_label}`,
         });
 
-      // Save checklist templates
+      // Fetch existing admin checklist templates
+      const { data: adminChecklists } = await supabase
+        .from("admin_checklist_templates")
+        .select("id, template_name, category, description, checkpoints, trade, template_number")
+        .eq("is_active", true);
+
+      // Try to match AI-suggested checklists to admin templates
       for (const checklist of result.selected_checklists) {
-        await supabase
-          .from("company_ks_checklist_templates")
-          .insert({
-            company_id: companyId,
-            template_name: checklist.name,
-            category: checklist.category || "kvalitet",
-            description: checklist.description || null,
-            checkpoints: checklist.checkpoints.map((cp, idx) => ({
-              id: crypto.randomUUID(),
-              text: cp,
-              sort_order: idx,
-            })),
-          });
+        const nameL = checklist.name.toLowerCase();
+
+        const matchedChecklist = adminChecklists?.find(t => {
+          const titleL = t.template_name.toLowerCase();
+          const words = nameL.split(/\s+/).filter(w => w.length > 3);
+          const matchCount = words.filter(w => titleL.includes(w)).length;
+          return matchCount >= 2 || titleL.includes(nameL) || nameL.includes(titleL);
+        });
+
+        if (matchedChecklist) {
+          // Adopt admin template - link via selected_templates
+          await supabase
+            .from("company_ks_selected_templates")
+            .insert({
+              company_id: companyId,
+              admin_template_id: matchedChecklist.id,
+              template_type: "checklist",
+            });
+        } else {
+          // Create new company-specific checklist template
+          await supabase
+            .from("company_ks_checklist_templates")
+            .insert({
+              company_id: companyId,
+              template_name: checklist.name,
+              category: checklist.category || "kvalitet",
+              description: checklist.description || null,
+              checkpoints: checklist.checkpoints.map((cp, idx) => ({
+                id: crypto.randomUUID(),
+                text: cp,
+                sort_order: idx,
+              })),
+            });
+        }
       }
 
-      // Save routines
+      // Fetch existing admin routine templates for KS
+      const { data: adminTemplates } = await supabase
+        .from("admin_routine_templates_v2")
+        .select("id, title, description, module, subcategory, steps, frequency, target_roles, tags, template_number")
+        .eq("module", "ks_ik_bygg")
+        .eq("status", "published");
+
+      // Try to match AI-suggested routines to admin templates
       for (const routine of result.selected_routines) {
-        await supabase
-          .from("company_ks_routines")
-          .insert({
-            company_id: companyId,
-            routine_name: routine.name,
-            category: routine.category || "dokumentasjon",
-            description: routine.description || null,
-            content: routine.description || "",
-          });
+        const routineNameLower = routine.name.toLowerCase();
+
+        // Find a matching admin template by fuzzy name match
+        const matchedTemplate = adminTemplates?.find(t => {
+          const titleLower = t.title.toLowerCase();
+          // Check if key words overlap
+          const routineWords = routineNameLower.split(/\s+/).filter(w => w.length > 3);
+          const matchCount = routineWords.filter(w => titleLower.includes(w)).length;
+          return matchCount >= 2 || titleLower.includes(routineNameLower) || routineNameLower.includes(titleLower);
+        });
+
+        if (matchedTemplate) {
+          // Adopt from admin template library - create a snapshot
+          const stepsContent = matchedTemplate.steps
+            ? (matchedTemplate.steps as any[]).map((s: any, i: number) => `${i + 1}. ${s.title || s.description || ''}`).join('\n')
+            : routine.description || "";
+
+          await supabase
+            .from("company_ks_routines")
+            .insert({
+              company_id: companyId,
+              routine_name: matchedTemplate.title,
+              category: routine.category || "dokumentasjon",
+              description: matchedTemplate.description || routine.description || null,
+              content: stepsContent || matchedTemplate.description || "",
+              admin_template_id: matchedTemplate.id,
+            });
+        } else {
+          // No match found - create new routine from AI suggestion
+          await supabase
+            .from("company_ks_routines")
+            .insert({
+              company_id: companyId,
+              routine_name: routine.name,
+              category: routine.category || "dokumentasjon",
+              description: routine.description || null,
+              content: routine.description || "",
+            });
+        }
       }
 
       // Mark KS setup as completed in module settings
