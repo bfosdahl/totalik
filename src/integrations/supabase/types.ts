@@ -13753,6 +13753,36 @@ export type Database = {
         }
         Relationships: []
       }
+      nextcom_processed_orders: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: string
+          order_id: string
+          processed_at: string | null
+          result: Json | null
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          order_id: string
+          processed_at?: string | null
+          result?: Json | null
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          order_id?: string
+          processed_at?: string | null
+          result?: Json | null
+          status?: string
+        }
+        Relationships: []
+      }
       notification_log: {
         Row: {
           body: string
