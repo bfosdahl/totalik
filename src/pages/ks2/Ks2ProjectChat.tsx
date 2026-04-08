@@ -192,7 +192,7 @@ export default function Ks2ProjectChat() {
       console.error("Error executing action:", err);
       toast.error("Kunne ikke utføre handlingen");
     }
-  }, [projectId, profile?.company_id, profile?.full_name]);
+  }, [projectId, profile?.company_id, profile?.first_name, profile?.last_name]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
