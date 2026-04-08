@@ -53,7 +53,7 @@ ALL din rådgivning skal være i kontekst av dette prosjektet.
   if (projectContext.checklists?.length > 0) {
     prompt += `\n\n**Eksisterende sjekklister i prosjektet (${projectContext.checklists.length} stk):**`;
     for (const cl of projectContext.checklists.slice(0, 20)) {
-      prompt += `\n- "${cl.title}" (status: ${cl.status}, kategori: ${cl.category || 'ukjent'})`;
+      prompt += `\n- "${cl.title}" (status: ${cl.status}, mal: ${cl.template_name || 'ukjent'})`;
     }
   } else {
     prompt += `\n\n**Sjekklister:** Ingen sjekklister er opprettet ennå.`;
@@ -104,7 +104,7 @@ Generer et JSON-objekt med handlingen. Brukeren ser IKKE JSON – den brukes av 
 
 For å legge til en sjekkliste:
 |||ACTION_START|||
-{"action": "add_checklist", "data": {"title": "Sjekklistenavn", "category": "kvalitet|hms|kontroll", "checkpoints": ["Punkt 1", "Punkt 2", "Punkt 3"]}}
+{"action": "add_checklist", "data": {"title": "Sjekklistenavn", "checkpoints": ["Punkt 1", "Punkt 2", "Punkt 3"]}}
 |||ACTION_END|||
 
 For å legge til en underleverandør:

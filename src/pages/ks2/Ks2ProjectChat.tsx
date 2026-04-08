@@ -23,12 +23,16 @@ function getDisplayContent(content: string): string {
     .trim();
 }
 
-function extractAction(content: string): any | null {
-  const match = content.match(/\|\|\|ACTION_START\|\|\|([\s\S]*?)\|\|\|ACTION_END\|\|\|/);
-  if (match?.[1]) {
-    try { return JSON.parse(match[1].trim()); } catch { return null; }
+function extractActions(content: string): any[] {
+  const actions: any[] = [];
+  const regex = /\|\|\|ACTION_START\|\|\|([\s\S]*?)\|\|\|ACTION_END\|\|\|/g;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    try {
+      actions.push(JSON.parse(match[1].trim()));
+    } catch { /* skip malformed */ }
   }
-  return null;
+  return actions;
 }
 
 const WELCOME_MESSAGE = `Hei! Jeg er Prosjekt-assistenten 👋
@@ -62,7 +66,7 @@ export default function Ks2ProjectChat() {
       try {
         const [projectRes, checklistsRes, subcontractorsRes, deviationsRes, milestonesRes] = await Promise.all([
           supabase.from("ks_module2_projects").select("*").eq("id", projectId).single(),
-          supabase.from("ks_module2_checklists").select("id, title, status, category, created_at").eq("project_id", projectId).order("created_at", { ascending: false }).limit(30),
+      supabase.from("ks_module2_checklists").select("id, title, status, template_name, created_at").eq("project_id", projectId).order("created_at", { ascending: false }).limit(30),
           supabase.from("ks_module2_subcontractors").select("id, firm_name, trade, approval_status, contact_person").eq("project_id", projectId),
           supabase.from("ks_module2_deviations" as any).select("id, title, severity, status").eq("project_id", projectId),
           supabase.from("ks_module2_milestones" as any).select("id, name, status, target_date").eq("project_id", projectId),
@@ -153,10 +157,9 @@ export default function Ks2ProjectChat() {
           project_id: projectId,
           company_id: profile.company_id,
           title: action.data.title,
-          category: action.data.category || "kvalitet",
-          status: "ikke_startet",
+          template_name: action.data.title,
+          status: "planned",
           checklist_items: checkpoints,
-          created_by_name: [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "AI-assistent",
         } as any);
 
         if (error) throw error;
@@ -180,7 +183,7 @@ export default function Ks2ProjectChat() {
 
       // Refresh context after action
       const [checklistsRes, subcontractorsRes] = await Promise.all([
-        supabase.from("ks_module2_checklists").select("id, title, status, category, created_at").eq("project_id", projectId).order("created_at", { ascending: false }).limit(30),
+        supabase.from("ks_module2_checklists").select("id, title, status, template_name, created_at").eq("project_id", projectId).order("created_at", { ascending: false }).limit(30),
         supabase.from("ks_module2_subcontractors").select("id, firm_name, trade, approval_status, contact_person").eq("project_id", projectId),
       ]);
 
@@ -280,8 +283,8 @@ export default function Ks2ProjectChat() {
       }
 
       // Process any actions in the response
-      const action = extractAction(fullContent);
-      if (action) {
+      const actions = extractActions(fullContent);
+      for (const action of actions) {
         await handleAction(action);
       }
 
