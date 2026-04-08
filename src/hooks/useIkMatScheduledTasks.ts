@@ -705,6 +705,7 @@ export const useIkMatScheduledTasks = () => {
       }
 
       // Delete matching auto-generated IK-MAT deviations from deviation register
+      // Only run if dismiss succeeded (we're past the throw above)
       if (autoDeviationTitles.size > 0) {
         const { error: deleteError } = await supabase
           .from('deviations')
@@ -714,7 +715,11 @@ export const useIkMatScheduledTasks = () => {
           .in('status', ['open', 'in-progress'])
           .in('title', [...autoDeviationTitles]);
 
-        if (deleteError) throw deleteError;
+        if (deleteError) {
+          // Dismiss entries already saved - log but don't throw so UI knows dismiss partially succeeded
+          console.error('Failed to delete deviations after dismiss:', deleteError);
+          // The deviations will be hidden anyway since they're in the dismissed table
+        }
       }
     },
     onSuccess: () => {
