@@ -54,7 +54,7 @@ export interface PreSelectedTemplate {
 
 interface Ks2ChecklistWizardProps {
   projectId: string;
-  onClose: () => void;
+  onClose: (result?: { saved: boolean }) => void;
   preSelectedTemplate?: PreSelectedTemplate | null;
   existingChecklist?: KsModule2Checklist | null;
 }
@@ -393,7 +393,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
               toast.success("Egenkontroll lagret i dokumentasjon");
             }
           }
-          onClose();
+          onClose({ saved: true });
         }
       } else {
         // Just update progress
@@ -406,7 +406,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
           progress_percent: progress,
         });
         if (result) {
-          onClose();
+          onClose({ saved: true });
         }
       }
       return;
@@ -442,7 +442,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
           toast.success("Egenkontroll lagret i dokumentasjon");
         }
       }
-      onClose();
+      onClose({ saved: true });
     }
   };
 
@@ -455,7 +455,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
   }, {} as Record<string, ChecklistTemplate[]>);
 
   return (
-    <Dialog open onOpenChange={onClose}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose({ saved: false }); }}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

@@ -87,11 +87,13 @@ export function SimpleProjectChecklists({ projectId }: SimpleProjectChecklistsPr
     c.title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleWizardClose = () => {
+  const handleWizardClose = (result?: { saved: boolean }) => {
     setShowWizard(false);
     setSelectedTemplateForWizard(null);
     setExistingChecklist(null);
-    refetchChecklists();
+    if (result?.saved) {
+      refetchChecklists();
+    }
   };
 
   const handleStartChecklist = (template: any) => {
