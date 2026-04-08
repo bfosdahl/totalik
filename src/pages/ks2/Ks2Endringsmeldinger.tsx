@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -81,9 +82,26 @@ export default function Ks2Endringsmeldinger() {
   const handleCreate = () => {
     if (!projectId || !profile?.company_id) return;
 
-    const hours = parseFloat(formData.estimated_hours) || 0;
-    const rate = parseFloat(formData.hourly_rate) || 0;
-    const materials = parseFloat(formData.material_cost) || 0;
+    const hoursRaw = parseFloat(formData.estimated_hours);
+    const rateRaw = parseFloat(formData.hourly_rate);
+    const materialsRaw = parseFloat(formData.material_cost);
+
+    if (formData.estimated_hours && isNaN(hoursRaw)) {
+      toast.error("Ugyldig verdi for estimerte timer");
+      return;
+    }
+    if (formData.hourly_rate && isNaN(rateRaw)) {
+      toast.error("Ugyldig verdi for timepris");
+      return;
+    }
+    if (formData.material_cost && isNaN(materialsRaw)) {
+      toast.error("Ugyldig verdi for materialkostnad");
+      return;
+    }
+
+    const hours = hoursRaw || 0;
+    const rate = rateRaw || 0;
+    const materials = materialsRaw || 0;
     const totalCost = hours * rate + materials;
 
     createChangeOrder({

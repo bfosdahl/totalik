@@ -95,7 +95,13 @@ export async function generateKsModule2ChecklistPdf(options: GenerateChecklistPd
   yPos += 15;
 
   // Checklist items table
-  const items = checklist.checklist_items as ChecklistItem[];
+  const items = (checklist.checklist_items as ChecklistItem[]) || [];
+  if (items.length === 0) {
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "italic");
+    doc.text("Ingen kontrollpunkter registrert.", 15, yPos);
+    yPos += 15;
+  }
   const tableData = items.map((item, index) => {
     let statusText = "-";
     if (item.value === true || item.value === "yes") statusText = "✓ Ja";
