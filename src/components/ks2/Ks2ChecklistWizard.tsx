@@ -54,7 +54,7 @@ export interface PreSelectedTemplate {
 
 interface Ks2ChecklistWizardProps {
   projectId: string;
-  onClose: () => void;
+  onClose: (result?: { saved: boolean }) => void;
   preSelectedTemplate?: PreSelectedTemplate | null;
   existingChecklist?: KsModule2Checklist | null;
 }
