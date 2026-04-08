@@ -22,7 +22,10 @@ export function useIkMatOverdueSync() {
     try {
       // Fetch overdue data: temperature equipment not logged, cleaning not done, task completions missed
       const today = startOfDay(new Date());
+      const todayStr = format(today, 'yyyy-MM-dd');
       const lookbackStart = subDays(today, 30); // Check last 30 days
+      const lookbackStr = format(lookbackStart, "yyyy-MM-dd'T'HH:mm:ss");
+      const todayEndStr = format(endOfDay(today), "yyyy-MM-dd'T'HH:mm:ss");
 
       // 1. Get temperature equipment
       const { data: equipment } = await supabase
@@ -31,13 +34,13 @@ export function useIkMatOverdueSync() {
         .eq('company_id', company.id)
         .eq('is_active', true);
 
-      // 2. Get temperature logs for the period
+      // 2. Get temperature logs for the period (using local time strings)
       const { data: tempLogs } = await supabase
         .from('ik_mat_temperature_logs')
         .select('equipment_id, measured_at')
         .eq('company_id', company.id)
-        .gte('measured_at', lookbackStart.toISOString())
-        .lte('measured_at', endOfDay(today).toISOString());
+        .gte('measured_at', lookbackStr)
+        .lte('measured_at', todayEndStr);
 
       // 3. Get existing ik_mat deviations to avoid duplicates
       const { data: existingDeviations } = await supabase
@@ -45,7 +48,7 @@ export function useIkMatOverdueSync() {
         .select('title, created_at, category')
         .eq('company_id', company.id)
         .eq('type', 'ik_mat')
-        .gte('created_at', lookbackStart.toISOString());
+        .gte('created_at', lookbackStr);
 
       // 3b. Get dismissed auto-deviations (deleted by user, should not be re-created)
       const { data: dismissedItems } = await supabase
@@ -60,22 +63,6 @@ export function useIkMatOverdueSync() {
       const existingTitles = new Set(
         (existingDeviations || []).map(d => `${d.title}__${format(new Date(d.created_at), 'yyyy-MM-dd')}`)
       );
-
-      // 4. Get IKM deviation number sequence
-      const { data: numberData } = await supabase
-        .from('deviations')
-        .select('deviation_number')
-        .eq('company_id', company.id)
-        .like('deviation_number', 'IKM-%');
-
-      let maxNum = 0;
-      (numberData || []).forEach((row) => {
-        const match = row.deviation_number.match(/IKM-(\d+)/);
-        if (match) {
-          const num = parseInt(match[1], 10);
-          if (num > maxNum) maxNum = num;
-        }
-      });
 
       const reporterName = [profile.first_name, profile.last_name]
         .filter(Boolean).join(' ') || profile.email || 'System';
