@@ -63,7 +63,7 @@ export default function Ks2ProjectChat() {
         const [projectRes, checklistsRes, subcontractorsRes, deviationsRes, milestonesRes] = await Promise.all([
           supabase.from("ks_module2_projects").select("*").eq("id", projectId).single(),
           supabase.from("ks_module2_checklists").select("id, title, status, category, created_at").eq("project_id", projectId).order("created_at", { ascending: false }).limit(30),
-          supabase.from("ks_module2_subcontractors").select("id, company_name, trade, approval_status, contact_person").eq("project_id", projectId),
+          supabase.from("ks_module2_subcontractors").select("id, firm_name, trade, approval_status, contact_person").eq("project_id", projectId),
           supabase.from("ks_module2_deviations" as any).select("id, title, severity, status").eq("project_id", projectId),
           supabase.from("ks_module2_milestones" as any).select("id, name, status, target_date").eq("project_id", projectId),
         ]);
@@ -167,20 +167,21 @@ export default function Ks2ProjectChat() {
         const { error } = await supabase.from("ks_module2_subcontractors").insert({
           project_id: projectId,
           company_id: profile.company_id,
-          company_name: action.data.company_name,
+          firm_name: action.data.company_name || action.data.firm_name,
           trade: action.data.trade || null,
           contact_person: action.data.contact_person || null,
+          work_scope: action.data.work_scope || action.data.trade || "Ikke spesifisert",
           approval_status: "pending",
         } as any);
 
         if (error) throw error;
-        toast.success(`Underleverandør "${action.data.company_name}" ble lagt til`);
+        toast.success(`Underleverandør "${action.data.company_name || action.data.firm_name}" ble lagt til`);
       }
 
       // Refresh context after action
       const [checklistsRes, subcontractorsRes] = await Promise.all([
         supabase.from("ks_module2_checklists").select("id, title, status, category, created_at").eq("project_id", projectId).order("created_at", { ascending: false }).limit(30),
-        supabase.from("ks_module2_subcontractors").select("id, company_name, trade, approval_status, contact_person").eq("project_id", projectId),
+        supabase.from("ks_module2_subcontractors").select("id, firm_name, trade, approval_status, contact_person").eq("project_id", projectId),
       ]);
 
       setProjectContext((prev: any) => ({

@@ -63,7 +63,7 @@ ALL din rådgivning skal være i kontekst av dette prosjektet.
   if (projectContext.subcontractors?.length > 0) {
     prompt += `\n\n**Registrerte underleverandører (${projectContext.subcontractors.length} stk):**`;
     for (const ue of projectContext.subcontractors.slice(0, 15)) {
-      prompt += `\n- "${ue.company_name}" – fag: ${ue.trade || 'ukjent'}, status: ${ue.approval_status || 'ukjent'}`;
+      prompt += `\n- "${ue.firm_name || ue.company_name}" – fag: ${ue.trade || 'ukjent'}, status: ${ue.approval_status || 'ukjent'}`;
     }
   } else {
     prompt += `\n\n**Underleverandører:** Ingen registrert.`;
@@ -109,7 +109,7 @@ For å legge til en sjekkliste:
 
 For å legge til en underleverandør:
 |||ACTION_START|||
-{"action": "add_subcontractor", "data": {"company_name": "Firmanavn", "trade": "Fagområde", "contact_person": "Kontaktperson"}}
+{"action": "add_subcontractor", "data": {"company_name": "Firmanavn", "trade": "Fagområde", "contact_person": "Kontaktperson", "work_scope": "Beskrivelse av arbeidsomfang"}}
 |||ACTION_END|||
 
 VIKTIG: Generer ALLTID en handlig (action) når brukeren eksplisitt ber om å legge til, opprette, eller registrere noe. Bekreft alltid for brukeren hva du har lagt til.`;
