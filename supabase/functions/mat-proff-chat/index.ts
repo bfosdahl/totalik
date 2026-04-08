@@ -668,7 +668,7 @@ serve(async (req) => {
     }
 
     const userId = userData.user.id;
-    console.log("Authenticated user for MAT proff chat:", userId);
+    // User authenticated successfully
 
     // Get user's company_id and profile info
     const { data: profile } = await supabase
