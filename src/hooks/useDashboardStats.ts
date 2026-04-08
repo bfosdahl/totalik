@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -24,17 +24,21 @@ export function useDashboardStats(): DashboardStats {
     totalSteps: 6,
   });
 
+  const fetchIdRef = useRef(0);
+
   useEffect(() => {
-    if (!profile?.company_id) return;
+    if (!profile?.company_id) {
+      setStats(prev => ({ ...prev, isLoading: false }));
+      return;
+    }
+
+    const currentFetchId = ++fetchIdRef.current;
 
     const fetchStats = async () => {
       try {
         const companyId = profile.company_id;
         const totalSteps = 6;
         
-        // First check if setup wizard is completed - this is the primary indicator
-        // Standard data inserted by applyDefaultHmsSetup should NOT count as completed
-        // unless the user has actively completed the setup wizard
         const [
           wizardProgressResult,
           goalsResult,
@@ -44,42 +48,35 @@ export function useDashboardStats(): DashboardStats {
           routinesResult,
           hmsDeclarationResult,
         ] = await Promise.all([
-          // Check wizard completion status
           supabase
             .from("setup_wizard_progress")
             .select("is_completed, completed_steps")
             .eq("company_id", companyId)
             .maybeSingle(),
-          // 1. Goals
           supabase
             .from("company_goals")
             .select("id, is_predefined", { count: "exact" })
             .eq("company_id", companyId),
-          // 2. Organization
           supabase
             .from("company_organization")
             .select("custom_content, is_custom")
             .eq("company_id", companyId)
             .maybeSingle(),
-          // 3. Risk assessment
           supabase
             .from("company_risk_assessments")
             .select("risks")
             .eq("company_id", companyId)
             .maybeSingle(),
-          // 4. Action plan
           supabase
             .from("company_action_plans")
             .select("actions")
             .eq("company_id", companyId)
             .maybeSingle(),
-          // 5. Routines
           supabase
             .from("company_routines")
             .select("routines")
             .eq("company_id", companyId)
             .maybeSingle(),
-          // 6. HMS Self declaration (handbook requirement)
           supabase
             .from("hms_self_declarations")
             .select("id")
@@ -87,39 +84,32 @@ export function useDashboardStats(): DashboardStats {
             .maybeSingle(),
         ]);
 
-        // If the wizard is marked as completed, count based on completed_steps
+        // Race condition guard
+        if (currentFetchId !== fetchIdRef.current) return;
+
         const wizardCompleted = wizardProgressResult.data?.is_completed ?? false;
         const completedStepsList: string[] = wizardProgressResult.data?.completed_steps ?? [];
         
-        // Count completed steps based on actual data AND wizard completion
         let completedSteps = 0;
         
-        // Helper function to check if a step was completed via wizard or has non-predefined data
         const isStepCompleted = (stepId: string, hasData: boolean, hasNonPredefinedData: boolean): boolean => {
-          // If wizard is completed, trust the completed_steps list
           if (wizardCompleted) {
             return completedStepsList.includes(stepId) || hasData;
           }
-          // Otherwise, only count steps with non-predefined data (user actually set it up)
-          // OR if the step is in completed_steps (user went through wizard manually)
           return completedStepsList.includes(stepId) || hasNonPredefinedData;
         };
         
-        // 1. Goals - check if there are non-predefined goals OR step completed in wizard
+        // 1. Goals
         const hasGoals = (goalsResult.data?.length ?? 0) > 0;
         const hasNonPredefinedGoals = goalsResult.data?.some(g => !g.is_predefined) ?? false;
-        if (isStepCompleted('goals', hasGoals, hasNonPredefinedGoals)) {
-          completedSteps++;
-        }
+        if (isStepCompleted('goals', hasGoals, hasNonPredefinedGoals)) completedSteps++;
         
-        // 2. Organization - check if user customized it OR step completed in wizard
+        // 2. Organization
         let hasOrgData = false;
         let hasCustomOrg = false;
         if (orgResult.data?.custom_content) {
           hasOrgData = true;
-          // is_custom indicates user has modified the content
           hasCustomOrg = orgResult.data.is_custom ?? false;
-          // Also check content for non-template data
           try {
             const parsed = JSON.parse(orgResult.data.custom_content);
             if ((parsed.roles?.length > 0) || (parsed.description?.trim().length > 0)) {
@@ -131,11 +121,9 @@ export function useDashboardStats(): DashboardStats {
             }
           }
         }
-        if (isStepCompleted('organization', hasOrgData, hasCustomOrg)) {
-          completedSteps++;
-        }
+        if (isStepCompleted('organization', hasOrgData, hasCustomOrg)) completedSteps++;
         
-        // 3. Risk assessment - check for non-predefined risks OR step completed in wizard
+        // 3. Risk assessment
         let hasRisks = false;
         let hasNonPredefinedRisks = false;
         if (riskResult.data?.risks) {
@@ -145,28 +133,22 @@ export function useDashboardStats(): DashboardStats {
             hasNonPredefinedRisks = risks.some(r => !r.is_predefined);
           }
         }
-        if (isStepCompleted('risk', hasRisks, hasNonPredefinedRisks)) {
-          completedSteps++;
-        }
+        if (isStepCompleted('risk', hasRisks, hasNonPredefinedRisks)) completedSteps++;
         
-        // 4. Action plan - check for non-predefined actions OR step completed in wizard
+        // 4. Action plan
         let hasActions = false;
         let hasNonPredefinedActions = false;
         if (actionResult.data?.actions) {
           const actions = actionResult.data.actions as Array<{ is_predefined?: boolean; status?: string }>;
           if (Array.isArray(actions) && actions.length > 0) {
             hasActions = true;
-            // Actions typically don't have is_predefined flag, but check for user-modified status
             hasNonPredefinedActions = actions.some(a => !a.is_predefined && a.is_predefined !== undefined) ||
-              // If actions don't have is_predefined, check if they were modified (have status changed)
               actions.some(a => a.status && a.status !== 'ikke_startet');
           }
         }
-        if (isStepCompleted('actions', hasActions, hasNonPredefinedActions)) {
-          completedSteps++;
-        }
+        if (isStepCompleted('actions', hasActions, hasNonPredefinedActions)) completedSteps++;
         
-        // 5. Routines - check for non-predefined routines OR step completed in wizard
+        // 5. Routines
         let hasRoutines = false;
         let hasNonPredefinedRoutines = false;
         if (routinesResult.data?.routines) {
@@ -176,18 +158,13 @@ export function useDashboardStats(): DashboardStats {
             hasNonPredefinedRoutines = routines.some(r => !r.is_predefined);
           }
         }
-        if (isStepCompleted('routines', hasRoutines, hasNonPredefinedRoutines)) {
-          completedSteps++;
-        }
+        if (isStepCompleted('routines', hasRoutines, hasNonPredefinedRoutines)) completedSteps++;
         
-        // 6. HMS declaration signed (handbook step requirement) - this is always user-action
-        if (hmsDeclarationResult.data?.id) {
-          completedSteps++;
-        }
+        // 6. HMS declaration
+        if (hmsDeclarationResult.data?.id) completedSteps++;
 
         const compliancePercent = Math.round((completedSteps / totalSteps) * 100);
 
-        // Fetch open deviations count
         const { count: openDeviationsCount } = await supabase
           .from("deviations")
           .select("*", { count: "exact", head: true })
@@ -195,7 +172,8 @@ export function useDashboardStats(): DashboardStats {
           .eq("is_deleted", false)
           .in("status", ["open", "in-progress"]);
 
-        // Fetch completed actions from action plans
+        if (currentFetchId !== fetchIdRef.current) return;
+
         let completedActionsCount = 0;
         if (actionResult.data?.actions && Array.isArray(actionResult.data.actions)) {
           completedActionsCount = (actionResult.data.actions as Array<{ status?: string }>)
@@ -207,10 +185,12 @@ export function useDashboardStats(): DashboardStats {
             .length;
         }
 
-        // Fetch deviations due in next 7 days
-        const today = new Date();
-        const sevenDaysFromNow = new Date();
-        sevenDaysFromNow.setDate(today.getDate() + 7);
+        // Use local date to avoid UTC timezone mismatch for Norwegian users
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const sevenDaysFromNow = new Date(now);
+        sevenDaysFromNow.setDate(now.getDate() + 7);
+        const futureStr = `${sevenDaysFromNow.getFullYear()}-${String(sevenDaysFromNow.getMonth() + 1).padStart(2, '0')}-${String(sevenDaysFromNow.getDate()).padStart(2, '0')}`;
 
         const { count: dueSoonCount } = await supabase
           .from("deviations")
@@ -218,8 +198,10 @@ export function useDashboardStats(): DashboardStats {
           .eq("company_id", companyId)
           .eq("is_deleted", false)
           .in("status", ["open", "in-progress"])
-          .gte("due_date", today.toISOString().split("T")[0])
-          .lte("due_date", sevenDaysFromNow.toISOString().split("T")[0]);
+          .gte("due_date", todayStr)
+          .lte("due_date", futureStr);
+
+        if (currentFetchId !== fetchIdRef.current) return;
 
         setStats({
           compliancePercent,
@@ -232,7 +214,9 @@ export function useDashboardStats(): DashboardStats {
         });
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
-        setStats((prev) => ({ ...prev, isLoading: false }));
+        if (currentFetchId === fetchIdRef.current) {
+          setStats((prev) => ({ ...prev, isLoading: false }));
+        }
       }
     };
 
