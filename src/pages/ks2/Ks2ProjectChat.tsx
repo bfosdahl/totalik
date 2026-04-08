@@ -167,14 +167,15 @@ export default function Ks2ProjectChat() {
         const { error } = await supabase.from("ks_module2_subcontractors").insert({
           project_id: projectId,
           company_id: profile.company_id,
-          company_name: action.data.company_name,
+          firm_name: action.data.company_name || action.data.firm_name,
           trade: action.data.trade || null,
           contact_person: action.data.contact_person || null,
+          work_scope: action.data.work_scope || action.data.trade || "Ikke spesifisert",
           approval_status: "pending",
         } as any);
 
         if (error) throw error;
-        toast.success(`Underleverandør "${action.data.company_name}" ble lagt til`);
+        toast.success(`Underleverandør "${action.data.company_name || action.data.firm_name}" ble lagt til`);
       }
 
       // Refresh context after action
