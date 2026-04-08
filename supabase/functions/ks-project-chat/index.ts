@@ -104,7 +104,7 @@ Generer et JSON-objekt med handlingen. Brukeren ser IKKE JSON – den brukes av 
 
 For å legge til en sjekkliste:
 |||ACTION_START|||
-{"action": "add_checklist", "data": {"title": "Sjekklistenavn", "category": "kvalitet|hms|kontroll", "checkpoints": ["Punkt 1", "Punkt 2", "Punkt 3"]}}
+{"action": "add_checklist", "data": {"title": "Sjekklistenavn", "checkpoints": ["Punkt 1", "Punkt 2", "Punkt 3"]}}
 |||ACTION_END|||
 
 For å legge til en underleverandør:
