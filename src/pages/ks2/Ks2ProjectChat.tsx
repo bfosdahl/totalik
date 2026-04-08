@@ -179,7 +179,7 @@ export default function Ks2ProjectChat() {
 
       // Refresh context after action
       const [checklistsRes, subcontractorsRes] = await Promise.all([
-        supabase.from("ks_module2_checklists").select("id, title, status, category, created_at").eq("project_id", projectId).order("created_at", { ascending: false }).limit(30),
+        supabase.from("ks_module2_checklists").select("id, title, status, template_name, created_at").eq("project_id", projectId).order("created_at", { ascending: false }).limit(30),
         supabase.from("ks_module2_subcontractors").select("id, firm_name, trade, approval_status, contact_person").eq("project_id", projectId),
       ]);
 
