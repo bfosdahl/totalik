@@ -18,20 +18,29 @@ interface Message {
 
 function getDisplayContent(content: string): string {
   return content
+    .replace(/\|\|\|ACTION_START\|\|\|[\s\S]*?\|\|\|ACTION_END\|\|\|/g, "")
     .replace(/\|\|\|JSON_START\|\|\|[\s\S]*?\|\|\|JSON_END\|\|\|/g, "")
     .trim();
 }
 
+function extractAction(content: string): any | null {
+  const match = content.match(/\|\|\|ACTION_START\|\|\|([\s\S]*?)\|\|\|ACTION_END\|\|\|/);
+  if (match?.[1]) {
+    try { return JSON.parse(match[1].trim()); } catch { return null; }
+  }
+  return null;
+}
+
 const WELCOME_MESSAGE = `Hei! Jeg er Prosjekt-assistenten 👋
 
-Jeg er her for å hjelpe deg gjennom hele prosjektet. Du kan spørre meg om:
+Jeg er låst til dette prosjektet og kjenner all informasjon om det. Du kan spørre meg om:
 
-- **Sjekklister** – Hvilke bør du bruke? Hva betyr sjekkpunktene?
-- **Rutiner** – Avvikshåndtering, egenkontroll, dokumentasjon
-- **SAK10-krav** – Hva kreves for ditt prosjekt?
+- **Sjekklister** – Hvilke bør du bruke? Legg til nye sjekklister
+- **Underleverandører** – Registrer nye UE, oppfølging og krav
+- **Avvik** – Vurdering, tiltak og forebygging
+- **SAK10-krav** – Hva kreves for dette prosjektet?
 - **HMS/SHA** – Risikovurderinger og sikkerhetstiltak
-- **Underleverandører** – Styring og oppfølging
-- **Generelle spørsmål** om kvalitetssikring i byggeprosjekter
+- **Dokumentasjon** – Hva må dokumenteres?
 
 Bare skriv hva du lurer på! 🔨`;
 
@@ -42,7 +51,37 @@ export default function Ks2ProjectChat() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [projectContext, setProjectContext] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Load project context (project info + related data)
+  useEffect(() => {
+    if (!projectId || !profile?.company_id) return;
+
+    const loadContext = async () => {
+      try {
+        const [projectRes, checklistsRes, subcontractorsRes, deviationsRes, milestonesRes] = await Promise.all([
+          supabase.from("ks_module2_projects").select("*").eq("id", projectId).single(),
+          supabase.from("ks_module2_checklists").select("id, title, status, category, created_at").eq("project_id", projectId).order("created_at", { ascending: false }).limit(30),
+          supabase.from("ks_module2_subcontractors").select("id, company_name, trade, approval_status, contact_person").eq("project_id", projectId),
+          supabase.from("ks_module2_deviations" as any).select("id, title, severity, status").eq("project_id", projectId),
+          supabase.from("ks_module2_milestones" as any).select("id, name, status, target_date").eq("project_id", projectId),
+        ]);
+
+        setProjectContext({
+          project: projectRes.data || {},
+          checklists: checklistsRes.data || [],
+          subcontractors: subcontractorsRes.data || [],
+          deviations: deviationsRes.data || [],
+          milestones: milestonesRes.data || [],
+        });
+      } catch (err) {
+        console.error("Error loading project context:", err);
+      }
+    };
+
+    loadContext();
+  }, [projectId, profile?.company_id]);
 
   // Load chat history from DB
   useEffect(() => {
@@ -75,7 +114,6 @@ export default function Ks2ProjectChat() {
     loadHistory();
   }, [projectId]);
 
-  // Auto-scroll
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -99,25 +137,78 @@ export default function Ks2ProjectChat() {
     }
   }, [projectId, profile?.company_id, profile?.user_id]);
 
+  const handleAction = useCallback(async (action: any) => {
+    if (!projectId || !profile?.company_id) return;
+
+    try {
+      if (action.action === "add_checklist" && action.data) {
+        const checkpoints = (action.data.checkpoints || []).map((cp: string, idx: number) => ({
+          id: crypto.randomUUID(),
+          text: cp,
+          checked: false,
+          order: idx,
+        }));
+
+        const { error } = await supabase.from("ks_module2_checklists").insert({
+          project_id: projectId,
+          company_id: profile.company_id,
+          title: action.data.title,
+          category: action.data.category || "kvalitet",
+          status: "ikke_startet",
+          checklist_items: checkpoints,
+          created_by_name: profile.full_name || "AI-assistent",
+        } as any);
+
+        if (error) throw error;
+        toast.success(`Sjekkliste "${action.data.title}" ble lagt til`);
+      }
+
+      if (action.action === "add_subcontractor" && action.data) {
+        const { error } = await supabase.from("ks_module2_subcontractors").insert({
+          project_id: projectId,
+          company_id: profile.company_id,
+          company_name: action.data.company_name,
+          trade: action.data.trade || null,
+          contact_person: action.data.contact_person || null,
+          approval_status: "pending",
+        } as any);
+
+        if (error) throw error;
+        toast.success(`Underleverandør "${action.data.company_name}" ble lagt til`);
+      }
+
+      // Refresh context after action
+      const [checklistsRes, subcontractorsRes] = await Promise.all([
+        supabase.from("ks_module2_checklists").select("id, title, status, category, created_at").eq("project_id", projectId).order("created_at", { ascending: false }).limit(30),
+        supabase.from("ks_module2_subcontractors").select("id, company_name, trade, approval_status, contact_person").eq("project_id", projectId),
+      ]);
+
+      setProjectContext((prev: any) => ({
+        ...prev,
+        checklists: checklistsRes.data || prev?.checklists || [],
+        subcontractors: subcontractorsRes.data || prev?.subcontractors || [],
+      }));
+    } catch (err) {
+      console.error("Error executing action:", err);
+      toast.error("Kunne ikke utføre handlingen");
+    }
+  }, [projectId, profile?.company_id, profile?.full_name]);
+
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
     const userMessage = input.trim();
     setInput("");
-    
+
     const newMessages = [...messages, { role: "user" as const, content: userMessage }];
     setMessages(newMessages);
-    
-    // Save user message to DB
     await saveMessage("user", userMessage);
-    
     setIsLoading(true);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Ikke logget inn");
 
-      // Build message history for AI (exclude welcome message if it's from DB)
       const aiMessages = newMessages
         .filter(m => m.content !== WELCOME_MESSAGE)
         .map(m => ({ role: m.role, content: m.content }));
@@ -130,7 +221,10 @@ export default function Ks2ProjectChat() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${session.access_token}`,
           },
-          body: JSON.stringify({ messages: aiMessages }),
+          body: JSON.stringify({
+            messages: aiMessages,
+            projectContext: projectContext,
+          }),
         }
       );
 
@@ -184,14 +278,18 @@ export default function Ks2ProjectChat() {
         }
       }
 
-      // Save assistant response to DB
+      // Process any actions in the response
+      const action = extractAction(fullContent);
+      if (action) {
+        await handleAction(action);
+      }
+
       if (fullContent) {
         await saveMessage("assistant", fullContent);
       }
     } catch (error) {
       console.error("Project chat error:", error);
-      const errorMsg = "Beklager, det oppsto en feil. Prøv igjen.";
-      setMessages(prev => [...prev, { role: "assistant", content: errorMsg }]);
+      setMessages(prev => [...prev, { role: "assistant", content: "Beklager, det oppsto en feil. Prøv igjen." }]);
       toast.error("Feil ved kommunikasjon med AI");
     } finally {
       setIsLoading(false);
@@ -217,7 +315,9 @@ export default function Ks2ProjectChat() {
         </div>
         <div>
           <h3 className="font-medium">Prosjekt-assistenten</h3>
-          <p className="text-xs text-muted-foreground">AI-hjelp for kvalitetssikring og prosjektstyring</p>
+          <p className="text-xs text-muted-foreground">
+            Låst til: {projectContext?.project?.project_name || "Laster..."} ({projectContext?.project?.project_number || ""})
+          </p>
         </div>
       </div>
 
