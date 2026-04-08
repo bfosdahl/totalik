@@ -61,10 +61,8 @@ export function useCompanyModules(companyId?: string) {
         hasLoadedOnce.current = true;
       } catch (error) {
         console.error("Error fetching company modules:", error);
-        // Don't clear modules on fetch error if we had them before
-        if (!hasLoadedOnce.current) {
-          setModules([]);
-        }
+        // Always clear modules on error to prevent stale data from wrong company
+        setModules([]);
       } finally {
         setIsLoading(false);
       }
