@@ -15783,6 +15783,20 @@ export type Database = {
         Returns: boolean
       }
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
+      complete_fdv_control: {
+        Args: {
+          p_building_id: string
+          p_company_id: string
+          p_completed_by_id: string
+          p_completed_by_name: string
+          p_control_id: string
+          p_findings?: string
+          p_next_due_date?: string
+          p_notes?: string
+          p_status: string
+        }
+        Returns: undefined
+      }
       copy_inspection_template_seeds: {
         Args: { target_company_id: string }
         Returns: undefined
