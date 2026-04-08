@@ -147,11 +147,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               .eq("project_id", access.project_id)
               .eq("user_id", userId);
           } else {
+            // Increment login_count using raw SQL via rpc, fallback to +1
+            const currentCount = access.login_count ?? 0;
             await supabase
               .from("ks_module2_project_access")
               .update({ 
                 last_login: new Date().toISOString(),
-                login_count: supabase.rpc ? undefined : 1
+                login_count: currentCount + 1
               })
               .eq("project_id", access.project_id)
               .eq("user_id", userId);
