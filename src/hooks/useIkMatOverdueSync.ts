@@ -100,12 +100,11 @@ export function useIkMatOverdueSync() {
                 const dedupeKey = `${title}__${dateStr}`;
                 if (!existingTitles.has(dedupeKey) && !dismissedTitles.has(title)) {
                   existingTitles.add(dedupeKey);
-                  maxNum++;
                   const dueDate = new Date(currentDate);
                   dueDate.setDate(dueDate.getDate() + 3);
                   newDeviations.push({
                     company_id: company.id,
-                    deviation_number: `IKM-${String(maxNum).padStart(3, '0')}`,
+
                     title,
                     description: `Temperaturlogg for ${(equip as any).name} ble ikke utført ${dateStr}. Dette er et automatisk registrert avvik fra Kontroll-modulen.`,
                     category: 'temperature',
@@ -174,12 +173,11 @@ export function useIkMatOverdueSync() {
             const dedupeKey = `${title}__${dateStr}`;
             if (!existingTitles.has(dedupeKey) && !dismissedTitles.has(title)) {
               existingTitles.add(dedupeKey);
-              maxNum++;
               const dueDate = new Date(currentDate);
               dueDate.setDate(dueDate.getDate() + 3);
               newDeviations.push({
                 company_id: company.id,
-                deviation_number: `IKM-${String(maxNum).padStart(3, '0')}`,
+
                 title,
                 description: `Daglig renhold ble ikke registrert som utført ${dateStr}. Automatisk registrert fra Kontroll-modulen.`,
                 category: 'cleaning',
@@ -247,12 +245,11 @@ export function useIkMatOverdueSync() {
                 const dedupeKey = `${title}__${dateStr}`;
                 if (!existingTitles.has(dedupeKey) && !dismissedTitles.has(title)) {
                   existingTitles.add(dedupeKey);
-                  maxNum++;
                   const dueDate = new Date(currentDate);
                   dueDate.setDate(dueDate.getDate() + 3);
                   newDeviations.push({
                     company_id: company.id,
-                    deviation_number: `IKM-${String(maxNum).padStart(3, '0')}`,
+
                     title,
                     description: `Planlagt oppgave "${task.title}" ble ikke utført ${dateStr}. Automatisk registrert fra Kontroll-modulen.`,
                     category: 'other',
