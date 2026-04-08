@@ -153,10 +153,9 @@ export default function Ks2ProjectChat() {
           project_id: projectId,
           company_id: profile.company_id,
           title: action.data.title,
-          category: action.data.category || "kvalitet",
+          template_name: action.data.title,
           status: "ikke_startet",
           checklist_items: checkpoints,
-          created_by_name: [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "AI-assistent",
         } as any);
 
         if (error) throw error;
