@@ -406,7 +406,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
           progress_percent: progress,
         });
         if (result) {
-          onClose();
+          onClose({ saved: true });
         }
       }
       return;
