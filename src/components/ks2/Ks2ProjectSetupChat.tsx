@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -56,15 +56,17 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
   const [isLoading, setIsLoading] = useState(false);
   const [setupComplete, setSetupComplete] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const sendMessage = useCallback(async (userMessage: string) => {
+    if (!userMessage.trim() || isLoading) return;
 
-    const userMessage = input.trim();
+    const currentMessages = messagesRef.current;
     setInput("");
     setMessages(prev => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
@@ -84,7 +86,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
             Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
-            messages: [...messages, { role: "user", content: userMessage }].map(m => ({
+            messages: [...currentMessages, { role: "user", content: userMessage }].map(m => ({
               role: m.role,
               content: m.content
             }))
@@ -153,7 +155,6 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
           console.log("Parsed project data:", parsed);
           setSetupComplete(true);
           
-          // Map to project input format
           const projectData: Partial<NewKsModule2ProjectInput> & {
             recommended_checklists?: any[];
             recommended_routines?: any[];
@@ -171,7 +172,6 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
             milestones: parsed.milestones || []
           };
 
-          // Show completion message and pass data
           setTimeout(() => {
             onComplete(projectData);
           }, 1000);
@@ -189,6 +189,10 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
     } finally {
       setIsLoading(false);
     }
+  }, [isLoading, onComplete]);
+
+  const handleSend = () => {
+    sendMessage(input.trim());
   };
 
   return (
@@ -282,7 +286,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
           </Button>
           <Button
             variant="ghost"
-            onClick={() => setInput("Sett opp et forslag for et typisk byggeprosjekt")}
+            onClick={() => sendMessage("Sett opp et forslag for et typisk byggeprosjekt")}
             disabled={isLoading || setupComplete}
             className="text-primary"
           >
