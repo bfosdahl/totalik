@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -56,15 +56,17 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
   const [isLoading, setIsLoading] = useState(false);
   const [setupComplete, setSetupComplete] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const sendMessage = useCallback(async (userMessage: string) => {
+    if (!userMessage.trim() || isLoading) return;
 
-    const userMessage = input.trim();
+    const currentMessages = messagesRef.current;
     setInput("");
     setMessages(prev => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
@@ -84,7 +86,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
             Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
-            messages: [...messages, { role: "user", content: userMessage }].map(m => ({
+            messages: [...currentMessages, { role: "user", content: userMessage }].map(m => ({
               role: m.role,
               content: m.content
             }))
@@ -153,7 +155,6 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
           console.log("Parsed project data:", parsed);
           setSetupComplete(true);
           
-          // Map to project input format
           const projectData: Partial<NewKsModule2ProjectInput> & {
             recommended_checklists?: any[];
             recommended_routines?: any[];
@@ -171,7 +172,6 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
             milestones: parsed.milestones || []
           };
 
-          // Show completion message and pass data
           setTimeout(() => {
             onComplete(projectData);
           }, 1000);
@@ -189,6 +189,10 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
     } finally {
       setIsLoading(false);
     }
+  }, [isLoading, onComplete]);
+
+  const handleSend = () => {
+    sendMessage(input.trim());
   };
 
   return (
@@ -282,111 +286,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
           </Button>
           <Button
             variant="ghost"
-            onClick={() => {
-              const msg = "Sett opp et forslag for et typisk byggeprosjekt";
-              setInput(msg);
-              // Trigger send on next tick after state update
-              setTimeout(() => {
-                const fakeInput = msg;
-                setInput("");
-                setMessages(prev => [...prev, { role: "user", content: fakeInput }]);
-                setIsLoading(true);
-
-                (async () => {
-                  try {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (!session) throw new Error("Ikke logget inn");
-
-                    const currentMessages = [...messages, { role: "user", content: fakeInput }];
-                    const response = await fetch(
-                      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ks-project-chat`,
-                      {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
-                          Authorization: `Bearer ${session.access_token}`,
-                        },
-                        body: JSON.stringify({
-                          messages: currentMessages.map(m => ({ role: m.role, content: m.content }))
-                        }),
-                      }
-                    );
-
-                    if (!response.ok) {
-                      const errorData = await response.json();
-                      throw new Error(errorData.error || "Feil ved kommunikasjon med AI");
-                    }
-
-                    const reader = response.body?.getReader();
-                    if (!reader) throw new Error("No reader");
-
-                    const decoder = new TextDecoder();
-                    let fullContent = "";
-                    let textBuffer = "";
-
-                    setMessages(prev => [...prev, { role: "assistant", content: "" }]);
-
-                    while (true) {
-                      const { done, value } = await reader.read();
-                      if (done) break;
-                      textBuffer += decoder.decode(value, { stream: true });
-                      let newlineIndex: number;
-                      while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-                        let line = textBuffer.slice(0, newlineIndex);
-                        textBuffer = textBuffer.slice(newlineIndex + 1);
-                        if (line.endsWith("\r")) line = line.slice(0, -1);
-                        if (line.startsWith(":") || line.trim() === "") continue;
-                        if (!line.startsWith("data: ")) continue;
-                        const jsonStr = line.slice(6).trim();
-                        if (jsonStr === "[DONE]") break;
-                        try {
-                          const json = JSON.parse(jsonStr);
-                          const content = json.choices?.[0]?.delta?.content;
-                          if (content) {
-                            fullContent += content;
-                            setMessages(prev => {
-                              const newMessages = [...prev];
-                              newMessages[newMessages.length - 1] = { role: "assistant", content: fullContent };
-                              return newMessages;
-                            });
-                          }
-                        } catch {
-                          textBuffer = line + "\n" + textBuffer;
-                          break;
-                        }
-                      }
-                    }
-
-                    const jsonContent = extractJsonFromContent(fullContent);
-                    if (jsonContent) {
-                      try {
-                        const parsed = JSON.parse(jsonContent);
-                        setSetupComplete(true);
-                        const projectData = {
-                          project_name: parsed.project_info?.project_name || "",
-                          description: parsed.project_info?.description || "",
-                          address: parsed.project_info?.address || "",
-                          client_name: parsed.project_info?.client_name || "",
-                          contractor_type: parsed.contractor_type || undefined,
-                          recommended_checklists: parsed.recommended_checklists || [],
-                          recommended_routines: parsed.recommended_routines || [],
-                          hms_focus: parsed.hms_focus || [],
-                          milestones: parsed.milestones || []
-                        };
-                        setTimeout(() => onComplete(projectData), 1000);
-                      } catch (e) {
-                        console.error("Error parsing JSON:", e);
-                      }
-                    }
-                  } catch (error) {
-                    console.error("Chat error:", error);
-                    setMessages(prev => [...prev, { role: "assistant", content: "Beklager, det oppsto en feil. Prøv igjen." }]);
-                  } finally {
-                    setIsLoading(false);
-                  }
-                })();
-              }, 0);
-            }}
+            onClick={() => sendMessage("Sett opp et forslag for et typisk byggeprosjekt")}
             disabled={isLoading || setupComplete}
             className="text-primary"
           >
