@@ -158,7 +158,7 @@ export default function Ks2ProjectChat() {
           company_id: profile.company_id,
           title: action.data.title,
           template_name: action.data.title,
-          status: "ikke_startet",
+          status: "planned",
           checklist_items: checkpoints,
         } as any);
 
