@@ -455,7 +455,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
   }, {} as Record<string, ChecklistTemplate[]>);
 
   return (
-    <Dialog open onOpenChange={onClose}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose({ saved: false }); }}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
