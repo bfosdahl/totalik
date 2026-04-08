@@ -90,7 +90,15 @@ export default function Ks2Fremdriftsplan() {
       };
     }
 
-    const dates = milestones.flatMap(m => [parseISO(m.start_date), parseISO(m.end_date)]);
+    const dates = milestones
+      .flatMap(m => [parseISO(m.start_date), parseISO(m.end_date)])
+      .filter(d => !isNaN(d.getTime()));
+    
+    if (dates.length === 0) {
+      const now = new Date();
+      return { start: startOfMonth(now), end: endOfMonth(addMonths(now, 2)) };
+    }
+
     const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
     const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
 
