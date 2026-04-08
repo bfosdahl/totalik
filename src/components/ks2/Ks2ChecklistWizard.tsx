@@ -442,7 +442,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
           toast.success("Egenkontroll lagret i dokumentasjon");
         }
       }
-      onClose();
+      onClose({ saved: true });
     }
   };
 

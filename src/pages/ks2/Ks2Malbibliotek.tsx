@@ -196,7 +196,7 @@ export default function Ks2Malbibliotek() {
     setShowChecklistWizard(true);
   };
 
-  const handleWizardClose = () => {
+  const handleWizardClose = (result?: { saved: boolean }) => {
     setShowChecklistWizard(false);
     setSelectedTemplateForWizard(null);
   };

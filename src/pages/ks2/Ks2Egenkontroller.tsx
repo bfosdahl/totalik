@@ -99,11 +99,13 @@ export default function Ks2Egenkontroller() {
     setViewingChecklist(checklist);
   };
 
-  const handleWizardClose = () => {
+  const handleWizardClose = (result?: { saved: boolean }) => {
     setShowWizard(false);
     setSelectedTemplateForWizard(null);
     setExistingChecklist(null);
-    refetchChecklists();
+    if (result?.saved) {
+      refetchChecklists();
+    }
   };
 
   const getActionButton = (checklist: KsModule2Checklist) => {
