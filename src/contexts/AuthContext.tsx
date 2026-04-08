@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data: accessData, error: accessError } = await supabase
         .from("ks_module2_project_access")
-        .select("project_id, access_level, role_in_project, status")
+        .select("project_id, access_level, role_in_project, status, login_count")
         .eq("user_id", userId)
         .in("status", ["invited", "active"])
         .neq("access_level", "none");
