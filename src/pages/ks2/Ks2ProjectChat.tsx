@@ -23,12 +23,16 @@ function getDisplayContent(content: string): string {
     .trim();
 }
 
-function extractAction(content: string): any | null {
-  const match = content.match(/\|\|\|ACTION_START\|\|\|([\s\S]*?)\|\|\|ACTION_END\|\|\|/);
-  if (match?.[1]) {
-    try { return JSON.parse(match[1].trim()); } catch { return null; }
+function extractActions(content: string): any[] {
+  const actions: any[] = [];
+  const regex = /\|\|\|ACTION_START\|\|\|([\s\S]*?)\|\|\|ACTION_END\|\|\|/g;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    try {
+      actions.push(JSON.parse(match[1].trim()));
+    } catch { /* skip malformed */ }
   }
-  return null;
+  return actions;
 }
 
 const WELCOME_MESSAGE = `Hei! Jeg er Prosjekt-assistenten 👋
