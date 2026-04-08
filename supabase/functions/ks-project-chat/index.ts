@@ -109,7 +109,7 @@ For å legge til en sjekkliste:
 
 For å legge til en underleverandør:
 |||ACTION_START|||
-{"action": "add_subcontractor", "data": {"company_name": "Firmanavn", "trade": "Fagområde", "contact_person": "Kontaktperson"}}
+{"action": "add_subcontractor", "data": {"company_name": "Firmanavn", "trade": "Fagområde", "contact_person": "Kontaktperson", "work_scope": "Beskrivelse av arbeidsomfang"}}
 |||ACTION_END|||
 
 VIKTIG: Generer ALLTID en handlig (action) når brukeren eksplisitt ber om å legge til, opprette, eller registrere noe. Bekreft alltid for brukeren hva du har lagt til.`;
