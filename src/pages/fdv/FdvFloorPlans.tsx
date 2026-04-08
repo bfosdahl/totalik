@@ -177,20 +177,21 @@ export default function FdvFloorPlans() {
     if (!planToDelete) return;
 
     try {
-      // Delete image from storage if exists
-      if (planToDelete.image_url) {
-        const path = planToDelete.image_url.split("/").pop();
-        if (path) {
-          await supabase.storage.from("fdv-documents").remove([`${companyId}/floor-plans/${path}`]);
-        }
-      }
-
+      // Delete DB record first, then storage (prevents ghost files)
       const { error } = await supabase
         .from("fdv_floor_plans")
         .delete()
         .eq("id", planToDelete.id);
 
       if (error) throw error;
+
+      // Delete image from storage after DB success
+      if (planToDelete.image_url) {
+        const path = planToDelete.image_url.split("/").pop();
+        if (path) {
+          await supabase.storage.from("fdv-documents").remove([`${companyId}/floor-plans/${path}`]).catch(console.error);
+        }
+      }
 
       toast.success("Etasjeplan slettet");
       await fetchFloorPlans();

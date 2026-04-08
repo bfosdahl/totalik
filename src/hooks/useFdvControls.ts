@@ -112,41 +112,23 @@ export function useFdvControls(buildingId?: string) {
   ) => {
     if (!companyId || !profile) return false;
 
-    const completedAt = new Date().toISOString();
     const nextDueDate = addMonths(new Date(), control.interval_months).toISOString().split('T')[0];
+    const completedByName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email || 'Ukjent';
 
     try {
-      // Create log entry
-      const { error: logError } = await supabase
-        .from("fdv_control_logs")
-        .insert({
-          control_id: control.id,
-          building_id: control.building_id,
-          company_id: companyId,
-          completed_at: completedAt,
-          completed_by_id: profile.id,
-          completed_by_name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email || 'Ukjent',
-          status: logData.status,
-          findings: logData.findings || null,
-          next_due_date: nextDueDate,
-          notes: logData.notes || null,
-        });
+      const { error } = await supabase.rpc('complete_fdv_control', {
+        p_control_id: control.id,
+        p_building_id: control.building_id,
+        p_company_id: companyId,
+        p_completed_by_id: profile.id,
+        p_completed_by_name: completedByName,
+        p_status: logData.status,
+        p_findings: logData.findings || null,
+        p_notes: logData.notes || null,
+        p_next_due_date: nextDueDate,
+      });
 
-      if (logError) throw logError;
-
-      // Update control
-      const { error: updateError } = await supabase
-        .from("fdv_controls")
-        .update({
-          status: logData.status === 'avvik' ? 'avvik' : 'utfort',
-          last_completed_date: completedAt.split('T')[0],
-          last_completed_by_id: profile.id,
-          last_completed_by_name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email || 'Ukjent',
-          next_due_date: nextDueDate,
-        })
-        .eq("id", control.id);
-
-      if (updateError) throw updateError;
+      if (error) throw error;
 
       toast.success("Kontroll registrert");
       await fetchControls();
