@@ -24,10 +24,13 @@ export function useDashboardStats(): DashboardStats {
     totalSteps: 6,
   });
 
-  useEffect(() => {
-    if (!profile?.company_id) return;
+  const fetchIdRef = useRef(0);
 
-    const fetchStats = async () => {
+  useEffect(() => {
+    if (!profile?.company_id) {
+      setStats(prev => ({ ...prev, isLoading: false }));
+      return;
+    }
       try {
         const companyId = profile.company_id;
         const totalSteps = 6;
