@@ -283,8 +283,8 @@ export default function Ks2ProjectChat() {
       }
 
       // Process any actions in the response
-      const action = extractAction(fullContent);
-      if (action) {
+      const actions = extractActions(fullContent);
+      for (const action of actions) {
         await handleAction(action);
       }
 
