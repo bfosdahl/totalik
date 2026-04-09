@@ -824,6 +824,8 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
             </form>
           </TabsContent>
         </Tabs>
+        </>
+        )}
       </DialogContent>
     </Dialog>
   );
