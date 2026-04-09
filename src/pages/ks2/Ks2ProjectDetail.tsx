@@ -25,6 +25,9 @@ import Ks2Reklamasjoner from "./Ks2Reklamasjoner";
 import Ks2Okonomi from "./Ks2Okonomi";
 import Ks2Motereferater from "./Ks2Motereferater";
 import Ks2Dagsrapport from "./Ks2Dagsrapport";
+import Ks2Befaring from "./Ks2Befaring";
+import Ks2ProjectNotes from "./Ks2ProjectNotes";
+import Ks2ProjectPhotos from "./Ks2ProjectPhotos";
 // HMS Module imports
 import Ks2HmsDashboard from "./Ks2HmsDashboard";
 import Ks2HmsPlan from "./Ks2HmsPlan";
@@ -127,6 +130,12 @@ export default function Ks2ProjectDetail() {
         return <Ks2Motereferater />;
       case "/dagsrapport":
         return <Ks2Dagsrapport />;
+      case "/befaringer":
+        return <Ks2Befaring />;
+      case "/notater":
+        return <Ks2ProjectNotes />;
+      case "/bilder":
+        return <Ks2ProjectPhotos />;
       case "/timeregistrering":
         return <Ks2Timeregistrering />;
       case "/fremdriftsplan":
@@ -183,6 +192,7 @@ export default function Ks2ProjectDetail() {
         projectName={project.project_name}
         projectNumber={project.project_number}
         contractorType={project.contractor_type}
+        projectType={(project as any).project_type}
       />
 
       {/* Main Content */}

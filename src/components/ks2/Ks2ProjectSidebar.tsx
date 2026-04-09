@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { ProjectType } from "@/hooks/useKsModule2Projects";
 import {
   LayoutDashboard,
   ClipboardCheck,
@@ -31,6 +32,9 @@ import {
   Search,
   Command,
   MessageSquare,
+  Image,
+  StickyNote,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -43,6 +47,7 @@ interface Ks2ProjectSidebarProps {
   projectName: string;
   projectNumber: string;
   contractorType?: string | null;
+  projectType?: ProjectType | string | null;
 }
 
 // Top-level standalone items
@@ -119,6 +124,35 @@ interface MenuGroup {
 /** Contractor types that typically manage subcontractors */
 const CONTRACTOR_TYPES_WITH_SUBS = ["total", "hoved"];
 
+// Menu items for small projects
+const smallProjectTopItems = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "", guestAllowed: true },
+  { id: "chat", label: "Prosjekt-assistent", icon: MessageSquare, path: "/chat", guestAllowed: false },
+];
+
+const smallProjectItems = [
+  { id: "prosjektinfo", label: "Prosjektinfo", icon: Info, path: "/prosjektinfo", guestAllowed: false },
+  { id: "sjekklister", label: "Sjekklister", icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
+  { id: "bilder", label: "Bilder", icon: Image, path: "/bilder", guestAllowed: true },
+  { id: "notater", label: "Notater", icon: StickyNote, path: "/notater", guestAllowed: false },
+  { id: "timeregistrering", label: "Timer", icon: Clock, path: "/timeregistrering", guestAllowed: false },
+  { id: "befaringer", label: "Befaringer", icon: Eye, path: "/befaringer", guestAllowed: true },
+  { id: "dokumentasjon", label: "Dokumenter", icon: FolderOpen, path: "/dokumentasjon", guestAllowed: true },
+  { id: "underleverandorer", label: "Underleverandører", icon: Building2, path: "/underleverandorer", guestAllowed: false },
+  { id: "okonomi", label: "Økonomi", icon: Wallet, path: "/okonomi", guestAllowed: false },
+];
+
+// Menu items for mini projects
+const miniProjectTopItems = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "", guestAllowed: true },
+];
+
+const miniProjectItems = [
+  { id: "sjekklister", label: "Sjekklister", icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
+  { id: "avvik", label: "Avvik", icon: AlertTriangle, path: "/avvik", guestAllowed: true },
+  { id: "dokumentasjon", label: "Dokumenter", icon: FolderOpen, path: "/dokumentasjon", guestAllowed: true },
+];
+
 function getMenuGroups(contractorType?: string | null): MenuGroup[] {
   const needsSubs = contractorType ? CONTRACTOR_TYPES_WITH_SUBS.includes(contractorType) : true;
 
@@ -135,14 +169,21 @@ function getMenuGroups(contractorType?: string | null): MenuGroup[] {
   return groups;
 }
 
-export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType }: Ks2ProjectSidebarProps) {
+export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType, projectType }: Ks2ProjectSidebarProps) {
   const { projectId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isGuestUser, guestProjects, signOut, profile } = useAuth();
 
-  const menuGroups = getMenuGroups(contractorType);
+  const effectiveType = (projectType || "standard") as ProjectType;
+  const isSmall = effectiveType === "small";
+  const isMini = effectiveType === "mini";
+  const isSimplified = isSmall || isMini;
+
+  const menuGroups = isSimplified ? [] : getMenuGroups(contractorType);
+  const flatItems = isSmall ? smallProjectItems : isMini ? miniProjectItems : [];
+  const effectiveTopItems = isSmall ? smallProjectTopItems : isMini ? miniProjectTopItems : topMenuItems;
 
   const basePath = `/ks/project/${projectId}`;
   const currentPath = location.pathname.replace(basePath, "") || "";
@@ -252,7 +293,7 @@ export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType }
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {/* Top-level items (Dashboard) */}
         <TooltipProvider delayDuration={400}>
-          {filterByGuest(topMenuItems).map((item) => {
+          {filterByGuest(effectiveTopItems).map((item) => {
             const isActive = currentPath === item.path;
             const Icon = item.icon;
 
@@ -286,7 +327,31 @@ export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType }
           })}
         </TooltipProvider>
 
-        {/* Grouped Menu Sections */}
+        {/* Flat items for small/mini projects */}
+        {isSimplified && filterByGuest(flatItems).map((item) => {
+          const isActive = currentPath === item.path || currentPath.startsWith(item.path + "/");
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                navigate(`${basePath}${item.path}`);
+                onNavigate?.();
+              }}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                isActive
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              )}
+            >
+              <Icon className="h-5 w-5 flex-shrink-0" />
+              <span className="flex-1 text-left">{item.label}</span>
+            </button>
+          );
+        })}
+
+        {/* Grouped Menu Sections (standard projects only) */}
         {menuGroups.map((group) => {
           const filteredItems = filterByGuest(group.items);
           if (filteredItems.length === 0) return null;

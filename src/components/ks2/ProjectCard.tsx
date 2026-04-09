@@ -124,7 +124,15 @@ export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDele
               </h3>
             </div>
           </div>
-          <Badge className={cn("mt-2 text-xs", status.className)}>{status.label}</Badge>
+          <div className="flex gap-1.5 mt-2 flex-wrap">
+            <Badge className={cn("text-xs", status.className)}>{status.label}</Badge>
+            {(project as any).project_type === "small" && (
+              <Badge variant="outline" className="text-xs">Lite prosjekt</Badge>
+            )}
+            {(project as any).project_type === "mini" && (
+              <Badge variant="outline" className="text-xs">Mini</Badge>
+            )}
+          </div>
         </div>
 
         {/* Details */}

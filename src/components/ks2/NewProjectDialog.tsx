@@ -6,15 +6,40 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, FileText, Sparkles, ClipboardList, Plus, Trash2, Save } from "lucide-react";
+import { Loader2, FileText, Sparkles, ClipboardList, Plus, Trash2, Save, Building2, Briefcase, Hammer } from "lucide-react";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
-import { NewKsModule2ProjectInput } from "@/hooks/useKsModule2Projects";
+import { NewKsModule2ProjectInput, ProjectType } from "@/hooks/useKsModule2Projects";
 import { Ks2ProjectSetupChat } from "./Ks2ProjectSetupChat";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyProjectTemplates } from "@/hooks/useCompanyProjectTemplates";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+
+const PROJECT_TYPE_OPTIONS: { id: ProjectType; name: string; description: string; icon: typeof Building2; features: string[] }[] = [
+  {
+    id: "standard",
+    name: "Standard prosjekt",
+    description: "Komplett prosjektstyring med alle moduler",
+    icon: Building2,
+    features: ["KS, HMS, SHA", "Byggesak & blanketter", "Økonomi & fremdrift", "Underleverandører", "Alle moduler"]
+  },
+  {
+    id: "small",
+    name: "Lite prosjekt",
+    description: "For mindre prosjekter med enklere behov",
+    icon: Briefcase,
+    features: ["Sjekklister", "Bilder & dokumenter", "Timer & befaringer", "UE & økonomi"]
+  },
+  {
+    id: "mini",
+    name: "Mini prosjekt",
+    description: "For enkle jobber og små oppdrag",
+    icon: Hammer,
+    features: ["Sjekklister", "Avvik", "Dokumenter"]
+  }
+];
 
 // Prosjektmaler med forhåndsdefinert informasjon
 const PROJECT_TEMPLATES = [
@@ -157,6 +182,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
   const { users } = useCompanyUsers();
   const { profile, isCompanyAdmin } = useAuth();
   const { templates: customTemplates, createTemplate, deleteTemplate } = useCompanyProjectTemplates();
+  const [selectedProjectType, setSelectedProjectType] = useState<ProjectType | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("blank");
   const [formData, setFormData] = useState<NewKsModule2ProjectInput>(getEmptyFormData());
   const [activeTab, setActiveTab] = useState<string>("manual");
@@ -205,9 +231,10 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
     e.preventDefault();
     if (!formData.project_name.trim()) return;
 
-    await onSubmit(formData);
+    await onSubmit({ ...formData, project_type: selectedProjectType || "standard" });
     setFormData(getEmptyFormData());
     setSelectedTemplate("blank");
+    setSelectedProjectType(null);
     onOpenChange(false);
   };
 
@@ -285,6 +312,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
   }) => {
     const projectData: NewKsModule2ProjectInput = {
       ...getEmptyFormData(),
+      project_type: selectedProjectType || "standard",
       project_name: data.project_name || "",
       description: data.description || "",
       address: data.address || "",
@@ -329,16 +357,65 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) setSelectedProjectType(null); onOpenChange(o); }}>
       <DialogContent 
         className="max-w-2xl max-h-[90vh] h-[90vh] flex flex-col overflow-hidden p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-2">
-          <DialogTitle className="text-xl font-semibold">Opprett nytt prosjekt</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            {selectedProjectType ? "Opprett nytt prosjekt" : "Velg prosjekttype"}
+          </DialogTitle>
         </DialogHeader>
 
+        {/* Project Type Selection Step */}
+        {!selectedProjectType ? (
+          <div className="px-6 pb-6 flex-1 overflow-y-auto">
+            <p className="text-sm text-muted-foreground mb-6">
+              Velg hvilken type prosjekt du vil opprette. Dette bestemmer hvilke moduler som er tilgjengelige.
+            </p>
+            <div className="grid gap-4">
+              {PROJECT_TYPE_OPTIONS.map((option) => {
+                const Icon = option.icon;
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => setSelectedProjectType(option.id)}
+                    className={cn(
+                      "flex items-start gap-4 p-4 rounded-xl border-2 text-left transition-all hover:border-primary hover:bg-primary/5",
+                      "border-border"
+                    )}
+                  >
+                    <div className="flex-shrink-0 p-3 rounded-lg bg-primary/10">
+                      <Icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-base">{option.name}</h3>
+                      <p className="text-sm text-muted-foreground mt-0.5">{option.description}</p>
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {option.features.map((f) => (
+                          <span key={f} className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                            {f}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+        <>
+        {/* Back button */}
+        <div className="px-6 pb-2">
+          <Button variant="ghost" size="sm" onClick={() => setSelectedProjectType(null)} className="-ml-2 text-muted-foreground">
+            ← Endre prosjekttype ({PROJECT_TYPE_OPTIONS.find(o => o.id === selectedProjectType)?.name})
+          </Button>
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col min-h-0 px-6">
+          {selectedProjectType === "standard" ? (
           <TabsList className="grid w-full grid-cols-2 mb-4 flex-shrink-0">
             <TabsTrigger value="manual" className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
@@ -349,6 +426,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
               Prosjekt-hjelperen
             </TabsTrigger>
           </TabsList>
+          ) : null}
 
           <TabsContent value="ai" className="mt-0 flex-1 min-h-0">
             <Ks2ProjectSetupChat 
@@ -392,7 +470,8 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
               </div>
             </div>
 
-            {/* Project Template Selection */}
+            {/* Project Template Selection - standard only */}
+            {selectedProjectType === "standard" && (
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
                 <FileText className="w-4 h-4" />
@@ -505,6 +584,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                 )}
               </div>
             </div>
+            )}
 
             {/* Address */}
             <div className="space-y-4">
@@ -535,7 +615,8 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
               </div>
             </div>
 
-            {/* Client Info */}
+            {/* Client Info - not for mini */}
+            {selectedProjectType !== "mini" && (
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                 Byggherre
@@ -596,8 +677,10 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                 </div>
               </div>
             </div>
+            )}
 
-            {/* Project Details */}
+            {/* Project Details - standard and small only */}
+            {selectedProjectType !== "mini" && (
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                 Prosjektdetaljer
@@ -668,6 +751,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                 </div>
               </div>
             </div>
+            )}
 
             {/* Dates and Contract */}
             <div className="space-y-4">
@@ -747,6 +831,8 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
             </form>
           </TabsContent>
         </Tabs>
+        </>
+        )}
       </DialogContent>
     </Dialog>
   );

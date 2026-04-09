@@ -14568,6 +14568,105 @@ export type Database = {
           },
         ]
       }
+      simple_project_notes: {
+        Row: {
+          company_id: string
+          content: string
+          created_at: string
+          created_by_id: string | null
+          created_by_name: string
+          id: string
+          project_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          content?: string
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string
+          id?: string
+          project_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          content?: string
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string
+          id?: string
+          project_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simple_project_notes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "simple_project_notes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      simple_project_photos: {
+        Row: {
+          caption: string | null
+          company_id: string
+          created_at: string
+          created_by_id: string | null
+          created_by_name: string
+          file_path: string
+          id: string
+          project_id: string
+        }
+        Insert: {
+          caption?: string | null
+          company_id: string
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string
+          file_path: string
+          id?: string
+          project_id: string
+        }
+        Update: {
+          caption?: string | null
+          company_id?: string
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string
+          file_path?: string
+          id?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simple_project_photos_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "simple_project_photos_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       standard_work_schedules: {
         Row: {
           company_id: string

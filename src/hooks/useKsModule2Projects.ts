@@ -34,9 +34,12 @@ export interface KsModule2Project {
   updated_at: string;
 }
 
+export type ProjectType = "standard" | "small" | "mini";
+
 export interface NewKsModule2ProjectInput {
   project_name: string;
   project_number?: string;
+  project_type?: ProjectType;
   address?: string;
   gnr_bnr?: string;
   client_name?: string;
@@ -141,6 +144,7 @@ export function useKsModule2Projects() {
         .insert([{
           company_id: profile.company_id,
           created_by: profile.id,
+          project_type: input.project_type || "standard",
           project_name: input.project_name,
           project_number: input.project_number || "",
           address: input.address || null,
