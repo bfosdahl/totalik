@@ -327,7 +327,31 @@ export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType, 
           })}
         </TooltipProvider>
 
-        {/* Grouped Menu Sections */}
+        {/* Flat items for small/mini projects */}
+        {isSimplified && filterByGuest(flatItems).map((item) => {
+          const isActive = currentPath === item.path || currentPath.startsWith(item.path + "/");
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                navigate(`${basePath}${item.path}`);
+                onNavigate?.();
+              }}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                isActive
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              )}
+            >
+              <Icon className="h-5 w-5 flex-shrink-0" />
+              <span className="flex-1 text-left">{item.label}</span>
+            </button>
+          );
+        })}
+
+        {/* Grouped Menu Sections (standard projects only) */}
         {menuGroups.map((group) => {
           const filteredItems = filterByGuest(group.items);
           if (filteredItems.length === 0) return null;
