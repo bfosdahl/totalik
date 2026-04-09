@@ -231,9 +231,10 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
     e.preventDefault();
     if (!formData.project_name.trim()) return;
 
-    await onSubmit(formData);
+    await onSubmit({ ...formData, project_type: selectedProjectType || "standard" });
     setFormData(getEmptyFormData());
     setSelectedTemplate("blank");
+    setSelectedProjectType(null);
     onOpenChange(false);
   };
 
