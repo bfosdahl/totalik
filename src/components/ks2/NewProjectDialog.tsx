@@ -469,7 +469,8 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
               </div>
             </div>
 
-            {/* Project Template Selection */}
+            {/* Project Template Selection - standard only */}
+            {selectedProjectType === "standard" && (
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
                 <FileText className="w-4 h-4" />
@@ -582,6 +583,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                 )}
               </div>
             </div>
+            )}
 
             {/* Address */}
             <div className="space-y-4">
