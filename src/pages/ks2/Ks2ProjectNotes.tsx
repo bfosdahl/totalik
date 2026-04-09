@@ -45,7 +45,7 @@ export default function Ks2ProjectNotes() {
         .eq("project_id", projectId)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data || []) as ProjectNote[];
+      return (data || []) as unknown as ProjectNote[];
     },
     enabled: !!projectId,
   });

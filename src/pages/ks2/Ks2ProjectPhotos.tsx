@@ -35,7 +35,7 @@ export default function Ks2ProjectPhotos() {
         .eq("project_id", projectId)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data || []) as ProjectPhoto[];
+      return (data || []) as unknown as ProjectPhoto[];
     },
     enabled: !!projectId,
   });
