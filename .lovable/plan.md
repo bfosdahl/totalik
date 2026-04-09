@@ -1,33 +1,35 @@
 
+## Prosjekttype-velger i KS Bygg
 
-## Årshjul – Mobiloptimalisering og enklere redigering
+### Oversikt
+Legge til valg av prosjekttype ved opprettelse av prosjekt. Sidebaren og tilgjengelige moduler tilpasses basert på valgt type.
 
-### Problemer i dag
-1. **Redigeringsknapper skjult på mobil**: Både i `AarshjulEditDialog` og i aktivitetslistene brukes `group-hover:opacity-100` – dette fungerer ikke på touch-enheter, så knappene er usynlige på mobil.
-2. **Ingen tydelig "Rediger"-knapp på mobil**: Pencil-knappen for å åpne edit-dialogen vises kun når en måned er valgt, og er liten.
-3. **Layouten er grid-basert** (`grid-cols-1 lg:grid-cols-2`): På mobil vises hjulet + aktivitetslisten under hverandre, men man må scrolle for å se aktiviteter etter å ha trykket på en måned.
-4. **Ingen direkte "legg til"-knapp synlig** uten å først velge en måned.
+### Prosjekttyper
 
-### Plan
+**Standard prosjekt** (project_type = 'standard') – Alt som i dag:
+- Dashboard, Kvalitetssikring, HMS/SHA, Byggesak, Prosjektstyring, Økonomi, Partnere, Dokumentasjon
 
-**1. Fjern hover-avhengighet for knapper (AarshjulEditDialog + HmsAarshjul)**
-- Erstatt `opacity-0 group-hover:opacity-100` med alltid synlige knapper (evt. `opacity-100 sm:opacity-0 sm:group-hover:opacity-100` for å beholde hover-effekt på desktop men alltid vise på mobil).
-- Gjelder standard-aktiviteter, egne aktiviteter, og aktivitetslisten i hovedvisningen.
+**Små prosjekter** (project_type = 'small'):
+- Prosjektinfo, Sjekklister, Bilder, Notater, Timer, Befaringer, Dokumenter, UE, Økonomi
 
-**2. Legg til "Rediger måned"-knapp under hjulet på mobil**
-- Når en måned er valgt på mobil, vis en tydelig knapp under hjulet: "Rediger [Måned]" som åpner edit-dialogen.
-- Flytt pencil-ikonet til en mer synlig plassering med tekst.
+**Mini prosjekt** (project_type = 'mini'):
+- Sjekklister, Avvik, Dokumenter
 
-**3. Forbedre aktivitetslisten på mobil**
-- Erstatt den lille `EyeOff`-knappen i aktivitetsrader med en swipe-lignende tydelig knapp, eller vis alltid.
-- Legg til en flytende "+" knapp nederst for å raskt legge til ny aktivitet i valgt måned.
+### Endringer
 
-**4. Forbedre AarshjulEditDialog for mobil**
-- Gjør dialogen fullskjerm på mobil (`sm:max-w-lg`).
-- Vis knappene (Rediger/Slett) alltid synlige, ikke bare på hover.
-- Legg til en tydelig "Legg til egen aktivitet"-knapp med `Plus`-ikon øverst.
+1. **Database**: `project_type`-kolonnen finnes allerede i `ks_module2_projects`. Sette default til `'standard'` og oppdatere eksisterende null-verdier.
 
-### Filer som endres
-- `src/components/audits/HmsAarshjul.tsx` – Mobilsynlighet for redigeringsknapper, bedre layout for valgt måned.
-- `src/components/audits/AarshjulEditDialog.tsx` – Alltid synlige handlingsknapper, mobiloptimert dialog.
+2. **NewProjectDialog.tsx**: Legge til et første steg der brukeren velger prosjekttype (tre kort med ikon og beskrivelse). Standard-mal-velger vises kun for "Standard prosjekt".
 
+3. **Ks2ProjectSidebar.tsx**: Filtrere menygrupper basert på `project.project_type`. Sende `projectType` som ny prop.
+
+4. **Ks2ProjectDetail.tsx**: Sende `project_type` til sidebar. For små/mini prosjekter – nye sider for Bilder, Notater, Befaringer.
+
+5. **useKsModule2Projects.ts**: Inkludere `project_type` i interfacet og insert-logikken.
+
+### Nye sider for Små prosjekter
+- Bilder (bildeoppslasting/galleri)
+- Notater (enkle tekstnotater)
+- Befaringer (befaringsrapporter)
+
+Disse kan starte som enkle placeholder-sider og bygges ut senere.
