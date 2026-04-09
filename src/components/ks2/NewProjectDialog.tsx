@@ -312,6 +312,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
   }) => {
     const projectData: NewKsModule2ProjectInput = {
       ...getEmptyFormData(),
+      project_type: selectedProjectType || "standard",
       project_name: data.project_name || "",
       description: data.description || "",
       address: data.address || "",
