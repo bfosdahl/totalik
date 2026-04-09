@@ -293,7 +293,7 @@ export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType, 
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {/* Top-level items (Dashboard) */}
         <TooltipProvider delayDuration={400}>
-          {filterByGuest(topMenuItems).map((item) => {
+          {filterByGuest(effectiveTopItems).map((item) => {
             const isActive = currentPath === item.path;
             const Icon = item.icon;
 
