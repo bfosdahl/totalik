@@ -144,6 +144,7 @@ export function useKsModule2Projects() {
         .insert([{
           company_id: profile.company_id,
           created_by: profile.id,
+          project_type: input.project_type || "standard",
           project_name: input.project_name,
           project_number: input.project_number || "",
           address: input.address || null,
