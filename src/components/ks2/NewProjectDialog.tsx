@@ -750,6 +750,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                 </div>
               </div>
             </div>
+            )}
 
             {/* Dates and Contract */}
             <div className="space-y-4">
