@@ -36,32 +36,6 @@ import {
   StickyNote,
   Eye,
 } from "lucide-react";
-  AlertTriangle,
-  Library,
-  Shield,
-  FileText,
-  ArrowLeft,
-  Menu,
-  Building2,
-  LogOut,
-  ChevronDown,
-  ChevronRight,
-  HardHat,
-  FileCheck,
-  FlaskConical,
-  Clock,
-  GanttChart,
-  FileWarning,
-  Wallet,
-  Users,
-  Briefcase,
-  Settings,
-  Home,
-  Mail,
-  Search,
-  Command,
-  MessageSquare,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
