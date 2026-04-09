@@ -183,6 +183,7 @@ export default function Ks2ProjectDetail() {
         projectName={project.project_name}
         projectNumber={project.project_number}
         contractorType={project.contractor_type}
+        projectType={(project as any).project_type}
       />
 
       {/* Main Content */}
