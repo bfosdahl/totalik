@@ -167,9 +167,9 @@ function PhotoCard({
 }) {
   const [url, setUrl] = useState<string>("");
 
-  useState(() => {
+  useEffect(() => {
     getSignedUrl(photo.file_path).then(setUrl);
-  });
+  }, [photo.file_path]);
 
   return (
     <Card className="overflow-hidden group relative">
