@@ -614,7 +614,8 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
               </div>
             </div>
 
-            {/* Client Info */}
+            {/* Client Info - not for mini */}
+            {selectedProjectType !== "mini" && (
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                 Byggherre
