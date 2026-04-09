@@ -104,7 +104,6 @@ const ksByggItems: NavItem[] = [
   { label: "Mine prosjekter", path: "/ks" },
   { label: "Oppsett-hjelper", path: "/ks/oppsett" },
   { label: "Utfylte sjekklister", path: "/ks/utfylte-sjekklister" },
-  { label: "Småprosjekter", path: "/ks/smaaprosjekter" },
   { label: "Befaring", path: "/ks/befaring" },
   { label: "Kalkyler", path: "/ks/kalkyler" },
 ];
