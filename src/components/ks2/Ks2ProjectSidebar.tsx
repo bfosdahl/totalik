@@ -150,6 +150,35 @@ interface MenuGroup {
 /** Contractor types that typically manage subcontractors */
 const CONTRACTOR_TYPES_WITH_SUBS = ["total", "hoved"];
 
+// Menu items for small projects
+const smallProjectTopItems = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "", guestAllowed: true },
+  { id: "chat", label: "Prosjekt-assistent", icon: MessageSquare, path: "/chat", guestAllowed: false },
+];
+
+const smallProjectItems = [
+  { id: "prosjektinfo", label: "Prosjektinfo", icon: Info, path: "/prosjektinfo", guestAllowed: false },
+  { id: "sjekklister", label: "Sjekklister", icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
+  { id: "bilder", label: "Bilder", icon: Image, path: "/bilder", guestAllowed: true },
+  { id: "notater", label: "Notater", icon: StickyNote, path: "/notater", guestAllowed: false },
+  { id: "timeregistrering", label: "Timer", icon: Clock, path: "/timeregistrering", guestAllowed: false },
+  { id: "befaringer", label: "Befaringer", icon: Eye, path: "/befaringer", guestAllowed: true },
+  { id: "dokumentasjon", label: "Dokumenter", icon: FolderOpen, path: "/dokumentasjon", guestAllowed: true },
+  { id: "underleverandorer", label: "Underleverandører", icon: Building2, path: "/underleverandorer", guestAllowed: false },
+  { id: "okonomi", label: "Økonomi", icon: Wallet, path: "/okonomi", guestAllowed: false },
+];
+
+// Menu items for mini projects
+const miniProjectTopItems = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "", guestAllowed: true },
+];
+
+const miniProjectItems = [
+  { id: "sjekklister", label: "Sjekklister", icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
+  { id: "avvik", label: "Avvik", icon: AlertTriangle, path: "/avvik", guestAllowed: true },
+  { id: "dokumentasjon", label: "Dokumenter", icon: FolderOpen, path: "/dokumentasjon", guestAllowed: true },
+];
+
 function getMenuGroups(contractorType?: string | null): MenuGroup[] {
   const needsSubs = contractorType ? CONTRACTOR_TYPES_WITH_SUBS.includes(contractorType) : true;
 
