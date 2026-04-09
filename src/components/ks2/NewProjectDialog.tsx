@@ -182,6 +182,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
   const { users } = useCompanyUsers();
   const { profile, isCompanyAdmin } = useAuth();
   const { templates: customTemplates, createTemplate, deleteTemplate } = useCompanyProjectTemplates();
+  const [selectedProjectType, setSelectedProjectType] = useState<ProjectType | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("blank");
   const [formData, setFormData] = useState<NewKsModule2ProjectInput>(getEmptyFormData());
   const [activeTab, setActiveTab] = useState<string>("manual");
