@@ -356,16 +356,65 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) setSelectedProjectType(null); onOpenChange(o); }}>
       <DialogContent 
         className="max-w-2xl max-h-[90vh] h-[90vh] flex flex-col overflow-hidden p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-2">
-          <DialogTitle className="text-xl font-semibold">Opprett nytt prosjekt</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            {selectedProjectType ? "Opprett nytt prosjekt" : "Velg prosjekttype"}
+          </DialogTitle>
         </DialogHeader>
 
+        {/* Project Type Selection Step */}
+        {!selectedProjectType ? (
+          <div className="px-6 pb-6 flex-1 overflow-y-auto">
+            <p className="text-sm text-muted-foreground mb-6">
+              Velg hvilken type prosjekt du vil opprette. Dette bestemmer hvilke moduler som er tilgjengelige.
+            </p>
+            <div className="grid gap-4">
+              {PROJECT_TYPE_OPTIONS.map((option) => {
+                const Icon = option.icon;
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => setSelectedProjectType(option.id)}
+                    className={cn(
+                      "flex items-start gap-4 p-4 rounded-xl border-2 text-left transition-all hover:border-primary hover:bg-primary/5",
+                      "border-border"
+                    )}
+                  >
+                    <div className="flex-shrink-0 p-3 rounded-lg bg-primary/10">
+                      <Icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-base">{option.name}</h3>
+                      <p className="text-sm text-muted-foreground mt-0.5">{option.description}</p>
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {option.features.map((f) => (
+                          <span key={f} className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                            {f}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+        <>
+        {/* Back button */}
+        <div className="px-6 pb-2">
+          <Button variant="ghost" size="sm" onClick={() => setSelectedProjectType(null)} className="-ml-2 text-muted-foreground">
+            ← Endre prosjekttype ({PROJECT_TYPE_OPTIONS.find(o => o.id === selectedProjectType)?.name})
+          </Button>
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col min-h-0 px-6">
+          {selectedProjectType === "standard" ? (
           <TabsList className="grid w-full grid-cols-2 mb-4 flex-shrink-0">
             <TabsTrigger value="manual" className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
@@ -376,6 +425,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
               Prosjekt-hjelperen
             </TabsTrigger>
           </TabsList>
+          ) : null}
 
           <TabsContent value="ai" className="mt-0 flex-1 min-h-0">
             <Ks2ProjectSetupChat 
