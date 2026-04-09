@@ -195,14 +195,21 @@ function getMenuGroups(contractorType?: string | null): MenuGroup[] {
   return groups;
 }
 
-export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType }: Ks2ProjectSidebarProps) {
+export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType, projectType }: Ks2ProjectSidebarProps) {
   const { projectId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isGuestUser, guestProjects, signOut, profile } = useAuth();
 
-  const menuGroups = getMenuGroups(contractorType);
+  const effectiveType = (projectType || "standard") as ProjectType;
+  const isSmall = effectiveType === "small";
+  const isMini = effectiveType === "mini";
+  const isSimplified = isSmall || isMini;
+
+  const menuGroups = isSimplified ? [] : getMenuGroups(contractorType);
+  const flatItems = isSmall ? smallProjectItems : isMini ? miniProjectItems : [];
+  const effectiveTopItems = isSmall ? smallProjectTopItems : isMini ? miniProjectTopItems : topMenuItems;
 
   const basePath = `/ks/project/${projectId}`;
   const currentPath = location.pathname.replace(basePath, "") || "";
