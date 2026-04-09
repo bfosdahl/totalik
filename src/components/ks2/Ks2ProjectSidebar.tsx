@@ -73,6 +73,7 @@ interface Ks2ProjectSidebarProps {
   projectName: string;
   projectNumber: string;
   contractorType?: string | null;
+  projectType?: ProjectType | string | null;
 }
 
 // Top-level standalone items
