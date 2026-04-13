@@ -60,6 +60,7 @@ const IkMatOppsett = lazy(() => import("./pages/IkMatOppsett"));
 const IkMatHaccp = lazy(() => import("./pages/IkMatHaccp"));
 const IkMatRisikovurdering = lazy(() => import("./pages/IkMatRisikovurdering"));
 const IkMatAllergener = lazy(() => import("./pages/IkMatAllergener"));
+const IkMatKjokkenplan = lazy(() => import("./pages/IkMatKjokkenplan"));
 const IkMatFasteAvtaler = lazy(() => import("./pages/IkMatFasteAvtaler"));
 const IkMatKontroll = lazy(() => import("./pages/IkMatKontroll"));
 const IkMatMaal = lazy(() => import("./pages/IkMatMaal"));
