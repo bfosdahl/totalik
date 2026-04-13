@@ -5,21 +5,41 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LayoutGrid, Plus, Pencil, Save, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { LayoutGrid, Plus, Pencil, Save, Loader2, Trash2, MapPin } from "lucide-react";
 import { KitchenZoneEditor } from "@/components/ikmat/KitchenZoneEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+interface KitchenRoom {
+  id: string;
+  name: string;
+  data?: string;
+  image?: string;
+}
 
 const IkMatKjokkenplan = () => {
   const { company } = useAuth();
   const navigate = useNavigate();
   const { hasModule, modules, isLoading: modulesLoading } = useCompanyModules();
+  const [rooms, setRooms] = useState<KitchenRoom[]>([]);
+  const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
   const [kitchenEditorOpen, setKitchenEditorOpen] = useState(false);
-  const [kitchenZoneData, setKitchenZoneData] = useState<string | undefined>(undefined);
-  const [kitchenZoneImage, setKitchenZoneImage] = useState<string | undefined>(undefined);
   const [isSaving, setIsSaving] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [deleteRoomId, setDeleteRoomId] = useState<string | null>(null);
+  const [newRoomName, setNewRoomName] = useState("");
+  const [showNewRoomInput, setShowNewRoomInput] = useState(false);
 
   useEffect(() => {
     if (!modulesLoading && !hasModule('IK_MAT')) {
@@ -32,22 +52,61 @@ const IkMatKjokkenplan = () => {
       if (ikMatModule?.settings) {
         const settings = ikMatModule.settings as any;
         const manual = settings.manualContent || {};
-        if (manual.kitchenZoneData) setKitchenZoneData(manual.kitchenZoneData);
-        if (manual.kitchenZoneImage) setKitchenZoneImage(manual.kitchenZoneImage);
+        
+        // Migration: convert old single-room format to multi-room
+        if (manual.kitchenRooms && Array.isArray(manual.kitchenRooms)) {
+          setRooms(manual.kitchenRooms);
+        } else if (manual.kitchenZoneData || manual.kitchenZoneImage) {
+          // Migrate old single drawing to first room
+          setRooms([{
+            id: crypto.randomUUID(),
+            name: "Kjøkken",
+            data: manual.kitchenZoneData,
+            image: manual.kitchenZoneImage,
+          }]);
+        }
       }
       setIsInitialized(true);
     }
   }, [hasModule, modulesLoading, navigate, modules, isInitialized]);
 
-  const handleSaveKitchenZone = async (imageDataUrl: string, elementsJson: string) => {
-    setKitchenZoneData(elementsJson);
-    setKitchenZoneImage(imageDataUrl);
-    setKitchenEditorOpen(false);
-    setHasChanges(true);
-    toast.success('Kjøkkenplanløsning lagret. Husk å lagre siden.');
+  const handleAddRoom = () => {
+    if (!newRoomName.trim()) return;
+    const newRoom: KitchenRoom = {
+      id: crypto.randomUUID(),
+      name: newRoomName.trim(),
+    };
+    const updated = [...rooms, newRoom];
+    setRooms(updated);
+    setNewRoomName("");
+    setShowNewRoomInput(false);
+    // Open editor immediately for the new room
+    setEditingRoomId(newRoom.id);
+    setKitchenEditorOpen(true);
+    saveRoomsToDatabase(updated);
   };
 
-  const saveToDatabase = useCallback(async () => {
+  const handleSaveKitchenZone = async (imageDataUrl: string, elementsJson: string) => {
+    if (!editingRoomId) return;
+    const updated = rooms.map(r =>
+      r.id === editingRoomId ? { ...r, data: elementsJson, image: imageDataUrl } : r
+    );
+    setRooms(updated);
+    setKitchenEditorOpen(false);
+    setEditingRoomId(null);
+    await saveRoomsToDatabase(updated);
+    toast.success('Tegning lagret');
+  };
+
+  const handleDeleteRoom = (roomId: string) => {
+    const updated = rooms.filter(r => r.id !== roomId);
+    setRooms(updated);
+    setDeleteRoomId(null);
+    saveRoomsToDatabase(updated);
+    toast.success('Rom slettet');
+  };
+
+  const saveRoomsToDatabase = useCallback(async (roomsToSave: KitchenRoom[]) => {
     if (!company?.id) return;
     try {
       setIsSaving(true);
@@ -67,8 +126,10 @@ const IkMatKjokkenplan = () => {
         ...settings,
         manualContent: {
           ...manualContent,
-          kitchenZoneData,
-          kitchenZoneImage,
+          kitchenRooms: roomsToSave,
+          // Keep old fields for backward compat with PDF export etc
+          kitchenZoneData: roomsToSave[0]?.data,
+          kitchenZoneImage: roomsToSave[0]?.image,
         },
       };
 
@@ -82,15 +143,15 @@ const IkMatKjokkenplan = () => {
         .eq('module_type', 'IK_MAT');
 
       if (saveError) throw saveError;
-      setHasChanges(false);
-      toast.success('Kjøkkenplanløsning lagret');
     } catch (error) {
-      console.error('Error saving kitchen plan:', error);
+      console.error('Error saving kitchen plans:', error);
       toast.error('Kunne ikke lagre endringer');
     } finally {
       setIsSaving(false);
     }
-  }, [company?.id, kitchenZoneData, kitchenZoneImage]);
+  }, [company?.id]);
+
+  const editingRoom = rooms.find(r => r.id === editingRoomId);
 
   return (
     <AppLayout>
@@ -99,91 +160,131 @@ const IkMatKjokkenplan = () => {
           <div>
             <h1 className="text-2xl font-bold">Kjøkkenplanløsning – Ren/uren sone</h1>
             <p className="text-muted-foreground">
-              Del opp kjøkkenet i soner for å skille rene og urene arbeidsoppgaver
+              Del opp kjøkkenet og lokalet i soner for å skille rene og urene arbeidsoppgaver
             </p>
           </div>
-          {hasChanges && (
-            <Button onClick={saveToDatabase} disabled={isSaving}>
-              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              Lagre
-            </Button>
+          {isSaving && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Lagrer...
+            </div>
           )}
         </div>
 
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <LayoutGrid className="h-5 w-5" />
-                  Kjøkkenplanløsning
-                </CardTitle>
-                <CardDescription>
-                  Del opp kjøkkenet i soner for å skille rene og urene arbeidsoppgaver,
-                  i henhold til Næringsmiddelhygieneforskriften.
-                </CardDescription>
-              </div>
-              <Button onClick={() => setKitchenEditorOpen(true)}>
-                {kitchenZoneImage ? (
-                  <>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Rediger tegning
-                  </>
-                ) : (
-                  <>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Tegn kjøkkenplan
-                  </>
+        {/* Room list */}
+        {rooms.length > 0 && (
+          <div className="grid gap-4">
+            {rooms.map((room) => (
+              <Card key={room.id}>
+                <CardHeader className="pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <MapPin className="h-5 w-5 text-muted-foreground" />
+                      {room.name}
+                    </CardTitle>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingRoomId(room.id);
+                          setKitchenEditorOpen(true);
+                        }}
+                      >
+                        {room.image ? (
+                          <><Pencil className="mr-2 h-4 w-4" />Rediger</>
+                        ) : (
+                          <><Plus className="mr-2 h-4 w-4" />Tegn</>
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => setDeleteRoomId(room.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                {room.image && (
+                  <CardContent className="pt-0">
+                    <div className="border rounded-lg overflow-hidden bg-white">
+                      <img
+                        src={room.image}
+                        alt={room.name}
+                        className="w-full h-auto max-h-[400px] object-contain"
+                      />
+                    </div>
+                  </CardContent>
                 )}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {kitchenZoneImage ? (
-              <div className="space-y-4">
-                <div className="border rounded-lg overflow-hidden bg-white">
-                  <img
-                    src={kitchenZoneImage}
-                    alt="Kjøkkenplanløsning"
-                    className="w-full h-auto max-h-[500px] object-contain"
-                  />
-                </div>
-                <div className="flex flex-wrap gap-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded" style={{ backgroundColor: "#fef3c7", border: "1px solid #ca8a04" }} />
-                    <span className="text-muted-foreground">Ren sone (matlaging)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded" style={{ backgroundColor: "#e0e7ff", border: "1px solid #6366f1" }} />
-                    <span className="text-muted-foreground">Uren sone (oppvask)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded" style={{ backgroundColor: "#bae6fd", border: "1px solid #0284c7" }} />
-                    <span className="text-muted-foreground">Kjøl/frys</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded" style={{ backgroundColor: "#a5f3fc", border: "1px solid #0891b2" }} />
-                    <span className="text-muted-foreground">Vask/sanitær</span>
-                  </div>
-                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Add new room */}
+        <Card>
+          <CardContent className="pt-6">
+            {showNewRoomInput ? (
+              <div className="flex items-center gap-3">
+                <Input
+                  placeholder="Navn på rom/område (f.eks. Kjøkken, Lager, 2. etasje...)"
+                  value={newRoomName}
+                  onChange={(e) => setNewRoomName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddRoom()}
+                  autoFocus
+                />
+                <Button onClick={handleAddRoom} disabled={!newRoomName.trim()}>
+                  Opprett
+                </Button>
+                <Button variant="ghost" onClick={() => { setShowNewRoomInput(false); setNewRoomName(""); }}>
+                  Avbryt
+                </Button>
               </div>
             ) : (
-              <div className="text-center py-12 border-2 border-dashed rounded-lg">
-                <LayoutGrid className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Ingen kjøkkenplan tegnet</h3>
-                <p className="text-sm text-muted-foreground mb-4 max-w-lg mx-auto">
-                  Tegn opp kjøkkenet med soner for matlaging og oppvask.
-                  Dette er et krav i henhold til Næringsmiddelhygieneforskriften for å sikre
-                  at arbeidet foregår på en hygienisk måte.
-                </p>
-                <Button onClick={() => setKitchenEditorOpen(true)}>
+              <div className="text-center">
+                {rooms.length === 0 && (
+                  <div className="mb-4">
+                    <LayoutGrid className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                    <h3 className="text-lg font-medium mb-1">Ingen rom/områder lagt til</h3>
+                    <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+                      Legg til rom og områder i lokalet ditt – f.eks. kjøkken, lager, serveringsområde.
+                      Tegn opp hver sone for å dokumentere ren/uren soneinndeling.
+                    </p>
+                  </div>
+                )}
+                <Button onClick={() => setShowNewRoomInput(true)}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Tegn kjøkkenplan
+                  Legg til rom / område
                 </Button>
               </div>
             )}
           </CardContent>
         </Card>
+
+        {/* Legend */}
+        {rooms.length > 0 && (
+          <div className="flex flex-wrap gap-3 text-sm px-1">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: "#fef3c7", border: "1px solid #ca8a04" }} />
+              <span className="text-muted-foreground">Ren sone (matlaging)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: "#e0e7ff", border: "1px solid #6366f1" }} />
+              <span className="text-muted-foreground">Uren sone (oppvask)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: "#bae6fd", border: "1px solid #0284c7" }} />
+              <span className="text-muted-foreground">Kjøl/frys</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: "#a5f3fc", border: "1px solid #0891b2" }} />
+              <span className="text-muted-foreground">Vask/sanitær</span>
+            </div>
+          </div>
+        )}
 
         {/* Regulation info */}
         <Card className="border-blue-200 bg-blue-50/50">
@@ -211,10 +312,33 @@ const IkMatKjokkenplan = () => {
 
         <KitchenZoneEditor
           open={kitchenEditorOpen}
-          onOpenChange={setKitchenEditorOpen}
-          initialData={kitchenZoneData}
+          onOpenChange={(open) => {
+            setKitchenEditorOpen(open);
+            if (!open) setEditingRoomId(null);
+          }}
+          initialData={editingRoom?.data}
           onSave={handleSaveKitchenZone}
         />
+
+        <AlertDialog open={!!deleteRoomId} onOpenChange={() => setDeleteRoomId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Slett rom?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Er du sikker på at du vil slette dette rommet og tegningen? Dette kan ikke angres.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={() => deleteRoomId && handleDeleteRoom(deleteRoomId)}
+              >
+                Slett
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AppLayout>
   );
