@@ -143,7 +143,16 @@ const IkMatAllergener = () => {
     } finally {
       setIsSaving(false);
     }
-  }, [company?.id, menuItems]);
+  }, [company?.id, menuItems, kitchenZoneData, kitchenZoneImage]);
+
+  // Save kitchen zone drawing
+  const handleSaveKitchenZone = async (imageDataUrl: string, elementsJson: string) => {
+    setKitchenZoneData(elementsJson);
+    setKitchenZoneImage(imageDataUrl);
+    setKitchenEditorOpen(false);
+    setHasChanges(true);
+    toast.success('Kjøkkenplanløsning lagret. Husk å lagre siden.');
+  };
 
   // Toggle allergen selection
   const toggleAllergen = (id: string) => {
