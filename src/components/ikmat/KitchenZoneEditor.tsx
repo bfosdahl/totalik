@@ -30,7 +30,6 @@ import {
   ChevronUp,
   ChevronDown,
   Ruler,
-  Separator as SepIcon,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
