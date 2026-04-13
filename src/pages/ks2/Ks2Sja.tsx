@@ -67,7 +67,6 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
   }, []);
 
   const [newRisk, setNewRisk] = useState({ description: "", consequence: "Moderat", probability: "Mulig" });
-
   const isCompleted = sja.status === "completed";
 
   const addRisk = () => {
