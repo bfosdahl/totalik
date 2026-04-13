@@ -36,7 +36,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
   const [measures, setMeasures] = useState(sja.risk_reducing_measures || []);
   const [notes, setNotes] = useState(sja.notes || "");
   const [isSaving, setIsSaving] = useState(false);
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const autoSave = useCallback(async (updatedRisks?: typeof risks, updatedMeasures?: typeof measures) => {
     if (isCompleted) return;
