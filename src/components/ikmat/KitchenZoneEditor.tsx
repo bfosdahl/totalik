@@ -437,9 +437,10 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
 
   const findElementAt = (x: number, y: number) => {
     return [...elements].reverse().find(el => {
-      const minHit = 20;
-      const hitW = Math.max(el.width, minHit);
-      const hitH = Math.max(el.height, minHit);
+      const minHit = 35;
+      const padding = 8;
+      const hitW = Math.max(el.width + padding * 2, minHit);
+      const hitH = Math.max(el.height + padding * 2, minHit);
       const hitX = el.x - (hitW - el.width) / 2;
       const hitY = el.y - (hitH - el.height) / 2;
       return x >= hitX && x <= hitX + hitW && y >= hitY && y <= hitY + hitH;
@@ -565,11 +566,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
         }
       }
       const { x, y } = getCanvasCoords(touch.clientX, touch.clientY);
-      const clickedEl = [...elements].reverse().find(el => {
-        const minHit = 30; const hitW = Math.max(el.width, minHit); const hitH = Math.max(el.height, minHit);
-        const hitX = el.x - (hitW - el.width) / 2; const hitY = el.y - (hitH - el.height) / 2;
-        return x >= hitX && x <= hitX + hitW && y >= hitY && y <= hitY + hitH;
-      });
+      const clickedEl = findElementAt(x, y);
       if (clickedEl) { setSelectedId(clickedEl.id); setIsDragging(true); setDragStart({ x: x - clickedEl.x, y: y - clickedEl.y }); }
     }
   };
