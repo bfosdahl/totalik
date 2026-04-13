@@ -72,6 +72,7 @@ const ikMatItems: NavItem[] = [
   { icon: ClipboardCheck, labelKey: "nav.control", path: "/ik-mat/kontroll", color: "text-emerald-500" },
   { icon: AlertTriangle, labelKey: "nav.deviations", path: "/ik-mat/avvik", color: "text-red-500" },
   { icon: Wheat, labelKey: "nav.allergens", path: "/ik-mat/allergener", color: "text-amber-500" },
+  { icon: LayoutGrid, labelKey: "nav.kitchenLayout", path: "/ik-mat/kjokkenplan", color: "text-cyan-500" },
   { icon: Handshake, labelKey: "nav.fixedAgreements", path: "/ik-mat/faste-avtaler", color: "text-indigo-500" },
   { icon: FolderOpen, labelKey: "nav.documentCenter", path: "/ik-mat/dokumentsenter", color: "text-slate-500" },
 ];
