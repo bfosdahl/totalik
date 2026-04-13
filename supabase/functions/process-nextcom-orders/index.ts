@@ -99,9 +99,18 @@ Deno.serve(async (req) => {
 
     console.log(`[TotalIK NextCom Sync] Starting${dryRun ? ' (DRY RUN)' : ''}...`);
 
-    // Step 1: Fetch confirmed orders from NextCom
-    const orders = await fetchNextcomOrders(basicAuthEncoded);
-    console.log(`[TotalIK NextCom Sync] Found ${orders.length} confirmed orders`);
+    // Step 1: Get the latest processed order timestamp to only fetch recent orders
+    const { data: latestProcessed } = await supabase
+      .from("nextcom_processed_orders")
+      .select("processed_at")
+      .order("processed_at", { ascending: false })
+      .limit(1);
+
+    const lastProcessedAt = latestProcessed?.[0]?.processed_at || null;
+
+    // Step 2: Fetch only recent confirmed orders from NextCom
+    const orders = await fetchNextcomOrders(basicAuthEncoded, lastProcessedAt);
+    console.log(`[TotalIK NextCom Sync] Found ${orders.length} confirmed orders (since: ${lastProcessedAt || 'all time'})`);
 
     if (orders.length === 0) {
       return respond({ success: true, message: "No pending orders found", orders_found: 0 });
@@ -274,12 +283,13 @@ function detectModules(productNames: string[]): string[] {
 
 // ── NextCom API ──
 
-async function fetchNextcomOrders(basicAuth: string): Promise<NextcomOrder[]> {
+async function fetchNextcomOrders(basicAuth: string, lastProcessedAt: string | null): Promise<NextcomOrder[]> {
   const allOrders: NextcomOrder[] = [];
   const limit = 100;
-  const maxPages = 5;
+  // Only fetch the last 2 pages (200 orders max) instead of scanning everything
+  const maxPages = 2;
 
-  // Get total count
+  // Get total count with a single lightweight call
   const countUrl = `${NEXTCOM_BASE_URL}/crm-system/orders?offset=0&limit=1&locale=eng`;
   const countResponse = await fetch(countUrl, {
     headers: { "Authorization": `Basic ${basicAuth}`, "Accept": "application/json" },
@@ -294,18 +304,11 @@ async function fetchNextcomOrders(basicAuth: string): Promise<NextcomOrder[]> {
   const totalCount = countData.totalCount || countData.total || countData.count || 0;
   console.log(`[NextCom] Total orders: ${totalCount}`);
 
-  // Fetch newest pages
-  const offsets: number[] = [];
-  offsets.push(totalCount);
+  // Only fetch the newest pages (last 200 orders max = 2 API calls)
   for (let page = 0; page < maxPages; page++) {
-    const off = Math.max(0, totalCount - ((page + 1) * limit));
-    if (!offsets.includes(off)) offsets.push(off);
-  }
-
-  for (let i = 0; i < offsets.length; i++) {
-    const offset = offsets[i];
+    const offset = Math.max(0, totalCount - ((page + 1) * limit));
     const url = `${NEXTCOM_BASE_URL}/crm-system/orders?offset=${offset}&limit=${limit}&locale=eng`;
-    console.log(`[NextCom] Fetching offset=${offset} (${i + 1}/${offsets.length})...`);
+    console.log(`[NextCom] Fetching offset=${offset} (${page + 1}/${maxPages})...`);
 
     const response = await fetch(url, {
       headers: { "Authorization": `Basic ${basicAuth}`, "Accept": "application/json" },
@@ -319,7 +322,7 @@ async function fetchNextcomOrders(basicAuth: string): Promise<NextcomOrder[]> {
     const data = await response.json();
     const items = data.items || [];
 
-    if (items.length === 0) continue;
+    if (items.length === 0) break;
 
     // Accept statusId 2, 10, 29 as "confirmed"
     const confirmedOrders = items.filter((o: NextcomOrder) => o.statusId === 2 || o.statusId === 10 || o.statusId === 29);
