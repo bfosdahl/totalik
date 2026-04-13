@@ -35,6 +35,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 // Kitchen zone element types
 type KitchenElementType =
+  | "rom"           // Room outline
   | "wall"
   | "matsone"        // Food prep zone (clean)
   | "oppvasksone"    // Dish wash zone (unclean)
@@ -74,6 +75,7 @@ const MIN_ELEMENT_SIZE = 10;
 const GRID_SNAP = 10;
 
 const KITCHEN_PRESETS: Record<KitchenElementType, { label: string; emoji: string; defaultWidth: number; defaultHeight: number; color: string; zone?: "ren" | "uren" }> = {
+  rom:           { label: "Rom",            emoji: "⬜", defaultWidth: 500, defaultHeight: 450, color: "#f9fafb" },
   wall:          { label: "Vegg",           emoji: "▬", defaultWidth: 200, defaultHeight: 10, color: "#1f2937" },
   matsone:       { label: "Matsone",        emoji: "🍳", defaultWidth: 250, defaultHeight: 180, color: "#fef3c7", zone: "ren" },
   oppvasksone:   { label: "Oppvasksone",    emoji: "🫧", defaultWidth: 200, defaultHeight: 150, color: "#e0e7ff", zone: "uren" },
@@ -156,6 +158,20 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
     const preset = KITCHEN_PRESETS[el.type];
 
     switch (el.type) {
+      case "rom":
+        // Room outline - white fill with thick dark border
+        ctx.fillStyle = el.color || "#f9fafb";
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = "#1f2937";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x, y, w, h);
+        // Room label
+        ctx.fillStyle = "#6b7280";
+        ctx.font = `${Math.max(12, 14 * scale)}px sans-serif`;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(el.label || "Rom", x + 8, y + 6);
+        break;
       case "wall":
         ctx.fillStyle = el.color || "#1f2937";
         ctx.fillRect(x, y, w, h);
@@ -351,7 +367,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
       ctx.restore();
 
       // Dimensions
-      if (showDimensions && ["wall", "matsone", "oppvasksone", "kjoeleskap", "fryser", "torrvarelager"].includes(el.type)) {
+      if (showDimensions && ["rom", "wall", "matsone", "oppvasksone", "kjoeleskap", "fryser", "torrvarelager"].includes(el.type)) {
         const wM = pxToMeters(el.width, ppm);
         const hM = pxToMeters(el.height, ppm);
         ctx.save();
@@ -705,7 +721,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
   // Group presets for sidebar
   const zonePresets: KitchenElementType[] = ["matsone", "oppvasksone", "torrvarelager"];
   const equipmentPresets: KitchenElementType[] = ["kjoeleskap", "fryser", "komfyr", "oppvaskmaskin", "haandvask", "matkum"];
-  const otherPresets: KitchenElementType[] = ["hylle_rent", "hylle_urent", "wall", "door", "text"];
+  const otherPresets: KitchenElementType[] = ["rom", "hylle_rent", "hylle_urent", "wall", "door", "text"];
 
   const renderPresetButton = (type: KitchenElementType) => {
     const preset = KITCHEN_PRESETS[type];
