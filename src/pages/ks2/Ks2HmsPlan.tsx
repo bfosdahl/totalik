@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import UserSelect from "@/components/audits/UserSelect";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -330,10 +331,10 @@ export default function Ks2HmsPlan() {
                     </div>
                     <div className="sm:w-64">
                       <Label className="text-sm">Navn</Label>
-                      <Input
+                      <UserSelect
                         placeholder="Velg person..."
                         value={resp.name}
-                        onChange={(e) => updateResponsible(index, e.target.value)}
+                        onValueChange={(val) => updateResponsible(index, val)}
                         className="mt-1"
                       />
                     </div>
