@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LayoutGrid, Plus, Pencil, Save, Loader2, Trash2, MapPin } from "lucide-react";
+import { LayoutGrid, Plus, Pencil, Save, Loader2, Trash2, MapPin, Download } from "lucide-react";
 import { KitchenZoneEditor } from "@/components/ikmat/KitchenZoneEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -197,6 +197,20 @@ const IkMatKjokkenplan = () => {
                           <><Plus className="mr-2 h-4 w-4" />Tegn</>
                         )}
                       </Button>
+                      {room.image && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const link = document.createElement('a');
+                            link.download = `${room.name.replace(/[^a-zA-Z0-9æøåÆØÅ\s-]/g, '')}_kjokkenplan.png`;
+                            link.href = room.image!;
+                            link.click();
+                          }}
+                        >
+                          <Download className="mr-2 h-4 w-4" />Last ned
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="ghost"
