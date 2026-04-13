@@ -36,6 +36,35 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
   const [measures, setMeasures] = useState(sja.risk_reducing_measures || []);
   const [notes, setNotes] = useState(sja.notes || "");
   const [isSaving, setIsSaving] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const autoSave = useCallback(async (updatedRisks?: typeof risks, updatedMeasures?: typeof measures) => {
+    if (isCompleted) return;
+    const risksToSave = updatedRisks ?? risks;
+    const measuresToSave = updatedMeasures ?? measures;
+    try {
+      await updateSja.mutateAsync({
+        id: sja.id,
+        work_description: workDescription,
+        participants: participants.split(",").map(p => p.trim()).filter(Boolean),
+        identified_risks: risksToSave,
+        risk_reducing_measures: measuresToSave,
+        notes,
+        status: sja.status === "draft" ? "active" : sja.status,
+      });
+    } catch {
+      // silent - manual save still available
+    }
+  }, [sja.id, sja.status, workDescription, participants, risks, measures, notes, isCompleted, updateSja]);
+
+  const debouncedAutoSave = useCallback((...args: Parameters<typeof autoSave>) => {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => autoSave(...args), 2000);
+  }, [autoSave]);
+
+  useEffect(() => {
+    return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current); };
+  }, []);
 
   const [newRisk, setNewRisk] = useState({ description: "", consequence: "Moderat", probability: "Mulig" });
 
