@@ -119,6 +119,8 @@ const IkMatAllergener = () => {
         manualContent: {
           ...manualContent,
           menuItems,
+          kitchenZoneData,
+          kitchenZoneImage,
         },
       };
 
