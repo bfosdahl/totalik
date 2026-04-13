@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,32 +36,70 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
   const [measures, setMeasures] = useState(sja.risk_reducing_measures || []);
   const [notes, setNotes] = useState(sja.notes || "");
   const [isSaving, setIsSaving] = useState(false);
-
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [newRisk, setNewRisk] = useState({ description: "", consequence: "Moderat", probability: "Mulig" });
-
   const isCompleted = sja.status === "completed";
+
+  const autoSave = useCallback(async (updatedRisks?: typeof risks, updatedMeasures?: typeof measures) => {
+    if (isCompleted) return;
+    const risksToSave = updatedRisks ?? risks;
+    const measuresToSave = updatedMeasures ?? measures;
+    try {
+      await updateSja.mutateAsync({
+        id: sja.id,
+        work_description: workDescription,
+        participants: participants.split(",").map(p => p.trim()).filter(Boolean),
+        identified_risks: risksToSave,
+        risk_reducing_measures: measuresToSave,
+        notes,
+        status: sja.status === "draft" ? "active" : sja.status,
+      });
+    } catch {
+      // silent - manual save still available
+    }
+  }, [sja.id, sja.status, workDescription, participants, risks, measures, notes, isCompleted, updateSja]);
+
+  const debouncedAutoSave = useCallback((...args: Parameters<typeof autoSave>) => {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => autoSave(...args), 2000);
+  }, [autoSave]);
+
+  useEffect(() => {
+    return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current); };
+  }, []);
 
   const addRisk = () => {
     if (!newRisk.description) return;
-    setRisks([...risks, { ...newRisk }]);
+    const updated = [...risks, { ...newRisk }];
+    setRisks(updated);
     setNewRisk({ description: "", consequence: "Moderat", probability: "Mulig" });
+    debouncedAutoSave(updated, measures);
   };
 
   const removeRisk = (index: number) => {
-    setRisks(risks.filter((_, i) => i !== index));
-    setMeasures(measures.filter(m => m.risk !== risks[index]?.description));
+    const updatedRisks = risks.filter((_, i) => i !== index);
+    const updatedMeasures = measures.filter(m => m.risk !== risks[index]?.description);
+    setRisks(updatedRisks);
+    setMeasures(updatedMeasures);
+    debouncedAutoSave(updatedRisks, updatedMeasures);
   };
 
   const addMeasure = (riskDesc: string) => {
-    setMeasures([...measures, { risk: riskDesc, measure: "", responsible: "" }]);
+    const updated = [...measures, { risk: riskDesc, measure: "", responsible: "" }];
+    setMeasures(updated);
+    debouncedAutoSave(risks, updated);
   };
 
   const updateMeasure = (index: number, updates: Partial<typeof measures[0]>) => {
-    setMeasures(measures.map((m, i) => i === index ? { ...m, ...updates } : m));
+    const updated = measures.map((m, i) => i === index ? { ...m, ...updates } : m);
+    setMeasures(updated);
+    debouncedAutoSave(risks, updated);
   };
 
   const removeMeasure = (index: number) => {
-    setMeasures(measures.filter((_, i) => i !== index));
+    const updated = measures.filter((_, i) => i !== index);
+    setMeasures(updated);
+    debouncedAutoSave(risks, updated);
   };
 
   const handleSave = async () => {
