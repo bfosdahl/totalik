@@ -70,25 +70,36 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
 
   const addRisk = () => {
     if (!newRisk.description) return;
-    setRisks([...risks, { ...newRisk }]);
+    const updated = [...risks, { ...newRisk }];
+    setRisks(updated);
     setNewRisk({ description: "", consequence: "Moderat", probability: "Mulig" });
+    debouncedAutoSave(updated, measures);
   };
 
   const removeRisk = (index: number) => {
-    setRisks(risks.filter((_, i) => i !== index));
-    setMeasures(measures.filter(m => m.risk !== risks[index]?.description));
+    const updatedRisks = risks.filter((_, i) => i !== index);
+    const updatedMeasures = measures.filter(m => m.risk !== risks[index]?.description);
+    setRisks(updatedRisks);
+    setMeasures(updatedMeasures);
+    debouncedAutoSave(updatedRisks, updatedMeasures);
   };
 
   const addMeasure = (riskDesc: string) => {
-    setMeasures([...measures, { risk: riskDesc, measure: "", responsible: "" }]);
+    const updated = [...measures, { risk: riskDesc, measure: "", responsible: "" }];
+    setMeasures(updated);
+    debouncedAutoSave(risks, updated);
   };
 
   const updateMeasure = (index: number, updates: Partial<typeof measures[0]>) => {
-    setMeasures(measures.map((m, i) => i === index ? { ...m, ...updates } : m));
+    const updated = measures.map((m, i) => i === index ? { ...m, ...updates } : m);
+    setMeasures(updated);
+    debouncedAutoSave(risks, updated);
   };
 
   const removeMeasure = (index: number) => {
-    setMeasures(measures.filter((_, i) => i !== index));
+    const updated = measures.filter((_, i) => i !== index);
+    setMeasures(updated);
+    debouncedAutoSave(risks, updated);
   };
 
   const handleSave = async () => {
