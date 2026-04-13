@@ -502,21 +502,30 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (selectedId && activeTool === "select" && !isDragging && !isResizing) {
+    if (activeTool === "select" && !isDragging && !isResizing) {
       const { sx, sy } = getScreenCoords(e.clientX, e.clientY);
-      const handle = hitTestHandle(sx, sy);
       const canvas = canvasRef.current;
       if (canvas) {
-        if (handle) {
-          const cursorMap: Record<ResizeHandle, string> = {
-            nw: "nw-resize", ne: "ne-resize", sw: "sw-resize", se: "se-resize",
-            n: "n-resize", s: "s-resize", w: "w-resize", e: "e-resize",
-          };
-          canvas.style.cursor = cursorMap[handle];
+        if (selectedId) {
+          const handle = hitTestHandle(sx, sy);
+          if (handle) {
+            const cursorMap: Record<ResizeHandle, string> = {
+              nw: "nw-resize", ne: "ne-resize", sw: "sw-resize", se: "se-resize",
+              n: "n-resize", s: "s-resize", w: "w-resize", e: "e-resize",
+            };
+            canvas.style.cursor = cursorMap[handle];
+          } else {
+            const { x, y } = getCanvasCoords(e.clientX, e.clientY);
+            canvas.style.cursor = findElementAt(x, y) ? "grab" : "default";
+          }
         } else {
-          canvas.style.cursor = "default";
+          const { x, y } = getCanvasCoords(e.clientX, e.clientY);
+          canvas.style.cursor = findElementAt(x, y) ? "grab" : "default";
         }
       }
+    }
+    if (isDragging && activeTool === "select" && canvasRef.current) {
+      canvasRef.current.style.cursor = "grabbing";
     }
     if (isResizing && selectedId && resizeHandle) {
       const dx = (e.clientX - resizeOrigin.ex) / zoom;
