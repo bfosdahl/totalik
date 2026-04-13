@@ -197,6 +197,20 @@ const IkMatKjokkenplan = () => {
                           <><Plus className="mr-2 h-4 w-4" />Tegn</>
                         )}
                       </Button>
+                      {room.image && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const link = document.createElement('a');
+                            link.download = `${room.name.replace(/[^a-zA-Z0-9æøåÆØÅ\s-]/g, '')}_kjokkenplan.png`;
+                            link.href = room.image!;
+                            link.click();
+                          }}
+                        >
+                          <Download className="mr-2 h-4 w-4" />Last ned
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="ghost"
