@@ -56,6 +56,9 @@ const IkMatAllergener = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [kitchenEditorOpen, setKitchenEditorOpen] = useState(false);
+  const [kitchenZoneData, setKitchenZoneData] = useState<string | undefined>(undefined);
+  const [kitchenZoneImage, setKitchenZoneImage] = useState<string | undefined>(undefined);
   
   // Dialog states
   const [addDialogOpen, setAddDialogOpen] = useState(false);
