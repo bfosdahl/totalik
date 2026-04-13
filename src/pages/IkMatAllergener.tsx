@@ -83,6 +83,13 @@ const IkMatAllergener = () => {
         if (manual.menuItems) {
           setMenuItems(manual.menuItems);
         }
+        // Load kitchen zone data
+        if (manual.kitchenZoneData) {
+          setKitchenZoneData(manual.kitchenZoneData);
+        }
+        if (manual.kitchenZoneImage) {
+          setKitchenZoneImage(manual.kitchenZoneImage);
+        }
       }
       setIsInitialized(true);
     }
