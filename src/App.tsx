@@ -60,6 +60,7 @@ const IkMatOppsett = lazy(() => import("./pages/IkMatOppsett"));
 const IkMatHaccp = lazy(() => import("./pages/IkMatHaccp"));
 const IkMatRisikovurdering = lazy(() => import("./pages/IkMatRisikovurdering"));
 const IkMatAllergener = lazy(() => import("./pages/IkMatAllergener"));
+const IkMatKjokkenplan = lazy(() => import("./pages/IkMatKjokkenplan"));
 const IkMatFasteAvtaler = lazy(() => import("./pages/IkMatFasteAvtaler"));
 const IkMatKontroll = lazy(() => import("./pages/IkMatKontroll"));
 const IkMatMaal = lazy(() => import("./pages/IkMatMaal"));
@@ -233,6 +234,7 @@ const App = () => (
                   <Route path="/ik-mat/temperaturlogg" element={<Navigate to="/ik-mat/kontroll?tab=temperatur" replace />} />
                   <Route path="/ik-mat/sporbarhet" element={<Navigate to="/ik-mat/kontroll?tab=sporbarhet" replace />} />
                   <Route path="/ik-mat/allergener" element={<ProtectedRoute><IkMatAllergener /></ProtectedRoute>} />
+                  <Route path="/ik-mat/kjokkenplan" element={<ProtectedRoute><IkMatKjokkenplan /></ProtectedRoute>} />
                   <Route path="/ik-mat/faste-avtaler" element={<ProtectedRoute><IkMatFasteAvtaler /></ProtectedRoute>} />
                   <Route path="/ik-mat/dokumentsenter" element={<ProtectedRoute><IkMatDokumentsenter /></ProtectedRoute>} />
                   <Route path="/ik-mat/avvik" element={<ProtectedRoute><IkMatAvvik /></ProtectedRoute>} />

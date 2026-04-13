@@ -161,6 +161,7 @@
     "control": "Control",
     "allergens": "Allergens",
     "fixedAgreements": "Fixed Agreements",
+    "kitchenLayout": "Kitchen Layout",
     "minimize": "Minimize",
     "expand": "Expand",
     "orderModule": "Order Module",
