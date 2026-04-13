@@ -19,25 +19,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  Square,
   Trash2,
   Download,
   RotateCcw,
   MousePointer,
-  Type,
-  Minus,
   Move,
   ZoomIn,
   ZoomOut,
   Copy,
   ChevronUp,
   ChevronDown,
-  Settings2,
   Ruler,
-  Droplets,
-  Refrigerator,
-  Flame,
-  ShowerHead,
+  Separator as SepIcon,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
