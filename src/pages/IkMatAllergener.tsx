@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Plus, Trash2, Save, Loader2, UtensilsCrossed, Check, Edit2, LayoutGrid, Image, Pencil } from "lucide-react";
+import { AlertTriangle, Plus, Trash2, Save, Loader2, UtensilsCrossed, Check, Edit2, LayoutGrid, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AllergenPosterDialog } from "@/components/ikmat/AllergenPosterDialog";
 import { KitchenZoneEditor } from "@/components/ikmat/KitchenZoneEditor";
