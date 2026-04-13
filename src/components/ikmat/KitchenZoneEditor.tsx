@@ -437,9 +437,10 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
 
   const findElementAt = (x: number, y: number) => {
     return [...elements].reverse().find(el => {
-      const minHit = 20;
-      const hitW = Math.max(el.width, minHit);
-      const hitH = Math.max(el.height, minHit);
+      const minHit = 35;
+      const padding = 8;
+      const hitW = Math.max(el.width + padding * 2, minHit);
+      const hitH = Math.max(el.height + padding * 2, minHit);
       const hitX = el.x - (hitW - el.width) / 2;
       const hitY = el.y - (hitH - el.height) / 2;
       return x >= hitX && x <= hitX + hitW && y >= hitY && y <= hitY + hitH;
@@ -501,21 +502,30 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (selectedId && activeTool === "select" && !isDragging && !isResizing) {
+    if (activeTool === "select" && !isDragging && !isResizing) {
       const { sx, sy } = getScreenCoords(e.clientX, e.clientY);
-      const handle = hitTestHandle(sx, sy);
       const canvas = canvasRef.current;
       if (canvas) {
-        if (handle) {
-          const cursorMap: Record<ResizeHandle, string> = {
-            nw: "nw-resize", ne: "ne-resize", sw: "sw-resize", se: "se-resize",
-            n: "n-resize", s: "s-resize", w: "w-resize", e: "e-resize",
-          };
-          canvas.style.cursor = cursorMap[handle];
+        if (selectedId) {
+          const handle = hitTestHandle(sx, sy);
+          if (handle) {
+            const cursorMap: Record<ResizeHandle, string> = {
+              nw: "nw-resize", ne: "ne-resize", sw: "sw-resize", se: "se-resize",
+              n: "n-resize", s: "s-resize", w: "w-resize", e: "e-resize",
+            };
+            canvas.style.cursor = cursorMap[handle];
+          } else {
+            const { x, y } = getCanvasCoords(e.clientX, e.clientY);
+            canvas.style.cursor = findElementAt(x, y) ? "grab" : "default";
+          }
         } else {
-          canvas.style.cursor = "default";
+          const { x, y } = getCanvasCoords(e.clientX, e.clientY);
+          canvas.style.cursor = findElementAt(x, y) ? "grab" : "default";
         }
       }
+    }
+    if (isDragging && activeTool === "select" && canvasRef.current) {
+      canvasRef.current.style.cursor = "grabbing";
     }
     if (isResizing && selectedId && resizeHandle) {
       const dx = (e.clientX - resizeOrigin.ex) / zoom;
@@ -565,11 +575,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
         }
       }
       const { x, y } = getCanvasCoords(touch.clientX, touch.clientY);
-      const clickedEl = [...elements].reverse().find(el => {
-        const minHit = 30; const hitW = Math.max(el.width, minHit); const hitH = Math.max(el.height, minHit);
-        const hitX = el.x - (hitW - el.width) / 2; const hitY = el.y - (hitH - el.height) / 2;
-        return x >= hitX && x <= hitX + hitW && y >= hitY && y <= hitY + hitH;
-      });
+      const clickedEl = findElementAt(x, y);
       if (clickedEl) { setSelectedId(clickedEl.id); setIsDragging(true); setDragStart({ x: x - clickedEl.x, y: y - clickedEl.y }); }
     }
   };
