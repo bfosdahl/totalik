@@ -37,6 +37,8 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
   const [notes, setNotes] = useState(sja.notes || "");
   const [isSaving, setIsSaving] = useState(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [newRisk, setNewRisk] = useState({ description: "", consequence: "Moderat", probability: "Mulig" });
+  const isCompleted = sja.status === "completed";
 
   const autoSave = useCallback(async (updatedRisks?: typeof risks, updatedMeasures?: typeof measures) => {
     if (isCompleted) return;
@@ -65,9 +67,6 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
   useEffect(() => {
     return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current); };
   }, []);
-
-  const [newRisk, setNewRisk] = useState({ description: "", consequence: "Moderat", probability: "Mulig" });
-  const isCompleted = sja.status === "completed";
 
   const addRisk = () => {
     if (!newRisk.description) return;
