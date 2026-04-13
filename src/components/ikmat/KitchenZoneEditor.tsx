@@ -721,7 +721,8 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
   // Group presets for sidebar
   const zonePresets: KitchenElementType[] = ["matsone", "oppvasksone", "torrvarelager"];
   const equipmentPresets: KitchenElementType[] = ["kjoeleskap", "fryser", "komfyr", "oppvaskmaskin", "haandvask", "matkum"];
-  const otherPresets: KitchenElementType[] = ["rom", "hylle_rent", "hylle_urent", "wall", "door", "text"];
+  const roomPresets: KitchenElementType[] = ["rom"];
+  const otherPresets: KitchenElementType[] = ["hylle_rent", "hylle_urent", "wall", "door", "text"];
 
   const renderPresetButton = (type: KitchenElementType) => {
     const preset = KITCHEN_PRESETS[type];
@@ -766,6 +767,15 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
               <TooltipContent>Flytt visning</TooltipContent>
             </Tooltip>
           </TooltipProvider>
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-2">
+        <Label className="text-xs text-muted-foreground">Romplan</Label>
+        <div className="grid grid-cols-1 gap-1">
+          <TooltipProvider>{roomPresets.map(renderPresetButton)}</TooltipProvider>
         </div>
       </div>
 
