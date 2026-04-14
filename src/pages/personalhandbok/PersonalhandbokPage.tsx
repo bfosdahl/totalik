@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import DOMPurify from "dompurify";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -396,7 +397,7 @@ const PersonalhandbokPage = () => {
                 <CardContent>
                   <div 
                     className="prose dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{ __html: selectedChapter.content }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedChapter.content) }}
                   />
                 </CardContent>
               </Card>
