@@ -132,6 +132,7 @@ const smallProjectTopItems = [
 
 const smallProjectItems = [
   { id: "prosjektinfo", label: "Prosjektinfo", icon: Info, path: "/prosjektinfo", guestAllowed: false },
+  { id: "dagsrapport", label: "Dagsrapporter", icon: FileText, path: "/dagsrapport", guestAllowed: false },
   { id: "sjekklister", label: "Sjekklister", icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
   { id: "bilder", label: "Bilder", icon: Image, path: "/bilder", guestAllowed: true },
   { id: "notater", label: "Notater", icon: StickyNote, path: "/notater", guestAllowed: false },
