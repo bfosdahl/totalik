@@ -52,9 +52,9 @@ export const useKsModule2DocumentTemplates = () => {
       description?: string;
       isSystemTemplate?: boolean;
     }) => {
-      // Sanitize filename
+      // Sanitize filename. Hyphen is escaped so it isn't read as a range.
       const sanitizedFileName = file.name
-        .replace(/[^\w\s.-æøåÆØÅ]/g, "")
+        .replace(/[^\w\s.\-æøåÆØÅ]/g, "")
         .replace(/\s+/g, "_");
       
       const timestamp = Date.now();

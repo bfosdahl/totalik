@@ -15904,6 +15904,7 @@ export type Database = {
         Args: { p_company_id: string }
         Returns: string
       }
+      generate_audit_number: { Args: never; Returns: string }
       generate_checklist_template_number: {
         Args: { p_category: string }
         Returns: string
@@ -15929,7 +15930,9 @@ export type Database = {
       generate_ks_module2_meeting_number: { Args: never; Returns: string }
       generate_ks_module2_project_number: { Args: never; Returns: string }
       generate_ks_module2_routine_number: { Args: never; Returns: string }
+      generate_ks_module2_sja_number: { Args: never; Returns: string }
       generate_ks_module2_uk_number: { Args: never; Returns: string }
+      generate_ks_module2_vernerunde_number: { Args: never; Returns: string }
       generate_project_number: { Args: never; Returns: string }
       generate_routine_template_number: {
         Args: { p_module: string }

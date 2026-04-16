@@ -193,8 +193,10 @@ export function useKsModule2Routines(projectId?: string) {
     if (!profile?.company_id) return null;
 
     try {
+      // Allow word chars, spaces, dot, hyphen, underscore, and Norwegian letters.
+      // The hyphen is escaped so it isn't interpreted as a range.
       const sanitizedName = file.name
-        .replace(/[^\w\s.-æøåÆØÅ]/g, '')
+        .replace(/[^\w\s.\-æøåÆØÅ]/g, '')
         .replace(/\s+/g, '_');
       
       const filePath = `${profile.company_id}/${projectId}/${Date.now()}_${sanitizedName}`;
