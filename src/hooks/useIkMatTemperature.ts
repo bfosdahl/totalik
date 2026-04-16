@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { EQUIPMENT_TYPE_DEFAULTS } from '@/lib/temperatureGuidelines';
 import { useIkMatDeviation } from './useIkMatDeviation';
+import { getLocalDayStartISO, getLocalDayEndISO } from '@/lib/dateUtils';
 
 export interface TemperatureEquipment {
   id: string;
@@ -67,13 +68,15 @@ export function useIkMatTemperature() {
     queryKey: ['ik-mat-temperature-logs-today', company?.id],
     queryFn: async () => {
       if (!company?.id) return [];
-      const today = new Date().toISOString().split('T')[0];
+      // Use LOCAL day boundaries so "today" matches Norwegian time, not UTC.
+      const dayStart = getLocalDayStartISO();
+      const dayEnd = getLocalDayEndISO();
       const { data, error } = await supabase
         .from('ik_mat_temperature_logs')
         .select('*, equipment:ik_mat_temperature_equipment(*)')
         .eq('company_id', company.id)
-        .gte('measured_at', `${today}T00:00:00`)
-        .lte('measured_at', `${today}T23:59:59`)
+        .gte('measured_at', dayStart)
+        .lte('measured_at', dayEnd)
         .order('measured_at', { ascending: false });
       
       if (error) throw error;
@@ -93,10 +96,11 @@ export function useIkMatTemperature() {
       .order('measured_at', { ascending: false });
     
     if (startDate) {
-      query = query.gte('measured_at', `${startDate}T00:00:00`);
+      // Treat the YYYY-MM-DD as a local date and convert to start-of-day ISO.
+      query = query.gte('measured_at', getLocalDayStartISO(new Date(`${startDate}T00:00:00`)));
     }
     if (endDate) {
-      query = query.lte('measured_at', `${endDate}T23:59:59`);
+      query = query.lte('measured_at', getLocalDayEndISO(new Date(`${endDate}T00:00:00`)));
     }
     
     const { data, error } = await query.limit(500);
