@@ -15930,6 +15930,7 @@ export type Database = {
       generate_ks_module2_project_number: { Args: never; Returns: string }
       generate_ks_module2_routine_number: { Args: never; Returns: string }
       generate_ks_module2_uk_number: { Args: never; Returns: string }
+      generate_ks_module2_vernerunde_number: { Args: never; Returns: string }
       generate_project_number: { Args: never; Returns: string }
       generate_routine_template_number: {
         Args: { p_module: string }
