@@ -111,7 +111,7 @@ export function useAudits() {
         setIsSaving(false);
       }
     },
-    [companyId, fetchAudits, getNextAuditNumber]
+    [companyId, departmentId, fetchAudits]
   );
 
   const updateAudit = useCallback(
