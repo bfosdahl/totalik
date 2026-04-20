@@ -151,6 +151,9 @@ serve(async (req) => {
       const { data: resetData } = await supabaseAdmin.auth.admin.generateLink({
         type: "recovery",
         email,
+        options: {
+          redirectTo: "https://totalik.no/auth",
+        },
       });
 
       return new Response(
@@ -218,10 +221,17 @@ serve(async (req) => {
       console.error("Error adding role:", roleError);
     }
 
-    // Generate password reset link
+    // Generate password reset link — redirectTo MUST point to /auth so the recovery
+    // hash is detected by Auth.tsx and the "set new password" form is shown.
+    // Without redirectTo, the user lands on '/' already logged in and never sees
+    // the password-setup screen, which forces them to use the regular "change password"
+    // flow that asks for the OLD password (which a brand-new user does not know).
     const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email,
+      options: {
+        redirectTo: "https://totalik.no/auth",
+      },
     });
 
     const resetLinkGenerated = !resetError && !!resetData?.properties?.action_link;
