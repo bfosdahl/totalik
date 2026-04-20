@@ -44,11 +44,16 @@ export default function Auth() {
     orgNumber: z.string().regex(/^\d{9}$/, t("auth.orgNumberFormat") || "Org.nr må være 9 siffer"),
   });
 
-  // Detect password recovery from URL hash (more reliable than event)
+  // Detect password recovery from URL (hash OR search params, both flows supported)
   useEffect(() => {
     const hash = window.location.hash;
-    if (hash && (hash.includes("type=recovery") || hash.includes("type%3Drecovery"))) {
-      console.info("[Auth] Recovery token detected in URL hash");
+    const search = window.location.search;
+    const isRecoveryUrl =
+      (hash && (hash.includes("type=recovery") || hash.includes("type%3Drecovery"))) ||
+      (search && (search.includes("type=recovery") || search.includes("type%3Drecovery")));
+
+    if (isRecoveryUrl) {
+      console.info("[Auth] Recovery token detected in URL");
       setIsPasswordRecovery(true);
     }
 
