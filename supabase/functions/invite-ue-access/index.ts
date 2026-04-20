@@ -83,10 +83,13 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("User already exists:", existingUser.id);
       userId = existingUser.id;
       
-      // Generate a password reset link for existing user
+      // Generate a password reset link for existing user — redirectTo MUST point to /auth
       const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
         type: 'recovery',
         email: email,
+        options: {
+          redirectTo: "https://totalik.no/auth",
+        },
       });
       
       if (linkError) {
@@ -115,10 +118,13 @@ const handler = async (req: Request): Promise<Response> => {
       userId = newUser.user.id;
       console.log("Created new user:", userId);
 
-      // Generate a recovery/set password link for the new user
+      // Generate a recovery/set password link for the new user — redirectTo MUST point to /auth
       const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
         type: 'recovery',
         email: email,
+        options: {
+          redirectTo: "https://totalik.no/auth",
+        },
       });
       
       if (linkError) {
