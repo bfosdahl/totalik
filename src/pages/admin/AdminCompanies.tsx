@@ -494,16 +494,24 @@ export default function AdminCompanies() {
   );
 
   const totalFiltered = filteredCompanies?.length || 0;
-  const totalPages = Math.ceil(totalFiltered / pageSize);
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
   const paginatedCompanies = filteredCompanies?.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    (safeCurrentPage - 1) * pageSize,
+    safeCurrentPage * pageSize
   );
 
-  // Reset to page 1 when search or pageSize changes
+  // Reset to page 1 when search or pageSize changes — guard to avoid redundant updates
   useEffect(() => {
-    setCurrentPage(1);
+    setCurrentPage((prev) => (prev === 1 ? prev : 1));
   }, [search, pageSize]);
+
+  // Keep currentPage in valid range without causing render loops
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
