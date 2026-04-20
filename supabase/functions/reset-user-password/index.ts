@@ -172,10 +172,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Otherwise, generate a secure password reset link
+    // Otherwise, generate a secure password reset link — redirectTo MUST point to /auth
+    // so the recovery hash is detected by Auth.tsx and the "set new password" form is shown.
     const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'recovery',
       email: targetUser.user.email,
+      options: {
+        redirectTo: "https://totalik.no/auth",
+      },
     });
 
     if (resetError || !resetData?.properties?.action_link) {

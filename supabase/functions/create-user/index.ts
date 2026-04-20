@@ -169,10 +169,14 @@ serve(async (req) => {
       }
     }
 
-    // Generate password reset link
+    // Generate password reset link — redirectTo MUST point to /auth so the recovery
+    // hash is detected by Auth.tsx and the "set new password" form is shown.
     const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email,
+      options: {
+        redirectTo: "https://totalik.no/auth",
+      },
     });
 
     if (resetError) {
