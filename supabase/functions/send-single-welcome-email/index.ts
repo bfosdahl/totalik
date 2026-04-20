@@ -67,10 +67,14 @@ const handler = async (req: Request): Promise<Response> => {
     const companyName = (profile.companies as any)?.name || "Total-IK";
     const firstName = profile.first_name || "";
 
-    // Generate password reset link so the user can actually set their password
+    // Generate password reset link — redirectTo MUST point to /auth so the recovery
+    // hash is detected by Auth.tsx and the "set new password" form is shown.
     const { data: resetData, error: resetError } = await supabase.auth.admin.generateLink({
       type: "recovery",
       email: profile.email,
+      options: {
+        redirectTo: "https://totalik.no/auth",
+      },
     });
 
     if (resetError) {

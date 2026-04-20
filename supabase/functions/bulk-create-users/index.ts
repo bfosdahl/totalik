@@ -31,10 +31,14 @@ async function sendWelcomeEmail(
   companyName: string
 ): Promise<boolean> {
   try {
-    // Generate password recovery link
+    // Generate password recovery link — redirectTo MUST point to /auth so the recovery
+    // hash is detected by Auth.tsx and the "set new password" form is shown.
     const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email,
+      options: {
+        redirectTo: "https://totalik.no/auth",
+      },
     });
 
     if (resetError || !resetData?.properties?.action_link) {
