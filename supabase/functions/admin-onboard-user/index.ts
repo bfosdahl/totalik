@@ -33,8 +33,16 @@ serve(async (req) => {
     });
     if (createErr) {
       if (createErr.message?.toLowerCase().includes("already")) {
-        const { data: list } = await supa.auth.admin.listUsers();
-        userId = list.users.find(u => u.email?.toLowerCase() === email.toLowerCase())!.id;
+        // Look up via profiles table to avoid listUsers pagination limit
+        const { data: existingProfile } = await supa
+          .from("profiles")
+          .select("user_id")
+          .eq("email", email)
+          .maybeSingle();
+        if (!existingProfile?.user_id) {
+          throw new Error(`User exists in auth but no profile found for ${email}`);
+        }
+        userId = existingProfile.user_id;
       } else throw createErr;
     } else { userId = created.user.id; }
 
