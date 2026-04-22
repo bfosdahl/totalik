@@ -251,33 +251,6 @@ const Settings = () => {
           </div>
         </motion.div>
 
-        {/* Quick info */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-card rounded-xl border border-border p-6 shadow-card"
-        >
-          <h3 className="font-semibold mb-4">Kontoinformasjon</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between py-2 border-b border-border">
-              <span className="text-muted-foreground">Abonnement</span>
-              <span className="font-medium">Premium</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-border">
-              <span className="text-muted-foreground">Brukere</span>
-              <span className="font-medium">5 / 10</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-border">
-              <span className="text-muted-foreground">Lagring brukt</span>
-              <span className="font-medium">2.3 GB / 10 GB</span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span className="text-muted-foreground">Fornyes</span>
-              <span className="font-medium">15. februar 2024</span>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </AppLayout>
   );
