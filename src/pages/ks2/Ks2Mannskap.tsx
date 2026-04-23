@@ -128,7 +128,7 @@ export default function Ks2Mannskap() {
   const [selectedChecklists, setSelectedChecklists] = useState<Set<string>>(new Set());
   const [isAssigning, setIsAssigning] = useState(false);
 
-  const canManage = isCompanyAdmin || profile?.is_hms_responsible;
+  const canManage = isCompanyAdmin;
 
   const fetchData = async () => {
     if (!projectId) return;
