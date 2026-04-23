@@ -211,27 +211,14 @@ serve(async (req) => {
       }
     }
 
-    // Generate password reset link — redirectTo MUST point to /auth so the recovery
-    // hash is detected by Auth.tsx and the "set new password" form is shown.
-    const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
-      type: "recovery",
-      email,
-      options: {
-        redirectTo: "https://totalik.no/auth",
-      },
-    });
-
-    if (resetError) {
-      console.error("Error generating recovery link:", resetError);
-    }
-
-    // Send welcome email with Resend
+    // Send welcome email with Resend - includes default password directly
     let emailSent = false;
-    if (resend && resetData?.properties?.action_link) {
+    if (resend) {
       try {
         const companyName = company?.name || "din bedrift";
         const userName = firstName ? firstName : "bruker";
         const roleName = role === "company_admin" ? "Administrator" : "Bruker";
+        const loginUrl = "https://totalik.no/auth";
 
         const emailResponse = await resend.emails.send({
           from: "Total-IK <noreply@totalik.no>",
@@ -256,17 +243,18 @@ serve(async (req) => {
                 
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
                   <p style="margin: 0;"><strong>Din rolle:</strong> ${roleName}</p>
-                  <p style="margin: 10px 0 0 0;"><strong>E-post:</strong> ${email}</p>
+                  <p style="margin: 8px 0 0 0;"><strong>E-post:</strong> ${email}</p>
+                  <p style="margin: 8px 0 0 0;"><strong>Midlertidig passord:</strong> <code style="background: #fff; padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd; font-size: 16px; font-weight: bold; color: #667eea;">${tempPassword}</code></p>
                 </div>
                 
-                <p>For å komme i gang, klikk på knappen nedenfor for å sette ditt passord:</p>
+                <p>Klikk på knappen nedenfor for å logge inn. Vi anbefaler at du endrer passordet etter første innlogging.</p>
                 
                 <div style="text-align: center; margin: 30px 0;">
-                  <a href="${resetData.properties.action_link}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Sett passord og logg inn</a>
+                  <a href="${loginUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Logg inn</a>
                 </div>
                 
-                <p style="color: #666; font-size: 14px;">Hvis knappen ikke fungerer, kopier og lim inn denne lenken i nettleseren din:</p>
-                <p style="color: #667eea; font-size: 12px; word-break: break-all;">${resetData.properties.action_link}</p>
+                <p style="color: #666; font-size: 14px;">Hvis knappen ikke fungerer, gå til:</p>
+                <p style="color: #667eea; font-size: 12px; word-break: break-all;">${loginUrl}</p>
                 
                 ${getTermsNoticeHtml()}
                 
