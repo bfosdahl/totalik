@@ -4,7 +4,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClipboardCheck, SprayCan, Thermometer, Package, ClipboardList, CalendarDays } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ClipboardCheck, SprayCan, Thermometer, Package, ClipboardList, CalendarDays, Route as RouteIcon, Play } from "lucide-react";
+import { useIkMatDailyRounds } from "@/hooks/useIkMatDailyRounds";
 
 // Import existing tab contents as components
 import { SjekklisterTab } from "@/components/ikmat/kontroll/SjekklisterTab";
@@ -12,6 +14,7 @@ import { RenholdsplanTab } from "@/components/ikmat/kontroll/RenholdsplanTab";
 import { TemperaturloggTab } from "@/components/ikmat/kontroll/TemperaturloggTab";
 import { SporbarhetTab } from "@/components/ikmat/kontroll/SporbarhetTab";
 import { KalenderTab } from "@/components/ikmat/kontroll/KalenderTab";
+import { RunderTab } from "@/components/ikmat/kontroll/RunderTab";
 
 const IkMatKontroll = () => {
   const { company } = useAuth();
@@ -50,22 +53,29 @@ const IkMatKontroll = () => {
   return (
     <AppLayout>
       <div className="container max-w-7xl mx-auto py-8 space-y-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <ClipboardList className="h-8 w-8 text-primary" />
-            Kontroll
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Daglige kontroller, logging og dokumentasjon for matsikkerhet
-          </p>
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <ClipboardList className="h-8 w-8 text-primary" />
+              Kontroll
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Daglige kontroller, logging og dokumentasjon for matsikkerhet
+            </p>
+          </div>
+          <QuickStartRoundButton onOpenRunder={() => handleTabChange("runder")} />
         </div>
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:max-w-3xl sm:grid-cols-5 h-auto p-1">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:max-w-4xl sm:grid-cols-6 h-auto p-1">
               <TabsTrigger value="kalender" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
                 <CalendarDays className="h-4 w-4" />
                 <span className="hidden xs:inline sm:inline">Kalender</span>
+              </TabsTrigger>
+              <TabsTrigger value="runder" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                <RouteIcon className="h-4 w-4" />
+                <span className="hidden xs:inline sm:inline">Runder</span>
               </TabsTrigger>
               <TabsTrigger value="sjekklister" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
                 <ClipboardCheck className="h-4 w-4" />
@@ -90,6 +100,10 @@ const IkMatKontroll = () => {
             <KalenderTab />
           </TabsContent>
 
+          <TabsContent value="runder" className="mt-6">
+            <RunderTab />
+          </TabsContent>
+
           <TabsContent value="sjekklister" className="mt-6">
             <SjekklisterTab />
           </TabsContent>
@@ -110,5 +124,25 @@ const IkMatKontroll = () => {
     </AppLayout>
   );
 };
+
+function QuickStartRoundButton({ onOpenRunder }: { onOpenRunder: () => void }) {
+  const navigate = useNavigate();
+  const { rounds } = useIkMatDailyRounds();
+  if (rounds.length === 0) return null;
+  // If exactly one round, go straight to it; otherwise open the tab.
+  const handleClick = () => {
+    if (rounds.length === 1) {
+      navigate(`/ik-mat/runde/${rounds[0].id}`);
+    } else {
+      onOpenRunder();
+    }
+  };
+  return (
+    <Button onClick={handleClick} size="sm" className="self-start sm:self-auto">
+      <Play className="h-4 w-4 mr-2" />
+      Start daglig runde
+    </Button>
+  );
+}
 
 export default IkMatKontroll;

@@ -63,6 +63,7 @@ const IkMatAllergener = lazy(() => import("./pages/IkMatAllergener"));
 const IkMatKjokkenplan = lazy(() => import("./pages/IkMatKjokkenplan"));
 const IkMatFasteAvtaler = lazy(() => import("./pages/IkMatFasteAvtaler"));
 const IkMatKontroll = lazy(() => import("./pages/IkMatKontroll"));
+const IkMatDailyRound = lazy(() => import("./pages/IkMatDailyRound"));
 const IkMatMaal = lazy(() => import("./pages/IkMatMaal"));
 const IkMatOrganisasjon = lazy(() => import("./pages/IkMatOrganisasjon"));
 const IkMatRutiner = lazy(() => import("./pages/IkMatRutiner"));
@@ -228,7 +229,8 @@ const App = () => (
                   <Route path="/ik-mat/handlingsplan" element={<Navigate to="/ik-mat/risiko-og-tiltak" replace />} />
                   <Route path="/ik-mat/rutiner" element={<ProtectedRoute><IkMatRutiner /></ProtectedRoute>} />
                   <Route path="/ik-mat/haccp" element={<ProtectedRoute><IkMatHaccp /></ProtectedRoute>} />
-                  <Route path="/ik-mat/kontroll" element={<ProtectedRoute><IkMatKontroll /></ProtectedRoute>} />
+                 <Route path="/ik-mat/kontroll" element={<ProtectedRoute><IkMatKontroll /></ProtectedRoute>} />
+                 <Route path="/ik-mat/runde/:roundId" element={<ProtectedRoute><IkMatDailyRound /></ProtectedRoute>} />
                   <Route path="/ik-mat/sjekklister" element={<Navigate to="/ik-mat/kontroll?tab=sjekklister" replace />} />
                   <Route path="/ik-mat/renholdsplan" element={<Navigate to="/ik-mat/kontroll?tab=renholdsplan" replace />} />
                   <Route path="/ik-mat/temperaturlogg" element={<Navigate to="/ik-mat/kontroll?tab=temperatur" replace />} />

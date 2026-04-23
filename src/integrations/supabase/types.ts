@@ -6884,6 +6884,104 @@ export type Database = {
           },
         ]
       }
+      ik_mat_daily_round_completions: {
+        Row: {
+          company_id: string
+          completed_at: string
+          completed_by_id: string | null
+          completed_by_name: string
+          created_at: string
+          id: string
+          round_id: string
+          started_at: string
+          station_results: Json
+          status: string
+        }
+        Insert: {
+          company_id: string
+          completed_at?: string
+          completed_by_id?: string | null
+          completed_by_name: string
+          created_at?: string
+          id?: string
+          round_id: string
+          started_at?: string
+          station_results?: Json
+          status?: string
+        }
+        Update: {
+          company_id?: string
+          completed_at?: string
+          completed_by_id?: string | null
+          completed_by_name?: string
+          created_at?: string
+          id?: string
+          round_id?: string
+          started_at?: string
+          station_results?: Json
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_daily_round_completions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_daily_round_completions_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "ik_mat_daily_rounds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_mat_daily_rounds: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by_id: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          stations: Json
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by_id?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          stations?: Json
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by_id?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          stations?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_daily_rounds_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_mat_daily_task_completions: {
         Row: {
           company_id: string
