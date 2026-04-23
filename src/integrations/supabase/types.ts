@@ -9794,6 +9794,79 @@ export type Database = {
           },
         ]
       }
+      ks_module2_project_crew: {
+        Row: {
+          added_by: string | null
+          company_id: string
+          created_at: string
+          display_name: string
+          end_date: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          project_id: string
+          project_role: string | null
+          responsibilities: string | null
+          start_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          added_by?: string | null
+          company_id: string
+          created_at?: string
+          display_name: string
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          project_id: string
+          project_role?: string | null
+          responsibilities?: string | null
+          start_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          added_by?: string | null
+          company_id?: string
+          created_at?: string
+          display_name?: string
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          project_id?: string
+          project_role?: string | null
+          responsibilities?: string | null
+          start_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_project_crew_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_project_crew_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_project_crew_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       ks_module2_project_notes: {
         Row: {
           company_id: string
