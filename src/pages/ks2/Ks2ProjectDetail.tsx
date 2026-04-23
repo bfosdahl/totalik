@@ -20,6 +20,7 @@ import Ks2Underleverandorer from "./Ks2Underleverandorer";
 import Ks2UnderleverandorDetail from "./Ks2UnderleverandorDetail";
 import Ks2Endringsmeldinger from "./Ks2Endringsmeldinger";
 import Ks2Timeregistrering from "./Ks2Timeregistrering";
+import Ks2Mannskap from "./Ks2Mannskap";
 import Ks2Fremdriftsplan from "./Ks2Fremdriftsplan";
 import Ks2Reklamasjoner from "./Ks2Reklamasjoner";
 import Ks2Okonomi from "./Ks2Okonomi";
@@ -138,6 +139,8 @@ export default function Ks2ProjectDetail() {
         return <Ks2ProjectPhotos />;
       case "/timeregistrering":
         return <Ks2Timeregistrering />;
+      case "/mannskap":
+        return <Ks2Mannskap />;
       case "/fremdriftsplan":
         return <Ks2Fremdriftsplan />;
       case "/reklamasjoner":
