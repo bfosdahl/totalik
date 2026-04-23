@@ -291,8 +291,8 @@ export default function IkMatDailyRound() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center">
-              <PartyPopper className="h-8 w-8 text-emerald-600" />
+            <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <PartyPopper className="h-8 w-8 text-primary" />
             </div>
             <CardTitle>Runde fullført!</CardTitle>
             <CardDescription>
