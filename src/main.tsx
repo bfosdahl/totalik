@@ -60,6 +60,9 @@ window.addEventListener("unhandledrejection", (event) => {
   });
 });
 
+// Clear chunk-reload flag on successful boot so future chunk errors can recover.
+window.setTimeout(() => sessionStorage.removeItem("chunk-reload-attempted"), 5000);
+
 createRoot(document.getElementById("root")!).render(<App />);
 
 // Ensure users get the latest version (PWA/service worker update handling)
