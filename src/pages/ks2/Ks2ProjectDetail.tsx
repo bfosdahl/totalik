@@ -220,7 +220,9 @@ export default function Ks2ProjectDetail() {
 
         {/* Page Content - extra bottom padding for mobile FAB */}
         <main className="p-4 md:p-6 pb-24 lg:pb-6">
-          {renderContent()}
+          <Suspense fallback={<SubPageLoader />}>
+            {renderContent()}
+          </Suspense>
         </main>
       </div>
 
