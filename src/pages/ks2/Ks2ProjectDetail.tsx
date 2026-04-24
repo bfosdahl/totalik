@@ -1,5 +1,5 @@
 import { useParams, useLocation, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { KsModule2Project } from "@/hooks/useKsModule2Projects";
@@ -7,42 +7,51 @@ import { Ks2ProjectSidebar } from "@/components/ks2/Ks2ProjectSidebar";
 import { Ks2ProjectStatusBar } from "@/components/ks2/Ks2ProjectStatusBar";
 import { Ks2EnhancedDashboard } from "@/components/ks2/Ks2EnhancedDashboard";
 import { Ks2FloatingActions } from "@/components/ks2/Ks2FloatingActions";
-import Ks2Egenkontroller from "./Ks2Egenkontroller";
-import Ks2Sjekklister from "./Ks2Sjekklister";
-import Ks2Rutiner from "./Ks2Rutiner";
-import Ks2Dokumentasjon from "./Ks2Dokumentasjon";
-import Ks2Prosjektinfo from "./Ks2Prosjektinfo";
-import Ks2AvvikIntegrated from "./Ks2AvvikIntegrated";
-import Ks2UavhengigKontroll from "./Ks2UavhengigKontroll";
-import Ks2Malbibliotek from "./Ks2Malbibliotek";
-import Ks2Prosjektrapport from "./Ks2Prosjektrapport";
-import Ks2Underleverandorer from "./Ks2Underleverandorer";
-import Ks2UnderleverandorDetail from "./Ks2UnderleverandorDetail";
-import Ks2Endringsmeldinger from "./Ks2Endringsmeldinger";
-import Ks2Timeregistrering from "./Ks2Timeregistrering";
-import Ks2Mannskap from "./Ks2Mannskap";
-import Ks2Fremdriftsplan from "./Ks2Fremdriftsplan";
-import Ks2Reklamasjoner from "./Ks2Reklamasjoner";
-import Ks2Okonomi from "./Ks2Okonomi";
-import Ks2Motereferater from "./Ks2Motereferater";
-import Ks2Dagsrapport from "./Ks2Dagsrapport";
-import Ks2Befaring from "./Ks2Befaring";
-import Ks2ProjectNotes from "./Ks2ProjectNotes";
-import Ks2ProjectPhotos from "./Ks2ProjectPhotos";
+
+// Lazy-load sub-pages so they only load when the user navigates to them.
+// This keeps the initial Ks2ProjectDetail bundle small.
+const Ks2Egenkontroller = lazy(() => import("./Ks2Egenkontroller"));
+const Ks2Sjekklister = lazy(() => import("./Ks2Sjekklister"));
+const Ks2Rutiner = lazy(() => import("./Ks2Rutiner"));
+const Ks2Dokumentasjon = lazy(() => import("./Ks2Dokumentasjon"));
+const Ks2Prosjektinfo = lazy(() => import("./Ks2Prosjektinfo"));
+const Ks2AvvikIntegrated = lazy(() => import("./Ks2AvvikIntegrated"));
+const Ks2UavhengigKontroll = lazy(() => import("./Ks2UavhengigKontroll"));
+const Ks2Malbibliotek = lazy(() => import("./Ks2Malbibliotek"));
+const Ks2Prosjektrapport = lazy(() => import("./Ks2Prosjektrapport"));
+const Ks2Underleverandorer = lazy(() => import("./Ks2Underleverandorer"));
+const Ks2UnderleverandorDetail = lazy(() => import("./Ks2UnderleverandorDetail"));
+const Ks2Endringsmeldinger = lazy(() => import("./Ks2Endringsmeldinger"));
+const Ks2Timeregistrering = lazy(() => import("./Ks2Timeregistrering"));
+const Ks2Mannskap = lazy(() => import("./Ks2Mannskap"));
+const Ks2Fremdriftsplan = lazy(() => import("./Ks2Fremdriftsplan"));
+const Ks2Reklamasjoner = lazy(() => import("./Ks2Reklamasjoner"));
+const Ks2Okonomi = lazy(() => import("./Ks2Okonomi"));
+const Ks2Motereferater = lazy(() => import("./Ks2Motereferater"));
+const Ks2Dagsrapport = lazy(() => import("./Ks2Dagsrapport"));
+const Ks2Befaring = lazy(() => import("./Ks2Befaring"));
+const Ks2ProjectNotes = lazy(() => import("./Ks2ProjectNotes"));
+const Ks2ProjectPhotos = lazy(() => import("./Ks2ProjectPhotos"));
 // HMS Module imports
-import Ks2HmsDashboard from "./Ks2HmsDashboard";
-import Ks2HmsPlan from "./Ks2HmsPlan";
-import Ks2ShaPlan from "./Ks2ShaPlan";
-import Ks2Sja from "./Ks2Sja";
-import Ks2Vernerunder from "./Ks2Vernerunder";
-import Ks2Stoffkartotek from "./Ks2Stoffkartotek";
+const Ks2HmsDashboard = lazy(() => import("./Ks2HmsDashboard"));
+const Ks2HmsPlan = lazy(() => import("./Ks2HmsPlan"));
+const Ks2ShaPlan = lazy(() => import("./Ks2ShaPlan"));
+const Ks2Sja = lazy(() => import("./Ks2Sja"));
+const Ks2Vernerunder = lazy(() => import("./Ks2Vernerunder"));
+const Ks2Stoffkartotek = lazy(() => import("./Ks2Stoffkartotek"));
 // Byggesak Module imports
-import Ks2ByggesakDashboard from "./Ks2ByggesakDashboard";
-import Ks2ByggesakBlanketter from "./Ks2ByggesakBlanketter";
-import Ks2ByggesakEpost from "./Ks2ByggesakEpost";
-import Ks2ByggesakForm from "./Ks2ByggesakForm";
+const Ks2ByggesakDashboard = lazy(() => import("./Ks2ByggesakDashboard"));
+const Ks2ByggesakBlanketter = lazy(() => import("./Ks2ByggesakBlanketter"));
+const Ks2ByggesakEpost = lazy(() => import("./Ks2ByggesakEpost"));
+const Ks2ByggesakForm = lazy(() => import("./Ks2ByggesakForm"));
 // AI Chat
-import Ks2ProjectChat from "./Ks2ProjectChat";
+const Ks2ProjectChat = lazy(() => import("./Ks2ProjectChat"));
+
+const SubPageLoader = () => (
+  <div className="flex items-center justify-center py-20">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
 export default function Ks2ProjectDetail() {
   const { projectId } = useParams();
