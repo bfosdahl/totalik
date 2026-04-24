@@ -144,8 +144,3 @@ export default defineConfig(({ mode }) => ({
     },
   },
 }));
-        },
-      },
-    },
-  },
-}));
