@@ -97,8 +97,53 @@ export default defineConfig(({ mode }) => ({
           // Icons — Lucide is tree-shaken but still sizeable when many used.
           if (id.includes("lucide-react")) return "vendor-icons";
 
+          // Animation library — heavy, only used on some pages.
+          if (id.includes("framer-motion")) return "vendor-motion";
+
+          // Spreadsheet (xlsx) — very heavy, only used for import/export.
+          if (id.includes("/xlsx/") || id.includes("node-xlsx")) return "vendor-xlsx";
+
+          // Markdown rendering + sanitization.
+          if (
+            id.includes("react-markdown") ||
+            id.includes("remark-") ||
+            id.includes("rehype-") ||
+            id.includes("micromark") ||
+            id.includes("mdast-") ||
+            id.includes("hast-") ||
+            id.includes("unist-") ||
+            id.includes("dompurify")
+          ) {
+            return "vendor-markdown";
+          }
+
+          // TanStack Query.
+          if (id.includes("@tanstack")) return "vendor-tanstack";
+
+          // i18n.
+          if (id.includes("i18next") || id.includes("react-i18next")) return "vendor-i18n";
+
+          // Carousel + signature + QR + misc UI.
+          if (
+            id.includes("embla-carousel") ||
+            id.includes("react-signature-canvas") ||
+            id.includes("qrcode") ||
+            id.includes("cmdk") ||
+            id.includes("vaul") ||
+            id.includes("sonner") ||
+            id.includes("input-otp") ||
+            id.includes("react-resizable-panels")
+          ) {
+            return "vendor-ui-extra";
+          }
+
           // Everything else from node_modules.
           return "vendor";
+        },
+      },
+    },
+  },
+}));
         },
       },
     },
