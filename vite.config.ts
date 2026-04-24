@@ -43,4 +43,104 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // Raise warning threshold a bit; chunks below this are fine.
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        // Group large third-party libraries into stable, cacheable vendor chunks.
+        // This keeps the initial download small and lets the browser cache vendor
+        // code across deploys when only app code changes.
+        manualChunks: (id) => {
+          if (!id.includes("node_modules")) return undefined;
+
+          // React core — loaded on every page, keep separate for long-term caching.
+          if (
+            id.includes("/react/") ||
+            id.includes("/react-dom/") ||
+            id.includes("/react-router") ||
+            id.includes("/scheduler/")
+          ) {
+            return "vendor-react";
+          }
+
+          // Supabase client — used everywhere but heavy.
+          if (id.includes("@supabase")) return "vendor-supabase";
+
+          // Radix UI primitives (shadcn) — many small modules, group them.
+          if (id.includes("@radix-ui")) return "vendor-radix";
+
+          // Charts (recharts + d3) — only used on a few pages, but very large.
+          if (id.includes("recharts") || id.includes("/d3-")) return "vendor-charts";
+
+          // PDF generation libs — heavy and only used on demand.
+          if (
+            id.includes("jspdf") ||
+            id.includes("html2canvas") ||
+            id.includes("pdfjs-dist") ||
+            id.includes("react-pdf")
+          ) {
+            return "vendor-pdf";
+          }
+
+          // Rich-text / editor libs.
+          if (id.includes("@tiptap") || id.includes("prosemirror")) return "vendor-editor";
+
+          // Date utilities + calendars.
+          if (id.includes("date-fns") || id.includes("react-day-picker")) return "vendor-date";
+
+          // Form / validation.
+          if (id.includes("react-hook-form") || id.includes("zod") || id.includes("@hookform")) {
+            return "vendor-forms";
+          }
+
+          // Icons — Lucide is tree-shaken but still sizeable when many used.
+          if (id.includes("lucide-react")) return "vendor-icons";
+
+          // Animation library — heavy, only used on some pages.
+          if (id.includes("framer-motion")) return "vendor-motion";
+
+          // Spreadsheet (xlsx) — very heavy, only used for import/export.
+          if (id.includes("/xlsx/") || id.includes("node-xlsx")) return "vendor-xlsx";
+
+          // Markdown rendering + sanitization.
+          if (
+            id.includes("react-markdown") ||
+            id.includes("remark-") ||
+            id.includes("rehype-") ||
+            id.includes("micromark") ||
+            id.includes("mdast-") ||
+            id.includes("hast-") ||
+            id.includes("unist-") ||
+            id.includes("dompurify")
+          ) {
+            return "vendor-markdown";
+          }
+
+          // TanStack Query.
+          if (id.includes("@tanstack")) return "vendor-tanstack";
+
+          // i18n.
+          if (id.includes("i18next") || id.includes("react-i18next")) return "vendor-i18n";
+
+          // Carousel + signature + QR + misc UI.
+          if (
+            id.includes("embla-carousel") ||
+            id.includes("react-signature-canvas") ||
+            id.includes("qrcode") ||
+            id.includes("cmdk") ||
+            id.includes("vaul") ||
+            id.includes("sonner") ||
+            id.includes("input-otp") ||
+            id.includes("react-resizable-panels")
+          ) {
+            return "vendor-ui-extra";
+          }
+
+          // Everything else from node_modules.
+          return "vendor";
+        },
+      },
+    },
+  },
 }));
