@@ -745,29 +745,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             <NavItemList items={fdvItems} locationPathname={pathname} locationSearch={search} navigate={navigate} t={t} />
           </ModuleSection>
 
-          {/* ── GDPR ── */}
-          <ModuleSection
-            sectionKey="gdpr" moduleType="GDPR" icon={ShieldAlert} label="GDPR"
-            color="" hasModule={hasGdpr}
-            isExpanded={expandedSections.has('gdpr')} collapsed={collapsed}
-            onToggle={toggleSection} onLockedClick={handleLockedModuleClick}
-            selectedLockedModule={selectedLockedModule} canOrderModules={canOrderModules}
-            onOrder={handleOrderModule}
-          >
-            <NavItemList items={gdprItems} locationPathname={pathname} locationSearch={search} navigate={navigate} t={t} />
-          </ModuleSection>
-
-          {/* ── Åpenhetsloven ── */}
-          <ModuleSection
-            sectionKey="apenhetsloven" moduleType="APENHETSLOVEN" icon={Scale} label="Åpenhetsloven"
-            color="" hasModule={hasApenhetsloven}
-            isExpanded={expandedSections.has('apenhetsloven')} collapsed={collapsed}
-            onToggle={toggleSection} onLockedClick={handleLockedModuleClick}
-            selectedLockedModule={selectedLockedModule} canOrderModules={canOrderModules}
-            onOrder={handleOrderModule}
-          >
-            <NavItemList items={apenhetItems} locationPathname={pathname} locationSearch={search} navigate={navigate} t={t} />
-          </ModuleSection>
+          {/* GDPR og Åpenhetsloven – skjult inntil modulene er ferdig utviklet */}
 
           {/* ── Personalhåndbok ── */}
           <ModuleSection
