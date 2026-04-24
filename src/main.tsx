@@ -17,10 +17,42 @@ window.addEventListener("error", (event) => {
   });
 });
 
+// Detect chunk-load errors after a new deploy and auto-recover by reloading.
+// This happens when the user has an old HTML cached and tries to load a JS chunk
+// that no longer exists at the expected hash.
+const isChunkLoadError = (message: string): boolean => {
+  const m = message.toLowerCase();
+  return (
+    m.includes("failed to fetch dynamically imported module") ||
+    m.includes("error loading dynamically imported module") ||
+    m.includes("importing a module script failed") ||
+    m.includes("loading chunk") ||
+    m.includes("loading css chunk")
+  );
+};
+
+const handleChunkError = (message: string): boolean => {
+  if (!isChunkLoadError(message)) return false;
+  // Avoid infinite reload loops by only retrying once per session.
+  const KEY = "chunk-reload-attempted";
+  if (sessionStorage.getItem(KEY)) return false;
+  sessionStorage.setItem(KEY, "1");
+  toast("Ny versjon oppdaget – laster siden på nytt…", { duration: 2000 });
+  window.setTimeout(() => window.location.reload(), 800);
+  return true;
+};
+
 window.addEventListener("unhandledrejection", (event) => {
   const reason = event.reason;
+  const message = reason?.message || String(reason) || "Unhandled promise rejection";
+
+  if (handleChunkError(message)) {
+    event.preventDefault();
+    return;
+  }
+
   logClientError({
-    error_message: reason?.message || String(reason) || "Unhandled promise rejection",
+    error_message: message,
     error_stack: reason?.stack ?? null,
     url: window.location.href,
     user_agent: navigator.userAgent,
