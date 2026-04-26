@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -18,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useIkMatTemperature, TemperatureLog } from "@/hooks/useIkMatTemperature";
-import { Thermometer, AlertTriangle, CheckCircle2, AlertCircle, Pencil } from "lucide-react";
+import { Thermometer, AlertTriangle, CheckCircle2, AlertCircle, Pencil, PartyPopper, ChevronRight } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   getTemperatureGuideline,
@@ -34,6 +35,8 @@ interface LogTemperatureDialogProps {
   onOpenChange: (open: boolean) => void;
   preSelectedEquipmentId?: string | null;
   editLog?: TemperatureLog | null;
+  /** When true, after saving the dialog auto-advances to the next equipment that still needs a log today. */
+  autoAdvance?: boolean;
 }
 
 export function LogTemperatureDialog({
@@ -41,26 +44,43 @@ export function LogTemperatureDialog({
   onOpenChange,
   preSelectedEquipmentId,
   editLog,
+  autoAdvance = true,
 }: LogTemperatureDialogProps) {
-  const { equipment, logTemperature, updateTemperatureLog } = useIkMatTemperature();
-  
+  const {
+    equipment,
+    logTemperature,
+    updateTemperatureLog,
+    getEquipmentNeedingLog,
+  } = useIkMatTemperature();
+
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string>("");
   const [temperature, setTemperature] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [correctiveAction, setCorrectiveAction] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [allDone, setAllDone] = useState(false);
+  const [completedCount, setCompletedCount] = useState(0);
 
   const isEditMode = !!editLog;
 
+  // Snapshot initial pending count when dialog opens (for progress display)
+  const [initialPending, setInitialPending] = useState(0);
+
   useEffect(() => {
-    if (open && editLog) {
-      setSelectedEquipmentId(editLog.equipment_id);
-      setTemperature(String(editLog.temperature));
-      setNotes(editLog.notes || "");
-      setCorrectiveAction(editLog.corrective_action || "");
-    } else if (open && preSelectedEquipmentId) {
-      setSelectedEquipmentId(preSelectedEquipmentId);
+    if (open) {
+      if (editLog) {
+        setSelectedEquipmentId(editLog.equipment_id);
+        setTemperature(String(editLog.temperature));
+        setNotes(editLog.notes || "");
+        setCorrectiveAction(editLog.corrective_action || "");
+      } else if (preSelectedEquipmentId) {
+        setSelectedEquipmentId(preSelectedEquipmentId);
+      }
+      setAllDone(false);
+      setCompletedCount(0);
+      setInitialPending(getEquipmentNeedingLog().length);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, preSelectedEquipmentId, editLog]);
 
   // Auto-add minus for freezer when equipment changes (only in create mode)
@@ -71,7 +91,7 @@ export function LogTemperatureDialog({
         setTemperature('-');
       }
     }
-  }, [selectedEquipmentId, equipment, isEditMode]);
+  }, [selectedEquipmentId, equipment, isEditMode, temperature]);
 
   const selectedEquip = equipment.find(e => e.id === selectedEquipmentId);
 
@@ -83,6 +103,13 @@ export function LogTemperatureDialog({
   }, [selectedEquip, temperature]);
 
   const showCorrectiveAction = guideline && guideline.status !== 'green';
+
+  const resetForm = (nextEquipmentId?: string) => {
+    setSelectedEquipmentId(nextEquipmentId || "");
+    setTemperature("");
+    setNotes("");
+    setCorrectiveAction("");
+  };
 
   const handleSubmit = async () => {
     if (!selectedEquipmentId || !temperature) return;
@@ -97,24 +124,49 @@ export function LogTemperatureDialog({
           notes: notes || undefined,
           corrective_action: correctiveAction || undefined,
         });
-      } else {
-        await logTemperature.mutateAsync({
-          equipment_id: selectedEquipmentId,
-          temperature: parseFloat(temperature),
-          notes: notes || undefined,
-          corrective_action: correctiveAction || undefined,
-        });
+        resetForm();
+        onOpenChange(false);
+        return;
       }
-      
-      // Reset form
-      setSelectedEquipmentId(preSelectedEquipmentId || "");
-      setTemperature("");
-      setNotes("");
-      setCorrectiveAction("");
-      onOpenChange(false);
+
+      await logTemperature.mutateAsync({
+        equipment_id: selectedEquipmentId,
+        temperature: parseFloat(temperature),
+        notes: notes || undefined,
+        corrective_action: correctiveAction || undefined,
+      });
+
+      const newCompleted = completedCount + 1;
+      setCompletedCount(newCompleted);
+
+      if (autoAdvance) {
+        // Find the next equipment that still needs a log (excluding the one we just logged)
+        const stillPending = getEquipmentNeedingLog().filter(
+          (e) => e.id !== selectedEquipmentId
+        );
+
+        if (stillPending.length > 0) {
+          // Move on to next equipment
+          resetForm(stillPending[0].id);
+        } else {
+          // All done — show celebration screen
+          setAllDone(true);
+          resetForm();
+        }
+      } else {
+        resetForm(preSelectedEquipmentId || "");
+        onOpenChange(false);
+      }
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleClose = () => {
+    resetForm(preSelectedEquipmentId || "");
+    setAllDone(false);
+    setCompletedCount(0);
+    onOpenChange(false);
   };
 
   const getStatusIcon = (status: TrafficLightStatus) => {
@@ -128,8 +180,45 @@ export function LogTemperatureDialog({
     }
   };
 
+  // Celebration screen — all daily measurements done
+  if (allDone) {
+    return (
+      <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Alle målinger fullført</DialogTitle>
+          </DialogHeader>
+          <div className="text-center py-6 space-y-4">
+            <div className="mx-auto h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
+              <PartyPopper className="h-10 w-10 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold">Bra jobba! 🎉</h2>
+              <p className="text-muted-foreground">
+                Alle dagens temperaturmålinger er registrert.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {completedCount} av {initialPending || completedCount} målinger fullført
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button className="w-full" onClick={handleClose}>
+              Ferdig
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Progress info for header (only when not editing and we're in a flow)
+  const showProgress = !isEditMode && autoAdvance && initialPending > 1;
+  const progressPct = initialPending > 0 ? (completedCount / initialPending) * 100 : 0;
+  const remainingAfterThis = Math.max(0, initialPending - completedCount - 1);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -137,6 +226,16 @@ export function LogTemperatureDialog({
             {isEditMode ? "Rediger måling" : "Registrer temperatur"}
           </DialogTitle>
         </DialogHeader>
+
+        {showProgress && (
+          <div className="space-y-1.5 -mt-2">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Måling {completedCount + 1} av {initialPending}</span>
+              <span>{remainingAfterThis} gjenstår etter denne</span>
+            </div>
+            <Progress value={progressPct} className="h-1.5" />
+          </div>
+        )}
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
@@ -263,14 +362,24 @@ export function LogTemperatureDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleClose}>
             Avbryt
           </Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             disabled={!selectedEquipmentId || !temperature || isSubmitting || (showCorrectiveAction && !correctiveAction)}
           >
-            {isSubmitting ? "Lagrer..." : isEditMode ? "Oppdater" : "Registrer"}
+            {isSubmitting ? (
+              "Lagrer..."
+            ) : isEditMode ? (
+              "Oppdater"
+            ) : showProgress && remainingAfterThis > 0 ? (
+              <>
+                Registrer & neste <ChevronRight className="h-4 w-4 ml-1" />
+              </>
+            ) : (
+              "Registrer"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
