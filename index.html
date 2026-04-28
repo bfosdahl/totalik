@@ -54,7 +54,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Total-IK" />
-    <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/pwa-192x192.png" />
 
     <meta property="og:title" content="Total-IK - Internkontrollsystem" />
@@ -149,6 +148,21 @@
         <button onclick="window.location.href=window.location.pathname + '?fresh=' + Date.now()" style="appearance:none;border:0;border-radius:10px;background:#1d4ed8;color:white;font-size:16px;font-weight:700;padding:13px 18px;width:100%;">Last inn på nytt</button>
       </div>
     </div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module">
+      import('/src/main.tsx').catch(function (error) {
+        console.error('Total-IK boot failed', error);
+        try {
+          var retryKey = 'totalik-boot-retry';
+          if (!sessionStorage.getItem(retryKey)) {
+            sessionStorage.setItem(retryKey, '1');
+            fetch('/src/main.tsx', { cache: 'no-store' }).finally(function () {
+              window.location.href = window.location.pathname + '?fresh=' + Date.now();
+            });
+            return;
+          }
+        } catch (_) {}
+        window.__TOTALIK_BOOT_ERROR__('Siden kunne ikke starte automatisk. Trykk “Last inn på nytt”.');
+      });
+    </script>
   </body>
 </html>
