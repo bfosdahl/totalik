@@ -9,10 +9,25 @@
     <meta name="keywords" content="internkontroll, HMS, arbeidsmiljø, risikovurdering, avvikshåndtering, Norge" />
     <link rel="icon" href="/favicon.png" type="image/png" />
 
-    <!-- Security headers (fallback når host ikke leverer HTTP-headers fra public/_headers) -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; frame-src 'self' https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'" />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function (registrations) {
+          registrations.forEach(function (registration) {
+            registration.unregister();
+          });
+        });
+      }
+      if (window.caches) {
+        caches.keys().then(function (keys) {
+          keys.forEach(function (key) {
+            caches.delete(key);
+          });
+        });
+      }
+    </script>
 
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#1a1a2e" />
