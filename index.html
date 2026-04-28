@@ -13,6 +13,21 @@
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
     <script>
+      window.__TOTALIK_BOOTED__ = false;
+      window.__TOTALIK_BOOT_ERROR__ = function (message) {
+        var fallback = document.getElementById('boot-fallback');
+        if (!fallback || window.__TOTALIK_BOOTED__) return;
+        fallback.style.display = 'flex';
+        var text = document.getElementById('boot-fallback-text');
+        if (text) text.textContent = message || 'Siden bruker litt lang tid på å starte.';
+      };
+      window.addEventListener('error', function (event) {
+        window.__TOTALIK_BOOT_ERROR__(event.message || 'Siden kunne ikke starte automatisk.');
+      });
+      window.addEventListener('unhandledrejection', function (event) {
+        var reason = event.reason;
+        window.__TOTALIK_BOOT_ERROR__((reason && reason.message) || 'Siden kunne ikke starte automatisk.');
+      });
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function (registrations) {
           registrations.forEach(function (registration) {
@@ -27,6 +42,11 @@
           });
         });
       }
+      setTimeout(function () {
+        if (!window.__TOTALIK_BOOTED__) {
+          window.__TOTALIK_BOOT_ERROR__('Siden bruker litt lang tid på å starte.');
+        }
+      }, 3500);
     </script>
 
     <!-- PWA Meta Tags -->
@@ -34,7 +54,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Total-IK" />
-    <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/pwa-192x192.png" />
 
     <meta property="og:title" content="Total-IK - Internkontrollsystem" />
@@ -121,6 +140,29 @@
 
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <div id="boot-fallback" style="display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px;background:#f8fafc;color:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-align:center;box-sizing:border-box;">
+      <div style="max-width:360px;">
+        <img src="/total-ik-logo-dark.png" alt="Total-IK" style="height:80px;max-width:220px;object-fit:contain;margin:0 auto 20px;display:block;" />
+        <h1 style="font-size:22px;line-height:1.2;margin:0 0 10px;font-weight:700;">Total-IK starter</h1>
+        <p id="boot-fallback-text" style="font-size:15px;line-height:1.5;margin:0 0 20px;color:#475569;">Siden bruker litt lang tid på å starte.</p>
+        <button onclick="window.location.href=window.location.pathname + '?fresh=' + Date.now()" style="appearance:none;border:0;border-radius:10px;background:#1d4ed8;color:white;font-size:16px;font-weight:700;padding:13px 18px;width:100%;">Last inn på nytt</button>
+      </div>
+    </div>
+    <script type="module">
+      import('/src/main.tsx').catch(function (error) {
+        console.error('Total-IK boot failed', error);
+        try {
+          var retryKey = 'totalik-boot-retry';
+          if (!sessionStorage.getItem(retryKey)) {
+            sessionStorage.setItem(retryKey, '1');
+            fetch('/src/main.tsx', { cache: 'no-store' }).finally(function () {
+              window.location.href = window.location.pathname + '?fresh=' + Date.now();
+            });
+            return;
+          }
+        } catch (_) {}
+        window.__TOTALIK_BOOT_ERROR__('Siden kunne ikke starte automatisk. Trykk “Last inn på nytt”.');
+      });
+    </script>
   </body>
 </html>
