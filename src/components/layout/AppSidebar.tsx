@@ -217,10 +217,12 @@ const SubNavItem = memo(function SubNavItem({
   const iconSize = size === "small" ? "w-3 h-3" : "w-4 h-4";
   const activeClass = size === "small" ? "bg-sidebar-primary/60" : "bg-sidebar-primary/80";
 
+  const prefetchHandlers = getPrefetchHandlers(item.path);
   return (
     <NavLink
       to={item.path}
       onClick={onClick}
+      {...prefetchHandlers}
       className={cn(
         `flex items-center gap-3 px-3 ${py} rounded-lg transition-all duration-200 ${textSize}`,
         isActive
