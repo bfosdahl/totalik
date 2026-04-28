@@ -156,7 +156,22 @@ const PageLoader = () => (
   </div>
 );
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Data regnes som "fersk" i 30 sek -> ingen ny henting ved navigasjon
+      staleTime: 30_000,
+      // Behold cache i 5 min etter at komponenten unmountes
+      gcTime: 5 * 60_000,
+      // Ikke re-fetch automatisk når vinduet får fokus (eliminerer rykkete UI)
+      refetchOnWindowFocus: false,
+      // Re-fetch ved reconnect er fortsatt nyttig
+      refetchOnReconnect: true,
+      // Prøv 1 gang ekstra ved feil (default er 3 = treg)
+      retry: 1,
+    },
+  },
+});
 
 const App = () => (
   <ErrorBoundary>
