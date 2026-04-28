@@ -65,22 +65,45 @@ window.setTimeout(() => sessionStorage.removeItem("chunk-reload-attempted"), 500
 
 createRoot(document.getElementById("root")!).render(<App />);
 
-// Ensure users get the latest version (PWA/service worker update handling)
-const updateSW = registerSW({
-  immediate: true,
-  onNeedRefresh() {
-    // Auto-reload after a short delay, but allow user to trigger immediately
-    toast("Ny versjon tilgjengelig – oppdaterer…", {
-      duration: 5000,
-      action: {
-        label: "Oppdater nå",
-        onClick: () => updateSW(true),
-      },
-    });
+const isInIframe = (() => {
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
+})();
 
-    window.setTimeout(() => updateSW(true), 1500);
-  },
-  onOfflineReady() {
-    // Optional: show a subtle message; keep quiet to avoid noise
-  },
-});
+const isPreviewHost =
+  window.location.hostname.includes("id-preview--") ||
+  window.location.hostname.includes("lovableproject.com");
+
+const unregisterServiceWorkers = () => {
+  if (!("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((registration) => registration.unregister());
+  });
+};
+
+// Avoid stale service-worker caches in Lovable preview/iframes. They can serve
+// outdated chunks and leave Safari/preview users on a blank page after deploys.
+if (isPreviewHost || isInIframe) {
+  unregisterServiceWorkers();
+} else {
+  const updateSW = registerSW({
+    immediate: true,
+    onNeedRefresh() {
+      toast("Ny versjon tilgjengelig – oppdaterer…", {
+        duration: 5000,
+        action: {
+          label: "Oppdater nå",
+          onClick: () => updateSW(true),
+        },
+      });
+
+      window.setTimeout(() => updateSW(true), 1500);
+    },
+    onOfflineReady() {
+      // Optional: show a subtle message; keep quiet to avoid noise
+    },
+  });
+}
