@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    modulePreload: false,
     // Raise warning threshold a bit; chunks below this are fine.
     chunkSizeWarningLimit: 800,
     rollupOptions: {
