@@ -5,6 +5,12 @@ import App from "./App.tsx";
 import "./index.css";
 import "./i18n"; // Initialize i18n
 
+declare global {
+  interface Window {
+    __TOTALIK_BOOTED__?: boolean;
+  }
+}
+
 // Global handlers for uncaught errors
 window.addEventListener("error", (event) => {
   logClientError({
@@ -62,6 +68,7 @@ window.addEventListener("unhandledrejection", (event) => {
 // Clear chunk-reload flag on successful boot so future chunk errors can recover.
 window.setTimeout(() => sessionStorage.removeItem("chunk-reload-attempted"), 5000);
 
+window.__TOTALIK_BOOTED__ = true;
 createRoot(document.getElementById("root")!).render(<App />);
 
 const isInIframe = (() => {
