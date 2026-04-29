@@ -51,6 +51,7 @@ export interface ShiftFormData {
 export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, editShift }: CreateShiftDialogProps) {
   const { users } = useCompanyUsers();
   const { createSchedule, updateSchedule } = useWorkSchedules();
+  const { profile } = useAuth();
   
   const isEditMode = !!editShift;
   
@@ -67,8 +68,31 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
     notes: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sundayWarning, setSundayWarning] = useState<{ status: SundayStatus; message: string } | null>(null);
 
+  // AML §10-8 check whenever date + employee changes
   useEffect(() => {
+    let cancelled = false;
+    if (!profile?.company_id || !formData.employee_id || !formData.schedule_date) {
+      setSundayWarning(null);
+      return;
+    }
+    checkSundayConflictForEmployee({
+      companyId: profile.company_id,
+      employeeId: formData.employee_id,
+      scheduleDate: formData.schedule_date,
+    }).then((result) => {
+      if (cancelled) return;
+      if (result.message && (result.status === "risk" || result.status === "breach")) {
+        setSundayWarning({ status: result.status, message: result.message });
+      } else {
+        setSundayWarning(null);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [formData.employee_id, formData.schedule_date, profile?.company_id]);
     if (editShift) {
       setFormData({
         employee_id: editShift.employee_id,
