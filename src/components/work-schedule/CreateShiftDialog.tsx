@@ -231,6 +231,23 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                 />
               </div>
 
+              {sundayWarning && (
+                <div
+                  className={`flex gap-2 rounded-md border p-3 text-sm ${
+                    sundayWarning.status === "breach"
+                      ? "border-destructive/40 bg-destructive/10 text-destructive"
+                      : "border-amber-400/40 bg-amber-50 text-amber-900 dark:bg-amber-950/30 dark:text-amber-200"
+                  }`}
+                >
+                  {sundayWarning.status === "breach" ? (
+                    <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  ) : (
+                    <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  )}
+                  <span>{sundayWarning.message}</span>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="start_time">Fra *</Label>
