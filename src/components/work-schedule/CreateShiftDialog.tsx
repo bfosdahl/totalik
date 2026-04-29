@@ -93,6 +93,8 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
       cancelled = true;
     };
   }, [formData.employee_id, formData.schedule_date, profile?.company_id]);
+
+  useEffect(() => {
     if (editShift) {
       setFormData({
         employee_id: editShift.employee_id,
