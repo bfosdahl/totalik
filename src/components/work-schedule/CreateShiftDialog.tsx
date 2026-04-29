@@ -9,8 +9,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useWorkSchedules } from "@/hooks/useWorkSchedules";
+import { useAuth } from "@/contexts/AuthContext";
 import { LOCATIONS, ROLES } from "./ShiftCalendar";
 import { toast } from "sonner";
+import { AlertTriangle, Info } from "lucide-react";
+import { checkSundayConflictForEmployee, type SundayStatus } from "@/utils/sundayComplianceCheck";
 
 interface CreateShiftDialogProps {
   open: boolean;
