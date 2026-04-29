@@ -121,6 +121,7 @@ const HrAbsence = lazy(() => import("./pages/hr/HrAbsence"));
 const HrMeetings = lazy(() => import("./pages/hr/HrMeetings"));
 const HrSurveys = lazy(() => import("./pages/hr/HrSurveys"));
 const MyContract = lazy(() => import("./pages/hr/MyContract"));
+const HrSundayReport = lazy(() => import("./pages/hr/HrSundayReport"));
 
 // My pages
 const MyAbsence = lazy(() => import("./pages/my/MyAbsence"));
@@ -226,6 +227,7 @@ const App = () => (
                   <Route path="/hr/absence" element={<ProtectedRoute><HrAbsence /></ProtectedRoute>} />
                   <Route path="/hr/meetings" element={<ProtectedRoute><HrMeetings /></ProtectedRoute>} />
                   <Route path="/hr/surveys" element={<ProtectedRoute><HrSurveys /></ProtectedRoute>} />
+                  <Route path="/hr/sondagsrapport" element={<ProtectedRoute><HrSundayReport /></ProtectedRoute>} />
                   
                   {/* My pages - for employees */}
                   <Route path="/my/contract" element={<ProtectedRoute><MyContract /></ProtectedRoute>} />
