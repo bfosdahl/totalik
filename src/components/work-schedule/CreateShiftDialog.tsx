@@ -9,8 +9,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useWorkSchedules } from "@/hooks/useWorkSchedules";
+import { useAuth } from "@/contexts/AuthContext";
 import { LOCATIONS, ROLES } from "./ShiftCalendar";
 import { toast } from "sonner";
+import { AlertTriangle, Info } from "lucide-react";
+import { checkSundayConflictForEmployee, type SundayStatus } from "@/utils/sundayComplianceCheck";
 
 interface CreateShiftDialogProps {
   open: boolean;
@@ -48,6 +51,7 @@ export interface ShiftFormData {
 export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, editShift }: CreateShiftDialogProps) {
   const { users } = useCompanyUsers();
   const { createSchedule, updateSchedule } = useWorkSchedules();
+  const { profile } = useAuth();
   
   const isEditMode = !!editShift;
   
@@ -64,6 +68,31 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
     notes: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sundayWarning, setSundayWarning] = useState<{ status: SundayStatus; message: string } | null>(null);
+
+  // AML §10-8 check whenever date + employee changes
+  useEffect(() => {
+    let cancelled = false;
+    if (!profile?.company_id || !formData.employee_id || !formData.schedule_date) {
+      setSundayWarning(null);
+      return;
+    }
+    checkSundayConflictForEmployee({
+      companyId: profile.company_id,
+      employeeId: formData.employee_id,
+      scheduleDate: formData.schedule_date,
+    }).then((result) => {
+      if (cancelled) return;
+      if (result.message && (result.status === "risk" || result.status === "breach")) {
+        setSundayWarning({ status: result.status, message: result.message });
+      } else {
+        setSundayWarning(null);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [formData.employee_id, formData.schedule_date, profile?.company_id]);
 
   useEffect(() => {
     if (editShift) {
@@ -201,6 +230,23 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                   onChange={(e) => setFormData({ ...formData, schedule_date: e.target.value })}
                 />
               </div>
+
+              {sundayWarning && (
+                <div
+                  className={`flex gap-2 rounded-md border p-3 text-sm ${
+                    sundayWarning.status === "breach"
+                      ? "border-destructive/40 bg-destructive/10 text-destructive"
+                      : "border-amber-400/40 bg-amber-50 text-amber-900 dark:bg-amber-950/30 dark:text-amber-200"
+                  }`}
+                >
+                  {sundayWarning.status === "breach" ? (
+                    <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  ) : (
+                    <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  )}
+                  <span>{sundayWarning.message}</span>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

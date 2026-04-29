@@ -145,6 +145,7 @@ const personaladministrasjonItems = {
     { icon: BarChart3, labelKey: "nav.surveys", path: "/hr/surveys", color: "text-purple-500" },
     { icon: CalendarDays, labelKey: "nav.approveVacation", path: "/time-off?view=admin", color: "text-orange-500" },
     { icon: Calendar, labelKey: "nav.workSchedule", path: "/work-schedule", color: "text-cyan-500" },
+    { icon: CalendarDays, label: "Søndagsrapport (AML §10-8)", path: "/hr/sondagsrapport", color: "text-amber-600" },
     { icon: Clock, labelKey: "nav.approveHours", path: "/time-registration?view=admin", color: "text-indigo-500" },
     { icon: ShieldAlert, labelKey: "nav.anonymousMessages", path: "/anonymous-messages", color: "text-amber-500" },
   ] as NavItem[],
