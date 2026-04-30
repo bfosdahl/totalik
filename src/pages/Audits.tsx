@@ -74,8 +74,66 @@ const statusConfig = {
 
 const Audits = () => {
   const { audits, isLoading } = useAudits();
+  const { responses, isLoading: isLoadingResponses } = useAuditFormResponses();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("list");
+
+  // Build a unified list of activities combining both audits and audit_form_responses
+  type UnifiedActivity = {
+    id: string;
+    title: string;
+    status: "scheduled" | "in-progress" | "completed" | "overdue";
+    date: string;
+    type: "internal" | "external" | "routine";
+    audit_number: string;
+    area: string | null;
+    responsible_name: string | null;
+    checklist_total: number;
+    checklist_completed: number;
+    source: "audit" | "form";
+    formType?: string;
+  };
+
+  const formActivities: UnifiedActivity[] = responses.map((r) => ({
+    id: r.id,
+    title: formTypeLabels[r.form_type] || r.form_type,
+    status: r.status === "completed" ? "completed" : "in-progress",
+    date: r.completed_at || r.revision_date || r.updated_at || r.created_at,
+    type: "internal",
+    audit_number: "",
+    area: null,
+    responsible_name: r.completed_by_name || r.auditor_name || null,
+    checklist_total: 0,
+    checklist_completed: 0,
+    source: "form",
+    formType: r.form_type,
+  }));
+
+  const auditActivities: UnifiedActivity[] = audits.map((a) => ({
+    id: a.id,
+    title: a.title,
+    status: a.status,
+    date: a.scheduled_date,
+    type: a.type,
+    audit_number: a.audit_number,
+    area: a.area,
+    responsible_name: a.responsible_name,
+    checklist_total: a.checklist_total,
+    checklist_completed: a.checklist_completed,
+    source: "audit",
+  }));
+
+  const allActivities = [...auditActivities, ...formActivities].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  const formTypeToTab: Record<string, string> = {
+    annual_hms: "annual",
+    elkontroll: "elkontroll",
+    fysiske_forhold: "fysiske",
+    daglig_drift: "drift",
+    vernerunde: "vernerunde",
+  };
 
   // Handle ?form= query parameter for direct navigation from HMS Årshjul
   useEffect(() => {
