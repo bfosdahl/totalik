@@ -5,7 +5,7 @@ import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ClipboardCheck, SprayCan, Thermometer, Package, ClipboardList, CalendarDays, Route as RouteIcon, Play } from "lucide-react";
+import { ClipboardCheck, SprayCan, Thermometer, Package, ClipboardList, CalendarDays, Route as RouteIcon, Play, FileSearch } from "lucide-react";
 import { useIkMatDailyRounds } from "@/hooks/useIkMatDailyRounds";
 
 // Import existing tab contents as components
@@ -15,6 +15,7 @@ import { TemperaturloggTab } from "@/components/ikmat/kontroll/TemperaturloggTab
 import { SporbarhetTab } from "@/components/ikmat/kontroll/SporbarhetTab";
 import { KalenderTab } from "@/components/ikmat/kontroll/KalenderTab";
 import { RunderTab } from "@/components/ikmat/kontroll/RunderTab";
+import { RevisjonTab } from "@/components/ikmat/kontroll/RevisjonTab";
 
 const IkMatKontroll = () => {
   const { company } = useAuth();
@@ -68,7 +69,7 @@ const IkMatKontroll = () => {
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:max-w-4xl sm:grid-cols-6 h-auto p-1">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:max-w-5xl sm:grid-cols-7 h-auto p-1">
               <TabsTrigger value="kalender" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
                 <CalendarDays className="h-4 w-4" />
                 <span className="hidden xs:inline sm:inline">Kalender</span>
@@ -92,6 +93,10 @@ const IkMatKontroll = () => {
               <TabsTrigger value="sporbarhet" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
                 <Package className="h-4 w-4" />
                 <span className="hidden xs:inline sm:inline">Mottak</span>
+              </TabsTrigger>
+              <TabsTrigger value="revisjon" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                <FileSearch className="h-4 w-4" />
+                <span className="hidden xs:inline sm:inline">Revisjon</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -118,6 +123,10 @@ const IkMatKontroll = () => {
 
           <TabsContent value="sporbarhet" className="mt-6">
             <SporbarhetTab />
+          </TabsContent>
+
+          <TabsContent value="revisjon" className="mt-6">
+            <RevisjonTab />
           </TabsContent>
         </Tabs>
       </div>
