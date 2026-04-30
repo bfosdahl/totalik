@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   SkipForward,
   PartyPopper,
+  ListChecks,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIkMatDailyRounds, type RoundStation, type RoundStationResult } from "@/hooks/useIkMatDailyRounds";
