@@ -428,6 +428,17 @@ export const RunderTab = () => {
                           >
                             <ArrowDown className="h-4 w-4" />
                           </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7"
+                            onClick={() => {
+                              const next = editing.stations.filter((_, idx) => idx !== i);
+                              setEditing({ ...editing, stations: next });
+                            }}
+                          >
+                            <X className="h-4 w-4 text-destructive" />
+                          </Button>
                         </div>
                       );
                     })}
