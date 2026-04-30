@@ -253,6 +253,17 @@ const VernerundeForm = () => {
         title="Lagrede vernerunder"
       />
 
+      {isBuildingCustom && !selectedTemplate ? (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <CustomVernerundeBuilder
+            onBack={() => setIsBuildingCustom(false)}
+            onCreate={(template) => {
+              setIsBuildingCustom(false);
+              handleSelectTemplate(template);
+            }}
+          />
+        </motion.div>
+      ) : (
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <Card>
           <CardHeader>
