@@ -227,6 +227,7 @@ const VernerundeForm = () => {
     setSelectedTemplate(null);
     setFormData(getDefaultFormData());
     setExpandedCategories(new Set());
+    setIsBuildingCustom(false);
   };
 
   const completedCount = selectedTemplate 
