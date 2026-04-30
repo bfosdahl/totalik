@@ -37,6 +37,8 @@ import {
   GripVertical,
   ArrowUp,
   ArrowDown,
+  ListChecks,
+  X,
 } from "lucide-react";
 import { useIkMatDailyRounds, type RoundStation } from "@/hooks/useIkMatDailyRounds";
 import { useIkMatTemperature } from "@/hooks/useIkMatTemperature";
@@ -51,12 +53,14 @@ const TYPE_ICONS = {
   temperature: Thermometer,
   checklist: ClipboardCheck,
   cleaning: SprayCan,
+  custom: ListChecks,
 } as const;
 
 const TYPE_LABELS = {
   temperature: "Temperatur",
   checklist: "Sjekkliste",
   cleaning: "Renhold",
+  custom: "Egendefinert",
 } as const;
 
 export const RunderTab = () => {
