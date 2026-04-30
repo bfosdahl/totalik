@@ -26,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useAudits, type Audit } from "@/hooks/useAudits";
+import { useAuditFormResponses, formTypeLabels, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import AnnualHmsRevisionForm from "@/components/audits/AnnualHmsRevisionForm";
 import ElKontrollForm from "@/components/audits/ElKontrollForm";
 import FysiskeArbeidsforholdForm from "@/components/audits/FysiskeArbeidsforholdForm";
@@ -73,8 +74,66 @@ const statusConfig = {
 
 const Audits = () => {
   const { audits, isLoading } = useAudits();
+  const { responses, isLoading: isLoadingResponses } = useAuditFormResponses();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("list");
+
+  // Build a unified list of activities combining both audits and audit_form_responses
+  type UnifiedActivity = {
+    id: string;
+    title: string;
+    status: "scheduled" | "in-progress" | "completed" | "overdue";
+    date: string;
+    type: "internal" | "external" | "routine";
+    audit_number: string;
+    area: string | null;
+    responsible_name: string | null;
+    checklist_total: number;
+    checklist_completed: number;
+    source: "audit" | "form";
+    formType?: string;
+  };
+
+  const formActivities: UnifiedActivity[] = responses.map((r) => ({
+    id: r.id,
+    title: formTypeLabels[r.form_type] || r.form_type,
+    status: r.status === "completed" ? "completed" : "in-progress",
+    date: r.completed_at || r.revision_date || r.updated_at || r.created_at,
+    type: "internal",
+    audit_number: "",
+    area: null,
+    responsible_name: r.completed_by_name || r.auditor_name || null,
+    checklist_total: 0,
+    checklist_completed: 0,
+    source: "form",
+    formType: r.form_type,
+  }));
+
+  const auditActivities: UnifiedActivity[] = audits.map((a) => ({
+    id: a.id,
+    title: a.title,
+    status: a.status,
+    date: a.scheduled_date,
+    type: a.type,
+    audit_number: a.audit_number,
+    area: a.area,
+    responsible_name: a.responsible_name,
+    checklist_total: a.checklist_total,
+    checklist_completed: a.checklist_completed,
+    source: "audit",
+  }));
+
+  const allActivities = [...auditActivities, ...formActivities].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  const formTypeToTab: Record<string, string> = {
+    annual_hms: "annual",
+    elkontroll: "elkontroll",
+    fysiske_forhold: "fysiske",
+    daglig_drift: "drift",
+    vernerunde: "vernerunde",
+  };
 
   // Handle ?form= query parameter for direct navigation from HMS Årshjul
   useEffect(() => {
@@ -105,7 +164,7 @@ const Audits = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingResponses) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-64">
@@ -299,7 +358,7 @@ const Audits = () => {
               className="grid grid-cols-2 md:grid-cols-4 gap-4"
             >
               {Object.entries(statusConfig).map(([key, config]) => {
-                const count = audits.filter((a) => a.status === key).length;
+                const count = allActivities.filter((a) => a.status === key).length;
                 const StatusIcon = config.icon;
                 return (
                   <div
@@ -320,39 +379,47 @@ const Audits = () => {
               })}
             </motion.div>
 
-            {/* Planned activities header */}
-            <h2 className="text-lg font-semibold">Planlagte aktiviteter</h2>
+            {/* Activities header */}
+            <h2 className="text-lg font-semibold">Aktiviteter</h2>
 
-            {/* Audits list */}
+            {/* Activities list (audits + completed forms) */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
               className="space-y-4"
             >
-              {audits.length === 0 ? (
+              {allActivities.length === 0 ? (
                 <div className="bg-card rounded-xl border border-border p-8 text-center">
                   <FileCheck className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">Ingen planlagte aktiviteter</h3>
+                  <h3 className="text-lg font-medium mb-2">Ingen aktiviteter</h3>
                   <p className="text-muted-foreground">
                     Bruk knappene ovenfor for å gå direkte til et aktivitetsskjema.
                   </p>
                 </div>
               ) : (
                 <div className="grid gap-4">
-                  {audits.map((audit, index) => {
-                    const statusInfo = statusConfig[audit.status];
+                  {allActivities.map((activity, index) => {
+                    const statusInfo = statusConfig[activity.status];
                     const StatusIcon = statusInfo.icon;
-                    const progress = audit.checklist_total > 0 
-                      ? (audit.checklist_completed / audit.checklist_total) * 100 
+                    const progress = activity.checklist_total > 0
+                      ? (activity.checklist_completed / activity.checklist_total) * 100
                       : 0;
+
+                    const handleClick = () => {
+                      if (activity.source === "form" && activity.formType) {
+                        const tab = formTypeToTab[activity.formType];
+                        if (tab) setActiveTab(tab);
+                      }
+                    };
 
                     return (
                       <motion.div
-                        key={audit.id}
+                        key={`${activity.source}-${activity.id}`}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.25 + index * 0.05 }}
+                        onClick={handleClick}
                         className="bg-card rounded-xl border border-border p-5 shadow-card hover:shadow-card-hover transition-all cursor-pointer group"
                       >
                         <div className="flex items-start gap-4">
@@ -362,44 +429,46 @@ const Audits = () => {
 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2">
-                              <Badge className={typeConfig[audit.type].color}>
-                                {typeConfig[audit.type].label}
+                              <Badge className={typeConfig[activity.type].color}>
+                                {typeConfig[activity.type].label}
                               </Badge>
-                              <span className="text-xs text-muted-foreground font-mono">
-                                {audit.audit_number}
-                              </span>
+                              {activity.audit_number && (
+                                <span className="text-xs text-muted-foreground font-mono">
+                                  {activity.audit_number}
+                                </span>
+                              )}
                             </div>
 
                             <h3 className="font-semibold group-hover:text-primary transition-colors mb-1">
-                              {audit.title}
+                              {activity.title}
                             </h3>
-                            
+
                             <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3 flex-wrap">
-                              {audit.area && <span>{audit.area}</span>}
-                              {audit.responsible_name && (
+                              {activity.area && <span>{activity.area}</span>}
+                              {activity.responsible_name && (
                                 <>
-                                  <span>•</span>
-                                  <span>{audit.responsible_name}</span>
+                                  {activity.area && <span>•</span>}
+                                  <span>{activity.responsible_name}</span>
                                 </>
                               )}
                               <span>•</span>
-                              <span>{formatDate(audit.scheduled_date)}</span>
+                              <span>{formatDate(activity.date)}</span>
                             </div>
 
                             {/* Progress bar */}
-                            {audit.checklist_total > 0 && (
+                            {activity.checklist_total > 0 && (
                               <div className="flex items-center gap-3">
                                 <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                                   <div
                                     className={cn(
                                       "h-full rounded-full transition-all",
-                                      audit.status === "completed" ? "bg-success" : "bg-primary"
+                                      activity.status === "completed" ? "bg-success" : "bg-primary"
                                     )}
                                     style={{ width: `${progress}%` }}
                                   />
                                 </div>
                                 <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                  {audit.checklist_completed} / {audit.checklist_total} punkter
+                                  {activity.checklist_completed} / {activity.checklist_total} punkter
                                 </span>
                               </div>
                             )}
