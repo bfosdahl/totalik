@@ -32,6 +32,7 @@ const TYPE_META = {
   temperature: { icon: Thermometer, label: "Temperatur", color: "text-blue-600" },
   checklist: { icon: ClipboardCheck, label: "Sjekkliste", color: "text-emerald-600" },
   cleaning: { icon: SprayCan, label: "Renhold", color: "text-purple-600" },
+  custom: { icon: ListChecks, label: "Egendefinert", color: "text-amber-600" },
 } as const;
 
 export default function IkMatDailyRound() {
