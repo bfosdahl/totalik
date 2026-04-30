@@ -50,6 +50,7 @@ const VernerundeTemplateSelector = ({
   templates,
   isLoading,
   onSelectTemplate,
+  onCreateBlank,
 }: VernerundeTemplateSelectorProps) => {
   if (isLoading) {
     return (
@@ -64,9 +65,34 @@ const VernerundeTemplateSelector = ({
       <div className="text-center mb-6">
         <h3 className="text-lg font-semibold">Velg type vernerunde</h3>
         <p className="text-sm text-muted-foreground">
-          Velg hvilken sjekkliste du vil bruke for vernerunden
+          Velg en ferdig sjekkliste, eller opprett en tom vernerunde med egne punkter
         </p>
       </div>
+
+      {onCreateBlank && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <Card
+            className="cursor-pointer hover:border-primary hover:shadow-md transition-all group border-dashed border-2"
+            onClick={onCreateBlank}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-lg bg-primary/10 text-primary">
+                  <FilePlus2 className="w-6 h-6" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-medium group-hover:text-primary transition-colors">
+                    Opprett tom vernerunde
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Lag din egen sjekkliste – legg til kategorier og punkter selv
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {templates.map((template, index) => (
