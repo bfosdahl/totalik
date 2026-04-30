@@ -12,6 +12,8 @@ interface SendEmailRequest {
   email: string;
 }
 
+const DEFAULT_PASSWORD = "Abc_1234";
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -66,23 +68,21 @@ const handler = async (req: Request): Promise<Response> => {
 
     const companyName = (profile.companies as any)?.name || "Total-IK";
     const firstName = profile.first_name || "";
+    const loginUrl = "https://totalik.no/auth";
 
-    // Generate password reset link — redirectTo MUST point to /auth so the recovery
-    // hash is detected by Auth.tsx and the "set new password" form is shown.
-    const { data: resetData, error: resetError } = await supabase.auth.admin.generateLink({
-      type: "recovery",
-      email: profile.email,
-      options: {
-        redirectTo: "https://totalik.no/auth",
-      },
-    });
+    // Reset password to standard default so user can log in directly
+    const { error: pwError } = await supabase.auth.admin.updateUserById(
+      profile.user_id,
+      { password: DEFAULT_PASSWORD }
+    );
 
-    if (resetError) {
-      console.error("Error generating recovery link:", resetError);
+    if (pwError) {
+      console.error("Error resetting password:", pwError);
+      return new Response(
+        JSON.stringify({ error: `Could not reset password: ${pwError.message}` }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
-
-    const resetLink = resetData?.properties?.action_link;
-    const fallbackLoginUrl = "https://totalik.no/auth";
 
     const resend = new Resend(resendApiKey);
 
@@ -95,50 +95,48 @@ const handler = async (req: Request): Promise<Response> => {
           <div style="text-align: center; margin-bottom: 30px;">
             <h1 style="color: #1a1a2e; margin: 0;">Velkommen til Total-IK!</h1>
           </div>
-          
+
           <p style="color: #333; font-size: 16px;">Hei${firstName ? ` ${firstName}` : ''},</p>
-          
+
           <p style="color: #333; font-size: 16px;">
             Du har fått en brukerkonto hos ${companyName} i Total-IK systemet.
           </p>
-          
+
           <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #0066cc;">
             <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">🔐 Din innloggingsinformasjon</h3>
             <p style="color: #555; margin: 0 0 8px 0;">
               <strong>Brukernavn:</strong> ${profile.email}
             </p>
             <p style="color: #555; margin: 0;">
-              ${resetLink ? 'Klikk på knappen nedenfor for å sette ditt passord.' : 'Bruk "Glemt passord" på innloggingssiden for å sette ditt passord.'}
+              <strong>Passord:</strong> <code style="background: #fff; padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd; font-size: 16px; font-weight: bold; color: #0066cc;">${DEFAULT_PASSWORD}</code>
             </p>
           </div>
-          
+
           <p style="color: #333; font-size: 16px;">
-            Du kan endre passordet ditt etter innlogging under "Innstillinger" dersom du ønsker det.
+            Vi anbefaler at du endrer passordet etter første innlogging under "Innstillinger".
           </p>
-          
+
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetLink || fallbackLoginUrl}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
-              ${resetLink ? 'Sett passord og logg inn' : 'Gå til innlogging'}
+            <a href="${loginUrl}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
+              Logg inn
             </a>
           </div>
-          
-          ${resetLink ? `
-          <p style="color: #666; font-size: 14px;">Hvis knappen ikke fungerer, kopier og lim inn denne lenken i nettleseren din:</p>
-          <p style="color: #0066cc; font-size: 12px; word-break: break-all;">${resetLink}</p>
-          ` : ''}
-          
+
+          <p style="color: #666; font-size: 14px;">Hvis knappen ikke fungerer, gå til:</p>
+          <p style="color: #0066cc; font-size: 12px; word-break: break-all;">${loginUrl}</p>
+
           ${getTermsNoticeHtml()}
-          
+
           ${getTermsHtml()}
-          
+
           <div style="background: #e8f4f8; border: 1px solid #b8daff; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
             <p style="margin: 0; color: #004085; font-size: 14px;">
               <strong>Ved å logge inn bekrefter du at du har lest og godtar avtalevilkårene ovenfor.</strong>
             </p>
           </div>
-          
+
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-          
+
           <p style="color: #999; font-size: 12px; text-align: center;">
             Dette er en automatisk generert e-post fra Total-IK.<br>
             Hvis du har spørsmål, kontakt din administrator.
@@ -150,8 +148,8 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Email sent successfully to ${profile.email}`);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         email: profile.email,
         name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim()
       }),
