@@ -17,6 +17,7 @@ interface VernerundeTemplateSelectorProps {
   templates: HmsVernerundeTemplate[];
   isLoading: boolean;
   onSelectTemplate: (template: HmsVernerundeTemplate) => void;
+  onCreateBlank?: () => void;
 }
 
 const getTemplateIcon = (templateName: string) => {
