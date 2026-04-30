@@ -28,6 +28,7 @@ import { SignaturePad } from "@/components/ks2/SignaturePad";
 import { useAuditFormResponses, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import { useHmsVernerundeTemplates, HmsVernerundeTemplate, VernerundeCheckpoint } from "@/hooks/useHmsVernerundeTemplates";
 import VernerundeTemplateSelector from "./vernerunde/VernerundeTemplateSelector";
+import CustomVernerundeBuilder from "./vernerunde/CustomVernerundeBuilder";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const getDefaultFormData = () => ({
@@ -60,6 +61,7 @@ const VernerundeForm = () => {
   const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<HmsVernerundeTemplate | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [isBuildingCustom, setIsBuildingCustom] = useState(false);
   
   // Filter responses for vernerunde only
   const vernerundeResponses = responses.filter(r => r.form_type === "vernerunde");
@@ -115,6 +117,7 @@ const VernerundeForm = () => {
     setSelectedFormId(null);
     setFormData(getDefaultFormData());
     setExpandedCategories(new Set());
+    setIsBuildingCustom(false);
   };
 
   const handleCheckboxChange = (checkpointId: string, checked: boolean) => {
@@ -224,6 +227,7 @@ const VernerundeForm = () => {
     setSelectedTemplate(null);
     setFormData(getDefaultFormData());
     setExpandedCategories(new Set());
+    setIsBuildingCustom(false);
   };
 
   const completedCount = selectedTemplate 
@@ -249,6 +253,17 @@ const VernerundeForm = () => {
         title="Lagrede vernerunder"
       />
 
+      {isBuildingCustom && !selectedTemplate ? (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <CustomVernerundeBuilder
+            onBack={() => setIsBuildingCustom(false)}
+            onCreate={(template) => {
+              setIsBuildingCustom(false);
+              handleSelectTemplate(template);
+            }}
+          />
+        </motion.div>
+      ) : (
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <Card>
           <CardHeader>
@@ -295,6 +310,7 @@ const VernerundeForm = () => {
                 templates={templates}
                 isLoading={templatesLoading}
                 onSelectTemplate={handleSelectTemplate}
+                onCreateBlank={() => setIsBuildingCustom(true)}
               />
             ) : (
               <>
@@ -509,6 +525,7 @@ const VernerundeForm = () => {
           </CardContent>
         </Card>
       </motion.div>
+      )}
     </div>
   );
 };
