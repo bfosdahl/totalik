@@ -28,6 +28,7 @@ import { SignaturePad } from "@/components/ks2/SignaturePad";
 import { useAuditFormResponses, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import { useHmsVernerundeTemplates, HmsVernerundeTemplate, VernerundeCheckpoint } from "@/hooks/useHmsVernerundeTemplates";
 import VernerundeTemplateSelector from "./vernerunde/VernerundeTemplateSelector";
+import CustomVernerundeBuilder from "./vernerunde/CustomVernerundeBuilder";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const getDefaultFormData = () => ({
