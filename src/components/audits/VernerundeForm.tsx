@@ -61,6 +61,7 @@ const VernerundeForm = () => {
   const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<HmsVernerundeTemplate | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [isBuildingCustom, setIsBuildingCustom] = useState(false);
   
   // Filter responses for vernerunde only
   const vernerundeResponses = responses.filter(r => r.form_type === "vernerunde");
