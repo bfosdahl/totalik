@@ -26,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useAudits, type Audit } from "@/hooks/useAudits";
+import { useAuditFormResponses, formTypeLabels, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import AnnualHmsRevisionForm from "@/components/audits/AnnualHmsRevisionForm";
 import ElKontrollForm from "@/components/audits/ElKontrollForm";
 import FysiskeArbeidsforholdForm from "@/components/audits/FysiskeArbeidsforholdForm";
