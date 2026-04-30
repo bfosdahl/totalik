@@ -358,7 +358,7 @@ const Audits = () => {
               className="grid grid-cols-2 md:grid-cols-4 gap-4"
             >
               {Object.entries(statusConfig).map(([key, config]) => {
-                const count = audits.filter((a) => a.status === key).length;
+                const count = allActivities.filter((a) => a.status === key).length;
                 const StatusIcon = config.icon;
                 return (
                   <div
