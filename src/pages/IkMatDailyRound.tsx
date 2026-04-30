@@ -218,6 +218,18 @@ export default function IkMatDailyRound() {
           notes: noteInput || null,
         },
       }));
+    } else if (action === "done" && currentStation.type === "custom") {
+      // Custom station: just record completion + notes (no extra side-effects)
+      setResults((prev) => ({
+        ...prev,
+        [`${stepIdx}`]: {
+          type: "custom",
+          ref_id: currentStation.ref_id,
+          label,
+          status: "done",
+          notes: noteInput || null,
+        },
+      }));
     } else {
       // skipped
       setResults((prev) => ({
