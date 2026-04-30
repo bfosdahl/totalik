@@ -310,6 +310,7 @@ const VernerundeForm = () => {
                 templates={templates}
                 isLoading={templatesLoading}
                 onSelectTemplate={handleSelectTemplate}
+                onCreateBlank={() => setIsBuildingCustom(true)}
               />
             ) : (
               <>
