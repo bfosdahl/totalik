@@ -164,7 +164,7 @@ const Audits = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingResponses) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-64">
