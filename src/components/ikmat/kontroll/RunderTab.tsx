@@ -37,6 +37,8 @@ import {
   GripVertical,
   ArrowUp,
   ArrowDown,
+  ListChecks,
+  X,
 } from "lucide-react";
 import { useIkMatDailyRounds, type RoundStation } from "@/hooks/useIkMatDailyRounds";
 import { useIkMatTemperature } from "@/hooks/useIkMatTemperature";
@@ -51,12 +53,14 @@ const TYPE_ICONS = {
   temperature: Thermometer,
   checklist: ClipboardCheck,
   cleaning: SprayCan,
+  custom: ListChecks,
 } as const;
 
 const TYPE_LABELS = {
   temperature: "Temperatur",
   checklist: "Sjekkliste",
   cleaning: "Renhold",
+  custom: "Egendefinert",
 } as const;
 
 export const RunderTab = () => {
@@ -368,6 +372,16 @@ export const RunderTab = () => {
                     }
                   }}
                 />
+
+                {/* Custom point */}
+                <CustomStationAdder
+                  onAdd={(station) =>
+                    setEditing({
+                      ...editing,
+                      stations: [...editing.stations, station],
+                    })
+                  }
+                />
               </div>
 
               {/* Order */}
@@ -413,6 +427,17 @@ export const RunderTab = () => {
                             }}
                           >
                             <ArrowDown className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7"
+                            onClick={() => {
+                              const next = editing.stations.filter((_, idx) => idx !== i);
+                              setEditing({ ...editing, stations: next });
+                            }}
+                          >
+                            <X className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
                       );
@@ -524,6 +549,119 @@ function StationPickerGroup({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+interface CustomStationAdderProps {
+  onAdd: (station: RoundStation) => void;
+}
+
+function CustomStationAdder({ onAdd }: CustomStationAdderProps) {
+  const [label, setLabel] = useState("");
+  const [instructions, setInstructions] = useState("");
+  const [points, setPoints] = useState<string[]>([]);
+  const [pointDraft, setPointDraft] = useState("");
+
+  const addPoint = () => {
+    const v = pointDraft.trim();
+    if (!v) return;
+    setPoints((prev) => [...prev, v]);
+    setPointDraft("");
+  };
+
+  const handleAdd = () => {
+    if (!label.trim()) return;
+    onAdd({
+      type: "custom",
+      ref_id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      label: label.trim(),
+      instructions: instructions.trim() || undefined,
+      checkpoints: points.length > 0 ? points : undefined,
+    });
+    setLabel("");
+    setInstructions("");
+    setPoints([]);
+    setPointDraft("");
+  };
+
+  return (
+    <div className="border rounded-md p-3 space-y-3 border-dashed">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <Plus className="h-4 w-4" /> Legg til egendefinert punkt
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Lag dine egne kontrollpunkter for runden – f.eks. "Sjekk håndvask",
+        "Kontroller fritert olje" eller andre rutiner som ikke finnes i listene over.
+      </p>
+
+      <div className="space-y-2">
+        <Label className="text-xs">Tittel *</Label>
+        <Input
+          placeholder="f.eks. Visuell kontroll av kjøkken"
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-xs">Beskrivelse / instruksjon (valgfritt)</Label>
+        <Textarea
+          placeholder="Hva skal sjekkes?"
+          value={instructions}
+          onChange={(e) => setInstructions(e.target.value)}
+          rows={2}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-xs">Sjekkpunkter (valgfritt)</Label>
+        {points.length > 0 && (
+          <ul className="space-y-1">
+            {points.map((p, i) => (
+              <li
+                key={i}
+                className="flex items-center gap-2 text-sm bg-muted rounded p-2"
+              >
+                <span className="flex-1">• {p}</span>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6"
+                  onClick={() => setPoints(points.filter((_, idx) => idx !== i))}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="flex gap-2">
+          <Input
+            placeholder="Legg til et punkt..."
+            value={pointDraft}
+            onChange={(e) => setPointDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addPoint();
+              }
+            }}
+          />
+          <Button type="button" variant="outline" onClick={addPoint}>
+            Legg til
+          </Button>
+        </div>
+      </div>
+
+      <Button
+        type="button"
+        onClick={handleAdd}
+        disabled={!label.trim()}
+        className="w-full"
+      >
+        <Plus className="h-4 w-4 mr-2" /> Legg til som stasjon
+      </Button>
     </div>
   );
 }

@@ -3,12 +3,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
-export type RoundStationType = "temperature" | "checklist" | "cleaning";
+export type RoundStationType = "temperature" | "checklist" | "cleaning" | "custom";
 
 export interface RoundStation {
   type: RoundStationType;
   ref_id: string;
   label?: string;
+  /** For custom stations: free-text instruction shown to the operator */
+  instructions?: string;
+  /** For custom stations: optional checkpoints the operator must tick off */
+  checkpoints?: string[];
 }
 
 export interface DailyRound {

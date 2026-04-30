@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   SkipForward,
   PartyPopper,
+  ListChecks,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIkMatDailyRounds, type RoundStation, type RoundStationResult } from "@/hooks/useIkMatDailyRounds";
@@ -32,6 +33,7 @@ const TYPE_META = {
   temperature: { icon: Thermometer, label: "Temperatur", color: "text-blue-600" },
   checklist: { icon: ClipboardCheck, label: "Sjekkliste", color: "text-emerald-600" },
   cleaning: { icon: SprayCan, label: "Renhold", color: "text-purple-600" },
+  custom: { icon: ListChecks, label: "Egendefinert", color: "text-amber-600" },
 } as const;
 
 export default function IkMatDailyRound() {
@@ -210,6 +212,18 @@ export default function IkMatDailyRound() {
         ...prev,
         [`${stepIdx}`]: {
           type: "cleaning",
+          ref_id: currentStation.ref_id,
+          label,
+          status: "done",
+          notes: noteInput || null,
+        },
+      }));
+    } else if (action === "done" && currentStation.type === "custom") {
+      // Custom station: just record completion + notes (no extra side-effects)
+      setResults((prev) => ({
+        ...prev,
+        [`${stepIdx}`]: {
+          type: "custom",
           ref_id: currentStation.ref_id,
           label,
           status: "done",
@@ -430,6 +444,40 @@ export default function IkMatDailyRound() {
                   />
                   <span className="text-sm font-medium">Renhold utført</span>
                 </label>
+              </div>
+            )}
+
+            {currentStation.type === "custom" && (
+              <div className="space-y-3">
+                {currentStation.instructions && (
+                  <div className="text-sm bg-muted rounded-md p-3 whitespace-pre-wrap">
+                    {currentStation.instructions}
+                  </div>
+                )}
+                {currentStation.checkpoints && currentStation.checkpoints.length > 0 && (
+                  <div className="space-y-2 max-h-72 overflow-y-auto">
+                    {currentStation.checkpoints.map((cp, i) => (
+                      <label
+                        key={i}
+                        className="flex items-start gap-3 p-3 rounded-md border hover:bg-muted cursor-pointer"
+                      >
+                        <Checkbox
+                          checked={!!checkedPoints[i]}
+                          onCheckedChange={(v) =>
+                            setCheckedPoints((prev) => ({ ...prev, [i]: !!v }))
+                          }
+                          className="mt-0.5"
+                        />
+                        <span className="text-sm">{cp}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                {!currentStation.instructions && (!currentStation.checkpoints || currentStation.checkpoints.length === 0) && (
+                  <p className="text-sm text-muted-foreground italic">
+                    Bekreft at punktet er utført, eller hopp over.
+                  </p>
+                )}
               </div>
             )}
 
