@@ -372,6 +372,16 @@ export const RunderTab = () => {
                     }
                   }}
                 />
+
+                {/* Custom point */}
+                <CustomStationAdder
+                  onAdd={(station) =>
+                    setEditing({
+                      ...editing,
+                      stations: [...editing.stations, station],
+                    })
+                  }
+                />
               </div>
 
               {/* Order */}
