@@ -447,6 +447,40 @@ export default function IkMatDailyRound() {
               </div>
             )}
 
+            {currentStation.type === "custom" && (
+              <div className="space-y-3">
+                {currentStation.instructions && (
+                  <div className="text-sm bg-muted rounded-md p-3 whitespace-pre-wrap">
+                    {currentStation.instructions}
+                  </div>
+                )}
+                {currentStation.checkpoints && currentStation.checkpoints.length > 0 && (
+                  <div className="space-y-2 max-h-72 overflow-y-auto">
+                    {currentStation.checkpoints.map((cp, i) => (
+                      <label
+                        key={i}
+                        className="flex items-start gap-3 p-3 rounded-md border hover:bg-muted cursor-pointer"
+                      >
+                        <Checkbox
+                          checked={!!checkedPoints[i]}
+                          onCheckedChange={(v) =>
+                            setCheckedPoints((prev) => ({ ...prev, [i]: !!v }))
+                          }
+                          className="mt-0.5"
+                        />
+                        <span className="text-sm">{cp}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                {!currentStation.instructions && (!currentStation.checkpoints || currentStation.checkpoints.length === 0) && (
+                  <p className="text-sm text-muted-foreground italic">
+                    Bekreft at punktet er utført, eller hopp over.
+                  </p>
+                )}
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="note">Notat (valgfritt)</Label>
               <Textarea
