@@ -117,6 +117,7 @@ const VernerundeForm = () => {
     setSelectedFormId(null);
     setFormData(getDefaultFormData());
     setExpandedCategories(new Set());
+    setIsBuildingCustom(false);
   };
 
   const handleCheckboxChange = (checkpointId: string, checked: boolean) => {
