@@ -33,6 +33,7 @@ interface CompanyInfo {
   accent_color: string | null;
   has_departments: boolean;
   employee_count: number | null;
+  brreg_employee_count: number | null;
 }
 
 interface GuestAccessInfo {
