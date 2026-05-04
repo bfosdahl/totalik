@@ -1183,6 +1183,8 @@ export type Database = {
         Row: {
           accent_color: string | null
           address: string | null
+          brreg_employee_count: number | null
+          brreg_synced_at: string | null
           city: string | null
           created_at: string
           email: string | null
@@ -1205,6 +1207,8 @@ export type Database = {
         Insert: {
           accent_color?: string | null
           address?: string | null
+          brreg_employee_count?: number | null
+          brreg_synced_at?: string | null
           city?: string | null
           created_at?: string
           email?: string | null
@@ -1227,6 +1231,8 @@ export type Database = {
         Update: {
           accent_color?: string | null
           address?: string | null
+          brreg_employee_count?: number | null
+          brreg_synced_at?: string | null
           city?: string | null
           created_at?: string
           email?: string | null
