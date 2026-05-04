@@ -37,6 +37,7 @@ interface EmployeeSignatureEntry {
 type Step = "info" | "employer" | "employees" | "complete";
 
 const SESSION_STORAGE_KEY = "verneombud_exemption_state";
+const VERNEOMBUD_EXEMPTION_EMPLOYEE_LIMIT = 5;
 
 interface PersistedState {
   step: Step;
@@ -59,6 +60,7 @@ export function VerneombudExemptionDialog({
 }: VerneombudExemptionDialogProps) {
   const { profile } = useAuth();
   const { users, isLoading: isLoadingUsers, getUserDisplayName } = useCompanyUsers();
+  const isExemptionAllowed = totalEmployees < VERNEOMBUD_EXEMPTION_EMPLOYEE_LIMIT;
   
   const getInitialState = useCallback((): PersistedState | null => {
     try {
@@ -216,6 +218,11 @@ export function VerneombudExemptionDialog({
   };
 
   const handleSubmit = async () => {
+    if (!isExemptionAllowed) {
+      toast.error("Virksomheter med 5 eller flere ansatte må ha verneombud og kan ikke inngå fritaksavtale.");
+      return;
+    }
+
     if (employeeSignatures.length === 0) {
       toast.error("Minst én ansatt må signere avtalen");
       return;
