@@ -17,6 +17,7 @@ interface CrmRequest {
   address?: string;
   postal_code?: string;
   city?: string;
+  employee_count?: number | null;
   modules: string[];  // e.g. ["IK_HMS", "IK_MAT"]
   seller_name?: string;
   password?: string;
@@ -73,6 +74,9 @@ serve(async (req) => {
     const orgNumber = body.org_number.trim();
     const email = body.email.toLowerCase().trim();
     const companyName = body.company_name.trim();
+    const employeeCount = typeof body.employee_count === 'number' && Number.isFinite(body.employee_count)
+      ? Math.max(0, Math.floor(body.employee_count))
+      : null;
 
     // --- Check duplicates ---
     const { data: existingCompany } = await supabaseAdmin
@@ -122,6 +126,7 @@ serve(async (req) => {
         city: body.city || null,
         email: email,
         phone: body.phone || null,
+        employee_count: employeeCount,
       })
       .select('id, name')
       .single();
