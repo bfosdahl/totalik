@@ -116,6 +116,22 @@ serve(async (req) => {
 
     // --- 1. Create company ---
     console.log(`Creating company: ${companyName} (${orgNumber})`);
+
+    // Fetch official employee count from Brreg (best-effort)
+    let brregEmployeeCount: number | null = null;
+    try {
+      const cleanOrg = (orgNumber || '').replace(/\s/g, '');
+      if (/^\d{9}$/.test(cleanOrg)) {
+        const r = await fetch(`https://data.brreg.no/enhetsregisteret/api/enheter/${cleanOrg}`);
+        if (r.ok) {
+          const d = await r.json();
+          if (typeof d.antallAnsatte === 'number') brregEmployeeCount = d.antallAnsatte;
+        }
+      }
+    } catch (e) {
+      console.warn('Brreg lookup failed (non-fatal):', e);
+    }
+
     const { data: newCompany, error: companyError } = await supabaseAdmin
       .from('companies')
       .insert({
@@ -127,6 +143,8 @@ serve(async (req) => {
         email: email,
         phone: body.phone || null,
         employee_count: employeeCount,
+        brreg_employee_count: brregEmployeeCount,
+        brreg_synced_at: brregEmployeeCount !== null ? new Date().toISOString() : null,
       })
       .select('id, name')
       .single();
