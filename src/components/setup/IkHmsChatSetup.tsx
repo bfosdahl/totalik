@@ -1049,7 +1049,10 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
                       companyName={company?.name || ""}
                       companyAddress={company?.address ? `${company.address}, ${company.postal_code || ""} ${company.city || ""}` : undefined}
                       orgNumber={company?.org_number || undefined}
-                      employeeCount={confirmedEmployeeCount || company?.employee_count || 1}
+                      employeeCount={Math.max(
+                        company?.brreg_employee_count ?? 0,
+                        confirmedEmployeeCount || company?.employee_count || 1
+                      )}
                       onComplete={handleVerneombudComplete}
                       onSkip={handleVerneombudSkipped}
                     />
