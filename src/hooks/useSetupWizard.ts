@@ -84,6 +84,7 @@ export interface CompanyInfo {
   email?: string;
   logo_url?: string | null;
   employee_count?: number | null;
+  brreg_employee_count?: number | null;
 }
 
 export interface WizardProgress {
@@ -316,7 +317,7 @@ export function useSetupWizard() {
         // Load company info
         const { data: companyData } = await supabase
           .from("companies")
-          .select("id, name, org_number, address, postal_code, city, phone, email, logo_url, employee_count")
+          .select("id, name, org_number, address, postal_code, city, phone, email, logo_url, employee_count, brreg_employee_count")
           .eq("id", companyId)
           .maybeSingle();
 
@@ -332,6 +333,7 @@ export function useSetupWizard() {
             email: companyData.email || undefined,
             logo_url: companyData.logo_url,
             employee_count: companyData.employee_count,
+            brreg_employee_count: companyData.brreg_employee_count,
           });
         }
       } catch (error) {
