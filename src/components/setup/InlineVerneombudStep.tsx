@@ -11,6 +11,8 @@ import SignatureCanvas from "react-signature-canvas";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
 
+const VERNEOMBUD_REQUIRED_EMPLOYEE_COUNT = 5;
+
 interface InlineVerneombudStepProps {
   companyId: string;
   companyName: string;
@@ -32,7 +34,7 @@ export function InlineVerneombudStep({
 }: InlineVerneombudStepProps) {
   const { profile } = useAuth();
   const { users, isLoading: isLoadingUsers, getUserDisplayName } = useCompanyUsers();
-  const needsVerneombud = employeeCount >= 5;
+  const needsVerneombud = employeeCount >= VERNEOMBUD_REQUIRED_EMPLOYEE_COUNT;
   
   const [mode, setMode] = useState<"choose" | "assign" | "exempt" | "sign_exempt" | "sign_agreement" | "done">("choose");
   const [verneombudName, setVerneombudName] = useState("");
@@ -70,8 +72,10 @@ export function InlineVerneombudStep({
     }
   }, [selectedUserId, users, getUserDisplayName]);
 
+  const hasValidExistingExemption = alreadyHasExemption && !needsVerneombud;
+
   // Already handled
-  if (alreadyHasAgreement || alreadyHasExemption) {
+  if (alreadyHasAgreement || hasValidExistingExemption) {
     return (
       <Card className="p-4 border-success/30 bg-success/5">
         <div className="flex items-center gap-3">
@@ -84,7 +88,7 @@ export function InlineVerneombudStep({
               }
             </p>
           </div>
-          <Button size="sm" onClick={() => onComplete(verneombudName, alreadyHasExemption)} className="shrink-0">
+          <Button size="sm" onClick={() => onComplete(verneombudName, hasValidExistingExemption)} className="shrink-0">
             Neste <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
         </div>
@@ -93,6 +97,11 @@ export function InlineVerneombudStep({
   }
 
   const handleSaveExemption = async () => {
+    if (needsVerneombud) {
+      toast.error("Virksomheter med 5 eller flere ansatte må ha verneombud og kan ikke inngå fritaksavtale.");
+      return;
+    }
+
     const sig = usingSavedSignature ? savedSignature : sigRef.current?.toDataURL() || "";
     if (!sig || (sigRef.current?.isEmpty() && !usingSavedSignature)) {
       toast.error("Vennligst signer");

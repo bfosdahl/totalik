@@ -37,6 +37,7 @@ interface EmployeeSignatureEntry {
 type Step = "info" | "employer" | "employees" | "complete";
 
 const SESSION_STORAGE_KEY = "verneombud_exemption_state";
+const VERNEOMBUD_EXEMPTION_EMPLOYEE_LIMIT = 5;
 
 interface PersistedState {
   step: Step;
@@ -59,6 +60,7 @@ export function VerneombudExemptionDialog({
 }: VerneombudExemptionDialogProps) {
   const { profile } = useAuth();
   const { users, isLoading: isLoadingUsers, getUserDisplayName } = useCompanyUsers();
+  const isExemptionAllowed = totalEmployees < VERNEOMBUD_EXEMPTION_EMPLOYEE_LIMIT;
   
   const getInitialState = useCallback((): PersistedState | null => {
     try {
@@ -216,6 +218,11 @@ export function VerneombudExemptionDialog({
   };
 
   const handleSubmit = async () => {
+    if (!isExemptionAllowed) {
+      toast.error("Virksomheter med 5 eller flere ansatte må ha verneombud og kan ikke inngå fritaksavtale.");
+      return;
+    }
+
     if (employeeSignatures.length === 0) {
       toast.error("Minst én ansatt må signere avtalen");
       return;
@@ -338,6 +345,15 @@ export function VerneombudExemptionDialog({
         <ScrollArea className="flex-1 min-h-0 pr-4">
           {step === "info" && (
             <div className="space-y-4">
+              {!isExemptionAllowed && (
+                <div className="p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+                  <p className="font-medium text-destructive mb-1">Fritak kan ikke brukes</p>
+                  <p className="text-sm text-muted-foreground">
+                    Virksomheten har {totalEmployees} ansatte. Ved 5 eller flere ansatte skal det velges verneombud.
+                  </p>
+                </div>
+              )}
+
               <Card className="p-4 bg-muted/50">
                 <h3 className="font-semibold mb-3">Avtale om fritak fra verneombud</h3>
                 
@@ -714,7 +730,7 @@ export function VerneombudExemptionDialog({
               <Button variant="outline" onClick={handleCancel}>
                 Avbryt
               </Button>
-              <Button onClick={() => setStep("employer")}>
+              <Button onClick={() => setStep("employer")} disabled={!isExemptionAllowed}>
                 Start signering
               </Button>
             </>
@@ -758,7 +774,7 @@ export function VerneombudExemptionDialog({
               </Button>
               <Button 
                 onClick={handleSubmit} 
-                disabled={isSaving || employeeSignatures.length === 0}
+                disabled={isSaving || employeeSignatures.length === 0 || !isExemptionAllowed}
               >
                 {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Fullfør og lagre avtale ({employeeSignatures.length} signert)

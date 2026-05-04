@@ -46,6 +46,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 
+const VERNEOMBUD_REQUIRED_EMPLOYEE_COUNT = 5;
+
 interface SetupStep {
   id: string;
   title: string;
@@ -646,8 +648,17 @@ const Setup = () => {
 
               {/* Verneombud Exemption Card */}
               <Card 
-                className="cursor-pointer transition-all hover:shadow-md hover:border-primary/30 group p-4"
-                onClick={() => setShowVerneombudExemption(true)}
+                className={cn(
+                  "transition-all group p-4",
+                  (company.employee_count || 1) < VERNEOMBUD_REQUIRED_EMPLOYEE_COUNT
+                    ? "cursor-pointer hover:shadow-md hover:border-primary/30"
+                    : "opacity-60"
+                )}
+                onClick={() => {
+                  if ((company.employee_count || 1) < VERNEOMBUD_REQUIRED_EMPLOYEE_COUNT) {
+                    setShowVerneombudExemption(true);
+                  }
+                }}
               >
                 <div className="flex items-start gap-3">
                   <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
@@ -656,7 +667,9 @@ const Setup = () => {
                   <div className="flex-1">
                     <h3 className="font-medium">Fritak fra verneombud</h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      For virksomheter med færre enn 5 ansatte
+                      {(company.employee_count || 1) < VERNEOMBUD_REQUIRED_EMPLOYEE_COUNT
+                        ? "For virksomheter med færre enn 5 ansatte"
+                        : "Ikke tilgjengelig ved 5 eller flere ansatte"}
                     </p>
                   </div>
                   <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
