@@ -11,6 +11,8 @@ import SignatureCanvas from "react-signature-canvas";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
 
+const VERNEOMBUD_REQUIRED_EMPLOYEE_COUNT = 5;
+
 interface InlineVerneombudStepProps {
   companyId: string;
   companyName: string;
@@ -32,7 +34,7 @@ export function InlineVerneombudStep({
 }: InlineVerneombudStepProps) {
   const { profile } = useAuth();
   const { users, isLoading: isLoadingUsers, getUserDisplayName } = useCompanyUsers();
-  const needsVerneombud = employeeCount >= 5;
+  const needsVerneombud = employeeCount >= VERNEOMBUD_REQUIRED_EMPLOYEE_COUNT;
   
   const [mode, setMode] = useState<"choose" | "assign" | "exempt" | "sign_exempt" | "sign_agreement" | "done">("choose");
   const [verneombudName, setVerneombudName] = useState("");
@@ -93,6 +95,11 @@ export function InlineVerneombudStep({
   }
 
   const handleSaveExemption = async () => {
+    if (needsVerneombud) {
+      toast.error("Virksomheter med 5 eller flere ansatte må ha verneombud og kan ikke inngå fritaksavtale.");
+      return;
+    }
+
     const sig = usingSavedSignature ? savedSignature : sigRef.current?.toDataURL() || "";
     if (!sig || (sigRef.current?.isEmpty() && !usingSavedSignature)) {
       toast.error("Vennligst signer");
