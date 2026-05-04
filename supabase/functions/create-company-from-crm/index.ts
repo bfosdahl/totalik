@@ -197,6 +197,13 @@ serve(async (req) => {
       return respond({ error: 'Kunne ikke knytte profil til bedrift' }, 500);
     }
 
+    if (employeeCount !== null) {
+      await supabaseAdmin
+        .from('companies')
+        .update({ employee_count: employeeCount })
+        .eq('id', newCompany.id);
+    }
+
     // --- 5. Assign company_admin role ---
     const { error: roleError } = await supabaseAdmin
       .from('user_roles')
