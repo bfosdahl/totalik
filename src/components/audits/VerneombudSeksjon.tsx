@@ -36,8 +36,9 @@ export default function VerneombudSeksjon() {
   const { verneombudAgreement, verneombudFromProfile, verneombudFromAiSetup, isLoading: isLoadingVerneombud, hasVerneombudAgreement, hasVerneombudFromProfile, hasVerneombudFromAiSetup, hasAnyVerneombud, refetch: refetchVerneombud } = useVerneombudAgreement();
   const { employees } = useEmployees();
   
-  // Determine if company needs verneombud (5+ employees) or can use exemption (<5 employees)
-  const employeeCount = company?.employee_count ?? employees?.length ?? 0;
+  // Use Brreg as source of truth for verneombud requirement (legal threshold = 5 employees).
+  // Falls back to system count only if Brreg data is missing.
+  const employeeCount = company?.brreg_employee_count ?? company?.employee_count ?? employees?.length ?? 0;
   const requiresVerneombud = employeeCount >= 5;
   
   const [showVerneombudDialog, setShowVerneombudDialog] = useState(false);
