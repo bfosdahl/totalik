@@ -190,6 +190,8 @@ Deno.serve(async (req) => {
           continue;
         }
 
+        const employeeCount = await fetchBrregEmployeeCount(order.customerOrgNoOrSsn);
+
         // Call create-company-from-crm
         const crmPayload = {
           company_name: order.customerCompany || `Bedrift ${order.customerOrgNoOrSsn || order.customerEmail}`,
@@ -201,6 +203,7 @@ Deno.serve(async (req) => {
           address: order.customerAddress || "",
           postal_code: order.customerPostalCode || "",
           city: order.customerCity || "",
+          employee_count: employeeCount,
           modules,
           seller_name: "NextCom Import",
         };
@@ -279,6 +282,29 @@ function detectModules(productNames: string[]): string[] {
     }
   }
   return Array.from(modules);
+}
+
+async function fetchBrregEmployeeCount(orgNumber?: string): Promise<number | null> {
+  const normalizedOrgNumber = (orgNumber || "").replace(/\D/g, "");
+  if (normalizedOrgNumber.length !== 9) return null;
+
+  try {
+    const response = await fetch(`https://data.brreg.no/enhetsregisteret/api/enheter/${normalizedOrgNumber}`, {
+      headers: { "Accept": "application/json" },
+    });
+
+    if (!response.ok) {
+      console.warn(`[Brreg] Could not fetch employee count for ${normalizedOrgNumber}: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    const employeeCount = Number(data?.antallAnsatte);
+    return Number.isFinite(employeeCount) ? employeeCount : null;
+  } catch (error) {
+    console.warn(`[Brreg] Employee count lookup failed for ${normalizedOrgNumber}:`, error);
+    return null;
+  }
 }
 
 // ── NextCom API ──
