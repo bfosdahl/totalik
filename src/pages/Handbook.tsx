@@ -124,10 +124,9 @@ const Handbook = () => {
   const { verneombudAgreement, verneombudFromProfile, verneombudFromAiSetup, hasVerneombudAgreement, hasAnyVerneombud } = useVerneombudAgreement();
   const { employees } = useEmployees();
   
-  // For verneombud: Companies with 5+ employees MUST have a verneombud, they cannot use exemption agreement
-  // Exemption agreement is ONLY for companies with fewer than 5 employees
-  // Use company.employee_count from setup if available, otherwise fall back to profiles count
-  const employeeCount = companyInfo?.employee_count ?? employees?.length ?? 0;
+  // For verneombud: BRREG employee count is the source of truth.
+  // Companies with 5+ employees MUST have a verneombud and cannot use exemption agreement.
+  const employeeCount = companyInfo?.brreg_employee_count ?? companyInfo?.employee_count ?? employees?.length ?? 0;
   const requiresVerneombud = employeeCount >= 5;
   
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
@@ -291,7 +290,7 @@ const Handbook = () => {
 
   // Base section number offset:
   // 1) Egenerklæring om HMS
-  // 2) Avtale om fritak fra verneombud
+  // 2) Valg av verneombud / Avtale om fritak fra verneombud
   // Then: goals starts at 3.
   const sectionOffset = 2;
 
