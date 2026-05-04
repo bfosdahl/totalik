@@ -72,8 +72,10 @@ export function InlineVerneombudStep({
     }
   }, [selectedUserId, users, getUserDisplayName]);
 
+  const hasValidExistingExemption = alreadyHasExemption && !needsVerneombud;
+
   // Already handled
-  if (alreadyHasAgreement || alreadyHasExemption) {
+  if (alreadyHasAgreement || hasValidExistingExemption) {
     return (
       <Card className="p-4 border-success/30 bg-success/5">
         <div className="flex items-center gap-3">
@@ -86,7 +88,7 @@ export function InlineVerneombudStep({
               }
             </p>
           </div>
-          <Button size="sm" onClick={() => onComplete(verneombudName, alreadyHasExemption)} className="shrink-0">
+          <Button size="sm" onClick={() => onComplete(verneombudName, hasValidExistingExemption)} className="shrink-0">
             Neste <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
         </div>
