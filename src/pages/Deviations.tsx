@@ -472,13 +472,31 @@ const Deviations = () => {
           className="space-y-3"
         >
           {filteredDeviations.length === 0 ? (
-            <div className="bg-card rounded-xl border border-border p-8 text-center text-muted-foreground">
-              <AlertTriangle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p className="font-medium">Ingen avvik funnet</p>
-              {searchQuery ? (
-                <p className="text-sm mt-1">Prøv å endre søkekriteriene</p>
+            <div className="bg-card rounded-xl border border-border p-10 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-8 h-8 text-muted-foreground" />
+              </div>
+              {searchQuery || filterStatus ? (
+                <>
+                  <h3 className="text-lg font-semibold mb-2">Ingen avvik matcher søket</h3>
+                  <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
+                    Prøv å endre søkeordet eller fjern statusfilteret.
+                  </p>
+                  <Button variant="outline" size="sm" onClick={() => { setSearchQuery(""); setFilterStatus(null); }}>
+                    Nullstill filter
+                  </Button>
+                </>
               ) : (
-                <p className="text-sm mt-1">Klikk "Nytt avvik" for å registrere det første avviket</p>
+                <>
+                  <h3 className="text-lg font-semibold mb-2">Ingen avvik registrert ennå</h3>
+                  <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
+                    Registrer det første avviket for å starte oppfølging og forbedring i bedriften.
+                  </p>
+                  <Button size="sm" className="gap-1.5" onClick={() => setIsDialogOpen(true)}>
+                    <Plus className="w-4 h-4" />
+                    Registrer første avvik
+                  </Button>
+                </>
               )}
             </div>
           ) : (
@@ -489,6 +507,16 @@ const Deviations = () => {
                 resolved: "border-l-4 border-l-success",
                 closed: "border-l-4 border-l-success",
               };
+              // Calculate age in days
+              const ageDays = Math.floor(
+                (Date.now() - new Date(deviation.created_at).getTime()) / (1000 * 60 * 60 * 24)
+              );
+              const isOpen = deviation.status === "open" || deviation.status === "in-progress";
+              const ageBadgeColor = isOpen && ageDays > 30
+                ? "bg-destructive/10 text-destructive border-destructive/20"
+                : isOpen && ageDays > 14
+                ? "bg-warning/10 text-warning border-warning/20"
+                : "bg-muted text-muted-foreground border-border";
               return (
                 <motion.div
                   key={deviation.id}
