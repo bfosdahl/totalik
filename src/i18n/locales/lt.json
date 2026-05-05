@@ -334,7 +334,8 @@
     "actionPlan": "Veiksmų planas",
     "laws": "Įstatymai ir reglamentai",
     "editContent": "Redaguoti turinį",
-    "translateContent": "Versti turinį"
+    "translateContent": "Versti turinį",
+    "routinesDescription": "Tvarkykite įmonės DSS procedūras ir tvarkas"
   },
   "header": {
     "mainCompany": "Pagrindinė įmonė",

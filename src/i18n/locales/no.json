@@ -335,7 +335,8 @@
     "actionPlan": "Handlingsplan",
     "laws": "Lover og forskrifter",
     "editContent": "Rediger innhold",
-    "translateContent": "Oversett innhold"
+    "translateContent": "Oversett innhold",
+    "routinesDescription": "Administrer bedriftens HMS-rutiner og prosedyrer"
   },
   "header": {
     "mainCompany": "Hovedbedrift",
