@@ -55,6 +55,7 @@ interface NextcomOrder {
   customerAddress?: string;
   customerPostalCode?: string;
   customerCity?: string;
+  sellerName?: string;
 }
 
 Deno.serve(async (req) => {
