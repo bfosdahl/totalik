@@ -35,7 +35,11 @@ import {
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
+import DOMPurify from "dompurify";
 import { supabase } from "@/integrations/supabase/client";
+
+const looksLikeHtml = (s: string) => /<\/?[a-z][\s\S]*>/i.test(s);
+const stripHtml = (s: string) => s.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 import { useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -761,7 +765,16 @@ const Handbook = () => {
               )}
             </>
           ) : getOrganizationDescription() ? (
-            <div className="whitespace-pre-wrap">{getOrganizationDescription().slice(0, 500)}{getOrganizationDescription().length > 500 ? "..." : ""}</div>
+            looksLikeHtml(getOrganizationDescription()) ? (
+              <div
+                className="prose prose-sm max-w-none dark:prose-invert"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(getOrganizationDescription()),
+                }}
+              />
+            ) : (
+              <div className="whitespace-pre-wrap">{getOrganizationDescription().slice(0, 500)}{getOrganizationDescription().length > 500 ? "..." : ""}</div>
+            )
           ) : null}
         </div>
       ) : (
@@ -1608,7 +1621,8 @@ const Handbook = () => {
       
       // Get translated or original roles
       const pdfOrgRoles = getOrganizationRoles();
-      const pdfOrgDescription = getOrganizationDescription();
+      const rawOrgDescription = getOrganizationDescription();
+      const pdfOrgDescription = looksLikeHtml(rawOrgDescription) ? stripHtml(rawOrgDescription) : rawOrgDescription;
 
       if (pdfOrgRoles.length > 0) {
         // Draw visual org chart
@@ -2816,9 +2830,13 @@ const Handbook = () => {
 
         <div style="margin-bottom: 20px;">
           <h2 style="font-size: 18px; margin-bottom: 10px;">2. Organisering og ansvar</h2>
-          <p style="white-space: pre-wrap;">${(organization?.roles?.length ?? 0) > 0 
-            ? organization?.roles?.map(r => `${r.title}${r.personName ? ` (${r.personName})` : ''}`).join(', ')
-            : (organization?.description?.substring(0, 500) || "Ikke definert")}</p>
+          <div>${(organization?.roles?.length ?? 0) > 0 
+            ? `<p style="white-space: pre-wrap;">${organization?.roles?.map(r => `${r.title}${r.personName ? ` (${r.personName})` : ''}`).join(', ')}</p>`
+            : (organization?.description 
+                ? (looksLikeHtml(organization.description) 
+                    ? DOMPurify.sanitize(organization.description) 
+                    : `<p style="white-space: pre-wrap;">${organization.description.substring(0, 500)}</p>`)
+                : "<p>Ikke definert</p>")}</div>
         </div>
 
         <div style="margin-bottom: 20px;">

@@ -300,11 +300,11 @@ export function useSetupWizard() {
           const transformedRoutines = rawRoutines.map((routine, index) => ({
             id: (routine.id as string) || `routine-${index + 1}`,
             routine_number: (routine.routine_number as string) || `R${(index + 1).toString().padStart(3, '0')}`,
-            routine_name: (routine.routine_name as string) || (routine.name as string) || 'Ukjent rutine',
+            routine_name: (routine.routine_name as string) || (routine.name as string) || (routine.title as string) || 'Ukjent rutine',
             category: (routine.category as string) || 'Generelt',
             purpose: (routine.purpose as string) || (routine.description as string) || '',
             responsibility: (routine.responsibility as string) || (routine.responsible as string) || '',
-            procedure: (routine.procedure as string) || '',
+            procedure: (routine.procedure as string) || (routine.content as string) || '',
             examples: (routine.examples as string) || '',
             remember: (routine.remember as string) || '',
             is_predefined: (routine.is_predefined as boolean) ?? false,

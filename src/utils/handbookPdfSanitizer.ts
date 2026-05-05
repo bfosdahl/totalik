@@ -289,11 +289,11 @@ export const sanitizeRoutines = (data: unknown): SanitizedRoutine[] => {
     return {
       id: safeString(routine.id, crypto.randomUUID()),
       routine_number: safeString(routine.routine_number, defaultNumber),
-      routine_name: safeString(routine.routine_name || (routine as any).name, "Ukjent rutine"),
+      routine_name: safeString(routine.routine_name || (routine as any).name || (routine as any).title, "Ukjent rutine"),
       category: safeString(routine.category, "Generelt"),
       purpose: safeString(routine.purpose || (routine as any).description),
       responsibility: safeString(routine.responsibility),
-      procedure: safeString(routine.procedure),
+      procedure: safeString(routine.procedure || (routine as any).content),
       examples: safeString(routine.examples),
       remember: safeString(routine.remember),
       is_predefined: Boolean(routine.is_predefined),
