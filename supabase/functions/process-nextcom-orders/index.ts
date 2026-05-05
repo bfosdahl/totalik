@@ -55,6 +55,7 @@ interface NextcomOrder {
   customerAddress?: string;
   customerPostalCode?: string;
   customerCity?: string;
+  sellerName?: string;
 }
 
 Deno.serve(async (req) => {
@@ -89,15 +90,19 @@ Deno.serve(async (req) => {
     // Check mode
     let dryRun = false;
     let markHistorical = false;
+    let reprocessOrderIds: string[] = [];
     try {
       const body = await req.json();
       dryRun = body?.dry_run === true;
       markHistorical = body?.mark_historical === true;
+      if (Array.isArray(body?.reprocess_order_ids)) {
+        reprocessOrderIds = body.reprocess_order_ids.map(String);
+      }
     } catch {
       // Normal cron invocation - no body
     }
 
-    console.log(`[TotalIK NextCom Sync] Starting${dryRun ? ' (DRY RUN)' : ''}...`);
+    console.log(`[TotalIK NextCom Sync] Starting${dryRun ? ' (DRY RUN)' : ''}${reprocessOrderIds.length ? ` (REPROCESS ${reprocessOrderIds.length})` : ''}...`);
 
     // Step 1: Get the latest processed order timestamp to only fetch recent orders
     const { data: latestProcessed } = await supabase
@@ -108,25 +113,31 @@ Deno.serve(async (req) => {
 
     const lastProcessedAt = latestProcessed?.[0]?.processed_at || null;
 
-    // Step 2: Fetch only recent confirmed orders from NextCom
-    const orders = await fetchNextcomOrders(basicAuthEncoded, lastProcessedAt);
+    // Step 2: Fetch confirmed orders from NextCom
+    const orders = await fetchNextcomOrders(basicAuthEncoded, lastProcessedAt, reprocessOrderIds.length > 0);
     console.log(`[TotalIK NextCom Sync] Found ${orders.length} confirmed orders (since: ${lastProcessedAt || 'all time'})`);
 
     if (orders.length === 0) {
       return respond({ success: true, message: "No pending orders found", orders_found: 0 });
     }
 
-    // Step 2: Check which orders we've already processed
-    const orderIds = orders.map(o => String(o.id));
-    const { data: processedOrders } = await supabase
-      .from("nextcom_processed_orders")
-      .select("order_id")
-      .in("order_id", orderIds);
+    // Step 2: Check which orders we've already processed (skipped in reprocess mode)
+    let processedSet = new Set<string>();
+    if (reprocessOrderIds.length === 0) {
+      const orderIds = orders.map(o => String(o.id));
+      const { data: processedOrders } = await supabase
+        .from("nextcom_processed_orders")
+        .select("order_id")
+        .in("order_id", orderIds);
+      processedSet = new Set((processedOrders || []).map(p => String(p.order_id)));
+    }
 
-    const processedSet = new Set((processedOrders || []).map(p => String(p.order_id)));
-    const newOrders = orders.filter(o => !processedSet.has(String(o.id)));
+    const newOrders = reprocessOrderIds.length > 0
+      ? orders.filter(o => reprocessOrderIds.includes(String(o.id)))
+      : orders.filter(o => !processedSet.has(String(o.id)));
 
-    console.log(`[TotalIK NextCom Sync] ${newOrders.length} new orders (${processedSet.size} already processed)`);
+    console.log(`[TotalIK NextCom Sync] ${newOrders.length} orders to process (${processedSet.size} already processed)`);
+
 
     // Mark historical mode
     if (markHistorical && newOrders.length > 0) {
@@ -162,6 +173,8 @@ Deno.serve(async (req) => {
         const isCourseOnly = modules.length === 0 && productNames.some(p =>
           COURSE_KEYWORDS.some(kw => p.toLowerCase().includes(kw))
         );
+        // Detect renewal orders by product name (e.g. "Fornyelse av lisens")
+        const isRenewal = productNames.some(p => p.toLowerCase().includes('fornyelse'));
 
         if (dryRun) {
           results.push({
@@ -174,8 +187,8 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Skip course-only orders (handled by kurskontoret)
-        if (isCourseOnly || modules.length === 0) {
+        // Skip course-only orders (handled by kurskontoret). Renewals are always processed.
+        if (!isRenewal && (isCourseOnly || modules.length === 0)) {
           console.log(`[TotalIK NextCom Sync] Order ${order.id}: Skipping - ${isCourseOnly ? 'course product' : 'no IK modules detected'} (${order.allProducts})`);
           await markOrderProcessed(supabase, order.id, "skipped_not_ik", { products: order.allProducts });
           results.push({ order_id: order.id, company: order.customerCompany || "Unknown", status: "skipped", error: isCourseOnly ? "Course product (handled by kurskontoret)" : "No IK modules detected" });
@@ -205,10 +218,11 @@ Deno.serve(async (req) => {
           city: order.customerCity || "",
           employee_count: employeeCount,
           modules,
-          seller_name: "NextCom Import",
+          seller_name: order.sellerName || "NextCom Import",
+          is_renewal: isRenewal,
         };
 
-        console.log(`[TotalIK NextCom Sync] Order ${order.id}: Creating company ${crmPayload.company_name} with modules [${modules.join(', ')}]`);
+        console.log(`[TotalIK NextCom Sync] Order ${order.id}: ${isRenewal ? 'RENEWAL' : 'NEW'} - ${crmPayload.company_name} with modules [${modules.join(', ')}]`);
 
         const syncApiKey = Deno.env.get("SYNC_API_KEY")!;
         const crmResponse = await fetch(`${supabaseUrl}/functions/v1/create-company-from-crm`, {
@@ -309,11 +323,11 @@ async function fetchBrregEmployeeCount(orgNumber?: string): Promise<number | nul
 
 // ── NextCom API ──
 
-async function fetchNextcomOrders(basicAuth: string, lastProcessedAt: string | null): Promise<NextcomOrder[]> {
+async function fetchNextcomOrders(basicAuth: string, lastProcessedAt: string | null, deepFetch = false): Promise<NextcomOrder[]> {
   const allOrders: NextcomOrder[] = [];
   const limit = 100;
-  // Only fetch the last 2 pages (200 orders max) instead of scanning everything
-  const maxPages = 2;
+  // Normal: last 2 pages (200 orders). Deep fetch (reprocess): last 5 pages (500 orders).
+  const maxPages = deepFetch ? 5 : 2;
 
   // Get total count with a single lightweight call
   const countUrl = `${NEXTCOM_BASE_URL}/crm-system/orders?offset=0&limit=1&locale=eng`;
