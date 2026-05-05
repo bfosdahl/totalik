@@ -4,6 +4,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { buildCanonicalOrganizationContent, normalizeHmsRoutines, stripHtml } from "@/lib/hmsImportNormalizers";
 
 export interface ParsedHandbookData {
   firmanavn: string | null;
@@ -117,14 +118,7 @@ export async function applyHandbookImport(
 
     // 2. Organization
     if (data.organisasjon) {
-      const org = data.organisasjon;
-      let content = '<h3>Organisering og ansvar</h3>\n<ul>';
-      if (org.dagligLeder) content += `\n<li><strong>Daglig leder:</strong> ${org.dagligLeder}</li>`;
-      if (org.verneombud) content += `\n<li><strong>Verneombud:</strong> ${org.verneombud}</li>`;
-      org.andreRoller?.forEach(r => {
-        content += `\n<li><strong>${r.rolle}:</strong> ${r.navn}</li>`;
-      });
-      content += '\n</ul>';
+      const content = buildCanonicalOrganizationContent(data.organisasjon);
 
       await supabase.from("company_organization").upsert({
         company_id: companyId,
@@ -190,13 +184,15 @@ export async function applyHandbookImport(
 
     // 5. Routines
     if (data.rutiner?.length > 0) {
-      const routines = data.rutiner.map((r) => ({
+      const routines = normalizeHmsRoutines(data.rutiner.map((r) => ({
         id: crypto.randomUUID(),
-        title: r.tittel,
-        description: r.formaal || '',
+        routine_name: r.tittel,
+        purpose: r.formaal || '',
         category: r.kategori || 'hms',
-        content: `<p><strong>Ansvar:</strong> ${r.ansvar || 'Ikke spesifisert'}</p>\n<p><strong>Frekvens:</strong> ${r.frekvens || 'Ved behov'}</p>\n<p>${r.prosedyre || ''}</p>`,
-      }));
+        responsibility: r.ansvar || 'Ikke spesifisert',
+        procedure: stripHtml(r.prosedyre || ''),
+        remember: r.frekvens ? `Frekvens: ${r.frekvens}` : '',
+      })));
 
       const { error } = await supabase.from("company_routines").upsert({
         company_id: companyId,
