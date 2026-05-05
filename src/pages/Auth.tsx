@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Shield, Mail, Lock, User, Loader2, Building2, KeyRound } from "lucide-react";
+import { Shield, Mail, Lock, User, Loader2, Building2, KeyRound, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { LanguageSelector } from "@/components/language/LanguageSelector";
 import { useTranslate } from "@/hooks/useTranslate";
 
