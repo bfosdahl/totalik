@@ -1621,7 +1621,8 @@ const Handbook = () => {
       
       // Get translated or original roles
       const pdfOrgRoles = getOrganizationRoles();
-      const pdfOrgDescription = getOrganizationDescription();
+      const rawOrgDescription = getOrganizationDescription();
+      const pdfOrgDescription = looksLikeHtml(rawOrgDescription) ? stripHtml(rawOrgDescription) : rawOrgDescription;
 
       if (pdfOrgRoles.length > 0) {
         // Draw visual org chart
