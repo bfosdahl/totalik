@@ -765,7 +765,16 @@ const Handbook = () => {
               )}
             </>
           ) : getOrganizationDescription() ? (
-            <div className="whitespace-pre-wrap">{getOrganizationDescription().slice(0, 500)}{getOrganizationDescription().length > 500 ? "..." : ""}</div>
+            looksLikeHtml(getOrganizationDescription()) ? (
+              <div
+                className="prose prose-sm max-w-none dark:prose-invert"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(getOrganizationDescription()),
+                }}
+              />
+            ) : (
+              <div className="whitespace-pre-wrap">{getOrganizationDescription().slice(0, 500)}{getOrganizationDescription().length > 500 ? "..." : ""}</div>
+            )
           ) : null}
         </div>
       ) : (
