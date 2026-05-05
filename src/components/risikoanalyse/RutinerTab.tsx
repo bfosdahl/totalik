@@ -621,8 +621,8 @@ export const RutinerTab = () => {
                         ) : (
                           <ChevronRight className="h-5 w-5 text-muted-foreground" />
                         )}
-                        <div>
-                          <div className="flex items-center gap-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <Badge variant="outline" className="text-xs">
                               {routine.routine_number}
                             </Badge>
@@ -631,8 +631,16 @@ export const RutinerTab = () => {
                                 Standard
                               </Badge>
                             )}
+                            <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                              {routine.category}
+                            </Badge>
                           </div>
                           <h3 className="font-medium mt-1">{routine.routine_name}</h3>
+                          {routine.responsibility && (
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                              Ansvar: {routine.responsibility.split("\n")[0]}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
