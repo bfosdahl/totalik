@@ -11,6 +11,8 @@
  * - x.map is not a function
  */
 
+import { normalizeHmsRoutines } from "@/lib/hmsImportNormalizers";
+
 // ============= SAFE VALUE HELPERS =============
 
 /**
@@ -280,25 +282,7 @@ export const sanitizeActions = (data: unknown): SanitizedAction[] => {
  */
 export const sanitizeRoutines = (data: unknown): SanitizedRoutine[] => {
   const obj = (data && typeof data === "object" ? data : {}) as Record<string, unknown>;
-  const routines = safeArray(obj.routines || data);
-  
-  return routines.map((item: unknown, index: number) => {
-    const routine = (item && typeof item === "object" ? item : {}) as Record<string, unknown>;
-    const defaultNumber = `R${String(index + 1).padStart(3, "0")}`;
-    
-    return {
-      id: safeString(routine.id, crypto.randomUUID()),
-      routine_number: safeString(routine.routine_number, defaultNumber),
-      routine_name: safeString(routine.routine_name || (routine as any).name || (routine as any).title, "Ukjent rutine"),
-      category: safeString(routine.category, "Generelt"),
-      purpose: safeString(routine.purpose || (routine as any).description),
-      responsibility: safeString(routine.responsibility),
-      procedure: safeString(routine.procedure || (routine as any).content),
-      examples: safeString(routine.examples),
-      remember: safeString(routine.remember),
-      is_predefined: Boolean(routine.is_predefined),
-    };
-  });
+  return normalizeHmsRoutines(safeArray(obj.routines || data));
 };
 
 /**
