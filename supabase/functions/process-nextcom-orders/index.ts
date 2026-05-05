@@ -207,10 +207,11 @@ Deno.serve(async (req) => {
           city: order.customerCity || "",
           employee_count: employeeCount,
           modules,
-          seller_name: "NextCom Import",
+          seller_name: order.sellerName || "NextCom Import",
+          is_renewal: isRenewal,
         };
 
-        console.log(`[TotalIK NextCom Sync] Order ${order.id}: Creating company ${crmPayload.company_name} with modules [${modules.join(', ')}]`);
+        console.log(`[TotalIK NextCom Sync] Order ${order.id}: ${isRenewal ? 'RENEWAL' : 'NEW'} - ${crmPayload.company_name} with modules [${modules.join(', ')}]`);
 
         const syncApiKey = Deno.env.get("SYNC_API_KEY")!;
         const crmResponse = await fetch(`${supabaseUrl}/functions/v1/create-company-from-crm`, {
