@@ -24,7 +24,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import type { Json } from "@/integrations/supabase/types";
+import { normalizeHmsRoutines } from "@/lib/hmsImportNormalizers";
 
 interface RoutineItem {
   id: string;
@@ -356,7 +356,7 @@ export const RutinerTab = () => {
 
       if (data?.routines) {
         const routinesArray = Array.isArray(data.routines) ? data.routines : [];
-        setRoutines(routinesArray as unknown as RoutineItem[]);
+        setRoutines(normalizeHmsRoutines(routinesArray));
       }
     } catch (err) {
       console.error("Error:", err);
@@ -370,6 +370,7 @@ export const RutinerTab = () => {
     
     try {
       setSaving(true);
+      const normalizedRoutines = normalizeHmsRoutines(routines);
       
       // Check if record exists first
       const { data: existing } = await supabase
@@ -383,7 +384,7 @@ export const RutinerTab = () => {
         const { error } = await supabase
           .from("company_routines")
           .update({
-            routines: JSON.parse(JSON.stringify(routines)),
+            routines: JSON.parse(JSON.stringify(normalizedRoutines)),
             updated_at: new Date().toISOString()
           })
           .eq("company_id", profile.company_id);
@@ -395,12 +396,13 @@ export const RutinerTab = () => {
           .from("company_routines")
           .insert([{
             company_id: profile.company_id,
-            routines: JSON.parse(JSON.stringify(routines))
+            routines: JSON.parse(JSON.stringify(normalizedRoutines))
           }]);
         
         if (error) throw error;
       }
       
+      setRoutines(normalizedRoutines);
       setHasChanges(false);
       toast.success("Rutiner lagret");
     } catch (err) {
