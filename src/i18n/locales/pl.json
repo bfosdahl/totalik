@@ -334,7 +334,8 @@
     "actionPlan": "Plan działań",
     "laws": "Przepisy prawne",
     "editContent": "Edytuj treść",
-    "translateContent": "Przetłumacz treść"
+    "translateContent": "Przetłumacz treść",
+    "routinesDescription": "Zarządzaj procedurami BHP firmy"
   },
   "header": {
     "mainCompany": "Firma główna",
