@@ -4,6 +4,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { buildCanonicalOrganizationContent, normalizeHmsRoutines, type NormalizedHmsRoutine } from "@/lib/hmsImportNormalizers";
 
 export interface ImportedHmsData {
   firmanavn: string | null;
@@ -174,52 +175,22 @@ export async function applyImportedHmsSetup(
 }
 
 function buildOrganizationContent(data: ImportedHmsData): string {
-  const org = data.organisasjon;
-  if (!org) return '';
-
-  let content = '<h3>Organisering og ansvar</h3>\n<ul>';
-  
-  if (org.dagligLeder) {
-    content += `\n<li><strong>Daglig leder:</strong> ${org.dagligLeder}</li>`;
-  }
-  if (org.verneombud) {
-    content += `\n<li><strong>Verneombud:</strong> ${org.verneombud}</li>`;
-  }
-  if (org.andreRoller && org.andreRoller.length > 0) {
-    org.andreRoller.forEach(rolle => {
-      content += `\n<li><strong>${rolle.rolle}:</strong> ${rolle.navn}</li>`;
-    });
-  }
-  
-  content += '\n</ul>';
-  return content;
+  return buildCanonicalOrganizationContent(data.organisasjon);
 }
 
-function buildRoutinesFromImport(data: ImportedHmsData): Array<{
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  content: string;
-}> {
-  const routines: Array<{
-    id: string;
-    title: string;
-    description: string;
-    category: string;
-    content: string;
-  }> = [];
+function buildRoutinesFromImport(data: ImportedHmsData): NormalizedHmsRoutine[] {
+  const routines: Array<Record<string, unknown>> = [];
 
   // Kurs og opplæring rutine
   if (data.kursOgOpplaering) {
     routines.push({
       id: crypto.randomUUID(),
-      title: 'Rutine for kurs og opplæring',
-      description: data.kursOgOpplaering.harRutiner 
+      routine_name: 'Rutine for kurs og opplæring',
+      purpose: data.kursOgOpplaering.harRutiner 
         ? 'Bedriften har etablerte rutiner for opplæring'
         : 'Bedriften trenger å etablere rutiner for opplæring',
       category: 'opplæring',
-      content: data.kursOgOpplaering.beskrivelse || 'Ingen beskrivelse tilgjengelig',
+      procedure: data.kursOgOpplaering.beskrivelse || 'Ingen beskrivelse tilgjengelig',
     });
   }
 
@@ -227,27 +198,25 @@ function buildRoutinesFromImport(data: ImportedHmsData): Array<{
   if (data.avvikssystem) {
     routines.push({
       id: crypto.randomUUID(),
-      title: 'Rutine for avvikshåndtering',
-      description: data.avvikssystem.harEgetSystem
+      routine_name: 'Rutine for avvikshåndtering',
+      purpose: data.avvikssystem.harEgetSystem
         ? 'Bedriften har eget system for avvikshåndtering'
         : 'Bedriften bruker Total-IKs avvikssystem',
       category: 'avvik',
-      content: data.avvikssystem.beskrivelse || 'Avvik skal rapporteres og behandles fortløpende.',
+      procedure: data.avvikssystem.beskrivelse || 'Avvik skal rapporteres og behandles fortløpende.',
     });
   }
 
   // Add a generic HMS routine
   routines.push({
     id: crypto.randomUUID(),
-    title: 'Generell HMS-rutine',
-    description: 'Overordnet rutine for helse, miljø og sikkerhet',
+    routine_name: 'Generell HMS-rutine',
+    purpose: 'Overordnet rutine for helse, miljø og sikkerhet',
     category: 'hms',
-    content: data.tilleggsinformasjon 
-      ? `<p>${data.tilleggsinformasjon}</p>` 
-      : '<p>HMS-arbeidet skal gjennomføres systematisk i henhold til forskrift om systematisk HMS-arbeid.</p>',
+    procedure: data.tilleggsinformasjon || 'HMS-arbeidet skal gjennomføres systematisk i henhold til forskrift om systematisk HMS-arbeid.',
   });
 
-  return routines;
+  return normalizeHmsRoutines(routines);
 }
 
 /**
