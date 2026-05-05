@@ -90,15 +90,19 @@ Deno.serve(async (req) => {
     // Check mode
     let dryRun = false;
     let markHistorical = false;
+    let reprocessOrderIds: string[] = [];
     try {
       const body = await req.json();
       dryRun = body?.dry_run === true;
       markHistorical = body?.mark_historical === true;
+      if (Array.isArray(body?.reprocess_order_ids)) {
+        reprocessOrderIds = body.reprocess_order_ids.map(String);
+      }
     } catch {
       // Normal cron invocation - no body
     }
 
-    console.log(`[TotalIK NextCom Sync] Starting${dryRun ? ' (DRY RUN)' : ''}...`);
+    console.log(`[TotalIK NextCom Sync] Starting${dryRun ? ' (DRY RUN)' : ''}${reprocessOrderIds.length ? ` (REPROCESS ${reprocessOrderIds.length})` : ''}...`);
 
     // Step 1: Get the latest processed order timestamp to only fetch recent orders
     const { data: latestProcessed } = await supabase
@@ -109,25 +113,31 @@ Deno.serve(async (req) => {
 
     const lastProcessedAt = latestProcessed?.[0]?.processed_at || null;
 
-    // Step 2: Fetch only recent confirmed orders from NextCom
-    const orders = await fetchNextcomOrders(basicAuthEncoded, lastProcessedAt);
+    // Step 2: Fetch confirmed orders from NextCom
+    const orders = await fetchNextcomOrders(basicAuthEncoded, lastProcessedAt, reprocessOrderIds.length > 0);
     console.log(`[TotalIK NextCom Sync] Found ${orders.length} confirmed orders (since: ${lastProcessedAt || 'all time'})`);
 
     if (orders.length === 0) {
       return respond({ success: true, message: "No pending orders found", orders_found: 0 });
     }
 
-    // Step 2: Check which orders we've already processed
-    const orderIds = orders.map(o => String(o.id));
-    const { data: processedOrders } = await supabase
-      .from("nextcom_processed_orders")
-      .select("order_id")
-      .in("order_id", orderIds);
+    // Step 2: Check which orders we've already processed (skipped in reprocess mode)
+    let processedSet = new Set<string>();
+    if (reprocessOrderIds.length === 0) {
+      const orderIds = orders.map(o => String(o.id));
+      const { data: processedOrders } = await supabase
+        .from("nextcom_processed_orders")
+        .select("order_id")
+        .in("order_id", orderIds);
+      processedSet = new Set((processedOrders || []).map(p => String(p.order_id)));
+    }
 
-    const processedSet = new Set((processedOrders || []).map(p => String(p.order_id)));
-    const newOrders = orders.filter(o => !processedSet.has(String(o.id)));
+    const newOrders = reprocessOrderIds.length > 0
+      ? orders.filter(o => reprocessOrderIds.includes(String(o.id)))
+      : orders.filter(o => !processedSet.has(String(o.id)));
 
-    console.log(`[TotalIK NextCom Sync] ${newOrders.length} new orders (${processedSet.size} already processed)`);
+    console.log(`[TotalIK NextCom Sync] ${newOrders.length} orders to process (${processedSet.size} already processed)`);
+
 
     // Mark historical mode
     if (markHistorical && newOrders.length > 0) {
