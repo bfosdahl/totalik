@@ -323,11 +323,11 @@ async function fetchBrregEmployeeCount(orgNumber?: string): Promise<number | nul
 
 // ── NextCom API ──
 
-async function fetchNextcomOrders(basicAuth: string, lastProcessedAt: string | null): Promise<NextcomOrder[]> {
+async function fetchNextcomOrders(basicAuth: string, lastProcessedAt: string | null, deepFetch = false): Promise<NextcomOrder[]> {
   const allOrders: NextcomOrder[] = [];
   const limit = 100;
-  // Only fetch the last 2 pages (200 orders max) instead of scanning everything
-  const maxPages = 2;
+  // Normal: last 2 pages (200 orders). Deep fetch (reprocess): last 5 pages (500 orders).
+  const maxPages = deepFetch ? 5 : 2;
 
   // Get total count with a single lightweight call
   const countUrl = `${NEXTCOM_BASE_URL}/crm-system/orders?offset=0&limit=1&locale=eng`;
