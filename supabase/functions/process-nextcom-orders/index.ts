@@ -162,6 +162,8 @@ Deno.serve(async (req) => {
         const isCourseOnly = modules.length === 0 && productNames.some(p =>
           COURSE_KEYWORDS.some(kw => p.toLowerCase().includes(kw))
         );
+        // Detect renewal orders by product name (e.g. "Fornyelse av lisens")
+        const isRenewal = productNames.some(p => p.toLowerCase().includes('fornyelse'));
 
         if (dryRun) {
           results.push({
