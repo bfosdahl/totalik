@@ -571,6 +571,16 @@ const Deviations = () => {
                           <Calendar className="w-3 h-3" />
                           {deviation.due_date}
                         </span>
+                        <span
+                          className={cn(
+                            "flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium",
+                            ageBadgeColor
+                          )}
+                          title={`Opprettet ${new Date(deviation.created_at).toLocaleDateString("nb-NO")}`}
+                        >
+                          <Clock className="w-3 h-3" />
+                          {ageDays === 0 ? "I dag" : ageDays === 1 ? "1 dag" : `${ageDays} dager`}
+                        </span>
                       </div>
                     </div>
                   </div>
