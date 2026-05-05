@@ -2830,9 +2830,13 @@ const Handbook = () => {
 
         <div style="margin-bottom: 20px;">
           <h2 style="font-size: 18px; margin-bottom: 10px;">2. Organisering og ansvar</h2>
-          <p style="white-space: pre-wrap;">${(organization?.roles?.length ?? 0) > 0 
-            ? organization?.roles?.map(r => `${r.title}${r.personName ? ` (${r.personName})` : ''}`).join(', ')
-            : (organization?.description?.substring(0, 500) || "Ikke definert")}</p>
+          <div>${(organization?.roles?.length ?? 0) > 0 
+            ? `<p style="white-space: pre-wrap;">${organization?.roles?.map(r => `${r.title}${r.personName ? ` (${r.personName})` : ''}`).join(', ')}</p>`
+            : (organization?.description 
+                ? (looksLikeHtml(organization.description) 
+                    ? DOMPurify.sanitize(organization.description) 
+                    : `<p style="white-space: pre-wrap;">${organization.description.substring(0, 500)}</p>`)
+                : "<p>Ikke definert</p>")}</div>
         </div>
 
         <div style="margin-bottom: 20px;">
