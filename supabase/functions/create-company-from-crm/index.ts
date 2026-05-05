@@ -63,7 +63,11 @@ serve(async (req) => {
     if (!body.email || !body.email.includes('@')) {
       return respond({ error: 'Gyldig email er påkrevd' }, 400);
     }
-    if (!body.modules || !Array.isArray(body.modules) || body.modules.length === 0) {
+    if (!body.modules || !Array.isArray(body.modules)) {
+      return respond({ error: 'modules må være en array' }, 400);
+    }
+    // Renewals are allowed to have empty modules (just send the thank-you email)
+    if (!body.is_renewal && body.modules.length === 0) {
       return respond({ error: 'modules er påkrevd (array med minst én modul)' }, 400);
     }
     const invalidModules = body.modules.filter(m => !VALID_MODULES.includes(m));
