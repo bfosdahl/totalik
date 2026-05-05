@@ -35,7 +35,11 @@ import {
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
+import DOMPurify from "dompurify";
 import { supabase } from "@/integrations/supabase/client";
+
+const looksLikeHtml = (s: string) => /<\/?[a-z][\s\S]*>/i.test(s);
+const stripHtml = (s: string) => s.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 import { useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
