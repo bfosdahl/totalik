@@ -75,8 +75,37 @@ export function EmployeeDetailDialog({
   const [newPassword, setNewPassword] = useState("");
   const [sendPasswordEmail, setSendPasswordEmail] = useState(true);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [isSendingWelcome, setIsSendingWelcome] = useState(false);
 
   const updateEmployee = useUpdateEmployee();
+
+  const handleSendWelcomeEmail = async () => {
+    if (!employee.email) {
+      toast.error("Ansatt mangler e-postadresse");
+      return;
+    }
+    setIsSendingWelcome(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-single-welcome-email", {
+        body: { email: employee.email },
+      });
+      if (error) {
+        const msg = (error as any).context?.error || error.message || "Kunne ikke sende velkomstmail";
+        toast.error(msg);
+        return;
+      }
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+      toast.success(`Velkomstmail sendt til ${employee.email}. Passord er satt til Abc_1234.`);
+    } catch (err) {
+      console.error("Send welcome email error:", err);
+      toast.error("En feil oppstod ved sending av velkomstmail");
+    } finally {
+      setIsSendingWelcome(false);
+    }
+  };
 
   const handleResetPassword = async () => {
     if (!newPassword || newPassword.length < 6) {
@@ -415,6 +444,29 @@ export function EmployeeDetailDialog({
                       <Label htmlFor="sendEmail" className="text-sm font-normal cursor-pointer">
                         Send nytt passord på e-post til ansatt
                       </Label>
+                    </div>
+
+                    <div className="pt-4 border-t">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-medium">Send velkomstmail på nytt</p>
+                          <p className="text-xs text-muted-foreground">
+                            Tilbakestiller passord til <code className="px-1 py-0.5 rounded bg-muted">Abc_1234</code> og sender e-post med innloggingsinfo.
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          onClick={handleSendWelcomeEmail}
+                          disabled={isSendingWelcome || !employee.email}
+                        >
+                          {isSendingWelcome ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Mail className="w-4 h-4 mr-2" />
+                          )}
+                          Send velkomstmail
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
