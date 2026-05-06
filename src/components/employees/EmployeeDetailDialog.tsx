@@ -445,6 +445,29 @@ export function EmployeeDetailDialog({
                         Send nytt passord på e-post til ansatt
                       </Label>
                     </div>
+
+                    <div className="pt-4 border-t">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-medium">Send velkomstmail på nytt</p>
+                          <p className="text-xs text-muted-foreground">
+                            Tilbakestiller passord til <code className="px-1 py-0.5 rounded bg-muted">Abc_1234</code> og sender e-post med innloggingsinfo.
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          onClick={handleSendWelcomeEmail}
+                          disabled={isSendingWelcome || !employee.email}
+                        >
+                          {isSendingWelcome ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Mail className="w-4 h-4 mr-2" />
+                          )}
+                          Send velkomstmail
+                        </Button>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               )}
