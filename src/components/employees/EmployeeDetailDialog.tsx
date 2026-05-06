@@ -75,8 +75,37 @@ export function EmployeeDetailDialog({
   const [newPassword, setNewPassword] = useState("");
   const [sendPasswordEmail, setSendPasswordEmail] = useState(true);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [isSendingWelcome, setIsSendingWelcome] = useState(false);
 
   const updateEmployee = useUpdateEmployee();
+
+  const handleSendWelcomeEmail = async () => {
+    if (!employee.email) {
+      toast.error("Ansatt mangler e-postadresse");
+      return;
+    }
+    setIsSendingWelcome(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-single-welcome-email", {
+        body: { email: employee.email },
+      });
+      if (error) {
+        const msg = (error as any).context?.error || error.message || "Kunne ikke sende velkomstmail";
+        toast.error(msg);
+        return;
+      }
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+      toast.success(`Velkomstmail sendt til ${employee.email}. Passord er satt til Abc_1234.`);
+    } catch (err) {
+      console.error("Send welcome email error:", err);
+      toast.error("En feil oppstod ved sending av velkomstmail");
+    } finally {
+      setIsSendingWelcome(false);
+    }
+  };
 
   const handleResetPassword = async () => {
     if (!newPassword || newPassword.length < 6) {
