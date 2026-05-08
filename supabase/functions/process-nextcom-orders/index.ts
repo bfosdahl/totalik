@@ -295,6 +295,13 @@ function detectModules(productNames: string[]): string[] {
   const modules = new Set<string>();
   for (const product of productNames) {
     const lower = product.toLowerCase().trim();
+    // Check bundles first (e.g. "Byggepakken" → IK_HMS + IK_BYGG)
+    for (const [bundleKeyword, bundleModules] of Object.entries(PRODUCT_BUNDLES)) {
+      if (lower.includes(bundleKeyword)) {
+        for (const m of bundleModules) modules.add(m);
+      }
+    }
+    // Then individual product mappings
     for (const [keyword, module] of Object.entries(PRODUCT_TO_MODULE)) {
       if (lower.includes(keyword)) {
         modules.add(module);
