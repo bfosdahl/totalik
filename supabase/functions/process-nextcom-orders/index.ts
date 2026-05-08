@@ -35,6 +35,12 @@ const PRODUCT_TO_MODULE: Record<string, string> = {
   'avdelinger': 'AVDELINGER',
 };
 
+// Bundle/pakke products that activate multiple modules at once
+const PRODUCT_BUNDLES: Record<string, string[]> = {
+  'byggepakke': ['IK_HMS', 'IK_BYGG'],
+  'byggepakken': ['IK_HMS', 'IK_BYGG'],
+};
+
 // Course-related keywords that should NOT be processed by TotalIK
 const COURSE_KEYWORDS = [
   'kurs', 'course', 'opplæring', 'sertifisering', 'varme arbeider',
@@ -289,6 +295,13 @@ function detectModules(productNames: string[]): string[] {
   const modules = new Set<string>();
   for (const product of productNames) {
     const lower = product.toLowerCase().trim();
+    // Check bundles first (e.g. "Byggepakken" → IK_HMS + IK_BYGG)
+    for (const [bundleKeyword, bundleModules] of Object.entries(PRODUCT_BUNDLES)) {
+      if (lower.includes(bundleKeyword)) {
+        for (const m of bundleModules) modules.add(m);
+      }
+    }
+    // Then individual product mappings
     for (const [keyword, module] of Object.entries(PRODUCT_TO_MODULE)) {
       if (lower.includes(keyword)) {
         modules.add(module);
