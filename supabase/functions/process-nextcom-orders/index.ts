@@ -35,6 +35,12 @@ const PRODUCT_TO_MODULE: Record<string, string> = {
   'avdelinger': 'AVDELINGER',
 };
 
+// Bundle/pakke products that activate multiple modules at once
+const PRODUCT_BUNDLES: Record<string, string[]> = {
+  'byggepakke': ['IK_HMS', 'IK_BYGG'],
+  'byggepakken': ['IK_HMS', 'IK_BYGG'],
+};
+
 // Course-related keywords that should NOT be processed by TotalIK
 const COURSE_KEYWORDS = [
   'kurs', 'course', 'opplæring', 'sertifisering', 'varme arbeider',
