@@ -190,7 +190,13 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
             description: parsed.project_info?.description || "",
             address: parsed.project_info?.address || "",
             client_name: parsed.project_info?.client_name || "",
-            contractor_type: parsed.contractor_type || undefined,
+            contractor_type: (() => {
+              const ct = String(parsed.contractor_type || "").toLowerCase();
+              if (["total", "totalentreprise"].includes(ct)) return "total" as const;
+              if (["hoved", "hovedentreprise"].includes(ct)) return "hoved" as const;
+              if (["under", "underentreprise", "fagentreprise", "fag"].includes(ct)) return "under" as const;
+              return undefined;
+            })(),
             recommended_checklists: parsed.recommended_checklists || [],
             recommended_routines: parsed.recommended_routines || [],
             hms_focus: parsed.hms_focus || [],
