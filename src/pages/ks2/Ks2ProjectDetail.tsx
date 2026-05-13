@@ -123,7 +123,6 @@ export default function Ks2ProjectDetail() {
 
     switch (currentPath) {
       case "/egenkontroller":
-        return <Ks2Egenkontroller />;
       case "/sjekklister":
         return <Ks2Sjekklister />;
       case "/rutiner":
