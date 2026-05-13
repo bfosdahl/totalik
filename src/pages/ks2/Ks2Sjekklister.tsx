@@ -18,6 +18,7 @@ import {
   ArrowRight,
   Eye,
   Play,
+  Pencil,
   Image as ImageIcon,
   Download,
   Loader2,
@@ -177,6 +178,10 @@ export default function Ks2Sjekklister() {
               <Button variant="outline" size="sm" onClick={() => setViewingChecklist(checklist)}>
                 <Eye className="h-4 w-4 mr-1" />
                 Se
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleContinueChecklist(checklist)} title="Rediger fullført sjekkliste">
+                <Pencil className="h-4 w-4 mr-1" />
+                Rediger
               </Button>
               <Button variant="outline" size="sm" disabled={isDownloading} onClick={() => handleDownloadChecklist(checklist)}>
                 {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
