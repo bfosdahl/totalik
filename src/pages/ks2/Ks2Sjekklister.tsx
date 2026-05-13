@@ -18,6 +18,7 @@ import {
   ArrowRight,
   Eye,
   Play,
+  Pencil,
   Image as ImageIcon,
   Download,
   Loader2,
