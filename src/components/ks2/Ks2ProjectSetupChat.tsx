@@ -342,13 +342,24 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
           >
             {parsingFile ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
           </Button>
-          <Input
+          <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.stopPropagation()}
-            placeholder={parsingFile ? "Leser dokument..." : "Skriv her..."}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            placeholder={parsingFile ? "Leser dokument..." : "Skriv her... (Enter for å sende, Shift+Enter for ny linje)"}
             disabled={isLoading || setupComplete || parsingFile}
             autoComplete="off"
+            autoFocus
+            rows={2}
+            className="resize-none min-h-[44px]"
           />
           <Button type="submit" size="icon" disabled={isLoading || !input.trim() || setupComplete || parsingFile}>
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
