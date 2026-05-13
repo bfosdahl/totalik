@@ -129,13 +129,27 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
       setResponsibleUserName(existingChecklist.responsible_user_name || "");
       setDeadlineDate(existingChecklist.deadline_date || "");
       setIsPaper(existingChecklist.is_paper_version);
-      setItems(existingChecklist.checklist_items || []);
+      // Sikre at hvert punkt har en unik id, ellers vil oppdateringer (bilder, svar, kommentarer)
+      // treffe alle punkter med samme/manglende id.
+      const normalizedItems = (existingChecklist.checklist_items || []).map((item, idx) => ({
+        ...item,
+        id: item.id && String(item.id).trim() !== "" ? String(item.id) : `item-${idx + 1}`,
+      }));
+      // Hvis det finnes duplikate id-er, gjør dem unike
+      const seen = new Set<string>();
+      const uniqueItems = normalizedItems.map((item, idx) => {
+        let id = item.id;
+        if (seen.has(id)) id = `${id}-${idx}`;
+        seen.add(id);
+        return { ...item, id };
+      });
+      setItems(uniqueItems);
       
       // Create a "virtual" template for compatibility
       setSelectedTemplate({
         name: existingChecklist.template_name,
         category: "",
-        items: (existingChecklist.checklist_items || []).map(({ value, comment, photos, ...rest }) => rest),
+        items: uniqueItems.map(({ value, comment, photos, ...rest }) => rest),
       });
     }
   }, [existingChecklist]);
