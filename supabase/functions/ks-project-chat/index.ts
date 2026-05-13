@@ -191,14 +191,14 @@ serve(async (req) => {
       );
     }
 
-    const { messages, projectContext } = await req.json();
+    const { messages, projectContext, setupMode } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = buildSystemPrompt(projectContext);
+    const systemPrompt = buildSystemPrompt(projectContext, setupMode);
     console.log("Project chat for user:", user.id, "project:", projectContext?.project?.project_number || "none");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
