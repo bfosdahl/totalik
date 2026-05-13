@@ -426,7 +426,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="ai" className="mt-0 flex-1 min-h-0">
+          <TabsContent value="ai" className="mt-0 flex-1 min-h-0 flex flex-col data-[state=inactive]:hidden">
             <Ks2ProjectSetupChat 
               onComplete={handleAiComplete}
               onCancel={() => setActiveTab("manual")}
