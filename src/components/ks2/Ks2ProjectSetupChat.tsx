@@ -316,6 +316,13 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
 
       {/* Input */}
       <div className="pt-4 border-t">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/pdf,.pdf"
+          className="hidden"
+          onChange={handleFileSelected}
+        />
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -323,18 +330,35 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
           }}
           className="flex gap-2"
         >
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading || setupComplete || parsingFile}
+            title="Last opp PDF (f.eks. salgsoppgave)"
+          >
+            {parsingFile ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
+          </Button>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.stopPropagation()}
-            placeholder="Skriv her..."
-            disabled={isLoading || setupComplete}
+            placeholder={parsingFile ? "Leser dokument..." : "Skriv her..."}
+            disabled={isLoading || setupComplete || parsingFile}
             autoComplete="off"
           />
-          <Button type="submit" size="icon" disabled={isLoading || !input.trim() || setupComplete}>
+          <Button type="submit" size="icon" disabled={isLoading || !input.trim() || setupComplete || parsingFile}>
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </Button>
         </form>
+
+        {parsingFile && (
+          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+            <FileText className="w-3 h-3" />
+            Leser dokument og henter ut prosjektinformasjon...
+          </div>
+        )}
 
         <div className="flex justify-between mt-4">
           <Button variant="outline" onClick={onCancel} disabled={isLoading}>
@@ -343,7 +367,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
           <Button
             variant="ghost"
             onClick={() => sendMessage("Sett opp et forslag for et typisk byggeprosjekt")}
-            disabled={isLoading || setupComplete}
+            disabled={isLoading || setupComplete || parsingFile}
             className="text-primary"
           >
             <Sparkles className="w-4 h-4 mr-2" />
