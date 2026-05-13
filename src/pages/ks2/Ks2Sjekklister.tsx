@@ -179,6 +179,10 @@ export default function Ks2Sjekklister() {
                 <Eye className="h-4 w-4 mr-1" />
                 Se
               </Button>
+              <Button variant="outline" size="sm" onClick={() => handleContinueChecklist(checklist)} title="Rediger fullført sjekkliste">
+                <Pencil className="h-4 w-4 mr-1" />
+                Rediger
+              </Button>
               <Button variant="outline" size="sm" disabled={isDownloading} onClick={() => handleDownloadChecklist(checklist)}>
                 {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
               </Button>
