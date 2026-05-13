@@ -58,8 +58,7 @@ const topMenuItems = [
 
 // Grouped menu sections
 const kvalitetssikringItems = [
-  { id: "egenkontroller", label: "Egenkontroller", icon: ClipboardCheck, path: "/egenkontroller", guestAllowed: true },
-  { id: "sjekklister", label: "Sjekklister", icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
+  { id: "sjekklister", label: "Sjekklister & egenkontroller", icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
   { id: "avvik", label: "KS-avvik", icon: AlertTriangle, path: "/avvik", guestAllowed: true },
   { id: "uk", label: "Uavhengig kontroll", icon: Shield, path: "/uk", guestAllowed: true },
 ];
@@ -239,7 +238,7 @@ export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType, 
         switch (e.key) {
           case "1":
             e.preventDefault();
-            navigate(`${basePath}/egenkontroller`);
+            navigate(`${basePath}/sjekklister`);
             break;
           case "2":
             e.preventDefault();
