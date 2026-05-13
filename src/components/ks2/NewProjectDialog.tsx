@@ -415,7 +415,6 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col min-h-0 px-6">
-          {selectedProjectType === "standard" ? (
           <TabsList className="grid w-full grid-cols-2 mb-4 flex-shrink-0">
             <TabsTrigger value="manual" className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
@@ -426,7 +425,6 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
               Prosjekt-hjelperen
             </TabsTrigger>
           </TabsList>
-          ) : null}
 
           <TabsContent value="ai" className="mt-0 flex-1 min-h-0">
             <Ks2ProjectSetupChat 
