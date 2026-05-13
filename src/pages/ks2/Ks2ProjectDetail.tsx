@@ -10,7 +10,6 @@ import { Ks2FloatingActions } from "@/components/ks2/Ks2FloatingActions";
 
 // Lazy-load sub-pages so they only load when the user navigates to them.
 // This keeps the initial Ks2ProjectDetail bundle small.
-const Ks2Egenkontroller = lazy(() => import("./Ks2Egenkontroller"));
 const Ks2Sjekklister = lazy(() => import("./Ks2Sjekklister"));
 const Ks2Rutiner = lazy(() => import("./Ks2Rutiner"));
 const Ks2Dokumentasjon = lazy(() => import("./Ks2Dokumentasjon"));
