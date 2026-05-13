@@ -218,6 +218,39 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
     sendMessage(input.trim());
   };
 
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      toast.error("Kun PDF-filer støttes for øyeblikket");
+      return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error("Filen er for stor (maks 15 MB)");
+      return;
+    }
+
+    setParsingFile(true);
+    try {
+      const text = await extractPdfText(file);
+      if (!text || text.length < 30) {
+        toast.error("Klarte ikke å lese tekst fra PDF-en");
+        return;
+      }
+      const truncated = text.length > 18000 ? text.slice(0, 18000) + "\n\n[...avkortet...]" : text;
+      const message = `Jeg har lastet opp dokumentet "${file.name}". Bruk informasjonen under til å fylle ut prosjektopplysninger og lag et forslag til prosjektoppsett (sjekklister, rutiner, HMS, milepæler).\n\n--- DOKUMENTINNHOLD ---\n${truncated}\n--- SLUTT ---`;
+      await sendMessage(message);
+    } catch (err) {
+      console.error("PDF parse error:", err);
+      toast.error("Kunne ikke lese PDF-filen");
+    } finally {
+      setParsingFile(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-[500px]">
       {/* Chat Header */}
