@@ -46,6 +46,8 @@ const INITIAL_MESSAGE = `Hei! Jeg er Prosjekt-hjelperen 👋
 
 Jeg hjelper deg å sette opp prosjektet med riktige sjekklister, rutiner og HMS-fokusområder.
 
+📎 **Tips:** Last opp en PDF (f.eks. salgsoppgave eller anbudsdokument) med 📎-knappen, så fyller jeg ut prosjektinformasjon automatisk!
+
 **Hva slags prosjekt skal du i gang med?**
 - Nybygg (enebolig, leilighetsbygg)
 - Totalrenovering
