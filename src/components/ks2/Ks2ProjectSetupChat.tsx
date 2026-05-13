@@ -3,9 +3,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import { Loader2, Send, Bot, User, Sparkles, CheckCircle } from "lucide-react";
+import { Loader2, Send, Bot, User, Sparkles, CheckCircle, Paperclip, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { NewKsModule2ProjectInput } from "@/hooks/useKsModule2Projects";
+import { toast } from "sonner";
+
+async function extractPdfText(file: File): Promise<string> {
+  const pdfjs: any = await import("pdfjs-dist");
+  // Use a worker-less setup via fake worker
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    "pdfjs-dist/build/pdf.worker.min.mjs",
+    import.meta.url
+  ).toString();
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjs.getDocument({ data: buf }).promise;
+  let text = "";
+  const max = Math.min(pdf.numPages, 30);
+  for (let i = 1; i <= max; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map((it: any) => it.str).join(" ") + "\n\n";
+  }
+  return text.trim();
+}
 
 interface Message {
   role: "user" | "assistant";
@@ -25,6 +45,8 @@ interface Ks2ProjectSetupChatProps {
 const INITIAL_MESSAGE = `Hei! Jeg er Prosjekt-hjelperen 👋
 
 Jeg hjelper deg å sette opp prosjektet med riktige sjekklister, rutiner og HMS-fokusområder.
+
+📎 **Tips:** Last opp en PDF (f.eks. salgsoppgave eller anbudsdokument) med 📎-knappen, så fyller jeg ut prosjektinformasjon automatisk!
 
 **Hva slags prosjekt skal du i gang med?**
 - Nybygg (enebolig, leilighetsbygg)
@@ -55,7 +77,9 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [setupComplete, setSetupComplete] = useState(false);
+  const [parsingFile, setParsingFile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
 
@@ -86,6 +110,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
             Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
+            setupMode: true,
             messages: [...currentMessages, { role: "user", content: userMessage }].map(m => ({
               role: m.role,
               content: m.content
@@ -195,6 +220,39 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
     sendMessage(input.trim());
   };
 
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      toast.error("Kun PDF-filer støttes for øyeblikket");
+      return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error("Filen er for stor (maks 15 MB)");
+      return;
+    }
+
+    setParsingFile(true);
+    try {
+      const text = await extractPdfText(file);
+      if (!text || text.length < 30) {
+        toast.error("Klarte ikke å lese tekst fra PDF-en");
+        return;
+      }
+      const truncated = text.length > 18000 ? text.slice(0, 18000) + "\n\n[...avkortet...]" : text;
+      const message = `Jeg har lastet opp dokumentet "${file.name}". Bruk informasjonen under til å fylle ut prosjektopplysninger og lag et forslag til prosjektoppsett (sjekklister, rutiner, HMS, milepæler).\n\n--- DOKUMENTINNHOLD ---\n${truncated}\n--- SLUTT ---`;
+      await sendMessage(message);
+    } catch (err) {
+      console.error("PDF parse error:", err);
+      toast.error("Kunne ikke lese PDF-filen");
+    } finally {
+      setParsingFile(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-[500px]">
       {/* Chat Header */}
@@ -260,6 +318,13 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
 
       {/* Input */}
       <div className="pt-4 border-t">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/pdf,.pdf"
+          className="hidden"
+          onChange={handleFileSelected}
+        />
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -267,18 +332,35 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
           }}
           className="flex gap-2"
         >
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading || setupComplete || parsingFile}
+            title="Last opp PDF (f.eks. salgsoppgave)"
+          >
+            {parsingFile ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
+          </Button>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.stopPropagation()}
-            placeholder="Skriv her..."
-            disabled={isLoading || setupComplete}
+            placeholder={parsingFile ? "Leser dokument..." : "Skriv her..."}
+            disabled={isLoading || setupComplete || parsingFile}
             autoComplete="off"
           />
-          <Button type="submit" size="icon" disabled={isLoading || !input.trim() || setupComplete}>
+          <Button type="submit" size="icon" disabled={isLoading || !input.trim() || setupComplete || parsingFile}>
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </Button>
         </form>
+
+        {parsingFile && (
+          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+            <FileText className="w-3 h-3" />
+            Leser dokument og henter ut prosjektinformasjon...
+          </div>
+        )}
 
         <div className="flex justify-between mt-4">
           <Button variant="outline" onClick={onCancel} disabled={isLoading}>
@@ -287,7 +369,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
           <Button
             variant="ghost"
             onClick={() => sendMessage("Sett opp et forslag for et typisk byggeprosjekt")}
-            disabled={isLoading || setupComplete}
+            disabled={isLoading || setupComplete || parsingFile}
             className="text-primary"
           >
             <Sparkles className="w-4 h-4 mr-2" />

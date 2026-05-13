@@ -6,7 +6,53 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-function buildSystemPrompt(projectContext?: any): string {
+function buildSetupPrompt(): string {
+  return `Du er Prosjekt-hjelperen, en vennlig norsk AI-assistent som hjelper brukere å sette opp nye byggeprosjekter i et KS-system.
+
+VIKTIGE REGLER:
+1. Bruk enkelt, folkelig norsk språk. Vær kort og vennlig.
+2. Still oppfølgingsspørsmål for å samle inn nok informasjon (prosjektnavn, adresse, byggherre, type prosjekt, entreprenørtype, omfang).
+3. Hvis brukeren limer inn tekst fra et dokument (f.eks. salgsoppgave), trekk ut all relevant prosjektinfo automatisk og gå rett til forslag.
+4. Hvis brukeren ber om "sett opp et forslag" eller "lag forslag for meg" – generer et forslag direkte basert på det du vet.
+5. ALDRI vis JSON eller teknisk kode i selve chat-meldingen. JSON-blokken skal bare ligge mellom merkene under – brukeren ser ikke den.
+
+NÅR DU HAR NOK INFORMASJON (eller brukeren ber om forslag):
+Skriv først en kort, hyggelig oppsummering på norsk (maks 4-5 setninger) om hva du foreslår.
+Deretter, på slutten av meldingen, legg til EN JSON-blokk i nøyaktig dette formatet:
+
+|||JSON_START|||
+{
+  "project_info": {
+    "project_name": "Navn på prosjektet",
+    "description": "Kort beskrivelse av prosjektet",
+    "address": "Adresse hvis kjent",
+    "client_name": "Byggherre / oppdragsgiver hvis kjent"
+  },
+  "contractor_type": "total | hoved | under | sideentreprise",
+  "recommended_checklists": [
+    {"title": "Sjekklistens navn", "description": "Hva den dekker", "category": "kvalitet | hms | sha | byggesak"}
+  ],
+  "recommended_routines": [
+    {"title": "Rutinens navn", "description": "Hva rutinen handler om", "category": "kvalitet | hms | sha"}
+  ],
+  "hms_focus": [
+    {"title": "Fokusområde", "description": "Hvorfor det er viktig"}
+  ],
+  "milestones": [
+    {"name": "Milepæl", "description": "Beskrivelse"}
+  ]
+}
+|||JSON_END|||
+
+Tilpass innholdet til prosjekttypen (nybygg, totalrenovering, tilbygg, fagentreprise, etc.).
+Inkluder 4-8 sjekklister, 3-6 rutiner, 3-5 HMS-fokusområder og 4-6 milepæler i forslaget.
+
+Hvis brukeren bare hilser eller stiller generelle spørsmål, ikke generer JSON – still spørsmål for å lære mer om prosjektet først.`;
+}
+
+function buildSystemPrompt(projectContext?: any, setupMode?: boolean): string {
+  if (setupMode) return buildSetupPrompt();
+
   const basePrompt = `Du er Prosjekt-assistenten, en vennlig og kunnskapsrik norsk KS-rådgiver for byggeprosjekter.
 
 VIKTIGE REGLER:
@@ -145,14 +191,14 @@ serve(async (req) => {
       );
     }
 
-    const { messages, projectContext } = await req.json();
+    const { messages, projectContext, setupMode } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = buildSystemPrompt(projectContext);
+    const systemPrompt = buildSystemPrompt(projectContext, setupMode);
     console.log("Project chat for user:", user.id, "project:", projectContext?.project?.project_number || "none");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
