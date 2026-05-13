@@ -106,6 +106,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
             Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
+            setupMode: true,
             messages: [...currentMessages, { role: "user", content: userMessage }].map(m => ({
               role: m.role,
               content: m.content
