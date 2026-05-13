@@ -3,9 +3,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import { Loader2, Send, Bot, User, Sparkles, CheckCircle } from "lucide-react";
+import { Loader2, Send, Bot, User, Sparkles, CheckCircle, Paperclip, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { NewKsModule2ProjectInput } from "@/hooks/useKsModule2Projects";
+import { toast } from "sonner";
+
+async function extractPdfText(file: File): Promise<string> {
+  const pdfjs: any = await import("pdfjs-dist");
+  // Use a worker-less setup via fake worker
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    "pdfjs-dist/build/pdf.worker.min.mjs",
+    import.meta.url
+  ).toString();
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjs.getDocument({ data: buf }).promise;
+  let text = "";
+  const max = Math.min(pdf.numPages, 30);
+  for (let i = 1; i <= max; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map((it: any) => it.str).join(" ") + "\n\n";
+  }
+  return text.trim();
+}
 
 interface Message {
   role: "user" | "assistant";
