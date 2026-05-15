@@ -125,8 +125,8 @@ serve(async (req) => {
             console.log(`Updated employee: ${emp.email}`);
           }
         } else {
-          // Create new user in auth - use standard default password
-          const tempPassword = "Abc_1234";
+          // Random unguessable password — user must use recovery link to set their own
+          const tempPassword = crypto.randomUUID() + "Aa1!";
           
           const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
             email: emp.email.toLowerCase(),

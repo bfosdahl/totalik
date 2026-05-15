@@ -12,8 +12,6 @@ interface SendEmailRequest {
   email: string;
 }
 
-const DEFAULT_PASSWORD = "Abc_1234";
-
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -33,11 +31,42 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // ===== AUTH: Require an authenticated company/system admin =====
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user: requestingUser }, error: userError } = await userClient.auth.getUser();
+    if (userError || !requestingUser) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", requestingUser.id);
+    const isAdmin = roles?.some(r => r.role === "company_admin" || r.role === "system_admin");
+    if (!isAdmin) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden — admin role required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    // ===============================================================
+
     const { email }: SendEmailRequest = await req.json();
 
-    if (!email) {
+    if (!email || typeof email !== "string" || !email.includes("@")) {
       return new Response(
-        JSON.stringify({ error: "Missing email" }),
+        JSON.stringify({ error: "Missing or invalid email" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -66,30 +95,48 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Tenant isolation: company_admin can only invite users in their own company
+    const isSystemAdmin = roles?.some(r => r.role === "system_admin");
+    if (!isSystemAdmin) {
+      const { data: requestingProfile } = await supabase
+        .from("profiles")
+        .select("company_id")
+        .eq("user_id", requestingUser.id)
+        .single();
+      if (!requestingProfile || requestingProfile.company_id !== profile.company_id) {
+        return new Response(
+          JSON.stringify({ error: "Forbidden — cross-tenant access denied" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     const companyName = (profile.companies as any)?.name || "Total-IK";
     const firstName = profile.first_name || "";
     const loginUrl = "https://totalik.no/auth";
 
-    // Reset password to standard default so user can log in directly
-    const { error: pwError } = await supabase.auth.admin.updateUserById(
-      profile.user_id,
-      { password: DEFAULT_PASSWORD }
-    );
+    // Generate a secure recovery link instead of resetting to a known password
+    const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
+      type: "recovery",
+      email: profile.email,
+      options: { redirectTo: loginUrl },
+    });
 
-    if (pwError) {
-      console.error("Error resetting password:", pwError);
+    if (linkErr || !linkData?.properties?.action_link) {
+      console.error("Error generating recovery link:", linkErr);
       return new Response(
-        JSON.stringify({ error: `Could not reset password: ${pwError.message}` }),
+        JSON.stringify({ error: `Could not generate recovery link: ${linkErr?.message ?? "unknown"}` }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    const resetLink = linkData.properties.action_link;
     const resend = new Resend(resendApiKey);
 
     await resend.emails.send({
       from: `Total-IK <noreply@totalik.no>`,
       to: [profile.email],
-      subject: `Velkommen til ${companyName} - Din brukerkonto`,
+      subject: `Velkommen til ${companyName} - Sett ditt passord`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
@@ -102,28 +149,18 @@ const handler = async (req: Request): Promise<Response> => {
             Du har fått en brukerkonto hos ${companyName} i Total-IK systemet.
           </p>
 
-          <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #0066cc;">
-            <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">🔐 Din innloggingsinformasjon</h3>
-            <p style="color: #555; margin: 0 0 8px 0;">
-              <strong>Brukernavn:</strong> ${profile.email}
-            </p>
-            <p style="color: #555; margin: 0;">
-              <strong>Passord:</strong> <code style="background: #fff; padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd; font-size: 16px; font-weight: bold; color: #0066cc;">${DEFAULT_PASSWORD}</code>
-            </p>
-          </div>
-
           <p style="color: #333; font-size: 16px;">
-            Vi anbefaler at du endrer passordet etter første innlogging under "Innstillinger".
+            Klikk på knappen nedenfor for å sette ditt passord og logge inn. Lenken er gyldig i 24 timer.
           </p>
 
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${loginUrl}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
-              Logg inn
+            <a href="${resetLink}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
+              Sett passord og logg inn
             </a>
           </div>
 
-          <p style="color: #666; font-size: 14px;">Hvis knappen ikke fungerer, gå til:</p>
-          <p style="color: #0066cc; font-size: 12px; word-break: break-all;">${loginUrl}</p>
+          <p style="color: #666; font-size: 14px;">Hvis knappen ikke fungerer, kopier denne lenken inn i nettleseren:</p>
+          <p style="color: #0066cc; font-size: 12px; word-break: break-all;">${resetLink}</p>
 
           ${getTermsNoticeHtml()}
 

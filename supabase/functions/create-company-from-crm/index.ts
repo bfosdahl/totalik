@@ -162,7 +162,7 @@ serve(async (req) => {
     const moduleResults = await activateModules(supabaseAdmin, newCompany.id, body.modules);
 
     // --- 3. Create auth user ---
-    const tempPassword = body.password || "Abc_1234";
+    const tempPassword = body.password || (crypto.randomUUID() + "Aa1!");
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: tempPassword,
