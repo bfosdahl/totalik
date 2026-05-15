@@ -211,14 +211,22 @@ serve(async (req) => {
       }
     }
 
-    // Send welcome email with Resend - includes default password directly
+    // Generate recovery link so the user sets their own password
+    const loginUrl = "https://totalik.no/auth";
+    const { data: resetData } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'recovery',
+      email,
+      options: { redirectTo: `${loginUrl}` },
+    });
+    const resetLink = resetData?.properties?.action_link || loginUrl;
+
+    // Send welcome email with Resend - includes secure recovery link (no plaintext password)
     let emailSent = false;
     if (resend) {
       try {
         const companyName = company?.name || "din bedrift";
         const userName = firstName ? firstName : "bruker";
         const roleName = role === "company_admin" ? "Administrator" : "Bruker";
-        const loginUrl = "https://totalik.no/auth";
 
         const emailResponse = await resend.emails.send({
           from: "Total-IK <noreply@totalik.no>",
