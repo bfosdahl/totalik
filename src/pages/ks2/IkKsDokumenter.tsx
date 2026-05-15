@@ -244,7 +244,7 @@ export default function IkKsDokumenter() {
                         <SelectValue placeholder="Velg mappe" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Ingen mappe</SelectItem>
+                        <SelectItem value="__none__">Ingen mappe</SelectItem>
                         {folders.map(folder => (
                           <SelectItem key={folder.id} value={folder.id}>{folder.name}</SelectItem>
                         ))}
@@ -261,7 +261,7 @@ export default function IkKsDokumenter() {
                         <SelectValue placeholder="Velg prosjekt" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Ingen prosjekt</SelectItem>
+                        <SelectItem value="__none__">Ingen prosjekt</SelectItem>
                         {projects?.map(project => (
                           <SelectItem key={project.id} value={project.id}>{project.project_name}</SelectItem>
                         ))}
