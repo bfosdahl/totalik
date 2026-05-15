@@ -352,11 +352,12 @@ export function BulkCompanyImportDialog({
           }
         }
 
-        // 4. Create company admin user if enabled and email exists
+        // 4. Create company admin user — ALWAYS when email exists.
+        // Logic guard: en bedrift skal aldri lagres med kontakt-epost uten en faktisk admin-bruker.
         let userCreated = false;
         let userEmail = "";
         let userCreateError: string | undefined;
-        if (createUsers && company.email) {
+        if (company.email) {
           try {
             // Use different email for renewal vs new customers
             if (company.isRenewal) {
@@ -545,23 +546,19 @@ export function BulkCompanyImportDialog({
               </div>
             </div>
 
-            {/* User creation option */}
+            {/* User creation info — alltid på når email finnes */}
             <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-              <Checkbox
-                id="create-users"
-                checked={createUsers}
-                onCheckedChange={(checked) => setCreateUsers(checked === true)}
-              />
+              <User className="w-4 h-4 text-muted-foreground shrink-0" />
               <div className="flex-1">
-                <Label htmlFor="create-users" className="text-sm font-medium cursor-pointer flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  Opprett bedriftsadmin for hver bedrift
-                </Label>
+                <p className="text-sm font-medium">
+                  Bedriftsadmin opprettes automatisk
+                </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Bruker e-post og kontaktperson fra Excel-filen. Brukere får tilsendt innloggingslenke.
+                  Alle bedrifter med e-post får en admin-bruker og innloggingslenke. Bedrifter uten e-post importeres uten bruker.
                 </p>
               </div>
             </div>
+
 
             {/* Kurslisens warning */}
             {kurslisensCount > 0 && (

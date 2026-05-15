@@ -466,6 +466,27 @@ export default function AdminCompanies() {
       return;
     }
 
+    // Logic guard: Hvis bedriften har en kontakt-e-post, MÅ vi også opprette en admin-bruker.
+    // Hindrer "spøkelsesbedrifter" der kontakt-epost ligger på bedriften uten en faktisk bruker som kan logge inn.
+    if (!editingCompany && formData.email && formData.email.trim().length > 0) {
+      if (!inviteAdmin) {
+        toast({
+          title: "Mangler admin-bruker",
+          description: "Bedriften har en kontakt-e-post. Kryss av for «Inviter administrator» og fyll inn navn, ellers blir e-posten en kontakt uten faktisk bruker.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!adminData.email || !adminData.firstName?.trim() || !adminData.lastName?.trim()) {
+        toast({
+          title: "Mangler navn på admin",
+          description: "Fyll inn e-post, fornavn og etternavn på administrator før du oppretter bedriften.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     if (editingCompany) {
       updateMutation.mutate({ id: editingCompany.id, data: formData });
     } else {
