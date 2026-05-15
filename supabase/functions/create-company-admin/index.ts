@@ -210,8 +210,9 @@ serve(async (req) => {
       );
     }
 
-    // Use standardized default password for easier onboarding
-    const tempPassword = "Abc_1234";
+    // Generate a cryptographically random temporary password.
+    // The user will receive a recovery link to set their own password.
+    const tempPassword = `${crypto.randomUUID()}${crypto.randomUUID()}`;
 
     // Create the new user
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
