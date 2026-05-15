@@ -256,16 +256,15 @@ export default function InstallAvvikApp() {
                   <p className="font-medium text-sm sm:text-base">Velg "Legg til på startskjerm"</p>
                   <span className="text-xs sm:text-sm text-muted-foreground">eller "Installer app"</span>
                 </div>
-    </main>
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
+          )}
 
-        {/* Footer */}
-        <p className="text-center text-xs sm:text-sm text-muted-foreground pb-4 px-4">
-          Avvik-appen er en del av Totalik og fungerer best i Chrome (Android) eller Safari (iPhone)
-        </p>
-      </div>
-    </div>
+          {/* Footer */}
+          <p className="text-center text-xs sm:text-sm text-muted-foreground pb-4 px-4">
+            Avvik-appen er en del av Totalik og fungerer best i Chrome (Android) eller Safari (iPhone)
+          </p>
+        </div>
+      </main>
   );
 }

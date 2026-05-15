@@ -336,6 +336,6 @@ export default function InstallApp() {
           Total-IK fungerer best i Chrome (Android) eller Safari (iPhone)
         </p>
       </div>
-    </div>
+    </main>
   );
 }
