@@ -89,8 +89,8 @@ export default function IkKsDokumenter() {
     await uploadDocument(selectedFile, {
       documentName: uploadData.documentName || selectedFile.name,
       description: uploadData.description,
-      folderId: uploadData.folderId || undefined,
-      projectId: uploadData.projectId || undefined,
+      folderId: uploadData.folderId && uploadData.folderId !== "__none__" ? uploadData.folderId : undefined,
+      projectId: uploadData.projectId && uploadData.projectId !== "__none__" ? uploadData.projectId : undefined,
     });
     setSelectedFile(null);
     setUploadData({ documentName: "", description: "", folderId: "", projectId: "" });
