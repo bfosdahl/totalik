@@ -8779,6 +8779,7 @@ export type Database = {
           created_by: string | null
           deadline_date: string | null
           id: string
+          include_in_report: boolean
           is_paper_version: boolean
           paper_file_path: string | null
           paper_uploaded: boolean
@@ -8801,6 +8802,7 @@ export type Database = {
           created_by?: string | null
           deadline_date?: string | null
           id?: string
+          include_in_report?: boolean
           is_paper_version?: boolean
           paper_file_path?: string | null
           paper_uploaded?: boolean
@@ -8823,6 +8825,7 @@ export type Database = {
           created_by?: string | null
           deadline_date?: string | null
           id?: string
+          include_in_report?: boolean
           is_paper_version?: boolean
           paper_file_path?: string | null
           paper_uploaded?: boolean
