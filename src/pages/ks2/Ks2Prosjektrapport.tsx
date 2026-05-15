@@ -219,7 +219,7 @@ export default function Ks2Prosjektrapport() {
           end_date: project.end_date,
           status: project.status,
         },
-        checklists: await Promise.all(checklists.map(async (c) => ({
+        checklists: await Promise.all(checklists.filter(c => c.include_in_report ?? true).map(async (c) => ({
           id: c.id,
           title: c.title,
           template_name: c.template_name || "Egendefinert",
