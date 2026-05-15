@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { AnonymousMessageButton } from "@/components/anonymous/AnonymousMessageButton";
 import { useTranslate } from "@/hooks/useTranslate";
+import { PageSeo } from "@/components/seo/PageSeo";
 
 const Index = () => {
   const { compliancePercent, openDeviations, completedActions, dueSoon, isLoading } = useDashboardStats();
