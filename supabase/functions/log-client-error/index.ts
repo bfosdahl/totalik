@@ -29,28 +29,48 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Extract user_id from JWT if present (best-effort, not required)
-    let userId: string | null = null;
+    // Require authentication — drop logs from unauthenticated callers
     const authHeader = req.headers.get("Authorization");
-    if (authHeader?.startsWith("Bearer ")) {
-      try {
-        const anonClient = createClient(
-          Deno.env.get("SUPABASE_URL")!,
-          Deno.env.get("SUPABASE_ANON_KEY")!,
-          { global: { headers: { Authorization: authHeader } } }
-        );
-        const { data } = await anonClient.auth.getUser();
-        userId = data?.user?.id ?? null;
-      } catch {
-        // Not authenticated — that's fine
-      }
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Insert with service role
+    const anonClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: userData, error: userErr } = await anonClient.auth.getUser();
+    if (userErr || !userData?.user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const userId: string = userData.user.id;
+
+    // Insert with service role (after rate limit check)
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    // Rate limit: max 30 error logs per minute per user
+    const { data: rateOk } = await supabaseAdmin.rpc("check_rate_limit", {
+      p_user_id: userId,
+      p_function_name: "log-client-error",
+      p_max_requests: 30,
+      p_window_minutes: 1,
+    });
+    if (rateOk === false) {
+      return new Response(
+        JSON.stringify({ error: "Rate limit exceeded" }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const { error: insertError } = await supabaseAdmin
       .from("client_error_logs")

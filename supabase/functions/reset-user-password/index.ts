@@ -1,6 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
-import { decode } from "https://deno.land/x/djwt@v3.0.2/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,25 +22,21 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Extract the token from the header
-    const token = authHeader.replace("Bearer ", "");
-
-    // Decode the JWT to get user ID (token is already validated by Supabase API gateway)
-    let requestingUserId: string;
-    try {
-      const [_header, payload, _signature] = decode(token);
-      const claims = payload as { sub?: string };
-      requestingUserId = claims.sub as string;
-      if (!requestingUserId) {
-        throw new Error("No user ID in token");
-      }
-    } catch (decodeError) {
-      console.error("JWT decode error:", decodeError);
+    // Verify the JWT cryptographically by calling auth.getUser with anon client
+    const anonClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: authedUser, error: authedUserError } = await anonClient.auth.getUser();
+    if (authedUserError || !authedUser?.user) {
+      console.error("Auth verification error:", authedUserError);
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    const requestingUserId: string = authedUser.user.id;
 
     // Create Supabase client with service role key for admin operations
     const supabaseAdmin = createClient(
