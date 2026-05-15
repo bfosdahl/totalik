@@ -156,8 +156,6 @@ export default function Ks2ProjectDetail() {
         return <Ks2Okonomi />;
       case "/avvik":
         return <Ks2AvvikIntegrated />;
-      case "/uk":
-        return <Ks2UavhengigKontroll />;
       case "/maler":
         return <Ks2Malbibliotek />;
       case "/rapport":
