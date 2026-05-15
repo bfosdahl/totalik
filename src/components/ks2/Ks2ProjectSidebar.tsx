@@ -60,7 +60,7 @@ const topMenuItems = [
 const kvalitetssikringItems = [
   { id: "sjekklister", label: "Sjekklister & egenkontroller", icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
   { id: "avvik", label: "KS-avvik", icon: AlertTriangle, path: "/avvik", guestAllowed: true },
-  { id: "uk", label: "Uavhengig kontroll", icon: Shield, path: "/uk", guestAllowed: true },
+  
 ];
 
 const hmsMenuItems = [
