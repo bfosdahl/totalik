@@ -89,8 +89,8 @@ export default function IkKsDokumenter() {
     await uploadDocument(selectedFile, {
       documentName: uploadData.documentName || selectedFile.name,
       description: uploadData.description,
-      folderId: uploadData.folderId || undefined,
-      projectId: uploadData.projectId || undefined,
+      folderId: uploadData.folderId && uploadData.folderId !== "__none__" ? uploadData.folderId : undefined,
+      projectId: uploadData.projectId && uploadData.projectId !== "__none__" ? uploadData.projectId : undefined,
     });
     setSelectedFile(null);
     setUploadData({ documentName: "", description: "", folderId: "", projectId: "" });
@@ -244,7 +244,7 @@ export default function IkKsDokumenter() {
                         <SelectValue placeholder="Velg mappe" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Ingen mappe</SelectItem>
+                        <SelectItem value="__none__">Ingen mappe</SelectItem>
                         {folders.map(folder => (
                           <SelectItem key={folder.id} value={folder.id}>{folder.name}</SelectItem>
                         ))}
@@ -261,7 +261,7 @@ export default function IkKsDokumenter() {
                         <SelectValue placeholder="Velg prosjekt" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Ingen prosjekt</SelectItem>
+                        <SelectItem value="__none__">Ingen prosjekt</SelectItem>
                         {projects?.map(project => (
                           <SelectItem key={project.id} value={project.id}>{project.project_name}</SelectItem>
                         ))}
