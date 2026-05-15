@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { LanguageSelector } from "@/components/language/LanguageSelector";
 import { useTranslate } from "@/hooks/useTranslate";
+import { PageSeo } from "@/components/seo/PageSeo";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -221,7 +222,12 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4 relative">
+    <main className="min-h-screen bg-gradient-hero flex items-center justify-center p-4 relative">
+      <PageSeo
+        title="Logg inn eller registrer bedrift"
+        description="Logg inn på Total-IK eller registrer din bedrift for å komme i gang med digitalt internkontrollsystem for HMS, mat, alkohol og bygg."
+        path="/auth"
+      />
       {/* Language selector in top right */}
       <div className="absolute top-4 right-4">
         <LanguageSelector variant="full" className="bg-white/10 hover:bg-white/20 text-white" />
