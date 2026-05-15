@@ -15,7 +15,7 @@ const Ks2Rutiner = lazy(() => import("./Ks2Rutiner"));
 const Ks2Dokumentasjon = lazy(() => import("./Ks2Dokumentasjon"));
 const Ks2Prosjektinfo = lazy(() => import("./Ks2Prosjektinfo"));
 const Ks2AvvikIntegrated = lazy(() => import("./Ks2AvvikIntegrated"));
-const Ks2UavhengigKontroll = lazy(() => import("./Ks2UavhengigKontroll"));
+
 const Ks2Malbibliotek = lazy(() => import("./Ks2Malbibliotek"));
 const Ks2Prosjektrapport = lazy(() => import("./Ks2Prosjektrapport"));
 const Ks2Underleverandorer = lazy(() => import("./Ks2Underleverandorer"));
