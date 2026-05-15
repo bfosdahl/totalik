@@ -49,47 +49,13 @@ export default function PendingApproval() {
 
     setIsCompleting(true);
     try {
-      const { data: newCompany, error: companyError } = await supabase
-        .from("companies")
-        .insert({ name: trimmed, org_number: trimmedOrg })
-        .select("id")
-        .single();
-
-      if (companyError || !newCompany) {
-        console.error("Error creating company from PendingApproval:", companyError);
-        throw new Error("Kunne ikke opprette bedrift");
-      }
-
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({ company_id: newCompany.id, status: "active" })
-        .eq("user_id", user.id);
-
-      if (profileError) {
-        console.error("Error updating profile from PendingApproval:", profileError);
-        throw new Error("Kunne ikke aktivere konto");
-      }
-
-      const { error: roleError } = await supabase.from("user_roles").insert({
-        user_id: user.id,
-        role: "company_admin",
+      const { data, error } = await supabase.functions.invoke("complete-pending-signup", {
+        body: { companyName: trimmed, orgNumber: trimmedOrg },
       });
 
-      if (roleError && !roleError.message?.toLowerCase().includes("duplicate")) {
-        console.error("Error adding company_admin role from PendingApproval:", roleError);
-      }
-
-      // Notify admin (Gard) about new company registration
-      try {
-        await supabase.functions.invoke("notify-new-company", {
-          body: {
-            companyName: trimmed,
-            contactPerson: `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || user.email,
-            contactEmail: user.email,
-          },
-        });
-      } catch (notifyError) {
-        console.error("Error sending admin notification:", notifyError);
+      if (error || (data as any)?.error) {
+        const msg = (data as any)?.error || error?.message || "Kunne ikke fullføre registreringen";
+        throw new Error(msg);
       }
 
       await Promise.all([refreshProfile(), refreshCompany()]);
