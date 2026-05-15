@@ -12,6 +12,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { PageSeo } from "@/components/seo/PageSeo";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -90,7 +91,12 @@ export default function InstallAvvikApp() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-destructive/10 to-background p-4 sm:p-6">
+    <main className="min-h-screen bg-gradient-to-b from-destructive/10 to-background p-4 sm:p-6">
+      <PageSeo
+        title="Installer avviks-app"
+        description="Installer en lett avviks-app fra Total-IK på mobilen for raske avviksmeldinger fra felt og byggeplass."
+        path="/install/avvik"
+      />
       <div className="max-w-md mx-auto space-y-4 sm:space-y-6 pt-6 sm:pt-8 pb-8">
         {/* Back button */}
         <Link to="/deviations" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -251,15 +257,15 @@ export default function InstallAvvikApp() {
                   <span className="text-xs sm:text-sm text-muted-foreground">eller "Installer app"</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
+          )}
 
-        {/* Footer */}
-        <p className="text-center text-xs sm:text-sm text-muted-foreground pb-4 px-4">
-          Avvik-appen er en del av Totalik og fungerer best i Chrome (Android) eller Safari (iPhone)
-        </p>
-      </div>
-    </div>
+          {/* Footer */}
+          <p className="text-center text-xs sm:text-sm text-muted-foreground pb-4 px-4">
+            Avvik-appen er en del av Totalik og fungerer best i Chrome (Android) eller Safari (iPhone)
+          </p>
+        </div>
+      </main>
   );
 }

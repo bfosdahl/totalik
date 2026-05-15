@@ -13,6 +13,7 @@ import {
   ExternalLink
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { PageSeo } from "@/components/seo/PageSeo";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -84,7 +85,12 @@ export default function InstallApp() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/10 to-background p-4 sm:p-6">
+    <main className="min-h-screen bg-gradient-to-b from-primary/10 to-background p-4 sm:p-6">
+      <PageSeo
+        title="Installer Total-IK som app"
+        description="Installer Total-IK som progressiv app (PWA) på iPhone, Android eller PC for rask tilgang til internkontroll, HMS og avvik."
+        path="/install"
+      />
       <div className="max-w-md mx-auto space-y-4 sm:space-y-6 pt-6 sm:pt-8 pb-8">
         {/* Header */}
         <motion.div 
@@ -330,6 +336,6 @@ export default function InstallApp() {
           Total-IK fungerer best i Chrome (Android) eller Safari (iPhone)
         </p>
       </div>
-    </div>
+    </main>
   );
 }

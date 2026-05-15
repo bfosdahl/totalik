@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { AnonymousMessageButton } from "@/components/anonymous/AnonymousMessageButton";
 import { useTranslate } from "@/hooks/useTranslate";
+import { PageSeo } from "@/components/seo/PageSeo";
 
 const Index = () => {
   const { compliancePercent, openDeviations, completedActions, dueSoon, isLoading } = useDashboardStats();
@@ -38,6 +39,11 @@ const Index = () => {
 
   return (
     <AppLayout>
+      <PageSeo
+        title="Dashboard"
+        description="Total-IK dashboard – oversikt over samsvar, avvik, fullførte tiltak og forfallende oppgaver i bedriftens internkontrollsystem."
+        path="/"
+      />
       <div className="space-y-4 md:space-y-6">
         {/* Welcome banner for new users */}
         {showWelcomeBanner && (
