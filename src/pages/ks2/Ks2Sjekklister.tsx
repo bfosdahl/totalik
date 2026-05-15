@@ -28,6 +28,8 @@ import { useKsModule2ProjectTemplates } from "@/hooks/useKsModule2ProjectTemplat
 import { useKsModule2Checklists, KsModule2Checklist } from "@/hooks/useKsModule2Checklists";
 import { Ks2ChecklistWizard, PreSelectedTemplate } from "@/components/ks2/Ks2ChecklistWizard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
@@ -49,7 +51,14 @@ export default function Ks2Sjekklister() {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const { checklistTemplates, isLoading: loadingTemplates } = useKsModule2ProjectTemplates(projectId || "");
-  const { checklists, isLoading: loadingChecklists, refetch: refetchChecklists } = useKsModule2Checklists(projectId || "");
+  const { checklists, isLoading: loadingChecklists, refetch: refetchChecklists, updateChecklist } = useKsModule2Checklists(projectId || "");
+
+  const handleToggleIncludeInReport = async (checklist: KsModule2Checklist) => {
+    const newValue = !(checklist.include_in_report ?? true);
+    await updateChecklist(checklist.id, { include_in_report: newValue });
+    toast({ title: newValue ? "Inkludert i rapport" : "Ekskludert fra rapport" });
+  };
+
 
   const handleDownloadChecklist = async (checklist: KsModule2Checklist) => {
     if (!profile?.company_id || !projectId) return;
@@ -174,18 +183,30 @@ export default function Ks2Sjekklister() {
           )}
           {getStatusBadge(checklist.status)}
           {checklist.status === "completed" ? (
-            <div className="flex gap-1">
-              <Button variant="outline" size="sm" onClick={() => setViewingChecklist(checklist)}>
-                <Eye className="h-4 w-4 mr-1" />
-                Se
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleContinueChecklist(checklist)} title="Rediger fullført sjekkliste">
-                <Pencil className="h-4 w-4 mr-1" />
-                Rediger
-              </Button>
-              <Button variant="outline" size="sm" disabled={isDownloading} onClick={() => handleDownloadChecklist(checklist)}>
-                {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-              </Button>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-2 py-1 rounded-md border bg-muted/30">
+                <Switch
+                  id={`include-report-${checklist.id}`}
+                  checked={checklist.include_in_report ?? true}
+                  onCheckedChange={() => handleToggleIncludeInReport(checklist)}
+                />
+                <Label htmlFor={`include-report-${checklist.id}`} className="text-xs cursor-pointer whitespace-nowrap">
+                  I rapport
+                </Label>
+              </div>
+              <div className="flex gap-1">
+                <Button variant="outline" size="sm" onClick={() => setViewingChecklist(checklist)}>
+                  <Eye className="h-4 w-4 mr-1" />
+                  Se
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleContinueChecklist(checklist)} title="Rediger fullført sjekkliste">
+                  <Pencil className="h-4 w-4 mr-1" />
+                  Rediger
+                </Button>
+                <Button variant="outline" size="sm" disabled={isDownloading} onClick={() => handleDownloadChecklist(checklist)}>
+                  {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                </Button>
+              </div>
             </div>
           ) : (
             <Button size="sm" onClick={() => handleContinueChecklist(checklist)}>
@@ -214,17 +235,9 @@ export default function Ks2Sjekklister() {
           <p className="text-muted-foreground">Maler, pågående og fullførte kontroller for prosjektet</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
+          <Button onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
             <Library className="h-4 w-4 mr-2" />
-            Malbibliotek
-          </Button>
-          <Button onClick={() => {
-            setExistingChecklist(null);
-            setSelectedTemplateForWizard(null);
-            setShowWizard(true);
-          }}>
-            <Plus className="h-4 w-4 mr-2" />
-            Ny kontroll
+            Velg sjekklister fra malbibliotek
           </Button>
         </div>
       </div>

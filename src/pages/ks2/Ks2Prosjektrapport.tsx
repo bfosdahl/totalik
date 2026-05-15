@@ -219,7 +219,7 @@ export default function Ks2Prosjektrapport() {
           end_date: project.end_date,
           status: project.status,
         },
-        checklists: await Promise.all(checklists.map(async (c) => ({
+        checklists: await Promise.all(checklists.filter(c => c.include_in_report ?? true).map(async (c) => ({
           id: c.id,
           title: c.title,
           template_name: c.template_name || "Egendefinert",
@@ -411,6 +411,7 @@ export default function Ks2Prosjektrapport() {
   };
 
   const completedChecklists = checklists.filter(c => c.status === "completed").length;
+  const checklistsInReport = checklists.filter(c => (c.include_in_report ?? true)).length;
   const closedAvvik = avvikList.filter(a => a.status === "closed").length;
   const approvedUk = ukList.filter(u => u.status === "approved").length;
   const completedSja = sjaList.filter(s => s.status === "completed").length;
@@ -472,7 +473,7 @@ export default function Ks2Prosjektrapport() {
                   iconBgColor="bg-green-100"
                   iconColor="text-green-600"
                   label="Sjekklister og egenkontroller"
-                  description={`${completedChecklists} av ${checklists.length} fullført`}
+                  description={`${checklistsInReport} av ${checklists.length} valgt for rapport (${completedChecklists} fullført)`}
                   checked={sections.includeChecklists}
                   onCheckedChange={(checked) => 
                     setSections(s => ({ ...s, includeChecklists: !!checked }))
