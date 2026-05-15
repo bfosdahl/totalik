@@ -28,6 +28,8 @@ import { useKsModule2ProjectTemplates } from "@/hooks/useKsModule2ProjectTemplat
 import { useKsModule2Checklists, KsModule2Checklist } from "@/hooks/useKsModule2Checklists";
 import { Ks2ChecklistWizard, PreSelectedTemplate } from "@/components/ks2/Ks2ChecklistWizard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
@@ -49,7 +51,14 @@ export default function Ks2Sjekklister() {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const { checklistTemplates, isLoading: loadingTemplates } = useKsModule2ProjectTemplates(projectId || "");
-  const { checklists, isLoading: loadingChecklists, refetch: refetchChecklists } = useKsModule2Checklists(projectId || "");
+  const { checklists, isLoading: loadingChecklists, refetch: refetchChecklists, updateChecklist } = useKsModule2Checklists(projectId || "");
+
+  const handleToggleIncludeInReport = async (checklist: KsModule2Checklist) => {
+    const newValue = !(checklist.include_in_report ?? true);
+    await updateChecklist(checklist.id, { include_in_report: newValue });
+    toast({ title: newValue ? "Inkludert i rapport" : "Ekskludert fra rapport" });
+  };
+
 
   const handleDownloadChecklist = async (checklist: KsModule2Checklist) => {
     if (!profile?.company_id || !projectId) return;
