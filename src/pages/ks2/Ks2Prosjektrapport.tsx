@@ -411,6 +411,7 @@ export default function Ks2Prosjektrapport() {
   };
 
   const completedChecklists = checklists.filter(c => c.status === "completed").length;
+  const checklistsInReport = checklists.filter(c => (c.include_in_report ?? true)).length;
   const closedAvvik = avvikList.filter(a => a.status === "closed").length;
   const approvedUk = ukList.filter(u => u.status === "approved").length;
   const completedSja = sjaList.filter(s => s.status === "completed").length;
