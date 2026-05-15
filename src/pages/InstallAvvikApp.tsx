@@ -256,6 +256,7 @@ export default function InstallAvvikApp() {
                   <p className="font-medium text-sm sm:text-base">Velg "Legg til på startskjerm"</p>
                   <span className="text-xs sm:text-sm text-muted-foreground">eller "Installer app"</span>
                 </div>
+              </div>
               </CardContent>
             </Card>
           )}
