@@ -1,0 +1,16 @@
+# Total-IK
+
+> Komplett internkontrollsystem for norske bedrifter. Dekker HMS, IK-MAT, IK-Alkohol, KS-Bygg og FDV med rutiner, risikovurdering, avvikshåndtering og dokumentasjon.
+
+Total-IK leveres av Athena Kurs og Internkontroll AS og hjelper bedrifter å oppfylle krav i internkontrollforskriften, arbeidsmiljøloven, matloven, alkoholloven og plan- og bygningsloven.
+
+## Pages
+
+- [Forsiden](/): Oversikt over Total-IK og innlogging.
+- [Logg inn / Registrer bedrift](/auth): Opprett konto og bedrift, eller logg inn i internkontrollsystemet.
+- [Installer app](/install): Installer Total-IK som app på mobil eller PC (PWA).
+- [Avviksapp](/install/avvik): Installer en lett avviks-app for raske avviksmeldinger fra felt.
+
+## Optional
+
+- [Kontakt](mailto:post@athenahms.no): Kontakt Athena Kurs og Internkontroll AS.

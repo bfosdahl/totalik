@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import { HelmetProvider } from "react-helmet-async";
 import { toast } from "sonner";
 import { logClientError } from "@/utils/logClientError";
 import App from "./App.tsx";
@@ -69,7 +70,11 @@ window.addEventListener("unhandledrejection", (event) => {
 window.setTimeout(() => sessionStorage.removeItem("chunk-reload-attempted"), 5000);
 
 window.__TOTALIK_BOOTED__ = true;
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <HelmetProvider>
+    <App />
+  </HelmetProvider>,
+);
 
 const isInIframe = (() => {
   try {
