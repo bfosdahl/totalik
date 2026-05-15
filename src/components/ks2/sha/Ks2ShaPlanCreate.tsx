@@ -278,37 +278,72 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
         <Card>
           <CardHeader>
             <CardTitle>Risikoområder (Byggherreforskriften §8 bokstav c)</CardTitle>
-            <CardDescription>Kryss av for relevante risikoområder og beskriv tiltak</CardDescription>
+            <CardDescription>
+              Kryss av for relevante risikoområder, beskriv tiltak. Du kan fjerne forslag du ikke trenger og legge til egne.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {riskAreas.map((ra, index) => (
-              <div key={ra.id} className="border rounded-lg p-4 space-y-3">
-                <div className="flex items-start gap-3">
-                  <Checkbox 
-                    id={ra.id}
-                    checked={ra.checked}
-                    onCheckedChange={(checked) => handleRiskAreaChange(index, "checked", !!checked)}
-                  />
-                  <div className="flex-1">
-                    <Label htmlFor={ra.id} className="cursor-pointer">
-                      <Badge variant="outline" className="mr-2">{ra.paragraph})</Badge>
-                      {ra.description}
-                    </Label>
-                  </div>
-                </div>
-                {ra.checked && (
-                  <div className="pl-7">
-                    <Label className="text-sm text-muted-foreground">Tiltak for å ivareta risiko:</Label>
-                    <Textarea 
+            {riskAreas.map((ra, index) => {
+              const isCustom = ra.id.startsWith("risk-custom-");
+              return (
+                <div key={ra.id} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <Checkbox 
+                      id={ra.id}
+                      checked={ra.checked}
+                      onCheckedChange={(checked) => handleRiskAreaChange(index, "checked", !!checked)}
                       className="mt-1"
-                      placeholder="Beskriv tiltak..."
-                      value={ra.measures}
-                      onChange={(e) => handleRiskAreaChange(index, "measures", e.target.value)}
                     />
+                    <div className="flex-1 space-y-2">
+                      {isCustom ? (
+                        <div className="flex gap-2">
+                          <Input
+                            className="w-20"
+                            placeholder="§/nr"
+                            value={ra.paragraph}
+                            onChange={(e) => handleRiskAreaChange(index, "paragraph", e.target.value)}
+                          />
+                          <Input
+                            className="flex-1"
+                            placeholder="Beskriv risikoområde..."
+                            value={ra.description}
+                            onChange={(e) => handleRiskAreaChange(index, "description", e.target.value)}
+                          />
+                        </div>
+                      ) : (
+                        <Label htmlFor={ra.id} className="cursor-pointer">
+                          {ra.paragraph && <Badge variant="outline" className="mr-2">{ra.paragraph})</Badge>}
+                          {ra.description}
+                        </Label>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveRiskArea(index)}
+                      title="Fjern"
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
                   </div>
-                )}
-              </div>
-            ))}
+                  {ra.checked && (
+                    <div className="pl-7">
+                      <Label className="text-sm text-muted-foreground">Tiltak for å ivareta risiko:</Label>
+                      <Textarea 
+                        className="mt-1"
+                        placeholder="Beskriv tiltak..."
+                        value={ra.measures}
+                        onChange={(e) => handleRiskAreaChange(index, "measures", e.target.value)}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            <Button variant="outline" onClick={handleAddRiskArea} className="w-full">
+              <Plus className="h-4 w-4 mr-2" />
+              Legg til eget risikoområde
+            </Button>
           </CardContent>
         </Card>
       )}
