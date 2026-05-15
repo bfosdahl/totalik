@@ -183,18 +183,30 @@ export default function Ks2Sjekklister() {
           )}
           {getStatusBadge(checklist.status)}
           {checklist.status === "completed" ? (
-            <div className="flex gap-1">
-              <Button variant="outline" size="sm" onClick={() => setViewingChecklist(checklist)}>
-                <Eye className="h-4 w-4 mr-1" />
-                Se
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleContinueChecklist(checklist)} title="Rediger fullført sjekkliste">
-                <Pencil className="h-4 w-4 mr-1" />
-                Rediger
-              </Button>
-              <Button variant="outline" size="sm" disabled={isDownloading} onClick={() => handleDownloadChecklist(checklist)}>
-                {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-              </Button>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-2 py-1 rounded-md border bg-muted/30">
+                <Switch
+                  id={`include-report-${checklist.id}`}
+                  checked={checklist.include_in_report ?? true}
+                  onCheckedChange={() => handleToggleIncludeInReport(checklist)}
+                />
+                <Label htmlFor={`include-report-${checklist.id}`} className="text-xs cursor-pointer whitespace-nowrap">
+                  I rapport
+                </Label>
+              </div>
+              <div className="flex gap-1">
+                <Button variant="outline" size="sm" onClick={() => setViewingChecklist(checklist)}>
+                  <Eye className="h-4 w-4 mr-1" />
+                  Se
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleContinueChecklist(checklist)} title="Rediger fullført sjekkliste">
+                  <Pencil className="h-4 w-4 mr-1" />
+                  Rediger
+                </Button>
+                <Button variant="outline" size="sm" disabled={isDownloading} onClick={() => handleDownloadChecklist(checklist)}>
+                  {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                </Button>
+              </div>
             </div>
           ) : (
             <Button size="sm" onClick={() => handleContinueChecklist(checklist)}>
