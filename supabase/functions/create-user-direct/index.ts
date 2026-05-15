@@ -111,8 +111,8 @@ serve(async (req) => {
       });
     }
 
-    // Create the new user with standard default password
-    const tempPassword = "Abc_1234";
+    // Random unguessable password — recovery link below lets user set their own
+    const tempPassword = crypto.randomUUID() + "Aa1!";
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: tempPassword,
