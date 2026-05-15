@@ -223,17 +223,9 @@ export default function Ks2Sjekklister() {
           <p className="text-muted-foreground">Maler, pågående og fullførte kontroller for prosjektet</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
+          <Button onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
             <Library className="h-4 w-4 mr-2" />
-            Malbibliotek
-          </Button>
-          <Button onClick={() => {
-            setExistingChecklist(null);
-            setSelectedTemplateForWizard(null);
-            setShowWizard(true);
-          }}>
-            <Plus className="h-4 w-4 mr-2" />
-            Ny kontroll
+            Velg sjekklister fra malbibliotek
           </Button>
         </div>
       </div>
