@@ -352,11 +352,12 @@ export function BulkCompanyImportDialog({
           }
         }
 
-        // 4. Create company admin user if enabled and email exists
+        // 4. Create company admin user — ALWAYS when email exists.
+        // Logic guard: en bedrift skal aldri lagres med kontakt-epost uten en faktisk admin-bruker.
         let userCreated = false;
         let userEmail = "";
         let userCreateError: string | undefined;
-        if (createUsers && company.email) {
+        if (company.email) {
           try {
             // Use different email for renewal vs new customers
             if (company.isRenewal) {
