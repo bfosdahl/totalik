@@ -31,6 +31,7 @@ export interface KsModule2Checklist {
   checklist_items: ChecklistItem[];
   signatures: any[];
   pdf_file_path: string | null;
+  include_in_report: boolean;
   created_by: string | null;
   created_at: string;
   updated_at: string;
