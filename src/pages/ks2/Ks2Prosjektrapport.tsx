@@ -473,7 +473,7 @@ export default function Ks2Prosjektrapport() {
                   iconBgColor="bg-green-100"
                   iconColor="text-green-600"
                   label="Sjekklister og egenkontroller"
-                  description={`${completedChecklists} av ${checklists.length} fullført`}
+                  description={`${checklistsInReport} av ${checklists.length} valgt for rapport (${completedChecklists} fullført)`}
                   checked={sections.includeChecklists}
                   onCheckedChange={(checked) => 
                     setSections(s => ({ ...s, includeChecklists: !!checked }))
