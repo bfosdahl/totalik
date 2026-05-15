@@ -200,6 +200,11 @@ export function useKsModule2ShaPlan(projectId: string) {
         measures: "",
       }));
 
+      // Sanitize: convert empty strings to null (date/text fields)
+      const sanitized = Object.fromEntries(
+        Object.entries(projectData).map(([k, v]) => [k, v === "" ? null : v])
+      );
+
       const { data, error } = await supabase
         .from("ks_module2_sha_plans")
         .insert([{
@@ -208,7 +213,7 @@ export function useKsModule2ShaPlan(projectId: string) {
           plan_type: "internal",
           status: "draft",
           created_by: user.id,
-          ...projectData,
+          ...sanitized,
           risk_areas: finalRiskAreas as unknown as any,
           change_routine_text: changeRoutineText || "Ved endringer i prosjektet som påvirker sikkerhet, helse og arbeidsmiljø, skal SHA-planen revideres. Alle parter skal varsles om endringer.",
         }])
