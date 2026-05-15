@@ -14,7 +14,9 @@ import {
   AlertTriangle,
   FileSignature,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  Plus,
+  Trash2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useKsModule2ShaPlan, DEFAULT_RISK_AREAS, RiskArea } from "@/hooks/useKsModule2ShaPlan";
@@ -99,10 +101,27 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
     fetchProjectData();
   }, [projectId, toast]);
 
-  const handleRiskAreaChange = (index: number, field: "checked" | "measures", value: boolean | string) => {
+  const handleRiskAreaChange = (index: number, field: "checked" | "measures" | "description" | "paragraph", value: boolean | string) => {
     setRiskAreas(prev => prev.map((ra, i) => 
       i === index ? { ...ra, [field]: value } : ra
     ));
+  };
+
+  const handleRemoveRiskArea = (index: number) => {
+    setRiskAreas(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAddRiskArea = () => {
+    setRiskAreas(prev => [
+      ...prev,
+      {
+        id: `risk-custom-${Date.now()}`,
+        paragraph: "",
+        description: "",
+        checked: true,
+        measures: "",
+      },
+    ]);
   };
 
   const handleSubmit = async () => {
