@@ -122,6 +122,7 @@ export default function IkHmsStoffkartotek() {
         .from("ik_hms_stoffkartotek" as any)
         .insert({
           company_id: company.id,
+          department_id: filterDepartmentId,
           product_name: input.product_name,
           manufacturer: input.manufacturer || null,
           danger_classes: input.danger_classes,
