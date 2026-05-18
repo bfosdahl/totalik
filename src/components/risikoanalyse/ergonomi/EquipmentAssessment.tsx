@@ -558,6 +558,7 @@ export function EquipmentAssessment() {
 
       const payload = {
         company_id: company.id,
+        department_id: filterDepartmentId,
         title: title || `Eksponeringsvurdering ${format(new Date(), "d. MMM yyyy", { locale: nb })}`,
         vibration_type: vibType,
         tools: tools as any,
