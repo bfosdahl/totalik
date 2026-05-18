@@ -101,6 +101,7 @@ export function InlineHmsDeclaration({
         .from("hms_self_declarations")
         .select("id")
         .eq("company_id", companyId)
+        .is("department_id", null)
         .maybeSingle();
 
       const declarationData = {
