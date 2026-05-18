@@ -207,6 +207,7 @@ serve(async (req) => {
       const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
       const notifyClient = createClient(supabaseUrl, anonKey);
       await notifyClient.functions.invoke("notify-new-company", {
+        headers: { "x-cron-secret": Deno.env.get("CRON_SECRET") ?? "" },
         body: {
           companyName: companyName.trim(),
           contactPerson: `${firstName || ""} ${lastName || ""}`.trim(),
