@@ -1009,6 +1009,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
           month={editMonth}
           monthName={months.find((m) => m.id === editMonth)?.fullName || ""}
           companyId={company.id}
+          departmentId={filterDepartmentId}
           monthOverrides={monthOverrides}
           hiddenDefaults={hiddenDefaults}
           onSaved={() => {
