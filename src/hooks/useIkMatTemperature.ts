@@ -144,6 +144,7 @@ export function useIkMatTemperature() {
         .from('ik_mat_temperature_equipment')
         .insert({
           company_id: company.id,
+          department_id: filterDepartmentId,
           name: data.name,
           equipment_type: data.equipment_type,
           location: data.location || null,
