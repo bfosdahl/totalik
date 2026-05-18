@@ -99,14 +99,14 @@ export default function IkHmsStoffkartotek() {
 
   // Fetch stoffkartotek
   const { data: stoffkartotekList = [], isLoading } = useQuery({
-    queryKey: ["ik-hms-stoffkartotek", company?.id],
+    queryKey: ["ik-hms-stoffkartotek", company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
-      const { data, error } = await supabase
-        .from("ik_hms_stoffkartotek" as any)
+      let q = (supabase.from("ik_hms_stoffkartotek" as any) as any)
         .select("*")
-        .eq("company_id", company.id)
-        .order("product_name", { ascending: true });
+        .eq("company_id", company.id);
+      q = filterDepartmentId ? q.eq("department_id", filterDepartmentId) : q.is("department_id", null);
+      const { data, error } = await q.order("product_name", { ascending: true });
 
       if (error) throw error;
       return (data as unknown) as IkHmsStoffkartotek[];
