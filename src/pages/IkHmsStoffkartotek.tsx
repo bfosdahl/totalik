@@ -138,7 +138,7 @@ export default function IkHmsStoffkartotek() {
       return data;
     },
     onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id] });
+      queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id, filterDepartmentId] });
       toast.success("Stoff lagt til i stoffkartoteket");
       setIsCreateOpen(false);
       
@@ -181,7 +181,7 @@ export default function IkHmsStoffkartotek() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id] });
+      queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id, filterDepartmentId] });
       toast.success("Stoff oppdatert");
     },
     onError: () => {
@@ -200,7 +200,7 @@ export default function IkHmsStoffkartotek() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id] });
+      queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id, filterDepartmentId] });
       toast.success("Stoff slettet");
       setIsDetailOpen(false);
       setSelectedProduct(null);
