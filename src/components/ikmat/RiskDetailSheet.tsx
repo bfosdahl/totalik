@@ -38,6 +38,7 @@ const SCALE_OPTIONS = [
 ];
 
 const FREQUENCY_OPTIONS = [
+  { value: 'as_needed', label: 'Ved behov' },
   { value: 'daily', label: 'Daglig' },
   { value: 'weekly', label: 'Ukentlig' },
   { value: 'monthly', label: 'Månedlig' },
