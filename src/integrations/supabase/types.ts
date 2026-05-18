@@ -7337,6 +7337,7 @@ export type Database = {
         Row: {
           company_id: string
           created_at: string
+          department_id: string | null
           equipment_type: string
           id: string
           is_active: boolean
@@ -7351,6 +7352,7 @@ export type Database = {
         Insert: {
           company_id: string
           created_at?: string
+          department_id?: string | null
           equipment_type?: string
           id?: string
           is_active?: boolean
@@ -7365,6 +7367,7 @@ export type Database = {
         Update: {
           company_id?: string
           created_at?: string
+          department_id?: string | null
           equipment_type?: string
           id?: string
           is_active?: boolean
@@ -7384,6 +7387,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ik_mat_temperature_equipment_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ik_mat_temperature_logs: {
@@ -7392,6 +7402,7 @@ export type Database = {
           corrective_action: string | null
           corrective_action_by: string | null
           created_at: string
+          department_id: string | null
           equipment_id: string
           id: string
           is_acceptable: boolean
@@ -7407,6 +7418,7 @@ export type Database = {
           corrective_action?: string | null
           corrective_action_by?: string | null
           created_at?: string
+          department_id?: string | null
           equipment_id: string
           id?: string
           is_acceptable?: boolean
@@ -7422,6 +7434,7 @@ export type Database = {
           corrective_action?: string | null
           corrective_action_by?: string | null
           created_at?: string
+          department_id?: string | null
           equipment_id?: string
           id?: string
           is_acceptable?: boolean
@@ -7438,6 +7451,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_temperature_logs_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
           {
