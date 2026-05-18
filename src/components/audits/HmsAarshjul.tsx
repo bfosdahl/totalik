@@ -279,11 +279,12 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   // Fetch custom activities
   const fetchCustomActivities = useCallback(async () => {
     if (!company?.id) return;
-    const { data, error } = await supabase
+    let q = supabase
       .from("company_aarshjul_activities")
       .select("id, name, description, responsible, month")
-      .eq("company_id", company.id)
-      [filterDepartmentId ? "eq" : "is"]("department_id", filterDepartmentId);
+      .eq("company_id", company.id);
+    q = filterDepartmentId ? q.eq("department_id", filterDepartmentId) : q.is("department_id", null);
+    const { data, error } = await q;
     if (!error && data) {
       setCustomActivities(data as CustomDbActivity[]);
     }
@@ -296,11 +297,12 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   // Fetch hidden default activities
   const fetchHiddenDefaults = useCallback(async () => {
     if (!company?.id) return;
-    const { data, error } = await supabase
+    let q = supabase
       .from("company_aarshjul_hidden_defaults")
       .select("activity_id")
-      .eq("company_id", company.id)
-      [filterDepartmentId ? "eq" : "is"]("department_id", filterDepartmentId);
+      .eq("company_id", company.id);
+    q = filterDepartmentId ? q.eq("department_id", filterDepartmentId) : q.is("department_id", null);
+    const { data, error } = await q;
     if (!error && data) {
       setHiddenDefaults(data.map((d: any) => d.activity_id));
     }
@@ -313,11 +315,12 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   // Fetch month overrides for default activities
   const fetchMonthOverrides = useCallback(async () => {
     if (!company?.id) return;
-    const { data, error } = await supabase
+    let q = supabase
       .from("company_aarshjul_default_overrides")
       .select("activity_id, custom_months")
-      .eq("company_id", company.id)
-      [filterDepartmentId ? "eq" : "is"]("department_id", filterDepartmentId);
+      .eq("company_id", company.id);
+    q = filterDepartmentId ? q.eq("department_id", filterDepartmentId) : q.is("department_id", null);
+    const { data, error } = await q;
     if (!error && data) {
       const overrides: Record<string, number[]> = {};
       data.forEach((d: any) => {
@@ -348,12 +351,13 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   // Unhide a default activity
   const handleUnhideDefault = async (activityId: string) => {
     if (!company?.id) return;
-    const { error } = await supabase
+    let q = supabase
       .from("company_aarshjul_hidden_defaults")
       .delete()
       .eq("company_id", company.id)
-      [filterDepartmentId ? "eq" : "is"]("department_id", filterDepartmentId)
       .eq("activity_id", activityId);
+    q = filterDepartmentId ? q.eq("department_id", filterDepartmentId) : q.is("department_id", null);
+    const { error } = await q;
     if (error) {
       toast.error("Kunne ikke gjenopprette aktiviteten");
     } else {
@@ -1005,6 +1009,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
           month={editMonth}
           monthName={months.find((m) => m.id === editMonth)?.fullName || ""}
           companyId={company.id}
+          departmentId={filterDepartmentId}
           monthOverrides={monthOverrides}
           hiddenDefaults={hiddenDefaults}
           onSaved={() => {

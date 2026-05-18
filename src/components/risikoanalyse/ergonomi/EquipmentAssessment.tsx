@@ -28,6 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import jsPDF from "jspdf";
@@ -507,6 +508,7 @@ function exportToPDF(
 // ===== Main Component =====
 export function EquipmentAssessment() {
   const { company, profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
 
   const [vibType, setVibType] = useState<"hand_arm" | "whole_body">("hand_arm");
@@ -531,14 +533,15 @@ export function EquipmentAssessment() {
 
   // === Saved assessments query ===
   const { data: savedAssessments = [] } = useQuery({
-    queryKey: ["equipment-exposure-assessments", company?.id],
+    queryKey: ["equipment-exposure-assessments", company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
-      const { data, error } = await supabase
+      let q = supabase
         .from("equipment_exposure_assessments")
         .select("*")
-        .eq("company_id", company.id)
-        .order("created_at", { ascending: false });
+        .eq("company_id", company.id);
+      q = filterDepartmentId ? q.eq("department_id", filterDepartmentId) : q.is("department_id", null);
+      const { data, error } = await q.order("created_at", { ascending: false });
       if (error) throw error;
       return data || [];
     },
@@ -555,6 +558,7 @@ export function EquipmentAssessment() {
 
       const payload = {
         company_id: company.id,
+        department_id: filterDepartmentId,
         title: title || `Eksponeringsvurdering ${format(new Date(), "d. MMM yyyy", { locale: nb })}`,
         vibration_type: vibType,
         tools: tools as any,

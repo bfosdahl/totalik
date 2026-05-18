@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Search, FlaskConical, AlertTriangle, FileText, Download, Eye, Upload, Loader2, Globe, Edit, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -73,6 +74,7 @@ const getDangerClassColor = (dangerClass: string) => {
 
 export default function IkHmsStoffkartotek() {
   const { company } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -97,14 +99,14 @@ export default function IkHmsStoffkartotek() {
 
   // Fetch stoffkartotek
   const { data: stoffkartotekList = [], isLoading } = useQuery({
-    queryKey: ["ik-hms-stoffkartotek", company?.id],
+    queryKey: ["ik-hms-stoffkartotek", company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
-      const { data, error } = await supabase
-        .from("ik_hms_stoffkartotek" as any)
+      let q = (supabase.from("ik_hms_stoffkartotek" as any) as any)
         .select("*")
-        .eq("company_id", company.id)
-        .order("product_name", { ascending: true });
+        .eq("company_id", company.id);
+      q = filterDepartmentId ? q.eq("department_id", filterDepartmentId) : q.is("department_id", null);
+      const { data, error } = await q.order("product_name", { ascending: true });
 
       if (error) throw error;
       return (data as unknown) as IkHmsStoffkartotek[];
@@ -120,6 +122,7 @@ export default function IkHmsStoffkartotek() {
         .from("ik_hms_stoffkartotek" as any)
         .insert({
           company_id: company.id,
+          department_id: filterDepartmentId,
           product_name: input.product_name,
           manufacturer: input.manufacturer || null,
           danger_classes: input.danger_classes,
@@ -135,7 +138,7 @@ export default function IkHmsStoffkartotek() {
       return data;
     },
     onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id] });
+      queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id, filterDepartmentId] });
       toast.success("Stoff lagt til i stoffkartoteket");
       setIsCreateOpen(false);
       
@@ -178,7 +181,7 @@ export default function IkHmsStoffkartotek() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id] });
+      queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id, filterDepartmentId] });
       toast.success("Stoff oppdatert");
     },
     onError: () => {
@@ -197,7 +200,7 @@ export default function IkHmsStoffkartotek() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id] });
+      queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id, filterDepartmentId] });
       toast.success("Stoff slettet");
       setIsDetailOpen(false);
       setSelectedProduct(null);
@@ -816,8 +819,9 @@ export default function IkHmsStoffkartotek() {
           open={isGlobalSearchOpen}
           onOpenChange={setIsGlobalSearchOpen}
           companyId={company?.id || ""}
+          departmentId={filterDepartmentId}
           onImportSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id] });
+            queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id, filterDepartmentId] });
           }}
         />
 
@@ -860,6 +864,7 @@ interface GlobalSearchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   companyId: string;
+  departmentId: string | null;
   onImportSuccess: () => void;
 }
 
@@ -867,6 +872,7 @@ function GlobalChemicalSearchDialog({
   open, 
   onOpenChange, 
   companyId,
+  departmentId,
   onImportSuccess 
 }: GlobalSearchDialogProps) {
   const [selectedChemical, setSelectedChemical] = useState<GlobalChemicalWithSds | null>(null);
@@ -883,6 +889,7 @@ function GlobalChemicalSearchDialog({
         .from("ik_hms_stoffkartotek" as any)
         .insert({
           company_id: companyId,
+          department_id: departmentId,
           product_name: selectedChemical.product_name,
           manufacturer: selectedChemical.manufacturer || null,
           danger_classes: selectedChemical.danger_classes || [],
