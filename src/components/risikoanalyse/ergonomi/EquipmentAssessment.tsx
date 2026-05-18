@@ -533,14 +533,15 @@ export function EquipmentAssessment() {
 
   // === Saved assessments query ===
   const { data: savedAssessments = [] } = useQuery({
-    queryKey: ["equipment-exposure-assessments", company?.id],
+    queryKey: ["equipment-exposure-assessments", company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
-      const { data, error } = await supabase
+      let q = supabase
         .from("equipment_exposure_assessments")
         .select("*")
-        .eq("company_id", company.id)
-        .order("created_at", { ascending: false });
+        .eq("company_id", company.id);
+      q = filterDepartmentId ? q.eq("department_id", filterDepartmentId) : q.is("department_id", null);
+      const { data, error } = await q.order("created_at", { ascending: false });
       if (error) throw error;
       return data || [];
     },
