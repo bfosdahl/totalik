@@ -84,12 +84,13 @@ export default function AarshjulEditDialog({
 
   const fetchActivities = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
+    let q = supabase
       .from("company_aarshjul_activities")
       .select("*")
       .eq("company_id", companyId)
-      .eq("month", month)
-      .order("created_at");
+      .eq("month", month);
+    q = departmentId ? q.eq("department_id", departmentId) : q.is("department_id", null);
+    const { data, error } = await q.order("created_at");
 
     if (!error && data) {
       setActivities(data as CustomActivity[]);
