@@ -88,6 +88,7 @@ Deno.serve(async (req) => {
     try {
       const notify = createClient(supabaseUrl, anonKey);
       await notify.functions.invoke("notify-new-company", {
+        headers: { "x-cron-secret": Deno.env.get("CRON_SECRET") ?? "" },
         body: {
           companyName: newCompany.name,
           contactPerson: `${existingProfile?.first_name || ""} ${existingProfile?.last_name || ""}`.trim() || userEmail,
