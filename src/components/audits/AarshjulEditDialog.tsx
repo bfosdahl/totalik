@@ -129,6 +129,7 @@ export default function AarshjulEditDialog({
           .from("company_aarshjul_activities")
           .insert({
             company_id: companyId,
+            department_id: departmentId,
             month,
             name: name.trim(),
             description: description.trim() || null,
