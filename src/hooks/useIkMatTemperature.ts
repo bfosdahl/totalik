@@ -43,20 +43,26 @@ export interface TemperatureLog {
 
 export function useIkMatTemperature() {
   const { company, profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
   const { createTemperatureDeviation } = useIkMatDeviation();
 
   // Fetch equipment
   const { data: equipment = [], isLoading: equipmentLoading } = useQuery({
-    queryKey: ['ik-mat-temperature-equipment', company?.id],
+    queryKey: ['ik-mat-temperature-equipment', company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
-      const { data, error } = await supabase
+      let query = supabase
         .from('ik_mat_temperature_equipment')
         .select('*')
         .eq('company_id', company.id)
-        .eq('is_active', true)
-        .order('sort_order', { ascending: true });
+        .eq('is_active', true);
+      if (filterDepartmentId) {
+        query = query.eq('department_id', filterDepartmentId);
+      } else {
+        query = query.is('department_id', null);
+      }
+      const { data, error } = await query.order('sort_order', { ascending: true });
       
       if (error) throw error;
       return data as TemperatureEquipment[];
@@ -66,19 +72,24 @@ export function useIkMatTemperature() {
 
   // Fetch today's logs
   const { data: todaysLogs = [], isLoading: logsLoading } = useQuery({
-    queryKey: ['ik-mat-temperature-logs-today', company?.id],
+    queryKey: ['ik-mat-temperature-logs-today', company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
       // Use LOCAL day boundaries so "today" matches Norwegian time, not UTC.
       const dayStart = getLocalDayStartISO();
       const dayEnd = getLocalDayEndISO();
-      const { data, error } = await supabase
+      let query = supabase
         .from('ik_mat_temperature_logs')
         .select('*, equipment:ik_mat_temperature_equipment(*)')
         .eq('company_id', company.id)
         .gte('measured_at', dayStart)
-        .lte('measured_at', dayEnd)
-        .order('measured_at', { ascending: false });
+        .lte('measured_at', dayEnd);
+      if (filterDepartmentId) {
+        query = query.eq('department_id', filterDepartmentId);
+      } else {
+        query = query.is('department_id', null);
+      }
+      const { data, error } = await query.order('measured_at', { ascending: false });
       
       if (error) throw error;
       return data as TemperatureLog[];
