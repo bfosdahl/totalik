@@ -45,6 +45,7 @@ interface AarshjulEditDialogProps {
   month: number;
   monthName: string;
   companyId: string;
+  departmentId: string | null;
   monthOverrides: Record<string, number[]>;
   hiddenDefaults: string[];
   onSaved: () => void;
@@ -56,6 +57,7 @@ export default function AarshjulEditDialog({
   month,
   monthName,
   companyId,
+  departmentId,
   monthOverrides,
   hiddenDefaults,
   onSaved,
