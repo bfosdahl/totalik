@@ -149,8 +149,13 @@ Deno.serve(async (req) => {
 
       if (updateError) {
         console.error("Password update error:", updateError);
+        const code = (updateError as any).code;
+        let friendly = "Kunne ikke oppdatere passord: " + updateError.message;
+        if (code === "weak_password") {
+          friendly = "Passordet er for svakt eller har lekket i et kjent datainnbrudd. Velg et sterkere passord (minst 8 tegn, bland store/små bokstaver, tall og spesialtegn).";
+        }
         return new Response(
-          JSON.stringify({ error: "Kunne ikke oppdatere passord: " + updateError.message }),
+          JSON.stringify({ error: friendly, code }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
