@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDepartmentContext } from '@/contexts/DepartmentContext';
 import { toast } from 'sonner';
 
 import { EQUIPMENT_TYPE_DEFAULTS } from '@/lib/temperatureGuidelines';
