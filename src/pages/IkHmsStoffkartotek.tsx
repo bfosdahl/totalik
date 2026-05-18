@@ -864,6 +864,7 @@ interface GlobalSearchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   companyId: string;
+  departmentId: string | null;
   onImportSuccess: () => void;
 }
 
@@ -871,6 +872,7 @@ function GlobalChemicalSearchDialog({
   open, 
   onOpenChange, 
   companyId,
+  departmentId,
   onImportSuccess 
 }: GlobalSearchDialogProps) {
   const [selectedChemical, setSelectedChemical] = useState<GlobalChemicalWithSds | null>(null);
@@ -887,6 +889,7 @@ function GlobalChemicalSearchDialog({
         .from("ik_hms_stoffkartotek" as any)
         .insert({
           company_id: companyId,
+          department_id: departmentId,
           product_name: selectedChemical.product_name,
           manufacturer: selectedChemical.manufacturer || null,
           danger_classes: selectedChemical.danger_classes || [],
