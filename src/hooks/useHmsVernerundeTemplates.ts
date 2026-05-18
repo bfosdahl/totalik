@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { toast } from "sonner";
 
 export interface VernerundeCheckpoint {
@@ -24,15 +25,22 @@ export interface HmsVernerundeTemplate {
 
 export const useHmsVernerundeTemplates = () => {
   const { profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
 
   const { data: templates = [], isLoading } = useQuery({
-    queryKey: ["hms-vernerunde-templates", profile?.company_id],
+    queryKey: ["hms-vernerunde-templates", profile?.company_id, filterDepartmentId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from("hms_vernerunde_templates")
         .select("*")
-        .eq("is_active", true)
+        .eq("is_active", true);
+      if (filterDepartmentId) {
+        q = q.or(`is_system_template.eq.true,and(company_id.eq.${profile?.company_id},department_id.eq.${filterDepartmentId})`);
+      } else if (profile?.company_id) {
+        q = q.or(`is_system_template.eq.true,and(company_id.eq.${profile.company_id},department_id.is.null)`);
+      }
+      const { data, error } = await q
         .order("is_system_template", { ascending: false })
         .order("template_name");
 
@@ -56,6 +64,7 @@ export const useHmsVernerundeTemplates = () => {
         .from("hms_vernerunde_templates")
         .insert({
           company_id: profile?.company_id,
+          department_id: filterDepartmentId,
           template_name: input.template_name,
           description: input.description || null,
           checkpoints: JSON.parse(JSON.stringify(input.checkpoints)),
