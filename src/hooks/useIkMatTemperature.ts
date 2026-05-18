@@ -106,6 +106,12 @@ export function useIkMatTemperature() {
       .select('*, equipment:ik_mat_temperature_equipment(*)')
       .eq('company_id', company.id)
       .order('measured_at', { ascending: false });
+
+    if (filterDepartmentId) {
+      query = query.eq('department_id', filterDepartmentId);
+    } else {
+      query = query.is('department_id', null);
+    }
     
     if (startDate) {
       // Treat the YYYY-MM-DD as a local date and convert to start-of-day ISO.
