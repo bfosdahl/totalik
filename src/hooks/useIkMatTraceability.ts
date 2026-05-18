@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { useToast } from "@/hooks/use-toast";
 
 export interface TraceabilityRecord {
@@ -20,18 +21,22 @@ export interface TraceabilityRecord {
 
 export const useIkMatTraceability = (companyId: string | undefined) => {
   const { toast } = useToast();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
 
   const { data: records, isLoading } = useQuery({
-    queryKey: ["ik-mat-traceability", companyId],
+    queryKey: ["ik-mat-traceability", companyId, filterDepartmentId],
     queryFn: async () => {
       if (!companyId) return [];
-      
-      const { data, error } = await supabase
+
+      let q = supabase
         .from("ik_mat_traceability_records")
         .select("*")
-        .eq("company_id", companyId)
-        .order("receipt_date", { ascending: false });
+        .eq("company_id", companyId);
+      q = filterDepartmentId
+        ? q.eq("department_id", filterDepartmentId)
+        : q.is("department_id", null);
+      const { data, error } = await q.order("receipt_date", { ascending: false });
 
       if (error) throw error;
       return data as TraceabilityRecord[];
@@ -43,7 +48,7 @@ export const useIkMatTraceability = (companyId: string | undefined) => {
     mutationFn: async (record: Omit<TraceabilityRecord, "id" | "created_at" | "updated_at">) => {
       const { data, error } = await supabase
         .from("ik_mat_traceability_records")
-        .insert(record)
+        .insert({ ...record, department_id: filterDepartmentId } as any)
         .select()
         .single();
 
