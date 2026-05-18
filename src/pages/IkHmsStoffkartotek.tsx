@@ -819,8 +819,9 @@ export default function IkHmsStoffkartotek() {
           open={isGlobalSearchOpen}
           onOpenChange={setIsGlobalSearchOpen}
           companyId={company?.id || ""}
+          departmentId={filterDepartmentId}
           onImportSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id] });
+            queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id, filterDepartmentId] });
           }}
         />
 
