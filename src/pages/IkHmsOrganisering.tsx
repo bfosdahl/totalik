@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 const IkHmsOrganisering = () => {
   const { profile, isSystemAdmin, isCompanyAdmin } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const isMobile = useIsMobile();
   
   const {
@@ -83,11 +85,14 @@ const IkHmsOrganisering = () => {
       if (!profile?.company_id) return;
 
       try {
-        const { data, error } = await supabase
+        let oq = supabase
           .from("company_organization")
           .select("custom_content")
-          .eq("company_id", profile.company_id)
-          .single();
+          .eq("company_id", profile.company_id);
+        oq = filterDepartmentId
+          ? oq.eq("department_id", filterDepartmentId)
+          : oq.is("department_id", null);
+        const { data, error } = await oq.maybeSingle();
 
         if (error && error.code !== "PGRST116") throw error;
         
@@ -109,7 +114,7 @@ const IkHmsOrganisering = () => {
     };
 
     fetchDescription();
-  }, [profile?.company_id]);
+  }, [profile?.company_id, filterDepartmentId]);
 
   // Auto-sync roles to company_organization when org chart nodes change
   const initialLoadRef = useRef(true);
@@ -142,10 +147,11 @@ const IkHmsOrganisering = () => {
       .from("company_organization")
       .upsert({
         company_id: profile.company_id,
+        department_id: filterDepartmentId,
         custom_content: content,
         is_custom: true,
         updated_at: new Date().toISOString(),
-      }, { onConflict: "company_id" })
+      }, { onConflict: "company_id,department_id" })
       .then(({ error }) => {
         if (error) console.error("Error auto-syncing roles:", error);
       });
@@ -270,11 +276,12 @@ const IkHmsOrganisering = () => {
         .from("company_organization")
         .upsert({
           company_id: profile.company_id,
+          department_id: filterDepartmentId,
           custom_content: content,
           is_custom: true,
           updated_at: new Date().toISOString(),
         }, {
-          onConflict: "company_id",
+          onConflict: "company_id,department_id",
         });
 
       if (error) throw error;
@@ -373,10 +380,11 @@ const IkHmsOrganisering = () => {
         .from("company_organization")
         .upsert({
           company_id: profile.company_id,
+          department_id: filterDepartmentId,
           custom_content: content,
           is_custom: true,
           updated_at: new Date().toISOString(),
-        }, { onConflict: "company_id" });
+        }, { onConflict: "company_id,department_id" });
     } catch (error) {
       console.error("Error syncing roles to handbook:", error);
     }

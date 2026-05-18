@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { toast } from "sonner";
 
 export interface ActionPlanFollowup {
@@ -36,18 +37,22 @@ export interface CreateFollowupInput {
 
 export function useActionPlanFollowups() {
   const { company, profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
 
   const { data: followups = [], isLoading, refetch } = useQuery({
-    queryKey: ["action-plan-followups", company?.id],
+    queryKey: ["action-plan-followups", company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
       
-      const { data, error } = await supabase
+      let q = supabase
         .from("action_plan_followups")
         .select("*")
-        .eq("company_id", company.id)
-        .order("followup_date", { ascending: true });
+        .eq("company_id", company.id);
+      q = filterDepartmentId
+        ? q.eq("department_id", filterDepartmentId)
+        : q.is("department_id", null);
+      const { data, error } = await q.order("followup_date", { ascending: true });
       
       if (error) throw error;
       return data as ActionPlanFollowup[];
@@ -63,6 +68,7 @@ export function useActionPlanFollowups() {
         .from("action_plan_followups")
         .insert({
           company_id: company.id,
+          department_id: filterDepartmentId,
           action_id: input.action_id,
           action_description: input.action_description,
           risk_description: input.risk_description || null,

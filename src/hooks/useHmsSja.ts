@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { toast } from "sonner";
 
 export interface HmsSjaRisk {
@@ -63,18 +64,22 @@ export interface CreateHmsSjaInput {
 
 export function useHmsSja() {
   const { company } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
 
   const { data: sjaList = [], isLoading, refetch } = useQuery({
-    queryKey: ["hms-sja", company?.id],
+    queryKey: ["hms-sja", company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
       
-      const { data, error } = await supabase
+      let q = supabase
         .from("hms_sja")
         .select("*")
-        .eq("company_id", company.id)
-        .order("created_at", { ascending: false });
+        .eq("company_id", company.id);
+      q = filterDepartmentId
+        ? q.eq("department_id", filterDepartmentId)
+        : q.is("department_id", null);
+      const { data, error } = await q.order("created_at", { ascending: false });
       
       if (error) throw error;
       
@@ -96,6 +101,7 @@ export function useHmsSja() {
         .from("hms_sja")
         .insert([{
           company_id: company.id,
+          department_id: filterDepartmentId,
           sja_number: "",
           title: input.title,
           description: input.description || null,

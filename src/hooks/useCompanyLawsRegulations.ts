@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { toast } from "sonner";
 
 export interface CompanyLawRegulation {
@@ -29,19 +30,23 @@ export interface NewLawRegulation {
 
 export const useCompanyLawsRegulations = () => {
   const { profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
   const companyId = profile?.company_id;
 
   const { data: savedLaws = [], isLoading } = useQuery({
-    queryKey: ["company-laws-regulations", companyId],
+    queryKey: ["company-laws-regulations", companyId, filterDepartmentId],
     queryFn: async () => {
       if (!companyId) return [];
       
-      const { data, error } = await supabase
+      let q = supabase
         .from("company_laws_regulations")
         .select("*")
-        .eq("company_id", companyId)
-        .order("created_at", { ascending: true });
+        .eq("company_id", companyId);
+      q = filterDepartmentId
+        ? q.eq("department_id", filterDepartmentId)
+        : q.is("department_id", null);
+      const { data, error } = await q.order("created_at", { ascending: true });
 
       if (error) throw error;
       return data as CompanyLawRegulation[];
@@ -56,6 +61,7 @@ export const useCompanyLawsRegulations = () => {
       const lawsWithCompanyId = laws.map(law => ({
         ...law,
         company_id: companyId,
+        department_id: filterDepartmentId,
       }));
 
       const { data, error } = await supabase
@@ -85,6 +91,7 @@ export const useCompanyLawsRegulations = () => {
         .insert({
           ...law,
           company_id: companyId,
+          department_id: filterDepartmentId,
           is_manually_added: true,
         })
         .select()
@@ -126,10 +133,14 @@ export const useCompanyLawsRegulations = () => {
     mutationFn: async () => {
       if (!companyId) throw new Error("Ingen bedrift valgt");
 
-      const { error } = await supabase
+      let dq = supabase
         .from("company_laws_regulations")
         .delete()
         .eq("company_id", companyId);
+      dq = filterDepartmentId
+        ? dq.eq("department_id", filterDepartmentId)
+        : dq.is("department_id", null);
+      const { error } = await dq;
 
       if (error) throw error;
     },

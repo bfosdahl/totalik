@@ -1458,7 +1458,7 @@ export type Database = {
           {
             foreignKeyName: "company_action_plans_company_id_fkey"
             columns: ["company_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -2375,7 +2375,7 @@ export type Database = {
           {
             foreignKeyName: "company_organization_company_id_fkey"
             columns: ["company_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -2483,7 +2483,7 @@ export type Database = {
           {
             foreignKeyName: "company_risk_assessments_company_id_fkey"
             columns: ["company_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -2525,7 +2525,7 @@ export type Database = {
           {
             foreignKeyName: "company_routines_company_id_fkey"
             columns: ["company_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },

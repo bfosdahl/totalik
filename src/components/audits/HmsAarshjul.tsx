@@ -28,6 +28,7 @@ import {
   Plus,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -234,6 +235,7 @@ interface CustomDbActivity {
 const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   const navigate = useNavigate();
   const { company } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const isMobile = useIsMobile();
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
@@ -280,11 +282,12 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
     const { data, error } = await supabase
       .from("company_aarshjul_activities")
       .select("id, name, description, responsible, month")
-      .eq("company_id", company.id);
+      .eq("company_id", company.id)
+      [filterDepartmentId ? "eq" : "is"]("department_id", filterDepartmentId);
     if (!error && data) {
       setCustomActivities(data as CustomDbActivity[]);
     }
-  }, [company?.id]);
+  }, [company?.id, filterDepartmentId]);
 
   useEffect(() => {
     fetchCustomActivities();
@@ -296,11 +299,12 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
     const { data, error } = await supabase
       .from("company_aarshjul_hidden_defaults")
       .select("activity_id")
-      .eq("company_id", company.id);
+      .eq("company_id", company.id)
+      [filterDepartmentId ? "eq" : "is"]("department_id", filterDepartmentId);
     if (!error && data) {
       setHiddenDefaults(data.map((d: any) => d.activity_id));
     }
-  }, [company?.id]);
+  }, [company?.id, filterDepartmentId]);
 
   useEffect(() => {
     fetchHiddenDefaults();
@@ -312,7 +316,8 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
     const { data, error } = await supabase
       .from("company_aarshjul_default_overrides")
       .select("activity_id, custom_months")
-      .eq("company_id", company.id);
+      .eq("company_id", company.id)
+      [filterDepartmentId ? "eq" : "is"]("department_id", filterDepartmentId);
     if (!error && data) {
       const overrides: Record<string, number[]> = {};
       data.forEach((d: any) => {
@@ -320,7 +325,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
       });
       setMonthOverrides(overrides);
     }
-  }, [company?.id]);
+  }, [company?.id, filterDepartmentId]);
 
   useEffect(() => {
     fetchMonthOverrides();
@@ -331,7 +336,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
     if (!company?.id) return;
     const { error } = await supabase
       .from("company_aarshjul_hidden_defaults")
-      .insert({ company_id: company.id, activity_id: activityId });
+      .insert({ company_id: company.id, department_id: filterDepartmentId, activity_id: activityId });
     if (error) {
       toast.error("Kunne ikke skjule aktiviteten");
     } else {
@@ -347,6 +352,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
       .from("company_aarshjul_hidden_defaults")
       .delete()
       .eq("company_id", company.id)
+      [filterDepartmentId ? "eq" : "is"]("department_id", filterDepartmentId)
       .eq("activity_id", activityId);
     if (error) {
       toast.error("Kunne ikke gjenopprette aktiviteten");

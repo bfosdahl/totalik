@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ interface CompanyGoal {
 
 const IkHmsMaal = () => {
   const { profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const [goals, setGoals] = useState<CompanyGoal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -29,11 +31,14 @@ const IkHmsMaal = () => {
       if (!profile?.company_id) return;
 
       try {
-        const { data, error } = await supabase
+        let q = supabase
           .from("company_goals")
           .select("*")
-          .eq("company_id", profile.company_id)
-          .order("sort_order", { ascending: true });
+          .eq("company_id", profile.company_id);
+        q = filterDepartmentId
+          ? q.eq("department_id", filterDepartmentId)
+          : q.is("department_id", null);
+        const { data, error } = await q.order("sort_order", { ascending: true });
 
         if (error) throw error;
         setGoals(data || []);
@@ -46,7 +51,7 @@ const IkHmsMaal = () => {
     };
 
     fetchGoals();
-  }, [profile?.company_id]);
+  }, [profile?.company_id, filterDepartmentId]);
 
   const handleUpdateGoal = (id: string, text: string) => {
     setGoals(goals.map(g => g.id === id ? { ...g, goal_text: text } : g));

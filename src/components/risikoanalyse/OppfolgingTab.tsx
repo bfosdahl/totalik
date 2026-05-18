@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { format, isPast, isToday } from "date-fns";
@@ -43,6 +44,7 @@ interface ActionItem {
 
 export function OppfolgingTab() {
   const { company, profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const [actions, setActions] = useState<ActionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -96,11 +98,14 @@ export function OppfolgingTab() {
       if (!company?.id) return;
       
       try {
-        const { data } = await supabase
+        let q = supabase
           .from("company_action_plans")
           .select("actions")
-          .eq("company_id", company.id)
-          .single();
+          .eq("company_id", company.id);
+        q = filterDepartmentId
+          ? q.eq("department_id", filterDepartmentId)
+          : q.is("department_id", null);
+        const { data } = await q.maybeSingle();
         
         if (data?.actions) {
           const rawActions = data.actions as unknown as any[];
@@ -116,7 +121,7 @@ export function OppfolgingTab() {
     };
     
     loadActions();
-  }, [company?.id]);
+  }, [company?.id, filterDepartmentId]);
 
   // Save actions
   const handleSave = async () => {
@@ -128,9 +133,10 @@ export function OppfolgingTab() {
         .from("company_action_plans")
         .upsert([{
           company_id: company.id,
+          department_id: filterDepartmentId,
           actions: actions as unknown as Json,
           updated_at: new Date().toISOString(),
-        }], { onConflict: "company_id" });
+        }], { onConflict: "company_id,department_id" });
 
       if (error) throw error;
       toast.success("Lagret");

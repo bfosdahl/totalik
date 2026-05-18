@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { useEmployees } from "@/hooks/useEmployees";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
@@ -154,6 +155,7 @@ const getRiskLevel = (consequence: number, probability: number) => {
 
 export function RisikovurderingOgHandlingsplan() {
   const { company, profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const { employees } = useEmployees();
   const [risks, setRisks] = useState<RiskItem[]>([]);
   const [actions, setActions] = useState<ActionItem[]>([]);
@@ -281,11 +283,14 @@ export function RisikovurderingOgHandlingsplan() {
       if (!company?.id) return;
       
       try {
-        const { data: riskData } = await supabase
+        let rq = supabase
           .from("company_risk_assessments")
           .select("*")
-          .eq("company_id", company.id)
-          .maybeSingle();
+          .eq("company_id", company.id);
+        rq = filterDepartmentId
+          ? rq.eq("department_id", filterDepartmentId)
+          : rq.is("department_id", null);
+        const { data: riskData } = await rq.maybeSingle();
         
         if (riskData?.risks) {
           const rawRisks = riskData.risks as unknown as any[];
@@ -296,11 +301,14 @@ export function RisikovurderingOgHandlingsplan() {
           setRisks([]);
         }
 
-        const { data: actionData } = await supabase
+        let aq = supabase
           .from("company_action_plans")
           .select("*")
-          .eq("company_id", company.id)
-          .maybeSingle();
+          .eq("company_id", company.id);
+        aq = filterDepartmentId
+          ? aq.eq("department_id", filterDepartmentId)
+          : aq.is("department_id", null);
+        const { data: actionData } = await aq.maybeSingle();
         
         if (actionData?.actions) {
           setActions(actionData.actions as unknown as ActionItem[]);
@@ -315,7 +323,7 @@ export function RisikovurderingOgHandlingsplan() {
     };
 
     loadData();
-  }, [company?.id, refreshKey]);
+  }, [company?.id, refreshKey, filterDepartmentId]);
 
   // Save all data
   const handleSave = async () => {
@@ -327,9 +335,10 @@ export function RisikovurderingOgHandlingsplan() {
         .from("company_risk_assessments")
         .upsert([{
           company_id: company.id,
+          department_id: filterDepartmentId,
           risks: risks as unknown as Json,
           updated_at: new Date().toISOString(),
-        }], { onConflict: "company_id" });
+        }], { onConflict: "company_id,department_id" });
 
       if (riskError) throw riskError;
 
@@ -337,9 +346,10 @@ export function RisikovurderingOgHandlingsplan() {
         .from("company_action_plans")
         .upsert([{
           company_id: company.id,
+          department_id: filterDepartmentId,
           actions: actions as unknown as Json,
           updated_at: new Date().toISOString(),
-        }], { onConflict: "company_id" });
+        }], { onConflict: "company_id,department_id" });
 
       if (actionError) throw actionError;
 
@@ -524,6 +534,7 @@ export function RisikovurderingOgHandlingsplan() {
           .from("company_risk_assessments")
           .insert({
             company_id: company.id,
+            department_id: filterDepartmentId,
             risks: updatedRisks as unknown as Json,
             updated_at: nowIso,
           })
@@ -548,6 +559,7 @@ export function RisikovurderingOgHandlingsplan() {
           .from("company_action_plans")
           .insert({
             company_id: company.id,
+            department_id: filterDepartmentId,
             actions: updatedActions as unknown as Json,
             updated_at: nowIso,
           })

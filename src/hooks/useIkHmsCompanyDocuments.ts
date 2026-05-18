@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 
 export interface IkHmsCompanyDocument {
   id: string;
@@ -99,18 +100,22 @@ export const DOCUMENT_CATEGORIES = [
 export const useIkHmsCompanyDocuments = () => {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const companyId = profile?.company_id;
 
   const { data: documents = [], isLoading } = useQuery({
-    queryKey: ["ik-hms-company-documents", companyId],
+    queryKey: ["ik-hms-company-documents", companyId, filterDepartmentId],
     queryFn: async () => {
       if (!companyId) return [];
       
-      const { data, error } = await supabase
+      let q = supabase
         .from("ik_hms_company_documents")
         .select("*")
-        .eq("company_id", companyId)
-        .order("created_at", { ascending: false });
+        .eq("company_id", companyId);
+      q = filterDepartmentId
+        ? q.eq("department_id", filterDepartmentId)
+        : q.is("department_id", null);
+      const { data, error } = await q.order("created_at", { ascending: false });
 
       if (error) throw error;
       return data as IkHmsCompanyDocument[];
@@ -165,6 +170,7 @@ export const useIkHmsCompanyDocuments = () => {
         .from("ik_hms_company_documents")
         .insert({
           company_id: companyId,
+          department_id: filterDepartmentId,
           document_name: documentName,
           description,
           category,

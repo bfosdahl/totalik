@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { toast } from "sonner";
 
 export interface OrgChartNodePerson {
@@ -70,20 +71,24 @@ export const PREDEFINED_ORG_ROLES = [
 
 export const useOrgChart = () => {
   const { profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
   const companyId = profile?.company_id;
 
   // Fetch all nodes with persons
   const { data: nodes = [], isLoading } = useQuery({
-    queryKey: ['org-chart-nodes', companyId],
+    queryKey: ['org-chart-nodes', companyId, filterDepartmentId],
     queryFn: async () => {
       if (!companyId) return [];
       
-      const { data: nodesData, error: nodesError } = await supabase
+      let nq = supabase
         .from('org_chart_nodes')
         .select('*')
-        .eq('company_id', companyId)
-        .order('sort_order');
+        .eq('company_id', companyId);
+      nq = filterDepartmentId
+        ? nq.eq('department_id', filterDepartmentId)
+        : nq.is('department_id', null);
+      const { data: nodesData, error: nodesError } = await nq.order('sort_order');
       
       if (nodesError) throw nodesError;
       
@@ -161,6 +166,7 @@ export const useOrgChart = () => {
         .from('org_chart_nodes')
         .insert({
           company_id: companyId,
+          department_id: filterDepartmentId,
           role_title: data.role_title,
           role_description: data.role_description || null,
           parent_node_id: data.parent_node_id || null,
@@ -328,12 +334,16 @@ export const useOrgChart = () => {
   // Set as root node
   const setAsRoot = useMutation({
     mutationFn: async (nodeId: string) => {
-      // First, unset any existing root
-      await supabase
+      // First, unset any existing root (in same scope)
+      let rq = supabase
         .from('org_chart_nodes')
         .update({ is_root: false })
         .eq('company_id', companyId)
         .eq('is_root', true);
+      rq = filterDepartmentId
+        ? rq.eq('department_id', filterDepartmentId)
+        : rq.is('department_id', null);
+      await rq;
       
       // Set new root
       const { data, error } = await supabase

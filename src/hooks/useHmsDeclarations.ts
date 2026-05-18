@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { useCallback } from "react";
 
 export interface HmsSelfDeclaration {
@@ -45,19 +46,23 @@ export interface VerneombudExemptionAgreement {
 
 export function useHmsDeclarations() {
   const { profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const companyId = profile?.company_id;
   const queryClient = useQueryClient();
 
   const { data: selfDeclaration, isLoading: isLoadingSelfDeclaration } = useQuery({
-    queryKey: ["hms-self-declaration", companyId],
+    queryKey: ["hms-self-declaration", companyId, filterDepartmentId],
     queryFn: async () => {
       if (!companyId) return null;
-      const { data, error } = await supabase
+      let q = supabase
         .from("hms_self_declarations")
         .select("*")
         .eq("company_id", companyId)
-        .eq("status", "active")
-        .maybeSingle();
+        .eq("status", "active");
+      q = filterDepartmentId
+        ? q.eq("department_id", filterDepartmentId)
+        : q.is("department_id", null);
+      const { data, error } = await q.maybeSingle();
       
       if (error) {
         console.error("Error fetching HMS self-declaration:", error);
@@ -101,6 +106,7 @@ export function useHmsDeclarations() {
     queryClient.invalidateQueries({ queryKey: ["hms-self-declaration", companyId] });
     queryClient.invalidateQueries({ queryKey: ["verneombud-exemption", companyId] });
   }, [queryClient, companyId]);
+  void filterDepartmentId;
 
   return {
     selfDeclaration,
