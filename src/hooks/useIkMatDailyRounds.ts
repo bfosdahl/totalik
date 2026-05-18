@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { toast } from "sonner";
 
 export type RoundStationType = "temperature" | "checklist" | "cleaning" | "custom";
@@ -49,17 +50,21 @@ export interface RoundCompletion {
 
 export function useIkMatDailyRounds() {
   const { company, profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
 
   const { data: rounds = [], isLoading } = useQuery({
-    queryKey: ["ik-mat-daily-rounds", company?.id],
+    queryKey: ["ik-mat-daily-rounds", company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
-      const { data, error } = await supabase
+      let q = supabase
         .from("ik_mat_daily_rounds")
         .select("*")
-        .eq("company_id", company.id)
-        .order("created_at", { ascending: true });
+        .eq("company_id", company.id);
+      q = filterDepartmentId
+        ? q.eq("department_id", filterDepartmentId)
+        : q.is("department_id", null);
+      const { data, error } = await q.order("created_at", { ascending: true });
       if (error) throw error;
       return (data || []) as unknown as DailyRound[];
     },
@@ -67,13 +72,17 @@ export function useIkMatDailyRounds() {
   });
 
   const { data: completions = [] } = useQuery({
-    queryKey: ["ik-mat-daily-round-completions", company?.id],
+    queryKey: ["ik-mat-daily-round-completions", company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
-      const { data, error } = await supabase
+      let q = supabase
         .from("ik_mat_daily_round_completions")
         .select("*")
-        .eq("company_id", company.id)
+        .eq("company_id", company.id);
+      q = filterDepartmentId
+        ? q.eq("department_id", filterDepartmentId)
+        : q.is("department_id", null);
+      const { data, error } = await q
         .order("completed_at", { ascending: false })
         .limit(100);
       if (error) throw error;
@@ -93,11 +102,12 @@ export function useIkMatDailyRounds() {
         .from("ik_mat_daily_rounds")
         .insert({
           company_id: company.id,
+          department_id: filterDepartmentId,
           name: input.name,
           description: input.description || null,
           stations: input.stations as any,
           created_by_id: profile?.id || null,
-        })
+        } as any)
         .select()
         .single();
       if (error) throw error;
@@ -161,6 +171,7 @@ export function useIkMatDailyRounds() {
         .from("ik_mat_daily_round_completions")
         .insert({
           company_id: company.id,
+          department_id: filterDepartmentId,
           round_id: input.round_id,
           completed_by_id: profile.id,
           completed_by_name: completedByName,
@@ -168,7 +179,7 @@ export function useIkMatDailyRounds() {
           station_results: input.station_results as any,
           started_at: input.started_at,
           completed_at: new Date().toISOString(),
-        })
+        } as any)
         .select()
         .single();
       if (error) throw error;

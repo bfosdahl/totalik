@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDepartmentContext } from '@/contexts/DepartmentContext';
 import { toast } from 'sonner';
 import { startOfDay, endOfDay, format, addDays, subDays, isToday, isBefore, parseISO, isSameDay } from 'date-fns';
 import { useCompanyModules } from './useCompanyModules';
@@ -50,21 +51,29 @@ export interface CalendarEvent {
 
 export const useIkMatScheduledTasks = () => {
   const { company, profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const { modules } = useCompanyModules();
   const queryClient = useQueryClient();
 
+  // Helper to apply department filter consistently
+  const applyDeptFilter = <T extends { eq: any; is: any }>(q: T): T =>
+    (filterDepartmentId
+      ? q.eq('department_id', filterDepartmentId)
+      : q.is('department_id', null)) as T;
+
   // Fetch all scheduled tasks
   const { data: tasks, isLoading: tasksLoading } = useQuery({
-    queryKey: ['ik-mat-scheduled-tasks', company?.id],
+    queryKey: ['ik-mat-scheduled-tasks', company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
 
-      const { data, error } = await supabase
+      let q = supabase
         .from('ik_mat_scheduled_tasks')
         .select('*')
         .eq('company_id', company.id)
-        .eq('is_active', true)
-        .order('title');
+        .eq('is_active', true);
+      q = applyDeptFilter(q);
+      const { data, error } = await q.order('title');
 
       if (error) throw error;
       return (data || []) as ScheduledTask[];
@@ -74,14 +83,16 @@ export const useIkMatScheduledTasks = () => {
 
   // Fetch temperature equipment for generating pending tasks
   const { data: temperatureEquipment } = useQuery({
-    queryKey: ['ik-mat-temperature-equipment-for-calendar', company?.id],
+    queryKey: ['ik-mat-temperature-equipment-for-calendar', company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
-      const { data, error } = await supabase
+      let q = supabase
         .from('ik_mat_temperature_equipment')
         .select('*')
         .eq('company_id', company.id)
         .eq('is_active', true);
+      q = applyDeptFilter(q);
+      const { data, error } = await q;
       if (error) throw error;
       return data || [];
     },
@@ -90,13 +101,15 @@ export const useIkMatScheduledTasks = () => {
 
   // Fetch custom cleaning tasks
   const { data: cleaningTasks } = useQuery({
-    queryKey: ['custom-cleaning-tasks-for-calendar', company?.id],
+    queryKey: ['custom-cleaning-tasks-for-calendar', company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
-      const { data, error } = await supabase
+      let q = supabase
         .from('ik_mat_custom_cleaning_tasks')
         .select('*')
         .eq('company_id', company.id);
+      q = applyDeptFilter(q);
+      const { data, error } = await q;
       if (error) throw error;
       return data || [];
     },
@@ -119,10 +132,12 @@ export const useIkMatScheduledTasks = () => {
   const fetchCompletions = async (startDate: Date, endDate: Date) => {
     if (!company?.id) return [];
 
-    const { data, error } = await supabase
+    let q = supabase
       .from('ik_mat_task_completions')
       .select('*, task:ik_mat_scheduled_tasks(*)')
-      .eq('company_id', company.id)
+      .eq('company_id', company.id);
+    q = applyDeptFilter(q);
+    const { data, error } = await q
       .gte('scheduled_date', format(startDate, 'yyyy-MM-dd'))
       .lte('scheduled_date', format(endDate, 'yyyy-MM-dd'));
 
@@ -134,10 +149,12 @@ export const useIkMatScheduledTasks = () => {
   const fetchTemperatureLogs = async (startDate: Date, endDate: Date) => {
     if (!company?.id) return [];
 
-    const { data, error } = await supabase
+    let q = supabase
       .from('ik_mat_temperature_logs')
       .select('*, equipment:ik_mat_temperature_equipment(name)')
-      .eq('company_id', company.id)
+      .eq('company_id', company.id);
+    q = applyDeptFilter(q);
+    const { data, error } = await q
       .gte('measured_at', startOfDay(startDate).toISOString())
       .lte('measured_at', endOfDay(endDate).toISOString());
 
@@ -149,10 +166,12 @@ export const useIkMatScheduledTasks = () => {
   const fetchVaremottak = async (startDate: Date, endDate: Date) => {
     if (!company?.id) return [];
 
-    const { data, error } = await supabase
+    let q = supabase
       .from('ik_mat_traceability_records')
       .select('*')
-      .eq('company_id', company.id)
+      .eq('company_id', company.id);
+    q = applyDeptFilter(q);
+    const { data, error } = await q
       .gte('receipt_date', format(startDate, 'yyyy-MM-dd'))
       .lte('receipt_date', format(endDate, 'yyyy-MM-dd'));
 
@@ -164,10 +183,12 @@ export const useIkMatScheduledTasks = () => {
   const fetchCleaningResponses = async (startDate: Date, endDate: Date) => {
     if (!company?.id) return [];
 
-    const { data, error } = await supabase
+    let q = supabase
       .from('ik_mat_cleaning_plan_responses')
       .select('*')
-      .eq('company_id', company.id)
+      .eq('company_id', company.id);
+    q = applyDeptFilter(q);
+    const { data, error } = await q
       .gte('created_at', startOfDay(startDate).toISOString())
       .lte('created_at', endOfDay(endDate).toISOString());
 
@@ -177,13 +198,15 @@ export const useIkMatScheduledTasks = () => {
 
   // Fetch dismissed auto-deviations to filter calendar overdue events
   const { data: dismissedTitles } = useQuery({
-    queryKey: ['ik-mat-dismissed-auto-deviations', company?.id],
+    queryKey: ['ik-mat-dismissed-auto-deviations', company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return new Set<string>();
-      const { data } = await supabase
+      let q = supabase
         .from('ik_mat_dismissed_auto_deviations')
         .select('deviation_title')
         .eq('company_id', company.id);
+      q = applyDeptFilter(q);
+      const { data } = await q;
       return new Set((data || []).map(d => d.deviation_title));
     },
     enabled: !!company?.id,
@@ -475,8 +498,9 @@ export const useIkMatScheduledTasks = () => {
         .from('ik_mat_scheduled_tasks')
         .insert({
           company_id: company.id,
+          department_id: filterDepartmentId,
           ...newTask,
-        })
+        } as any)
         .select()
         .single();
 
@@ -577,6 +601,7 @@ export const useIkMatScheduledTasks = () => {
           .from('ik_mat_task_completions')
           .insert({
             company_id: company.id,
+            department_id: filterDepartmentId,
             task_id: taskId,
             scheduled_date: format(scheduledDate, 'yyyy-MM-dd'),
             status: 'completed',
@@ -584,7 +609,7 @@ export const useIkMatScheduledTasks = () => {
             completed_by_id: profile.id,
             completed_by_name: displayName,
             notes,
-          })
+          } as any)
           .select()
           .single();
 
@@ -692,6 +717,7 @@ export const useIkMatScheduledTasks = () => {
         for (let i = 0; i < allTitles.length; i += batchSize) {
           const batch = allTitles.slice(i, i + batchSize).map((title) => ({
             company_id: company.id,
+            department_id: filterDepartmentId,
             deviation_title: title,
             dismissed_by_id: profile.user_id || null,
           }));

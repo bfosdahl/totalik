@@ -23,6 +23,7 @@ export type Database = {
           completed_by_id: string | null
           completed_by_name: string | null
           created_at: string
+          department_id: string | null
           followup_date: string
           followup_type: string
           id: string
@@ -42,6 +43,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name?: string | null
           created_at?: string
+          department_id?: string | null
           followup_date: string
           followup_type?: string
           id?: string
@@ -61,6 +63,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name?: string | null
           created_at?: string
+          department_id?: string | null
           followup_date?: string
           followup_type?: string
           id?: string
@@ -85,6 +88,13 @@ export type Database = {
             columns: ["completed_by_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_plan_followups_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
         ]
@@ -952,6 +962,7 @@ export type Database = {
           company_id: string
           created_at: string
           current_phase: number
+          department_id: string | null
           existing_measures: Json | null
           exposed_workers_count: number | null
           exposure_duration: string | null
@@ -999,6 +1010,7 @@ export type Database = {
           company_id: string
           created_at?: string
           current_phase?: number
+          department_id?: string | null
           existing_measures?: Json | null
           exposed_workers_count?: number | null
           exposure_duration?: string | null
@@ -1046,6 +1058,7 @@ export type Database = {
           company_id?: string
           created_at?: string
           current_phase?: number
+          department_id?: string | null
           existing_measures?: Json | null
           exposed_workers_count?: number | null
           exposure_duration?: string | null
@@ -1101,6 +1114,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chemical_risk_assessments_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
           {
@@ -1267,6 +1287,7 @@ export type Database = {
           color: string | null
           company_id: string
           created_at: string
+          department_id: string | null
           description: string | null
           id: string
           month: number
@@ -1278,6 +1299,7 @@ export type Database = {
           color?: string | null
           company_id: string
           created_at?: string
+          department_id?: string | null
           description?: string | null
           id?: string
           month: number
@@ -1289,6 +1311,7 @@ export type Database = {
           color?: string | null
           company_id?: string
           created_at?: string
+          department_id?: string | null
           description?: string | null
           id?: string
           month?: number
@@ -1304,6 +1327,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "company_aarshjul_activities_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       company_aarshjul_default_overrides: {
@@ -1312,6 +1342,7 @@ export type Database = {
           company_id: string
           created_at: string
           custom_months: number[]
+          department_id: string | null
           id: string
           updated_at: string
         }
@@ -1320,6 +1351,7 @@ export type Database = {
           company_id: string
           created_at?: string
           custom_months: number[]
+          department_id?: string | null
           id?: string
           updated_at?: string
         }
@@ -1328,6 +1360,7 @@ export type Database = {
           company_id?: string
           created_at?: string
           custom_months?: number[]
+          department_id?: string | null
           id?: string
           updated_at?: string
         }
@@ -1339,24 +1372,34 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "company_aarshjul_default_overrides_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       company_aarshjul_hidden_defaults: {
         Row: {
           activity_id: string
           company_id: string
+          department_id: string | null
           hidden_at: string
           id: string
         }
         Insert: {
           activity_id: string
           company_id: string
+          department_id?: string | null
           hidden_at?: string
           id?: string
         }
         Update: {
           activity_id?: string
           company_id?: string
+          department_id?: string | null
           hidden_at?: string
           id?: string
         }
@@ -1368,6 +1411,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "company_aarshjul_hidden_defaults_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       company_action_plans: {
@@ -1377,6 +1427,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           deleted_by: string | null
+          department_id: string | null
           id: string
           is_deleted: boolean
           updated_at: string
@@ -1387,6 +1438,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
+          department_id?: string | null
           id?: string
           is_deleted?: boolean
           updated_at?: string
@@ -1397,6 +1449,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
+          department_id?: string | null
           id?: string
           is_deleted?: boolean
           updated_at?: string
@@ -1409,6 +1462,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "company_action_plans_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       company_chemical_entries: {
@@ -1416,6 +1476,7 @@ export type Database = {
           company_id: string
           created_at: string
           custom_notes: string | null
+          department_id: string | null
           global_chemical_id: string
           id: string
           last_updated: string
@@ -1428,6 +1489,7 @@ export type Database = {
           company_id: string
           created_at?: string
           custom_notes?: string | null
+          department_id?: string | null
           global_chemical_id: string
           id?: string
           last_updated?: string
@@ -1440,6 +1502,7 @@ export type Database = {
           company_id?: string
           created_at?: string
           custom_notes?: string | null
+          department_id?: string | null
           global_chemical_id?: string
           id?: string
           last_updated?: string
@@ -1454,6 +1517,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_chemical_entries_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
           {
@@ -1560,6 +1630,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           deleted_by: string | null
+          department_id: string | null
           goal_text: string
           id: string
           is_deleted: boolean
@@ -1572,6 +1643,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
+          department_id?: string | null
           goal_text: string
           id?: string
           is_deleted?: boolean
@@ -1584,6 +1656,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
+          department_id?: string | null
           goal_text?: string
           id?: string
           is_deleted?: boolean
@@ -1597,6 +1670,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_goals_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
         ]
@@ -2036,6 +2116,7 @@ export type Database = {
           category: string | null
           company_id: string
           created_at: string
+          department_id: string | null
           description: string | null
           employee_threshold: number | null
           id: string
@@ -2049,6 +2130,7 @@ export type Database = {
           category?: string | null
           company_id: string
           created_at?: string
+          department_id?: string | null
           description?: string | null
           employee_threshold?: number | null
           id?: string
@@ -2062,6 +2144,7 @@ export type Database = {
           category?: string | null
           company_id?: string
           created_at?: string
+          department_id?: string | null
           description?: string | null
           employee_threshold?: number | null
           id?: string
@@ -2077,6 +2160,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_laws_regulations_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
         ]
@@ -2255,6 +2345,7 @@ export type Database = {
           company_id: string
           created_at: string
           custom_content: string
+          department_id: string | null
           id: string
           is_custom: boolean | null
           template_id: string | null
@@ -2264,6 +2355,7 @@ export type Database = {
           company_id: string
           created_at?: string
           custom_content: string
+          department_id?: string | null
           id?: string
           is_custom?: boolean | null
           template_id?: string | null
@@ -2273,6 +2365,7 @@ export type Database = {
           company_id?: string
           created_at?: string
           custom_content?: string
+          department_id?: string | null
           id?: string
           is_custom?: boolean | null
           template_id?: string | null
@@ -2284,6 +2377,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: true
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_organization_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
         ]
@@ -2358,6 +2458,7 @@ export type Database = {
         Row: {
           company_id: string
           created_at: string
+          department_id: string | null
           id: string
           risks: Json
           updated_at: string
@@ -2365,6 +2466,7 @@ export type Database = {
         Insert: {
           company_id: string
           created_at?: string
+          department_id?: string | null
           id?: string
           risks?: Json
           updated_at?: string
@@ -2372,6 +2474,7 @@ export type Database = {
         Update: {
           company_id?: string
           created_at?: string
+          department_id?: string | null
           id?: string
           risks?: Json
           updated_at?: string
@@ -2384,12 +2487,20 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "company_risk_assessments_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       company_routines: {
         Row: {
           company_id: string
           created_at: string
+          department_id: string | null
           id: string
           routines: Json
           updated_at: string
@@ -2397,6 +2508,7 @@ export type Database = {
         Insert: {
           company_id: string
           created_at?: string
+          department_id?: string | null
           id?: string
           routines?: Json
           updated_at?: string
@@ -2404,6 +2516,7 @@ export type Database = {
         Update: {
           company_id?: string
           created_at?: string
+          department_id?: string | null
           id?: string
           routines?: Json
           updated_at?: string
@@ -2414,6 +2527,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: true
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_routines_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
         ]
@@ -3838,6 +3958,7 @@ export type Database = {
           assessed_by_name: string | null
           company_id: string
           created_at: string
+          department_id: string | null
           id: string
           noise_lex8h: number | null
           noise_zone: string | null
@@ -3856,6 +3977,7 @@ export type Database = {
           assessed_by_name?: string | null
           company_id: string
           created_at?: string
+          department_id?: string | null
           id?: string
           noise_lex8h?: number | null
           noise_zone?: string | null
@@ -3874,6 +3996,7 @@ export type Database = {
           assessed_by_name?: string | null
           company_id?: string
           created_at?: string
+          department_id?: string | null
           id?: string
           noise_lex8h?: number | null
           noise_zone?: string | null
@@ -3900,6 +4023,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_exposure_assessments_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
         ]
@@ -4626,6 +4756,7 @@ export type Database = {
           completed_by_id: string | null
           completed_by_name: string
           created_at: string | null
+          department_id: string | null
           id: string
           notes: string | null
           responses: Json | null
@@ -4639,6 +4770,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name: string
           created_at?: string | null
+          department_id?: string | null
           id?: string
           notes?: string | null
           responses?: Json | null
@@ -4652,6 +4784,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name?: string
           created_at?: string | null
+          department_id?: string | null
           id?: string
           notes?: string | null
           responses?: Json | null
@@ -4673,6 +4806,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "gdpr_checklist_responses_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gdpr_documentation: {
@@ -4680,6 +4820,7 @@ export type Database = {
           company_id: string
           content: string | null
           created_at: string | null
+          department_id: string | null
           documentation_type: string
           id: string
           last_reviewed: string | null
@@ -4691,6 +4832,7 @@ export type Database = {
           company_id: string
           content?: string | null
           created_at?: string | null
+          department_id?: string | null
           documentation_type: string
           id?: string
           last_reviewed?: string | null
@@ -4702,6 +4844,7 @@ export type Database = {
           company_id?: string
           content?: string | null
           created_at?: string | null
+          department_id?: string | null
           documentation_type?: string
           id?: string
           last_reviewed?: string | null
@@ -4715,6 +4858,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gdpr_documentation_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
         ]
@@ -5011,6 +5161,7 @@ export type Database = {
           country: string | null
           created_at: string
           declaration_date: string
+          department_id: string | null
           employee_rep_name: string | null
           employee_rep_signature: string | null
           employee_rep_signed_at: string | null
@@ -5030,6 +5181,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           declaration_date?: string
+          department_id?: string | null
           employee_rep_name?: string | null
           employee_rep_signature?: string | null
           employee_rep_signed_at?: string | null
@@ -5049,6 +5201,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           declaration_date?: string
+          department_id?: string | null
           employee_rep_name?: string | null
           employee_rep_signature?: string | null
           employee_rep_signed_at?: string | null
@@ -5068,6 +5221,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "hms_self_declarations_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       hms_sja: {
@@ -5077,6 +5237,7 @@ export type Database = {
           completed_by_id: string | null
           completed_by_name: string | null
           created_at: string
+          department_id: string | null
           description: string | null
           emergency_procedures: string | null
           id: string
@@ -5103,6 +5264,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name?: string | null
           created_at?: string
+          department_id?: string | null
           description?: string | null
           emergency_procedures?: string | null
           id?: string
@@ -5129,6 +5291,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name?: string | null
           created_at?: string
+          department_id?: string | null
           description?: string | null
           emergency_procedures?: string | null
           id?: string
@@ -5165,6 +5328,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "hms_sja_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "hms_sja_responsible_id_fkey"
             columns: ["responsible_id"]
             isOneToOne: false
@@ -5178,6 +5348,7 @@ export type Database = {
           checkpoints: Json
           company_id: string | null
           created_at: string
+          department_id: string | null
           description: string | null
           id: string
           is_active: boolean
@@ -5189,6 +5360,7 @@ export type Database = {
           checkpoints?: Json
           company_id?: string | null
           created_at?: string
+          department_id?: string | null
           description?: string | null
           id?: string
           is_active?: boolean
@@ -5200,6 +5372,7 @@ export type Database = {
           checkpoints?: Json
           company_id?: string | null
           created_at?: string
+          department_id?: string | null
           description?: string | null
           id?: string
           is_active?: boolean
@@ -5213,6 +5386,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hms_vernerunde_templates_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
         ]
@@ -6559,6 +6739,7 @@ export type Database = {
           category: string | null
           company_id: string
           created_at: string
+          department_id: string | null
           description: string | null
           document_name: string
           file_name: string
@@ -6578,6 +6759,7 @@ export type Database = {
           category?: string | null
           company_id: string
           created_at?: string
+          department_id?: string | null
           description?: string | null
           document_name: string
           file_name: string
@@ -6597,6 +6779,7 @@ export type Database = {
           category?: string | null
           company_id?: string
           created_at?: string
+          department_id?: string | null
           description?: string | null
           document_name?: string
           file_name?: string
@@ -6621,6 +6804,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "ik_hms_company_documents_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "ik_hms_company_documents_original_document_id_fkey"
             columns: ["original_document_id"]
             isOneToOne: false
@@ -6636,6 +6826,7 @@ export type Database = {
           danger_classes: string[] | null
           deleted_at: string | null
           deleted_by: string | null
+          department_id: string | null
           id: string
           is_deleted: boolean
           last_updated: string
@@ -6652,6 +6843,7 @@ export type Database = {
           danger_classes?: string[] | null
           deleted_at?: string | null
           deleted_by?: string | null
+          department_id?: string | null
           id?: string
           is_deleted?: boolean
           last_updated?: string
@@ -6668,6 +6860,7 @@ export type Database = {
           danger_classes?: string[] | null
           deleted_at?: string | null
           deleted_by?: string | null
+          department_id?: string | null
           id?: string
           is_deleted?: boolean
           last_updated?: string
@@ -6686,6 +6879,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ik_hms_stoffkartotek_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ik_mat_checklist_responses: {
@@ -6697,6 +6897,7 @@ export type Database = {
           completed_by_id: string | null
           completed_by_name: string
           created_at: string | null
+          department_id: string | null
           id: string
           notes: string | null
           responses: Json
@@ -6711,6 +6912,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name: string
           created_at?: string | null
+          department_id?: string | null
           id?: string
           notes?: string | null
           responses?: Json
@@ -6725,6 +6927,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name?: string
           created_at?: string | null
+          department_id?: string | null
           id?: string
           notes?: string | null
           responses?: Json
@@ -6746,6 +6949,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ik_mat_checklist_responses_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ik_mat_cleaning_plan_responses: {
@@ -6756,6 +6966,7 @@ export type Database = {
           completed_by_id: string | null
           completed_by_name: string
           created_at: string | null
+          department_id: string | null
           frequency_type: string | null
           id: string
           notes: string | null
@@ -6769,6 +6980,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name: string
           created_at?: string | null
+          department_id?: string | null
           frequency_type?: string | null
           id?: string
           notes?: string | null
@@ -6782,6 +6994,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name?: string
           created_at?: string | null
+          department_id?: string | null
           frequency_type?: string | null
           id?: string
           notes?: string | null
@@ -6803,6 +7016,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ik_mat_cleaning_plan_responses_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ik_mat_custom_checklists: {
@@ -6812,6 +7032,7 @@ export type Database = {
           checkpoints: Json
           company_id: string
           created_at: string | null
+          department_id: string | null
           description: string | null
           id: string
           updated_at: string | null
@@ -6822,6 +7043,7 @@ export type Database = {
           checkpoints?: Json
           company_id: string
           created_at?: string | null
+          department_id?: string | null
           description?: string | null
           id?: string
           updated_at?: string | null
@@ -6832,6 +7054,7 @@ export type Database = {
           checkpoints?: Json
           company_id?: string
           created_at?: string | null
+          department_id?: string | null
           description?: string | null
           id?: string
           updated_at?: string | null
@@ -6844,6 +7067,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ik_mat_custom_checklists_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ik_mat_custom_cleaning_tasks: {
@@ -6851,6 +7081,7 @@ export type Database = {
           area: string
           company_id: string
           created_at: string | null
+          department_id: string | null
           frequency: string
           id: string
           method: string
@@ -6862,6 +7093,7 @@ export type Database = {
           area: string
           company_id: string
           created_at?: string | null
+          department_id?: string | null
           frequency: string
           id?: string
           method: string
@@ -6873,6 +7105,7 @@ export type Database = {
           area?: string
           company_id?: string
           created_at?: string | null
+          department_id?: string | null
           frequency?: string
           id?: string
           method?: string
@@ -6888,6 +7121,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ik_mat_custom_cleaning_tasks_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ik_mat_daily_round_completions: {
@@ -6897,6 +7137,7 @@ export type Database = {
           completed_by_id: string | null
           completed_by_name: string
           created_at: string
+          department_id: string | null
           id: string
           round_id: string
           started_at: string
@@ -6909,6 +7150,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name: string
           created_at?: string
+          department_id?: string | null
           id?: string
           round_id: string
           started_at?: string
@@ -6921,6 +7163,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name?: string
           created_at?: string
+          department_id?: string | null
           id?: string
           round_id?: string
           started_at?: string
@@ -6933,6 +7176,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_daily_round_completions_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
           {
@@ -6949,6 +7199,7 @@ export type Database = {
           company_id: string
           created_at: string
           created_by_id: string | null
+          department_id: string | null
           description: string | null
           id: string
           is_active: boolean
@@ -6960,6 +7211,7 @@ export type Database = {
           company_id: string
           created_at?: string
           created_by_id?: string | null
+          department_id?: string | null
           description?: string | null
           id?: string
           is_active?: boolean
@@ -6971,6 +7223,7 @@ export type Database = {
           company_id?: string
           created_at?: string
           created_by_id?: string | null
+          department_id?: string | null
           description?: string | null
           id?: string
           is_active?: boolean
@@ -6986,6 +7239,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ik_mat_daily_rounds_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ik_mat_daily_task_completions: {
@@ -6995,6 +7255,7 @@ export type Database = {
           completed_by_id: string | null
           completed_by_name: string
           completed_date: string
+          department_id: string | null
           id: string
           notes: string | null
           task_type: string
@@ -7005,6 +7266,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name: string
           completed_date?: string
+          department_id?: string | null
           id?: string
           notes?: string | null
           task_type: string
@@ -7015,6 +7277,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name?: string
           completed_date?: string
+          department_id?: string | null
           id?: string
           notes?: string | null
           task_type?: string
@@ -7034,12 +7297,20 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ik_mat_daily_task_completions_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ik_mat_daily_task_settings: {
         Row: {
           company_id: string
           created_at: string
+          department_id: string | null
           frequency: string
           id: string
           is_active: boolean
@@ -7054,6 +7325,7 @@ export type Database = {
         Insert: {
           company_id: string
           created_at?: string
+          department_id?: string | null
           frequency?: string
           id?: string
           is_active?: boolean
@@ -7068,6 +7340,7 @@ export type Database = {
         Update: {
           company_id?: string
           created_at?: string
+          department_id?: string | null
           frequency?: string
           id?: string
           is_active?: boolean
@@ -7087,11 +7360,19 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ik_mat_daily_task_settings_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ik_mat_dismissed_auto_deviations: {
         Row: {
           company_id: string
+          department_id: string | null
           deviation_title: string
           dismissed_at: string
           dismissed_by_id: string | null
@@ -7099,6 +7380,7 @@ export type Database = {
         }
         Insert: {
           company_id: string
+          department_id?: string | null
           deviation_title: string
           dismissed_at?: string
           dismissed_by_id?: string | null
@@ -7106,6 +7388,7 @@ export type Database = {
         }
         Update: {
           company_id?: string
+          department_id?: string | null
           deviation_title?: string
           dismissed_at?: string
           dismissed_by_id?: string | null
@@ -7117,6 +7400,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_dismissed_auto_deviations_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
         ]
@@ -7163,6 +7453,7 @@ export type Database = {
           created_at: string
           day_of_month: number[] | null
           day_of_week: number[] | null
+          department_id: string | null
           description: string | null
           frequency: string
           id: string
@@ -7178,6 +7469,7 @@ export type Database = {
           created_at?: string
           day_of_month?: number[] | null
           day_of_week?: number[] | null
+          department_id?: string | null
           description?: string | null
           frequency: string
           id?: string
@@ -7193,6 +7485,7 @@ export type Database = {
           created_at?: string
           day_of_month?: number[] | null
           day_of_week?: number[] | null
+          department_id?: string | null
           description?: string | null
           frequency?: string
           id?: string
@@ -7211,6 +7504,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ik_mat_scheduled_tasks_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ik_mat_suppliers: {
@@ -7221,6 +7521,7 @@ export type Database = {
           contract_end_date: string | null
           contract_start_date: string | null
           created_at: string | null
+          department_id: string | null
           email: string | null
           id: string
           notes: string | null
@@ -7236,6 +7537,7 @@ export type Database = {
           contract_end_date?: string | null
           contract_start_date?: string | null
           created_at?: string | null
+          department_id?: string | null
           email?: string | null
           id?: string
           notes?: string | null
@@ -7251,6 +7553,7 @@ export type Database = {
           contract_end_date?: string | null
           contract_start_date?: string | null
           created_at?: string | null
+          department_id?: string | null
           email?: string | null
           id?: string
           notes?: string | null
@@ -7267,6 +7570,13 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ik_mat_suppliers_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ik_mat_task_completions: {
@@ -7276,6 +7586,7 @@ export type Database = {
           completed_by_id: string | null
           completed_by_name: string
           created_at: string
+          department_id: string | null
           id: string
           notes: string | null
           scheduled_date: string
@@ -7289,6 +7600,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name: string
           created_at?: string
+          department_id?: string | null
           id?: string
           notes?: string | null
           scheduled_date: string
@@ -7302,6 +7614,7 @@ export type Database = {
           completed_by_id?: string | null
           completed_by_name?: string
           created_at?: string
+          department_id?: string | null
           id?: string
           notes?: string | null
           scheduled_date?: string
@@ -7322,6 +7635,13 @@ export type Database = {
             columns: ["completed_by_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_task_completions_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
           {
@@ -7482,6 +7802,7 @@ export type Database = {
           company_id: string
           created_at: string | null
           created_by: string | null
+          department_id: string | null
           document_path: string | null
           expiry_date: string | null
           id: string
@@ -7498,6 +7819,7 @@ export type Database = {
           company_id: string
           created_at?: string | null
           created_by?: string | null
+          department_id?: string | null
           document_path?: string | null
           expiry_date?: string | null
           id?: string
@@ -7514,6 +7836,7 @@ export type Database = {
           company_id?: string
           created_at?: string | null
           created_by?: string | null
+          department_id?: string | null
           document_path?: string | null
           expiry_date?: string | null
           id?: string
@@ -7531,6 +7854,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_traceability_records_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
         ]
@@ -14131,6 +14461,7 @@ export type Database = {
         Row: {
           company_id: string
           created_at: string
+          department_id: string | null
           id: string
           is_root: boolean
           parent_node_id: string | null
@@ -14142,6 +14473,7 @@ export type Database = {
         Insert: {
           company_id: string
           created_at?: string
+          department_id?: string | null
           id?: string
           is_root?: boolean
           parent_node_id?: string | null
@@ -14153,6 +14485,7 @@ export type Database = {
         Update: {
           company_id?: string
           created_at?: string
+          department_id?: string | null
           id?: string
           is_root?: boolean
           parent_node_id?: string | null
@@ -14167,6 +14500,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_chart_nodes_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "company_departments"
             referencedColumns: ["id"]
           },
           {

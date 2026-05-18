@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { toast } from "sonner";
 
 export interface IkMatSupplier {
@@ -21,18 +22,22 @@ export interface IkMatSupplier {
 
 export function useIkMatSuppliers() {
   const { company } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
 
   const { data: suppliers = [], isLoading } = useQuery({
-    queryKey: ["ik-mat-suppliers", company?.id],
+    queryKey: ["ik-mat-suppliers", company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
 
-      const { data, error } = await supabase
+      let q = supabase
         .from("ik_mat_suppliers")
         .select("*")
-        .eq("company_id", company.id)
-        .order("created_at", { ascending: false });
+        .eq("company_id", company.id);
+      q = filterDepartmentId
+        ? q.eq("department_id", filterDepartmentId)
+        : q.is("department_id", null);
+      const { data, error } = await q.order("created_at", { ascending: false });
 
       if (error) throw error;
       return data as IkMatSupplier[];
@@ -49,7 +54,8 @@ export function useIkMatSuppliers() {
         .insert({
           ...supplierData,
           company_id: company.id,
-        })
+          department_id: filterDepartmentId,
+        } as any)
         .select()
         .single();
 
