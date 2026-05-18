@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDepartmentContext } from '@/contexts/DepartmentContext';
 import { toast } from 'sonner';
 import { useIkMatDeviation } from './useIkMatDeviation';
 
@@ -27,19 +28,23 @@ export interface CleaningPlanResponse {
 
 export const useIkMatCleaningPlan = () => {
   const { company, user } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
   const { createCleaningDeviation } = useIkMatDeviation();
 
   const { data: responses, isLoading } = useQuery({
-    queryKey: ['ik-mat-cleaning-plan-responses', company?.id],
+    queryKey: ['ik-mat-cleaning-plan-responses', company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
 
-      const { data, error } = await supabase
+      let q = supabase
         .from('ik_mat_cleaning_plan_responses')
         .select('*')
-        .eq('company_id', company.id)
-        .order('completed_at', { ascending: false });
+        .eq('company_id', company.id);
+      q = filterDepartmentId
+        ? q.eq('department_id', filterDepartmentId)
+        : q.is('department_id', null);
+      const { data, error } = await q.order('completed_at', { ascending: false });
 
       if (error) throw error;
       return (data || []) as unknown as CleaningPlanResponse[];
@@ -67,6 +72,7 @@ export const useIkMatCleaningPlan = () => {
         .from('ik_mat_cleaning_plan_responses')
         .insert({
           company_id: company.id,
+          department_id: filterDepartmentId,
           completed_by_id: null, // Don't set FK to avoid constraint errors
           completed_by_name: completedByName,
           cleaning_records: newResponse.cleaning_records as any,
@@ -74,7 +80,7 @@ export const useIkMatCleaningPlan = () => {
           status: newResponse.status,
           frequency_type: newResponse.frequency_type || null,
           completed_at: newResponse.status === 'completed' ? new Date().toISOString() : null,
-        })
+        } as any)
         .select()
         .single();
 

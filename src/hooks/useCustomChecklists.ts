@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDepartmentContext } from '@/contexts/DepartmentContext';
 import { toast } from 'sonner';
 
 export interface CustomChecklist {
@@ -16,18 +17,22 @@ export interface CustomChecklist {
 
 export const useCustomChecklists = () => {
   const { company } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
 
   const { data: checklists, isLoading } = useQuery({
-    queryKey: ['custom-checklists', company?.id],
+    queryKey: ['custom-checklists', company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
 
-      const { data, error } = await supabase
+      let q = supabase
         .from('ik_mat_custom_checklists')
         .select('*')
-        .eq('company_id', company.id)
-        .order('created_at', { ascending: false });
+        .eq('company_id', company.id);
+      q = filterDepartmentId
+        ? q.eq('department_id', filterDepartmentId)
+        : q.is('department_id', null);
+      const { data, error } = await q.order('created_at', { ascending: false });
 
       if (error) throw error;
       return (data || []) as unknown as CustomChecklist[];
@@ -47,11 +52,12 @@ export const useCustomChecklists = () => {
         .from('ik_mat_custom_checklists')
         .insert({
           company_id: company.id,
+          department_id: filterDepartmentId,
           checklist_name: newChecklist.checklist_name,
           description: newChecklist.description || null,
           checkpoints: newChecklist.checkpoints as any,
           checklist_type: 'custom',
-        })
+        } as any)
         .select()
         .single();
 

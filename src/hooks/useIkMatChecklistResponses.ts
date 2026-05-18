@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { toast } from "sonner";
 import { useIkMatDeviation } from "./useIkMatDeviation";
 
@@ -36,6 +37,7 @@ export interface ChecklistResponse {
 
 export function useIkMatChecklistResponses() {
   const { profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const [responses, setResponses] = useState<ChecklistResponse[]>([]);
   const { createChecklistDeviation } = useIkMatDeviation();
   const [isLoading, setIsLoading] = useState(true);
@@ -44,11 +46,14 @@ export function useIkMatChecklistResponses() {
     if (!profile?.company_id) return;
 
     try {
-      const { data, error } = await supabase
+      let q = supabase
         .from('ik_mat_checklist_responses')
         .select('*')
-        .eq('company_id', profile.company_id)
-        .order('completed_at', { ascending: false });
+        .eq('company_id', profile.company_id);
+      q = filterDepartmentId
+        ? q.eq('department_id', filterDepartmentId)
+        : q.is('department_id', null);
+      const { data, error } = await q.order('completed_at', { ascending: false });
 
       if (error) throw error;
       setResponses((data || []) as unknown as ChecklistResponse[]);
@@ -62,7 +67,7 @@ export function useIkMatChecklistResponses() {
 
   useEffect(() => {
     fetchResponses();
-  }, [profile?.company_id]);
+  }, [profile?.company_id, filterDepartmentId]);
 
   const createResponse = async (
     checklistType: string,
@@ -84,13 +89,14 @@ export function useIkMatChecklistResponses() {
         .from('ik_mat_checklist_responses')
         .insert({
           company_id: profile.company_id,
+          department_id: filterDepartmentId,
           checklist_type: checklistType,
           checklist_name: checklistName,
           completed_by_id: profile.id,
           completed_by_name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email,
           status: 'draft' as const,
           responses: initialResponses as any
-        })
+        } as any)
         .select()
         .single();
 

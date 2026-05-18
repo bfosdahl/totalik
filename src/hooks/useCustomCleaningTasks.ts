@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDepartmentContext } from '@/contexts/DepartmentContext';
 import { toast } from 'sonner';
 
 export interface CustomCleaningTask {
@@ -17,18 +18,22 @@ export interface CustomCleaningTask {
 
 export const useCustomCleaningTasks = () => {
   const { company } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
 
   const { data: tasks, isLoading } = useQuery({
-    queryKey: ['custom-cleaning-tasks', company?.id],
+    queryKey: ['custom-cleaning-tasks', company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
 
-      const { data, error } = await supabase
+      let q = supabase
         .from('ik_mat_custom_cleaning_tasks')
         .select('*')
-        .eq('company_id', company.id)
-        .order('sort_order', { ascending: true });
+        .eq('company_id', company.id);
+      q = filterDepartmentId
+        ? q.eq('department_id', filterDepartmentId)
+        : q.is('department_id', null);
+      const { data, error } = await q.order('sort_order', { ascending: true });
 
       if (error) throw error;
       return (data || []) as CustomCleaningTask[];
@@ -49,8 +54,9 @@ export const useCustomCleaningTasks = () => {
         .from('ik_mat_custom_cleaning_tasks')
         .insert({
           company_id: company.id,
+          department_id: filterDepartmentId,
           ...newTask,
-        })
+        } as any)
         .select()
         .single();
 
