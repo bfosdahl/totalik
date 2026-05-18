@@ -279,11 +279,12 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   // Fetch custom activities
   const fetchCustomActivities = useCallback(async () => {
     if (!company?.id) return;
-    const { data, error } = await supabase
+    let q = supabase
       .from("company_aarshjul_activities")
       .select("id, name, description, responsible, month")
-      .eq("company_id", company.id)
-      [filterDepartmentId ? "eq" : "is"]("department_id", filterDepartmentId);
+      .eq("company_id", company.id);
+    q = filterDepartmentId ? q.eq("department_id", filterDepartmentId) : q.is("department_id", null);
+    const { data, error } = await q;
     if (!error && data) {
       setCustomActivities(data as CustomDbActivity[]);
     }
@@ -296,11 +297,12 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   // Fetch hidden default activities
   const fetchHiddenDefaults = useCallback(async () => {
     if (!company?.id) return;
-    const { data, error } = await supabase
+    let q = supabase
       .from("company_aarshjul_hidden_defaults")
       .select("activity_id")
-      .eq("company_id", company.id)
-      [filterDepartmentId ? "eq" : "is"]("department_id", filterDepartmentId);
+      .eq("company_id", company.id);
+    q = filterDepartmentId ? q.eq("department_id", filterDepartmentId) : q.is("department_id", null);
+    const { data, error } = await q;
     if (!error && data) {
       setHiddenDefaults(data.map((d: any) => d.activity_id));
     }
@@ -313,11 +315,12 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   // Fetch month overrides for default activities
   const fetchMonthOverrides = useCallback(async () => {
     if (!company?.id) return;
-    const { data, error } = await supabase
+    let q = supabase
       .from("company_aarshjul_default_overrides")
       .select("activity_id, custom_months")
-      .eq("company_id", company.id)
-      [filterDepartmentId ? "eq" : "is"]("department_id", filterDepartmentId);
+      .eq("company_id", company.id);
+    q = filterDepartmentId ? q.eq("department_id", filterDepartmentId) : q.is("department_id", null);
+    const { data, error } = await q;
     if (!error && data) {
       const overrides: Record<string, number[]> = {};
       data.forEach((d: any) => {
