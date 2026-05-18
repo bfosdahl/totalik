@@ -133,6 +133,23 @@ export function useCompanyModuleDocuments(moduleType: ModuleDocumentType) {
     },
   });
 
+  const moveDocument = useMutation({
+    mutationFn: async ({ id, folderName }: { id: string; folderName: string | null }) => {
+      const { error } = await supabase
+        .from("company_module_documents")
+        .update({ folder_name: folderName })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Dokument flyttet");
+      queryClient.invalidateQueries({ queryKey: ["company-module-documents", company?.id, moduleType] });
+    },
+    onError: () => {
+      toast.error("Kunne ikke flytte dokument");
+    },
+  });
+
   const getDownloadUrl = async (filePath: string): Promise<string | null> => {
     try {
       const { data, error } = await supabase.storage
@@ -152,6 +169,7 @@ export function useCompanyModuleDocuments(moduleType: ModuleDocumentType) {
     isLoading,
     uploadDocument,
     deleteDocument,
+    moveDocument,
     getDownloadUrl,
   };
 }
