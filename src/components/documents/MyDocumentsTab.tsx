@@ -66,9 +66,10 @@ const NEW_FOLDER_SENTINEL = "__new__";
 const ROOT_SENTINEL = "__root__";
 
 export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocumentsTabProps) {
-  const { documents, isLoading, uploadDocument, deleteDocument, moveDocument, getDownloadUrl } = useCompanyModuleDocuments(moduleType);
-  const [currentFolder, setCurrentFolder] = useState<string | null>(null);
-  const [pendingFolders, setPendingFolders] = useState<string[]>([]);
+  const { documents, isLoading, uploadDocument, deleteDocument, moveDocument, deleteFolder, getDownloadUrl } = useCompanyModuleDocuments(moduleType);
+  // currentPath = null means root. Otherwise full path like "Sertifikater/2024"
+  const [currentPath, setCurrentPath] = useState<string | null>(null);
+  const [pendingFolders, setPendingFolders] = useState<string[]>([]); // full paths
   const [newFolderDialogOpen, setNewFolderDialogOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -82,24 +83,69 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [moveTargetFolder, setMoveTargetFolder] = useState<string>(ROOT_SENTINEL);
   const [moveCustomFolder, setMoveCustomFolder] = useState("");
+  const [deleteFolderDialogOpen, setDeleteFolderDialogOpen] = useState(false);
+  const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Derive folder list from documents + locally created (still empty) folders
-  const folders = useMemo(() => {
+  // All unique folder paths (from docs + pending)
+  const allFolderPaths = useMemo(() => {
     const set = new Set<string>();
     documents.forEach((d) => {
-      if (d.folder_name) set.add(d.folder_name);
+      if (d.folder_name) {
+        // Add path + all parent paths
+        const parts = d.folder_name.split("/");
+        for (let i = 1; i <= parts.length; i++) {
+          set.add(parts.slice(0, i).join("/"));
+        }
+      }
     });
-    pendingFolders.forEach((f) => set.add(f));
+    pendingFolders.forEach((f) => {
+      const parts = f.split("/");
+      for (let i = 1; i <= parts.length; i++) {
+        set.add(parts.slice(0, i).join("/"));
+      }
+    });
     return Array.from(set).sort((a, b) => a.localeCompare(b, "nb"));
   }, [documents, pendingFolders]);
 
-  const visibleDocuments = useMemo(() => {
-    return documents.filter((d) => (d.folder_name ?? null) === currentFolder);
-  }, [documents, currentFolder]);
+  // Immediate child folder NAMES of the current path
+  const childFolders = useMemo(() => {
+    const prefix = currentPath ? currentPath + "/" : "";
+    const names = new Set<string>();
+    allFolderPaths.forEach((p) => {
+      if (currentPath === null) {
+        // top-level segment only
+        if (!p.includes("/")) names.add(p);
+      } else if (p.startsWith(prefix)) {
+        const rest = p.slice(prefix.length);
+        if (rest && !rest.includes("/")) names.add(rest);
+      }
+    });
+    return Array.from(names).sort((a, b) => a.localeCompare(b, "nb"));
+  }, [allFolderPaths, currentPath]);
 
-  const folderDocCount = (folder: string) =>
-    documents.filter((d) => d.folder_name === folder).length;
+  const visibleDocuments = useMemo(() => {
+    return documents.filter((d) => (d.folder_name ?? null) === currentPath);
+  }, [documents, currentPath]);
+
+  // Doc + subfolder count for a child folder (full path)
+  const folderStats = (childName: string) => {
+    const fullPath = currentPath ? `${currentPath}/${childName}` : childName;
+    const docs = documents.filter(
+      (d) => d.folder_name === fullPath || (d.folder_name?.startsWith(fullPath + "/") ?? false)
+    ).length;
+    const subs = allFolderPaths.filter((p) => p.startsWith(fullPath + "/")).length;
+    return { docs, subs, fullPath };
+  };
+
+  const breadcrumbs = useMemo(() => {
+    if (!currentPath) return [] as { name: string; path: string }[];
+    const parts = currentPath.split("/");
+    return parts.map((name, idx) => ({
+      name,
+      path: parts.slice(0, idx + 1).join("/"),
+    }));
+  }, [currentPath]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -113,12 +159,17 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
 
   const resolveSelectedFolder = (value: string, custom: string): string | null => {
     if (value === ROOT_SENTINEL) return null;
-    if (value === NEW_FOLDER_SENTINEL) return custom.trim() || null;
+    if (value === NEW_FOLDER_SENTINEL) {
+      const name = custom.trim();
+      if (!name) return null;
+      // Create as subfolder of currentPath
+      return currentPath ? `${currentPath}/${name}` : name;
+    }
     return value;
   };
 
   const openUploadDialog = () => {
-    setUploadFolder(currentFolder ? currentFolder : ROOT_SENTINEL);
+    setUploadFolder(currentPath ? currentPath : ROOT_SENTINEL);
     setCustomFolderName("");
     setUploadDialogOpen(true);
   };
@@ -134,7 +185,6 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
       folderName: folderName || undefined,
     });
 
-    // Remove from pending if it now has a real doc
     if (folderName) {
       setPendingFolders((prev) => prev.filter((f) => f !== folderName));
     }
@@ -150,20 +200,19 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
 
   const handleCreateFolder = () => {
     const name = newFolderName.trim();
-    if (!name) return;
-    if (!folders.includes(name)) {
-      setPendingFolders((prev) => [...prev, name]);
+    if (!name || name.includes("/")) return;
+    const fullPath = currentPath ? `${currentPath}/${name}` : name;
+    if (!allFolderPaths.includes(fullPath)) {
+      setPendingFolders((prev) => [...prev, fullPath]);
     }
     setNewFolderName("");
     setNewFolderDialogOpen(false);
-    setCurrentFolder(name);
+    setCurrentPath(fullPath);
   };
 
   const handleDownload = async (doc: CompanyModuleDocument) => {
     const url = await getDownloadUrl(doc.file_path);
-    if (url) {
-      window.open(url, "_blank");
-    }
+    if (url) window.open(url, "_blank");
   };
 
   const handleDeleteClick = (doc: CompanyModuleDocument) => {
@@ -194,6 +243,28 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
     setSelectedDocument(null);
   };
 
+  const openDeleteFolderDialog = (fullPath: string) => {
+    setFolderToDelete(fullPath);
+    setDeleteFolderDialogOpen(true);
+  };
+
+  const handleConfirmDeleteFolder = async () => {
+    if (!folderToDelete) return;
+    await deleteFolder.mutateAsync(folderToDelete);
+    // Remove from pending (and any pending subfolders)
+    setPendingFolders((prev) =>
+      prev.filter((f) => f !== folderToDelete && !f.startsWith(folderToDelete + "/"))
+    );
+    // If we're inside the deleted folder, jump back to its parent
+    if (currentPath && (currentPath === folderToDelete || currentPath.startsWith(folderToDelete + "/"))) {
+      const parts = folderToDelete.split("/");
+      parts.pop();
+      setCurrentPath(parts.length > 0 ? parts.join("/") : null);
+    }
+    setDeleteFolderDialogOpen(false);
+    setFolderToDelete(null);
+  };
+
   const formatFileSize = (bytes: number | null) => {
     if (!bytes) return "Ukjent størrelse";
     if (bytes < 1024) return `${bytes} B`;
@@ -212,6 +283,25 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
 
   const spinnerColor = accentColor === "orange" ? "border-orange-500" : "border-amber-500";
 
+  // Folder dropdown options: every existing path + root
+  const folderDropdownOptions = allFolderPaths;
+
+  const folderToDeleteStats = useMemo(() => {
+    if (!folderToDelete) return { docs: 0, subs: 0 };
+    const docs = documents.filter(
+      (d) => d.folder_name === folderToDelete || (d.folder_name?.startsWith(folderToDelete + "/") ?? false)
+    ).length;
+    const subs = allFolderPaths.filter((p) => p.startsWith(folderToDelete + "/")).length;
+    return { docs, subs };
+  }, [folderToDelete, documents, allFolderPaths]);
+
+  const goUp = () => {
+    if (!currentPath) return;
+    const parts = currentPath.split("/");
+    parts.pop();
+    setCurrentPath(parts.length > 0 ? parts.join("/") : null);
+  };
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -219,13 +309,13 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
         <div>
           <h3 className="text-lg font-semibold">Mine dokumenter</h3>
           <p className="text-sm text-muted-foreground">
-            Organiser dine egne dokumenter i mapper
+            Organiser dokumentene dine i mapper og undermapper
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={() => setNewFolderDialogOpen(true)}>
             <FolderPlus className="h-4 w-4 mr-2" />
-            Ny mappe
+            {currentPath ? "Ny undermappe" : "Ny mappe"}
           </Button>
           <Button onClick={openUploadDialog}>
             <Plus className="h-4 w-4 mr-2" />
@@ -235,33 +325,35 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
       </div>
 
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm">
+      <div className="flex items-center gap-1 text-sm flex-wrap">
         <button
-          onClick={() => setCurrentFolder(null)}
+          onClick={() => setCurrentPath(null)}
           className={`flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted transition-colors ${
-            currentFolder === null ? "font-medium" : "text-muted-foreground"
+            currentPath === null ? "font-medium" : "text-muted-foreground"
           }`}
         >
           <FolderOpen className="h-4 w-4" />
           Mine dokumenter
         </button>
-        {currentFolder && (
-          <>
+        {breadcrumbs.map((bc, idx) => (
+          <div key={bc.path} className="flex items-center gap-1">
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            <span className="flex items-center gap-1.5 px-2 py-1 font-medium">
-              <Folder className="h-4 w-4" />
-              {currentFolder}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="ml-auto"
-              onClick={() => setCurrentFolder(null)}
+            <button
+              onClick={() => setCurrentPath(bc.path)}
+              className={`flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted transition-colors ${
+                idx === breadcrumbs.length - 1 ? "font-medium" : "text-muted-foreground"
+              }`}
             >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Tilbake
-            </Button>
-          </>
+              <Folder className="h-4 w-4" />
+              {bc.name}
+            </button>
+          </div>
+        ))}
+        {currentPath && (
+          <Button variant="ghost" size="sm" className="ml-auto" onClick={goUp}>
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Tilbake
+          </Button>
         )}
       </div>
 
@@ -273,38 +365,67 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
         </div>
       ) : (
         <div className="space-y-4">
-          {/* Folders (only at root) */}
-          {currentFolder === null && folders.length > 0 && (
+          {/* Child folders */}
+          {childFolders.length > 0 && (
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {folders.map((folder) => (
-                <button
-                  key={folder}
-                  onClick={() => setCurrentFolder(folder)}
-                  className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 hover:border-primary/50 transition-colors text-left"
-                >
-                  <Folder className="h-8 w-8 text-amber-500 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-sm truncate">{folder}</h4>
-                    <p className="text-xs text-muted-foreground">
-                      {folderDocCount(folder)} dokument{folderDocCount(folder) === 1 ? "" : "er"}
-                    </p>
+              {childFolders.map((name) => {
+                const stats = folderStats(name);
+                return (
+                  <div
+                    key={name}
+                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 hover:border-primary/50 transition-colors"
+                  >
+                    <button
+                      onClick={() => setCurrentPath(stats.fullPath)}
+                      className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                    >
+                      <Folder className="h-8 w-8 text-amber-500 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm truncate">{name}</h4>
+                        <p className="text-xs text-muted-foreground">
+                          {stats.docs} dokument{stats.docs === 1 ? "" : "er"}
+                          {stats.subs > 0 && ` • ${stats.subs} undermappe${stats.subs === 1 ? "" : "r"}`}
+                        </p>
+                      </div>
+                    </button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" title="Mer">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Mappe</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => setCurrentPath(stats.fullPath)}>
+                          <FolderOpen className="h-4 w-4 mr-2" />
+                          Åpne
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => openDeleteFolderDialog(stats.fullPath)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Slett mappe
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </button>
-              ))}
+                );
+              })}
             </div>
           )}
 
           {/* Documents in current view */}
-          {visibleDocuments.length === 0 && (currentFolder !== null || folders.length === 0) ? (
+          {visibleDocuments.length === 0 && childFolders.length === 0 ? (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <FolderOpen className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
                 <h3 className="font-medium text-lg">
-                  {currentFolder ? "Denne mappen er tom" : "Ingen dokumenter lastet opp"}
+                  {currentPath ? "Denne mappen er tom" : "Ingen dokumenter lastet opp"}
                 </h3>
                 <p className="text-muted-foreground text-sm mt-1 mb-4">
-                  Last opp dokumenter for enkel tilgang
+                  Last opp dokumenter eller opprett en {currentPath ? "undermappe" : "mappe"}
                 </p>
                 <Button onClick={openUploadDialog} variant="outline">
                   <Upload className="h-4 w-4 mr-2" />
@@ -314,9 +435,6 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
             </Card>
           ) : visibleDocuments.length > 0 ? (
             <div className="grid gap-2">
-              {currentFolder === null && (
-                <p className="text-xs text-muted-foreground mt-2">Dokumenter uten mappe</p>
-              )}
               {visibleDocuments.map((doc) => (
                 <div
                   key={doc.id}
@@ -379,28 +497,33 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
       <Dialog open={newFolderDialogOpen} onOpenChange={setNewFolderDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Ny mappe</DialogTitle>
+            <DialogTitle>{currentPath ? "Ny undermappe" : "Ny mappe"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
             <Label>Mappenavn</Label>
             <Input
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
-              placeholder="F.eks. Sertifikater, Avtaler, Inspeksjoner"
+              placeholder="F.eks. Sertifikater, Avtaler, 2024"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleCreateFolder();
               }}
             />
+            {currentPath && (
+              <p className="text-xs text-muted-foreground">
+                Opprettes som undermappe i: <span className="font-medium">{currentPath}</span>
+              </p>
+            )}
             <p className="text-xs text-muted-foreground">
-              Mappen vises permanent når du har lastet opp minst ett dokument i den.
+              Mappen lagres permanent når du har lastet opp minst ett dokument i den.
             </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNewFolderDialogOpen(false)}>
               Avbryt
             </Button>
-            <Button onClick={handleCreateFolder} disabled={!newFolderName.trim()}>
+            <Button onClick={handleCreateFolder} disabled={!newFolderName.trim() || newFolderName.includes("/")}>
               Opprett
             </Button>
           </DialogFooter>
@@ -439,12 +562,14 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={ROOT_SENTINEL}>Ingen mappe (rot)</SelectItem>
-                  {folders.map((f) => (
+                  {folderDropdownOptions.map((f) => (
                     <SelectItem key={f} value={f}>
                       {f}
                     </SelectItem>
                   ))}
-                  <SelectItem value={NEW_FOLDER_SENTINEL}>+ Ny mappe...</SelectItem>
+                  <SelectItem value={NEW_FOLDER_SENTINEL}>
+                    + Ny {currentPath ? "undermappe her" : "mappe"}...
+                  </SelectItem>
                 </SelectContent>
               </Select>
               {uploadFolder === NEW_FOLDER_SENTINEL && (
@@ -498,12 +623,14 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={ROOT_SENTINEL}>Ingen mappe (rot)</SelectItem>
-                {folders.map((f) => (
+                {folderDropdownOptions.map((f) => (
                   <SelectItem key={f} value={f}>
                     {f}
                   </SelectItem>
                 ))}
-                <SelectItem value={NEW_FOLDER_SENTINEL}>+ Ny mappe...</SelectItem>
+                <SelectItem value={NEW_FOLDER_SENTINEL}>
+                  + Ny {currentPath ? "undermappe her" : "mappe"}...
+                </SelectItem>
               </SelectContent>
             </Select>
             {moveTargetFolder === NEW_FOLDER_SENTINEL && (
@@ -531,7 +658,7 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirmation dialog */}
+      {/* Delete document dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -548,6 +675,39 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Slett
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete folder dialog */}
+      <AlertDialog open={deleteFolderDialogOpen} onOpenChange={setDeleteFolderDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Slett mappe</AlertDialogTitle>
+            <AlertDialogDescription>
+              Er du sikker på at du vil slette mappen <span className="font-medium">"{folderToDelete}"</span>?
+              {folderToDeleteStats.docs > 0 || folderToDeleteStats.subs > 0 ? (
+                <>
+                  <br /><br />
+                  Dette vil også slette <strong>{folderToDeleteStats.docs} dokument{folderToDeleteStats.docs === 1 ? "" : "er"}</strong>
+                  {folderToDeleteStats.subs > 0 && (
+                    <> og <strong>{folderToDeleteStats.subs} undermappe{folderToDeleteStats.subs === 1 ? "" : "r"}</strong></>
+                  )}
+                  . Denne handlingen kan ikke angres.
+                </>
+              ) : (
+                <> Mappen er tom.</>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDeleteFolder}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Slett mappe
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

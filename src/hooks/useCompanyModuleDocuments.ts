@@ -150,6 +150,36 @@ export function useCompanyModuleDocuments(moduleType: ModuleDocumentType) {
     },
   });
 
+  // Delete an entire folder path (and all subfolders) – removes every document inside.
+  const deleteFolder = useMutation({
+    mutationFn: async (folderPath: string) => {
+      const affected = documents.filter(
+        (d) => d.folder_name === folderPath || (d.folder_name?.startsWith(folderPath + "/") ?? false)
+      );
+      if (affected.length > 0) {
+        const paths = affected.map((d) => d.file_path);
+        const { error: storageError } = await supabase.storage
+          .from("company-module-documents")
+          .remove(paths);
+        if (storageError) console.error("Storage delete error:", storageError);
+
+        const { error: dbError } = await supabase
+          .from("company_module_documents")
+          .delete()
+          .in("id", affected.map((d) => d.id));
+        if (dbError) throw dbError;
+      }
+      return affected.length;
+    },
+    onSuccess: (count) => {
+      toast.success(count > 0 ? `Mappe slettet (${count} dokument${count === 1 ? "" : "er"})` : "Mappe slettet");
+      queryClient.invalidateQueries({ queryKey: ["company-module-documents", company?.id, moduleType] });
+    },
+    onError: () => {
+      toast.error("Kunne ikke slette mappe");
+    },
+  });
+
   const getDownloadUrl = async (filePath: string): Promise<string | null> => {
     try {
       const { data, error } = await supabase.storage
@@ -170,6 +200,7 @@ export function useCompanyModuleDocuments(moduleType: ModuleDocumentType) {
     uploadDocument,
     deleteDocument,
     moveDocument,
+    deleteFolder,
     getDownloadUrl,
   };
 }
