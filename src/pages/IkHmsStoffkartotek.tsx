@@ -74,6 +74,7 @@ const getDangerClassColor = (dangerClass: string) => {
 
 export default function IkHmsStoffkartotek() {
   const { company } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
