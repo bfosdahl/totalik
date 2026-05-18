@@ -191,18 +191,20 @@ export default function AarshjulEditDialog({
       const { error } = await supabase
         .from("company_aarshjul_default_overrides")
         .upsert(
-          { company_id: companyId, activity_id: activityId, custom_months: newMonths },
-          { onConflict: "company_id,activity_id" }
+          { company_id: companyId, department_id: departmentId, activity_id: activityId, custom_months: newMonths },
+          { onConflict: "company_id,department_id,activity_id" }
         );
       if (error) throw error;
 
       // If it was hidden, unhide it
       if (hiddenDefaults.includes(activityId)) {
-        await supabase
+        let dq = supabase
           .from("company_aarshjul_hidden_defaults")
           .delete()
           .eq("company_id", companyId)
           .eq("activity_id", activityId);
+        dq = departmentId ? dq.eq("department_id", departmentId) : dq.is("department_id", null);
+        await dq;
       }
 
       toast.success(`${defaultActivity.name} lagt til i ${monthName}`);
@@ -228,22 +230,24 @@ export default function AarshjulEditDialog({
         await supabase
           .from("company_aarshjul_hidden_defaults")
           .upsert(
-            { company_id: companyId, activity_id: activityId },
-            { onConflict: "company_id,activity_id" }
+            { company_id: companyId, department_id: departmentId, activity_id: activityId },
+            { onConflict: "company_id,department_id,activity_id" }
           );
         // Remove override if exists
-        await supabase
+        let dq = supabase
           .from("company_aarshjul_default_overrides")
           .delete()
           .eq("company_id", companyId)
           .eq("activity_id", activityId);
+        dq = departmentId ? dq.eq("department_id", departmentId) : dq.is("department_id", null);
+        await dq;
       } else {
         // Update override with remaining months
         const { error } = await supabase
           .from("company_aarshjul_default_overrides")
           .upsert(
-            { company_id: companyId, activity_id: activityId, custom_months: newMonths },
-            { onConflict: "company_id,activity_id" }
+            { company_id: companyId, department_id: departmentId, activity_id: activityId, custom_months: newMonths },
+            { onConflict: "company_id,department_id,activity_id" }
           );
         if (error) throw error;
       }
@@ -258,16 +262,20 @@ export default function AarshjulEditDialog({
   // Reset a standard activity to its default months
   const handleResetToDefault = async (activityId: string) => {
     try {
-      await supabase
+      let oq = supabase
         .from("company_aarshjul_default_overrides")
         .delete()
         .eq("company_id", companyId)
         .eq("activity_id", activityId);
-      await supabase
+      oq = departmentId ? oq.eq("department_id", departmentId) : oq.is("department_id", null);
+      await oq;
+      let hq = supabase
         .from("company_aarshjul_hidden_defaults")
         .delete()
         .eq("company_id", companyId)
         .eq("activity_id", activityId);
+      hq = departmentId ? hq.eq("department_id", departmentId) : hq.is("department_id", null);
+      await hq;
       toast.success("Tilbakestilt til standard");
       onSaved();
     } catch {
