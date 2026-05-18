@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { toast } from "sonner";
 
 export interface WorkTask {
@@ -164,13 +165,14 @@ export const useProjectChemicalRiskAssessments = (projectId: string | null) => {
 // Get all chemical risk assessments for the company (for Risikoanalyse page)
 export const useCompanyChemicalRiskAssessments = () => {
   const { company } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
 
   return useQuery({
-    queryKey: ["company-chemical-risk-assessments", company?.id],
+    queryKey: ["company-chemical-risk-assessments", company?.id, filterDepartmentId],
     queryFn: async () => {
       if (!company?.id) return [];
 
-      const { data, error } = await supabase
+      let q = supabase
         .from("chemical_risk_assessments" as any)
         .select(`
           *,
@@ -179,8 +181,11 @@ export const useCompanyChemicalRiskAssessments = () => {
             global_chemicals:global_chemical_id(*)
           )
         `)
-        .eq("company_id", company.id)
-        .order("updated_at", { ascending: false });
+        .eq("company_id", company.id);
+      q = filterDepartmentId
+        ? q.eq("department_id", filterDepartmentId)
+        : q.is("department_id", null);
+      const { data, error } = await q.order("updated_at", { ascending: false });
 
       if (error) throw error;
       return (data as any[]) || [];
@@ -196,6 +201,7 @@ export const useChemicalRiskAssessmentMutations = (
 ) => {
   const queryClient = useQueryClient();
   const { company, profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const userName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
 
   // Create or initialize assessment
@@ -205,6 +211,7 @@ export const useChemicalRiskAssessmentMutations = (
 
       const insertData: any = {
         company_id: company.id,
+        department_id: filterDepartmentId,
         project_id: projectId,
         current_phase: 1,
         status: 'draft',
