@@ -508,6 +508,7 @@ function exportToPDF(
 // ===== Main Component =====
 export function EquipmentAssessment() {
   const { company, profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const queryClient = useQueryClient();
 
   const [vibType, setVibType] = useState<"hand_arm" | "whole_body">("hand_arm");
