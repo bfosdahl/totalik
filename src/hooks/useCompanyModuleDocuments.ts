@@ -169,6 +169,7 @@ export function useCompanyModuleDocuments(moduleType: ModuleDocumentType) {
     isLoading,
     uploadDocument,
     deleteDocument,
+    moveDocument,
     getDownloadUrl,
   };
 }
