@@ -233,6 +233,7 @@ export function useIkMatTemperature() {
         .from('ik_mat_temperature_logs')
         .insert({
           company_id: company.id,
+          department_id: filterDepartmentId,
           equipment_id: data.equipment_id,
           temperature: data.temperature,
           is_acceptable: isAcceptable,
