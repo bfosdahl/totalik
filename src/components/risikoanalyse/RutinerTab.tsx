@@ -24,6 +24,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { normalizeHmsRoutines } from "@/lib/hmsImportNormalizers";
 
 interface RoutineItem {
@@ -322,6 +323,7 @@ const CATEGORIES = [
 
 export const RutinerTab = () => {
   const { profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const [routines, setRoutines] = useState<RoutineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -336,18 +338,21 @@ export const RutinerTab = () => {
     if (profile?.company_id) {
       fetchRoutines();
     }
-  }, [profile?.company_id]);
+  }, [profile?.company_id, filterDepartmentId]);
 
   const fetchRoutines = async () => {
     if (!profile?.company_id) return;
     
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let q = supabase
         .from("company_routines")
         .select("*")
-        .eq("company_id", profile.company_id)
-        .single();
+        .eq("company_id", profile.company_id);
+      q = filterDepartmentId
+        ? q.eq("department_id", filterDepartmentId)
+        : q.is("department_id", null);
+      const { data, error } = await q.maybeSingle();
 
       if (error && error.code !== "PGRST116") {
         console.error("Error fetching routines:", error);
@@ -373,21 +378,28 @@ export const RutinerTab = () => {
       const normalizedRoutines = normalizeHmsRoutines(routines);
       
       // Check if record exists first
-      const { data: existing } = await supabase
+      let eq2 = supabase
         .from("company_routines")
         .select("id")
-        .eq("company_id", profile.company_id)
-        .single();
+        .eq("company_id", profile.company_id);
+      eq2 = filterDepartmentId
+        ? eq2.eq("department_id", filterDepartmentId)
+        : eq2.is("department_id", null);
+      const { data: existing } = await eq2.maybeSingle();
 
       if (existing) {
         // Update existing
-        const { error } = await supabase
+        let uq = supabase
           .from("company_routines")
           .update({
             routines: JSON.parse(JSON.stringify(normalizedRoutines)),
             updated_at: new Date().toISOString()
           })
           .eq("company_id", profile.company_id);
+        uq = filterDepartmentId
+          ? uq.eq("department_id", filterDepartmentId)
+          : uq.is("department_id", null);
+        const { error } = await uq;
         
         if (error) throw error;
       } else {
@@ -396,6 +408,7 @@ export const RutinerTab = () => {
           .from("company_routines")
           .insert([{
             company_id: profile.company_id,
+            department_id: filterDepartmentId,
             routines: JSON.parse(JSON.stringify(normalizedRoutines))
           }]);
         
