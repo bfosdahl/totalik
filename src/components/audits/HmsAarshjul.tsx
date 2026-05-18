@@ -351,12 +351,13 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   // Unhide a default activity
   const handleUnhideDefault = async (activityId: string) => {
     if (!company?.id) return;
-    const { error } = await supabase
+    let q = supabase
       .from("company_aarshjul_hidden_defaults")
       .delete()
       .eq("company_id", company.id)
-      [filterDepartmentId ? "eq" : "is"]("department_id", filterDepartmentId)
       .eq("activity_id", activityId);
+    q = filterDepartmentId ? q.eq("department_id", filterDepartmentId) : q.is("department_id", null);
+    const { error } = await q;
     if (error) {
       toast.error("Kunne ikke gjenopprette aktiviteten");
     } else {
