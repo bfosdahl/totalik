@@ -22,6 +22,9 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const auth = await requireAuth(req, corsHeaders);
+  if (auth instanceof Response) return auth;
+
   try {
     if (!RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY is not configured");
