@@ -37,6 +37,16 @@ import {
 import { useKsModule2Projects, KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { cn } from "@/lib/utils";
 import { Ks2NewTimeEntryDialog } from "@/components/ks2/Ks2NewTimeEntryDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useTimeEntries } from "@/hooks/useTimeEntries";
 import { CreateTimeEntry } from "@/hooks/useTimeEntries";
 
@@ -154,6 +164,34 @@ export default function ProsjektHub() {
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [switcherSearch, setSwitcherSearch] = useState("");
   const [timeDialogOpen, setTimeDialogOpen] = useState(false);
+  const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
+
+  // Intercept lukking av timedialogen for å bekrefte mot ulagrede endringer
+  const handleTimeDialogOpenChange = (next: boolean) => {
+    if (next) {
+      setTimeDialogOpen(true);
+      return;
+    }
+    // Hvis nettopp lagret eller dialogen aldri åpnet seg: lukk uten bekreftelse
+    if (justSubmittedRef.current || !timeDialogOpen) {
+      setTimeDialogOpen(false);
+      return;
+    }
+    setConfirmCloseOpen(true);
+  };
+
+  const handleKeepDraft = () => {
+    // Behold utkast i localStorage – påminnelse-toast vises ved neste besøk
+    setConfirmCloseOpen(false);
+    setTimeDialogOpen(false);
+  };
+
+  const handleDiscardDraft = () => {
+    localStorage.removeItem(DRAFT_KEY);
+    justSubmittedRef.current = true; // hindre påminnelse-toast denne gangen
+    setConfirmCloseOpen(false);
+    setTimeDialogOpen(false);
+  };
   // Sporing av ulagrede tidsregistreringer
   const justSubmittedRef = useRef(false);
   const draftChecked = useRef(false);
@@ -618,12 +656,35 @@ export default function ProsjektHub() {
               {selected && (
                 <Ks2NewTimeEntryDialog
                   open={timeDialogOpen}
-                  onOpenChange={setTimeDialogOpen}
+                  onOpenChange={handleTimeDialogOpenChange}
                   onSubmit={handleTimeSubmit}
                   projectId={selected.id}
                   projectName={selected.project_name}
                 />
               )}
+
+              {/* Bekreftelse ved lukking med ulagrede endringer */}
+              <AlertDialog open={confirmCloseOpen} onOpenChange={setConfirmCloseOpen}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Lukke uten å lagre?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Du har påbegynt en timeføring{selected ? ` på ${selected.project_name}` : ""}. Velg om du vil lagre utkastet for å fortsette senere, forkaste det, eller gå tilbake til skjemaet.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                    <AlertDialogCancel className="sm:mr-auto">
+                      Tilbake til skjema
+                    </AlertDialogCancel>
+                    <Button variant="outline" onClick={handleDiscardDraft}>
+                      Forkast
+                    </Button>
+                    <AlertDialogAction onClick={handleKeepDraft}>
+                      Lagre utkast og lukk
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </motion.div>
           )}
         </AnimatePresence>
