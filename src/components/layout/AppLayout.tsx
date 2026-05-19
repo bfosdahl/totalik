@@ -2,6 +2,7 @@ import { ReactNode, useState, useCallback } from "react";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader } from "./AppHeader";
 import { MascotChatHelper } from "@/components/help/MascotChatHelper";
+import { VersionChecker } from "@/components/VersionChecker";
 import { TermsAcceptanceDialog } from "@/components/terms/TermsAcceptanceDialog";
 import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
 import { useAuth } from "@/contexts/AuthContext";
