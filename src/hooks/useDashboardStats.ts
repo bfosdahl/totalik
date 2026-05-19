@@ -245,7 +245,7 @@ export function useDashboardStats(): DashboardStats {
     };
 
     fetchStats();
-  }, [profile?.company_id]);
+  }, [profile?.company_id, filterDepartmentId]);
 
   return stats;
 }
