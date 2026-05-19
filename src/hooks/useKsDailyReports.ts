@@ -64,6 +64,7 @@ export interface CreateDailyReport {
   safety_meeting_held?: boolean;
   subcontractor_attendance?: any[];
   deviations_today?: any[];
+  photos?: any[];
   notes?: string;
   status?: string;
 }

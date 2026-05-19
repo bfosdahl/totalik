@@ -25,6 +25,8 @@ import {
   ChevronUp,
   CheckCircle2,
   Clock,
+  Download,
+  ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,6 +57,10 @@ import {
 import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
+import { DailyReportPhotoUploader, DailyReportPhoto } from "@/components/ks2/DailyReportPhotoUploader";
+import { generateDailyReportPdf } from "@/utils/ksDailyReportPdf";
+import { DailyReportPhotoGallery } from "@/components/ks2/DailyReportPhotoGallery";
+import { supabase } from "@/integrations/supabase/client";
 
 const weatherIcons: Record<string, React.ReactNode> = {
   sol: <Sun className="h-4 w-4 text-amber-500" />,
@@ -114,6 +120,7 @@ function DailyReportForm({
     (initialData?.deviations_today || []).map((d: any) => d.description || d).join("\n")
   );
   const [notes, setNotes] = useState(initialData?.notes || "");
+  const [photos, setPhotos] = useState<DailyReportPhoto[]>((initialData?.photos as any) || []);
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     weather: true,
@@ -125,6 +132,7 @@ function DailyReportForm({
     hms: false,
     ue: false,
     deviations: false,
+    photos: true,
     notes: false,
   });
 
@@ -167,6 +175,7 @@ function DailyReportForm({
       ? deviationsText.split("\n").filter(Boolean).map((d) => ({ description: d.trim() }))
       : [],
     notes: notes || undefined,
+    photos: photos,
   });
 
   const SectionHeader = ({ id, label, icon }: { id: string; label: string; icon: React.ReactNode }) => (
@@ -356,6 +365,19 @@ function DailyReportForm({
         )}
       </div>
 
+      {/* Photos */}
+      <div>
+        <SectionHeader id="photos" label="Bilder / vedlegg" icon={<Camera className="h-4 w-4 text-sky-500" />} />
+        {expandedSections.photos && (
+          <div className="mt-2">
+            <p className="text-xs text-muted-foreground mb-2">
+              Ta bilde eller last opp filer. Bilder følger med på PDF og e-post.
+            </p>
+            <DailyReportPhotoUploader photos={photos} onChange={setPhotos} />
+          </div>
+        )}
+      </div>
+
       {/* Notes */}
       <div>
         <SectionHeader id="notes" label="Andre merknader" icon={<FileText className="h-4 w-4 text-muted-foreground" />} />
@@ -455,8 +477,26 @@ export default function Ks2Dagsrapport() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [expandedReport, setExpandedReport] = useState<string | null>(null);
   const [emailReport, setEmailReport] = useState<DailyReport | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const { users } = useCompanyUsers();
   const { profile } = useAuth();
+
+  const handleDownloadPdf = async (report: DailyReport) => {
+    setDownloadingId(report.id);
+    try {
+      const [{ data: projectData }, { data: companyData }] = await Promise.all([
+        report.project_id
+          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name").eq("id", report.project_id).maybeSingle()
+          : Promise.resolve({ data: null } as any),
+        supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email").eq("id", report.company_id).maybeSingle(),
+      ]);
+      await generateDailyReportPdf(report, projectData as any, companyData as any);
+    } catch (err) {
+      console.error("PDF generation failed", err);
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   const handleSubmit = async (data: CreateDailyReport, asDraft: boolean) => {
     await createReport({
@@ -687,14 +727,33 @@ export default function Ks2Dagsrapport() {
                       </div>
                     )}
 
+                    {/* Photos */}
+                    {report.photos?.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2">
+                          Bilder ({report.photos.length})
+                        </h4>
+                        <DailyReportPhotoGallery photos={report.photos as any} />
+                      </div>
+                    )}
+
                     {/* Actions */}
-                    <div className="flex gap-2 pt-2 border-t">
+                    <div className="flex flex-wrap gap-2 pt-2 border-t">
                       {report.status === "draft" && (
                         <Button size="sm" variant="default" onClick={() => submitReport(report.id)}>
                           <Send className="h-3.5 w-3.5 mr-1" />
                           Send inn
                         </Button>
                       )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDownloadPdf(report)}
+                        disabled={downloadingId === report.id}
+                      >
+                        <Download className="h-3.5 w-3.5 mr-1" />
+                        {downloadingId === report.id ? "Genererer..." : "Last ned PDF"}
+                      </Button>
                       <Button size="sm" variant="outline" onClick={() => setEmailReport(report)}>
                         <Mail className="h-3.5 w-3.5 mr-1" />
                         Send på e-post
