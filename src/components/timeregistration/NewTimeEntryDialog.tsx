@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { CalendarIcon, Clock, FolderOpen, FileText, Plus, Trash2, Building2, Zap } from "lucide-react";
+import { CalendarIcon, Clock, FolderOpen, FileText, Plus, Trash2, Building2, Zap, Save } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +37,7 @@ interface NewTimeEntryDialogProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (entry: CreateTimeEntry) => Promise<boolean>;
   defaultProjectId?: string;
+  draftSavedAt?: number;
 }
 
 interface AllowanceRow {
@@ -57,6 +58,7 @@ export function NewTimeEntryDialog({
   onOpenChange,
   onSubmit,
   defaultProjectId,
+  draftSavedAt,
 }: NewTimeEntryDialogProps) {
   const [date, setDate] = useState<Date>(new Date());
   const [hours, setHours] = useState("");
@@ -184,6 +186,16 @@ export function NewTimeEntryDialog({
         <DialogHeader>
           <DialogTitle>Registrer timer</DialogTitle>
         </DialogHeader>
+
+        {draftSavedAt && (
+          <div className="flex items-center gap-2 rounded-md bg-emerald-50 border border-emerald-200 px-3 py-2 text-emerald-700">
+            <Save className="h-4 w-4 shrink-0" />
+            <span className="text-sm font-medium">Utkast lagret</span>
+            <span className="text-xs text-emerald-600/80 ml-auto">
+              {format(new Date(draftSavedAt), "HH:mm", { locale: nb })}
+            </span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Prosjekt */}

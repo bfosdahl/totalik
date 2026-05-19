@@ -798,6 +798,7 @@ export default function ProsjektHub() {
                   onSubmit={handleTimeSubmit}
                   projectId={selected.id}
                   projectName={selected.project_name}
+                  draftSavedAt={readDrafts()[selected.id]?.openedAt}
                 />
               )}
 
