@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,19 +8,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { 
-  Building2, 
-  Users, 
-  AlertTriangle, 
+import {
+  Building2,
+  Users,
+  AlertTriangle,
   FileText,
   CheckCircle2,
   Clock,
   Loader2,
   Save,
   Eye,
-  Download
+  Download,
+  MapPin,
 } from "lucide-react";
 import { useKsModule2ShaPlan, RiskArea } from "@/hooks/useKsModule2ShaPlan";
+import { useKsRiggPlan } from "@/hooks/useKsRiggPlan";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Props {
@@ -28,9 +31,45 @@ interface Props {
 
 export function Ks2ShaPlanView({ projectId }: Props) {
   const { profile } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { shaPlan, updateShaPlan, approveAsEntrepreneur, getExternalFileUrl, isLoading, isSaving } = useKsModule2ShaPlan(projectId);
+  const { plans: riggPlans } = useKsRiggPlan(projectId);
   const [editedRiskAreas, setEditedRiskAreas] = useState<RiskArea[] | null>(null);
   const [isApproving, setIsApproving] = useState(false);
+  const [accordionValue, setAccordionValue] = useState<string | undefined>(undefined);
+  const [highlightParagraph, setHighlightParagraph] = useState<string | null>(null);
+  const riskRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Build paragraph -> [{planId, planName, objectId, label, color, note}]
+  const linksByParagraph = useMemo(() => {
+    const map: Record<string, Array<{ planId: string; planName: string; objectId: string; label: string; color: string; note?: string }>> = {};
+    riggPlans.forEach((plan) => {
+      (plan.canvas_data?.objects || []).forEach((obj) => {
+        (obj.linkedRiskParagraphs || []).forEach((p) => {
+          if (!map[p]) map[p] = [];
+          map[p].push({ planId: plan.id, planName: plan.name, objectId: obj.id, label: obj.label, color: obj.color, note: obj.riskNote });
+        });
+      });
+    });
+    return map;
+  }, [riggPlans]);
+
+  // Handle ?paragraph=X deep link from riggplan
+  useEffect(() => {
+    const p = searchParams.get("paragraph");
+    if (p) {
+      setAccordionValue("risks");
+      setHighlightParagraph(p);
+      searchParams.delete("paragraph");
+      setSearchParams(searchParams, { replace: true });
+      setTimeout(() => {
+        riskRefs.current[p]?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setTimeout(() => setHighlightParagraph(null), 2500);
+      }, 250);
+    }
+  }, [searchParams, setSearchParams]);
+
 
   // Get current user's full name for approval
   const currentUserName = profile 
