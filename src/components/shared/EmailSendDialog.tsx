@@ -148,7 +148,7 @@ export function EmailSendDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Mail className="h-5 w-5 flex-shrink-0" />
-            <span className="truncate">Send {documentType === "deviation" ? "avvik" : "håndbok"} på e-post</span>
+            <span className="truncate">Send {documentType === "deviation" ? "avvik" : documentType === "handbook" ? "håndbok" : "dagsrapport"} på e-post</span>
           </DialogTitle>
         </DialogHeader>
 
