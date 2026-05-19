@@ -60,6 +60,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { DailyReportPhotoUploader, DailyReportPhoto } from "@/components/ks2/DailyReportPhotoUploader";
 import { generateDailyReportPdf } from "@/utils/ksDailyReportPdf";
 import { DailyReportPhotoGallery } from "@/components/ks2/DailyReportPhotoGallery";
+import { supabase } from "@/integrations/supabase/client";
 
 const weatherIcons: Record<string, React.ReactNode> = {
   sol: <Sun className="h-4 w-4 text-amber-500" />,
