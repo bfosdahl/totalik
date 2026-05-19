@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -21,15 +22,26 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export default function InstallApp() {
+  const navigate = useNavigate();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isSafari, setIsSafari] = useState(false);
 
   useEffect(() => {
-    if (window.matchMedia("(display-mode: standalone)").matches) {
+    // Hvis appen åpnes som installert PWA (standalone), send brukeren rett til hovedsiden
+    // slik at de slipper å se install-veiledningen hver gang.
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      // iOS Safari
+      (window.navigator as any).standalone === true;
+
+    if (isStandalone) {
       setIsInstalled(true);
+      navigate("/", { replace: true });
+      return;
     }
+
 
     const userAgent = window.navigator.userAgent.toLowerCase();
     const isIOSDevice = /iphone|ipad|ipod/.test(userAgent) || 
