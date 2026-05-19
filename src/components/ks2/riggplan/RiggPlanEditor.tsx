@@ -191,20 +191,33 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                   {DEFAULT_RISK_AREAS.map((ra) => {
                     const checked = (selected.linkedRiskParagraphs || []).includes(ra.paragraph);
                     return (
-                      <label
+                      <div
                         key={ra.paragraph}
-                        className="flex items-start gap-1.5 px-1.5 py-1 rounded hover:bg-accent cursor-pointer text-[11px] leading-tight"
+                        className="flex items-start gap-1.5 px-1.5 py-1 rounded hover:bg-accent text-[11px] leading-tight"
                       >
                         <Checkbox
                           checked={checked}
                           onCheckedChange={() => toggleRiskParagraph(selected.id, ra.paragraph)}
                           className="mt-0.5 h-3.5 w-3.5"
                         />
-                        <span>
+                        <label className="flex-1 cursor-pointer" onClick={() => toggleRiskParagraph(selected.id, ra.paragraph)}>
                           <span className="font-semibold mr-1">§{ra.paragraph})</span>
                           {ra.description}
-                        </span>
-                      </label>
+                        </label>
+                        {checked && projectId && (
+                          <button
+                            type="button"
+                            title="Åpne risikoområdet i SHA-planen"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/ks/project/${projectId}/hms/sha-plan?paragraph=${ra.paragraph}`);
+                            }}
+                            className="shrink-0 text-emerald-600 hover:text-emerald-700"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
