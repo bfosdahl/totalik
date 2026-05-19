@@ -57,6 +57,9 @@ import {
 import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
+import { DailyReportPhotoUploader, DailyReportPhoto } from "@/components/ks2/DailyReportPhotoUploader";
+import { generateDailyReportPdf } from "@/utils/ksDailyReportPdf";
+import { DailyReportPhotoGallery } from "@/components/ks2/DailyReportPhotoGallery";
 
 const weatherIcons: Record<string, React.ReactNode> = {
   sol: <Sun className="h-4 w-4 text-amber-500" />,
