@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, ArrowLeft, Trash2, MapPin } from "lucide-react";
+import { Loader2, Plus, ArrowLeft, Trash2, MapPin, Shield, ArrowRight, FileCheck } from "lucide-react";
+import { useKsModule2ShaPlan } from "@/hooks/useKsModule2ShaPlan";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
