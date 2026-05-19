@@ -29,8 +29,31 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // --- Auth: require valid user JWT ---
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const userClient = createClient(
+    supabaseUrl,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } } },
+  );
+  const { data: userData, error: userErr } = await userClient.auth.getUser();
+  if (userErr || !userData?.user) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
   try {
-    const { content, targetLanguage, contentType = "handbook", companyId } = await req.json();
+    const { content, targetLanguage, contentType = "handbook" } = await req.json();
 
     if (!content || !targetLanguage) {
       return new Response(
@@ -47,9 +70,17 @@ serve(async (req) => {
       );
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Derive companyId server-side from authenticated user (prevents cache poisoning)
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("company_id")
+      .eq("user_id", userData.user.id)
+      .maybeSingle();
+    const companyId = profile?.company_id ?? null;
+
 
     // Check cache first
     const contentHash = hashContent(content);

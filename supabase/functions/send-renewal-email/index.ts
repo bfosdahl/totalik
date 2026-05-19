@@ -5,7 +5,7 @@ import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
 };
 
 interface RenewalEmailRequest {
@@ -14,9 +14,40 @@ interface RenewalEmailRequest {
   companyName: string;
 }
 
+// Strict auth: cron secret OR authenticated system_admin only.
+// (Protects against unsolicited password-reset emails / email harvesting.)
+async function isAuthorized(req: Request): Promise<boolean> {
+  const cronSecret = req.headers.get("x-cron-secret");
+  const expected = Deno.env.get("CRON_SECRET");
+  if (cronSecret && expected && cronSecret === expected) return true;
+
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) return false;
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data?.user) return false;
+    const { data: isAdmin } = await supabase.rpc("is_system_admin", { _user_id: data.user.id });
+    return isAdmin === true;
+  } catch {
+    return false;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  if (!(await isAuthorized(req))) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   }
 
   try {
