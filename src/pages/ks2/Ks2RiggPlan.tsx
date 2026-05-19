@@ -16,6 +16,8 @@ import {
 import { useKsRiggPlan, type RiggPlan } from "@/hooks/useKsRiggPlan";
 import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { RiggPlanEditor } from "@/components/ks2/riggplan/RiggPlanEditor";
+import { syncRiggPlansToSha } from "@/utils/riggToShaSync";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -53,7 +55,13 @@ export default function Ks2RiggPlan() {
           isSaving={isSaving}
           onSave={async (canvas_data, name) => {
             const ok = await updatePlan(activePlan.id, { canvas_data, name });
-            if (ok) setActivePlan({ ...activePlan, canvas_data, name });
+            if (ok) {
+              setActivePlan({ ...activePlan, canvas_data, name });
+              const updated = await syncRiggPlansToSha(projectId || "");
+              if (updated > 0) {
+                toast.success(`SHA-plan oppdatert med ${updated} risikoområde${updated === 1 ? "" : "r"} fra riggplan`);
+              }
+            }
           }}
         />
       </div>
@@ -207,7 +215,10 @@ export default function Ks2RiggPlan() {
             <Button
               variant="destructive"
               onClick={async () => {
-                if (deleteId) await deletePlan(deleteId);
+                if (deleteId) {
+                  await deletePlan(deleteId);
+                  await syncRiggPlansToSha(projectId || "");
+                }
                 setDeleteId(null);
               }}
             >

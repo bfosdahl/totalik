@@ -4,10 +4,13 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trash2, Save, Download, RotateCw, Plus, Minus } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Trash2, Save, Download, RotateCw, Plus, Minus, Shield } from "lucide-react";
 import { RIGG_SYMBOLS, getSymbol } from "./riggSymbols";
 import type { RiggCanvasData, RiggObject, RiggPlan } from "@/hooks/useKsRiggPlan";
 import { exportRiggPlanPdf } from "@/utils/riggPlanPdf";
+import { DEFAULT_RISK_AREAS } from "@/hooks/useKsModule2ShaPlan";
 
 interface Props {
   plan: RiggPlan;
@@ -54,9 +57,21 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
       width: sym.defaultWidth,
       height: sym.defaultHeight,
       color: sym.color,
+      linkedRiskParagraphs: [...(sym.suggestedRiskParagraphs || [])],
+      riskNote: "",
     };
     setCanvas({ ...canvas, objects: [...canvas.objects, newObj] });
     setSelectedId(newObj.id);
+  };
+
+  const toggleRiskParagraph = (objId: string, paragraph: string) => {
+    const obj = canvas.objects.find((o) => o.id === objId);
+    if (!obj) return;
+    const current = obj.linkedRiskParagraphs || [];
+    const next = current.includes(paragraph)
+      ? current.filter((p) => p !== paragraph)
+      : [...current, paragraph];
+    updateObject(objId, { linkedRiskParagraphs: next });
   };
 
   const updateObject = (id: string, patch: Partial<RiggObject>) => {
@@ -154,10 +169,51 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
               onChange={(e) => updateObject(selected.id, { color: e.target.value })}
               className="h-8"
             />
+
+            <div className="mt-3 pt-3 border-t space-y-2">
+              <div className="flex items-center gap-1.5">
+                <Shield className="h-3.5 w-3.5 text-emerald-600" />
+                <Label className="text-xs font-semibold">SHA §8 risikoområder</Label>
+              </div>
+              <p className="text-[10px] text-muted-foreground leading-snug">
+                Auto-synkes til SHA-planen ved lagring. Avkryssede områder markeres som aktuelle med merknad om plasseringen.
+              </p>
+              <ScrollArea className="h-[160px] pr-2 -mx-1 px-1 border rounded bg-muted/30">
+                <div className="space-y-1 py-1.5">
+                  {DEFAULT_RISK_AREAS.map((ra) => {
+                    const checked = (selected.linkedRiskParagraphs || []).includes(ra.paragraph);
+                    return (
+                      <label
+                        key={ra.paragraph}
+                        className="flex items-start gap-1.5 px-1.5 py-1 rounded hover:bg-accent cursor-pointer text-[11px] leading-tight"
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={() => toggleRiskParagraph(selected.id, ra.paragraph)}
+                          className="mt-0.5 h-3.5 w-3.5"
+                        />
+                        <span>
+                          <span className="font-semibold mr-1">§{ra.paragraph})</span>
+                          {ra.description}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+              <Label className="text-xs">Merknad til SHA</Label>
+              <Textarea
+                value={selected.riskNote || ""}
+                onChange={(e) => updateObject(selected.id, { riskNote: e.target.value })}
+                placeholder="F.eks. plassering, avstand, sikringstiltak…"
+                className="text-xs min-h-[56px]"
+              />
+            </div>
+
             <Button
               variant="destructive"
               size="sm"
-              className="w-full"
+              className="w-full mt-3"
               onClick={() => removeObject(selected.id)}
             >
               <Trash2 className="h-3 w-3 mr-1" /> Slett
