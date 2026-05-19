@@ -37,6 +37,7 @@ interface NewTimeEntryDialogProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (entry: CreateTimeEntry) => Promise<boolean>;
   defaultProjectId?: string;
+  draftSavedAt?: number;
 }
 
 interface AllowanceRow {
