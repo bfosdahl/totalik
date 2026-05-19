@@ -102,17 +102,12 @@ export default function Ks2Timeregistrering() {
     );
   };
 
-  const handleCreateEntry = async (entry: {
-    entry_date: string;
-    hours: number;
-    project_name?: string;
-    project_id?: string;
-    description?: string;
-  }) => {
+  const handleCreateEntry = async (entry: Parameters<typeof createEntry>[0]) => {
     return createEntry({
       ...entry,
       project_id: projectId,
-      project_name: project ? `${project.project_number} - ${project.project_name}` : undefined,
+      ks_project_id: projectId,
+      project_name: project ? `${project.project_number} - ${project.project_name}` : entry.project_name,
     });
   };
 
