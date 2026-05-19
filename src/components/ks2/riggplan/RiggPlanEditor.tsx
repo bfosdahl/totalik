@@ -4,10 +4,13 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trash2, Save, Download, RotateCw, Plus, Minus } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Trash2, Save, Download, RotateCw, Plus, Minus, Shield } from "lucide-react";
 import { RIGG_SYMBOLS, getSymbol } from "./riggSymbols";
 import type { RiggCanvasData, RiggObject, RiggPlan } from "@/hooks/useKsRiggPlan";
 import { exportRiggPlanPdf } from "@/utils/riggPlanPdf";
+import { DEFAULT_RISK_AREAS } from "@/hooks/useKsModule2ShaPlan";
 
 interface Props {
   plan: RiggPlan;
