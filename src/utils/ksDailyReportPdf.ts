@@ -303,5 +303,25 @@ async function buildDailyReportPdf(
   addPdfFooter(doc, headerInfo);
 
   const fileName = `Dagsrapport_${report.report_number}_${format(new Date(report.report_date), "yyyy-MM-dd")}.pdf`;
+  return { doc, fileName };
+}
+
+export async function generateDailyReportPdf(
+  report: DailyReport,
+  project: DailyReportPdfProject | null,
+  company: DailyReportPdfCompany | null
+): Promise<void> {
+  const { doc, fileName } = await buildDailyReportPdf(report, project, company);
   doc.save(fileName);
+}
+
+export async function generateDailyReportPdfBase64(
+  report: DailyReport,
+  project: DailyReportPdfProject | null,
+  company: DailyReportPdfCompany | null
+): Promise<{ base64: string; fileName: string }> {
+  const { doc, fileName } = await buildDailyReportPdf(report, project, company);
+  const dataUri = doc.output("datauristring");
+  const base64 = dataUri.split(",")[1] || "";
+  return { base64, fileName };
 }
