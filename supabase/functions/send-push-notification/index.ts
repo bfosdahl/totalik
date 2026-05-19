@@ -22,8 +22,41 @@ serve(async (req) => {
   }
 
   try {
+    // Authenticate caller: either via CRON_SECRET (internal/cron callers)
+    // or via valid JWT for the user the notification targets.
+    const cronSecret = Deno.env.get("CRON_SECRET");
+    const providedSecret = req.headers.get("x-cron-secret");
+    const authHeader = req.headers.get("Authorization");
+
     const payload: PushPayload = await req.json();
+
+    let authorized = false;
+    if (cronSecret && providedSecret && providedSecret === cronSecret) {
+      authorized = true;
+    } else if (authHeader?.startsWith("Bearer ")) {
+      const supabaseAuth = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader } } }
+      );
+      const { data: { user } } = await supabaseAuth.auth.getUser(
+        authHeader.replace("Bearer ", "")
+      );
+      // Users may only send notifications targeting themselves.
+      if (user && user.id === payload.user_id) {
+        authorized = true;
+      }
+    }
+
+    if (!authorized) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     console.log("Sending push notification:", payload);
+
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
