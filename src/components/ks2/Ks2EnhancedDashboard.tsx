@@ -477,13 +477,37 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
           <CardTitle className="text-base">Snarveier</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <Button
               className="h-auto py-4 flex-col gap-2"
               onClick={() => navigate(`/ks/project/${projectId}/egenkontroller?new=true`)}
             >
               <Plus className="h-6 w-6" />
               <span className="text-xs">Ny egenkontroll</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-auto py-4 flex-col gap-2"
+              onClick={() => navigate(`/ks/project/${projectId}/sjekklister`)}
+            >
+              <ClipboardCheck className="h-6 w-6" />
+              <span className="text-xs">Sjekklister</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-auto py-4 flex-col gap-2"
+              onClick={() => navigate(`/ks/project/${projectId}/hms/sja`)}
+            >
+              <ShieldAlert className="h-6 w-6" />
+              <span className="text-xs">SJA</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-auto py-4 flex-col gap-2"
+              onClick={() => navigate(`/ks/project/${projectId}/timeregistrering`)}
+            >
+              <Timer className="h-6 w-6" />
+              <span className="text-xs">Timeføring</span>
             </Button>
             <Button
               variant="outline"
@@ -500,10 +524,6 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
             >
               <FileText className="h-6 w-6" />
               <span className="text-xs">KS-rapport</span>
-            </Button>
-            <Button variant="outline" className="h-auto py-4 flex-col gap-2" disabled>
-              <Package className="h-6 w-6" />
-              <span className="text-xs">FDV-pakke</span>
             </Button>
           </div>
         </CardContent>
