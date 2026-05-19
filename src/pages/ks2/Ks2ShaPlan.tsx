@@ -265,6 +265,36 @@ export default function Ks2ShaPlan() {
         </CardContent>
       </Card>
 
+      {/* Riggplan kobling */}
+      <Card className="border-primary/30">
+        <CardContent className="py-3 flex items-center gap-3 flex-wrap">
+          <div className="p-2 rounded-md bg-primary/10">
+            <MapPin className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-[220px]">
+            <p className="text-sm font-medium">
+              Riggplan {riggPlans.length > 0 ? `(${riggPlans.length} aktiv${riggPlans.length === 1 ? "" : "e"})` : "(ingen opprettet)"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {riggPlans.length > 0
+                ? "Visuell plassering av brakkerigg, kran, lager, adkomst og rømning — utfyller risikoområdene i SHA-planen."
+                : "Lag en riggplan for å visualisere byggeplassen og utfylle HMS-rutinene i SHA-planen."}
+            </p>
+          </div>
+          <Button
+            variant={riggPlans.length > 0 ? "outline" : "default"}
+            size="sm"
+            onClick={() => navigate(`/ks/project/${projectId}/hms/riggplan`)}
+          >
+            {riggPlans.length > 0 ? (
+              <>Åpne riggplan <ArrowRight className="h-4 w-4 ml-1" /></>
+            ) : (
+              <>Lag riggplan <ArrowRight className="h-4 w-4 ml-1" /></>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">
