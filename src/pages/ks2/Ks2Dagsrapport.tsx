@@ -779,9 +779,14 @@ export default function Ks2Dagsrapport() {
                         <Download className="h-3.5 w-3.5 mr-1" />
                         {downloadingId === report.id ? "Genererer..." : "Last ned PDF"}
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setEmailReport(report)}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleOpenEmail(report)}
+                        disabled={preparingEmail === report.id}
+                      >
                         <Mail className="h-3.5 w-3.5 mr-1" />
-                        Send på e-post
+                        {preparingEmail === report.id ? "Klargjør PDF..." : "Send på e-post"}
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
