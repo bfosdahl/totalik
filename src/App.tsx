@@ -106,6 +106,7 @@ const KsOppsett = lazy(() => import("./pages/ks2/KsOppsett"));
 // Mine prosjekter
 const MineProsjekterDashboard = lazy(() => import("./pages/mineprosjekter/MineProsjekterDashboard"));
 const SimpleProjectDetail = lazy(() => import("./pages/mineprosjekter/SimpleProjectDetail"));
+const ProsjektHub = lazy(() => import("./pages/ProsjektHub"));
 
 // FDV
 const FdvDashboard = lazy(() => import("./pages/fdv/FdvDashboard"));
