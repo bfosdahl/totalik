@@ -69,7 +69,13 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
   const showDepartmentSelector = hasDepartments && (userDepartments.length > 1 || canViewAllDepartments);
 
   return (
-    <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4 md:px-6">
+    <header
+      className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4 md:px-6 h-16"
+      style={{
+        paddingTop: "env(safe-area-inset-top)",
+        height: "calc(4rem + env(safe-area-inset-top))",
+      }}
+    >
       <div className="flex items-center gap-4">
         {/* Mobile menu button */}
         <Button
