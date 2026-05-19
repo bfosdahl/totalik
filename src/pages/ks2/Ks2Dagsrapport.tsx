@@ -477,6 +477,8 @@ export default function Ks2Dagsrapport() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [expandedReport, setExpandedReport] = useState<string | null>(null);
   const [emailReport, setEmailReport] = useState<DailyReport | null>(null);
+  const [emailAttachment, setEmailAttachment] = useState<{ filename: string; content: string; contentType: string } | null>(null);
+  const [preparingEmail, setPreparingEmail] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const { users } = useCompanyUsers();
   const { profile } = useAuth();
