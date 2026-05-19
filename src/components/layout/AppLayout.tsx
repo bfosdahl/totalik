@@ -45,6 +45,9 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Global mascot helper */}
       <MascotChatHelper />
 
+      {/* Detects new deployments and prompts users to reload */}
+      <VersionChecker />
+
       {/* Terms acceptance dialog - shown on first login */}
       <TermsAcceptanceDialog
         open={!!showTermsDialog}
