@@ -472,6 +472,17 @@ export default function ProsjektHub() {
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               </div>
+
+              {/* Quick time entry dialog */}
+              {selected && (
+                <Ks2NewTimeEntryDialog
+                  open={timeDialogOpen}
+                  onOpenChange={setTimeDialogOpen}
+                  onSubmit={handleTimeSubmit}
+                  projectId={selected.id}
+                  projectName={selected.project_name}
+                />
+              )}
             </motion.div>
           )}
         </AnimatePresence>
