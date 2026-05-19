@@ -7,6 +7,7 @@ interface Ks2NewTimeEntryDialogProps {
   onSubmit: (entry: CreateTimeEntry) => Promise<boolean>;
   projectId: string;
   projectName: string;
+  draftSavedAt?: number;
 }
 
 /**
@@ -19,6 +20,7 @@ export function Ks2NewTimeEntryDialog({
   onOpenChange,
   onSubmit,
   projectId,
+  draftSavedAt,
 }: Ks2NewTimeEntryDialogProps) {
   return (
     <NewTimeEntryDialog
@@ -26,6 +28,7 @@ export function Ks2NewTimeEntryDialog({
       onOpenChange={onOpenChange}
       onSubmit={onSubmit}
       defaultProjectId={projectId}
+      draftSavedAt={draftSavedAt}
     />
   );
 }
