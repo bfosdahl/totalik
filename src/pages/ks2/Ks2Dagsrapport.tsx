@@ -119,6 +119,7 @@ function DailyReportForm({
     (initialData?.deviations_today || []).map((d: any) => d.description || d).join("\n")
   );
   const [notes, setNotes] = useState(initialData?.notes || "");
+  const [photos, setPhotos] = useState<DailyReportPhoto[]>((initialData?.photos as any) || []);
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     weather: true,
