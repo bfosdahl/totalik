@@ -169,6 +169,16 @@ const Settings = () => {
     );
   }
 
+  if (activeSection === "allowances") {
+    return (
+      <AppLayout>
+        <div className="max-w-3xl mx-auto">
+          <AllowanceTypesSettings onBack={goBack} />
+        </div>
+      </AppLayout>
+    );
+  }
+
   // Render placeholder for other sections
   if (activeSection !== "main" && currentSection) {
     return (
