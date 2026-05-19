@@ -451,24 +451,26 @@ export default function ProsjektHub() {
                 </div>
               )}
 
-              {/* Quick time entry CTA */}
-              <motion.button
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                onClick={() => setTimeDialogOpen(true)}
-                className="w-full flex items-center gap-3 p-4 rounded-xl border bg-gradient-to-r from-primary to-primary/90 text-primary-foreground shadow-sm hover:shadow transition-all active:scale-[0.98]"
-              >
-                <div className="h-11 w-11 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                  <Plus className="h-5 w-5" />
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-sm">Registrer timer</div>
-                  <div className="text-[11px] text-primary-foreground/80">
-                    Før timer direkte på {selected.project_name}
+              {/* Quick time entry CTA – kun når timer er tilgjengelig for prosjekttypen */}
+              {getAvailableShortcuts(selected).some((s) => s.id === "timer") && (
+                <motion.button
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => setTimeDialogOpen(true)}
+                  className="w-full flex items-center gap-3 p-4 rounded-xl border bg-gradient-to-r from-primary to-primary/90 text-primary-foreground shadow-sm hover:shadow transition-all active:scale-[0.98]"
+                >
+                  <div className="h-11 w-11 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <Plus className="h-5 w-5" />
                   </div>
-                </div>
-                <Clock className="ml-auto h-5 w-5 opacity-70 shrink-0" />
-              </motion.button>
+                  <div className="text-left">
+                    <div className="font-semibold text-sm">Registrer timer</div>
+                    <div className="text-[11px] text-primary-foreground/80">
+                      Før timer direkte på {selected.project_name}
+                    </div>
+                  </div>
+                  <Clock className="ml-auto h-5 w-5 opacity-70 shrink-0" />
+                </motion.button>
+              )}
 
               {/* Snarvei-grid – tilpasset prosjektets moduler */}
               {(() => {
