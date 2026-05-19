@@ -154,6 +154,34 @@ export default function ProsjektHub() {
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [switcherSearch, setSwitcherSearch] = useState("");
   const [timeDialogOpen, setTimeDialogOpen] = useState(false);
+  const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
+
+  // Intercept lukking av timedialogen for å bekrefte mot ulagrede endringer
+  const handleTimeDialogOpenChange = (next: boolean) => {
+    if (next) {
+      setTimeDialogOpen(true);
+      return;
+    }
+    // Hvis nettopp lagret eller dialogen aldri åpnet seg: lukk uten bekreftelse
+    if (justSubmittedRef.current || !timeDialogOpen) {
+      setTimeDialogOpen(false);
+      return;
+    }
+    setConfirmCloseOpen(true);
+  };
+
+  const handleKeepDraft = () => {
+    // Behold utkast i localStorage – påminnelse-toast vises ved neste besøk
+    setConfirmCloseOpen(false);
+    setTimeDialogOpen(false);
+  };
+
+  const handleDiscardDraft = () => {
+    localStorage.removeItem(DRAFT_KEY);
+    justSubmittedRef.current = true; // hindre påminnelse-toast denne gangen
+    setConfirmCloseOpen(false);
+    setTimeDialogOpen(false);
+  };
   // Sporing av ulagrede tidsregistreringer
   const justSubmittedRef = useRef(false);
   const draftChecked = useRef(false);
