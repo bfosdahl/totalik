@@ -1,73 +1,67 @@
-# Plan: Full avdelingsisolering på tvers av alle moduler
+# Prosjektbasert timeføring + administrerbare tillegg
 
-## Bakgrunn
+## Hva som bygges
 
-Når en bedrift har avdelinger skal hver avdeling fungere som en "selvstendig bedrift" under hovedbedriften. Alt brukeren oppretter, endrer eller sletter mens hun er inne i en avdeling skal **bare** påvirke den avdelingen – aldri hovedbedriften eller andre avdelinger.
+### 1. Prosjekt-hub (mobil + PC)
+Ny side `/mine-prosjekter` (utvider eksisterende `MineProsjekterDashboard`) som viser alle KS-prosjekter brukeren har tilgang til. Klikk på prosjekt → snarvei-grid med:
+- Timeføring (forhåndsutfylt med prosjekt)
+- Sjekklister, SJA, Avvik, Vernerunde, Dagsrapport, Bilder
 
-I dag er bare **14 av ~140 tabeller** avdelingsfiltrert (bl.a. `deviations`, `audits`, `ergonomic_risk_assessments`, `ik_mat_temperature_*`, `department_*`, `hms_forsvarlighetsvurderinger`, `time_entries`). De aller fleste IK-MAT, IK-HMS, IK-Alkohol og felles moduler deler fortsatt data på tvers av hele bedriften.
+På mobil legges også «Mine prosjekter» som ny fane i bunnmenyen (erstatter eller flytter en av dagens).
 
-Dette er en **stor endring** (database + hooks + RLS + UI for ~100+ tabeller). Jeg foreslår å rulle det ut i prioriterte faser i stedet for én gigant-migrasjon, slik at vi kan teste hver modul nøye før vi går videre.
+### 2. Utvidet timeføring
+Time-entry-dialogen får nye felter:
+- **Prosjekt** (kobling til `ks_module2_projects` – viser også kunde fra `client_name`)
+- **Kunde** (auto-fylt fra prosjekt, kan overstyres for ikke-prosjekt-arbeid)
+- **Beskrivelse**
+- **Timetype**: Normal, 50 % overtid, 100 % overtid
+- **Tillegg** (multi-rad): velg type fra liste + antall (timer/dager/km/stk) + auto-beregnet beløp
 
-## Prinsipp som brukes overalt
+### 3. Administrerbare satser (Innstillinger → Lønn & satser)
+Ny admin-side hvor bedriftsadmin kan opprette/redigere tilleggstyper:
+- Navn (f.eks. «Diett innenlands», «Brudd på hvile», «Reisetimer»)
+- Enhet: time / dag / km / stk / fast
+- Sats (kr per enhet)
+- Aktiv/inaktiv
 
-For hver tabell:
+Standardtyper seedes automatisk for nye bedrifter (statens satser for diett/km, reisetimer, hvilebrudd).
 
-1. Legg til kolonne `department_id uuid NULL REFERENCES company_departments(id) ON DELETE SET NULL` + index `(company_id, department_id)`.
-2. Hook filtrerer:
-   - Avdelingsvisning: `.eq('department_id', filterDepartmentId)`
-   - Hovedbedriftsvisning: `.is('department_id', null)`
-3. Hook setter `department_id: filterDepartmentId` ved alle INSERT.
-4. UPDATE/DELETE arver automatisk filteret (siden vi henter kun synlige rader).
-5. Eksisterende rader beholder `department_id = NULL` → tilhører hovedbedriften (ingen data forsvinner).
+## Database (migrasjon)
 
-RLS-politikkene fortsetter å sjekke `company_id`. Avdelingsfiltrering gjøres i hooks (samme mønster som vi alt bruker for `deviations`, `audits` osv.). Dette unngår 100+ nye RLS-policies og holder mønsteret konsistent.
+```text
+time_entries (utvides)
+  + customer_name           text
+  + hour_type               text  -- 'normal' | 'overtime_50' | 'overtime_100'
+  + ks_project_id           uuid  -- FK ks_module2_projects (project_id beholdes for legacy)
 
-## Faseplan
+time_entry_allowances (ny)
+  id, time_entry_id (FK cascade), allowance_type_id (FK),
+  quantity numeric, rate_snapshot numeric, amount numeric,
+  notes text, created_at
 
-### Fase 1 – IK MAT (mest akutt etter dagens hendelse)
-Tabeller:
-- `ik_mat_suppliers`
-- `ik_mat_checklist_responses`, `ik_mat_custom_checklists`
-- `ik_mat_cleaning_plan_responses`, `ik_mat_custom_cleaning_tasks`
-- `ik_mat_daily_rounds`, `ik_mat_daily_round_completions`
-- `ik_mat_daily_task_settings`, `ik_mat_daily_task_completions`
-- `ik_mat_scheduled_tasks`, `ik_mat_task_completions`
-- `ik_mat_traceability_records`
-- `ik_mat_dismissed_auto_deviations`
+company_allowance_types (ny)
+  id, company_id, name, unit ('hour'|'day'|'km'|'piece'|'fixed'),
+  rate numeric, is_active bool, sort_order int, is_default bool
+```
 
-### Fase 2 – IK HMS
-Tabeller:
-- `company_routines`, `company_risk_assessments`, `company_action_plans`, `action_plan_followups`
-- `company_goals`
-- `company_organization`, `org_chart_nodes`
-- `hms_sja`, `hms_self_declarations`, `hms_vernerunde_templates`
-- `ik_hms_company_documents`, `ik_hms_stoffkartotek`
-- `chemical_risk_assessments`, `company_chemical_entries`, `equipment_exposure_assessments`
-- `gdpr_documentation`, `gdpr_checklist_responses`
-- `company_aarshjul_activities` (+ overrides/hidden_defaults)
-- `company_laws_regulations`
+RLS: company_id-isolering på begge, ansatte ser/oppretter egne `time_entry_allowances` via `time_entries.user_id`. Trigger seeder standardtyper når en bedrift opprettes.
 
-### Fase 3 – IK Alkohol
-Alle `ik_alkohol_*` tabeller (organisasjon, rutiner, mål, risiko, kontroller, hendelser, lovverk, opplæring, compliance, lisenser, vakt, vedlegg).
+## UI-endringer
+- `Ks2NewTimeEntryDialog` + ny generell `TimeEntryDialog` får prosjektvelger, timetype-radioer og tilleggs-seksjon (med + Legg til-knapp per linje)
+- Ny side: `src/pages/admin/AllowanceTypes.tsx` (Innstillinger-meny)
+- Ny side/utvidelse: `src/pages/MyProjects.tsx` med snarvei-grid per prosjekt
+- Mobile FAB på prosjektside med samme snarveier
+- Rapport-PDF og Tripletex-sync utvides senere (ikke i denne runden – tillegg lagres allerede strukturert)
 
-### Fase 4 – Felles / personal / dokumenter
-- `company_module_documents` (Mine dokumenter)
-- `employee_absence`, `employee_meetings`, `employee_messages`, `employee_surveys`, `employee_courses`, `employee_documents`, `employment_contracts`
-- `hr_meetings`, `hr_meeting_templates`
-- `driving_log_entries`, `driving_log_expenses`
-- `anonymous_messages`, `anonymous_message_discussions`
-- `hms_card_requests`
-- `notification_settings`-relaterte (vurderes – kan være globalt per bruker)
+## Hva som IKKE er med i denne runden
+- Tripletex-sync av tillegg (sender bare timer/timetype foreløpig)
+- Rapport-eksport av tillegg som egne linjer i PDF
+- Automatisk beregning av reisetimer fra kjørebok
+Disse kan tas i neste iterasjon når dere har testet flyten.
 
-### Fase 5 – KS Bygg / FDV (egen vurdering)
-KS Bygg er allerede prosjektbasert (`project_id` isolerer naturlig). Vi vurderer om avdelingsfiltrering trengs her, eller om "avdeling eier prosjekt" er nok. FDV-bygg kan trolig tilordnes avdeling. Tas etter Fase 1–4 er stabilt.
-
-## Det jeg trenger fra deg før jeg starter
-
-For å unngå at jeg lager noe du ikke vil ha, vil jeg gjerne avklare:
-
-1. **Skal jeg starte med Fase 1 (IK MAT) nå?** Det er den mest akutte etter dagens hendelse, og gir oss et tydelig mønster å gjenta i fase 2–4.
-2. **Synlighet for hovedadmin:** Når company_admin står i "Hovedbedrift"-visning, skal de da se *bare* hovedbedriftens data (slik vi gjør nå med deviations), eller skal de kunne se "alt på tvers"? I dag = bare hovedbedrift.
-3. **Eksisterende data:** All eksisterende data forblir på hovedbedriften (`department_id = NULL`). Skal jeg gi deg et verktøy for å flytte rader til en avdeling i etterkant, eller holder det at nye avdelinger starter tomme?
-
-Når du svarer ja på Fase 1 setter jeg i gang med migrasjon + hook-oppdateringer for alle IK MAT-tabellene over.
+## Implementeringsrekkefølge
+1. Migrasjon (utvide `time_entries`, opprette `company_allowance_types` + `time_entry_allowances`, seed-trigger, RLS)
+2. Hook `useAllowanceTypes` + admin-side
+3. Oppdater `TimeEntryDialog` + `Ks2NewTimeEntryDialog` med nye felter
+4. Ny prosjekt-hub med snarvei-grid
+5. Mobile bunnmeny + FAB-justering

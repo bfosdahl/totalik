@@ -1471,6 +1471,53 @@ export type Database = {
           },
         ]
       }
+      company_allowance_types: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          is_default: boolean
+          name: string
+          rate: number
+          sort_order: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name: string
+          rate?: number
+          sort_order?: number
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name?: string
+          rate?: number
+          sort_order?: number
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_allowance_types_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_chemical_entries: {
         Row: {
           company_id: string
@@ -15552,11 +15599,14 @@ export type Database = {
           approved_by_name: string | null
           company_id: string
           created_at: string
+          customer_name: string | null
           department_id: string | null
           description: string | null
           entry_date: string
+          hour_type: string
           hours: number
           id: string
+          ks_project_id: string | null
           project_id: string | null
           project_name: string | null
           source: string | null
@@ -15574,11 +15624,14 @@ export type Database = {
           approved_by_name?: string | null
           company_id: string
           created_at?: string
+          customer_name?: string | null
           department_id?: string | null
           description?: string | null
           entry_date: string
+          hour_type?: string
           hours: number
           id?: string
+          ks_project_id?: string | null
           project_id?: string | null
           project_name?: string | null
           source?: string | null
@@ -15596,11 +15649,14 @@ export type Database = {
           approved_by_name?: string | null
           company_id?: string
           created_at?: string
+          customer_name?: string | null
           department_id?: string | null
           description?: string | null
           entry_date?: string
+          hour_type?: string
           hours?: number
           id?: string
+          ks_project_id?: string | null
           project_id?: string | null
           project_name?: string | null
           source?: string | null
@@ -15621,10 +15677,71 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "time_entries_ks_project_id_fkey"
+            columns: ["ks_project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "time_entries_work_schedule_id_fkey"
             columns: ["work_schedule_id"]
             isOneToOne: false
             referencedRelation: "work_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      time_entry_allowances: {
+        Row: {
+          allowance_type_id: string | null
+          amount: number
+          created_at: string
+          id: string
+          notes: string | null
+          quantity: number
+          rate_snapshot: number
+          time_entry_id: string
+          type_name: string
+          unit: string
+        }
+        Insert: {
+          allowance_type_id?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          quantity?: number
+          rate_snapshot?: number
+          time_entry_id: string
+          type_name: string
+          unit: string
+        }
+        Update: {
+          allowance_type_id?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          quantity?: number
+          rate_snapshot?: number
+          time_entry_id?: string
+          type_name?: string
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_entry_allowances_allowance_type_id_fkey"
+            columns: ["allowance_type_id"]
+            isOneToOne: false
+            referencedRelation: "company_allowance_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entry_allowances_time_entry_id_fkey"
+            columns: ["time_entry_id"]
+            isOneToOne: false
+            referencedRelation: "time_entries"
             referencedColumns: ["id"]
           },
         ]
@@ -16508,6 +16625,10 @@ export type Database = {
       is_hms_responsible: { Args: { user_id: string }; Returns: boolean }
       is_leader_or_verneombud: { Args: { p_user_id: string }; Returns: boolean }
       is_system_admin: { Args: { _user_id: string }; Returns: boolean }
+      seed_default_allowance_types: {
+        Args: { p_company_id: string }
+        Returns: undefined
+      }
       seed_hr_meeting_templates_for_company: {
         Args: { p_company_id: string }
         Returns: undefined
