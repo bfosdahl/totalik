@@ -646,12 +646,35 @@ export default function ProsjektHub() {
               {selected && (
                 <Ks2NewTimeEntryDialog
                   open={timeDialogOpen}
-                  onOpenChange={setTimeDialogOpen}
+                  onOpenChange={handleTimeDialogOpenChange}
                   onSubmit={handleTimeSubmit}
                   projectId={selected.id}
                   projectName={selected.project_name}
                 />
               )}
+
+              {/* Bekreftelse ved lukking med ulagrede endringer */}
+              <AlertDialog open={confirmCloseOpen} onOpenChange={setConfirmCloseOpen}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Lukke uten å lagre?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Du har påbegynt en timeføring{selected ? ` på ${selected.project_name}` : ""}. Velg om du vil lagre utkastet for å fortsette senere, forkaste det, eller gå tilbake til skjemaet.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                    <AlertDialogCancel className="sm:mr-auto">
+                      Tilbake til skjema
+                    </AlertDialogCancel>
+                    <Button variant="outline" onClick={handleDiscardDraft}>
+                      Forkast
+                    </Button>
+                    <AlertDialogAction onClick={handleKeepDraft}>
+                      Lagre utkast og lukk
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </motion.div>
           )}
         </AnimatePresence>
