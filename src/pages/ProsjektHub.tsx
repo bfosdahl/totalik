@@ -105,9 +105,10 @@ interface ProjectRowProps {
   onSelect: () => void;
   onToggleFavorite: (e: React.MouseEvent) => void;
   compact?: boolean;
+  hasDraft?: boolean;
 }
 
-function ProjectRow({ project, onSelect, onToggleFavorite, compact }: ProjectRowProps) {
+function ProjectRow({ project, onSelect, onToggleFavorite, compact, hasDraft }: ProjectRowProps) {
   return (
     <button onClick={onSelect} className="w-full text-left">
       <Card className={cn("hover:bg-accent transition-colors active:scale-[0.99]", compact ? "p-2.5" : "p-3")}>
@@ -121,8 +122,14 @@ function ProjectRow({ project, onSelect, onToggleFavorite, compact }: ProjectRow
               <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
                 {statusLabel[project.status] || project.status}
               </Badge>
+              {hasDraft && (
+                <Badge className="text-[10px] px-1.5 py-0 bg-amber-500 hover:bg-amber-500 text-white">
+                  Utkast
+                </Badge>
+              )}
             </div>
             <div className="font-medium text-sm line-clamp-1">{project.project_name}</div>
+
             {!compact && project.client_name && (
               <div className="text-xs text-muted-foreground line-clamp-1">{project.client_name}</div>
             )}
