@@ -4,6 +4,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
+export type HourType = "normal" | "overtime_50" | "overtime_100";
+
+export interface TimeEntryAllowanceInput {
+  allowance_type_id?: string | null;
+  type_name: string;
+  unit: string;
+  quantity: number;
+  rate_snapshot: number;
+  amount: number;
+  notes?: string | null;
+}
+
 export interface TimeEntry {
   id: string;
   company_id: string;
@@ -13,6 +25,9 @@ export interface TimeEntry {
   hours: number;
   project_name: string | null;
   project_id: string | null;
+  ks_project_id?: string | null;
+  customer_name?: string | null;
+  hour_type?: HourType;
   description: string | null;
   status: "draft" | "submitted" | "approved" | "rejected" | "pending_confirmation";
   approved_by: string | null;
@@ -36,8 +51,12 @@ export interface CreateTimeEntry {
   hours: number;
   project_name?: string;
   project_id?: string;
+  ks_project_id?: string | null;
+  customer_name?: string | null;
+  hour_type?: HourType;
   description?: string;
   status?: "draft" | "submitted";
+  allowances?: TimeEntryAllowanceInput[];
 }
 
 export function useTimeEntries() {
