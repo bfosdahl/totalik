@@ -29,7 +29,9 @@ import { Ks2ShaTilpasning } from "@/components/ks2/sha/Ks2ShaTilpasning";
 
 export default function Ks2ShaPlan() {
   const { projectId } = useParams();
+  const navigate = useNavigate();
   const { shaPlan, tilpasning, isLoading, isSaving } = useKsModule2ShaPlan(projectId || "");
+  const { plans: riggPlans } = useKsRiggPlan(projectId || "");
   const [activeTab, setActiveTab] = useState<string>("plan");
   const [showCreateFlow, setShowCreateFlow] = useState(false);
   const [createType, setCreateType] = useState<"internal" | "external" | null>(null);
