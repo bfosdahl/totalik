@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 
 interface DashboardStats {
   compliancePercent: number;
@@ -12,8 +13,13 @@ interface DashboardStats {
   totalSteps: number;
 }
 
+// Helper: apply department filter (null = main company view → department_id IS NULL)
+const withDept = (query: any, departmentId: string | null) =>
+  departmentId ? query.eq("department_id", departmentId) : query.is("department_id", null);
+
 export function useDashboardStats(): DashboardStats {
   const { profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const [stats, setStats] = useState<DashboardStats>({
     compliancePercent: 0,
     openDeviations: 0,
@@ -37,6 +43,7 @@ export function useDashboardStats(): DashboardStats {
     const fetchStats = async () => {
       try {
         const companyId = profile.company_id;
+        const deptId = filterDepartmentId;
         const totalSteps = 6;
         
         const [
