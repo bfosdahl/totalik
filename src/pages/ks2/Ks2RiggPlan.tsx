@@ -30,9 +30,28 @@ export default function Ks2RiggPlan() {
   const project = projects?.find((p) => p.id === projectId);
 
   const [activePlan, setActivePlan] = useState<RiggPlan | null>(null);
+  const [initialSelectedId, setInitialSelectedId] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
   const [newName, setNewName] = useState("Hovedriggplan");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Auto-open plan/object from URL (deep link from SHA-plan)
+  useEffect(() => {
+    if (isLoading || activePlan) return;
+    const planId = searchParams.get("plan");
+    const objectId = searchParams.get("object");
+    if (planId) {
+      const found = plans.find((p) => p.id === planId);
+      if (found) {
+        setActivePlan(found);
+        setInitialSelectedId(objectId || null);
+        searchParams.delete("plan");
+        searchParams.delete("object");
+        setSearchParams(searchParams, { replace: true });
+      }
+    }
+  }, [isLoading, plans, searchParams, activePlan, setSearchParams]);
 
   if (isLoading) {
     return (
