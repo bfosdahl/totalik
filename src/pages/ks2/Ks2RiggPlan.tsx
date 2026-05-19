@@ -215,7 +215,10 @@ export default function Ks2RiggPlan() {
             <Button
               variant="destructive"
               onClick={async () => {
-                if (deleteId) await deletePlan(deleteId);
+                if (deleteId) {
+                  await deletePlan(deleteId);
+                  await syncRiggPlansToSha(projectId || "");
+                }
                 setDeleteId(null);
               }}
             >
