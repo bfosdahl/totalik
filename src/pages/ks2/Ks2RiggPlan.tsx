@@ -21,8 +21,10 @@ import { nb } from "date-fns/locale";
 
 export default function Ks2RiggPlan() {
   const { projectId } = useParams();
+  const navigate = useNavigate();
   const { plans, isLoading, isSaving, createPlan, updatePlan, deletePlan } = useKsRiggPlan(projectId || "");
   const { projects } = useKsModule2Projects();
+  const { shaPlan } = useKsModule2ShaPlan(projectId || "");
   const project = projects?.find((p) => p.id === projectId);
 
   const [activePlan, setActivePlan] = useState<RiggPlan | null>(null);
