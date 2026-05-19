@@ -168,9 +168,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
 
       const response = await supabase.functions.invoke("send-test-notification", {
         body: {
-          company_id: company.id,
           recipient_emails: [profile.email],
-          company_name: company.name,
         },
       });
 
