@@ -2,6 +2,7 @@ import { ReactNode, useState, useCallback } from "react";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader } from "./AppHeader";
 import { MascotChatHelper } from "@/components/help/MascotChatHelper";
+import { VersionChecker } from "@/components/VersionChecker";
 import { TermsAcceptanceDialog } from "@/components/terms/TermsAcceptanceDialog";
 import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,6 +44,9 @@ export function AppLayout({ children }: AppLayoutProps) {
       
       {/* Global mascot helper */}
       <MascotChatHelper />
+
+      {/* Detects new deployments and prompts users to reload */}
+      <VersionChecker />
 
       {/* Terms acceptance dialog - shown on first login */}
       <TermsAcceptanceDialog
