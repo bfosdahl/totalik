@@ -364,6 +364,19 @@ function DailyReportForm({
         )}
       </div>
 
+      {/* Photos */}
+      <div>
+        <SectionHeader id="photos" label="Bilder / vedlegg" icon={<Camera className="h-4 w-4 text-sky-500" />} />
+        {expandedSections.photos && (
+          <div className="mt-2">
+            <p className="text-xs text-muted-foreground mb-2">
+              Ta bilde eller last opp filer. Bilder følger med på PDF og e-post.
+            </p>
+            <DailyReportPhotoUploader photos={photos} onChange={setPhotos} />
+          </div>
+        )}
+      </div>
+
       {/* Notes */}
       <div>
         <SectionHeader id="notes" label="Andre merknader" icon={<FileText className="h-4 w-4 text-muted-foreground" />} />
