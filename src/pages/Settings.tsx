@@ -11,7 +11,8 @@ import {
   LucideIcon,
   Download,
   Smartphone,
-  Layers
+  Layers,
+  Wallet
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
