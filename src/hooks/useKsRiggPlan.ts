@@ -13,6 +13,10 @@ export interface RiggObject {
   height: number;
   color: string;
   rotation?: number;
+  /** §8-bokstaver i Byggherreforskriften som dette objektet er knyttet til */
+  linkedRiskParagraphs?: string[];
+  /** Fritekst-merknad som synkroniseres inn i tiltakene for SHA-risikoområdet */
+  riskNote?: string;
 }
 
 export interface RiggCanvasData {
