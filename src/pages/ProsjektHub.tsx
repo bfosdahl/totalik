@@ -18,6 +18,7 @@ import {
   Star,
   ChevronsUpDown,
   Check,
+  Plus,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,9 @@ import {
 } from "@/components/ui/sheet";
 import { useKsModule2Projects, KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { cn } from "@/lib/utils";
+import { Ks2NewTimeEntryDialog } from "@/components/ks2/Ks2NewTimeEntryDialog";
+import { useTimeEntries } from "@/hooks/useTimeEntries";
+import { CreateTimeEntry } from "@/hooks/useTimeEntries";
 
 interface Shortcut {
   id: string;
