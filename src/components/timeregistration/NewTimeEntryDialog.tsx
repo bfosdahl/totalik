@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { CalendarIcon, Clock, FolderOpen, FileText, Plus, Trash2, Building2, Zap } from "lucide-react";
+import { CalendarIcon, Clock, FolderOpen, FileText, Plus, Trash2, Building2, Zap, Save } from "lucide-react";
 import {
   Dialog,
   DialogContent,
