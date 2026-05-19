@@ -150,6 +150,9 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const auth = await requireAuth(req, corsHeaders);
+  if (auth instanceof Response) return auth;
+
   try {
     const data: SendMeetingMinutesRequest = await req.json();
     console.log("Sending meeting minutes to:", data.recipients);
