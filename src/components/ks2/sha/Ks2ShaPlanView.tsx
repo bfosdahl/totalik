@@ -201,7 +201,12 @@ export function Ks2ShaPlanView({ projectId }: Props) {
   // Internal plan view
   return (
     <div className="space-y-6">
-      <Accordion type="multiple" defaultValue={["info", "risks"]} className="space-y-4">
+      <Accordion
+        type="multiple"
+        value={accordionValue ? Array.from(new Set(["info", "risks", accordionValue])) : ["info", "risks"]}
+        onValueChange={(v) => setAccordionValue(v[v.length - 1])}
+        className="space-y-4"
+      >
         {/* Project Info */}
         <AccordionItem value="info" className="border rounded-lg px-4">
           <AccordionTrigger className="hover:no-underline">
