@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -6,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Save, Download, RotateCw, Plus, Minus, Shield } from "lucide-react";
+import { Trash2, Save, Download, RotateCw, Plus, Minus, Shield, ExternalLink } from "lucide-react";
 import { RIGG_SYMBOLS, getSymbol } from "./riggSymbols";
 import type { RiggCanvasData, RiggObject, RiggPlan } from "@/hooks/useKsRiggPlan";
 import { exportRiggPlanPdf } from "@/utils/riggPlanPdf";
@@ -18,9 +19,12 @@ interface Props {
   projectNumber: string;
   onSave: (canvas: RiggCanvasData, name: string) => Promise<void>;
   isSaving: boolean;
+  initialSelectedId?: string | null;
 }
 
-export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSaving }: Props) {
+export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSaving, initialSelectedId }: Props) {
+  const navigate = useNavigate();
+  const { projectId } = useParams();
   const [canvas, setCanvas] = useState<RiggCanvasData>(plan.canvas_data);
   const [name, setName] = useState(plan.name);
   const [selectedId, setSelectedId] = useState<string | null>(null);
