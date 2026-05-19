@@ -17,14 +17,21 @@ interface User {
   last_name: string;
 }
 
+interface EmailAttachment {
+  filename: string;
+  content: string; // base64 (no data: prefix)
+  contentType?: string;
+}
+
 interface EmailSendDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  documentType: "deviation" | "handbook";
+  documentType: "deviation" | "handbook" | "daily-report";
   subject: string;
   htmlContent: string;
   users: User[];
   companyName?: string;
+  attachments?: EmailAttachment[];
 }
 
 export function EmailSendDialog({
