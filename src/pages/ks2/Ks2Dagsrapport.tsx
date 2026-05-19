@@ -58,7 +58,7 @@ import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
 import { DailyReportPhotoUploader, DailyReportPhoto } from "@/components/ks2/DailyReportPhotoUploader";
-import { generateDailyReportPdf } from "@/utils/ksDailyReportPdf";
+import { generateDailyReportPdf, generateDailyReportPdfBase64 } from "@/utils/ksDailyReportPdf";
 import { DailyReportPhotoGallery } from "@/components/ks2/DailyReportPhotoGallery";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -477,6 +477,8 @@ export default function Ks2Dagsrapport() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [expandedReport, setExpandedReport] = useState<string | null>(null);
   const [emailReport, setEmailReport] = useState<DailyReport | null>(null);
+  const [emailAttachment, setEmailAttachment] = useState<{ filename: string; content: string; contentType: string } | null>(null);
+  const [preparingEmail, setPreparingEmail] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const { users } = useCompanyUsers();
   const { profile } = useAuth();
@@ -497,6 +499,29 @@ export default function Ks2Dagsrapport() {
       setDownloadingId(null);
     }
   };
+
+  const handleOpenEmail = async (report: DailyReport) => {
+    setPreparingEmail(report.id);
+    try {
+      const [{ data: projectData }, { data: companyData }] = await Promise.all([
+        report.project_id
+          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name").eq("id", report.project_id).maybeSingle()
+          : Promise.resolve({ data: null } as any),
+        supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email").eq("id", report.company_id).maybeSingle(),
+      ]);
+      const { base64, fileName } = await generateDailyReportPdfBase64(report, projectData as any, companyData as any);
+      setEmailAttachment({ filename: fileName, content: base64, contentType: "application/pdf" });
+      setEmailReport(report);
+    } catch (err) {
+      console.error("Failed to prepare PDF for email", err);
+      // Still allow sending without attachment
+      setEmailAttachment(null);
+      setEmailReport(report);
+    } finally {
+      setPreparingEmail(null);
+    }
+  };
+
 
   const handleSubmit = async (data: CreateDailyReport, asDraft: boolean) => {
     await createReport({
@@ -754,9 +779,14 @@ export default function Ks2Dagsrapport() {
                         <Download className="h-3.5 w-3.5 mr-1" />
                         {downloadingId === report.id ? "Genererer..." : "Last ned PDF"}
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setEmailReport(report)}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleOpenEmail(report)}
+                        disabled={preparingEmail === report.id}
+                      >
                         <Mail className="h-3.5 w-3.5 mr-1" />
-                        Send på e-post
+                        {preparingEmail === report.id ? "Klargjør PDF..." : "Send på e-post"}
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -791,8 +821,13 @@ export default function Ks2Dagsrapport() {
       {emailReport && (
         <EmailSendDialog
           open={!!emailReport}
-          onOpenChange={(open) => !open && setEmailReport(null)}
-          documentType="deviation"
+          onOpenChange={(open) => {
+            if (!open) {
+              setEmailReport(null);
+              setEmailAttachment(null);
+            }
+          }}
+          documentType="daily-report"
           subject={`Dagsrapport ${emailReport.report_number} — ${format(new Date(emailReport.report_date), "d. MMMM yyyy", { locale: nb })}`}
           htmlContent={generateReportEmailHtml(emailReport)}
           users={users.map((u) => ({
@@ -801,7 +836,7 @@ export default function Ks2Dagsrapport() {
             first_name: u.first_name || "",
             last_name: u.last_name || "",
           }))}
-          companyName={profile?.company_id ? undefined : undefined}
+          attachments={emailAttachment ? [emailAttachment] : undefined}
         />
       )}
     </div>

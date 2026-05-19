@@ -17,14 +17,21 @@ interface User {
   last_name: string;
 }
 
+interface EmailAttachment {
+  filename: string;
+  content: string; // base64 (no data: prefix)
+  contentType?: string;
+}
+
 interface EmailSendDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  documentType: "deviation" | "handbook";
+  documentType: "deviation" | "handbook" | "daily-report";
   subject: string;
   htmlContent: string;
   users: User[];
   companyName?: string;
+  attachments?: EmailAttachment[];
 }
 
 export function EmailSendDialog({
@@ -35,6 +42,7 @@ export function EmailSendDialog({
   htmlContent,
   users,
   companyName,
+  attachments,
 }: EmailSendDialogProps) {
   const { profile } = useAuth();
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
@@ -116,6 +124,7 @@ export function EmailSendDialog({
           htmlContent,
           senderName: profile?.first_name ? `${profile.first_name} ${profile.last_name}` : undefined,
           companyName,
+          attachments,
         },
       });
 
@@ -139,7 +148,7 @@ export function EmailSendDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Mail className="h-5 w-5 flex-shrink-0" />
-            <span className="truncate">Send {documentType === "deviation" ? "avvik" : "håndbok"} på e-post</span>
+            <span className="truncate">Send {documentType === "deviation" ? "avvik" : documentType === "handbook" ? "håndbok" : "dagsrapport"} på e-post</span>
           </DialogTitle>
         </DialogHeader>
 

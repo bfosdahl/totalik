@@ -32,26 +32,30 @@ async function fetchPhotoDataUrl(path: string): Promise<{ dataUrl: string; w: nu
   }
 }
 
-export async function generateDailyReportPdf(
+export interface DailyReportPdfProject {
+  project_name?: string;
+  project_number?: string;
+  address?: string | null;
+  gnr_bnr?: string | null;
+  saksnr?: string | null;
+  client_name?: string | null;
+}
+
+export interface DailyReportPdfCompany {
+  name?: string;
+  address?: string | null;
+  postal_code?: string | null;
+  city?: string | null;
+  org_number?: string | null;
+  phone?: string | null;
+  email?: string | null;
+}
+
+async function buildDailyReportPdf(
   report: DailyReport,
-  project: {
-    project_name?: string;
-    project_number?: string;
-    address?: string | null;
-    gnr_bnr?: string | null;
-    saksnr?: string | null;
-    client_name?: string | null;
-  } | null,
-  company: {
-    name?: string;
-    address?: string | null;
-    postal_code?: string | null;
-    city?: string | null;
-    org_number?: string | null;
-    phone?: string | null;
-    email?: string | null;
-  } | null
-): Promise<void> {
+  project: DailyReportPdfProject | null,
+  company: DailyReportPdfCompany | null
+): Promise<{ doc: jsPDF; fileName: string }> {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -299,5 +303,25 @@ export async function generateDailyReportPdf(
   addPdfFooter(doc, headerInfo);
 
   const fileName = `Dagsrapport_${report.report_number}_${format(new Date(report.report_date), "yyyy-MM-dd")}.pdf`;
+  return { doc, fileName };
+}
+
+export async function generateDailyReportPdf(
+  report: DailyReport,
+  project: DailyReportPdfProject | null,
+  company: DailyReportPdfCompany | null
+): Promise<void> {
+  const { doc, fileName } = await buildDailyReportPdf(report, project, company);
   doc.save(fileName);
+}
+
+export async function generateDailyReportPdfBase64(
+  report: DailyReport,
+  project: DailyReportPdfProject | null,
+  company: DailyReportPdfCompany | null
+): Promise<{ base64: string; fileName: string }> {
+  const { doc, fileName } = await buildDailyReportPdf(report, project, company);
+  const dataUri = doc.output("datauristring");
+  const base64 = dataUri.split(",")[1] || "";
+  return { base64, fileName };
 }

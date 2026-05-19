@@ -7,13 +7,20 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface EmailAttachment {
+  filename: string;
+  content: string; // base64
+  contentType?: string;
+}
+
 interface SendDocumentEmailRequest {
-  documentType: "deviation" | "handbook";
+  documentType: "deviation" | "handbook" | "daily-report";
   subject: string;
   recipients: string[];
   htmlContent: string;
   senderName?: string;
   companyName?: string;
+  attachments?: EmailAttachment[];
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -30,7 +37,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const data: SendDocumentEmailRequest = await req.json();
-    console.log(`Sending ${data.documentType} email to:`, data.recipients);
+    console.log(`Sending ${data.documentType} email to:`, data.recipients, "attachments:", data.attachments?.length || 0);
 
     if (!data.recipients || data.recipients.length === 0) {
       throw new Error("Ingen mottakere angitt");
@@ -40,18 +47,28 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Ingen innhold å sende");
     }
 
+    const body: Record<string, unknown> = {
+      from: `${data.companyName || "Total-IK"} <noreply@totalik.no>`,
+      to: data.recipients,
+      subject: data.subject,
+      html: data.htmlContent,
+    };
+
+    if (data.attachments && data.attachments.length > 0) {
+      body.attachments = data.attachments.map((a) => ({
+        filename: a.filename,
+        content: a.content,
+        content_type: a.contentType || "application/pdf",
+      }));
+    }
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
-      body: JSON.stringify({
-        from: `${data.companyName || "Total-IK"} <noreply@totalik.no>`,
-        to: data.recipients,
-        subject: data.subject,
-        html: data.htmlContent,
-      }),
+      body: JSON.stringify(body),
     });
 
     const emailResponse = await res.json();
