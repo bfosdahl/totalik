@@ -64,7 +64,7 @@ export default function Ks2RiggPlan() {
   if (activePlan) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" size="sm" onClick={() => setActivePlan(null)}>
+        <Button variant="ghost" size="sm" onClick={() => { setActivePlan(null); setInitialSelectedId(null); }}>
           <ArrowLeft className="h-4 w-4 mr-1" /> Tilbake til riggplaner
         </Button>
         <RiggPlanEditor
@@ -72,6 +72,7 @@ export default function Ks2RiggPlan() {
           projectName={project?.project_name || ""}
           projectNumber={project?.project_number || ""}
           isSaving={isSaving}
+          initialSelectedId={initialSelectedId}
           onSave={async (canvas_data, name) => {
             const ok = await updatePlan(activePlan.id, { canvas_data, name });
             if (ok) {
