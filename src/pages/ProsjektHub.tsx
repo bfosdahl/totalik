@@ -115,10 +115,12 @@ function ProjectRow({ project, onSelect, onToggleFavorite, compact }: ProjectRow
 export default function ProsjektHub() {
   const navigate = useNavigate();
   const { projects, isLoading, toggleFavorite } = useKsModule2Projects();
+  const { createEntry } = useTimeEntries();
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<KsModule2Project | null>(null);
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [switcherSearch, setSwitcherSearch] = useState("");
+  const [timeDialogOpen, setTimeDialogOpen] = useState(false);
 
   const active = useMemo(
     () => projects.filter((p) => p.status !== "completed"),
@@ -160,6 +162,10 @@ export default function ProsjektHub() {
 
   const go = (shortcut: Shortcut) => {
     if (!selected) return;
+    if (shortcut.id === "timer") {
+      setTimeDialogOpen(true);
+      return;
+    }
     navigate(`/ks/project/${selected.id}${shortcut.path}`);
   };
 
@@ -167,6 +173,15 @@ export default function ProsjektHub() {
     setSelected(p);
     setSwitcherOpen(false);
     setSwitcherSearch("");
+  };
+
+  const handleTimeSubmit = async (entry: CreateTimeEntry): Promise<boolean> => {
+    if (!selected) return false;
+    return createEntry({
+      ...entry,
+      ks_project_id: selected.id,
+      project_name: selected.project_name,
+    });
   };
 
   return (
