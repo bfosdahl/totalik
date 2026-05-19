@@ -176,6 +176,8 @@ export default function Ks2ProjectDetail() {
         return <Ks2AvvikIntegrated />;
       case "/hms/stoffkartotek":
         return <Ks2Stoffkartotek />;
+      case "/hms/riggplan":
+        return <Ks2RiggPlan />;
       // Byggesak Module routes
       case "/byggesak":
         return <Ks2ByggesakDashboard />;
