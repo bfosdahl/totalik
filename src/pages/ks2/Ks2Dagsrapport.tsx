@@ -500,6 +500,29 @@ export default function Ks2Dagsrapport() {
     }
   };
 
+  const handleOpenEmail = async (report: DailyReport) => {
+    setPreparingEmail(report.id);
+    try {
+      const [{ data: projectData }, { data: companyData }] = await Promise.all([
+        report.project_id
+          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name").eq("id", report.project_id).maybeSingle()
+          : Promise.resolve({ data: null } as any),
+        supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email").eq("id", report.company_id).maybeSingle(),
+      ]);
+      const { base64, fileName } = await generateDailyReportPdfBase64(report, projectData as any, companyData as any);
+      setEmailAttachment({ filename: fileName, content: base64, contentType: "application/pdf" });
+      setEmailReport(report);
+    } catch (err) {
+      console.error("Failed to prepare PDF for email", err);
+      // Still allow sending without attachment
+      setEmailAttachment(null);
+      setEmailReport(report);
+    } finally {
+      setPreparingEmail(null);
+    }
+  };
+
+
   const handleSubmit = async (data: CreateDailyReport, asDraft: boolean) => {
     await createReport({
       ...data,
