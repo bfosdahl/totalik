@@ -32,26 +32,30 @@ async function fetchPhotoDataUrl(path: string): Promise<{ dataUrl: string; w: nu
   }
 }
 
-export async function generateDailyReportPdf(
+export interface DailyReportPdfProject {
+  project_name?: string;
+  project_number?: string;
+  address?: string | null;
+  gnr_bnr?: string | null;
+  saksnr?: string | null;
+  client_name?: string | null;
+}
+
+export interface DailyReportPdfCompany {
+  name?: string;
+  address?: string | null;
+  postal_code?: string | null;
+  city?: string | null;
+  org_number?: string | null;
+  phone?: string | null;
+  email?: string | null;
+}
+
+async function buildDailyReportPdf(
   report: DailyReport,
-  project: {
-    project_name?: string;
-    project_number?: string;
-    address?: string | null;
-    gnr_bnr?: string | null;
-    saksnr?: string | null;
-    client_name?: string | null;
-  } | null,
-  company: {
-    name?: string;
-    address?: string | null;
-    postal_code?: string | null;
-    city?: string | null;
-    org_number?: string | null;
-    phone?: string | null;
-    email?: string | null;
-  } | null
-): Promise<void> {
+  project: DailyReportPdfProject | null,
+  company: DailyReportPdfCompany | null
+): Promise<{ doc: jsPDF; fileName: string }> {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
