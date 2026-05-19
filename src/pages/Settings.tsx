@@ -24,8 +24,9 @@ import { CustomizationSettings } from "@/components/settings/CustomizationSettin
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { DepartmentSettings } from "@/components/settings/DepartmentSettings";
 import { SettingsPlaceholder } from "@/components/settings/SettingsPlaceholder";
+import { AllowanceTypesSettings } from "@/components/settings/AllowanceTypesSettings";
 
-type SettingsSection = "main" | "company" | "users" | "departments" | "notifications" | "security" | "customization" | "data";
+type SettingsSection = "main" | "company" | "users" | "departments" | "notifications" | "security" | "customization" | "data" | "allowances";
 
 interface SettingsSectionConfig {
   id: SettingsSection;
