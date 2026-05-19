@@ -55,6 +55,12 @@ const settingsSections: SettingsSectionConfig[] = [
     description: "Organiser bedriften i avdelinger",
   },
   {
+    id: "allowances",
+    icon: Wallet,
+    title: "Lønn & tilleggssatser",
+    description: "Definer satser for diett, kilometer, reisetimer og andre tillegg",
+  },
+  {
     id: "notifications",
     icon: Bell,
     title: "Varsler",
