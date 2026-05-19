@@ -18,6 +18,8 @@ import {
   TrendingUp,
   BarChart3,
   Bell,
+  ShieldAlert,
+  Timer,
 } from "lucide-react";
 import { useKsModule2Checklists } from "@/hooks/useKsModule2Checklists";
 import { useKsModule2Subcontractors } from "@/hooks/useKsModule2Subcontractors";
