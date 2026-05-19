@@ -183,12 +183,15 @@ export function useDashboardStats(): DashboardStats {
 
         const compliancePercent = Math.round((completedSteps / totalSteps) * 100);
 
-        const { count: openDeviationsCount } = await supabase
-          .from("deviations")
-          .select("*", { count: "exact", head: true })
-          .eq("company_id", companyId)
-          .eq("is_deleted", false)
-          .in("status", ["open", "in-progress"]);
+        const { count: openDeviationsCount } = await withDept(
+          supabase
+            .from("deviations")
+            .select("*", { count: "exact", head: true })
+            .eq("company_id", companyId)
+            .eq("is_deleted", false)
+            .in("status", ["open", "in-progress"]),
+          deptId
+        );
 
         if (currentFetchId !== fetchIdRef.current) return;
 
