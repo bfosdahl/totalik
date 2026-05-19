@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDepartmentContext } from "@/contexts/DepartmentContext";
 
 interface DashboardStats {
   compliancePercent: number;
@@ -12,8 +13,13 @@ interface DashboardStats {
   totalSteps: number;
 }
 
+// Helper: apply department filter (null = main company view → department_id IS NULL)
+const withDept = (query: any, departmentId: string | null) =>
+  departmentId ? query.eq("department_id", departmentId) : query.is("department_id", null);
+
 export function useDashboardStats(): DashboardStats {
   const { profile } = useAuth();
+  const { filterDepartmentId } = useDepartmentContext();
   const [stats, setStats] = useState<DashboardStats>({
     compliancePercent: 0,
     openDeviations: 0,
@@ -37,6 +43,7 @@ export function useDashboardStats(): DashboardStats {
     const fetchStats = async () => {
       try {
         const companyId = profile.company_id;
+        const deptId = filterDepartmentId;
         const totalSteps = 6;
         
         const [
@@ -53,30 +60,41 @@ export function useDashboardStats(): DashboardStats {
             .select("is_completed, completed_steps")
             .eq("company_id", companyId)
             .maybeSingle(),
-          supabase
-            .from("company_goals")
-            .select("id, is_predefined", { count: "exact" })
-            .eq("company_id", companyId),
-          supabase
-            .from("company_organization")
-            .select("custom_content, is_custom")
-            .eq("company_id", companyId)
-            .maybeSingle(),
-          supabase
-            .from("company_risk_assessments")
-            .select("risks")
-            .eq("company_id", companyId)
-            .maybeSingle(),
-          supabase
-            .from("company_action_plans")
-            .select("actions")
-            .eq("company_id", companyId)
-            .maybeSingle(),
-          supabase
-            .from("company_routines")
-            .select("routines")
-            .eq("company_id", companyId)
-            .maybeSingle(),
+          withDept(
+            supabase
+              .from("company_goals")
+              .select("id, is_predefined", { count: "exact" })
+              .eq("company_id", companyId),
+            deptId
+          ),
+          withDept(
+            supabase
+              .from("company_organization")
+              .select("custom_content, is_custom")
+              .eq("company_id", companyId),
+            deptId
+          ).maybeSingle(),
+          withDept(
+            supabase
+              .from("company_risk_assessments")
+              .select("risks")
+              .eq("company_id", companyId),
+            deptId
+          ).maybeSingle(),
+          withDept(
+            supabase
+              .from("company_action_plans")
+              .select("actions")
+              .eq("company_id", companyId),
+            deptId
+          ).maybeSingle(),
+          withDept(
+            supabase
+              .from("company_routines")
+              .select("routines")
+              .eq("company_id", companyId),
+            deptId
+          ).maybeSingle(),
           supabase
             .from("hms_self_declarations")
             .select("id")
@@ -165,12 +183,15 @@ export function useDashboardStats(): DashboardStats {
 
         const compliancePercent = Math.round((completedSteps / totalSteps) * 100);
 
-        const { count: openDeviationsCount } = await supabase
-          .from("deviations")
-          .select("*", { count: "exact", head: true })
-          .eq("company_id", companyId)
-          .eq("is_deleted", false)
-          .in("status", ["open", "in-progress"]);
+        const { count: openDeviationsCount } = await withDept(
+          supabase
+            .from("deviations")
+            .select("*", { count: "exact", head: true })
+            .eq("company_id", companyId)
+            .eq("is_deleted", false)
+            .in("status", ["open", "in-progress"]),
+          deptId
+        );
 
         if (currentFetchId !== fetchIdRef.current) return;
 
@@ -192,14 +213,17 @@ export function useDashboardStats(): DashboardStats {
         sevenDaysFromNow.setDate(now.getDate() + 7);
         const futureStr = `${sevenDaysFromNow.getFullYear()}-${String(sevenDaysFromNow.getMonth() + 1).padStart(2, '0')}-${String(sevenDaysFromNow.getDate()).padStart(2, '0')}`;
 
-        const { count: dueSoonCount } = await supabase
-          .from("deviations")
-          .select("*", { count: "exact", head: true })
-          .eq("company_id", companyId)
-          .eq("is_deleted", false)
-          .in("status", ["open", "in-progress"])
-          .gte("due_date", todayStr)
-          .lte("due_date", futureStr);
+        const { count: dueSoonCount } = await withDept(
+          supabase
+            .from("deviations")
+            .select("*", { count: "exact", head: true })
+            .eq("company_id", companyId)
+            .eq("is_deleted", false)
+            .in("status", ["open", "in-progress"])
+            .gte("due_date", todayStr)
+            .lte("due_date", futureStr),
+          deptId
+        );
 
         if (currentFetchId !== fetchIdRef.current) return;
 
@@ -221,7 +245,7 @@ export function useDashboardStats(): DashboardStats {
     };
 
     fetchStats();
-  }, [profile?.company_id]);
+  }, [profile?.company_id, filterDepartmentId]);
 
   return stats;
 }
