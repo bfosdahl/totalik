@@ -308,6 +308,10 @@ const App = () => (
                   {/* Småprosjekter routes */}
                   <Route path="/ks/smaaprosjekter" element={<ProtectedRoute><MineProsjekterDashboard /></ProtectedRoute>} />
                   <Route path="/ks/smaaprosjekter/:projectId" element={<ProtectedRoute><SimpleProjectDetail /></ProtectedRoute>} />
+
+                  {/* Mobil prosjekt-hub med snarvei-grid */}
+                  <Route path="/prosjekt-hub" element={<ProtectedRoute><ProsjektHub /></ProtectedRoute>} />
+                  
                   
                   {/* Personalhåndbok routes */}
                   <Route path="/personalhandbok" element={<ProtectedRoute><PersonalhandbokPage /></ProtectedRoute>} />
