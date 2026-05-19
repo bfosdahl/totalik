@@ -356,6 +356,48 @@ export default function ProsjektHub() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeDialogOpen]);
 
+  // Påminn hvis brukeren navigerer bort fra prosjekt-huben mens timedialogen er åpen
+  useEffect(() => {
+    if (!timeDialogOpen || !selected) return;
+
+    const projectId = selected.id;
+    const projectName = selected.project_name;
+
+    // Advar ved tab-lukking / refresh
+    const beforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", beforeUnload);
+      // Hvis dialogen fortsatt teknisk sett er "åpen" når vi forlater siden,
+      // bevar utkast og vis en påminnelse via global toast.
+      if (justSubmittedRef.current) return;
+      const proj = { id: projectId, name: projectName };
+      upsertDraft({
+        projectId: proj.id,
+        projectName: proj.name,
+        projectNumber: selected.project_number,
+        openedAt: readDrafts()[proj.id]?.openedAt ?? Date.now(),
+      });
+      toast({
+        title: "Timeføring ikke fullført",
+        description: `Du forlot prosjekt-huben med en åpen timeføring på ${proj.name}. Utkastet er bevart.`,
+        action: (
+          <ToastAction
+            altText="Fullfør"
+            onClick={() => navigate("/prosjekt-hub")}
+          >
+            Fullfør
+          </ToastAction>
+        ),
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeDialogOpen, selected?.id]);
+
   const active = useMemo(
     () => projects.filter((p) => p.status !== "completed"),
     [projects]
