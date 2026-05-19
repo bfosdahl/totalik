@@ -46,7 +46,7 @@ interface Shortcut {
   color: string;
 }
 
-const shortcuts: Shortcut[] = [
+const allShortcuts: Shortcut[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "", color: "bg-slate-500" },
   { id: "timer", label: "Timer", icon: Clock, path: "/timeregistrering", color: "bg-primary" },
   { id: "sjekklister", label: "Sjekklister", icon: ClipboardCheck, path: "/sjekklister", color: "bg-sky-500" },
@@ -57,6 +57,28 @@ const shortcuts: Shortcut[] = [
   { id: "bilder", label: "Bilder", icon: ImageIcon, path: "/bilder", color: "bg-pink-500" },
   { id: "stoff", label: "Stoffkartotek", icon: FlaskConical, path: "/hms/stoffkartotek", color: "bg-amber-600" },
 ];
+
+// Hvilke snarveier som vises per prosjekttype/entreprenørrolle.
+// Standard prosjekt har alt; mini/small har en redusert meny i tråd med
+// Ks2ProjectSidebar (smallProjectItems / miniProjectItems).
+const SHORTCUTS_BY_TYPE: Record<string, string[]> = {
+  mini: ["dashboard", "sjekklister", "avvik", "bilder"],
+  small: ["dashboard", "timer", "sjekklister", "dagsrapport", "bilder"],
+};
+
+function getAvailableShortcuts(project: KsModule2Project): Shortcut[] {
+  const type = ((project as any).project_type as string) || "standard";
+  const contractor = project.contractor_type;
+  const allowed = SHORTCUTS_BY_TYPE[type];
+  let list = allowed
+    ? allShortcuts.filter((s) => allowed.includes(s.id))
+    : allShortcuts.slice();
+  // Underentreprenører bruker sjelden vernerunde/stoffkartotek på eget prosjekt.
+  if (type === "standard" && contractor === "under") {
+    list = list.filter((s) => s.id !== "vernerunde");
+  }
+  return list;
+}
 
 const statusLabel: Record<string, string> = {
   planned: "Planlagt",
