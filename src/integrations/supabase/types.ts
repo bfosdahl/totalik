@@ -10748,6 +10748,59 @@ export type Database = {
           },
         ]
       }
+      ks_module2_rigg_plans: {
+        Row: {
+          canvas_data: Json
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_current_version: boolean
+          name: string
+          project_id: string
+          status: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          canvas_data?: Json
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_current_version?: boolean
+          name?: string
+          project_id: string
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          canvas_data?: Json
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_current_version?: boolean
+          name?: string
+          project_id?: string
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ks_module2_rigg_plans_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ks_module2_routine_checklist_links: {
         Row: {
           created_at: string | null
