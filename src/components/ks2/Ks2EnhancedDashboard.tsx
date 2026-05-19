@@ -491,7 +491,11 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
               <AlertTriangle className="h-6 w-6" />
               <span className="text-xs">Registrer avvik</span>
             </Button>
-            <Button variant="outline" className="h-auto py-4 flex-col gap-2" disabled>
+            <Button
+              variant="outline"
+              className="h-auto py-4 flex-col gap-2"
+              onClick={() => navigate(`/ks/project/${projectId}/rapport`)}
+            >
               <FileText className="h-6 w-6" />
               <span className="text-xs">KS-rapport</span>
             </Button>
