@@ -27,7 +27,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
   const { projectId } = useParams();
   const [canvas, setCanvas] = useState<RiggCanvasData>(plan.canvas_data);
   const [name, setName] = useState(plan.name);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId || null);
   const [dragState, setDragState] = useState<{
     id: string;
     mode: "move" | "resize";
