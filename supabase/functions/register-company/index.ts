@@ -196,6 +196,7 @@ serve(async (req) => {
       const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
       const welcomeClient = createClient(supabaseUrl, anonKey);
       await welcomeClient.functions.invoke("send-welcome-email", {
+        headers: { "x-cron-secret": Deno.env.get("CRON_SECRET") ?? "" },
         body: { userId, email, firstName: firstName || "" },
       });
     } catch (emailErr) {
