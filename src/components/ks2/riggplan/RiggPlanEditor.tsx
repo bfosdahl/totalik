@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -6,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Save, Download, RotateCw, Plus, Minus, Shield } from "lucide-react";
+import { Trash2, Save, Download, RotateCw, Plus, Minus, Shield, ExternalLink } from "lucide-react";
 import { RIGG_SYMBOLS, getSymbol } from "./riggSymbols";
 import type { RiggCanvasData, RiggObject, RiggPlan } from "@/hooks/useKsRiggPlan";
 import { exportRiggPlanPdf } from "@/utils/riggPlanPdf";
@@ -18,12 +19,15 @@ interface Props {
   projectNumber: string;
   onSave: (canvas: RiggCanvasData, name: string) => Promise<void>;
   isSaving: boolean;
+  initialSelectedId?: string | null;
 }
 
-export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSaving }: Props) {
+export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSaving, initialSelectedId }: Props) {
+  const navigate = useNavigate();
+  const { projectId } = useParams();
   const [canvas, setCanvas] = useState<RiggCanvasData>(plan.canvas_data);
   const [name, setName] = useState(plan.name);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId || null);
   const [dragState, setDragState] = useState<{
     id: string;
     mode: "move" | "resize";
@@ -42,6 +46,10 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
     setCanvas(plan.canvas_data);
     setName(plan.name);
   }, [plan.id]);
+
+  useEffect(() => {
+    if (initialSelectedId) setSelectedId(initialSelectedId);
+  }, [initialSelectedId]);
 
   const selected = canvas.objects.find((o) => o.id === selectedId) || null;
 
@@ -183,20 +191,33 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                   {DEFAULT_RISK_AREAS.map((ra) => {
                     const checked = (selected.linkedRiskParagraphs || []).includes(ra.paragraph);
                     return (
-                      <label
+                      <div
                         key={ra.paragraph}
-                        className="flex items-start gap-1.5 px-1.5 py-1 rounded hover:bg-accent cursor-pointer text-[11px] leading-tight"
+                        className="flex items-start gap-1.5 px-1.5 py-1 rounded hover:bg-accent text-[11px] leading-tight"
                       >
                         <Checkbox
                           checked={checked}
                           onCheckedChange={() => toggleRiskParagraph(selected.id, ra.paragraph)}
                           className="mt-0.5 h-3.5 w-3.5"
                         />
-                        <span>
+                        <label className="flex-1 cursor-pointer" onClick={() => toggleRiskParagraph(selected.id, ra.paragraph)}>
                           <span className="font-semibold mr-1">§{ra.paragraph})</span>
                           {ra.description}
-                        </span>
-                      </label>
+                        </label>
+                        {checked && projectId && (
+                          <button
+                            type="button"
+                            title="Åpne risikoområdet i SHA-planen"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/ks/project/${projectId}/hms/sha-plan?paragraph=${ra.paragraph}`);
+                            }}
+                            className="shrink-0 text-emerald-600 hover:text-emerald-700"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
                     );
                   })}
                 </div>

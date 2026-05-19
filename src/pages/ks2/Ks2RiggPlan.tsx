@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus, ArrowLeft, Trash2, MapPin, Shield, ArrowRight, FileCheck } from "lucide-react";
@@ -30,9 +30,28 @@ export default function Ks2RiggPlan() {
   const project = projects?.find((p) => p.id === projectId);
 
   const [activePlan, setActivePlan] = useState<RiggPlan | null>(null);
+  const [initialSelectedId, setInitialSelectedId] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
   const [newName, setNewName] = useState("Hovedriggplan");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Auto-open plan/object from URL (deep link from SHA-plan)
+  useEffect(() => {
+    if (isLoading || activePlan) return;
+    const planId = searchParams.get("plan");
+    const objectId = searchParams.get("object");
+    if (planId) {
+      const found = plans.find((p) => p.id === planId);
+      if (found) {
+        setActivePlan(found);
+        setInitialSelectedId(objectId || null);
+        searchParams.delete("plan");
+        searchParams.delete("object");
+        setSearchParams(searchParams, { replace: true });
+      }
+    }
+  }, [isLoading, plans, searchParams, activePlan, setSearchParams]);
 
   if (isLoading) {
     return (
@@ -45,7 +64,7 @@ export default function Ks2RiggPlan() {
   if (activePlan) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" size="sm" onClick={() => setActivePlan(null)}>
+        <Button variant="ghost" size="sm" onClick={() => { setActivePlan(null); setInitialSelectedId(null); }}>
           <ArrowLeft className="h-4 w-4 mr-1" /> Tilbake til riggplaner
         </Button>
         <RiggPlanEditor
@@ -53,6 +72,7 @@ export default function Ks2RiggPlan() {
           projectName={project?.project_name || ""}
           projectNumber={project?.project_number || ""}
           isSaving={isSaving}
+          initialSelectedId={initialSelectedId}
           onSave={async (canvas_data, name) => {
             const ok = await updatePlan(activePlan.id, { canvas_data, name });
             if (ok) {

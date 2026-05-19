@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,19 +8,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { 
-  Building2, 
-  Users, 
-  AlertTriangle, 
+import {
+  Building2,
+  Users,
+  AlertTriangle,
   FileText,
   CheckCircle2,
   Clock,
   Loader2,
   Save,
   Eye,
-  Download
+  Download,
+  MapPin,
 } from "lucide-react";
 import { useKsModule2ShaPlan, RiskArea } from "@/hooks/useKsModule2ShaPlan";
+import { useKsRiggPlan } from "@/hooks/useKsRiggPlan";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Props {
@@ -28,9 +31,45 @@ interface Props {
 
 export function Ks2ShaPlanView({ projectId }: Props) {
   const { profile } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { shaPlan, updateShaPlan, approveAsEntrepreneur, getExternalFileUrl, isLoading, isSaving } = useKsModule2ShaPlan(projectId);
+  const { plans: riggPlans } = useKsRiggPlan(projectId);
   const [editedRiskAreas, setEditedRiskAreas] = useState<RiskArea[] | null>(null);
   const [isApproving, setIsApproving] = useState(false);
+  const [accordionValue, setAccordionValue] = useState<string | undefined>(undefined);
+  const [highlightParagraph, setHighlightParagraph] = useState<string | null>(null);
+  const riskRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Build paragraph -> [{planId, planName, objectId, label, color, note}]
+  const linksByParagraph = useMemo(() => {
+    const map: Record<string, Array<{ planId: string; planName: string; objectId: string; label: string; color: string; note?: string }>> = {};
+    riggPlans.forEach((plan) => {
+      (plan.canvas_data?.objects || []).forEach((obj) => {
+        (obj.linkedRiskParagraphs || []).forEach((p) => {
+          if (!map[p]) map[p] = [];
+          map[p].push({ planId: plan.id, planName: plan.name, objectId: obj.id, label: obj.label, color: obj.color, note: obj.riskNote });
+        });
+      });
+    });
+    return map;
+  }, [riggPlans]);
+
+  // Handle ?paragraph=X deep link from riggplan
+  useEffect(() => {
+    const p = searchParams.get("paragraph");
+    if (p) {
+      setAccordionValue("risks");
+      setHighlightParagraph(p);
+      searchParams.delete("paragraph");
+      setSearchParams(searchParams, { replace: true });
+      setTimeout(() => {
+        riskRefs.current[p]?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setTimeout(() => setHighlightParagraph(null), 2500);
+      }, 250);
+    }
+  }, [searchParams, setSearchParams]);
+
 
   // Get current user's full name for approval
   const currentUserName = profile 
@@ -162,7 +201,12 @@ export function Ks2ShaPlanView({ projectId }: Props) {
   // Internal plan view
   return (
     <div className="space-y-6">
-      <Accordion type="multiple" defaultValue={["info", "risks"]} className="space-y-4">
+      <Accordion
+        type="multiple"
+        value={accordionValue ? Array.from(new Set(["info", "risks", accordionValue])) : ["info", "risks"]}
+        onValueChange={(v) => setAccordionValue(v[v.length - 1])}
+        className="space-y-4"
+      >
         {/* Project Info */}
         <AccordionItem value="info" className="border rounded-lg px-4">
           <AccordionTrigger className="hover:no-underline">
@@ -226,33 +270,67 @@ export function Ks2ShaPlanView({ projectId }: Props) {
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-3 pt-4">
-              {riskAreas.map((ra, index) => (
-                <div key={ra.id} className={`border rounded-lg p-3 ${ra.checked ? "border-amber-500/30 bg-amber-500/5" : ""}`}>
-                  <div className="flex items-start gap-3">
-                    <Checkbox 
-                      id={`view-${ra.id}`}
-                      checked={ra.checked}
-                      onCheckedChange={(checked) => handleRiskAreaChange(index, "checked", !!checked)}
-                    />
-                    <div className="flex-1">
-                      <Label htmlFor={`view-${ra.id}`} className="cursor-pointer text-sm">
-                        <Badge variant="outline" className="mr-2 text-xs">{ra.paragraph}</Badge>
-                        {ra.description}
-                      </Label>
-                      {ra.checked && (
-                        <Textarea 
-                          className="mt-2"
-                          placeholder="Tiltak..."
-                          value={ra.measures}
-                          onChange={(e) => handleRiskAreaChange(index, "measures", e.target.value)}
-                          rows={2}
-                        />
-                      )}
+              {riskAreas.map((ra, index) => {
+                const riggLinks = linksByParagraph[ra.paragraph] || [];
+                const isHighlighted = highlightParagraph === ra.paragraph;
+                return (
+                  <div
+                    key={ra.id}
+                    ref={(el) => { riskRefs.current[ra.paragraph] = el; }}
+                    className={`border rounded-lg p-3 transition-all ${
+                      isHighlighted ? "border-primary ring-2 ring-primary/40 bg-primary/5" :
+                      ra.checked ? "border-amber-500/30 bg-amber-500/5" : ""
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id={`view-${ra.id}`}
+                        checked={ra.checked}
+                        onCheckedChange={(checked) => handleRiskAreaChange(index, "checked", !!checked)}
+                      />
+                      <div className="flex-1">
+                        <Label htmlFor={`view-${ra.id}`} className="cursor-pointer text-sm">
+                          <Badge variant="outline" className="mr-2 text-xs">{ra.paragraph}</Badge>
+                          {ra.description}
+                        </Label>
+                        {riggLinks.length > 0 && (
+                          <div className="mt-2 flex items-center flex-wrap gap-1.5">
+                            <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                              <MapPin className="h-3 w-3" /> Fra riggplan:
+                            </span>
+                            {riggLinks.map((link) => (
+                              <button
+                                key={`${link.planId}-${link.objectId}`}
+                                type="button"
+                                onClick={() => navigate(`/ks/project/${projectId}/hms/riggplan?plan=${link.planId}&object=${link.objectId}`)}
+                                title={`${link.label} (${link.planName})${link.note ? ` — ${link.note}` : ""} — klikk for å åpne i riggplan`}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[11px] hover:border-primary hover:bg-accent transition"
+                              >
+                                <span
+                                  className="w-2.5 h-2.5 rounded-sm border"
+                                  style={{ backgroundColor: link.color }}
+                                />
+                                <span className="font-medium">{link.label}</span>
+                                <span className="text-muted-foreground">· {link.planName}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {ra.checked && (
+                          <Textarea
+                            className="mt-2"
+                            placeholder="Tiltak..."
+                            value={ra.measures}
+                            onChange={(e) => handleRiskAreaChange(index, "measures", e.target.value)}
+                            rows={2}
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-              
+                );
+              })}
+
               {editedRiskAreas && (
                 <Button onClick={handleSaveRiskAreas} disabled={isSaving}>
                   {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
