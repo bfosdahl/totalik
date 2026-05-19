@@ -16,12 +16,21 @@ import {
   ArrowLeft,
   Loader2,
   Star,
+  ChevronsUpDown,
+  Check,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { useKsModule2Projects, KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { cn } from "@/lib/utils";
 
@@ -53,51 +62,126 @@ const statusLabel: Record<string, string> = {
   completed: "Ferdig",
 };
 
+interface ProjectRowProps {
+  project: KsModule2Project;
+  onSelect: () => void;
+  onToggleFavorite: (e: React.MouseEvent) => void;
+  compact?: boolean;
+}
+
+function ProjectRow({ project, onSelect, onToggleFavorite, compact }: ProjectRowProps) {
+  return (
+    <button onClick={onSelect} className="w-full text-left">
+      <Card className={cn("hover:bg-accent transition-colors active:scale-[0.99]", compact ? "p-2.5" : "p-3")}>
+        <div className="flex items-center gap-3">
+          <div className={cn("rounded-lg bg-primary/10 flex items-center justify-center shrink-0", compact ? "h-8 w-8" : "h-10 w-10")}>
+            <Building2 className={cn("text-primary", compact ? "h-4 w-4" : "h-5 w-5")} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] text-muted-foreground">{project.project_number}</span>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                {statusLabel[project.status] || project.status}
+              </Badge>
+            </div>
+            <div className="font-medium text-sm line-clamp-1">{project.project_name}</div>
+            {!compact && project.client_name && (
+              <div className="text-xs text-muted-foreground line-clamp-1">{project.client_name}</div>
+            )}
+          </div>
+          <button
+            onClick={onToggleFavorite}
+            className="p-1.5 rounded-md hover:bg-muted shrink-0"
+            aria-label={project.is_favorite ? "Fjern favoritt" : "Marker som favoritt"}
+          >
+            <Star
+              className={cn(
+                "h-4 w-4 transition-colors",
+                project.is_favorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground"
+              )}
+            />
+          </button>
+          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+        </div>
+      </Card>
+    </button>
+  );
+}
+
 export default function ProsjektHub() {
   const navigate = useNavigate();
-  const { projects, isLoading } = useKsModule2Projects();
+  const { projects, isLoading, toggleFavorite } = useKsModule2Projects();
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<KsModule2Project | null>(null);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const [switcherSearch, setSwitcherSearch] = useState("");
 
-  const filtered = useMemo(() => {
-    const visible = projects.filter((p) => p.status !== "completed");
-    const sorted = [...visible].sort((a, b) => {
-      if (a.is_favorite !== b.is_favorite) return a.is_favorite ? -1 : 1;
-      return a.project_name.localeCompare(b.project_name, "nb");
-    });
+  const active = useMemo(
+    () => projects.filter((p) => p.status !== "completed"),
+    [projects]
+  );
+
+  const favorites = useMemo(
+    () => active.filter((p) => p.is_favorite).sort((a, b) => a.project_name.localeCompare(b.project_name, "nb")),
+    [active]
+  );
+
+  const filteredList = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return sorted;
-    return sorted.filter(
+    const base = [...active].sort((a, b) => a.project_name.localeCompare(b.project_name, "nb"));
+    if (!q) return base;
+    return base.filter(
       (p) =>
         p.project_name.toLowerCase().includes(q) ||
         p.project_number?.toLowerCase().includes(q) ||
         p.client_name?.toLowerCase().includes(q) ||
         p.address?.toLowerCase().includes(q)
     );
-  }, [projects, search]);
+  }, [active, search]);
+
+  const switcherList = useMemo(() => {
+    const q = switcherSearch.trim().toLowerCase();
+    const base = [...active].sort((a, b) => {
+      if (a.is_favorite !== b.is_favorite) return a.is_favorite ? -1 : 1;
+      return a.project_name.localeCompare(b.project_name, "nb");
+    });
+    if (!q) return base;
+    return base.filter(
+      (p) =>
+        p.project_name.toLowerCase().includes(q) ||
+        p.project_number?.toLowerCase().includes(q) ||
+        p.client_name?.toLowerCase().includes(q)
+    );
+  }, [active, switcherSearch]);
 
   const go = (shortcut: Shortcut) => {
     if (!selected) return;
     navigate(`/ks/project/${selected.id}${shortcut.path}`);
   };
 
+  const handleSwitch = (p: KsModule2Project) => {
+    setSelected(p);
+    setSwitcherOpen(false);
+    setSwitcherSearch("");
+  };
+
   return (
     <AppLayout>
       <div className="mx-auto max-w-2xl space-y-4 pb-24">
         {/* Header */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {selected && (
             <Button variant="ghost" size="icon" onClick={() => setSelected(null)} aria-label="Tilbake">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           )}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold leading-tight">
-              {selected ? selected.project_name : "Mine prosjekter"}
+              {selected ? "Snarveier" : "Mine prosjekter"}
             </h1>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground line-clamp-1">
               {selected
-                ? `${selected.project_number}${selected.client_name ? ` · ${selected.client_name}` : ""}`
+                ? `${selected.project_number} · ${selected.project_name}`
                 : "Velg prosjekt for å registrere timer, sjekklister, SJA og mer"}
             </p>
           </div>
@@ -111,7 +195,7 @@ export default function ProsjektHub() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -12 }}
               transition={{ duration: 0.18 }}
-              className="space-y-3"
+              className="space-y-4"
             >
               {/* Search */}
               <div className="relative">
@@ -128,52 +212,58 @@ export default function ProsjektHub() {
                 <div className="flex items-center justify-center py-16 text-muted-foreground">
                   <Loader2 className="h-6 w-6 animate-spin" />
                 </div>
-              ) : filtered.length === 0 ? (
-                <Card className="p-8 text-center text-sm text-muted-foreground">
-                  {projects.length === 0
-                    ? "Du har ingen prosjekter ennå."
-                    : "Ingen prosjekter matcher søket."}
-                </Card>
               ) : (
-                <div className="space-y-2">
-                  {filtered.map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => setSelected(p)}
-                      className="w-full text-left"
-                    >
-                      <Card className="p-3 hover:bg-accent transition-colors active:scale-[0.99]">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                            <Building2 className="h-5 w-5 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-[10px] text-muted-foreground">
-                                {p.project_number}
-                              </span>
-                              {p.is_favorite && (
-                                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                              )}
-                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                                {statusLabel[p.status] || p.status}
-                              </Badge>
-                            </div>
-                            <div className="font-medium text-sm line-clamp-1">
-                              {p.project_name}
-                            </div>
-                            {p.client_name && (
-                              <div className="text-xs text-muted-foreground line-clamp-1">
-                                {p.client_name}
-                              </div>
-                            )}
-                          </div>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                        </div>
+                <>
+                  {/* Favoritter */}
+                  {favorites.length > 0 && !search.trim() && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 px-1">
+                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                        <h2 className="text-sm font-semibold">Favoritter</h2>
+                        <span className="text-xs text-muted-foreground">({favorites.length})</span>
+                      </div>
+                      <div className="space-y-2">
+                        {favorites.map((p) => (
+                          <ProjectRow
+                            key={p.id}
+                            project={p}
+                            onSelect={() => setSelected(p)}
+                            onToggleFavorite={(e) => {
+                              e.stopPropagation();
+                              toggleFavorite(p.id, p.is_favorite);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Alle */}
+                  <div className="space-y-2">
+                    {favorites.length > 0 && !search.trim() && (
+                      <h2 className="text-sm font-semibold px-1 pt-2">Alle prosjekter</h2>
+                    )}
+                    {filteredList.length === 0 ? (
+                      <Card className="p-8 text-center text-sm text-muted-foreground">
+                        {active.length === 0
+                          ? "Du har ingen aktive prosjekter ennå."
+                          : "Ingen prosjekter matcher søket."}
                       </Card>
-                    </button>
-                  ))}
-                </div>
+                    ) : (
+                      filteredList.map((p) => (
+                        <ProjectRow
+                          key={p.id}
+                          project={p}
+                          onSelect={() => setSelected(p)}
+                          onToggleFavorite={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(p.id, p.is_favorite);
+                          }}
+                        />
+                      ))
+                    )}
+                  </div>
+                </>
               )}
             </motion.div>
           ) : (
@@ -185,11 +275,142 @@ export default function ProsjektHub() {
               transition={{ duration: 0.18 }}
               className="space-y-4"
             >
-              <Card className="p-4 bg-gradient-to-br from-primary/5 to-transparent">
-                <p className="text-xs text-muted-foreground mb-1">Snarveier i</p>
-                <p className="font-semibold">{selected.project_name}</p>
-              </Card>
+              {/* Project switcher */}
+              <Sheet open={switcherOpen} onOpenChange={setSwitcherOpen}>
+                <SheetTrigger asChild>
+                  <button className="w-full text-left">
+                    <Card className="p-3 bg-gradient-to-br from-primary/5 to-transparent hover:bg-accent transition-colors active:scale-[0.99]">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                          <Building2 className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                              Aktivt prosjekt
+                            </p>
+                            {selected.is_favorite && (
+                              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            )}
+                          </div>
+                          <p className="font-semibold text-sm line-clamp-1">
+                            {selected.project_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground line-clamp-1">
+                            {selected.project_number}
+                            {selected.client_name ? ` · ${selected.client_name}` : ""}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                          Bytt
+                          <ChevronsUpDown className="h-4 w-4" />
+                        </div>
+                      </div>
+                    </Card>
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="bottom"
+                  className="max-h-[85vh] rounded-t-2xl p-0 flex flex-col"
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                >
+                  <SheetHeader className="px-4 pt-4 pb-2">
+                    <SheetTitle>Bytt prosjekt</SheetTitle>
+                  </SheetHeader>
+                  <div className="px-4 pb-3">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        value={switcherSearch}
+                        onChange={(e) => setSwitcherSearch(e.target.value)}
+                        placeholder="Søk prosjekt"
+                        className="pl-10 h-10"
+                        autoFocus={false}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-2">
+                    {switcherList.length === 0 ? (
+                      <p className="text-center text-sm text-muted-foreground py-8">
+                        Ingen treff.
+                      </p>
+                    ) : (
+                      switcherList.map((p) => {
+                        const isCurrent = p.id === selected.id;
+                        return (
+                          <button
+                            key={p.id}
+                            onClick={() => handleSwitch(p)}
+                            className={cn(
+                              "w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-colors",
+                              isCurrent ? "bg-primary/10 border-primary/30" : "hover:bg-accent"
+                            )}
+                          >
+                            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                              <Building2 className="h-4 w-4 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-[10px] text-muted-foreground">
+                                  {p.project_number}
+                                </span>
+                                {p.is_favorite && (
+                                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                                )}
+                              </div>
+                              <div className="font-medium text-sm line-clamp-1">
+                                {p.project_name}
+                              </div>
+                              {p.client_name && (
+                                <div className="text-xs text-muted-foreground line-clamp-1">
+                                  {p.client_name}
+                                </div>
+                              )}
+                            </div>
+                            {isCurrent && <Check className="h-4 w-4 text-primary shrink-0" />}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
 
+              {/* Favoritt-snarveier */}
+              {favorites.length > 1 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 px-1">
+                    <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Hopp til favoritt
+                    </span>
+                  </div>
+                  <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+                    {favorites.map((p) => {
+                      const isCurrent = p.id === selected.id;
+                      return (
+                        <button
+                          key={p.id}
+                          onClick={() => setSelected(p)}
+                          className={cn(
+                            "shrink-0 px-3 py-1.5 rounded-full text-xs border transition-colors",
+                            isCurrent
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-card hover:bg-accent border-border"
+                          )}
+                        >
+                          <span className="font-mono text-[10px] opacity-70 mr-1.5">
+                            {p.project_number}
+                          </span>
+                          {p.project_name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Snarvei-grid */}
               <div className="grid grid-cols-3 gap-3">
                 {shortcuts.map((s, i) => (
                   <motion.button
@@ -214,14 +435,24 @@ export default function ProsjektHub() {
                 ))}
               </div>
 
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => navigate(`/ks/project/${selected.id}`)}
-              >
-                Åpne hele prosjektet
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => toggleFavorite(selected.id, selected.is_favorite)}
+                >
+                  <Star
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      selected.is_favorite && "fill-amber-400 text-amber-400"
+                    )}
+                  />
+                  {selected.is_favorite ? "Favoritt" : "Marker favoritt"}
+                </Button>
+                <Button onClick={() => navigate(`/ks/project/${selected.id}`)}>
+                  Åpne prosjekt
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
