@@ -400,7 +400,8 @@ export default function ProsjektHub() {
     });
     if (ok) {
       justSubmittedRef.current = true;
-      localStorage.removeItem(DRAFT_KEY);
+      removeDraft(selected.id);
+      refreshDraftIds();
     }
     return ok;
   };
