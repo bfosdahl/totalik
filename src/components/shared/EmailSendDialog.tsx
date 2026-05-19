@@ -124,6 +124,7 @@ export function EmailSendDialog({
           htmlContent,
           senderName: profile?.first_name ? `${profile.first_name} ${profile.last_name}` : undefined,
           companyName,
+          attachments,
         },
       });
 
