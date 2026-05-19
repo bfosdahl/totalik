@@ -503,6 +503,7 @@ export default function ProsjektHub() {
                         <ProjectRow
                           key={p.id}
                           project={p}
+                          hasDraft={draftIds.has(p.id)}
                           onSelect={() => setSelected(p)}
                           onToggleFavorite={(e) => {
                             e.stopPropagation();
