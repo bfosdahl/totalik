@@ -295,21 +295,32 @@ export default function ProsjektHub() {
           ? `Sist: ${mostRecent.projectName}${extra > 0 ? ` (+${extra} til)` : ""}. Velg prosjekt for å fortsette.`
           : `Du åpnet timedialogen for ${mostRecent.projectName} uten å lagre. Vil du fullføre nå?`,
       action: (
-        <ToastAction
-          altText="Fullfør"
-          onClick={() => {
-            const proj = projects.find((p) => p.id === mostRecent.projectId);
-            if (proj) {
-              setSelected(proj);
-              setTimeDialogOpen(true);
-            } else {
+        <div className="flex items-center gap-2">
+          <button
+            className="text-xs text-muted-foreground hover:text-destructive underline underline-offset-2"
+            onClick={() => {
               removeDraft(mostRecent.projectId);
               refreshDraftIds();
-            }
-          }}
-        >
-          Fullfør
-        </ToastAction>
+            }}
+          >
+            Slett utkast
+          </button>
+          <ToastAction
+            altText="Fullfør"
+            onClick={() => {
+              const proj = projects.find((p) => p.id === mostRecent.projectId);
+              if (proj) {
+                setSelected(proj);
+                setTimeDialogOpen(true);
+              } else {
+                removeDraft(mostRecent.projectId);
+                refreshDraftIds();
+              }
+            }}
+          >
+            Fullfør
+          </ToastAction>
+        </div>
       ),
     });
   }, [isLoading, projects, toast]);
