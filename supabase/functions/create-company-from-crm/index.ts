@@ -367,6 +367,7 @@ async function sendRenewalEmail(
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const client = createClient(Deno.env.get('SUPABASE_URL')!, anonKey);
     await client.functions.invoke('send-renewal-email', {
+      headers: { 'x-cron-secret': Deno.env.get('CRON_SECRET') ?? '' },
       body: { email, firstName, companyName },
     });
   } catch (e) {
