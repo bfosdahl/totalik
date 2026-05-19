@@ -270,33 +270,67 @@ export function Ks2ShaPlanView({ projectId }: Props) {
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-3 pt-4">
-              {riskAreas.map((ra, index) => (
-                <div key={ra.id} className={`border rounded-lg p-3 ${ra.checked ? "border-amber-500/30 bg-amber-500/5" : ""}`}>
-                  <div className="flex items-start gap-3">
-                    <Checkbox 
-                      id={`view-${ra.id}`}
-                      checked={ra.checked}
-                      onCheckedChange={(checked) => handleRiskAreaChange(index, "checked", !!checked)}
-                    />
-                    <div className="flex-1">
-                      <Label htmlFor={`view-${ra.id}`} className="cursor-pointer text-sm">
-                        <Badge variant="outline" className="mr-2 text-xs">{ra.paragraph}</Badge>
-                        {ra.description}
-                      </Label>
-                      {ra.checked && (
-                        <Textarea 
-                          className="mt-2"
-                          placeholder="Tiltak..."
-                          value={ra.measures}
-                          onChange={(e) => handleRiskAreaChange(index, "measures", e.target.value)}
-                          rows={2}
-                        />
-                      )}
+              {riskAreas.map((ra, index) => {
+                const riggLinks = linksByParagraph[ra.paragraph] || [];
+                const isHighlighted = highlightParagraph === ra.paragraph;
+                return (
+                  <div
+                    key={ra.id}
+                    ref={(el) => { riskRefs.current[ra.paragraph] = el; }}
+                    className={`border rounded-lg p-3 transition-all ${
+                      isHighlighted ? "border-primary ring-2 ring-primary/40 bg-primary/5" :
+                      ra.checked ? "border-amber-500/30 bg-amber-500/5" : ""
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id={`view-${ra.id}`}
+                        checked={ra.checked}
+                        onCheckedChange={(checked) => handleRiskAreaChange(index, "checked", !!checked)}
+                      />
+                      <div className="flex-1">
+                        <Label htmlFor={`view-${ra.id}`} className="cursor-pointer text-sm">
+                          <Badge variant="outline" className="mr-2 text-xs">{ra.paragraph}</Badge>
+                          {ra.description}
+                        </Label>
+                        {riggLinks.length > 0 && (
+                          <div className="mt-2 flex items-center flex-wrap gap-1.5">
+                            <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                              <MapPin className="h-3 w-3" /> Fra riggplan:
+                            </span>
+                            {riggLinks.map((link) => (
+                              <button
+                                key={`${link.planId}-${link.objectId}`}
+                                type="button"
+                                onClick={() => navigate(`/ks/project/${projectId}/hms/riggplan?plan=${link.planId}&object=${link.objectId}`)}
+                                title={`${link.label} (${link.planName})${link.note ? ` — ${link.note}` : ""} — klikk for å åpne i riggplan`}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[11px] hover:border-primary hover:bg-accent transition"
+                              >
+                                <span
+                                  className="w-2.5 h-2.5 rounded-sm border"
+                                  style={{ backgroundColor: link.color }}
+                                />
+                                <span className="font-medium">{link.label}</span>
+                                <span className="text-muted-foreground">· {link.planName}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {ra.checked && (
+                          <Textarea
+                            className="mt-2"
+                            placeholder="Tiltak..."
+                            value={ra.measures}
+                            onChange={(e) => handleRiskAreaChange(index, "measures", e.target.value)}
+                            rows={2}
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-              
+                );
+              })}
+
               {editedRiskAreas && (
                 <Button onClick={handleSaveRiskAreas} disabled={isSaving}>
                   {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
