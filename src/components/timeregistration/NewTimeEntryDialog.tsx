@@ -58,6 +58,7 @@ export function NewTimeEntryDialog({
   onOpenChange,
   onSubmit,
   defaultProjectId,
+  draftSavedAt,
 }: NewTimeEntryDialogProps) {
   const [date, setDate] = useState<Date>(new Date());
   const [hours, setHours] = useState("");
