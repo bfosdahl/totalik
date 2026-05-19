@@ -55,7 +55,13 @@ export default function Ks2RiggPlan() {
           isSaving={isSaving}
           onSave={async (canvas_data, name) => {
             const ok = await updatePlan(activePlan.id, { canvas_data, name });
-            if (ok) setActivePlan({ ...activePlan, canvas_data, name });
+            if (ok) {
+              setActivePlan({ ...activePlan, canvas_data, name });
+              const updated = await syncRiggPlansToSha(projectId || "");
+              if (updated > 0) {
+                toast.success(`SHA-plan oppdatert med ${updated} risikoområde${updated === 1 ? "" : "r"} fra riggplan`);
+              }
+            }
           }}
         />
       </div>
