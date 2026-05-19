@@ -47,6 +47,10 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
     setName(plan.name);
   }, [plan.id]);
 
+  useEffect(() => {
+    if (initialSelectedId) setSelectedId(initialSelectedId);
+  }, [initialSelectedId]);
+
   const selected = canvas.objects.find((o) => o.id === selectedId) || null;
 
   const addObject = (type: string) => {
