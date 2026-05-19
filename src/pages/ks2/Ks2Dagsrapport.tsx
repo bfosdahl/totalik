@@ -476,8 +476,26 @@ export default function Ks2Dagsrapport() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [expandedReport, setExpandedReport] = useState<string | null>(null);
   const [emailReport, setEmailReport] = useState<DailyReport | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const { users } = useCompanyUsers();
   const { profile } = useAuth();
+
+  const handleDownloadPdf = async (report: DailyReport) => {
+    setDownloadingId(report.id);
+    try {
+      const [{ data: projectData }, { data: companyData }] = await Promise.all([
+        report.project_id
+          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name").eq("id", report.project_id).maybeSingle()
+          : Promise.resolve({ data: null } as any),
+        supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email").eq("id", report.company_id).maybeSingle(),
+      ]);
+      await generateDailyReportPdf(report, projectData as any, companyData as any);
+    } catch (err) {
+      console.error("PDF generation failed", err);
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   const handleSubmit = async (data: CreateDailyReport, asDraft: boolean) => {
     await createReport({
