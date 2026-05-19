@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, ArrowLeft, Trash2, MapPin } from "lucide-react";
+import { Loader2, Plus, ArrowLeft, Trash2, MapPin, Shield, ArrowRight, FileCheck } from "lucide-react";
+import { useKsModule2ShaPlan } from "@/hooks/useKsModule2ShaPlan";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -20,8 +21,10 @@ import { nb } from "date-fns/locale";
 
 export default function Ks2RiggPlan() {
   const { projectId } = useParams();
+  const navigate = useNavigate();
   const { plans, isLoading, isSaving, createPlan, updatePlan, deletePlan } = useKsRiggPlan(projectId || "");
   const { projects } = useKsModule2Projects();
+  const { shaPlan } = useKsModule2ShaPlan(projectId || "");
   const project = projects?.find((p) => p.id === projectId);
 
   const [activePlan, setActivePlan] = useState<RiggPlan | null>(null);
@@ -72,6 +75,41 @@ export default function Ks2RiggPlan() {
           <Plus className="h-4 w-4 mr-1" /> Ny riggplan
         </Button>
       </div>
+
+      {/* SHA-plan kobling */}
+      <Card className="border-emerald-500/30 bg-emerald-500/5">
+        <CardContent className="py-3 flex items-center gap-3 flex-wrap">
+          <div className="p-2 rounded-md bg-emerald-500/15">
+            <Shield className="h-5 w-5 text-emerald-600" />
+          </div>
+          <div className="flex-1 min-w-[220px]">
+            <p className="text-sm font-medium">
+              {shaPlan ? "Knyttet til SHA-planen for prosjektet" : "SHA-plan er ikke opprettet enda"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {shaPlan
+                ? "Riggplanen utfyller HMS-rutinene og risikoområdene i SHA-planen (Byggherreforskriften §8)."
+                : "Opprett SHA-plan først for å koble riggplanen til prosjektets risikovurdering og HMS-rutiner."}
+            </p>
+          </div>
+          <Button
+            variant={shaPlan ? "outline" : "default"}
+            size="sm"
+            className={shaPlan ? "border-emerald-500/40" : "bg-emerald-600 hover:bg-emerald-700"}
+            onClick={() => navigate(`/ks/project/${projectId}/hms/sha-plan`)}
+          >
+            {shaPlan ? (
+              <>
+                <FileCheck className="h-4 w-4 mr-1" /> Åpne SHA-plan
+              </>
+            ) : (
+              <>
+                Opprett SHA-plan <ArrowRight className="h-4 w-4 ml-1" />
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
 
       {plans.length === 0 ? (
         <Card>

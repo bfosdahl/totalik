@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useKsRiggPlan } from "@/hooks/useKsRiggPlan";
+import { MapPin, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +29,9 @@ import { Ks2ShaTilpasning } from "@/components/ks2/sha/Ks2ShaTilpasning";
 
 export default function Ks2ShaPlan() {
   const { projectId } = useParams();
+  const navigate = useNavigate();
   const { shaPlan, tilpasning, isLoading, isSaving } = useKsModule2ShaPlan(projectId || "");
+  const { plans: riggPlans } = useKsRiggPlan(projectId || "");
   const [activeTab, setActiveTab] = useState<string>("plan");
   const [showCreateFlow, setShowCreateFlow] = useState(false);
   const [createType, setCreateType] = useState<"internal" | "external" | null>(null);
@@ -258,6 +262,36 @@ export default function Ks2ShaPlan() {
               </p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Riggplan kobling */}
+      <Card className="border-primary/30">
+        <CardContent className="py-3 flex items-center gap-3 flex-wrap">
+          <div className="p-2 rounded-md bg-primary/10">
+            <MapPin className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-[220px]">
+            <p className="text-sm font-medium">
+              Riggplan {riggPlans.length > 0 ? `(${riggPlans.length} aktiv${riggPlans.length === 1 ? "" : "e"})` : "(ingen opprettet)"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {riggPlans.length > 0
+                ? "Visuell plassering av brakkerigg, kran, lager, adkomst og rømning — utfyller risikoområdene i SHA-planen."
+                : "Lag en riggplan for å visualisere byggeplassen og utfylle HMS-rutinene i SHA-planen."}
+            </p>
+          </div>
+          <Button
+            variant={riggPlans.length > 0 ? "outline" : "default"}
+            size="sm"
+            onClick={() => navigate(`/ks/project/${projectId}/hms/riggplan`)}
+          >
+            {riggPlans.length > 0 ? (
+              <>Åpne riggplan <ArrowRight className="h-4 w-4 ml-1" /></>
+            ) : (
+              <>Lag riggplan <ArrowRight className="h-4 w-4 ml-1" /></>
+            )}
+          </Button>
         </CardContent>
       </Card>
 
