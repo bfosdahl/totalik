@@ -60,30 +60,41 @@ export function useDashboardStats(): DashboardStats {
             .select("is_completed, completed_steps")
             .eq("company_id", companyId)
             .maybeSingle(),
-          supabase
-            .from("company_goals")
-            .select("id, is_predefined", { count: "exact" })
-            .eq("company_id", companyId),
-          supabase
-            .from("company_organization")
-            .select("custom_content, is_custom")
-            .eq("company_id", companyId)
-            .maybeSingle(),
-          supabase
-            .from("company_risk_assessments")
-            .select("risks")
-            .eq("company_id", companyId)
-            .maybeSingle(),
-          supabase
-            .from("company_action_plans")
-            .select("actions")
-            .eq("company_id", companyId)
-            .maybeSingle(),
-          supabase
-            .from("company_routines")
-            .select("routines")
-            .eq("company_id", companyId)
-            .maybeSingle(),
+          withDept(
+            supabase
+              .from("company_goals")
+              .select("id, is_predefined", { count: "exact" })
+              .eq("company_id", companyId),
+            deptId
+          ),
+          withDept(
+            supabase
+              .from("company_organization")
+              .select("custom_content, is_custom")
+              .eq("company_id", companyId),
+            deptId
+          ).maybeSingle(),
+          withDept(
+            supabase
+              .from("company_risk_assessments")
+              .select("risks")
+              .eq("company_id", companyId),
+            deptId
+          ).maybeSingle(),
+          withDept(
+            supabase
+              .from("company_action_plans")
+              .select("actions")
+              .eq("company_id", companyId),
+            deptId
+          ).maybeSingle(),
+          withDept(
+            supabase
+              .from("company_routines")
+              .select("routines")
+              .eq("company_id", companyId),
+            deptId
+          ).maybeSingle(),
           supabase
             .from("hms_self_declarations")
             .select("id")
