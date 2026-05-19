@@ -821,8 +821,13 @@ export default function Ks2Dagsrapport() {
       {emailReport && (
         <EmailSendDialog
           open={!!emailReport}
-          onOpenChange={(open) => !open && setEmailReport(null)}
-          documentType="deviation"
+          onOpenChange={(open) => {
+            if (!open) {
+              setEmailReport(null);
+              setEmailAttachment(null);
+            }
+          }}
+          documentType="daily-report"
           subject={`Dagsrapport ${emailReport.report_number} — ${format(new Date(emailReport.report_date), "d. MMMM yyyy", { locale: nb })}`}
           htmlContent={generateReportEmailHtml(emailReport)}
           users={users.map((u) => ({
@@ -831,7 +836,7 @@ export default function Ks2Dagsrapport() {
             first_name: u.first_name || "",
             last_name: u.last_name || "",
           }))}
-          companyName={profile?.company_id ? undefined : undefined}
+          attachments={emailAttachment ? [emailAttachment] : undefined}
         />
       )}
     </div>
