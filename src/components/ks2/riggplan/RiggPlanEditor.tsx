@@ -57,9 +57,21 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
       width: sym.defaultWidth,
       height: sym.defaultHeight,
       color: sym.color,
+      linkedRiskParagraphs: [...(sym.suggestedRiskParagraphs || [])],
+      riskNote: "",
     };
     setCanvas({ ...canvas, objects: [...canvas.objects, newObj] });
     setSelectedId(newObj.id);
+  };
+
+  const toggleRiskParagraph = (objId: string, paragraph: string) => {
+    const obj = canvas.objects.find((o) => o.id === objId);
+    if (!obj) return;
+    const current = obj.linkedRiskParagraphs || [];
+    const next = current.includes(paragraph)
+      ? current.filter((p) => p !== paragraph)
+      : [...current, paragraph];
+    updateObject(objId, { linkedRiskParagraphs: next });
   };
 
   const updateObject = (id: string, patch: Partial<RiggObject>) => {
