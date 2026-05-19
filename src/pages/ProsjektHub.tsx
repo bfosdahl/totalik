@@ -470,32 +470,42 @@ export default function ProsjektHub() {
                 <Clock className="ml-auto h-5 w-5 opacity-70 shrink-0" />
               </motion.button>
 
-              {/* Snarvei-grid (uten timer) */}
-              <div className="grid grid-cols-3 gap-3">
-                {shortcuts
-                  .filter((s) => s.id !== "timer")
-                  .map((s, i) => (
-                    <motion.button
-                      key={s.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0, transition: { delay: i * 0.03 } }}
-                      onClick={() => go(s)}
-                      className="flex flex-col items-center gap-2 p-3 rounded-xl border bg-card hover:bg-accent transition-colors active:scale-[0.97]"
-                    >
-                      <div
-                        className={cn(
-                          "h-11 w-11 rounded-xl flex items-center justify-center text-white",
-                          s.color
-                        )}
-                      >
-                        <s.icon className="h-5 w-5" />
-                      </div>
-                      <span className="text-[11px] font-medium text-center leading-tight">
-                        {s.label}
-                      </span>
-                    </motion.button>
-                  ))}
-              </div>
+              {/* Snarvei-grid – tilpasset prosjektets moduler */}
+              {(() => {
+                const available = getAvailableShortcuts(selected).filter((s) => s.id !== "timer");
+                const hasTimer = getAvailableShortcuts(selected).some((s) => s.id === "timer");
+                return (
+                  <>
+                    {!hasTimer && null}
+                    <div className="grid grid-cols-3 gap-3">
+                      {available.map((s, i) => (
+                        <motion.button
+                          key={s.id}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0, transition: { delay: i * 0.03 } }}
+                          onClick={() => go(s)}
+                          className="flex flex-col items-center gap-2 p-3 rounded-xl border bg-card hover:bg-accent transition-colors active:scale-[0.97]"
+                        >
+                          <div
+                            className={cn(
+                              "h-11 w-11 rounded-xl flex items-center justify-center text-white",
+                              s.color
+                            )}
+                          >
+                            <s.icon className="h-5 w-5" />
+                          </div>
+                          <span className="text-[11px] font-medium text-center leading-tight">
+                            {s.label}
+                          </span>
+                        </motion.button>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground text-center">
+                      Snarveier vises basert på prosjekttypen ({((selected as any).project_type as string) || "standard"}).
+                    </p>
+                  </>
+                );
+              })()}
 
               <div className="grid grid-cols-2 gap-2">
                 <Button
