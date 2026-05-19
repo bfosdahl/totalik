@@ -213,14 +213,17 @@ export function useDashboardStats(): DashboardStats {
         sevenDaysFromNow.setDate(now.getDate() + 7);
         const futureStr = `${sevenDaysFromNow.getFullYear()}-${String(sevenDaysFromNow.getMonth() + 1).padStart(2, '0')}-${String(sevenDaysFromNow.getDate()).padStart(2, '0')}`;
 
-        const { count: dueSoonCount } = await supabase
-          .from("deviations")
-          .select("*", { count: "exact", head: true })
-          .eq("company_id", companyId)
-          .eq("is_deleted", false)
-          .in("status", ["open", "in-progress"])
-          .gte("due_date", todayStr)
-          .lte("due_date", futureStr);
+        const { count: dueSoonCount } = await withDept(
+          supabase
+            .from("deviations")
+            .select("*", { count: "exact", head: true })
+            .eq("company_id", companyId)
+            .eq("is_deleted", false)
+            .in("status", ["open", "in-progress"])
+            .gte("due_date", todayStr)
+            .lte("due_date", futureStr),
+          deptId
+        );
 
         if (currentFetchId !== fetchIdRef.current) return;
 
