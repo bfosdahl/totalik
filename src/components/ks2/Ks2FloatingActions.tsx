@@ -7,6 +7,7 @@ import {
   AlertTriangle, 
   HardHat,
   FileText,
+  Clock,
   X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
