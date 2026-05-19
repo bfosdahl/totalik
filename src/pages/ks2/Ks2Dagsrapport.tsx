@@ -727,14 +727,33 @@ export default function Ks2Dagsrapport() {
                       </div>
                     )}
 
+                    {/* Photos */}
+                    {report.photos?.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2">
+                          Bilder ({report.photos.length})
+                        </h4>
+                        <DailyReportPhotoGallery photos={report.photos as any} />
+                      </div>
+                    )}
+
                     {/* Actions */}
-                    <div className="flex gap-2 pt-2 border-t">
+                    <div className="flex flex-wrap gap-2 pt-2 border-t">
                       {report.status === "draft" && (
                         <Button size="sm" variant="default" onClick={() => submitReport(report.id)}>
                           <Send className="h-3.5 w-3.5 mr-1" />
                           Send inn
                         </Button>
                       )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDownloadPdf(report)}
+                        disabled={downloadingId === report.id}
+                      >
+                        <Download className="h-3.5 w-3.5 mr-1" />
+                        {downloadingId === report.id ? "Genererer..." : "Last ned PDF"}
+                      </Button>
                       <Button size="sm" variant="outline" onClick={() => setEmailReport(report)}>
                         <Mail className="h-3.5 w-3.5 mr-1" />
                         Send på e-post
