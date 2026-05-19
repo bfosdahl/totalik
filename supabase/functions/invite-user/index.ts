@@ -122,6 +122,16 @@ serve(async (req) => {
         });
       }
 
+      // Block cross-tenant hijacking: an admin must NOT be able to move a user
+      // who already belongs to another company into their own company.
+      if (existingProfileCheck?.company_id && existingProfileCheck.company_id !== targetCompanyId) {
+        return new Response(
+          JSON.stringify({ error: "Denne e-postadressen er allerede registrert hos en annen organisasjon. Brukeren må selv kontakte support for å bytte selskap." }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+
       // User exists but not in this company - update their profile to this company
       await supabaseAdmin
         .from("profiles")
