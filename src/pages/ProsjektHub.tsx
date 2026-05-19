@@ -280,11 +280,16 @@ export default function ProsjektHub() {
 
   const handleTimeSubmit = async (entry: CreateTimeEntry): Promise<boolean> => {
     if (!selected) return false;
-    return createEntry({
+    const ok = await createEntry({
       ...entry,
       ks_project_id: selected.id,
       project_name: selected.project_name,
     });
+    if (ok) {
+      justSubmittedRef.current = true;
+      localStorage.removeItem(DRAFT_KEY);
+    }
+    return ok;
   };
 
   return (
