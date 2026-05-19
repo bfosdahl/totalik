@@ -18,6 +18,7 @@ import {
   Star,
   ChevronsUpDown,
   Check,
+  Plus,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,9 @@ import {
 } from "@/components/ui/sheet";
 import { useKsModule2Projects, KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { cn } from "@/lib/utils";
+import { Ks2NewTimeEntryDialog } from "@/components/ks2/Ks2NewTimeEntryDialog";
+import { useTimeEntries } from "@/hooks/useTimeEntries";
+import { CreateTimeEntry } from "@/hooks/useTimeEntries";
 
 interface Shortcut {
   id: string;
@@ -111,10 +115,12 @@ function ProjectRow({ project, onSelect, onToggleFavorite, compact }: ProjectRow
 export default function ProsjektHub() {
   const navigate = useNavigate();
   const { projects, isLoading, toggleFavorite } = useKsModule2Projects();
+  const { createEntry } = useTimeEntries();
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<KsModule2Project | null>(null);
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [switcherSearch, setSwitcherSearch] = useState("");
+  const [timeDialogOpen, setTimeDialogOpen] = useState(false);
 
   const active = useMemo(
     () => projects.filter((p) => p.status !== "completed"),
@@ -156,6 +162,10 @@ export default function ProsjektHub() {
 
   const go = (shortcut: Shortcut) => {
     if (!selected) return;
+    if (shortcut.id === "timer") {
+      setTimeDialogOpen(true);
+      return;
+    }
     navigate(`/ks/project/${selected.id}${shortcut.path}`);
   };
 
@@ -163,6 +173,15 @@ export default function ProsjektHub() {
     setSelected(p);
     setSwitcherOpen(false);
     setSwitcherSearch("");
+  };
+
+  const handleTimeSubmit = async (entry: CreateTimeEntry): Promise<boolean> => {
+    if (!selected) return false;
+    return createEntry({
+      ...entry,
+      ks_project_id: selected.id,
+      project_name: selected.project_name,
+    });
   };
 
   return (
@@ -410,29 +429,50 @@ export default function ProsjektHub() {
                 </div>
               )}
 
-              {/* Snarvei-grid */}
+              {/* Quick time entry CTA */}
+              <motion.button
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={() => setTimeDialogOpen(true)}
+                className="w-full flex items-center gap-3 p-4 rounded-xl border bg-gradient-to-r from-primary to-primary/90 text-primary-foreground shadow-sm hover:shadow transition-all active:scale-[0.98]"
+              >
+                <div className="h-11 w-11 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                  <Plus className="h-5 w-5" />
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-sm">Registrer timer</div>
+                  <div className="text-[11px] text-primary-foreground/80">
+                    Før timer direkte på {selected.project_name}
+                  </div>
+                </div>
+                <Clock className="ml-auto h-5 w-5 opacity-70 shrink-0" />
+              </motion.button>
+
+              {/* Snarvei-grid (uten timer) */}
               <div className="grid grid-cols-3 gap-3">
-                {shortcuts.map((s, i) => (
-                  <motion.button
-                    key={s.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0, transition: { delay: i * 0.03 } }}
-                    onClick={() => go(s)}
-                    className="flex flex-col items-center gap-2 p-3 rounded-xl border bg-card hover:bg-accent transition-colors active:scale-[0.97]"
-                  >
-                    <div
-                      className={cn(
-                        "h-11 w-11 rounded-xl flex items-center justify-center text-white",
-                        s.color
-                      )}
+                {shortcuts
+                  .filter((s) => s.id !== "timer")
+                  .map((s, i) => (
+                    <motion.button
+                      key={s.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0, transition: { delay: i * 0.03 } }}
+                      onClick={() => go(s)}
+                      className="flex flex-col items-center gap-2 p-3 rounded-xl border bg-card hover:bg-accent transition-colors active:scale-[0.97]"
                     >
-                      <s.icon className="h-5 w-5" />
-                    </div>
-                    <span className="text-[11px] font-medium text-center leading-tight">
-                      {s.label}
-                    </span>
-                  </motion.button>
-                ))}
+                      <div
+                        className={cn(
+                          "h-11 w-11 rounded-xl flex items-center justify-center text-white",
+                          s.color
+                        )}
+                      >
+                        <s.icon className="h-5 w-5" />
+                      </div>
+                      <span className="text-[11px] font-medium text-center leading-tight">
+                        {s.label}
+                      </span>
+                    </motion.button>
+                  ))}
               </div>
 
               <div className="grid grid-cols-2 gap-2">
@@ -453,6 +493,17 @@ export default function ProsjektHub() {
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               </div>
+
+              {/* Quick time entry dialog */}
+              {selected && (
+                <Ks2NewTimeEntryDialog
+                  open={timeDialogOpen}
+                  onOpenChange={setTimeDialogOpen}
+                  onSubmit={handleTimeSubmit}
+                  projectId={selected.id}
+                  projectName={selected.project_name}
+                />
+              )}
             </motion.div>
           )}
         </AnimatePresence>
