@@ -35,6 +35,7 @@ import {
   Image,
   StickyNote,
   Eye,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -71,6 +72,7 @@ const hmsMenuItems = [
   { id: "vernerunder", label: "Vernerunder & RUH", icon: HardHat, path: "/hms/vernerunder", guestAllowed: true },
   { id: "hms-avvik", label: "HMS-avvik", icon: AlertTriangle, path: "/hms/avvik", guestAllowed: true },
   { id: "stoffkartotek", label: "Stoffkartotek", icon: FlaskConical, path: "/hms/stoffkartotek", guestAllowed: true },
+  { id: "riggplan", label: "Riggplan", icon: MapPin, path: "/hms/riggplan", guestAllowed: true },
 ];
 
 const byggesakItems = [
