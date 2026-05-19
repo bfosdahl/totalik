@@ -7,6 +7,7 @@ import {
   AlertTriangle, 
   HardHat,
   FileText,
+  Clock,
   X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,11 +22,18 @@ interface QuickAction {
 
 const quickActions: QuickAction[] = [
   { 
+    id: "timer", 
+    label: "Registrer timer", 
+    icon: Clock, 
+    path: "/timer",
+    color: "bg-primary text-primary-foreground"
+  },
+  { 
     id: "egenkontroll", 
     label: "Ny egenkontroll", 
     icon: ClipboardCheck, 
     path: "/egenkontroller?new=true",
-    color: "bg-primary text-primary-foreground"
+    color: "bg-sky-500 text-white"
   },
   { 
     id: "avvik", 

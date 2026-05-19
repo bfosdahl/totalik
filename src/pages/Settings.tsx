@@ -11,7 +11,8 @@ import {
   LucideIcon,
   Download,
   Smartphone,
-  Layers
+  Layers,
+  Wallet
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -23,8 +24,9 @@ import { CustomizationSettings } from "@/components/settings/CustomizationSettin
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { DepartmentSettings } from "@/components/settings/DepartmentSettings";
 import { SettingsPlaceholder } from "@/components/settings/SettingsPlaceholder";
+import { AllowanceTypesSettings } from "@/components/settings/AllowanceTypesSettings";
 
-type SettingsSection = "main" | "company" | "users" | "departments" | "notifications" | "security" | "customization" | "data";
+type SettingsSection = "main" | "company" | "users" | "departments" | "notifications" | "security" | "customization" | "data" | "allowances";
 
 interface SettingsSectionConfig {
   id: SettingsSection;
@@ -51,6 +53,12 @@ const settingsSections: SettingsSectionConfig[] = [
     icon: Layers,
     title: "Avdelinger",
     description: "Organiser bedriften i avdelinger",
+  },
+  {
+    id: "allowances",
+    icon: Wallet,
+    title: "Lønn & tilleggssatser",
+    description: "Definer satser for diett, kilometer, reisetimer og andre tillegg",
   },
   {
     id: "notifications",
@@ -156,6 +164,16 @@ const Settings = () => {
       <AppLayout>
         <div className="max-w-3xl mx-auto">
           <DepartmentSettings onBack={goBack} />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (activeSection === "allowances") {
+    return (
+      <AppLayout>
+        <div className="max-w-3xl mx-auto">
+          <AllowanceTypesSettings onBack={goBack} />
         </div>
       </AppLayout>
     );
