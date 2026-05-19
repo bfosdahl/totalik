@@ -37,6 +37,16 @@ import {
 import { useKsModule2Projects, KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { cn } from "@/lib/utils";
 import { Ks2NewTimeEntryDialog } from "@/components/ks2/Ks2NewTimeEntryDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useTimeEntries } from "@/hooks/useTimeEntries";
 import { CreateTimeEntry } from "@/hooks/useTimeEntries";
 
