@@ -16,6 +16,8 @@ import {
 import { useKsRiggPlan, type RiggPlan } from "@/hooks/useKsRiggPlan";
 import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { RiggPlanEditor } from "@/components/ks2/riggplan/RiggPlanEditor";
+import { syncRiggPlansToSha } from "@/utils/riggToShaSync";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
