@@ -174,6 +174,7 @@ function DailyReportForm({
       ? deviationsText.split("\n").filter(Boolean).map((d) => ({ description: d.trim() }))
       : [],
     notes: notes || undefined,
+    photos: photos,
   });
 
   const SectionHeader = ({ id, label, icon }: { id: string; label: string; icon: React.ReactNode }) => (
