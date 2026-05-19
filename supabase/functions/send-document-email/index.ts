@@ -30,6 +30,9 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const auth = await requireAuth(req, corsHeaders);
+  if (auth instanceof Response) return auth;
+
   try {
     // Validate API key
     if (!RESEND_API_KEY) {
