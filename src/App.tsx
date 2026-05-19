@@ -106,6 +106,7 @@ const KsOppsett = lazy(() => import("./pages/ks2/KsOppsett"));
 // Mine prosjekter
 const MineProsjekterDashboard = lazy(() => import("./pages/mineprosjekter/MineProsjekterDashboard"));
 const SimpleProjectDetail = lazy(() => import("./pages/mineprosjekter/SimpleProjectDetail"));
+const ProsjektHub = lazy(() => import("./pages/ProsjektHub"));
 
 // FDV
 const FdvDashboard = lazy(() => import("./pages/fdv/FdvDashboard"));
@@ -307,6 +308,10 @@ const App = () => (
                   {/* Småprosjekter routes */}
                   <Route path="/ks/smaaprosjekter" element={<ProtectedRoute><MineProsjekterDashboard /></ProtectedRoute>} />
                   <Route path="/ks/smaaprosjekter/:projectId" element={<ProtectedRoute><SimpleProjectDetail /></ProtectedRoute>} />
+
+                  {/* Mobil prosjekt-hub med snarvei-grid */}
+                  <Route path="/prosjekt-hub" element={<ProtectedRoute><ProsjektHub /></ProtectedRoute>} />
+                  
                   
                   {/* Personalhåndbok routes */}
                   <Route path="/personalhandbok" element={<ProtectedRoute><PersonalhandbokPage /></ProtectedRoute>} />

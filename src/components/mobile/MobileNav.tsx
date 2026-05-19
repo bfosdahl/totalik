@@ -6,7 +6,8 @@ import {
   Clock,
   Users,
   Menu,
-  X
+  X,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -29,10 +30,10 @@ const mainNavItems: NavItem[] = [
     path: "/",
   },
   {
-    id: "hms",
-    label: "HMS",
-    icon: <Shield className="h-5 w-5" />,
-    path: "/setup",
+    id: "projects",
+    label: "Prosjekt",
+    icon: <Briefcase className="h-5 w-5" />,
+    path: "/prosjekt-hub",
   },
   {
     id: "deviations",
