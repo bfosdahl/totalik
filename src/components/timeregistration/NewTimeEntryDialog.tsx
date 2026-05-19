@@ -125,7 +125,7 @@ export function NewTimeEntryDialog({
 
     // Build allowances
     const allowances: TimeEntryAllowanceInput[] = allowanceRows
-      .map((r) => {
+      .map<TimeEntryAllowanceInput | null>((r) => {
         const t = allowanceTypes.find((x) => x.id === r.typeId);
         const qty = parseFloat(r.quantity);
         if (!t || isNaN(qty) || qty <= 0) return null;
@@ -137,7 +137,7 @@ export function NewTimeEntryDialog({
           rate_snapshot: Number(t.rate),
           amount: Number((qty * Number(t.rate)).toFixed(2)),
           notes: r.notes || null,
-        } satisfies TimeEntryAllowanceInput;
+        };
       })
       .filter((x): x is TimeEntryAllowanceInput => x !== null);
 
