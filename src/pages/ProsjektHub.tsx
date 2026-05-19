@@ -146,13 +146,74 @@ function ProjectRow({ project, onSelect, onToggleFavorite, compact }: ProjectRow
   );
 }
 
-const DRAFT_KEY = "prosjekt-hub:pending-time-draft";
+const DRAFTS_KEY = "prosjekt-hub:pending-time-drafts"; // map<projectId, PendingDraft>
+const LEGACY_DRAFT_KEY = "prosjekt-hub:pending-time-draft"; // gammel enkelt-nøkkel
+const DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
+
 type PendingDraft = {
   projectId: string;
   projectName: string;
   projectNumber: string;
   openedAt: number;
 };
+
+type DraftMap = Record<string, PendingDraft>;
+
+function readDrafts(): DraftMap {
+  try {
+    // Migrer gammel enkelt-nøkkel hvis den finnes
+    const legacy = localStorage.getItem(LEGACY_DRAFT_KEY);
+    if (legacy) {
+      try {
+        const d: PendingDraft = JSON.parse(legacy);
+        if (d?.projectId) {
+          const current = JSON.parse(localStorage.getItem(DRAFTS_KEY) || "{}") as DraftMap;
+          if (!current[d.projectId]) {
+            current[d.projectId] = d;
+            localStorage.setItem(DRAFTS_KEY, JSON.stringify(current));
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+      localStorage.removeItem(LEGACY_DRAFT_KEY);
+    }
+    const raw = localStorage.getItem(DRAFTS_KEY);
+    if (!raw) return {};
+    const map = JSON.parse(raw) as DraftMap;
+    // Rens utløpte
+    const now = Date.now();
+    let changed = false;
+    for (const id of Object.keys(map)) {
+      if (now - (map[id]?.openedAt ?? 0) > DRAFT_TTL_MS) {
+        delete map[id];
+        changed = true;
+      }
+    }
+    if (changed) localStorage.setItem(DRAFTS_KEY, JSON.stringify(map));
+    return map;
+  } catch {
+    return {};
+  }
+}
+
+function writeDrafts(map: DraftMap) {
+  localStorage.setItem(DRAFTS_KEY, JSON.stringify(map));
+}
+
+function upsertDraft(draft: PendingDraft) {
+  const map = readDrafts();
+  map[draft.projectId] = draft;
+  writeDrafts(map);
+}
+
+function removeDraft(projectId: string) {
+  const map = readDrafts();
+  if (map[projectId]) {
+    delete map[projectId];
+    writeDrafts(map);
+  }
+}
 
 export default function ProsjektHub() {
   const navigate = useNavigate();
@@ -165,6 +226,16 @@ export default function ProsjektHub() {
   const [switcherSearch, setSwitcherSearch] = useState("");
   const [timeDialogOpen, setTimeDialogOpen] = useState(false);
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
+  // Sett med projectId som har et utkast – brukt for badges i UI
+  const [draftIds, setDraftIds] = useState<Set<string>>(new Set());
+
+  // Sporing av ulagrede tidsregistreringer
+  const justSubmittedRef = useRef(false);
+  const draftChecked = useRef(false);
+
+  const refreshDraftIds = () => {
+    setDraftIds(new Set(Object.keys(readDrafts())));
+  };
 
   // Intercept lukking av timedialogen for å bekrefte mot ulagrede endringer
   const handleTimeDialogOpenChange = (next: boolean) => {
@@ -172,7 +243,6 @@ export default function ProsjektHub() {
       setTimeDialogOpen(true);
       return;
     }
-    // Hvis nettopp lagret eller dialogen aldri åpnet seg: lukk uten bekreftelse
     if (justSubmittedRef.current || !timeDialogOpen) {
       setTimeDialogOpen(false);
       return;
@@ -181,82 +251,87 @@ export default function ProsjektHub() {
   };
 
   const handleKeepDraft = () => {
-    // Behold utkast i localStorage – påminnelse-toast vises ved neste besøk
+    // Behold utkast for valgt prosjekt
     setConfirmCloseOpen(false);
     setTimeDialogOpen(false);
+    refreshDraftIds();
   };
 
   const handleDiscardDraft = () => {
-    localStorage.removeItem(DRAFT_KEY);
+    if (selected) removeDraft(selected.id);
     justSubmittedRef.current = true; // hindre påminnelse-toast denne gangen
     setConfirmCloseOpen(false);
     setTimeDialogOpen(false);
+    refreshDraftIds();
   };
-  // Sporing av ulagrede tidsregistreringer
-  const justSubmittedRef = useRef(false);
-  const draftChecked = useRef(false);
 
-  // Sjekk for ulagret utkast ved oppstart
+  // Sjekk for ulagrede utkast ved oppstart
   useEffect(() => {
     if (draftChecked.current) return;
     if (isLoading || projects.length === 0) return;
     draftChecked.current = true;
-    try {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (!raw) return;
-      const draft: PendingDraft = JSON.parse(raw);
-      if (Date.now() - draft.openedAt > 24 * 60 * 60 * 1000) {
-        localStorage.removeItem(DRAFT_KEY);
-        return;
-      }
-      toast({
-        title: "Ulagret timeføring",
-        description: `Du åpnet timedialogen for ${draft.projectName} uten å lagre. Vil du fullføre nå?`,
-        action: (
-          <ToastAction
-            altText="Fullfør"
-            onClick={() => {
-              const proj = projects.find((p) => p.id === draft.projectId);
-              if (proj) {
-                setSelected(proj);
-                setTimeDialogOpen(true);
-              } else {
-                localStorage.removeItem(DRAFT_KEY);
-              }
-            }}
-          >
-            Fullfør
-          </ToastAction>
-        ),
-      });
-    } catch {
-      localStorage.removeItem(DRAFT_KEY);
-    }
+
+    const drafts = readDrafts();
+    const list = Object.values(drafts)
+      .filter((d) => projects.some((p) => p.id === d.projectId))
+      .sort((a, b) => b.openedAt - a.openedAt);
+
+    setDraftIds(new Set(list.map((d) => d.projectId)));
+    if (list.length === 0) return;
+
+    const mostRecent = list[0];
+    const extra = list.length - 1;
+    toast({
+      title: list.length > 1 ? `${list.length} ulagrede timeføringer` : "Ulagret timeføring",
+      description:
+        list.length > 1
+          ? `Sist: ${mostRecent.projectName}${extra > 0 ? ` (+${extra} til)` : ""}. Velg prosjekt for å fortsette.`
+          : `Du åpnet timedialogen for ${mostRecent.projectName} uten å lagre. Vil du fullføre nå?`,
+      action: (
+        <ToastAction
+          altText="Fullfør"
+          onClick={() => {
+            const proj = projects.find((p) => p.id === mostRecent.projectId);
+            if (proj) {
+              setSelected(proj);
+              setTimeDialogOpen(true);
+            } else {
+              removeDraft(mostRecent.projectId);
+              refreshDraftIds();
+            }
+          }}
+        >
+          Fullfør
+        </ToastAction>
+      ),
+    });
   }, [isLoading, projects, toast]);
 
   // Lagre/fjern utkast når timedialogen åpnes/lukkes
   useEffect(() => {
     if (timeDialogOpen && selected) {
-      const draft: PendingDraft = {
+      // Bevar opprinnelig openedAt hvis utkast finnes fra før
+      const existing = readDrafts()[selected.id];
+      upsertDraft({
         projectId: selected.id,
         projectName: selected.project_name,
         projectNumber: selected.project_number,
-        openedAt: Date.now(),
-      };
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        openedAt: existing?.openedAt ?? Date.now(),
+      });
       justSubmittedRef.current = false;
-    } else if (!timeDialogOpen) {
+      refreshDraftIds();
+    } else if (!timeDialogOpen && selected) {
       if (justSubmittedRef.current) {
-        localStorage.removeItem(DRAFT_KEY);
-      } else if (localStorage.getItem(DRAFT_KEY)) {
+        // submit-sti rydder selv – ingenting å gjøre her
+      } else if (readDrafts()[selected.id]) {
         toast({
           title: "Påminnelse",
-          description: "Du lukket timedialogen uten å lagre. Klikk for å fortsette.",
-          action: selected ? (
+          description: `Utkast beholdt for ${selected.project_name}. Klikk for å fortsette.`,
+          action: (
             <ToastAction altText="Fortsett" onClick={() => setTimeDialogOpen(true)}>
               Fortsett
             </ToastAction>
-          ) : undefined,
+          ),
         });
       }
     }
