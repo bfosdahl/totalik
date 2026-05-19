@@ -136,15 +136,94 @@ function ProjectRow({ project, onSelect, onToggleFavorite, compact }: ProjectRow
   );
 }
 
+const DRAFT_KEY = "prosjekt-hub:pending-time-draft";
+type PendingDraft = {
+  projectId: string;
+  projectName: string;
+  projectNumber: string;
+  openedAt: number;
+};
+
 export default function ProsjektHub() {
   const navigate = useNavigate();
   const { projects, isLoading, toggleFavorite } = useKsModule2Projects();
   const { createEntry } = useTimeEntries();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<KsModule2Project | null>(null);
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [switcherSearch, setSwitcherSearch] = useState("");
   const [timeDialogOpen, setTimeDialogOpen] = useState(false);
+  // Sporing av ulagrede tidsregistreringer
+  const justSubmittedRef = useRef(false);
+  const draftChecked = useRef(false);
+
+  // Sjekk for ulagret utkast ved oppstart
+  useEffect(() => {
+    if (draftChecked.current) return;
+    if (isLoading || projects.length === 0) return;
+    draftChecked.current = true;
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const draft: PendingDraft = JSON.parse(raw);
+      if (Date.now() - draft.openedAt > 24 * 60 * 60 * 1000) {
+        localStorage.removeItem(DRAFT_KEY);
+        return;
+      }
+      toast({
+        title: "Ulagret timeføring",
+        description: `Du åpnet timedialogen for ${draft.projectName} uten å lagre. Vil du fullføre nå?`,
+        action: (
+          <ToastAction
+            altText="Fullfør"
+            onClick={() => {
+              const proj = projects.find((p) => p.id === draft.projectId);
+              if (proj) {
+                setSelected(proj);
+                setTimeDialogOpen(true);
+              } else {
+                localStorage.removeItem(DRAFT_KEY);
+              }
+            }}
+          >
+            Fullfør
+          </ToastAction>
+        ),
+      });
+    } catch {
+      localStorage.removeItem(DRAFT_KEY);
+    }
+  }, [isLoading, projects, toast]);
+
+  // Lagre/fjern utkast når timedialogen åpnes/lukkes
+  useEffect(() => {
+    if (timeDialogOpen && selected) {
+      const draft: PendingDraft = {
+        projectId: selected.id,
+        projectName: selected.project_name,
+        projectNumber: selected.project_number,
+        openedAt: Date.now(),
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      justSubmittedRef.current = false;
+    } else if (!timeDialogOpen) {
+      if (justSubmittedRef.current) {
+        localStorage.removeItem(DRAFT_KEY);
+      } else if (localStorage.getItem(DRAFT_KEY)) {
+        toast({
+          title: "Påminnelse",
+          description: "Du lukket timedialogen uten å lagre. Klikk for å fortsette.",
+          action: selected ? (
+            <ToastAction altText="Fortsett" onClick={() => setTimeDialogOpen(true)}>
+              Fortsett
+            </ToastAction>
+          ) : undefined,
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeDialogOpen]);
 
   const active = useMemo(
     () => projects.filter((p) => p.status !== "completed"),
