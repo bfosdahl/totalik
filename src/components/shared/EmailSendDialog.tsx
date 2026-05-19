@@ -42,6 +42,7 @@ export function EmailSendDialog({
   htmlContent,
   users,
   companyName,
+  attachments,
 }: EmailSendDialogProps) {
   const { profile } = useAuth();
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
