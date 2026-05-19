@@ -38,6 +38,7 @@ const Ks2ShaPlan = lazy(() => import("./Ks2ShaPlan"));
 const Ks2Sja = lazy(() => import("./Ks2Sja"));
 const Ks2Vernerunder = lazy(() => import("./Ks2Vernerunder"));
 const Ks2Stoffkartotek = lazy(() => import("./Ks2Stoffkartotek"));
+const Ks2RiggPlan = lazy(() => import("./Ks2RiggPlan"));
 // Byggesak Module imports
 const Ks2ByggesakDashboard = lazy(() => import("./Ks2ByggesakDashboard"));
 const Ks2ByggesakBlanketter = lazy(() => import("./Ks2ByggesakBlanketter"));
