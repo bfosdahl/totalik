@@ -238,7 +238,7 @@ export function useTimeEntries() {
     }
 
     try {
-      const { error } = await supabase.from("time_entries").insert({
+      const { data: inserted, error } = await supabase.from("time_entries").insert({
         company_id: profile.company_id,
         user_id: user.id,
         user_name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email || "Ukjent",
@@ -246,11 +246,35 @@ export function useTimeEntries() {
         hours: entry.hours,
         project_name: entry.project_name || null,
         project_id: entry.project_id || null,
+        ks_project_id: entry.ks_project_id || null,
+        customer_name: entry.customer_name || null,
+        hour_type: entry.hour_type || "normal",
         description: entry.description || null,
         status: entry.status || "submitted",
-      });
+      }).select("id").single();
 
       if (error) throw error;
+
+      // Persist allowances
+      if (inserted && entry.allowances && entry.allowances.length > 0) {
+        const rows = entry.allowances
+          .filter((a) => a.type_name && a.quantity > 0)
+          .map((a) => ({
+            time_entry_id: inserted.id,
+            allowance_type_id: a.allowance_type_id || null,
+            type_name: a.type_name,
+            unit: a.unit,
+            quantity: a.quantity,
+            rate_snapshot: a.rate_snapshot,
+            amount: a.amount,
+            notes: a.notes || null,
+          }));
+        if (rows.length > 0) {
+          const { error: aErr } = await supabase.from("time_entry_allowances").insert(rows);
+          if (aErr) console.error("Allowance insert error", aErr);
+        }
+      }
+
       toast.success("Timer registrert");
       await fetchEntries();
       return true;
