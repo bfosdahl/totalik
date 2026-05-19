@@ -131,6 +131,7 @@ function DailyReportForm({
     hms: false,
     ue: false,
     deviations: false,
+    photos: true,
     notes: false,
   });
 
