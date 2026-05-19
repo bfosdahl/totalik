@@ -10,10 +10,10 @@ const corsHeaders = {
 };
 
 interface TestNotificationRequest {
-  company_id: string;
   recipient_emails: string[];
-  company_name: string;
 }
+
+const MAX_RECIPIENTS = 10;
 
 const handler = async (req: Request): Promise<Response> => {
   console.log("send-test-notification function called");
@@ -25,37 +25,80 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      console.error("No authorization header");
+    if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace("Bearer ", "")
-    );
-
+    // Validate user via anon client with their JWT
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
     if (authError || !user) {
-      console.error("Auth error:", authError);
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    const { company_id, recipient_emails, company_name }: TestNotificationRequest = await req.json();
+    // Service-role client for trusted lookups
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    if (!company_id || !recipient_emails || recipient_emails.length === 0) {
-      console.error("Missing required fields");
+    // Derive caller's company server-side — never trust client
+    const { data: callerProfile, error: profileError } = await supabase
+      .from("profiles")
+      .select("company_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (profileError || !callerProfile?.company_id) {
+      return new Response(JSON.stringify({ error: "No company for user" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const { data: company } = await supabase
+      .from("companies")
+      .select("name")
+      .eq("id", callerProfile.company_id)
+      .maybeSingle();
+    const company_name = company?.name ?? "Din bedrift";
+
+    const body: TestNotificationRequest = await req.json().catch(() => ({ recipient_emails: [] }));
+    const requested = Array.isArray(body.recipient_emails) ? body.recipient_emails : [];
+
+    if (requested.length === 0) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
+    }
+
+    // Cap recipient count
+    const capped = requested.slice(0, MAX_RECIPIENTS).map((e) => String(e).trim().toLowerCase());
+
+    // Only allow recipients that belong to caller's company
+    const { data: allowedProfiles } = await supabase
+      .from("profiles")
+      .select("email")
+      .eq("company_id", callerProfile.company_id)
+      .in("email", capped);
+
+    const allowedSet = new Set((allowedProfiles ?? []).map((p) => String(p.email).toLowerCase()));
+    const recipient_emails = capped.filter((e) => allowedSet.has(e));
+
+    if (recipient_emails.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "No recipients belong to your company" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
     }
 
     console.log(`Sending test notification to ${recipient_emails.length} recipients for company ${company_name}`);
