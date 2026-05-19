@@ -154,13 +154,14 @@ function AllowanceEditDialog({
   const [isActive, setIsActive] = useState(type?.is_active ?? true);
   const [saving, setSaving] = useState(false);
 
-  // Reset when type changes
-  useState(() => {
-    setName(type?.name || "");
-    setUnit(type?.unit || "hour");
-    setRate(type ? String(type.rate) : "0");
-    setIsActive(type?.is_active ?? true);
-  });
+  useEffect(() => {
+    if (open) {
+      setName(type?.name || "");
+      setUnit(type?.unit || "hour");
+      setRate(type ? String(type.rate) : "0");
+      setIsActive(type?.is_active ?? true);
+    }
+  }, [open, type]);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
