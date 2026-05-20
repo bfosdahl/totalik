@@ -61,7 +61,7 @@ export function DailyTimeView({
   onDeleteEntry,
   userId,
 }: DailyTimeViewProps) {
-  const { profile } = useAuth();
+  const { profile, isCompanyAdmin } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [confirmingScheduleId, setConfirmingScheduleId] = useState<string | null>(null);
