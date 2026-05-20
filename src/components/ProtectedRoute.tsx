@@ -99,8 +99,10 @@ export function ProtectedRoute({
     );
   }
 
-  // If user has no roles and no company, wait for guest check to complete
-  if (roles.length === 0 && !profile.company_id && !guestCheckComplete) {
+  // Wait for user-data fetch (roles + guest check) to complete before evaluating
+  // role-based guards. Without this, admin-protected routes redirect to "/"
+  // during the brief window where profile exists but roles[] is still empty.
+  if (!guestCheckComplete) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
