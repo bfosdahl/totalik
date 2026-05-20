@@ -34,13 +34,7 @@ interface TimeEntry {
 
 interface DailyTimeViewProps {
   entries: TimeEntry[];
-  onCreateEntry: (entry: {
-    entry_date: string;
-    hours: number;
-    project_name?: string;
-    project_id?: string;
-    description?: string;
-  }) => Promise<boolean>;
+  onCreateEntry: (entry: CreateTimeEntry) => Promise<boolean>;
   onDeleteEntry: (id: string) => Promise<boolean>;
   userId: string;
 }
