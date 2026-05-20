@@ -98,8 +98,9 @@ export function TimeEntryList({
           {entries.map((entry) => {
             const config = statusConfig[entry.status];
             const canModify =
-              entry.user_id === user?.id &&
-              (entry.status === "draft" || entry.status === "submitted" || entry.status === "rejected");
+              (isCompanyAdmin && entry.status !== "pending_confirmation") ||
+              (entry.user_id === user?.id &&
+                (entry.status === "draft" || entry.status === "submitted" || entry.status === "rejected"));
             const canApprove = isCompanyAdmin && entry.status === "submitted";
 
             return (
