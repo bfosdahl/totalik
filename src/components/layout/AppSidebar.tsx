@@ -562,6 +562,19 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 pb-24 space-y-1 overflow-y-auto min-h-0" style={{ paddingBottom: 'max(6rem, calc(env(safe-area-inset-bottom) + 4rem))' }}>
+          {/* ── Forenklet ansatt-modus (kun det Eirik ba om) ── */}
+          {!isSystemAdmin && !isCompanyAdmin ? (
+            <EmployeeSimpleNav
+              collapsed={collapsed}
+              pathname={pathname}
+              t={t}
+              hasIkMat={hasIkMat}
+              hasKsBygg={hasKsBygg}
+              onAnonymous={() => setShowAnonymousDialog(true)}
+            />
+          ) : (
+          <>
+
 
           {/* Standard nav items */}
           {standardNavItems.map((item) => {
