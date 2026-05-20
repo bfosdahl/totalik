@@ -125,6 +125,14 @@ export function NewTimeEntryDialog({
       projectName = customProjectName;
     }
 
+    // Påkrevd prosjekt: enten KS-prosjekt eller fritekst-prosjekt
+    if (!projectName) {
+      toast.error("Du må velge et prosjekt", {
+        description: "Velg et aktivt KS-prosjekt eller skriv inn et prosjektnavn under 'Annet'.",
+      });
+      return;
+    }
+
     // Build allowances
     const allowances: TimeEntryAllowanceInput[] = allowanceRows
       .map<TimeEntryAllowanceInput | null>((r) => {
