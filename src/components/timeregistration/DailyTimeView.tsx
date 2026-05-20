@@ -61,7 +61,7 @@ export function DailyTimeView({
   onDeleteEntry,
   userId,
 }: DailyTimeViewProps) {
-  const { profile } = useAuth();
+  const { profile, isCompanyAdmin } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [confirmingScheduleId, setConfirmingScheduleId] = useState<string | null>(null);
@@ -356,7 +356,7 @@ export function DailyTimeView({
                       <Badge className={statusColors[entry.status]}>
                         {statusLabels[entry.status]}
                       </Badge>
-                      {entry.source !== "qr_clock" && (entry.status === "draft" ||
+                      {entry.source !== "qr_clock" && (isCompanyAdmin || entry.status === "draft" ||
                         entry.status === "submitted" ||
                         entry.status === "rejected") && (
                         <Button
