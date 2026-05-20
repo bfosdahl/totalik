@@ -137,39 +137,6 @@ export function DailyTimeView({
     setCurrentDate(new Date());
   };
 
-  const handleSubmit = async () => {
-    if (!hours) return;
-
-    const hoursNum = parseFloat(hours);
-    if (isNaN(hoursNum) || hoursNum <= 0 || hoursNum > 24) return;
-
-    setIsSubmitting(true);
-
-    const selectedProject = projectId && projectId !== "none" && projectId !== "custom" 
-      ? activeProjects.find((p) => p.id === projectId)
-      : null;
-    const projectName = selectedProject
-      ? `${selectedProject.project_number} - ${selectedProject.project_name}`
-      : customProject || undefined;
-
-    const success = await onCreateEntry({
-      entry_date: format(currentDate, "yyyy-MM-dd"),
-      hours: hoursNum,
-      project_id: selectedProject ? projectId : undefined,
-      project_name: projectName,
-      description: description || undefined,
-    });
-
-    if (success) {
-      setDialogOpen(false);
-      setHours("");
-      setProjectId("");
-      setCustomProject("");
-      setDescription("");
-    }
-    setIsSubmitting(false);
-  };
-
   const isToday = isSameDay(currentDate, new Date());
 
   return (
