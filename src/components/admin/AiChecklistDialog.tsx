@@ -68,19 +68,30 @@ export function AiChecklistDialog({ trigger }: AiChecklistDialogProps) {
   const handleSave = async () => {
     if (!result) return;
     try {
-      await createChecklistTemplate.mutateAsync({
-        template_name: result.template_name,
-        description: result.description,
-        category: result.category || "Generell egenkontroll",
-        trade: result.trade,
-        checkpoints: result.checkpoints || [],
-        is_active: true,
-      });
+      if (isSystemAdmin) {
+        await createChecklistTemplate.mutateAsync({
+          template_name: result.template_name,
+          description: result.description,
+          category: result.category || "Generell egenkontroll",
+          trade: result.trade,
+          checkpoints: result.checkpoints || [],
+          is_active: true,
+        });
+      } else {
+        const created = await createCompanyChecklistTemplate({
+          template_name: result.template_name,
+          description: result.description,
+          category: result.category || "general",
+          trade: result.trade,
+          checkpoints: result.checkpoints || [],
+        });
+        if (!created) throw new Error("Kunne ikke lagre i bedriftens malbibliotek");
+      }
       toast.success("Sjekkliste-mal lagret i malbiblioteket!");
       resetForm();
       setOpen(false);
-    } catch {
-      toast.error("Kunne ikke lagre mal");
+    } catch (err: any) {
+      toast.error(err?.message || "Kunne ikke lagre mal");
     }
   };
 
