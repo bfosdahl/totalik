@@ -408,6 +408,91 @@ const ModuleSection = memo(function ModuleSection({
   );
 });
 
+// ─── Simplified Employee Sidebar ────────────────────────────────────────────
+const EmployeeSimpleNav = memo(function EmployeeSimpleNav({
+  collapsed, pathname, t, hasIkMat, hasKsBygg, onAnonymous,
+}: {
+  collapsed: boolean;
+  pathname: string;
+  t: (key: string) => string;
+  hasIkMat: boolean;
+  hasKsBygg: boolean;
+  onAnonymous: () => void;
+}) {
+  const items: NavItem[] = [
+    { icon: LayoutDashboard, label: "Dashboard", path: "/", color: "text-sky-500" },
+    { icon: Clock, label: "Mine timer", path: "/time-registration", color: "text-indigo-500" },
+    { icon: CalendarDays, label: "Min ferie", path: "/time-off", color: "text-orange-500" },
+    { icon: HeartPulse, label: "Mitt fravær", path: "/my/absence", color: "text-rose-500" },
+    { icon: Car, label: "Min kjørebok", path: "/my/driving-log", color: "text-emerald-500" },
+    { icon: FileText, label: "Min kontrakt", path: "/my/contract", color: "text-slate-500" },
+    { icon: Mail, label: "Meldinger", path: "/my/messages", color: "text-blue-500" },
+    { icon: IdCard, label: "Mitt ansattkort", path: "/my/employee-card", color: "text-amber-500" },
+    { icon: AlertTriangle, label: "Avvik", path: "/deviations", color: "text-red-500" },
+    { icon: FileCheck, label: "SJA", path: "/risikoanalyse?tab=sja", color: "text-blue-500" },
+    { icon: ListChecks, label: "Rutiner", path: "/rutiner", color: "text-teal-500" },
+    { icon: FlaskConical, label: "Stoffkartotek", path: "/stoffkartotek", color: "text-purple-500" },
+  ];
+  if (hasKsBygg) {
+    items.splice(1, 0, { icon: HardHat, label: "Mine prosjekter", path: "/ks", color: "text-purple-500" });
+  }
+  if (hasIkMat) {
+    items.push({ icon: ClipboardCheck, label: "IK-Mat kontroll", path: "/ik-mat/kontroll", color: "text-emerald-500" });
+  }
+
+  return (
+    <>
+      {items.map((item) => {
+        const Icon = item.icon!;
+        const active = pathname === item.path || (item.path !== "/" && pathname.startsWith(item.path.split("?")[0]));
+        const hasQuery = item.path.includes("?");
+        return (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            onClick={hasQuery ? (e) => { e.preventDefault(); window.location.href = item.path; } : undefined}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
+              collapsed && "justify-center",
+              active
+                ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            )}
+          >
+            <Icon className={cn("w-5 h-5 flex-shrink-0", !active && item.color)} />
+            {!collapsed && <span className="font-medium text-sm">{item.label}</span>}
+          </NavLink>
+        );
+      })}
+
+      <button
+        onClick={onAnonymous}
+        className={cn(
+          "flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-left text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+          collapsed && "justify-center"
+        )}
+      >
+        <ShieldCheck className="w-5 h-5 flex-shrink-0 text-teal-500" />
+        {!collapsed && <span className="font-medium text-sm">Send anonym melding</span>}
+      </button>
+
+      <NavLink
+        to="/settings"
+        className={cn(
+          "flex items-center gap-3 px-3 py-2.5 rounded-lg",
+          collapsed && "justify-center",
+          pathname.startsWith("/settings")
+            ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
+            : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+        )}
+      >
+        <Settings className="w-5 h-5 flex-shrink-0 text-slate-400" />
+        {!collapsed && <span className="font-medium text-sm">Innstillinger</span>}
+      </NavLink>
+    </>
+  );
+});
+
 // ─── Main Component ─────────────────────────────────────────────────────────
 interface AppSidebarProps {
   isOpen: boolean;
@@ -562,6 +647,19 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 pb-24 space-y-1 overflow-y-auto min-h-0" style={{ paddingBottom: 'max(6rem, calc(env(safe-area-inset-bottom) + 4rem))' }}>
+          {/* ── Forenklet ansatt-modus (kun det Eirik ba om) ── */}
+          {!isSystemAdmin && !isCompanyAdmin ? (
+            <EmployeeSimpleNav
+              collapsed={collapsed}
+              pathname={pathname}
+              t={t}
+              hasIkMat={hasIkMat}
+              hasKsBygg={hasKsBygg}
+              onAnonymous={() => setShowAnonymousDialog(true)}
+            />
+          ) : (
+          <>
+
 
           {/* Standard nav items */}
           {standardNavItems.map((item) => {
@@ -792,7 +890,10 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               </NavLink>
             </>
           )}
+          </>
+          )}
         </nav>
+
 
         {/* Download app button */}
         <div className="p-3 border-t border-sidebar-border">

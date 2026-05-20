@@ -4,33 +4,17 @@ import { nb } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, Trash2, QrCode, Calendar, CheckCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useWorkSchedules, WorkSchedule } from "@/hooks/useWorkSchedules";
-import { useTimeEntries } from "@/hooks/useTimeEntries";
+import { useTimeEntries, CreateTimeEntry } from "@/hooks/useTimeEntries";
 import { useAuth } from "@/contexts/AuthContext";
 import { StartStopTimer } from "./StartStopTimer";
 import { OvertimeWarning } from "./OvertimeWarning";
 import { CopyPreviousDayButton } from "./CopyPreviousDayButton";
 import { WeeklySummaryChart } from "./WeeklySummaryChart";
+import { NewTimeEntryDialog } from "./NewTimeEntryDialog";
 import { toast } from "sonner";
 
 interface TimeEntry {
@@ -50,13 +34,7 @@ interface TimeEntry {
 
 interface DailyTimeViewProps {
   entries: TimeEntry[];
-  onCreateEntry: (entry: {
-    entry_date: string;
-    hours: number;
-    project_name?: string;
-    project_id?: string;
-    description?: string;
-  }) => Promise<boolean>;
+  onCreateEntry: (entry: CreateTimeEntry) => Promise<boolean>;
   onDeleteEntry: (id: string) => Promise<boolean>;
   userId: string;
 }
@@ -86,22 +64,10 @@ export function DailyTimeView({
   const { profile } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [hours, setHours] = useState("");
-  const [projectId, setProjectId] = useState("");
-  const [customProject, setCustomProject] = useState("");
-  const [description, setDescription] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmingScheduleId, setConfirmingScheduleId] = useState<string | null>(null);
 
-  const { projects } = useKsModule2Projects();
-  const { modules } = useCompanyModules();
   const { schedules } = useWorkSchedules();
   const { confirmScheduleEntry, refetch: refetchEntries } = useTimeEntries();
-  
-  const hasByggModule = modules.some(
-    (m) => m.module_type === "IK_BYGG" && m.is_active
-  );
-  const activeProjects = projects.filter((p) => p.status !== "completed" && p.status !== "handover");
 
   const userEntries = entries.filter((e) => e.user_id === userId);
   const dayEntries = userEntries.filter((e) => isSameDay(new Date(e.entry_date), currentDate));
@@ -169,39 +135,6 @@ export function DailyTimeView({
 
   const goToToday = () => {
     setCurrentDate(new Date());
-  };
-
-  const handleSubmit = async () => {
-    if (!hours) return;
-
-    const hoursNum = parseFloat(hours);
-    if (isNaN(hoursNum) || hoursNum <= 0 || hoursNum > 24) return;
-
-    setIsSubmitting(true);
-
-    const selectedProject = projectId && projectId !== "none" && projectId !== "custom" 
-      ? activeProjects.find((p) => p.id === projectId)
-      : null;
-    const projectName = selectedProject
-      ? `${selectedProject.project_number} - ${selectedProject.project_name}`
-      : customProject || undefined;
-
-    const success = await onCreateEntry({
-      entry_date: format(currentDate, "yyyy-MM-dd"),
-      hours: hoursNum,
-      project_id: selectedProject ? projectId : undefined,
-      project_name: projectName,
-      description: description || undefined,
-    });
-
-    if (success) {
-      setDialogOpen(false);
-      setHours("");
-      setProjectId("");
-      setCustomProject("");
-      setDescription("");
-    }
-    setIsSubmitting(false);
   };
 
   const isToday = isSameDay(currentDate, new Date());
@@ -444,80 +377,12 @@ export function DailyTimeView({
         )}
       </div>
 
-      {/* Add entry dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              Registrer timer - {format(currentDate, "EEEE d. MMMM", { locale: nb })}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Timer *</Label>
-              <Input
-                type="number"
-                step="0.5"
-                min="0.5"
-                max="24"
-                placeholder="F.eks. 7.5"
-                value={hours}
-                onChange={(e) => setHours(e.target.value)}
-              />
-            </div>
-
-            {hasByggModule && activeProjects.length > 0 && (
-              <div className="space-y-2">
-                <Label>Prosjekt (valgfritt)</Label>
-                <Select value={projectId} onValueChange={setProjectId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Velg prosjekt" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Ingen prosjekt</SelectItem>
-                    {activeProjects.map((project) => (
-                      <SelectItem key={project.id} value={project.id}>
-                        {project.project_number} - {project.project_name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="custom">Annet (skriv inn)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {projectId === "custom" && (
-              <div className="space-y-2">
-                <Label>Prosjektnavn</Label>
-                <Input
-                  placeholder="Skriv inn prosjektnavn"
-                  value={customProject}
-                  onChange={(e) => setCustomProject(e.target.value)}
-                />
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label>Beskrivelse (valgfritt)</Label>
-              <Textarea
-                placeholder="Hva jobbet du med?"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={2}
-              />
-            </div>
-
-            <Button
-              className="w-full"
-              onClick={handleSubmit}
-              disabled={!hours || isSubmitting}
-            >
-              {isSubmitting ? "Lagrer..." : "Registrer timer"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Add entry dialog (full mobile parity: overtid, prosjekt, tillegg) */}
+      <NewTimeEntryDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSubmit={onCreateEntry}
+      />
 
       {/* Weekly Summary Chart */}
       <WeeklySummaryChart
