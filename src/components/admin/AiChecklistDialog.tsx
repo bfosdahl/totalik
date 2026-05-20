@@ -24,7 +24,9 @@ interface AiChecklistDialogProps {
 }
 
 export function AiChecklistDialog({ trigger }: AiChecklistDialogProps) {
+  const { isSystemAdmin } = useAuth();
   const { createChecklistTemplate } = useAdminKsTemplates();
+  const { createTemplate: createCompanyChecklistTemplate } = useCompanyKsChecklistTemplates();
   const [open, setOpen] = useState(false);
   const [tema, setTema] = useState("");
   const [kategori, setKategori] = useState("");
