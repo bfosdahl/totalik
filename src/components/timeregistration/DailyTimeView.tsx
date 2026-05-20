@@ -356,7 +356,7 @@ export function DailyTimeView({
                       <Badge className={statusColors[entry.status]}>
                         {statusLabels[entry.status]}
                       </Badge>
-                      {entry.source !== "qr_clock" && (entry.status === "draft" ||
+                      {entry.source !== "qr_clock" && (isCompanyAdmin || entry.status === "draft" ||
                         entry.status === "submitted" ||
                         entry.status === "rejected") && (
                         <Button
