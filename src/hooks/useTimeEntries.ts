@@ -287,6 +287,11 @@ export function useTimeEntries() {
 
   const updateEntry = async (id: string, updates: Partial<CreateTimeEntry>): Promise<boolean> => {
     try {
+      const existing = entries.find((e) => e.id === id);
+      if (existing?.status === "approved" && !isCompanyAdmin) {
+        toast.error("Timer er allerede godkjent og kan ikke endres. Kontakt admin for å oppheve godkjenningen.");
+        return false;
+      }
       const { error } = await supabase
         .from("time_entries")
         .update({
@@ -308,6 +313,11 @@ export function useTimeEntries() {
 
   const deleteEntry = async (id: string): Promise<boolean> => {
     try {
+      const existing = entries.find((e) => e.id === id);
+      if (existing?.status === "approved" && !isCompanyAdmin) {
+        toast.error("Timer er allerede godkjent og kan ikke slettes. Kontakt admin for å oppheve godkjenningen.");
+        return false;
+      }
       const { error } = await supabase.from("time_entries").delete().eq("id", id);
 
       if (error) throw error;
