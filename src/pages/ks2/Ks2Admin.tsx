@@ -34,6 +34,8 @@ import { useKsModule2Templates } from "@/hooks/useKsModule2Templates";
 import { useKsModule2Settings } from "@/hooks/useKsModule2Settings";
 import { useKsModule2DocumentTemplates } from "@/hooks/useKsModule2DocumentTemplates";
 import { useAdminKsTemplates, CHECKLIST_CATEGORIES } from "@/hooks/useAdminKsTemplates";
+import { useCompanyKsChecklistTemplates } from "@/hooks/useCompanyKsChecklistTemplates";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
