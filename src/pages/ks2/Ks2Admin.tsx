@@ -73,7 +73,9 @@ export default function Ks2Admin() {
   const { settings, isLoading: settingsLoading, updateSettings } = useKsModule2Settings();
   const { documents, isLoading: documentsLoading, uploadDocument, deleteDocument, getDownloadUrl, isUploading } = useKsModule2DocumentTemplates();
   
+  const { isSystemAdmin } = useAuth();
   const { createChecklistTemplate } = useAdminKsTemplates();
+  const { createTemplate: createCompanyChecklistTemplate } = useCompanyKsChecklistTemplates();
 
   const [isNewTemplateOpen, setIsNewTemplateOpen] = useState(false);
   const [isUploadDocOpen, setIsUploadDocOpen] = useState(false);
