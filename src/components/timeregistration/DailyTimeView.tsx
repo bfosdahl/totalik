@@ -64,22 +64,10 @@ export function DailyTimeView({
   const { profile } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [hours, setHours] = useState("");
-  const [projectId, setProjectId] = useState("");
-  const [customProject, setCustomProject] = useState("");
-  const [description, setDescription] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmingScheduleId, setConfirmingScheduleId] = useState<string | null>(null);
 
-  const { projects } = useKsModule2Projects();
-  const { modules } = useCompanyModules();
   const { schedules } = useWorkSchedules();
   const { confirmScheduleEntry, refetch: refetchEntries } = useTimeEntries();
-  
-  const hasByggModule = modules.some(
-    (m) => m.module_type === "IK_BYGG" && m.is_active
-  );
-  const activeProjects = projects.filter((p) => p.status !== "completed" && p.status !== "handover");
 
   const userEntries = entries.filter((e) => e.user_id === userId);
   const dayEntries = userEntries.filter((e) => isSameDay(new Date(e.entry_date), currentDate));
