@@ -805,7 +805,10 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               </NavLink>
             </>
           )}
+          </>
+          )}
         </nav>
+
 
         {/* Download app button */}
         <div className="p-3 border-t border-sidebar-border">
