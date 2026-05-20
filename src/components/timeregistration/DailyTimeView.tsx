@@ -377,80 +377,12 @@ export function DailyTimeView({
         )}
       </div>
 
-      {/* Add entry dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              Registrer timer - {format(currentDate, "EEEE d. MMMM", { locale: nb })}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Timer *</Label>
-              <Input
-                type="number"
-                step="0.5"
-                min="0.5"
-                max="24"
-                placeholder="F.eks. 7.5"
-                value={hours}
-                onChange={(e) => setHours(e.target.value)}
-              />
-            </div>
-
-            {hasByggModule && activeProjects.length > 0 && (
-              <div className="space-y-2">
-                <Label>Prosjekt (valgfritt)</Label>
-                <Select value={projectId} onValueChange={setProjectId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Velg prosjekt" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Ingen prosjekt</SelectItem>
-                    {activeProjects.map((project) => (
-                      <SelectItem key={project.id} value={project.id}>
-                        {project.project_number} - {project.project_name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="custom">Annet (skriv inn)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {projectId === "custom" && (
-              <div className="space-y-2">
-                <Label>Prosjektnavn</Label>
-                <Input
-                  placeholder="Skriv inn prosjektnavn"
-                  value={customProject}
-                  onChange={(e) => setCustomProject(e.target.value)}
-                />
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label>Beskrivelse (valgfritt)</Label>
-              <Textarea
-                placeholder="Hva jobbet du med?"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={2}
-              />
-            </div>
-
-            <Button
-              className="w-full"
-              onClick={handleSubmit}
-              disabled={!hours || isSubmitting}
-            >
-              {isSubmitting ? "Lagrer..." : "Registrer timer"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Add entry dialog (full mobile parity: overtid, prosjekt, tillegg) */}
+      <NewTimeEntryDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSubmit={onCreateEntry}
+      />
 
       {/* Weekly Summary Chart */}
       <WeeklySummaryChart
