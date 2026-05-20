@@ -10,6 +10,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sparkles, Loader2, Save, Trash2, RefreshCw, HelpCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminKsTemplates, CHECKLIST_CATEGORIES } from "@/hooks/useAdminKsTemplates";
+import { useCompanyKsChecklistTemplates } from "@/hooks/useCompanyKsChecklistTemplates";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const TRADES = [
