@@ -34,6 +34,8 @@ import { useKsModule2Templates } from "@/hooks/useKsModule2Templates";
 import { useKsModule2Settings } from "@/hooks/useKsModule2Settings";
 import { useKsModule2DocumentTemplates } from "@/hooks/useKsModule2DocumentTemplates";
 import { useAdminKsTemplates, CHECKLIST_CATEGORIES } from "@/hooks/useAdminKsTemplates";
+import { useCompanyKsChecklistTemplates } from "@/hooks/useCompanyKsChecklistTemplates";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -71,7 +73,9 @@ export default function Ks2Admin() {
   const { settings, isLoading: settingsLoading, updateSettings } = useKsModule2Settings();
   const { documents, isLoading: documentsLoading, uploadDocument, deleteDocument, getDownloadUrl, isUploading } = useKsModule2DocumentTemplates();
   
+  const { isSystemAdmin } = useAuth();
   const { createChecklistTemplate } = useAdminKsTemplates();
+  const { createTemplate: createCompanyChecklistTemplate } = useCompanyKsChecklistTemplates();
 
   const [isNewTemplateOpen, setIsNewTemplateOpen] = useState(false);
   const [isUploadDocOpen, setIsUploadDocOpen] = useState(false);
@@ -135,14 +139,27 @@ export default function Ks2Admin() {
   const handleSaveAiChecklist = async () => {
     if (!aiResult) return;
     try {
-      await createChecklistTemplate.mutateAsync({
-        template_name: aiResult.template_name,
-        description: aiResult.description,
-        category: aiResult.category || "Generell egenkontroll",
-        trade: aiResult.trade,
-        checkpoints: aiResult.checkpoints || [],
-        is_active: true,
-      });
+      if (isSystemAdmin) {
+        // Systemadmin: lagre i globalt admin-bibliotek
+        await createChecklistTemplate.mutateAsync({
+          template_name: aiResult.template_name,
+          description: aiResult.description,
+          category: aiResult.category || "Generell egenkontroll",
+          trade: aiResult.trade,
+          checkpoints: aiResult.checkpoints || [],
+          is_active: true,
+        });
+      } else {
+        // Bedriftsbruker: lagre i bedriftens eget malbibliotek
+        const created = await createCompanyChecklistTemplate({
+          template_name: aiResult.template_name,
+          description: aiResult.description,
+          category: aiResult.category || "general",
+          trade: aiResult.trade,
+          checkpoints: aiResult.checkpoints || [],
+        });
+        if (!created) throw new Error("Kunne ikke lagre i bedriftens malbibliotek");
+      }
       toast.success("Sjekkliste-mal lagret i malbiblioteket!");
       setAiResult(null);
       setAiTema("");
@@ -151,7 +168,7 @@ export default function Ks2Admin() {
       setAiDetaljer("");
       setAiRutineRef("");
     } catch (err: any) {
-      toast.error("Kunne ikke lagre mal");
+      toast.error(err?.message || "Kunne ikke lagre mal");
     }
   };
 

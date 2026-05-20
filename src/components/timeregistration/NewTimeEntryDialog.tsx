@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useAllowanceTypes, ALLOWANCE_UNIT_LABELS } from "@/hooks/useAllowanceTypes";
@@ -125,6 +126,14 @@ export function NewTimeEntryDialog({
       projectName = customProjectName;
     }
 
+    // Påkrevd prosjekt: enten KS-prosjekt eller fritekst-prosjekt
+    if (!projectName) {
+      toast.error("Du må velge et prosjekt", {
+        description: "Velg et aktivt KS-prosjekt eller skriv inn et prosjektnavn under 'Annet'.",
+      });
+      return;
+    }
+
     // Build allowances
     const allowances: TimeEntryAllowanceInput[] = allowanceRows
       .map<TimeEntryAllowanceInput | null>((r) => {
@@ -200,7 +209,7 @@ export function NewTimeEntryDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Prosjekt */}
           <div className="space-y-2">
-            <Label>Prosjekt</Label>
+            <Label>Prosjekt <span className="text-destructive">*</span></Label>
             {hasKsBygg && activeProjects.length > 0 ? (
               <>
                 <Select
@@ -211,9 +220,8 @@ export function NewTimeEntryDialog({
                     if (v === "custom") setCustomProjectName("");
                   }}
                 >
-                  <SelectTrigger><SelectValue placeholder="Velg prosjekt" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Velg prosjekt (påkrevd)" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Ingen prosjekt</SelectItem>
                     {activeProjects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         <span className="font-mono text-xs text-muted-foreground mr-2">
@@ -226,6 +234,7 @@ export function NewTimeEntryDialog({
                     <SelectItem value="custom">Annet (fritekst)</SelectItem>
                   </SelectContent>
                 </Select>
+
                 {useCustomProject && (
                   <div className="relative mt-2">
                     <FolderOpen className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

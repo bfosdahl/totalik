@@ -10,6 +10,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sparkles, Loader2, Save, Trash2, RefreshCw, HelpCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminKsTemplates, CHECKLIST_CATEGORIES } from "@/hooks/useAdminKsTemplates";
+import { useCompanyKsChecklistTemplates } from "@/hooks/useCompanyKsChecklistTemplates";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const TRADES = [
@@ -22,7 +24,9 @@ interface AiChecklistDialogProps {
 }
 
 export function AiChecklistDialog({ trigger }: AiChecklistDialogProps) {
+  const { isSystemAdmin } = useAuth();
   const { createChecklistTemplate } = useAdminKsTemplates();
+  const { createTemplate: createCompanyChecklistTemplate } = useCompanyKsChecklistTemplates();
   const [open, setOpen] = useState(false);
   const [tema, setTema] = useState("");
   const [kategori, setKategori] = useState("");
@@ -64,19 +68,30 @@ export function AiChecklistDialog({ trigger }: AiChecklistDialogProps) {
   const handleSave = async () => {
     if (!result) return;
     try {
-      await createChecklistTemplate.mutateAsync({
-        template_name: result.template_name,
-        description: result.description,
-        category: result.category || "Generell egenkontroll",
-        trade: result.trade,
-        checkpoints: result.checkpoints || [],
-        is_active: true,
-      });
+      if (isSystemAdmin) {
+        await createChecklistTemplate.mutateAsync({
+          template_name: result.template_name,
+          description: result.description,
+          category: result.category || "Generell egenkontroll",
+          trade: result.trade,
+          checkpoints: result.checkpoints || [],
+          is_active: true,
+        });
+      } else {
+        const created = await createCompanyChecklistTemplate({
+          template_name: result.template_name,
+          description: result.description,
+          category: result.category || "general",
+          trade: result.trade,
+          checkpoints: result.checkpoints || [],
+        });
+        if (!created) throw new Error("Kunne ikke lagre i bedriftens malbibliotek");
+      }
       toast.success("Sjekkliste-mal lagret i malbiblioteket!");
       resetForm();
       setOpen(false);
-    } catch {
-      toast.error("Kunne ikke lagre mal");
+    } catch (err: any) {
+      toast.error(err?.message || "Kunne ikke lagre mal");
     }
   };
 
