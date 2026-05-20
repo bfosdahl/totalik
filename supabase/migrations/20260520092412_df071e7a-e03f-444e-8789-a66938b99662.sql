@@ -1,0 +1,1 @@
+update public.time_entries set status='approved', approved_by='feb4d739-c35e-448f-a941-37813fe58b66', approved_at=now() where id='b84ff611-a197-43c2-ba45-10e93102cbec';
