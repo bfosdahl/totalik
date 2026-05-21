@@ -375,16 +375,8 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const { messages, lookupOrgNumber, currentStep, industry, employeeCount, verneombudName, hasVerneombudExemption, companyId: clientCompanyId, checkFallback, messageHash: clientMessageHash } = body;
-    
-    // Handle Brreg lookup
-    if (lookupOrgNumber) {
-      const brregInfo = await fetchBrregInfo(lookupOrgNumber);
-      return new Response(JSON.stringify(brregInfo ? { success: true, data: brregInfo } : { success: false, error: "Fant ikke bedriften" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
-    // Auth
+    // Auth (required for ALL paths, including brreg lookup)
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Autentisering kreves" }), {
@@ -395,7 +387,7 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
+
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) {
@@ -403,6 +395,16 @@ serve(async (req) => {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Handle Brreg lookup (after auth)
+    if (lookupOrgNumber) {
+      const brregInfo = await fetchBrregInfo(lookupOrgNumber);
+      return new Response(JSON.stringify(brregInfo ? { success: true, data: brregInfo } : { success: false, error: "Fant ikke bedriften" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+
 
     // Handle fallback check
     if (checkFallback && clientMessageHash && clientCompanyId) {
