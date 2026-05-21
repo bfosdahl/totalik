@@ -8,6 +8,7 @@ import {
   Menu,
   X,
   Briefcase,
+  Car,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -36,16 +37,16 @@ const mainNavItems: NavItem[] = [
     path: "/prosjekt-hub",
   },
   {
-    id: "deviations",
-    label: "Avvik",
-    icon: <AlertTriangle className="h-5 w-5" />,
-    path: "/deviations",
-  },
-  {
     id: "time",
     label: "Timer",
     icon: <Clock className="h-5 w-5" />,
     path: "/time-registration",
+  },
+  {
+    id: "driving",
+    label: "Kjørebok",
+    icon: <Car className="h-5 w-5" />,
+    path: "/my/driving-log",
   },
 ];
 
@@ -70,6 +71,7 @@ export function MobileNav({ className }: MobileNavProps) {
   };
 
   const moreItems = [
+    { label: "Avvik", icon: <AlertTriangle className="h-5 w-5" />, path: "/deviations" },
     { label: "Ansatte", icon: <Users className="h-5 w-5" />, path: "/employees" },
     { label: "Rutiner", icon: <Shield className="h-5 w-5" />, path: "/rutiner" },
     { label: "Innstillinger", icon: <Menu className="h-5 w-5" />, path: "/settings" },
