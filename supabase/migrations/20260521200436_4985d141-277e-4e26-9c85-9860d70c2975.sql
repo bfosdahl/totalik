@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Authenticated users can read suggestion stats" ON public.ai_setup_suggestion_stats;
