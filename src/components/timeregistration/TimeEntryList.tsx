@@ -64,10 +64,12 @@ export function TimeEntryList({
   onApprove,
   onReject,
   onDelete,
+  onEdit,
   onConfirmSchedule,
   showEmployee = false,
 }: TimeEntryListProps) {
   const { user, isCompanyAdmin } = useAuth();
+  const [editEntry, setEditEntry] = useState<TimeEntry | null>(null);
 
   if (entries.length === 0) {
     return (
