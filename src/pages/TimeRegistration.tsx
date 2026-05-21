@@ -196,6 +196,21 @@ export default function TimeRegistration() {
                   <SelectItem value="all">Alle</SelectItem>
                 </SelectContent>
               </Select>
+              {isCompanyAdmin && (
+                <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
+                  <SelectTrigger className="w-full sm:w-[220px]">
+                    <SelectValue placeholder="Alle ansatte" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle ansatte</SelectItem>
+                    {employeeOptions.map((emp) => (
+                      <SelectItem key={emp.id} value={emp.id}>
+                        {emp.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               {start && end && (
                 <span className="text-xs sm:text-sm text-muted-foreground">
                   {format(start, "d. MMM", { locale: nb })} - {format(end, "d. MMM yyyy", { locale: nb })}
@@ -203,6 +218,7 @@ export default function TimeRegistration() {
               )}
             </div>
           )}
+
         </div>
 
         {/* Stats - Horizontal scroll on mobile */}
