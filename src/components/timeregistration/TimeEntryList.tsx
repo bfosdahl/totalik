@@ -46,6 +46,7 @@ interface TimeEntryListProps {
   onApprove?: (id: string) => Promise<boolean>;
   onReject?: (id: string) => Promise<boolean>;
   onDelete?: (id: string) => Promise<boolean>;
+  onEdit?: (id: string, updates: { hours: number; description?: string }) => Promise<boolean>;
   onConfirmSchedule?: (id: string, hours?: number) => Promise<boolean>;
   showEmployee?: boolean;
 }
