@@ -208,11 +208,15 @@ export default function Ks2ProjectDetail() {
 
       {/* Main Content */}
       <div className="lg:pl-[260px] transition-all duration-300">
-        {/* Top Banner - improved mobile spacing */}
-        <div className="border-b bg-card px-4 py-3 pl-14 lg:px-6 lg:py-4 lg:pl-6">
+        {/* Top Banner - improved mobile spacing + safe-area for iOS notch / Dynamic Island */}
+        <div
+          className="border-b bg-card px-4 py-3 pl-14 lg:px-6 lg:py-4 lg:pl-6"
+          style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}
+        >
           <p className="text-xs text-muted-foreground font-medium">{project.project_number}</p>
           <h1 className="text-lg lg:text-xl font-semibold truncate">{project.project_name}</h1>
         </div>
+
 
         {/* Project Status Bar */}
         <Ks2ProjectStatusBar />
