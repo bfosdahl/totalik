@@ -59,7 +59,8 @@ serve(async (req) => {
     }
 
     // Get the request body first to check for companyId
-    const { email, firstName, lastName, role, companyId: requestedCompanyId } = await req.json();
+    const { email: rawEmail, firstName, lastName, role, companyId: requestedCompanyId } = await req.json();
+    const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
 
     // Check if system admin (can specify any company)
     const isSystemAdmin = roles?.some(r => r.role === "system_admin");
@@ -106,7 +107,7 @@ serve(async (req) => {
     const { data: existingProfileCheck } = await supabaseAdmin
       .from("profiles")
       .select("user_id, company_id")
-      .eq("email", email)
+      .ilike("email", email)
       .maybeSingle();
     
     if (existingProfileCheck?.user_id) {
@@ -267,6 +268,13 @@ serve(async (req) => {
 
     if (createError || !newUser.user) {
       console.error("Error creating user:", createError);
+      const errorCode = (createError as any)?.code;
+      if (errorCode === "email_exists") {
+        return new Response(JSON.stringify({ error: "Brukeren finnes allerede. Prøv invitasjon på nytt med samme e-post, eller kontakt support hvis kontoen mangler i ansattlisten." }), {
+          status: 409,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       return new Response(JSON.stringify({ error: createError?.message || "Failed to create user" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
