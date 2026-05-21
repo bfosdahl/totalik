@@ -105,6 +105,8 @@ export function NewTimeEntryDialog({
   useEffect(() => {
     if (open) {
       setDate(new Date());
+      setStartTime("");
+      setEndTime("");
       setHours("");
       setHourType("normal");
       setSelectedProjectId(defaultProjectId || "");
