@@ -283,6 +283,7 @@ export default function TimeRegistration() {
                     onApprove={approveEntry}
                     onReject={rejectEntry}
                     onDelete={deleteEntry}
+                    onEdit={updateEntry}
                     onConfirmSchedule={confirmScheduleEntry}
                     showEmployee
                   />
