@@ -80,7 +80,8 @@ serve(async (req) => {
       });
     }
 
-    const { email, firstName, lastName, role } = await req.json();
+    const { email: rawEmail, firstName, lastName, role } = await req.json();
+    const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
 
     // Validate input
     if (!email || !email.includes("@")) {
@@ -93,12 +94,39 @@ serve(async (req) => {
     // Check if user already exists via profiles table (avoids listUsers pagination limit)
     const { data: existingProfile } = await supabaseAdmin
       .from("profiles")
-      .select("user_id, company_id")
-      .eq("email", email)
+      .select("user_id, company_id, is_active, status")
+      .ilike("email", email)
       .maybeSingle();
 
     if (existingProfile) {
       if (existingProfile.company_id === requestingProfile.company_id) {
+        const needsReactivation = existingProfile.is_active === false || existingProfile.status === "suspended" || existingProfile.status === "pending_approval";
+        if (needsReactivation) {
+          const reactivationUpdates: Record<string, unknown> = { is_active: true, status: "active" };
+          if (firstName) reactivationUpdates.first_name = firstName;
+          if (lastName) reactivationUpdates.last_name = lastName;
+
+          await supabaseAdmin
+            .from("profiles")
+            .update(reactivationUpdates)
+            .eq("user_id", existingProfile.user_id);
+
+          if (role && role !== "user") {
+            const { data: existingRoles } = await supabaseAdmin
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", existingProfile.user_id);
+            if (!existingRoles?.some((r) => r.role === role)) {
+              await supabaseAdmin.from("user_roles").insert({ user_id: existingProfile.user_id, role });
+            }
+          }
+
+          return new Response(JSON.stringify({ success: true, message: "Bruker reaktivert", userId: existingProfile.user_id, reactivated: true }), {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
         return new Response(JSON.stringify({ error: "Bruker finnes allerede i denne bedriften" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -129,8 +157,8 @@ serve(async (req) => {
       // Handle specific error cases with appropriate status codes
       const errorCode = (createError as any)?.code;
       if (errorCode === "email_exists") {
-        return new Response(JSON.stringify({ error: "Bruker finnes allerede med denne e-posten" }), {
-          status: 400,
+        return new Response(JSON.stringify({ error: "Brukeren finnes allerede. Bruk Send invitasjon for å reaktivere eksisterende konto, eller kontakt support hvis kontoen mangler i ansattlisten." }), {
+          status: 409,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }

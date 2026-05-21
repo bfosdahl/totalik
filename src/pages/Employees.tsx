@@ -86,7 +86,7 @@ export default function Employees() {
     
     setIsInviting(true);
     try {
-      const { error } = await supabase.functions.invoke('invite-user', {
+      const { data, error } = await supabase.functions.invoke('invite-user', {
         body: {
           email: inviteEmail,
           companyId: company.id,
@@ -94,12 +94,23 @@ export default function Employees() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        let errorMessage = "Kunne ikke sende invitasjon";
+        try {
+          const errorData = await error.context?.json?.();
+          errorMessage = errorData?.error || error.message || errorMessage;
+        } catch {
+          errorMessage = error.message || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+      if (data?.error) throw new Error(data.error);
 
-      toast.success("Invitasjon sendt til " + inviteEmail);
+      toast.success(data?.reactivated ? "Bruker reaktivert: " + inviteEmail : "Invitasjon sendt til " + inviteEmail);
       setInviteDialogOpen(false);
       setInviteEmail("");
       setInviteRole("user");
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
     } catch (error: any) {
       toast.error("Kunne ikke sende invitasjon: " + error.message);
     } finally {
