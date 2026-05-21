@@ -42,6 +42,8 @@ export default function TimeRegistration() {
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilter>("this-week");
   const [viewMode, setViewMode] = useState<"list" | "week" | "shifts" | "day">("day");
+  const [employeeFilter, setEmployeeFilter] = useState<string>("all");
+
 
   const getDateRange = (filter: DateFilter) => {
     const now = new Date();
