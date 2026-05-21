@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Check, X, Clock, Trash2, QrCode, CalendarCheck, MapPin } from "lucide-react";
+import { Check, X, Clock, Trash2, QrCode, CalendarCheck, MapPin, Pencil } from "lucide-react";
+import { EditTimeEntryDialog } from "./EditTimeEntryDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
