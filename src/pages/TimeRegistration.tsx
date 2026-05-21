@@ -79,10 +79,19 @@ export default function TimeRegistration() {
   const { start, end } = getDateRange(dateFilter);
 
   const filteredEntries = entries.filter((entry) => {
+    if (employeeFilter !== "all" && entry.user_id !== employeeFilter) return false;
     if (!start || !end) return true;
     const entryDate = new Date(entry.entry_date);
     return entryDate >= start && entryDate <= end;
   });
+
+  // Unique employee list for filter dropdown
+  const employeeOptions = Array.from(
+    new Map(entries.map((e) => [e.user_id, e.user_name])).entries()
+  )
+    .map(([id, name]) => ({ id, name }))
+    .sort((a, b) => a.name.localeCompare(b.name, "nb"));
+
 
   // Stats
   const myEntries = filteredEntries.filter((e) => e.user_id === entries[0]?.user_id);
