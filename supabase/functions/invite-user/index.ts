@@ -136,15 +136,17 @@ serve(async (req) => {
           });
         }
 
-        // Reactivate the user
+        // Reactivate the user without wiping existing names when the invite form only sends email
+        const reactivationUpdates: Record<string, unknown> = {
+          is_active: true,
+          status: "active",
+        };
+        if (firstName) reactivationUpdates.first_name = firstName;
+        if (lastName) reactivationUpdates.last_name = lastName;
+
         await supabaseAdmin
           .from("profiles")
-          .update({
-            is_active: true,
-            status: "active",
-            first_name: firstName || null,
-            last_name: lastName || null,
-          })
+          .update(reactivationUpdates)
           .eq("user_id", existingUser.id);
 
         // Ensure role
