@@ -54,6 +54,15 @@ const HOUR_TYPE_OPTIONS: { value: HourType; label: string; hint: string }[] = [
   { value: "overtime_100", label: "100%", hint: "Overtid 100%" },
 ];
 
+const calcHoursBetween = (from: string, to: string): number => {
+  if (!from || !to) return 0;
+  const [fh, fm] = from.split(":").map(Number);
+  const [th, tm] = to.split(":").map(Number);
+  let diff = (th * 60 + tm) - (fh * 60 + fm);
+  if (diff < 0) diff += 24 * 60;
+  return Math.round((diff / 60) * 100) / 100;
+};
+
 export function NewTimeEntryDialog({
   open,
   onOpenChange,
@@ -62,6 +71,8 @@ export function NewTimeEntryDialog({
   draftSavedAt,
 }: NewTimeEntryDialogProps) {
   const [date, setDate] = useState<Date>(new Date());
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [hours, setHours] = useState("");
   const [hourType, setHourType] = useState<HourType>("normal");
   const [selectedProjectId, setSelectedProjectId] = useState<string>(defaultProjectId || "");
