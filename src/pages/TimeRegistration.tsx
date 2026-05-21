@@ -31,6 +31,7 @@ export default function TimeRegistration() {
     entries,
     isLoading,
     createEntry,
+    updateEntry,
     approveEntry,
     rejectEntry,
     deleteEntry,
