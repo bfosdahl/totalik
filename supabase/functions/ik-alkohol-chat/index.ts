@@ -406,10 +406,22 @@ serve(async (req) => {
 
     // Handle fallback check - client asks if a completed response exists in DB
     if (checkFallback && clientMessageHash && clientCompanyId) {
+      const { data: authProfile } = await supabase
+        .from('profiles')
+        .select('company_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!authProfile?.company_id || authProfile.company_id !== clientCompanyId) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const { data } = await supabase
         .from('ai_setup_responses')
         .select('response_content')
-        .eq('company_id', clientCompanyId)
+        .eq('company_id', authProfile.company_id)
         .eq('function_name', 'ik-alkohol-chat')
         .eq('message_hash', clientMessageHash)
         .maybeSingle();
