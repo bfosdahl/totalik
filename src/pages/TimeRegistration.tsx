@@ -42,6 +42,8 @@ export default function TimeRegistration() {
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilter>("this-week");
   const [viewMode, setViewMode] = useState<"list" | "week" | "shifts" | "day">("day");
+  const [employeeFilter, setEmployeeFilter] = useState<string>("all");
+
 
   const getDateRange = (filter: DateFilter) => {
     const now = new Date();
@@ -77,10 +79,19 @@ export default function TimeRegistration() {
   const { start, end } = getDateRange(dateFilter);
 
   const filteredEntries = entries.filter((entry) => {
+    if (employeeFilter !== "all" && entry.user_id !== employeeFilter) return false;
     if (!start || !end) return true;
     const entryDate = new Date(entry.entry_date);
     return entryDate >= start && entryDate <= end;
   });
+
+  // Unique employee list for filter dropdown
+  const employeeOptions = Array.from(
+    new Map(entries.map((e) => [e.user_id, e.user_name])).entries()
+  )
+    .map(([id, name]) => ({ id, name }))
+    .sort((a, b) => a.name.localeCompare(b.name, "nb"));
+
 
   // Stats
   const myEntries = filteredEntries.filter((e) => e.user_id === entries[0]?.user_id);
@@ -185,6 +196,21 @@ export default function TimeRegistration() {
                   <SelectItem value="all">Alle</SelectItem>
                 </SelectContent>
               </Select>
+              {isCompanyAdmin && (
+                <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
+                  <SelectTrigger className="w-full sm:w-[220px]">
+                    <SelectValue placeholder="Alle ansatte" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle ansatte</SelectItem>
+                    {employeeOptions.map((emp) => (
+                      <SelectItem key={emp.id} value={emp.id}>
+                        {emp.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               {start && end && (
                 <span className="text-xs sm:text-sm text-muted-foreground">
                   {format(start, "d. MMM", { locale: nb })} - {format(end, "d. MMM yyyy", { locale: nb })}
@@ -192,6 +218,7 @@ export default function TimeRegistration() {
               )}
             </div>
           )}
+
         </div>
 
         {/* Stats - Horizontal scroll on mobile */}
