@@ -69,13 +69,20 @@ export function DailyRoundQrDialog({
     const svgData = new XMLSerializer().serializeToString(svg);
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
+    const escapeHtml = (s: string) =>
+      s.replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    const safeName = escapeHtml(roundName);
     printWindow.document.write(`
       <html>
-        <head><title>QR-kode ${roundName}</title></head>
+        <head><title>QR-kode ${safeName}</title></head>
         <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;font-family:Arial,sans-serif;">
           <div style="text-align:center;">
             ${svgData}
-            <h2 style="margin-top:20px;">🛣️ ${roundName}</h2>
+            <h2 style="margin-top:20px;">🛣️ ${safeName}</h2>
             <p style="color:#666;">Skann QR-koden og gjennomfør hele runden i én flyt</p>
           </div>
         </body>
