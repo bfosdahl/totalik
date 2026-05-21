@@ -441,8 +441,12 @@ export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType, 
 
   return (
     <>
-      {/* Mobile Menu Button - positioned to not overlap with content */}
-      <div className="lg:hidden fixed top-3 left-3 z-50">
+      {/* Mobile Menu Button - positioned below iOS notch / Dynamic Island */}
+      <div
+        className="lg:hidden fixed left-3 z-50"
+        style={{ top: "calc(0.75rem + env(safe-area-inset-top))" }}
+      >
+
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
             <Button size="icon" variant="outline" className="bg-background shadow-md h-10 w-10">

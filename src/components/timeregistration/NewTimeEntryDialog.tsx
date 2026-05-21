@@ -54,6 +54,15 @@ const HOUR_TYPE_OPTIONS: { value: HourType; label: string; hint: string }[] = [
   { value: "overtime_100", label: "100%", hint: "Overtid 100%" },
 ];
 
+const calcHoursBetween = (from: string, to: string): number => {
+  if (!from || !to) return 0;
+  const [fh, fm] = from.split(":").map(Number);
+  const [th, tm] = to.split(":").map(Number);
+  let diff = (th * 60 + tm) - (fh * 60 + fm);
+  if (diff < 0) diff += 24 * 60;
+  return Math.round((diff / 60) * 100) / 100;
+};
+
 export function NewTimeEntryDialog({
   open,
   onOpenChange,
@@ -62,6 +71,8 @@ export function NewTimeEntryDialog({
   draftSavedAt,
 }: NewTimeEntryDialogProps) {
   const [date, setDate] = useState<Date>(new Date());
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [hours, setHours] = useState("");
   const [hourType, setHourType] = useState<HourType>("normal");
   const [selectedProjectId, setSelectedProjectId] = useState<string>(defaultProjectId || "");
@@ -94,6 +105,8 @@ export function NewTimeEntryDialog({
   useEffect(() => {
     if (open) {
       setDate(new Date());
+      setStartTime("");
+      setEndTime("");
       setHours("");
       setHourType("normal");
       setSelectedProjectId(defaultProjectId || "");
@@ -274,46 +287,56 @@ export function NewTimeEntryDialog({
             </div>
           </div>
 
-          {/* Dato + Timer */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Dato */}
+          <div className="space-y-2">
+            <Label>Dato</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PPP", { locale: nb }) : "Velg dato"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} locale={nb} initialFocus />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Tid fra-til + total timer */}
+          <div className="grid grid-cols-3 gap-3">
             <div className="space-y-2">
-              <Label>Dato</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP", { locale: nb }) : "Velg dato"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} locale={nb} initialFocus />
-                </PopoverContent>
-              </Popover>
+              <Label>Fra</Label>
+              <Input
+                type="time"
+                value={startTime}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setStartTime(v);
+                  if (v && endTime) {
+                    const diff = calcHoursBetween(v, endTime);
+                    if (diff > 0) setHours(diff.toFixed(2));
+                  }
+                }}
+              />
             </div>
             <div className="space-y-2">
-              <Label>Timer</Label>
-              <div className="relative">
-                <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>Dato</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP", { locale: nb }) : "Velg dato"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} locale={nb} initialFocus />
-                </PopoverContent>
-              </Popover>
+              <Label>Til</Label>
+              <Input
+                type="time"
+                value={endTime}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setEndTime(v);
+                  if (startTime && v) {
+                    const diff = calcHoursBetween(startTime, v);
+                    if (diff > 0) setHours(diff.toFixed(2));
+                  }
+                }}
+              />
             </div>
             <div className="space-y-2">
               <Label>Timer</Label>
@@ -329,9 +352,6 @@ export function NewTimeEntryDialog({
                   onChange={(e) => setHours(e.target.value)}
                   className="pl-10"
                 />
-              </div>
-            </div>
-          </div>
               </div>
             </div>
           </div>
