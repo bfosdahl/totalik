@@ -336,9 +336,14 @@ export function useTimeEntries() {
         toast.error("Timer er allerede godkjent og kan ikke slettes. Kontakt admin for å oppheve godkjenningen.");
         return false;
       }
-      const { error } = await supabase.from("time_entries").delete().eq("id", id);
-
-      if (error) throw error;
+      if (id.startsWith("clock_")) {
+        const realId = id.replace("clock_", "");
+        const { error } = await supabase.from("time_clock_entries").delete().eq("id", realId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("time_entries").delete().eq("id", id);
+        if (error) throw error;
+      }
       toast.success("Timeregistrering slettet");
       await fetchEntries();
       return true;
