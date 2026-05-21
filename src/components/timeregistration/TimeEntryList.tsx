@@ -210,6 +210,21 @@ export function TimeEntryList({
                         <TooltipContent>Avvis</TooltipContent>
                       </Tooltip>
                     )}
+                    {canModify && onEdit && entry.status !== "pending_confirmation" && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                            onClick={() => setEditEntry(entry)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Rediger</TooltipContent>
+                      </Tooltip>
+                    )}
                     {canModify && onDelete && (
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -232,6 +247,14 @@ export function TimeEntryList({
           })}
         </TableBody>
       </Table>
+      {onEdit && (
+        <EditTimeEntryDialog
+          open={!!editEntry}
+          onOpenChange={(o) => !o && setEditEntry(null)}
+          entry={editEntry}
+          onSave={onEdit}
+        />
+      )}
     </div>
   );
 }
