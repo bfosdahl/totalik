@@ -102,9 +102,13 @@ serve(async (req) => {
       if (existingProfile.company_id === requestingProfile.company_id) {
         const needsReactivation = existingProfile.is_active === false || existingProfile.status === "suspended" || existingProfile.status === "pending_approval";
         if (needsReactivation) {
+          const reactivationUpdates: Record<string, unknown> = { is_active: true, status: "active" };
+          if (firstName) reactivationUpdates.first_name = firstName;
+          if (lastName) reactivationUpdates.last_name = lastName;
+
           await supabaseAdmin
             .from("profiles")
-            .update({ is_active: true, status: "active", first_name: firstName || null, last_name: lastName || null })
+            .update(reactivationUpdates)
             .eq("user_id", existingProfile.user_id);
 
           if (role && role !== "user") {
