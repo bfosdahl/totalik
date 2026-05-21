@@ -300,6 +300,7 @@ export default function TimeRegistration() {
                     entries={filteredEntries.filter((e) => e.status === "submitted")}
                     onApprove={approveEntry}
                     onReject={rejectEntry}
+                    onEdit={updateEntry}
                     showEmployee
                   />
                 </CardContent>
