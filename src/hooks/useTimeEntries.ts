@@ -292,15 +292,33 @@ export function useTimeEntries() {
         toast.error("Timer er allerede godkjent og kan ikke endres. Kontakt admin for å oppheve godkjenningen.");
         return false;
       }
-      const { error } = await supabase
-        .from("time_entries")
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", id);
 
-      if (error) throw error;
+      // QR-stempling: oppdater hours_worked / notes på time_clock_entries
+      if (id.startsWith("clock_")) {
+        const realId = id.replace("clock_", "");
+        const clockUpdates: Record<string, any> = {
+          updated_at: new Date().toISOString(),
+        };
+        if (updates.hours !== undefined) clockUpdates.hours_worked = updates.hours;
+        if (updates.description !== undefined) clockUpdates.notes = updates.description;
+
+        const { error } = await supabase
+          .from("time_clock_entries")
+          .update(clockUpdates)
+          .eq("id", realId);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("time_entries")
+          .update({
+            ...updates,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", id);
+
+        if (error) throw error;
+      }
       toast.success("Timeregistrering oppdatert");
       await fetchEntries();
       return true;
@@ -318,9 +336,14 @@ export function useTimeEntries() {
         toast.error("Timer er allerede godkjent og kan ikke slettes. Kontakt admin for å oppheve godkjenningen.");
         return false;
       }
-      const { error } = await supabase.from("time_entries").delete().eq("id", id);
-
-      if (error) throw error;
+      if (id.startsWith("clock_")) {
+        const realId = id.replace("clock_", "");
+        const { error } = await supabase.from("time_clock_entries").delete().eq("id", realId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("time_entries").delete().eq("id", id);
+        if (error) throw error;
+      }
       toast.success("Timeregistrering slettet");
       await fetchEntries();
       return true;

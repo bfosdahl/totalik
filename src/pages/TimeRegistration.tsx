@@ -31,6 +31,7 @@ export default function TimeRegistration() {
     entries,
     isLoading,
     createEntry,
+    updateEntry,
     approveEntry,
     rejectEntry,
     deleteEntry,
@@ -282,6 +283,7 @@ export default function TimeRegistration() {
                     onApprove={approveEntry}
                     onReject={rejectEntry}
                     onDelete={deleteEntry}
+                    onEdit={updateEntry}
                     onConfirmSchedule={confirmScheduleEntry}
                     showEmployee
                   />
@@ -298,6 +300,7 @@ export default function TimeRegistration() {
                     entries={filteredEntries.filter((e) => e.status === "submitted")}
                     onApprove={approveEntry}
                     onReject={rejectEntry}
+                    onEdit={updateEntry}
                     showEmployee
                   />
                 </CardContent>

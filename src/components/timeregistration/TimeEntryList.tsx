@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Check, X, Clock, Trash2, QrCode, CalendarCheck, MapPin } from "lucide-react";
+import { Check, X, Clock, Trash2, QrCode, CalendarCheck, MapPin, Pencil } from "lucide-react";
+import { EditTimeEntryDialog } from "./EditTimeEntryDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,6 +46,7 @@ interface TimeEntryListProps {
   onApprove?: (id: string) => Promise<boolean>;
   onReject?: (id: string) => Promise<boolean>;
   onDelete?: (id: string) => Promise<boolean>;
+  onEdit?: (id: string, updates: { hours: number; description?: string }) => Promise<boolean>;
   onConfirmSchedule?: (id: string, hours?: number) => Promise<boolean>;
   showEmployee?: boolean;
 }
@@ -61,10 +64,12 @@ export function TimeEntryList({
   onApprove,
   onReject,
   onDelete,
+  onEdit,
   onConfirmSchedule,
   showEmployee = false,
 }: TimeEntryListProps) {
   const { user, isCompanyAdmin } = useAuth();
+  const [editEntry, setEditEntry] = useState<TimeEntry | null>(null);
 
   if (entries.length === 0) {
     return (
@@ -205,6 +210,21 @@ export function TimeEntryList({
                         <TooltipContent>Avvis</TooltipContent>
                       </Tooltip>
                     )}
+                    {canModify && onEdit && entry.status !== "pending_confirmation" && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                            onClick={() => setEditEntry(entry)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Rediger</TooltipContent>
+                      </Tooltip>
+                    )}
                     {canModify && onDelete && (
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -227,6 +247,14 @@ export function TimeEntryList({
           })}
         </TableBody>
       </Table>
+      {onEdit && (
+        <EditTimeEntryDialog
+          open={!!editEntry}
+          onOpenChange={(o) => !o && setEditEntry(null)}
+          entry={editEntry}
+          onSave={onEdit}
+        />
+      )}
     </div>
   );
 }
