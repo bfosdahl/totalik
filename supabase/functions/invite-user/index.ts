@@ -116,10 +116,89 @@ serve(async (req) => {
 
     if (existingUser) {
       if (existingProfileCheck?.company_id === targetCompanyId) {
-        return new Response(JSON.stringify({ error: "Bruker er allerede i dette selskapet" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        // Same company — reactivate if suspended/inactive instead of erroring
+        const { data: existingProfile } = await supabaseAdmin
+          .from("profiles")
+          .select("is_active, status")
+          .eq("user_id", existingUser.id)
+          .maybeSingle();
+
+        const needsReactivation =
+          existingProfile?.is_active === false ||
+          existingProfile?.status === "suspended" ||
+          existingProfile?.status === "pending_approval";
+
+        if (!needsReactivation) {
+          return new Response(JSON.stringify({ error: "Bruker er allerede aktiv i dette selskapet" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        // Reactivate the user
+        await supabaseAdmin
+          .from("profiles")
+          .update({
+            is_active: true,
+            status: "active",
+            first_name: firstName || null,
+            last_name: lastName || null,
+          })
+          .eq("user_id", existingUser.id);
+
+        // Ensure role
+        if (role && role !== "user") {
+          const { data: existingRoles } = await supabaseAdmin
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", existingUser.id);
+          const hasRole = existingRoles?.some((r) => r.role === role);
+          if (!hasRole) {
+            await supabaseAdmin
+              .from("user_roles")
+              .insert({ user_id: existingUser.id, role });
+          }
+        }
+
+        // Send a fresh recovery link so the user can re-enter the system
+        let resetLink = "https://totalik.no/auth";
+        try {
+          const { data: resetData } = await supabaseAdmin.auth.admin.generateLink({
+            type: "recovery",
+            email,
+            options: { redirectTo: "https://totalik.no/auth" },
+          });
+          resetLink = resetData?.properties?.action_link || resetLink;
+        } catch (e) {
+          console.error("generateLink failed during reactivation:", e);
+        }
+
+        let emailSent = false;
+        if (resend) {
+          try {
+            const companyName = company?.name || "din bedrift";
+            await resend.emails.send({
+              from: "Total-IK <noreply@totalik.no>",
+              to: [email],
+              subject: `Du har fått tilgang igjen til ${companyName}`,
+              html: `<p>Hei,</p><p>Din konto i <strong>${companyName}</strong> er reaktivert. Klikk lenken under for å sette nytt passord og logge inn.</p><p><a href="${resetLink}">Sett nytt passord og logg inn</a></p><p>Lenken er gyldig i 24 timer.</p>`,
+            });
+            emailSent = true;
+          } catch (e) {
+            console.error("Reactivation email failed:", e);
+          }
+        }
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            message: "Bruker reaktivert i selskapet",
+            userId: existingUser.id,
+            reactivated: true,
+            emailSent,
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Block cross-tenant hijacking: an admin must NOT be able to move a user
@@ -170,6 +249,7 @@ serve(async (req) => {
         }
       );
     }
+
 
     // Random unguessable password — user receives recovery link to set their own
     const tempPassword = crypto.randomUUID() + "Aa1!";
