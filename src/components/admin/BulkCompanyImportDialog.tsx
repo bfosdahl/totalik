@@ -403,6 +403,13 @@ export function BulkCompanyImportDialog({
             console.error("Failed to create user:", userErr);
             userCreateError = userErr instanceof Error ? userErr.message : "Ukjent feil ved brukeropprettelse";
           }
+
+          // If user creation failed, we MUST roll back the company creation
+          if (!userCreated) {
+            // Delete the company (cascade should handle modules)
+            await supabase.from("companies").delete().eq("id", newCompany.id);
+            throw new Error(`Opprettelse av bruker feilet: ${userCreateError}. Bedriften ble rullet tilbake.`);
+          }
         }
 
         successCount++;
