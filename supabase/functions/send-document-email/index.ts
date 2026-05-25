@@ -89,6 +89,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     // --- Derive From display name server-side from authenticated user's company ---
     // Never trust client-supplied companyName (prevents impersonation).
+    // Also enforce role check: only company/system admins may send transactional emails
+    // to prevent the function from being used as a phishing relay by any employee.
     let fromName = "Total-IK";
     let companyId: string | null = null;
 
@@ -97,6 +99,19 @@ const handler = async (req: Request): Promise<Response> => {
         Deno.env.get("SUPABASE_URL")!,
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       );
+
+      // Role check
+      const [{ data: isCompanyAdmin }, { data: isSystemAdmin }] = await Promise.all([
+        admin.rpc("is_company_admin", { _user_id: auth.userId }),
+        admin.rpc("is_system_admin", { _user_id: auth.userId }),
+      ]);
+      if (!isCompanyAdmin && !isSystemAdmin) {
+        return new Response(
+          JSON.stringify({ error: "Du har ikke tilgang til å sende e-post fra systemet" }),
+          { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } },
+        );
+      }
+
       const { data: profile } = await admin
         .from("profiles")
         .select("company_id, companies:company_id(name)")
