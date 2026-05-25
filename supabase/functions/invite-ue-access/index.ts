@@ -70,6 +70,38 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { email, name, company_name, project_id, access_level }: InviteRequest = await req.json();
 
+    // Verify the target project belongs to the caller's company (system admins bypass).
+    // Without this check, a company admin could attach users to any other company's project.
+    if (!isSystemAdmin) {
+      const { data: callerProfile } = await supabase
+        .from("profiles")
+        .select("company_id")
+        .eq("user_id", requestingUser.id)
+        .maybeSingle();
+
+      const { data: targetProject } = await supabase
+        .from("ks_module2_projects")
+        .select("company_id")
+        .eq("id", project_id)
+        .maybeSingle();
+
+      if (
+        !callerProfile?.company_id ||
+        !targetProject?.company_id ||
+        callerProfile.company_id !== targetProject.company_id
+      ) {
+        console.error("Cross-tenant project access blocked", {
+          callerCompany: callerProfile?.company_id,
+          targetCompany: targetProject?.company_id,
+          project_id,
+        });
+        return new Response(
+          JSON.stringify({ error: "Du har ikke tilgang til dette prosjektet" }),
+          { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+    }
+
     console.log("Creating/checking user for:", email);
 
     // Check if user already exists

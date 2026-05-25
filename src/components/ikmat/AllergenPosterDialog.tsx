@@ -84,11 +84,18 @@ export const AllergenPosterDialog = ({ allergens, menuItems, companyName }: Alle
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
+    const escapeHtml = (s: string) =>
+      s.replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Allergenplakat - ${companyName}</title>
+          <title>Allergenplakat - ${escapeHtml(companyName)}</title>
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body { 
@@ -102,12 +109,14 @@ export const AllergenPosterDialog = ({ allergens, menuItems, companyName }: Alle
             }
           </style>
         </head>
-        <body>
-          ${content.innerHTML}
-        </body>
+        <body></body>
       </html>
     `);
     printWindow.document.close();
+    // Safely clone the rendered DOM (no innerHTML interpolation)
+    printWindow.document.body.appendChild(
+      printWindow.document.importNode(content, true)
+    );
     printWindow.focus();
     setTimeout(() => {
       printWindow.print();
