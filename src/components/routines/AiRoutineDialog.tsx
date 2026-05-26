@@ -162,6 +162,11 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
             <Sparkles className="h-5 w-5 text-blue-500" />
             AI Rutine-generator ({MODULE_LABELS[module]})
           </DialogTitle>
+          {lastSavedAt && (
+            <p className="text-xs text-muted-foreground">
+              Utkast lagret automatisk {lastSavedAt.toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit" })} – gjenåpnes hvis du lukker uten å lagre
+            </p>
+          )}
         </DialogHeader>
 
         <ScrollArea className="flex-1 min-h-0 pr-3">
