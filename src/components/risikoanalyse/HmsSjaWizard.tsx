@@ -451,6 +451,68 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Save as template dialog */}
+      <Dialog open={showSaveTemplate} onOpenChange={setShowSaveTemplate}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Lagre som SJA-mal</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium">Navn på mal *</label>
+              <Input
+                placeholder="F.eks. Kranoperasjon"
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Beskrivelse (valgfritt)</label>
+              <Textarea
+                placeholder="Når brukes denne malen?"
+                value={templateDesc}
+                onChange={(e) => setTemplateDesc(e.target.value)}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Aktivitet, risiko og tiltak fra denne SJA-en lagres som en gjenbrukbar mal.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSaveTemplate(false)}>
+              Avbryt
+            </Button>
+            <Button
+              disabled={!templateName.trim() || createTemplate.isPending}
+              onClick={async () => {
+                const filled = rows
+                  .filter((r) => r.activity || r.risk || r.measure)
+                  .map((r) => ({
+                    id: crypto.randomUUID(),
+                    activity: r.activity,
+                    risk: r.risk,
+                    measure: r.measure,
+                  }));
+                try {
+                  await createTemplate.mutateAsync({
+                    name: templateName.trim(),
+                    description: templateDesc.trim() || undefined,
+                    rows: filled,
+                  });
+                  setShowSaveTemplate(false);
+                  setTemplateName("");
+                  setTemplateDesc("");
+                } catch {
+                  /* toast handled in hook */
+                }
+              }}
+            >
+              {createTemplate.isPending ? "Lagrer..." : "Lagre mal"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
