@@ -224,11 +224,71 @@ export default function Ks2ProjectDetail() {
       <div className="lg:pl-[260px] transition-all duration-300">
         {/* Top Banner - improved mobile spacing + safe-area for iOS notch / Dynamic Island */}
         <div
-          className="border-b bg-card px-4 py-3 pl-14 lg:px-6 lg:py-4 lg:pl-6"
-          style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}
+          className="border-b bg-card px-4 py-3 pl-14 lg:px-6 lg:py-4 lg:pl-6 flex items-start justify-between gap-3"
+          style={{ paddingTop: "calc(1.25rem + env(safe-area-inset-top))" }}
         >
-          <p className="text-xs text-muted-foreground font-medium">{project.project_number}</p>
-          <h1 className="text-lg lg:text-xl font-semibold truncate">{project.project_name}</h1>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-xs text-muted-foreground font-medium">{project.project_number}</p>
+              {project.status === "completed" && (
+                <Badge className="bg-success/20 text-success text-[10px]">Avsluttet</Badge>
+              )}
+            </div>
+            <h1 className="text-lg lg:text-xl font-semibold truncate">{project.project_name}</h1>
+          </div>
+          <div className="shrink-0">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  {project.status === "completed" ? (
+                    <>
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">Gjenåpne</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">Avslutt</span>
+                    </>
+                  )}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {project.status === "completed" ? "Gjenåpne prosjekt?" : "Avslutt prosjekt?"}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {project.status === "completed"
+                      ? `Setter "${project.project_name}" tilbake til aktiv. Du kan redigere prosjektet på nytt.`
+                      : `Markerer "${project.project_name}" som avsluttet og arkivert. Du kan gjenåpne det senere om nødvendig.`}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={async () => {
+                      const newStatus = project.status === "completed" ? "active" : "completed";
+                      const { error } = await supabase
+                        .from("ks_module2_projects")
+                        .update({ status: newStatus })
+                        .eq("id", project.id);
+                      if (error) {
+                        toast.error("Kunne ikke oppdatere status");
+                        return;
+                      }
+                      toast.success(
+                        newStatus === "completed" ? "Prosjekt avsluttet" : "Prosjekt gjenåpnet"
+                      );
+                      fetchProject();
+                    }}
+                  >
+                    {project.status === "completed" ? "Gjenåpne" : "Avslutt prosjekt"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
 
 
