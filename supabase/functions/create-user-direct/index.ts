@@ -197,8 +197,10 @@ serve(async (req) => {
       }
     }
 
-    // Generate a secure password reset link
-    const loginUrl = req.headers.get("origin") || "https://athena-kurs-og-internkontroll.lovable.app";
+    // Generate a secure password reset link.
+    // SECURITY: Do NOT derive redirect origin from the Origin header — a caller can spoof it
+    // to point the recovery email at a phishing site. Use a fixed, trusted origin instead.
+    const loginUrl = "https://totalik.no";
     const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'recovery',
       email: email,
