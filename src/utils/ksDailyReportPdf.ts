@@ -357,9 +357,10 @@ async function buildDailyReportPdf(
 export async function generateDailyReportPdf(
   report: DailyReport,
   project: DailyReportPdfProject | null,
-  company: DailyReportPdfCompany | null
+  company: DailyReportPdfCompany | null,
+  onProgress?: PdfProgressCallback
 ): Promise<void> {
-  const { doc, fileName } = await buildDailyReportPdf(report, project, company);
+  const { doc, fileName } = await buildDailyReportPdf(report, project, company, onProgress);
   doc.save(fileName);
 }
 
