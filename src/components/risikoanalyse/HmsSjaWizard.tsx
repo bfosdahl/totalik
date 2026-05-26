@@ -5,15 +5,24 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   ArrowLeft,
   Plus,
   Trash2,
   Save,
   CheckCircle2,
   Loader2,
+  BookmarkPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { HmsSja, useHmsSja } from "@/hooks/useHmsSja";
+import { useHmsSjaTemplates } from "@/hooks/useHmsSjaTemplates";
 import { useAuth } from "@/contexts/AuthContext";
 import SignatureCanvas from "react-signature-canvas";
 
