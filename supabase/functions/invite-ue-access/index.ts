@@ -260,29 +260,6 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
             
             <p><strong>E-post for innlogging:</strong> ${safeEmail}</p>
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #5B6BFF 0%, #8B5CF6 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">Velkommen til KS-systemet</h1>
-          </div>
-          
-          <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 12px 12px;">
-            <p style="font-size: 16px;">Hei <strong>${name}</strong>${company_name ? ` (${company_name})` : ''},</p>
-            
-            <p>Du har blitt invitert som underleverandør til prosjektet:</p>
-            
-            <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #5B6BFF; margin: 20px 0;">
-              <strong style="font-size: 18px;">${projectInfo}</strong>
-              <p style="color: #666; margin: 10px 0 0 0;">Du har ${accessLevelText}</p>
-            </div>
-            
-            <p><strong>E-post for innlogging:</strong> ${email}</p>
             
             ${actionButtonHtml}
             
