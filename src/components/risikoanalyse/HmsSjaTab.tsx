@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useHmsSja, HmsSja, HmsSjaRisk, HmsSjaMeasure } from "@/hooks/useHmsSja";
+import { useHmsSjaTemplates } from "@/hooks/useHmsSjaTemplates";
 import { useEmployees } from "@/hooks/useEmployees";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
