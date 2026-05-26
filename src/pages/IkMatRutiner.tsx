@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { BookOpen, Plus, Trash2, Loader2, Edit, FileText, ChevronDown, Calendar, Hash, RotateCcw } from "lucide-react";
 import { RoutineLibraryDialog } from "@/components/routines/RoutineLibraryDialog";
+import { AiRoutineDialog } from "@/components/routines/AiRoutineDialog";
 import { RoutineTemplate } from "@/hooks/useRoutineLibrary";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -157,6 +158,7 @@ const IkMatRutiner = () => {
             </p>
           </div>
           <div className="flex gap-2">
+            <AiRoutineDialog module="ik_mat" onAdopt={handleAdoptFromLibrary} />
             <RoutineLibraryDialog 
               module="ik_mat" 
               onAdopt={handleAdoptFromLibrary}

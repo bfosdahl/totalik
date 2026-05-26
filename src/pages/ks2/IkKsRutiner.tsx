@@ -22,6 +22,7 @@ import {
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { RoutineLibraryDialog } from "@/components/routines/RoutineLibraryDialog";
+import { AiRoutineDialog } from "@/components/routines/AiRoutineDialog";
 import type { RoutineTemplate } from "@/hooks/useRoutineLibrary";
 import { useCompanyKsRoutines, CompanyKsRoutine } from "@/hooks/useCompanyKsRoutines";
 import {
@@ -130,6 +131,7 @@ export default function IkKsRutiner() {
           </div>
           
           <div className="flex gap-2">
+            <AiRoutineDialog module="ks_ik_bygg" onAdopt={handleAdoptFromLibrary} />
             <RoutineLibraryDialog module="ks_ik_bygg" onAdopt={handleAdoptFromLibrary} adoptedIds={adoptedKsTemplateIds} />
             <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
               <DialogTrigger asChild>
