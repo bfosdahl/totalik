@@ -59,11 +59,18 @@ serve(async (req) => {
     }
 
     // Get the request body first to check for companyId
-    const { email: rawEmail, firstName, lastName, role, companyId: requestedCompanyId } = await req.json();
+    const { email: rawEmail, firstName, lastName, role: requestedRole, companyId: requestedCompanyId } = await req.json();
     const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
 
-    // Check if system admin (can specify any company)
+    // Check if system admin (can specify any company / role)
     const isSystemAdmin = roles?.some(r => r.role === "system_admin");
+
+    // Server-side role whitelist: prevent privilege escalation.
+    // Only system admins may assign elevated roles. Company admins are capped at 'user' or 'company_admin'.
+    const ALLOWED_FOR_COMPANY_ADMIN = ["user", "company_admin"];
+    const role = isSystemAdmin
+      ? (requestedRole || "user")
+      : (ALLOWED_FOR_COMPANY_ADMIN.includes(requestedRole) ? requestedRole : "user");
 
     // Get the requesting user's company
     const { data: requestingProfile } = await supabaseAdmin

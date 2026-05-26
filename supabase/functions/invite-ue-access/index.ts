@@ -203,6 +203,19 @@ const handler = async (req: Request): Promise<Response> => {
       ? `${project.project_number} - ${project.project_name}${project.address ? ` (${project.address})` : ''}`
       : 'Prosjekt';
 
+    // HTML-escape all user-controlled or DB-sourced strings before interpolating into the email body.
+    const esc = (s: unknown) => String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    const safeName = esc(name);
+    const safeCompanyName = esc(company_name);
+    const safeProjectInfo = esc(projectInfo);
+    const safeEmail = esc(email);
+
     const baseUrl = Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || '';
     const loginUrl = `${baseUrl}/auth?redirect=/ks2/project/${project_id}`;
     
@@ -237,16 +250,16 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
           
           <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 12px 12px;">
-            <p style="font-size: 16px;">Hei <strong>${name}</strong>${company_name ? ` (${company_name})` : ''},</p>
+            <p style="font-size: 16px;">Hei <strong>${safeName}</strong>${company_name ? ` (${safeCompanyName})` : ''},</p>
             
-            <p>Du har blitt invitert som underleverandør til prosjektet:</p>
+            <p>Du har blitt invitert som underleverand&oslash;r til prosjektet:</p>
             
             <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #5B6BFF; margin: 20px 0;">
-              <strong style="font-size: 18px;">${projectInfo}</strong>
+              <strong style="font-size: 18px;">${safeProjectInfo}</strong>
               <p style="color: #666; margin: 10px 0 0 0;">Du har ${accessLevelText}</p>
             </div>
             
-            <p><strong>E-post for innlogging:</strong> ${email}</p>
+            <p><strong>E-post for innlogging:</strong> ${safeEmail}</p>
             
             ${actionButtonHtml}
             
