@@ -143,12 +143,28 @@ async function buildDailyReportPdf(
   );
   y += 16;
 
-  const ensureSpace = (needed: number) => {
-    if (y + needed > pageHeight - 25) {
-      doc.addPage();
-      y = 20;
+  // Logo strip (own logo + optional partner logo)
+  const logos: { url: string; label: string }[] = [];
+  if (company?.logo_url) logos.push({ url: company.logo_url, label: company?.name || "" });
+  if (project?.partner_logo_url) logos.push({ url: project.partner_logo_url, label: project?.partner_name || "Samarbeidspartner" });
+  if (logos.length > 0) {
+    onProgress?.(0, 0, "Laster logoer...");
+    const logoH = 18;
+    const logoW = 38;
+    const gap = 6;
+    const startX = margin;
+    for (let i = 0; i < logos.length; i++) {
+      const dataUrl = await loadImageAsDataUrl(logos[i].url);
+      if (!dataUrl) continue;
+      try {
+        doc.addImage(dataUrl, "PNG", startX + i * (logoW + gap), y, logoW, logoH, undefined, "FAST");
+      } catch {
+        try { doc.addImage(dataUrl, "JPEG", startX + i * (logoW + gap), y, logoW, logoH, undefined, "FAST"); } catch { /* skip */ }
+      }
     }
-  };
+    y += logoH + 4;
+  }
+
 
   const section = (title: string) => {
     ensureSpace(10);
