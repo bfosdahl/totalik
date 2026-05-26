@@ -16,19 +16,15 @@ async function fetchAndCompressPhoto(path: string): Promise<{ dataUrl: string; w
     if (!data?.signedUrl) return null;
     const res = await fetch(data.signedUrl);
     const blob = await res.blob();
-    const dataUrl = await new Promise<string>((resolve, reject) => {
+    const rawDataUrl = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result as string);
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
-    const dims = await new Promise<{ w: number; h: number }>((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve({ w: img.width, h: img.height });
-      img.onerror = () => resolve({ w: 1, h: 1 });
-      img.src = dataUrl;
-    });
-    return { dataUrl, w: dims.w, h: dims.h };
+    // Compress aggressively — 40+ photos at full resolution will OOM the PDF generator
+    const compressed = await compressDataUrl(rawDataUrl, 1200, 0.75);
+    return compressed;
   } catch (e) {
     console.warn("Could not load photo for PDF", path, e);
     return null;
