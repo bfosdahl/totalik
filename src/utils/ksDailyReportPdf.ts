@@ -165,6 +165,12 @@ async function buildDailyReportPdf(
     y += logoH + 4;
   }
 
+  const ensureSpace = (needed: number) => {
+    if (y + needed > pageHeight - 25) {
+      doc.addPage();
+      y = 20;
+    }
+  };
 
   const section = (title: string) => {
     ensureSpace(10);
