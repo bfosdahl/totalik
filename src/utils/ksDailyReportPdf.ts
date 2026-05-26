@@ -283,7 +283,7 @@ async function buildDailyReportPdf(
     para(report.notes);
   }
 
-  // Photos
+  // Photos — batch + compress to avoid OOM/hang on 40+ images
   if (report.photos?.length > 0) {
     section(`Vedlagte bilder (${report.photos.length})`);
     const cols = 2;
@@ -293,36 +293,44 @@ async function buildDailyReportPdf(
     let rowMaxH = 0;
     let rowStartY = y;
 
-    for (const photo of report.photos as any[]) {
-      const data = await fetchPhotoDataUrl(photo.path);
-      if (!data) continue;
-      const ratio = data.h / data.w;
-      const imgH = Math.min(imgW * ratio, 80);
+    const photos = report.photos as any[];
+    const BATCH = 5;
+    let processed = 0;
 
-      if (col === 0) {
-        ensureSpace(imgH + 6);
-        rowStartY = y;
-        rowMaxH = 0;
-      }
+    for (let i = 0; i < photos.length; i += BATCH) {
+      const slice = photos.slice(i, i + BATCH);
+      const loaded = await Promise.all(slice.map((p) => fetchAndCompressPhoto(p.path)));
+      for (const data of loaded) {
+        processed++;
+        onProgress?.(processed, photos.length, `Behandler bilde ${processed} av ${photos.length}…`);
+        if (!data) continue;
+        const ratio = data.h / data.w;
+        const imgH = Math.min(imgW * ratio, 80);
 
-      const x = margin + col * (imgW + gap);
-      try {
-        doc.addImage(data.dataUrl, "JPEG", x, rowStartY, imgW, imgH);
-      } catch {
+        if (col === 0) {
+          ensureSpace(imgH + 6);
+          rowStartY = y;
+          rowMaxH = 0;
+        }
+
+        const x = margin + col * (imgW + gap);
         try {
-          doc.addImage(data.dataUrl, "PNG", x, rowStartY, imgW, imgH);
+          doc.addImage(data.dataUrl, "JPEG", x, rowStartY, imgW, imgH, undefined, "FAST");
         } catch (e) {
           console.warn("addImage failed", e);
         }
-      }
-      rowMaxH = Math.max(rowMaxH, imgH);
+        rowMaxH = Math.max(rowMaxH, imgH);
 
-      col++;
-      if (col >= cols) {
-        col = 0;
-        y = rowStartY + rowMaxH + gap;
+        col++;
+        if (col >= cols) {
+          col = 0;
+          y = rowStartY + rowMaxH + gap;
+        }
       }
+      // Yield to UI thread so progress can render
+      await new Promise((r) => setTimeout(r, 0));
     }
+
     if (col !== 0) {
       y = rowStartY + rowMaxH + gap;
     }
