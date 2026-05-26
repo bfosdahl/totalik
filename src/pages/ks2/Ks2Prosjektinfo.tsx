@@ -379,6 +379,63 @@ export default function Ks2Prosjektinfo() {
           </CardContent>
         </Card>
 
+        {/* Samarbeidspartner / Partner logo */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Samarbeidspartner (vises på dagsrapport)</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <Label>Navn på samarbeidspartner</Label>
+              <Input
+                value={formData.partner_name}
+                onChange={(e) => handleChange("partner_name", e.target.value)}
+                placeholder="F.eks. Byggherre AS"
+              />
+            </div>
+            <div>
+              <Label>Partner-logo</Label>
+              <div className="flex items-center gap-3">
+                {formData.partner_logo_url && (
+                  <img src={formData.partner_logo_url} alt="Partner-logo" className="h-12 w-auto rounded border bg-white object-contain p-1" />
+                )}
+                <Input
+                  type="file"
+                  accept="image/*"
+                  disabled={isUploadingLogo}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file || !projectId) return;
+                    try {
+                      setIsUploadingLogo(true);
+                      const ext = file.name.split(".").pop() || "png";
+                      const safeName = `partner-${projectId}-${Date.now()}.${ext}`;
+                      const { error: upErr } = await supabase.storage
+                        .from("company-logos")
+                        .upload(safeName, file, { upsert: true });
+                      if (upErr) throw upErr;
+                      const { data: pub } = supabase.storage.from("company-logos").getPublicUrl(safeName);
+                      handleChange("partner_logo_url", pub.publicUrl);
+                      toast({ title: "Logo lastet opp – husk å lagre prosjektet" });
+                    } catch (err: any) {
+                      toast({ title: "Feil", description: err.message || "Opplasting feilet", variant: "destructive" });
+                    } finally {
+                      setIsUploadingLogo(false);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+                {formData.partner_logo_url && (
+                  <Button type="button" variant="outline" size="sm" onClick={() => handleChange("partner_logo_url", "")}>
+                    Fjern
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">PNG eller JPG. Vises ved siden av bedriftslogo på dagsrapport-PDF.</p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Dates & Contract */}
         <Card>
           <CardHeader>
