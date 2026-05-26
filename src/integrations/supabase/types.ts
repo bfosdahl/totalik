@@ -2585,6 +2585,39 @@ export type Database = {
           },
         ]
       }
+      content_snapshots: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          reason: string | null
+          record_id: string
+          snapshot_data: Json
+          table_name: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reason?: string | null
+          record_id: string
+          snapshot_data: Json
+          table_name: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reason?: string | null
+          record_id?: string
+          snapshot_data?: Json
+          table_name?: string
+        }
+        Relationships: []
+      }
       content_translations: {
         Row: {
           company_id: string | null
@@ -16611,6 +16644,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      attach_audit_trigger: { Args: { p_table: string }; Returns: undefined }
       check_company_admin_role: {
         Args: { p_user_id: string }
         Returns: boolean
@@ -16624,6 +16658,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      cleanup_audit_and_snapshots: { Args: never; Returns: undefined }
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
       complete_fdv_control: {
         Args: {
@@ -16711,6 +16746,11 @@ export type Database = {
       is_hms_responsible: { Args: { user_id: string }; Returns: boolean }
       is_leader_or_verneombud: { Args: { p_user_id: string }; Returns: boolean }
       is_system_admin: { Args: { _user_id: string }; Returns: boolean }
+      restore_deleted_record: {
+        Args: { p_audit_log_id: string }
+        Returns: Json
+      }
+      restore_snapshot: { Args: { p_snapshot_id: string }; Returns: Json }
       seed_default_allowance_types: {
         Args: { p_company_id: string }
         Returns: undefined
