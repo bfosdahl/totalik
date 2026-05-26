@@ -312,6 +312,8 @@ export function NewTimeEntryDialog({
               <Label>Fra</Label>
               <Input
                 type="time"
+                lang="nb-NO"
+                step={60}
                 value={startTime}
                 onChange={(e) => {
                   const v = e.target.value;
