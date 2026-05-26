@@ -5,15 +5,24 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   ArrowLeft,
   Plus,
   Trash2,
   Save,
   CheckCircle2,
   Loader2,
+  BookmarkPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { HmsSja, useHmsSja } from "@/hooks/useHmsSja";
+import { useHmsSjaTemplates } from "@/hooks/useHmsSjaTemplates";
 import { useAuth } from "@/contexts/AuthContext";
 import SignatureCanvas from "react-signature-canvas";
 
@@ -32,9 +41,13 @@ interface HmsSjaWizardProps {
 export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
   const { profile } = useAuth();
   const { updateSja, completeSja } = useHmsSja();
+  const { createTemplate } = useHmsSjaTemplates();
   const sigCanvasRef = useRef<SignatureCanvas>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showSignature, setShowSignature] = useState(false);
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateDesc, setTemplateDesc] = useState("");
 
   // Parse existing data into simplified rows
   const parseExistingRows = (): SjaRow[] => {
@@ -206,14 +219,31 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
           </div>
         </div>
         {!isCompleted && (
-          <Button onClick={handleManualSave} disabled={isSaving}>
-            {isSaving ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4 mr-2" />
-            )}
-            {isSaving ? "Lagrer..." : "Lagre"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                const filled = rows.filter((r) => r.activity || r.risk || r.measure);
+                if (filled.length === 0) {
+                  toast.error("Fyll inn minst én rad før du lagrer som mal");
+                  return;
+                }
+                setTemplateName(sja.title || "");
+                setShowSaveTemplate(true);
+              }}
+            >
+              <BookmarkPlus className="h-4 w-4 mr-2" />
+              Lagre som mal
+            </Button>
+            <Button onClick={handleManualSave} disabled={isSaving}>
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              {isSaving ? "Lagrer..." : "Lagre"}
+            </Button>
+          </div>
         )}
       </div>
 
@@ -421,6 +451,68 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Save as template dialog */}
+      <Dialog open={showSaveTemplate} onOpenChange={setShowSaveTemplate}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Lagre som SJA-mal</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium">Navn på mal *</label>
+              <Input
+                placeholder="F.eks. Kranoperasjon"
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Beskrivelse (valgfritt)</label>
+              <Textarea
+                placeholder="Når brukes denne malen?"
+                value={templateDesc}
+                onChange={(e) => setTemplateDesc(e.target.value)}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Aktivitet, risiko og tiltak fra denne SJA-en lagres som en gjenbrukbar mal.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSaveTemplate(false)}>
+              Avbryt
+            </Button>
+            <Button
+              disabled={!templateName.trim() || createTemplate.isPending}
+              onClick={async () => {
+                const filled = rows
+                  .filter((r) => r.activity || r.risk || r.measure)
+                  .map((r) => ({
+                    id: crypto.randomUUID(),
+                    activity: r.activity,
+                    risk: r.risk,
+                    measure: r.measure,
+                  }));
+                try {
+                  await createTemplate.mutateAsync({
+                    name: templateName.trim(),
+                    description: templateDesc.trim() || undefined,
+                    rows: filled,
+                  });
+                  setShowSaveTemplate(false);
+                  setTemplateName("");
+                  setTemplateDesc("");
+                } catch {
+                  /* toast handled in hook */
+                }
+              }}
+            >
+              {createTemplate.isPending ? "Lagrer..." : "Lagre mal"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

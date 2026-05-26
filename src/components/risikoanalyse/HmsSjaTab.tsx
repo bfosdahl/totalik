@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useHmsSja, HmsSja, HmsSjaRisk, HmsSjaMeasure } from "@/hooks/useHmsSja";
+import { useHmsSjaTemplates } from "@/hooks/useHmsSjaTemplates";
 import { useEmployees } from "@/hooks/useEmployees";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -45,12 +46,14 @@ const STATUS_CONFIG = {
 
 export function HmsSjaTab() {
   const { sjaList, isLoading, createSja, deleteSja } = useHmsSja();
+  const { templates } = useHmsSjaTemplates();
   const { employees } = useEmployees();
   
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const [selectedSja, setSelectedSja] = useState<HmsSja | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("none");
   
   const [newSja, setNewSja] = useState({
     title: "",
@@ -67,6 +70,32 @@ export function HmsSjaTab() {
       return;
     }
 
+    // Build risks/measures from selected template, if any
+    let risks: HmsSjaRisk[] = [];
+    let measures: HmsSjaMeasure[] = [];
+    let work_description: string | undefined;
+    if (selectedTemplateId && selectedTemplateId !== "none") {
+      const tmpl = templates.find((t) => t.id === selectedTemplateId);
+      if (tmpl) {
+        risks = tmpl.rows.map((r) => ({
+          id: r.id || crypto.randomUUID(),
+          description: r.risk,
+          probability: 3,
+          consequence: 3,
+          ...({ activity: r.activity } as any),
+        })) as any;
+        measures = tmpl.rows
+          .filter((r) => r.measure)
+          .map((r) => ({
+            id: crypto.randomUUID(),
+            riskId: r.id,
+            description: r.measure,
+            responsible: "",
+          }));
+        work_description = tmpl.rows.map((r) => r.activity).filter(Boolean).join("; ");
+      }
+    }
+
     const result = await createSja.mutateAsync({
       title: newSja.title,
       description: newSja.description,
@@ -74,9 +103,13 @@ export function HmsSjaTab() {
       planned_date: newSja.planned_date,
       responsible_name: newSja.responsible_name,
       risk_level: newSja.risk_level,
+      risks,
+      measures,
+      work_description,
     });
 
     setShowNewDialog(false);
+    setSelectedTemplateId("none");
     setNewSja({
       title: "",
       description: "",
@@ -184,6 +217,34 @@ export function HmsSjaTab() {
               <DialogTitle>Opprett ny Sikker Jobb Analyse</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
+              {templates.length > 0 && (
+                <div className="p-3 rounded-lg border bg-muted/30">
+                  <label className="text-sm font-medium block mb-2">
+                    Bruk SJA-mal (valgfritt)
+                  </label>
+                  <Select
+                    value={selectedTemplateId}
+                    onValueChange={setSelectedTemplateId}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Start fra bunn eller velg mal..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Ingen mal – start fra bunn</SelectItem>
+                      {templates.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedTemplateId !== "none" && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Aktiviteter, risiko og tiltak fra malen fylles inn automatisk. Du kan justere alt etterpå.
+                    </p>
+                  )}
+                </div>
+              )}
               <div>
                 <label className="text-sm font-medium">Tittel *</label>
                 <Input 
