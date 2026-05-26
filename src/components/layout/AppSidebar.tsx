@@ -65,6 +65,7 @@ const ikHmsItems: NavItem[] = [
 ];
 
 const ikMatItems: NavItem[] = [
+  { icon: Wand2, label: "Oppsett (AI-veiviser)", path: "/ik-mat/oppsett", color: "text-violet-500" },
   { icon: BookOpen, labelKey: "nav.handbookIkMat", path: "/ik-mat/handbok", color: "text-cyan-500" },
   { icon: Target, labelKey: "nav.targetSetting", path: "/ik-mat/maal", color: "text-yellow-500" },
   { icon: Building2, labelKey: "nav.orgChart", path: "/ik-mat/organisasjon", color: "text-sky-500" },
