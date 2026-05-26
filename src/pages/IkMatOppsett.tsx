@@ -139,6 +139,8 @@ const IkMatOppsett = () => {
               }}
             />
           </div>
+        )}
+
 
         <AlertDialog open={showRestartDialog} onOpenChange={setShowRestartDialog}>
           <AlertDialogContent>
