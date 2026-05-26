@@ -223,14 +223,14 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
           <h2 className="text-lg font-semibold mb-4">Sikker Jobb Analyse</h2>
 
           {/* Table header */}
-          <div className="hidden sm:grid sm:grid-cols-[1fr_1fr_1fr_40px] gap-3 mb-2 px-1">
-            <span className="text-sm font-medium text-muted-foreground">
+          <div className="hidden sm:grid sm:grid-cols-[1fr_1fr_1fr_40px] gap-3 mb-3 px-1">
+            <span className="text-base font-semibold text-foreground">
               Aktivitet (hva skal gjøres)
             </span>
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-base font-semibold text-foreground">
               Identifisert risiko (hva kan gå galt)
             </span>
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-base font-semibold text-foreground">
               Tiltak (hva gjør vi for å unngå det)
             </span>
             <span />
@@ -244,38 +244,38 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
                 className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_40px] gap-3 p-3 border rounded-lg bg-muted/20"
               >
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground sm:hidden mb-1 block">
+                  <label className="text-sm font-semibold text-foreground sm:hidden mb-1 block">
                     Aktivitet
                   </label>
                   <Textarea
                     placeholder="Beskriv aktiviteten..."
                     value={row.activity}
                     onChange={(e) => updateRow(row.id, "activity", e.target.value)}
-                    className="min-h-[60px] resize-none"
+                    className="min-h-[120px] text-base leading-relaxed"
                     disabled={isCompleted}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground sm:hidden mb-1 block">
+                  <label className="text-sm font-semibold text-foreground sm:hidden mb-1 block">
                     Risiko
                   </label>
                   <Textarea
                     placeholder="Hva kan gå galt?"
                     value={row.risk}
                     onChange={(e) => updateRow(row.id, "risk", e.target.value)}
-                    className="min-h-[60px] resize-none"
+                    className="min-h-[120px] text-base leading-relaxed"
                     disabled={isCompleted}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground sm:hidden mb-1 block">
+                  <label className="text-sm font-semibold text-foreground sm:hidden mb-1 block">
                     Tiltak
                   </label>
                   <Textarea
                     placeholder="Risikoreduserende tiltak..."
                     value={row.measure}
                     onChange={(e) => updateRow(row.id, "measure", e.target.value)}
-                    className="min-h-[60px] resize-none"
+                    className="min-h-[120px] text-base leading-relaxed"
                     disabled={isCompleted}
                   />
                 </div>
