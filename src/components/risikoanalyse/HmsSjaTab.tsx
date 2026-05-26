@@ -46,7 +46,7 @@ const STATUS_CONFIG = {
 
 export function HmsSjaTab() {
   const { sjaList, isLoading, createSja, deleteSja } = useHmsSja();
-  const { templates, deleteTemplate } = useHmsSjaTemplates();
+  const { templates } = useHmsSjaTemplates();
   const { employees } = useEmployees();
   
   const [searchQuery, setSearchQuery] = useState("");
