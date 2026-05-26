@@ -1,0 +1,1 @@
+ALTER TABLE public.ks_module2_projects ADD COLUMN IF NOT EXISTS partner_org_number TEXT;
