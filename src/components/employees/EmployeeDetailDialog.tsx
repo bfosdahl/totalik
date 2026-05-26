@@ -117,7 +117,7 @@ export function EmployeeDetailDialog({
     try {
       const { data, error } = await supabase.functions.invoke("reset-user-password", {
         body: {
-          userId: employee.id,
+          userId: employee.user_id,
           newPassword,
           sendEmail: sendPasswordEmail,
         },
