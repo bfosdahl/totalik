@@ -420,26 +420,29 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                           {riskMeasures.map((m) => {
                             const mIdx = measures.indexOf(m);
                             return (
-                              <div key={mIdx} className="flex items-center gap-2">
-                                <Input
+                              <div key={mIdx} className="flex flex-col sm:flex-row items-stretch sm:items-start gap-2">
+                                <Textarea
                                   placeholder="Beskriv tiltak..."
                                   value={m.measure}
                                   onChange={(e) => updateMeasure(mIdx, { measure: e.target.value })}
-                                  className="flex-1"
+                                  className="flex-1 min-h-[80px]"
+                                  rows={3}
                                   disabled={isCompleted}
                                 />
-                                <Input
-                                  placeholder="Ansvarlig"
-                                  value={m.responsible}
-                                  onChange={(e) => updateMeasure(mIdx, { responsible: e.target.value })}
-                                  className="w-36"
-                                  disabled={isCompleted}
-                                />
-                                {!isCompleted && (
-                                  <Button variant="ghost" size="sm" className="text-destructive" onClick={() => removeMeasure(mIdx)}>
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                )}
+                                <div className="flex gap-2 sm:flex-col sm:w-40">
+                                  <Input
+                                    placeholder="Ansvarlig"
+                                    value={m.responsible}
+                                    onChange={(e) => updateMeasure(mIdx, { responsible: e.target.value })}
+                                    className="flex-1 sm:w-full"
+                                    disabled={isCompleted}
+                                  />
+                                  {!isCompleted && (
+                                    <Button variant="ghost" size="sm" className="text-destructive self-start" onClick={() => removeMeasure(mIdx)}>
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                </div>
                               </div>
                             );
                           })}
