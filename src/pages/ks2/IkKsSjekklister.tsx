@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { QuickFillChecklistDialog } from "@/components/ks/QuickFillChecklistDialog";
+import { AiChecklistDialog } from "@/components/admin/AiChecklistDialog";
 import { PlayCircle } from "lucide-react";
 import {
   Collapsible,
@@ -157,7 +158,8 @@ export default function IkKsSjekklister() {
             </p>
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <AiChecklistDialog />
             <Dialog open={showAdminDialog} onOpenChange={setShowAdminDialog}>
               <DialogTrigger asChild>
                 <Button variant="outline">
