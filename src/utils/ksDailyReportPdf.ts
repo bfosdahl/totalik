@@ -38,6 +38,8 @@ export interface DailyReportPdfProject {
   gnr_bnr?: string | null;
   saksnr?: string | null;
   client_name?: string | null;
+  partner_logo_url?: string | null;
+  partner_name?: string | null;
 }
 
 export interface DailyReportPdfCompany {
@@ -48,12 +50,29 @@ export interface DailyReportPdfCompany {
   org_number?: string | null;
   phone?: string | null;
   email?: string | null;
+  logo_url?: string | null;
+}
+
+async function loadImageAsDataUrl(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const r = new FileReader();
+      r.onloadend = () => resolve(r.result as string);
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
 }
 
 async function buildDailyReportPdf(
   report: DailyReport,
   project: DailyReportPdfProject | null,
-  company: DailyReportPdfCompany | null
+  company: DailyReportPdfCompany | null,
+  onProgress?: PdfProgressCallback
 ): Promise<{ doc: jsPDF; fileName: string }> {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
