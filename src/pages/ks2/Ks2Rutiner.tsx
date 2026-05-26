@@ -469,7 +469,7 @@ export default function Ks2Rutiner() {
 
       {/* View Admin Routine Dialog */}
       <Dialog open={!!viewingRoutine} onOpenChange={() => setViewingRoutine(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="max-w-3xl h-[90vh] sm:h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
