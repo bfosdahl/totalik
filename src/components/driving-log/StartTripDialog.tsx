@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StartTripInput } from "@/hooks/useDrivingLog";
+import { useCompanyVehicles } from "@/hooks/useCompanyVehicles";
 import { format } from "date-fns";
+import { Car } from "lucide-react";
 
 interface StartTripDialogProps {
   open: boolean;
@@ -27,14 +29,35 @@ interface StartTripDialogProps {
   lastOdometerEnd?: number | null;
 }
 
+const MANUAL = "__manual__";
+
 export function StartTripDialog({ open, onOpenChange, onSubmit, isPending, lastOdometerEnd }: StartTripDialogProps) {
+  const { vehicles } = useCompanyVehicles();
+  const activeVehicles = useMemo(() => vehicles.filter((v) => v.is_active), [vehicles]);
+
   const [tripDate, setTripDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [startLocation, setStartLocation] = useState("");
   const [odometerStart, setOdometerStart] = useState(lastOdometerEnd?.toString() || "");
   const [vehicleType, setVehicleType] = useState("company");
   const [vehicleRegistration, setVehicleRegistration] = useState("");
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string>(MANUAL);
   const [tripType, setTripType] = useState("business");
   const [purpose, setPurpose] = useState("");
+
+  const handleVehicleChange = (id: string) => {
+    setSelectedVehicleId(id);
+    if (id === MANUAL) {
+      setVehicleRegistration("");
+      return;
+    }
+    const v = activeVehicles.find((x) => x.id === id);
+    if (v) {
+      setVehicleRegistration(v.license_plate);
+      if (v.vehicle_type === "private" || v.vehicle_type === "company") {
+        setVehicleType(v.vehicle_type);
+      }
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,11 +74,11 @@ export function StartTripDialog({ open, onOpenChange, onSubmit, isPending, lastO
       purpose: purpose || undefined,
     });
 
-    // Reset
     setStartLocation("");
     setOdometerStart("");
     setPurpose("");
     setVehicleRegistration("");
+    setSelectedVehicleId(MANUAL);
     onOpenChange(false);
   };
 
@@ -83,6 +106,23 @@ export function StartTripDialog({ open, onOpenChange, onSubmit, isPending, lastO
               </Select>
             </div>
           </div>
+
+          {activeVehicles.length > 0 && (
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5"><Car className="h-3.5 w-3.5" /> Velg bil fra bilpark</Label>
+              <Select value={selectedVehicleId} onValueChange={handleVehicleChange}>
+                <SelectTrigger><SelectValue placeholder="Velg bil..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={MANUAL}>Skriv inn manuelt</SelectItem>
+                  {activeVehicles.map((v) => (
+                    <SelectItem key={v.id} value={v.id}>
+                      {v.license_plate} {[v.make, v.model].filter(Boolean).join(" ") && `– ${[v.make, v.model].filter(Boolean).join(" ")}`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="st-start">Startsted *</Label>

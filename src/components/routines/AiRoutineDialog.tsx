@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,12 +39,50 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const draftKey = `ai-routine-draft-${module}-${profile?.company_id || "anon"}`;
+  const isFirstLoad = useRef(true);
+
+  // Load draft on open
+  useEffect(() => {
+    if (!open) return;
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (raw) {
+        const draft = JSON.parse(raw);
+        if (draft.tema) setTema(draft.tema);
+        if (draft.bransje) setBransje(draft.bransje);
+        if (draft.nivaa) setNivaa(draft.nivaa);
+        if (draft.result) {
+          setResult(draft.result);
+          setLastSavedAt(draft.savedAt ? new Date(draft.savedAt) : null);
+        }
+      }
+    } catch {}
+    isFirstLoad.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  // Auto-save draft (debounced)
+  useEffect(() => {
+    if (!open || isFirstLoad.current) return;
+    const t = setTimeout(() => {
+      try {
+        const now = new Date();
+        localStorage.setItem(draftKey, JSON.stringify({ tema, bransje, nivaa, result, savedAt: now.toISOString() }));
+        if (result || tema) setLastSavedAt(now);
+      } catch {}
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [tema, bransje, nivaa, result, open, draftKey]);
 
   const reset = () => {
     setTema("");
     setBransje("");
     setNivaa("standard");
     setResult(null);
+    setLastSavedAt(null);
+    try { localStorage.removeItem(draftKey); } catch {}
   };
 
   const handleGenerate = async () => {
@@ -124,6 +162,11 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
             <Sparkles className="h-5 w-5 text-blue-500" />
             AI Rutine-generator ({MODULE_LABELS[module]})
           </DialogTitle>
+          {lastSavedAt && (
+            <p className="text-xs text-muted-foreground">
+              Utkast lagret automatisk {lastSavedAt.toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit" })} – gjenåpnes hvis du lukker uten å lagre
+            </p>
+          )}
         </DialogHeader>
 
         <ScrollArea className="flex-1 min-h-0 pr-3">
