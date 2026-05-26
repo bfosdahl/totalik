@@ -165,9 +165,11 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
     doc.text("Identifiserte risikoer", margin, y); y += 6;
     doc.setFontSize(10);
     risks.forEach((r, i) => {
-      if (y > 270) { doc.addPage(); y = margin; }
-      doc.text(`${i + 1}. ${r.description} (S: ${r.probability}, K: ${r.consequence})`, margin, y);
-      y += 6;
+      const head = `${i + 1}. (S: ${r.probability}, K: ${r.consequence})`;
+      const lines = doc.splitTextToSize(`${head} ${r.description || ""}`, 170);
+      if (y + lines.length * 5 > 270) { doc.addPage(); y = margin; }
+      doc.text(lines, margin, y);
+      y += lines.length * 5 + 2;
     });
     if (risks.length === 0) { doc.text("Ingen risikoer registrert", margin, y); y += 6; }
     y += 4;
@@ -176,11 +178,11 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
     doc.text("Risikoreduserende tiltak", margin, y); y += 6;
     doc.setFontSize(10);
     measures.forEach((m, i) => {
-      if (y > 270) { doc.addPage(); y = margin; }
-      doc.text(`${i + 1}. ${m.measure || "-"} (Ansvarlig: ${m.responsible || "-"})`, margin, y);
-      y += 5;
-      doc.text(`   Risiko: ${m.risk}`, margin, y);
-      y += 6;
+      const block = `${i + 1}. ${m.measure || "-"}  (Ansvarlig: ${m.responsible || "-"})\nRisiko: ${m.risk || "-"}`;
+      const lines = doc.splitTextToSize(block, 170);
+      if (y + lines.length * 5 > 270) { doc.addPage(); y = margin; }
+      doc.text(lines, margin, y);
+      y += lines.length * 5 + 3;
     });
     if (measures.length === 0) { doc.text("Ingen tiltak registrert", margin, y); y += 6; }
 
