@@ -103,15 +103,20 @@ export const StoffkartotekList = ({ projectId }: StoffkartotekListProps) => {
   const handleDownloadSds = async (entry: CompanyChemicalEntry) => {
     const sdsPath = entry.current_sds?.sds_file_path;
     if (!sdsPath) {
-      toast.error("Ingen sikkerhetsdatablad tilgjengelig");
+      toast.error("Ingen sikkerhetsdatablad er lastet opp for dette stoffet");
       return;
     }
 
     const url = await getSdsDownloadUrl(sdsPath, true);
-    if (url) {
-      window.open(url, "_blank");
-    } else {
-      toast.error("Kunne ikke laste ned sikkerhetsdatablad");
+    if (!url) {
+      toast.error("Kunne ikke åpne datablad. Filen mangler i lageret – last opp på nytt fra «Rediger».");
+      return;
+    }
+
+    // Use direct navigation as a fallback strategy on mobile where window.open is popup-blocked.
+    const win = window.open(url, "_blank", "noopener,noreferrer");
+    if (!win || win.closed || typeof win.closed === "undefined") {
+      window.location.href = url;
     }
   };
 
