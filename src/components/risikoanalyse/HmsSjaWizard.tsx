@@ -219,14 +219,31 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
           </div>
         </div>
         {!isCompleted && (
-          <Button onClick={handleManualSave} disabled={isSaving}>
-            {isSaving ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4 mr-2" />
-            )}
-            {isSaving ? "Lagrer..." : "Lagre"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                const filled = rows.filter((r) => r.activity || r.risk || r.measure);
+                if (filled.length === 0) {
+                  toast.error("Fyll inn minst én rad før du lagrer som mal");
+                  return;
+                }
+                setTemplateName(sja.title || "");
+                setShowSaveTemplate(true);
+              }}
+            >
+              <BookmarkPlus className="h-4 w-4 mr-2" />
+              Lagre som mal
+            </Button>
+            <Button onClick={handleManualSave} disabled={isSaving}>
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              {isSaving ? "Lagrer..." : "Lagre"}
+            </Button>
+          </div>
         )}
       </div>
 
