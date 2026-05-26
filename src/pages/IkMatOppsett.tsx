@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { IkMatChatSetup } from "@/components/setup/IkMatChatSetup";
+import { IkMatHandbookImportUploader } from "@/components/setup/IkMatHandbookImportUploader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Building2, CheckCircle2, AlertTriangle } from "lucide-react";
@@ -122,14 +123,24 @@ const IkMatOppsett = () => {
             </div>
           </div>
         ) : (
-          <IkMatChatSetup
-            companyId={company.id}
-            onComplete={() => {
-              setSetupCompleted(true);
-              setIsRestarting(false);
-            }}
-          />
+          <div className="space-y-6">
+            <IkMatHandbookImportUploader
+              companyId={company.id}
+              onImportComplete={() => {
+                // Reload page so chat veiviser kan bruke importert kontekst
+                window.location.reload();
+              }}
+            />
+            <IkMatChatSetup
+              companyId={company.id}
+              onComplete={() => {
+                setSetupCompleted(true);
+                setIsRestarting(false);
+              }}
+            />
+          </div>
         )}
+
 
         <AlertDialog open={showRestartDialog} onOpenChange={setShowRestartDialog}>
           <AlertDialogContent>
