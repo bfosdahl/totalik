@@ -2585,6 +2585,78 @@ export type Database = {
           },
         ]
       }
+      company_vehicles: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          default_for_user_id: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          id: string
+          is_active: boolean
+          is_deleted: boolean
+          license_plate: string
+          make: string | null
+          model: string | null
+          notes: string | null
+          updated_at: string
+          vehicle_type: string
+          year: number | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          default_for_user_id?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          is_active?: boolean
+          is_deleted?: boolean
+          license_plate: string
+          make?: string | null
+          model?: string | null
+          notes?: string | null
+          updated_at?: string
+          vehicle_type?: string
+          year?: number | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          default_for_user_id?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          is_active?: boolean
+          is_deleted?: boolean
+          license_plate?: string
+          make?: string | null
+          model?: string | null
+          notes?: string | null
+          updated_at?: string
+          vehicle_type?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_vehicles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_vehicles_default_for_user_id_fkey"
+            columns: ["default_for_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_snapshots: {
         Row: {
           company_id: string | null
@@ -3210,6 +3282,7 @@ export type Database = {
           updated_at: string
           user_id: string
           vehicle_description: string | null
+          vehicle_id: string | null
           vehicle_registration: string | null
           vehicle_type: string
           via_locations: string | null
@@ -3233,6 +3306,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           vehicle_description?: string | null
+          vehicle_id?: string | null
           vehicle_registration?: string | null
           vehicle_type?: string
           via_locations?: string | null
@@ -3256,6 +3330,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           vehicle_description?: string | null
+          vehicle_id?: string | null
           vehicle_registration?: string | null
           vehicle_type?: string
           via_locations?: string | null
@@ -3273,6 +3348,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driving_log_entries_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "company_vehicles"
             referencedColumns: ["id"]
           },
         ]
@@ -10707,6 +10789,8 @@ export type Database = {
           last_activity_date: string | null
           last_activity_description: string | null
           no_subcontractors: boolean
+          partner_logo_url: string | null
+          partner_name: string | null
           planned_end_date: string | null
           planned_start_date: string | null
           progress_percent: number | null
@@ -10742,6 +10826,8 @@ export type Database = {
           last_activity_date?: string | null
           last_activity_description?: string | null
           no_subcontractors?: boolean
+          partner_logo_url?: string | null
+          partner_name?: string | null
           planned_end_date?: string | null
           planned_start_date?: string | null
           progress_percent?: number | null
@@ -10777,6 +10863,8 @@ export type Database = {
           last_activity_date?: string | null
           last_activity_description?: string | null
           no_subcontractors?: boolean
+          partner_logo_url?: string | null
+          partner_name?: string | null
           planned_end_date?: string | null
           planned_start_date?: string | null
           progress_percent?: number | null

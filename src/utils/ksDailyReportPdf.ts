@@ -4,28 +4,27 @@ import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { generatePdfHeader, addPdfFooter, PdfHeaderInfo } from "./ksModule2PdfHeader";
 import type { DailyReport } from "@/hooks/useKsDailyReports";
+import { compressDataUrl } from "./imageCompression";
 
 const BUCKET = "daily-report-photos";
 
-async function fetchPhotoDataUrl(path: string): Promise<{ dataUrl: string; w: number; h: number } | null> {
+export type PdfProgressCallback = (current: number, total: number, label?: string) => void;
+
+async function fetchAndCompressPhoto(path: string): Promise<{ dataUrl: string; w: number; h: number } | null> {
   try {
     const { data } = await supabase.storage.from(BUCKET).createSignedUrl(path, 600);
     if (!data?.signedUrl) return null;
     const res = await fetch(data.signedUrl);
     const blob = await res.blob();
-    const dataUrl = await new Promise<string>((resolve, reject) => {
+    const rawDataUrl = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result as string);
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
-    const dims = await new Promise<{ w: number; h: number }>((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve({ w: img.width, h: img.height });
-      img.onerror = () => resolve({ w: 1, h: 1 });
-      img.src = dataUrl;
-    });
-    return { dataUrl, w: dims.w, h: dims.h };
+    // Compress aggressively — 40+ photos at full resolution will OOM the PDF generator
+    const compressed = await compressDataUrl(rawDataUrl, 1200, 0.75);
+    return compressed;
   } catch (e) {
     console.warn("Could not load photo for PDF", path, e);
     return null;
@@ -39,6 +38,8 @@ export interface DailyReportPdfProject {
   gnr_bnr?: string | null;
   saksnr?: string | null;
   client_name?: string | null;
+  partner_logo_url?: string | null;
+  partner_name?: string | null;
 }
 
 export interface DailyReportPdfCompany {
@@ -49,12 +50,29 @@ export interface DailyReportPdfCompany {
   org_number?: string | null;
   phone?: string | null;
   email?: string | null;
+  logo_url?: string | null;
+}
+
+async function loadImageAsDataUrl(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const r = new FileReader();
+      r.onloadend = () => resolve(r.result as string);
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
 }
 
 async function buildDailyReportPdf(
   report: DailyReport,
   project: DailyReportPdfProject | null,
-  company: DailyReportPdfCompany | null
+  company: DailyReportPdfCompany | null,
+  onProgress?: PdfProgressCallback
 ): Promise<{ doc: jsPDF; fileName: string }> {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -124,6 +142,28 @@ async function buildDailyReportPdf(
     y + 7
   );
   y += 16;
+
+  // Logo strip (own logo + optional partner logo)
+  const logos: { url: string; label: string }[] = [];
+  if (company?.logo_url) logos.push({ url: company.logo_url, label: company?.name || "" });
+  if (project?.partner_logo_url) logos.push({ url: project.partner_logo_url, label: project?.partner_name || "Samarbeidspartner" });
+  if (logos.length > 0) {
+    onProgress?.(0, 0, "Laster logoer...");
+    const logoH = 18;
+    const logoW = 38;
+    const gap = 6;
+    const startX = margin;
+    for (let i = 0; i < logos.length; i++) {
+      const dataUrl = await loadImageAsDataUrl(logos[i].url);
+      if (!dataUrl) continue;
+      try {
+        doc.addImage(dataUrl, "PNG", startX + i * (logoW + gap), y, logoW, logoH, undefined, "FAST");
+      } catch {
+        try { doc.addImage(dataUrl, "JPEG", startX + i * (logoW + gap), y, logoW, logoH, undefined, "FAST"); } catch { /* skip */ }
+      }
+    }
+    y += logoH + 4;
+  }
 
   const ensureSpace = (needed: number) => {
     if (y + needed > pageHeight - 25) {
@@ -243,7 +283,7 @@ async function buildDailyReportPdf(
     para(report.notes);
   }
 
-  // Photos
+  // Photos — batch + compress to avoid OOM/hang on 40+ images
   if (report.photos?.length > 0) {
     section(`Vedlagte bilder (${report.photos.length})`);
     const cols = 2;
@@ -253,36 +293,44 @@ async function buildDailyReportPdf(
     let rowMaxH = 0;
     let rowStartY = y;
 
-    for (const photo of report.photos as any[]) {
-      const data = await fetchPhotoDataUrl(photo.path);
-      if (!data) continue;
-      const ratio = data.h / data.w;
-      const imgH = Math.min(imgW * ratio, 80);
+    const photos = report.photos as any[];
+    const BATCH = 5;
+    let processed = 0;
 
-      if (col === 0) {
-        ensureSpace(imgH + 6);
-        rowStartY = y;
-        rowMaxH = 0;
-      }
+    for (let i = 0; i < photos.length; i += BATCH) {
+      const slice = photos.slice(i, i + BATCH);
+      const loaded = await Promise.all(slice.map((p) => fetchAndCompressPhoto(p.path)));
+      for (const data of loaded) {
+        processed++;
+        onProgress?.(processed, photos.length, `Behandler bilde ${processed} av ${photos.length}…`);
+        if (!data) continue;
+        const ratio = data.h / data.w;
+        const imgH = Math.min(imgW * ratio, 80);
 
-      const x = margin + col * (imgW + gap);
-      try {
-        doc.addImage(data.dataUrl, "JPEG", x, rowStartY, imgW, imgH);
-      } catch {
+        if (col === 0) {
+          ensureSpace(imgH + 6);
+          rowStartY = y;
+          rowMaxH = 0;
+        }
+
+        const x = margin + col * (imgW + gap);
         try {
-          doc.addImage(data.dataUrl, "PNG", x, rowStartY, imgW, imgH);
+          doc.addImage(data.dataUrl, "JPEG", x, rowStartY, imgW, imgH, undefined, "FAST");
         } catch (e) {
           console.warn("addImage failed", e);
         }
-      }
-      rowMaxH = Math.max(rowMaxH, imgH);
+        rowMaxH = Math.max(rowMaxH, imgH);
 
-      col++;
-      if (col >= cols) {
-        col = 0;
-        y = rowStartY + rowMaxH + gap;
+        col++;
+        if (col >= cols) {
+          col = 0;
+          y = rowStartY + rowMaxH + gap;
+        }
       }
+      // Yield to UI thread so progress can render
+      await new Promise((r) => setTimeout(r, 0));
     }
+
     if (col !== 0) {
       y = rowStartY + rowMaxH + gap;
     }
@@ -309,9 +357,10 @@ async function buildDailyReportPdf(
 export async function generateDailyReportPdf(
   report: DailyReport,
   project: DailyReportPdfProject | null,
-  company: DailyReportPdfCompany | null
+  company: DailyReportPdfCompany | null,
+  onProgress?: PdfProgressCallback
 ): Promise<void> {
-  const { doc, fileName } = await buildDailyReportPdf(report, project, company);
+  const { doc, fileName } = await buildDailyReportPdf(report, project, company, onProgress);
   doc.save(fileName);
 }
 
