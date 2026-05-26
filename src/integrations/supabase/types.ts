@@ -5390,6 +5390,39 @@ export type Database = {
           },
         ]
       }
+      hms_sja_templates: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          rows: Json
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          rows?: Json
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          rows?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       hms_vernerunde_templates: {
         Row: {
           checkpoints: Json

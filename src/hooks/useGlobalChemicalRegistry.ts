@@ -337,18 +337,29 @@ export const useGlobalChemicalRegistry = (projectId: string | null) => {
     },
   });
 
-  // Get SDS download URL
+  // Get SDS download URL. Tries the primary bucket first, then falls back to the alternative
+  // (some SDS files were uploaded to ik-hms-sds before the global-sds-files migration).
   const getSdsDownloadUrl = async (sdsFilePath: string, isGlobal: boolean = true): Promise<string | null> => {
-    try {
-      const bucket = isGlobal ? "global-sds-files" : "ik-hms-sds";
-      const { data } = await supabase.storage
-        .from(bucket)
-        .createSignedUrl(sdsFilePath, 3600); // 1 hour expiry
+    const buckets = isGlobal
+      ? ["global-sds-files", "ik-hms-sds"]
+      : ["ik-hms-sds", "global-sds-files"];
 
-      return data?.signedUrl || null;
-    } catch {
-      return null;
+    for (const bucket of buckets) {
+      try {
+        const { data, error } = await supabase.storage
+          .from(bucket)
+          .createSignedUrl(sdsFilePath, 3600);
+        if (error) {
+          console.warn(`[SDS] bucket=${bucket} path=${sdsFilePath} error=${error.message}`);
+          continue;
+        }
+        if (data?.signedUrl) return data.signedUrl;
+      } catch (e: any) {
+        console.warn(`[SDS] bucket=${bucket} exception=${e?.message}`);
+      }
     }
+    console.error(`[SDS] No signed URL found for path=${sdsFilePath}`);
+    return null;
   };
 
   return {

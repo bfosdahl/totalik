@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Plus, FileText, ChevronDown, Edit, Trash2, Loader2, Check } from "lucide-react";
 import { RoutineLibraryDialog } from "@/components/routines/RoutineLibraryDialog";
+import { AiRoutineDialog } from "@/components/routines/AiRoutineDialog";
 import { useIkAlkoholRoutines, ROUTINE_CATEGORIES, VENUE_TYPES, CUSTOM_CATEGORY_VALUE } from "@/hooks/useIkAlkoholRoutines";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useAuth } from "@/contexts/AuthContext";
@@ -125,6 +126,7 @@ const IkAlkoholRutiner = () => {
             <p className="text-muted-foreground">Rutinebibliotek for alkoholkontroll</p>
           </div>
           <div className="flex gap-2">
+            <AiRoutineDialog module="ik_alkohol" onAdopt={handleAdoptFromLibrary} />
             <RoutineLibraryDialog 
               module="ik_alkohol" 
               onAdopt={handleAdoptFromLibrary}
