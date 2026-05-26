@@ -10791,6 +10791,7 @@ export type Database = {
           no_subcontractors: boolean
           partner_logo_url: string | null
           partner_name: string | null
+          partner_org_number: string | null
           planned_end_date: string | null
           planned_start_date: string | null
           progress_percent: number | null
@@ -10828,6 +10829,7 @@ export type Database = {
           no_subcontractors?: boolean
           partner_logo_url?: string | null
           partner_name?: string | null
+          partner_org_number?: string | null
           planned_end_date?: string | null
           planned_start_date?: string | null
           progress_percent?: number | null
@@ -10865,6 +10867,7 @@ export type Database = {
           no_subcontractors?: boolean
           partner_logo_url?: string | null
           partner_name?: string | null
+          partner_org_number?: string | null
           planned_end_date?: string | null
           planned_start_date?: string | null
           progress_percent?: number | null

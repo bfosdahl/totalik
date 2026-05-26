@@ -488,9 +488,9 @@ export default function Ks2Dagsrapport() {
     try {
       const [{ data: projectData }, { data: companyData }] = await Promise.all([
         report.project_id
-          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name").eq("id", report.project_id).maybeSingle()
+          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name, partner_name, partner_org_number, partner_logo_url").eq("id", report.project_id).maybeSingle()
           : Promise.resolve({ data: null } as any),
-        supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email").eq("id", report.company_id).maybeSingle(),
+        supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email, logo_url").eq("id", report.company_id).maybeSingle(),
       ]);
       await generateDailyReportPdf(report, projectData as any, companyData as any);
     } catch (err) {
@@ -505,9 +505,9 @@ export default function Ks2Dagsrapport() {
     try {
       const [{ data: projectData }, { data: companyData }] = await Promise.all([
         report.project_id
-          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name").eq("id", report.project_id).maybeSingle()
+          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name, partner_name, partner_org_number, partner_logo_url").eq("id", report.project_id).maybeSingle()
           : Promise.resolve({ data: null } as any),
-        supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email").eq("id", report.company_id).maybeSingle(),
+        supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email, logo_url").eq("id", report.company_id).maybeSingle(),
       ]);
       const { base64, fileName } = await generateDailyReportPdfBase64(report, projectData as any, companyData as any);
       setEmailAttachment({ filename: fileName, content: base64, contentType: "application/pdf" });

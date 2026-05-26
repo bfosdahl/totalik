@@ -40,6 +40,7 @@ export interface DailyReportPdfProject {
   client_name?: string | null;
   partner_logo_url?: string | null;
   partner_name?: string | null;
+  partner_org_number?: string | null;
 }
 
 export interface DailyReportPdfCompany {
@@ -118,16 +119,35 @@ async function buildDailyReportPdf(
   doc.setFontSize(12);
   doc.setFont("helvetica", "normal");
   doc.text(`Nr: ${report.report_number}`, 15, 25);
+  // Company info (right side of blue header)
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
-  doc.text(company?.name || "—", pageWidth - 15, 15, { align: "right" });
+  doc.text(company?.name || "—", pageWidth - 15, 13, { align: "right" });
+  let headerRightY = 13;
   if (company?.org_number) {
-    doc.setFontSize(9);
+    headerRightY += 4;
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
-    doc.text(`Org.nr: ${company.org_number}`, pageWidth - 15, 23, { align: "right" });
+    doc.text(`Org.nr: ${company.org_number}`, pageWidth - 15, headerRightY, { align: "right" });
   }
-  doc.setFontSize(8);
-  doc.text(`Generert: ${format(new Date(), "dd.MM.yyyy HH:mm", { locale: nb })}`, pageWidth - 15, 31, { align: "right" });
+  // Partner info (right under company info, in same blue header)
+  if (project?.partner_name || project?.partner_org_number) {
+    headerRightY += 5;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.text(`i samarbeid med:`, pageWidth - 15, headerRightY, { align: "right" });
+    if (project?.partner_name) {
+      headerRightY += 4;
+      doc.setFontSize(10);
+      doc.text(project.partner_name, pageWidth - 15, headerRightY, { align: "right" });
+    }
+    if (project?.partner_org_number) {
+      headerRightY += 4;
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Org.nr: ${project.partner_org_number}`, pageWidth - 15, headerRightY, { align: "right" });
+    }
+  }
   doc.setTextColor(0, 0, 0);
 
   // Date banner
