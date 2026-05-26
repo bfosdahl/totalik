@@ -18,7 +18,7 @@ import { adoptRoutineTemplateToVisibleSystem } from "@/lib/adoptRoutineTemplate"
 interface AiRoutineDialogProps {
   module: RoutineLibraryModule;
   /** Optional adopt callback. If provided, the generated routine is passed to it as a RoutineTemplate shape.
-   *  Otherwise, defaults to inserting into customer_routine_instances. */
+   *  Otherwise, it is saved directly into the module's visible routine system. */
   onAdopt?: (template: RoutineTemplate) => Promise<void> | void;
 }
 
