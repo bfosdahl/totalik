@@ -123,14 +123,22 @@ const IkMatOppsett = () => {
             </div>
           </div>
         ) : (
-          <IkMatChatSetup
-            companyId={company.id}
-            onComplete={() => {
-              setSetupCompleted(true);
-              setIsRestarting(false);
-            }}
-          />
-        )}
+          <div className="space-y-6">
+            <IkMatHandbookImportUploader
+              companyId={company.id}
+              onImportComplete={() => {
+                // Reload page so chat veiviser kan bruke importert kontekst
+                window.location.reload();
+              }}
+            />
+            <IkMatChatSetup
+              companyId={company.id}
+              onComplete={() => {
+                setSetupCompleted(true);
+                setIsRestarting(false);
+              }}
+            />
+          </div>
 
         <AlertDialog open={showRestartDialog} onOpenChange={setShowRestartDialog}>
           <AlertDialogContent>
