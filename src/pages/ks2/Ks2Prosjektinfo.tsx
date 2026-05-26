@@ -52,7 +52,10 @@ export default function Ks2Prosjektinfo() {
     contract_sum: "",
     description: "",
     status: "active" as "planned" | "active" | "handover" | "warranty" | "completed",
+    partner_name: "",
+    partner_logo_url: "",
   });
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -89,6 +92,8 @@ export default function Ks2Prosjektinfo() {
           contract_sum: p.contract_sum?.toString() || "",
           description: p.description || "",
           status: p.status,
+          partner_name: (p as any).partner_name || "",
+          partner_logo_url: (p as any).partner_logo_url || "",
         });
       } catch (error) {
         console.error("Error fetching project:", error);
@@ -139,7 +144,9 @@ export default function Ks2Prosjektinfo() {
           contract_sum: formData.contract_sum ? parseFloat(formData.contract_sum) : null,
           description: formData.description || null,
           status: formData.status,
-        })
+          partner_name: formData.partner_name || null,
+          partner_logo_url: formData.partner_logo_url || null,
+        } as any)
         .eq("id", projectId);
 
       if (error) throw error;
