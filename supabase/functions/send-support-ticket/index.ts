@@ -7,6 +7,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const esc = (s: unknown) =>
+  String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -123,25 +131,25 @@ serve(async (req) => {
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
               <tr>
                 <td style="padding: 8px 0; color: #666; width: 120px; vertical-align: top;"><strong>Bedrift:</strong></td>
-                <td style="padding: 8px 0; color: #333;">${companyName}</td>
+                <td style="padding: 8px 0; color: #333;">${esc(companyName)}</td>
               </tr>
               <tr>
                 <td style="padding: 8px 0; color: #666; vertical-align: top;"><strong>Bruker:</strong></td>
-                <td style="padding: 8px 0; color: #333;">${userName}</td>
+                <td style="padding: 8px 0; color: #333;">${esc(userName)}</td>
               </tr>
               <tr>
                 <td style="padding: 8px 0; color: #666; vertical-align: top;"><strong>E-post:</strong></td>
-                <td style="padding: 8px 0; color: #333;">${profile.email || user.email}</td>
+                <td style="padding: 8px 0; color: #333;">${esc(profile.email || user.email)}</td>
               </tr>
               <tr>
                 <td style="padding: 8px 0; color: #666; vertical-align: top;"><strong>Emne:</strong></td>
-                <td style="padding: 8px 0; color: #333; font-weight: 600;">${subject.trim()}</td>
+                <td style="padding: 8px 0; color: #333; font-weight: 600;">${esc(subject.trim())}</td>
               </tr>
             </table>
             
             <div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px;">
               <h3 style="margin: 0 0 8px 0; color: #333; font-size: 14px;">Melding:</h3>
-              <p style="color: #555; line-height: 1.6; margin: 0; white-space: pre-wrap;">${message.trim()}</p>
+              <p style="color: #555; line-height: 1.6; margin: 0; white-space: pre-wrap;">${esc(message.trim())}</p>
             </div>
             
             <p style="color: #999; font-size: 12px; text-align: center; margin-top: 20px;">
