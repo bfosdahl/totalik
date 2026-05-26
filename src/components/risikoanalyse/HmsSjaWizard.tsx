@@ -41,9 +41,13 @@ interface HmsSjaWizardProps {
 export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
   const { profile } = useAuth();
   const { updateSja, completeSja } = useHmsSja();
+  const { createTemplate } = useHmsSjaTemplates();
   const sigCanvasRef = useRef<SignatureCanvas>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showSignature, setShowSignature] = useState(false);
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateDesc, setTemplateDesc] = useState("");
 
   // Parse existing data into simplified rows
   const parseExistingRows = (): SjaRow[] => {
