@@ -13,11 +13,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { RoutineTemplate, RoutineLibraryModule } from "@/hooks/useRoutineLibrary";
+import { adoptRoutineTemplateToVisibleSystem } from "@/lib/adoptRoutineTemplate";
 
 interface AiRoutineDialogProps {
   module: RoutineLibraryModule;
   /** Optional adopt callback. If provided, the generated routine is passed to it as a RoutineTemplate shape.
-   *  Otherwise, defaults to inserting into customer_routine_instances. */
+   *  Otherwise, it is saved directly into the module's visible routine system. */
   onAdopt?: (template: RoutineTemplate) => Promise<void> | void;
 }
 
@@ -96,28 +97,7 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
         await onAdopt(template);
       } else {
         if (!profile?.company_id) throw new Error("Mangler bedrift");
-        const { error } = await supabase
-          .from("customer_routine_instances")
-          .insert([{
-            company_id: profile.company_id,
-            template_id: null,
-            template_version: null,
-            title: template.title,
-            module: template.module,
-            content: {
-              description: template.description,
-              purpose: template.purpose,
-              steps: template.steps,
-              frequency: template.frequency,
-              legal_refs: template.legal_refs,
-              target_roles: template.target_roles,
-              tags: template.tags,
-              ai_generated: true,
-            },
-            status: "active",
-            update_available: false,
-          }]);
-        if (error) throw error;
+        await adoptRoutineTemplateToVisibleSystem(template, profile.company_id);
         queryClient.invalidateQueries({ queryKey: ["customer-routine-instances"] });
         toast.success("AI-rutine lagret");
       }

@@ -24,7 +24,7 @@ interface RoutineLibraryDialogProps {
   module: RoutineLibraryModule;
   buttonLabel?: string;
   buttonVariant?: "default" | "outline" | "secondary" | "ghost";
-  /** Custom adopt handler. If provided, this is called instead of the default customer_routine_instances insert. */
+  /** Custom adopt handler. If provided, this is called instead of the default visible routine-system insert. */
   onAdopt?: (template: RoutineTemplate) => Promise<void>;
   /** Set of already-adopted template IDs from the parent (overrides internal tracking) */
   adoptedIds?: Set<string>;
