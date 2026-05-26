@@ -214,6 +214,7 @@ serve(async (req) => {
           model: "google/gemini-2.5-flash",
           messages,
           temperature: 0.1,
+          response_format: { type: "json_object" },
         }),
       },
     );
@@ -260,17 +261,64 @@ serve(async (req) => {
     }
 
     let extractedData;
-    try {
-      let jsonStr = content;
-      const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-      if (jsonMatch) jsonStr = jsonMatch[1];
-      extractedData = JSON.parse(jsonStr.trim());
-    } catch {
+    const tryParse = (s: string) => {
+      try { return JSON.parse(s); } catch { return null; }
+    };
+    const repairJson = (s: string): string => {
+      // Repair common AI mistakes:
+      // 1) Array opened with `[` but closed with `}` — replace stray `},` after a list of strings/objects with `],`
+      // 2) Trailing commas before } or ]
+      let out = s
+        // remove trailing commas
+        .replace(/,(\s*[}\]])/g, "$1");
+      // Heuristic: scan and balance brackets — convert misplaced `}` to `]` when an array is open
+      const stack: string[] = [];
+      const chars = out.split("");
+      let inStr = false;
+      let esc = false;
+      for (let i = 0; i < chars.length; i++) {
+        const c = chars[i];
+        if (inStr) {
+          if (esc) { esc = false; continue; }
+          if (c === "\\") { esc = true; continue; }
+          if (c === '"') inStr = false;
+          continue;
+        }
+        if (c === '"') { inStr = true; continue; }
+        if (c === "{" || c === "[") stack.push(c);
+        else if (c === "}") {
+          const top = stack[stack.length - 1];
+          if (top === "[") { chars[i] = "]"; stack.pop(); }
+          else stack.pop();
+        } else if (c === "]") {
+          const top = stack[stack.length - 1];
+          if (top === "{") { chars[i] = "}"; stack.pop(); }
+          else stack.pop();
+        }
+      }
+      return chars.join("");
+    };
+
+    let jsonStr = content;
+    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (jsonMatch) jsonStr = jsonMatch[1];
+    jsonStr = jsonStr.trim();
+
+    extractedData = tryParse(jsonStr);
+    if (!extractedData) {
+      const repaired = repairJson(jsonStr);
+      extractedData = tryParse(repaired);
+      if (extractedData) {
+        console.log("Recovered AI response via JSON repair");
+      }
+    }
+
+    if (!extractedData) {
       console.error("Failed to parse AI response:", content);
       return new Response(
         JSON.stringify({
-          error: "Kunne ikke parse AI-respons",
-          rawContent: content,
+          error: "Kunne ikke parse AI-respons. Prøv igjen, eller last opp et mindre dokument.",
+          rawContent: content?.slice(0, 2000),
         }),
         {
           status: 500,
