@@ -444,7 +444,7 @@ export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType, 
       {/* Mobile Menu Button - positioned below iOS notch / Dynamic Island */}
       <div
         className="lg:hidden fixed left-3 z-50"
-        style={{ top: "calc(0.75rem + env(safe-area-inset-top))" }}
+        style={{ top: "calc(1.25rem + env(safe-area-inset-top))" }}
       >
 
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
