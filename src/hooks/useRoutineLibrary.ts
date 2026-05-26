@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { adoptRoutineTemplateToVisibleSystem } from "@/lib/adoptRoutineTemplate";
 
 export interface RoutineTemplate {
   id: string;
@@ -82,27 +83,7 @@ export function useRoutineLibrary(module: RoutineLibraryModule) {
   const adoptTemplate = useMutation({
     mutationFn: async (template: RoutineTemplate) => {
       if (!companyId) throw new Error("No company");
-      const { error } = await supabase
-        .from("customer_routine_instances")
-        .insert([{
-          company_id: companyId,
-          template_id: template.id,
-          template_version: template.version,
-          title: template.title,
-          module: template.module,
-          content: {
-            description: template.description,
-            purpose: template.purpose,
-            steps: template.steps,
-            frequency: template.frequency,
-            legal_refs: template.legal_refs,
-            target_roles: template.target_roles,
-            tags: template.tags,
-          },
-          status: "active",
-          update_available: false,
-        }]);
-      if (error) throw error;
+      await adoptRoutineTemplateToVisibleSystem(template, companyId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["customer-routine-instances", companyId, module] });
