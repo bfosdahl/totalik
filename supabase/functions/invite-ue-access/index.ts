@@ -203,6 +203,19 @@ const handler = async (req: Request): Promise<Response> => {
       ? `${project.project_number} - ${project.project_name}${project.address ? ` (${project.address})` : ''}`
       : 'Prosjekt';
 
+    // HTML-escape all user-controlled or DB-sourced strings before interpolating into the email body.
+    const esc = (s: unknown) => String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    const safeName = esc(name);
+    const safeCompanyName = esc(company_name);
+    const safeProjectInfo = esc(projectInfo);
+    const safeEmail = esc(email);
+
     const baseUrl = Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || '';
     const loginUrl = `${baseUrl}/auth?redirect=/ks2/project/${project_id}`;
     
