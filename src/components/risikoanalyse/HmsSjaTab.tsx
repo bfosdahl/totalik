@@ -70,6 +70,32 @@ export function HmsSjaTab() {
       return;
     }
 
+    // Build risks/measures from selected template, if any
+    let risks: HmsSjaRisk[] = [];
+    let measures: HmsSjaMeasure[] = [];
+    let work_description: string | undefined;
+    if (selectedTemplateId && selectedTemplateId !== "none") {
+      const tmpl = templates.find((t) => t.id === selectedTemplateId);
+      if (tmpl) {
+        risks = tmpl.rows.map((r) => ({
+          id: r.id || crypto.randomUUID(),
+          description: r.risk,
+          probability: 3,
+          consequence: 3,
+          ...({ activity: r.activity } as any),
+        })) as any;
+        measures = tmpl.rows
+          .filter((r) => r.measure)
+          .map((r) => ({
+            id: crypto.randomUUID(),
+            riskId: r.id,
+            description: r.measure,
+            responsible: "",
+          }));
+        work_description = tmpl.rows.map((r) => r.activity).filter(Boolean).join("; ");
+      }
+    }
+
     const result = await createSja.mutateAsync({
       title: newSja.title,
       description: newSja.description,
@@ -77,9 +103,13 @@ export function HmsSjaTab() {
       planned_date: newSja.planned_date,
       responsible_name: newSja.responsible_name,
       risk_level: newSja.risk_level,
+      risks,
+      measures,
+      work_description,
     });
 
     setShowNewDialog(false);
+    setSelectedTemplateId("none");
     setNewSja({
       title: "",
       description: "",
