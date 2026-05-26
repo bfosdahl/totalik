@@ -206,7 +206,7 @@ export async function applyIkMatHandbookImport(
           .join(" ") || profileData.email || "Importert"
         : "Importert";
 
-      const rows = data.deviations
+      const rows: any[] = data.deviations
         .filter((d) => d?.tittel)
         .map((d) => ({
           company_id: companyId,
