@@ -53,6 +53,7 @@ export default function Ks2Prosjektinfo() {
     description: "",
     status: "active" as "planned" | "active" | "handover" | "warranty" | "completed",
     partner_name: "",
+    partner_org_number: "",
     partner_logo_url: "",
   });
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -93,6 +94,7 @@ export default function Ks2Prosjektinfo() {
           description: p.description || "",
           status: p.status,
           partner_name: (p as any).partner_name || "",
+          partner_org_number: (p as any).partner_org_number || "",
           partner_logo_url: (p as any).partner_logo_url || "",
         });
       } catch (error) {
@@ -145,6 +147,7 @@ export default function Ks2Prosjektinfo() {
           description: formData.description || null,
           status: formData.status,
           partner_name: formData.partner_name || null,
+          partner_org_number: formData.partner_org_number || null,
           partner_logo_url: formData.partner_logo_url || null,
         } as any)
         .eq("id", projectId);
@@ -391,6 +394,14 @@ export default function Ks2Prosjektinfo() {
                 value={formData.partner_name}
                 onChange={(e) => handleChange("partner_name", e.target.value)}
                 placeholder="F.eks. Byggherre AS"
+              />
+            </div>
+            <div>
+              <Label>Org.nr. samarbeidspartner</Label>
+              <Input
+                value={formData.partner_org_number}
+                onChange={(e) => handleChange("partner_org_number", e.target.value)}
+                placeholder="F.eks. 999 999 999"
               />
             </div>
             <div>
