@@ -4,10 +4,13 @@ import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { generatePdfHeader, addPdfFooter, PdfHeaderInfo } from "./ksModule2PdfHeader";
 import type { DailyReport } from "@/hooks/useKsDailyReports";
+import { compressDataUrl } from "./imageCompression";
 
 const BUCKET = "daily-report-photos";
 
-async function fetchPhotoDataUrl(path: string): Promise<{ dataUrl: string; w: number; h: number } | null> {
+export type PdfProgressCallback = (current: number, total: number, label?: string) => void;
+
+async function fetchAndCompressPhoto(path: string): Promise<{ dataUrl: string; w: number; h: number } | null> {
   try {
     const { data } = await supabase.storage.from(BUCKET).createSignedUrl(path, 600);
     if (!data?.signedUrl) return null;
