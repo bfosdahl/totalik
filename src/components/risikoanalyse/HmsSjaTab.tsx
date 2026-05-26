@@ -46,12 +46,14 @@ const STATUS_CONFIG = {
 
 export function HmsSjaTab() {
   const { sjaList, isLoading, createSja, deleteSja } = useHmsSja();
+  const { templates, deleteTemplate } = useHmsSjaTemplates();
   const { employees } = useEmployees();
   
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const [selectedSja, setSelectedSja] = useState<HmsSja | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("none");
   
   const [newSja, setNewSja] = useState({
     title: "",
