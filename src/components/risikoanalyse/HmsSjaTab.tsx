@@ -217,6 +217,34 @@ export function HmsSjaTab() {
               <DialogTitle>Opprett ny Sikker Jobb Analyse</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
+              {templates.length > 0 && (
+                <div className="p-3 rounded-lg border bg-muted/30">
+                  <label className="text-sm font-medium block mb-2">
+                    Bruk SJA-mal (valgfritt)
+                  </label>
+                  <Select
+                    value={selectedTemplateId}
+                    onValueChange={setSelectedTemplateId}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Start fra bunn eller velg mal..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Ingen mal – start fra bunn</SelectItem>
+                      {templates.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedTemplateId !== "none" && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Aktiviteter, risiko og tiltak fra malen fylles inn automatisk. Du kan justere alt etterpå.
+                    </p>
+                  )}
+                </div>
+              )}
               <div>
                 <label className="text-sm font-medium">Tittel *</label>
                 <Input 
