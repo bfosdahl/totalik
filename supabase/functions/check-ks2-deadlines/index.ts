@@ -9,6 +9,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const esc = (s: unknown) =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 interface Checklist {
   id: string;
   title: string;
@@ -181,20 +187,20 @@ const handler = async (req: Request): Promise<Response> => {
               <div class="container">
                 <div class="header">
                   <h1 style="margin: 0; font-size: 20px;">KS Egenkontroll Påminnelse</h1>
-                  <p style="margin: 5px 0 0 0; opacity: 0.9;">${companyName}</p>
+                  <p style="margin: 5px 0 0 0; opacity: 0.9;">${esc(companyName)}</p>
                 </div>
                 <div class="content">
-                  <p>Hei ${responsibleName},</p>
+                  <p>Hei ${esc(responsibleName)},</p>
                   <p>${urgency}</p>
                   
                   <div class="info-box">
                     <div style="margin-bottom: 10px;">
                       <span class="label">Prosjekt</span>
-                      <div class="value">${project.project_number} - ${project.project_name}</div>
+                      <div class="value">${esc(project.project_number)} - ${esc(project.project_name)}</div>
                     </div>
                     <div style="margin-bottom: 10px;">
                       <span class="label">Egenkontroll</span>
-                      <div class="value">${checklist.title}</div>
+                      <div class="value">${esc(checklist.title)}</div>
                     </div>
                     <div>
                       <span class="label">Frist</span>
@@ -205,7 +211,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <p>Vennligst logg inn for å fullføre egenkontroll før fristen.</p>
                   
                   <div class="footer">
-                    <p>Denne e-posten ble sendt automatisk fra ${companyName} sitt KS-system.</p>
+                    <p>Denne e-posten ble sendt automatisk fra ${esc(companyName)} sitt KS-system.</p>
                   </div>
                 </div>
               </div>

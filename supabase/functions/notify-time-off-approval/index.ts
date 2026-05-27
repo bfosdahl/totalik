@@ -7,6 +7,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
 };
 
+const esc = (s: unknown) =>
+  String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -82,7 +88,7 @@ serve(async (req) => {
                 <h1 style="color: white; margin: 0; font-size: 22px;">${statusEmoji} Forespørsel ${statusText}</h1>
               </div>
               <div style="background: #f9fafb; padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
-                <p>Hei ${employee.first_name || ''},</p>
+                <p>Hei ${esc(employee.first_name || '')},</p>
                 <p>Din fraværsforespørsel har blitt <strong>${statusText}</strong>.</p>
                 <div style="background: white; padding: 16px; border-radius: 8px; border-left: 4px solid ${statusColor}; margin: 16px 0;">
                   <p style="margin: 4px 0;"><strong>Fra:</strong> ${formattedStart}</p>
@@ -92,7 +98,7 @@ serve(async (req) => {
                 ${status !== 'approved' ? '<p>Kontakt din leder for mer informasjon.</p>' : ''}
                 <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
                 <p style="color: #9ca3af; font-size: 12px; text-align: center;">
-                  Automatisk varsel fra ${companyName} via Total-IK.
+                  Automatisk varsel fra ${esc(companyName)} via Total-IK.
                 </p>
               </div>
             </div>

@@ -9,6 +9,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const esc = (s: unknown) =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 interface Deviation {
   id: string;
   deviation_number: string;
@@ -181,20 +187,20 @@ const handler = async (req: Request): Promise<Response> => {
               <div class="container">
                 <div class="header">
                   <h1 style="margin: 0; font-size: 20px;">Avvikspåminnelse</h1>
-                  <p style="margin: 5px 0 0 0; opacity: 0.9;">${companyName}</p>
+                  <p style="margin: 5px 0 0 0; opacity: 0.9;">${esc(companyName)}</p>
                 </div>
                 <div class="content">
-                  <p>Hei ${assigneeName},</p>
+                  <p>Hei ${esc(assigneeName)},</p>
                   <p>${urgency}</p>
                   
                   <div class="deviation-box">
                     <div style="margin-bottom: 10px;">
                       <span class="label">Avviksnummer</span>
-                      <div class="value">${deviation.deviation_number}</div>
+                      <div class="value">${esc(deviation.deviation_number)}</div>
                     </div>
                     <div style="margin-bottom: 10px;">
                       <span class="label">Tittel</span>
-                      <div class="value">${deviation.title}</div>
+                      <div class="value">${esc(deviation.title)}</div>
                     </div>
                     <div>
                       <span class="label">Frist</span>
@@ -205,7 +211,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <p>Vennligst logg inn for å oppdatere status eller fullføre nødvendige tiltak.</p>
                   
                   <div class="footer">
-                    <p>Denne e-posten ble sendt automatisk fra ${companyName} sitt internkontrollsystem.</p>
+                    <p>Denne e-posten ble sendt automatisk fra ${esc(companyName)} sitt internkontrollsystem.</p>
                   </div>
                 </div>
               </div>

@@ -8,6 +8,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const esc = (s: unknown) =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -191,7 +197,7 @@ serve(async (req) => {
               from: "Total-IK <noreply@totalik.no>",
               to: [email],
               subject: `Du har fått tilgang igjen til ${companyName}`,
-              html: `<p>Hei,</p><p>Din konto i <strong>${companyName}</strong> er reaktivert. Klikk lenken under for å sette nytt passord og logge inn.</p><p><a href="${resetLink}">Sett nytt passord og logg inn</a></p><p>Lenken er gyldig i 24 timer.</p>`,
+              html: `<p>Hei,</p><p>Din konto i <strong>${esc(companyName)}</strong> er reaktivert. Klikk lenken under for å sette nytt passord og logge inn.</p><p><a href="${resetLink}">Sett nytt passord og logg inn</a></p><p>Lenken er gyldig i 24 timer.</p>`,
             });
             emailSent = true;
           } catch (e) {
@@ -348,17 +354,17 @@ serve(async (req) => {
             </head>
             <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
               <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-                <h1 style="color: white; margin: 0; font-size: 24px;">Velkommen til ${companyName}!</h1>
+                <h1 style="color: white; margin: 0; font-size: 24px;">Velkommen til ${esc(companyName)}!</h1>
               </div>
               
               <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-                <p style="font-size: 16px;">Hei ${userName},</p>
+                <p style="font-size: 16px;">Hei ${esc(userName)},</p>
                 
-                <p>Du har blitt invitert til å bruke HMS-systemet til <strong>${companyName}</strong>.</p>
+                <p>Du har blitt invitert til å bruke HMS-systemet til <strong>${esc(companyName)}</strong>.</p>
                 
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                  <p style="margin: 0;"><strong>Din rolle:</strong> ${roleName}</p>
-                  <p style="margin: 8px 0 0 0;"><strong>E-post:</strong> ${email}</p>
+                  <p style="margin: 0;"><strong>Din rolle:</strong> ${esc(roleName)}</p>
+                  <p style="margin: 8px 0 0 0;"><strong>E-post:</strong> ${esc(email)}</p>
                 </div>
                 
                 <p>Klikk på knappen nedenfor for å sette ditt passord og logge inn.</p>
@@ -383,7 +389,7 @@ serve(async (req) => {
                 <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
                 
                 <p style="color: #888; font-size: 12px; text-align: center;">
-                  Denne e-posten ble sendt fra HMS-systemet til ${companyName}.<br>
+                  Denne e-posten ble sendt fra HMS-systemet til ${esc(companyName)}.<br>
                   Hvis du ikke forventet denne invitasjonen, kan du trygt ignorere denne e-posten.
                 </p>
               </div>

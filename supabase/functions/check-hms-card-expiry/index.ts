@@ -5,6 +5,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const esc = (s: unknown) =>
+  String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+
 interface ProfileWithExpiry {
   id: string
   user_id: string
@@ -150,7 +156,7 @@ Deno.serve(async (req) => {
         const emailContent = `
           <h2>HMS-kort utløper snart</h2>
           <p>Hei,</p>
-          <p>Dette er en påminnelse om at HMS-kortet til <strong>${employeeName}</strong> utløper <strong>${formattedDate}</strong> (om ${daysText}).</p>
+          <p>Dette er en påminnelse om at HMS-kortet til <strong>${esc(employeeName)}</strong> utløper <strong>${formattedDate}</strong> (om ${daysText}).</p>
           <p>Vennligst sørg for å fornye HMS-kortet før utløpsdatoen for å sikre at arbeidstakeren kan fortsette å jobbe i henhold til regelverket.</p>
           <p>Med vennlig hilsen,<br>Total-IK</p>
         `

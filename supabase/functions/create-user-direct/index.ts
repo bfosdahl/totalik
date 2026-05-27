@@ -8,6 +8,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const esc = (s: unknown) =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -246,8 +253,8 @@ serve(async (req) => {
           subject: `Velkommen til ${companyName} - Sett ditt passord`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h1 style="color: #333;">Velkommen til ${companyName}!</h1>
-              <p>Hei ${firstName || ""},</p>
+              <h1 style="color: #333;">Velkommen til ${esc(companyName)}!</h1>
+              <p>Hei ${esc(firstName || "")},</p>
               <p>Din brukerkonto har blitt opprettet.</p>
               <p>Klikk på knappen nedenfor for å sette ditt passord:</p>
               <p style="margin: 30px 0;">
@@ -273,7 +280,7 @@ serve(async (req) => {
               
               <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
               <p style="color: #999; font-size: 12px;">
-                Dette er en automatisk generert e-post fra ${companyName}.
+                Dette er en automatisk generert e-post fra ${esc(companyName)}.
               </p>
             </div>
           `,
