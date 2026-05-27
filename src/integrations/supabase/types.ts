@@ -8395,6 +8395,8 @@ export type Database = {
           wind_conditions: string | null
           work_areas: string | null
           work_description: string | null
+          work_end_time: string | null
+          work_start_time: string | null
         }
         Insert: {
           company_id: string
@@ -8431,6 +8433,8 @@ export type Database = {
           wind_conditions?: string | null
           work_areas?: string | null
           work_description?: string | null
+          work_end_time?: string | null
+          work_start_time?: string | null
         }
         Update: {
           company_id?: string
@@ -8467,6 +8471,8 @@ export type Database = {
           wind_conditions?: string | null
           work_areas?: string | null
           work_description?: string | null
+          work_end_time?: string | null
+          work_start_time?: string | null
         }
         Relationships: [
           {

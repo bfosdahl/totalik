@@ -95,6 +95,8 @@ function DailyReportForm({
   const [ownCrew, setOwnCrew] = useState(initialData?.own_crew_count?.toString() || "0");
   const [workDesc, setWorkDesc] = useState(initialData?.work_description || "");
   const [workAreas, setWorkAreas] = useState(initialData?.work_areas || "");
+  const [workStartTime, setWorkStartTime] = useState(initialData?.work_start_time || "");
+  const [workEndTime, setWorkEndTime] = useState(initialData?.work_end_time || "");
   const [equipmentText, setEquipmentText] = useState(
     (initialData?.equipment_used || []).map((e: any) => e.name || e).join(", ")
   );
@@ -151,6 +153,8 @@ function DailyReportForm({
     total_crew_count: Number(ownCrew) || 0,
     work_description: workDesc || undefined,
     work_areas: workAreas || undefined,
+    work_start_time: workStartTime || undefined,
+    work_end_time: workEndTime || undefined,
     equipment_used: equipmentText ? equipmentText.split(",").map((e) => ({ name: e.trim() })) : [],
     materials_received: materialsText ? materialsText.split(",").map((m) => ({ name: m.trim() })) : [],
     progress_description: progressDesc || undefined,
