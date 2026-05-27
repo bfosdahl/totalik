@@ -404,6 +404,21 @@ export function ManageEquipmentDialog({
           equipment={qrEquipment}
         />
       </DialogContent>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Fjerne utstyr?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Er du sikker på at du vil fjerne "{deleteTarget?.name}"? Denne handlingen kan ikke angres.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Fjern</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
