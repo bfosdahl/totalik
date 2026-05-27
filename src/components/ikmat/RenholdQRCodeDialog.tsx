@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { QRCodeSVG } from "qrcode.react";
 import { Download, QrCode, Printer } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { downloadQrAsPng, printQr } from "@/utils/qrCodeExport";
 
 type FrequencyType = 'daily' | 'weekly' | 'monthly' | 'periodic';
 
@@ -33,69 +34,27 @@ export function RenholdQRCodeDialog({
   const [selectedFrequency, setSelectedFrequency] = useState<FrequencyType>('daily');
 
   const baseUrl = window.location.origin;
-  const qrUrl = `${baseUrl}/ik-mat/kontroll?tab=renholdsplan&frequency=${selectedFrequency}`;
-
   const config = FREQUENCY_CONFIG[selectedFrequency];
 
   const handleDownload = () => {
     const svg = qrRef.current?.querySelector("svg");
     if (!svg) return;
-
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const size = 400;
-    canvas.width = size;
-    canvas.height = size + 100;
-
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const img = new Image();
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0, size, size);
-
-      ctx.fillStyle = "#000000";
-      ctx.font = "bold 22px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(`${config.emoji} ${config.label} renhold`, size / 2, size + 35);
-
-      ctx.font = "14px Arial";
-      ctx.fillStyle = "#666666";
-      ctx.fillText(`Skann for ${config.description}`, size / 2, size + 60);
-
-      const link = document.createElement("a");
-      link.download = `QR-Renhold-${config.label}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    };
-    img.src = "data:image/svg+xml;base64," + btoa(encodeURIComponent(svgData).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode(parseInt(p1, 16))));
+    downloadQrAsPng({
+      svg,
+      filename: `QR-Renhold-${config.label}`,
+      title: `${config.emoji} ${config.label} renhold`,
+      subtitle: `Skann for ${config.description}`,
+    });
   };
 
   const handlePrint = () => {
     const svg = qrRef.current?.querySelector("svg");
     if (!svg) return;
-
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
-
-    printWindow.document.write(`
-      <html>
-        <head><title>QR-kode ${config.label} Renhold</title></head>
-        <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;font-family:Arial,sans-serif;">
-          <div style="text-align:center;">
-            ${svgData}
-            <h2 style="margin-top:20px;">${config.emoji} ${config.label} renhold</h2>
-            <p style="color:#666;">Skann QR-koden for ${config.description}</p>
-          </div>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
+    printQr({
+      svg,
+      title: `${config.emoji} ${config.label} renhold`,
+      subtitle: `Skann QR-koden for ${config.description}`,
+    });
   };
 
   return (
