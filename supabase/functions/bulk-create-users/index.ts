@@ -68,13 +68,13 @@ async function sendWelcomeEmail(
           </div>
           
           <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #1f2937; margin-top: 0;">Hei ${displayName}!</h2>
+            <h2 style="color: #1f2937; margin-top: 0;">Hei ${escapeHtml(displayName)}!</h2>
             
-            <p>Din brukerkonto hos <strong>${companyName}</strong> er nå opprettet i Total-IK.</p>
+            <p>Din brukerkonto hos <strong>${escapeHtml(companyName)}</strong> er nå opprettet i Total-IK.</p>
             
             <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
               <h3 style="margin-top: 0; color: #374151;">Din påloggingsinformasjon:</h3>
-              <p style="margin: 5px 0;"><strong>E-post:</strong> ${email}</p>
+              <p style="margin: 5px 0;"><strong>E-post:</strong> ${escapeHtml(email)}</p>
               <p style="margin: 5px 0;">Klikk på knappen nedenfor for å sette ditt passord.</p>
             </div>
             
