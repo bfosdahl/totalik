@@ -54,6 +54,8 @@ export interface CreateDailyReport {
   total_crew_count?: number;
   work_description?: string;
   work_areas?: string;
+  work_start_time?: string;
+  work_end_time?: string;
   equipment_used?: any[];
   materials_received?: any[];
   progress_description?: string;
