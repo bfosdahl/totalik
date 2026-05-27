@@ -12,10 +12,10 @@ import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { IkMatRisk, IkMatActionItem, getTrafficLight, getTrafficLightLabel, calculateRiskLevel, getActionPlanStatus } from "@/hooks/useIkMatContent";
 import { 
-import { getLocalDateString } from "@/lib/dateUtils";
   ChevronDown, ChevronRight, Plus, Trash2, Calendar, ClipboardCheck, 
   Shield, Target, ArrowRight, CheckCircle2, AlertCircle, Lock
 } from "lucide-react";
+import { getLocalDateString } from "@/lib/dateUtils";
 
 interface RiskDetailSheetProps {
   risk: IkMatRisk | null;
