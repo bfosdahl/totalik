@@ -1,7 +1,14 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireAuth } from "../_shared/auth-guard.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+
+const esc = (s: unknown) =>
+  String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
