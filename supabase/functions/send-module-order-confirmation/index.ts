@@ -84,7 +84,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: "Total-IK <noreply@totalik.no>",
         to: [recipientEmail],
-        subject: `Ordrebekreftelse - ${moduleName}`,
+        subject: `Ordrebekreftelse - ${esc(moduleName)}`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -109,18 +109,18 @@ const handler = async (req: Request): Promise<Response> => {
                 <h1 style="margin: 0;">Bestilling bekreftet!</h1>
               </div>
               <div class="content">
-                <p>Hei ${recipientName},</p>
+                <p>Hei ${esc(recipientName)},</p>
                 <p>Takk for din bestilling! Modulen er nå aktivert og klar til bruk.</p>
                 
                 <div class="order-box">
                   <h3 style="margin-top: 0;">Ordredetaljer</h3>
                   <div class="order-row">
                     <span>Bedrift:</span>
-                    <span>${companyName}</span>
+                    <span>${esc(companyName)}</span>
                   </div>
                   <div class="order-row">
                     <span>Modul:</span>
-                    <span>${moduleName}</span>
+                    <span>${esc(moduleName)}</span>
                   </div>
                   <div class="order-row">
                     <span>Bestillingsdato:</span>
@@ -128,7 +128,7 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                   <div class="order-row">
                     <span>Pris:</span>
-                    <span>${priceMonthly} kr/mnd ekskl. mva</span>
+                    <span>${esc(priceMonthly)} kr/mnd ekskl. mva</span>
                   </div>
                 </div>
 
@@ -140,12 +140,12 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                   <div class="order-row" style="border-color: #bfdbfe;">
                     <span>Brukernavn:</span>
-                    <span><strong>${recipientEmail}</strong></span>
+                    <span><strong>${esc(recipientEmail)}</strong></span>
                   </div>
                   <p style="font-size: 13px; color: #6b7280; margin-bottom: 0;">Bruk «Glemt passord» på innloggingssiden for å sette ditt passord.</p>
                 </div>
 
-                <p>Du kan nå begynne å bruke ${moduleName} ved å logge inn i Total-IK.</p>
+                <p>Du kan nå begynne å bruke ${esc(moduleName)} ved å logge inn i Total-IK.</p>
                 
                 <p>Faktura sendes til bedriftens registrerte e-postadresse innen de første dagene av neste måned.</p>
                 
@@ -185,7 +185,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: "Total-IK <noreply@totalik.no>",
         to: ["gard@athenahms.no"],
-        subject: `Ny bestilling: ${companyName} har bestilt ${moduleName}`,
+        subject: `Ny bestilling: ${esc(companyName)} har bestilt ${esc(moduleName)}`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -218,19 +218,19 @@ const handler = async (req: Request): Promise<Response> => {
                   <h3 style="margin-top: 0; color: #059669;">Ordredetaljer</h3>
                   <div class="order-row">
                     <span><strong>Bedrift:</strong></span>
-                    <span class="highlight">${companyName}</span>
+                    <span class="highlight">${esc(companyName)}</span>
                   </div>
                   <div class="order-row">
                     <span><strong>Kontaktperson:</strong></span>
-                    <span>${recipientName}</span>
+                    <span>${esc(recipientName)}</span>
                   </div>
                   <div class="order-row">
                     <span><strong>E-post:</strong></span>
-                    <span><a href="mailto:${recipientEmail}">${recipientEmail}</a></span>
+                    <span><a href="mailto:${esc(recipientEmail)}">${esc(recipientEmail)}</a></span>
                   </div>
                   <div class="order-row">
                     <span><strong>Modul:</strong></span>
-                    <span>${moduleName}</span>
+                    <span>${esc(moduleName)}</span>
                   </div>
                   <div class="order-row">
                     <span><strong>Bestillingsdato:</strong></span>
@@ -238,7 +238,7 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                   <div class="order-row">
                     <span><strong>Pris:</strong></span>
-                    <span class="highlight">${priceMonthly} kr/mnd ekskl. mva</span>
+                    <span class="highlight">${esc(priceMonthly)} kr/mnd ekskl. mva</span>
                   </div>
                 </div>
 
