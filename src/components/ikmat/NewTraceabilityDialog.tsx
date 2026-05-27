@@ -308,6 +308,13 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
         receipt_temperature: tempValue,
         notes: fullNotes || null,
         document_path: null,
+        allergens: formData.allergens,
+        expiry_type: formData.expiry_type,
+        is_internal_production: formData.is_internal_production,
+        internal_shelf_life_days: formData.internal_shelf_life_days
+          ? parseInt(formData.internal_shelf_life_days)
+          : null,
+        produced_by: formData.produced_by || null,
       };
 
       // Upload document if selected
