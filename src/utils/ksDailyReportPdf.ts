@@ -55,17 +55,56 @@ export interface DailyReportPdfCompany {
 }
 
 async function loadImageAsDataUrl(url: string): Promise<string | null> {
+  // 1) Try direct fetch (handles same-origin + Supabase signed URLs)
   try {
     const res = await fetch(url);
-    const blob = await res.blob();
-    return await new Promise<string>((resolve, reject) => {
-      const r = new FileReader();
-      r.onloadend = () => resolve(r.result as string);
-      r.onerror = reject;
-      r.readAsDataURL(blob);
-    });
+    if (res.ok) {
+      const blob = await res.blob();
+      return await new Promise<string>((resolve, reject) => {
+        const r = new FileReader();
+        r.onloadend = () => resolve(r.result as string);
+        r.onerror = reject;
+        r.readAsDataURL(blob);
+      });
+    }
   } catch {
-    return null;
+    // fall through to img-based fallback
+  }
+
+  // 2) Fallback: load via <img> (with and without CORS) and snapshot to canvas.
+  // Required when external CDNs lack ACAO header but allow hot-linking.
+  const tryImg = (withCors: boolean): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      if (withCors) img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth || img.width;
+          canvas.height = img.naturalHeight || img.height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return reject(new Error("no ctx"));
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL("image/jpeg", 0.92));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      img.onerror = () => reject(new Error("img load failed"));
+      img.src = url;
+    });
+
+  try {
+    return await tryImg(true);
+  } catch {
+    try {
+      return await tryImg(false);
+    } catch {
+      console.warn(`Could not load logo (CORS or network blocked): ${url}`);
+      return null;
+    }
   }
 }
 
