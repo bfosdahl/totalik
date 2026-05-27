@@ -60,8 +60,15 @@ async function tryResignSupabasePublicUrl(url: string): Promise<string | null> {
     const m = url.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/);
     if (!m) return null;
     const bucket = decodeURIComponent(m[1]);
-    const path = m[2].split("?")[0].split("#")[0];
-    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(decodeURIComponent(path), 600);
+    // Strip query/hash, then decode ONCE (regex captured the still-encoded path)
+    const rawPath = m[2].split("?")[0].split("#")[0];
+    let path: string;
+    try {
+      path = decodeURIComponent(rawPath);
+    } catch {
+      path = rawPath; // already decoded
+    }
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 600);
     if (error || !data?.signedUrl) return null;
     return data.signedUrl;
   } catch {
@@ -70,22 +77,37 @@ async function tryResignSupabasePublicUrl(url: string): Promise<string | null> {
 }
 
 async function loadImageAsDataUrl(url: string): Promise<string | null> {
-  const attempts: string[] = [url];
+  // sessionStorage cache — same logo reused across reports in a project
+  const cacheKey = `ksLogoB64:${url}`;
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) return cached;
+  } catch {}
+
+  // Signed URL FIRST (most likely to work — bypasses CORS + cache), then original as fallback
+  const attempts: string[] = [];
   const signed = await tryResignSupabasePublicUrl(url);
   if (signed) attempts.push(signed);
+  attempts.push(url);
 
-  // 1) Try fetch (direct, then signed re-attempt for Supabase storage)
+  const cacheAndReturn = (dataUrl: string) => {
+    try { sessionStorage.setItem(cacheKey, dataUrl); } catch {}
+    return dataUrl;
+  };
+
+  // 1) Try fetch
   for (const u of attempts) {
     try {
       const res = await fetch(u);
       if (res.ok) {
         const blob = await res.blob();
-        return await new Promise<string>((resolve, reject) => {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
           const r = new FileReader();
           r.onloadend = () => resolve(r.result as string);
           r.onerror = reject;
           r.readAsDataURL(blob);
         });
+        return cacheAndReturn(dataUrl);
       }
       console.warn(`Logo fetch returned ${res.status} for ${u}`);
     } catch (e) {
@@ -118,11 +140,26 @@ async function loadImageAsDataUrl(url: string): Promise<string | null> {
     });
 
   for (const u of attempts) {
-    try { return await tryImg(u, true); } catch {}
-    try { return await tryImg(u, false); } catch {}
+    try { return cacheAndReturn(await tryImg(u, true)); } catch {}
+    try { return cacheAndReturn(await tryImg(u, false)); } catch {}
   }
   console.warn(`Could not load logo after all attempts: ${url}`);
   return null;
+}
+
+// Shared helper — handles night shifts (end < start crosses midnight)
+export function calculateWorkDuration(start?: string | null, end?: string | null): string | null {
+  if (!start || !end) return null;
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  if ([sh, sm, eh, em].some((n) => Number.isNaN(n))) return null;
+  let startMin = sh * 60 + sm;
+  let endMin = eh * 60 + em;
+  if (endMin < startMin) endMin += 24 * 60;
+  const total = endMin - startMin;
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  return m === 0 ? `${h},0 t` : `${h},${Math.round((m / 60) * 10)} t`;
 }
 
 async function buildDailyReportPdf(
@@ -401,7 +438,8 @@ async function buildDailyReportPdf(
   if (report.work_description || report.work_areas || report.work_start_time || report.work_end_time) {
     section("Utført arbeid");
     if (report.work_start_time || report.work_end_time) {
-      kv("Tid", `${report.work_start_time || "—"} – ${report.work_end_time || "—"}`);
+      const dur = calculateWorkDuration(report.work_start_time, report.work_end_time);
+      kv("Tid", `${report.work_start_time || "—"} – ${report.work_end_time || "—"}${dur ? ` (${dur})` : ""}`);
     }
     if (report.work_description) para(report.work_description);
     if (report.work_areas) kv("Områder", report.work_areas);

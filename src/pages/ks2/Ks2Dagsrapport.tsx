@@ -58,7 +58,7 @@ import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
 import { DailyReportPhotoUploader, DailyReportPhoto } from "@/components/ks2/DailyReportPhotoUploader";
-import { generateDailyReportPdf, generateDailyReportPdfBase64 } from "@/utils/ksDailyReportPdf";
+import { generateDailyReportPdf, generateDailyReportPdfBase64, calculateWorkDuration } from "@/utils/ksDailyReportPdf";
 import { DailyReportPhotoGallery } from "@/components/ks2/DailyReportPhotoGallery";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -281,13 +281,18 @@ function DailyReportForm({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">Tid fra</Label>
-                <Input type="time" value={workStartTime} onChange={(e) => setWorkStartTime(e.target.value)} />
+                <Input type="time" value={workStartTime} onChange={(e) => setWorkStartTime(e.target.value)} placeholder="08:00" />
               </div>
               <div>
                 <Label className="text-xs">Tid til</Label>
-                <Input type="time" value={workEndTime} onChange={(e) => setWorkEndTime(e.target.value)} />
+                <Input type="time" value={workEndTime} onChange={(e) => setWorkEndTime(e.target.value)} placeholder="16:00" />
               </div>
             </div>
+            {calculateWorkDuration(workStartTime, workEndTime) && (
+              <p className="text-xs text-muted-foreground -mt-1">
+                Total arbeidstid: {calculateWorkDuration(workStartTime, workEndTime)}
+              </p>
+            )}
           </div>
         )}
       </div>
@@ -501,6 +506,9 @@ export default function Ks2Dagsrapport() {
     setDownloadingId(report.id);
     try {
       const effectiveProjectId = report.project_id || projectId || null;
+      if (!report.project_id && projectId) {
+        console.info(`[dagsrapport] project_id fallback: report ${report.id} mangler project_id, bruker URL projectId ${projectId}`);
+      }
       const [{ data: projectData }, { data: companyData }] = await Promise.all([
         effectiveProjectId
           ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name, partner_name, partner_org_number, partner_logo_url").eq("id", effectiveProjectId).maybeSingle()
@@ -519,6 +527,9 @@ export default function Ks2Dagsrapport() {
     setPreparingEmail(report.id);
     try {
       const effectiveProjectId = report.project_id || projectId || null;
+      if (!report.project_id && projectId) {
+        console.info(`[dagsrapport] project_id fallback (e-post): report ${report.id} mangler project_id, bruker URL projectId ${projectId}`);
+      }
       const [{ data: projectData }, { data: companyData }] = await Promise.all([
         effectiveProjectId
           ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name, partner_name, partner_org_number, partner_logo_url").eq("id", effectiveProjectId).maybeSingle()
@@ -652,6 +663,9 @@ export default function Ks2Dagsrapport() {
                           <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             Tid: {report.work_start_time || "—"} – {report.work_end_time || "—"}
+                            {calculateWorkDuration(report.work_start_time, report.work_end_time) && (
+                              <span className="ml-1">({calculateWorkDuration(report.work_start_time, report.work_end_time)})</span>
+                            )}
                           </p>
                         )}
                       </div>
