@@ -32,6 +32,26 @@ const handler = async (req: Request): Promise<Response> => {
   const auth = await requireAuth(req, corsHeaders);
   if (auth instanceof Response) return auth;
 
+  // Restrict to company_admin or system_admin to prevent email-relay abuse
+  if (auth.userId) {
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+    const { data: roles } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", auth.userId);
+    const hasAdminRole = (roles || []).some(r => r.role === "company_admin" || r.role === "system_admin");
+    if (!hasAdminRole) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+  }
+
   try {
     if (!RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY is not configured");
