@@ -513,7 +513,14 @@ async function buildDailyReportPdf(
 
   addPdfFooter(doc, headerInfo);
 
-  const fileName = `Dagsrapport_${report.report_number}_${format(new Date(report.report_date), "yyyy-MM-dd")}.pdf`;
+  const safeDateForName = (() => {
+    if (report.report_date) {
+      const d = new Date(report.report_date);
+      if (!isNaN(d.getTime())) return format(d, "yyyy-MM-dd");
+    }
+    return "ukjent-dato";
+  })();
+  const fileName = `Dagsrapport_${report.report_number}_${safeDateForName}.pdf`;
   return { doc, fileName };
 }
 
