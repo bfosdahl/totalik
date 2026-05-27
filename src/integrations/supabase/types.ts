@@ -14923,9 +14923,6 @@ export type Database = {
           is_hms_responsible: boolean | null
           is_verneombud: boolean | null
           last_name: string | null
-          next_of_kin_name: string | null
-          next_of_kin_phone: string | null
-          next_of_kin_relation: string | null
           phone: string | null
           preferred_language: string | null
           primary_department_id: string | null
@@ -14955,9 +14952,6 @@ export type Database = {
           is_hms_responsible?: boolean | null
           is_verneombud?: boolean | null
           last_name?: string | null
-          next_of_kin_name?: string | null
-          next_of_kin_phone?: string | null
-          next_of_kin_relation?: string | null
           phone?: string | null
           preferred_language?: string | null
           primary_department_id?: string | null
@@ -14987,9 +14981,6 @@ export type Database = {
           is_hms_responsible?: boolean | null
           is_verneombud?: boolean | null
           last_name?: string | null
-          next_of_kin_name?: string | null
-          next_of_kin_phone?: string | null
-          next_of_kin_relation?: string | null
           phone?: string | null
           preferred_language?: string | null
           primary_department_id?: string | null
@@ -15011,6 +15002,44 @@ export type Database = {
             columns: ["primary_department_id"]
             isOneToOne: false
             referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles_next_of_kin: {
+        Row: {
+          company_id: string
+          created_at: string
+          next_of_kin_name: string | null
+          next_of_kin_phone: string | null
+          next_of_kin_relation: string | null
+          profile_id: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          next_of_kin_name?: string | null
+          next_of_kin_phone?: string | null
+          next_of_kin_relation?: string | null
+          profile_id: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          next_of_kin_name?: string | null
+          next_of_kin_phone?: string | null
+          next_of_kin_relation?: string | null
+          profile_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_next_of_kin_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
