@@ -443,7 +443,13 @@ async function buildDailyReportPdf(
 
   // Photos — batch + compress to avoid OOM/hang on 40+ images
   if (report.photos?.length > 0) {
-    section(`Vedlagte bilder (${report.photos.length})`);
+    const MAX_PHOTOS = 50;
+    const totalPhotos = report.photos.length;
+    const photos = (report.photos as any[]).slice(0, MAX_PHOTOS);
+    const truncatedNote = totalPhotos > MAX_PHOTOS
+      ? ` (viser ${MAX_PHOTOS} av ${totalPhotos})`
+      : "";
+    section(`Vedlagte bilder (${totalPhotos})${truncatedNote}`);
     const cols = 2;
     const gap = 4;
     const imgW = (pageWidth - 2 * margin - gap) / cols;
@@ -451,7 +457,6 @@ async function buildDailyReportPdf(
     let rowMaxH = 0;
     let rowStartY = y;
 
-    const photos = report.photos as any[];
     const BATCH = 5;
     let processed = 0;
 
