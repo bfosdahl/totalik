@@ -60,7 +60,7 @@ export function DailyRoundQrDialog({
     };
     img.src =
       "data:image/svg+xml;base64," +
-      btoa(unescape(encodeURIComponent(svgData)));
+      btoa(encodeURIComponent(svgData).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode(parseInt(p1, 16))));
   };
 
   const handlePrint = () => {
