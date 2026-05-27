@@ -54,26 +54,47 @@ export interface DailyReportPdfCompany {
   logo_url?: string | null;
 }
 
-async function loadImageAsDataUrl(url: string): Promise<string | null> {
-  // 1) Try direct fetch (handles same-origin + Supabase signed URLs)
+async function tryResignSupabasePublicUrl(url: string): Promise<string | null> {
+  // Detect /storage/v1/object/public/<bucket>/<path...> and re-sign for CORS/cache safety
   try {
-    const res = await fetch(url);
-    if (res.ok) {
-      const blob = await res.blob();
-      return await new Promise<string>((resolve, reject) => {
-        const r = new FileReader();
-        r.onloadend = () => resolve(r.result as string);
-        r.onerror = reject;
-        r.readAsDataURL(blob);
-      });
-    }
+    const m = url.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/);
+    if (!m) return null;
+    const bucket = decodeURIComponent(m[1]);
+    const path = m[2].split("?")[0].split("#")[0];
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(decodeURIComponent(path), 600);
+    if (error || !data?.signedUrl) return null;
+    return data.signedUrl;
   } catch {
-    // fall through to img-based fallback
+    return null;
+  }
+}
+
+async function loadImageAsDataUrl(url: string): Promise<string | null> {
+  const attempts: string[] = [url];
+  const signed = await tryResignSupabasePublicUrl(url);
+  if (signed) attempts.push(signed);
+
+  // 1) Try fetch (direct, then signed re-attempt for Supabase storage)
+  for (const u of attempts) {
+    try {
+      const res = await fetch(u);
+      if (res.ok) {
+        const blob = await res.blob();
+        return await new Promise<string>((resolve, reject) => {
+          const r = new FileReader();
+          r.onloadend = () => resolve(r.result as string);
+          r.onerror = reject;
+          r.readAsDataURL(blob);
+        });
+      }
+      console.warn(`Logo fetch returned ${res.status} for ${u}`);
+    } catch (e) {
+      console.warn(`Logo fetch threw for ${u}`, e);
+    }
   }
 
   // 2) Fallback: load via <img> (with and without CORS) and snapshot to canvas.
-  // Required when external CDNs lack ACAO header but allow hot-linking.
-  const tryImg = (withCors: boolean): Promise<string> =>
+  const tryImg = (src: string, withCors: boolean): Promise<string> =>
     new Promise((resolve, reject) => {
       const img = new Image();
       if (withCors) img.crossOrigin = "anonymous";
@@ -93,19 +114,15 @@ async function loadImageAsDataUrl(url: string): Promise<string | null> {
         }
       };
       img.onerror = () => reject(new Error("img load failed"));
-      img.src = url;
+      img.src = src;
     });
 
-  try {
-    return await tryImg(true);
-  } catch {
-    try {
-      return await tryImg(false);
-    } catch {
-      console.warn(`Could not load logo (CORS or network blocked): ${url}`);
-      return null;
-    }
+  for (const u of attempts) {
+    try { return await tryImg(u, true); } catch {}
+    try { return await tryImg(u, false); } catch {}
   }
+  console.warn(`Could not load logo after all attempts: ${url}`);
+  return null;
 }
 
 async function buildDailyReportPdf(
