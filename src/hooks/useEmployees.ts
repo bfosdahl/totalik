@@ -47,9 +47,9 @@ export interface Employee {
   phone: string | null;
   avatar_url: string | null;
   is_active: boolean;
-  next_of_kin_name: string | null;
-  next_of_kin_phone: string | null;
-  next_of_kin_relation: string | null;
+  next_of_kin_name?: string | null;
+  next_of_kin_phone?: string | null;
+  next_of_kin_relation?: string | null;
   hms_card_required: boolean | null;
   hms_card_obtained: boolean | null;
   hms_card_number: string | null;
