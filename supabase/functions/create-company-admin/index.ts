@@ -162,6 +162,8 @@ serve(async (req) => {
       if (resend && resetData?.properties?.action_link) {
         try {
           const userName = firstName || existingProfile?.first_name || "Administrator";
+          const safeUserName = escapeHtml(userName);
+          const safeCompanyName = escapeHtml(company.name);
           const emailResponse = await resend.emails.send({
             from: "Total-IK <noreply@totalik.no>",
             to: [email],
@@ -174,13 +176,13 @@ serve(async (req) => {
                   <h1 style="color: white; margin: 0;">Velkommen som administrator!</h1>
                 </div>
                 <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-                  <p>Hei ${userName},</p>
-                  <p>Du har blitt lagt til som <strong>administrator</strong> for <strong>${company.name}</strong> i Total-IK.</p>
+                  <p>Hei ${safeUserName},</p>
+                  <p>Du har blitt lagt til som <strong>administrator</strong> for <strong>${safeCompanyName}</strong> i Total-IK.</p>
                   <p>Klikk på knappen for å sette/oppdatere passordet og logge inn:</p>
                   <div style="text-align: center; margin: 30px 0;">
                     <a href="${resetData.properties.action_link}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Sett passord og logg inn</a>
                   </div>
-                  <p style="color: #666; font-size: 13px;">Hvis knappen ikke fungerer, kopier denne lenken:<br/><span style="color: #667eea; word-break: break-all;">${resetData.properties.action_link}</span></p>
+                  <p style="color: #666; font-size: 13px;">Hvis knappen ikke fungerer, kopier denne lenken:<br/><span style="color: #667eea; word-break: break-all;">${escapeHtml(resetData.properties.action_link)}</span></p>
                   <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
                   <p style="color: #888; font-size: 12px; text-align: center;">Denne e-posten ble sendt fra Total-IK.</p>
                 </div>
