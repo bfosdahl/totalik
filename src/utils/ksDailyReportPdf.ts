@@ -438,7 +438,8 @@ async function buildDailyReportPdf(
   if (report.work_description || report.work_areas || report.work_start_time || report.work_end_time) {
     section("Utført arbeid");
     if (report.work_start_time || report.work_end_time) {
-      kv("Tid", `${report.work_start_time || "—"} – ${report.work_end_time || "—"}`);
+      const dur = calculateWorkDuration(report.work_start_time, report.work_end_time);
+      kv("Tid", `${report.work_start_time || "—"} – ${report.work_end_time || "—"}${dur ? ` (${dur})` : ""}`);
     }
     if (report.work_description) para(report.work_description);
     if (report.work_areas) kv("Områder", report.work_areas);
