@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getLocalDateString } from "@/lib/dateUtils";
 
 interface NewTraceabilityDialogProps {
   open: boolean;
@@ -113,7 +114,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
     batch_number: "",
     gtin: "",
     production_date: "",
-    receipt_date: new Date().toISOString().split('T')[0],
+    receipt_date: getLocalDateString(),
     expiry_date: "",
     receipt_temperature: "",
     product_types: ["kjolevare"] as ProductType[],
@@ -286,7 +287,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
         batch_number: "",
         gtin: "",
         production_date: "",
-        receipt_date: new Date().toISOString().split('T')[0],
+        receipt_date: getLocalDateString(),
         expiry_date: "",
         receipt_temperature: "",
         product_types: ["kjolevare"],

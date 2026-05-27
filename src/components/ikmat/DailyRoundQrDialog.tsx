@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { QRCodeSVG } from "qrcode.react";
 import { Download, Printer, QrCode, Route } from "lucide-react";
+import { downloadQrAsPng, printQr } from "@/utils/qrCodeExport";
 
 interface DailyRoundQrDialogProps {
   open: boolean;
@@ -30,66 +31,22 @@ export function DailyRoundQrDialog({
   const handleDownload = () => {
     const svg = qrRef.current?.querySelector("svg");
     if (!svg) return;
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const size = 400;
-    canvas.width = size;
-    canvas.height = size + 100;
-
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const img = new Image();
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0, size, size);
-      ctx.fillStyle = "#000000";
-      ctx.font = "bold 22px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(`🛣️ ${roundName}`, size / 2, size + 35);
-      ctx.font = "14px Arial";
-      ctx.fillStyle = "#666666";
-      ctx.fillText("Skann for å starte daglig runde", size / 2, size + 60);
-
-      const link = document.createElement("a");
-      link.download = `QR-Runde-${roundName.replace(/\s+/g, "-")}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    };
-    img.src =
-      "data:image/svg+xml;base64," +
-      btoa(encodeURIComponent(svgData).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode(parseInt(p1, 16))));
+    downloadQrAsPng({
+      svg,
+      filename: `QR-Runde-${roundName}`,
+      title: `🛣️ ${roundName}`,
+      subtitle: "Skann for å starte daglig runde",
+    });
   };
 
   const handlePrint = () => {
     const svg = qrRef.current?.querySelector("svg");
     if (!svg) return;
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
-    const escapeHtml = (s: string) =>
-      s.replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    const safeName = escapeHtml(roundName);
-    printWindow.document.write(`
-      <html>
-        <head><title>QR-kode ${safeName}</title></head>
-        <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;font-family:Arial,sans-serif;">
-          <div style="text-align:center;">
-            ${svgData}
-            <h2 style="margin-top:20px;">🛣️ ${safeName}</h2>
-            <p style="color:#666;">Skann QR-koden og gjennomfør hele runden i én flyt</p>
-          </div>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
+    printQr({
+      svg,
+      title: `🛣️ ${roundName}`,
+      subtitle: "Skann QR-koden og gjennomfør hele runden i én flyt",
+    });
   };
 
   return (

@@ -1,7 +1,6 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { format } from 'date-fns';
-import { nb } from 'date-fns/locale';
+import { safeFormatDate } from './safeFormatDate';
 
 interface CheckpointResponse {
   checkpoint: string;
@@ -39,7 +38,7 @@ export const generateChecklistPdf = async (data: ChecklistPdfData): Promise<void
   yPos += 6;
   doc.text(`Utfylt av: ${data.completedByName}`, 14, yPos);
   yPos += 6;
-  doc.text(`Dato: ${format(new Date(data.completedAt), 'dd.MM.yyyy HH:mm', { locale: nb })}`, 14, yPos);
+  doc.text(`Dato: ${safeFormatDate(data.completedAt, 'dd.MM.yyyy HH:mm')}`, 14, yPos);
   yPos += 6;
   doc.text(`Status: ${data.status === 'completed' ? 'Fullført' : 'Utkast'}`, 14, yPos);
   yPos += 10;
@@ -133,7 +132,7 @@ export const generateChecklistPdf = async (data: ChecklistPdfData): Promise<void
   }
 
   // Generate filename
-  const dateStr = format(new Date(data.completedAt), 'yyyy-MM-dd-HHmm');
+  const dateStr = safeFormatDate(data.completedAt, 'yyyy-MM-dd-HHmm', 'ukjent-dato');
   const filename = `${data.checklistName.replace(/\s+/g, '_')}_${dateStr}.pdf`;
   
   doc.save(filename);

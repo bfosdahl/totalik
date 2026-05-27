@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getLocalDateString } from "@/lib/dateUtils";
 
 export interface IkMatGoal {
   id: string;
@@ -166,7 +167,7 @@ export const getActionPlanStatus = (actions: IkMatActionItem[], riskId: string):
   const riskActions = actions.filter(a => a.riskId === riskId);
   if (riskActions.length === 0) return 'none';
   
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
   const hasOverdue = riskActions.some(a => 
     a.status !== 'completed' && a.deadline && a.deadline < today
   );

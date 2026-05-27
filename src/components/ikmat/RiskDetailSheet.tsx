@@ -15,6 +15,7 @@ import {
   ChevronDown, ChevronRight, Plus, Trash2, Calendar, ClipboardCheck, 
   Shield, Target, ArrowRight, CheckCircle2, AlertCircle, Lock
 } from "lucide-react";
+import { getLocalDateString } from "@/lib/dateUtils";
 
 interface RiskDetailSheetProps {
   risk: IkMatRisk | null;
@@ -571,7 +572,7 @@ interface ActionCardProps {
 }
 
 const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: ActionCardProps) => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
   const isOverdue = action.status !== 'completed' && action.deadline && action.deadline < today;
 
   return (

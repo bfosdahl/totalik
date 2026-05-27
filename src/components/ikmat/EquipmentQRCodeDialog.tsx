@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Download, QrCode } from "lucide-react";
 import { EQUIPMENT_TYPE_DEFAULTS } from "@/lib/temperatureGuidelines";
 import type { TemperatureEquipment } from "@/hooks/useIkMatTemperature";
+import { downloadQrAsPng } from "@/utils/qrCodeExport";
 
 interface EquipmentQRCodeDialogProps {
   open: boolean;
@@ -27,52 +28,21 @@ export function EquipmentQRCodeDialog({
 
   if (!equipment) return null;
 
-  // Create URL that deep-links to temperature registration for this equipment
   const baseUrl = window.location.origin;
   const qrUrl = `${baseUrl}/ik-mat/kontroll?action=log-temp&equipment=${equipment.id}`;
+  const typeLabelForCaption =
+    EQUIPMENT_TYPE_DEFAULTS[equipment.equipment_type as keyof typeof EQUIPMENT_TYPE_DEFAULTS]?.label ||
+    equipment.equipment_type;
 
   const handleDownload = () => {
     const svg = qrRef.current?.querySelector("svg");
     if (!svg) return;
-
-    // Create canvas and draw SVG
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const size = 400;
-    canvas.width = size;
-    canvas.height = size + 80; // Extra space for text
-
-    // White background
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw QR code
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const img = new Image();
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0, size, size);
-
-      // Add equipment name below QR code
-      ctx.fillStyle = "#000000";
-      ctx.font = "bold 20px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(equipment.name, size / 2, size + 35);
-
-      // Add type
-      ctx.font = "16px Arial";
-      ctx.fillStyle = "#666666";
-      const typeLabel = EQUIPMENT_TYPE_DEFAULTS[equipment.equipment_type as keyof typeof EQUIPMENT_TYPE_DEFAULTS]?.label || equipment.equipment_type;
-      ctx.fillText(typeLabel, size / 2, size + 60);
-
-      // Download
-      const link = document.createElement("a");
-      link.download = `QR-${equipment.name.replace(/\s+/g, "-")}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    };
-    img.src = "data:image/svg+xml;base64," + btoa(encodeURIComponent(svgData).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode(parseInt(p1, 16))));
+    downloadQrAsPng({
+      svg,
+      filename: `QR-${equipment.name}`,
+      title: equipment.name,
+      subtitle: typeLabelForCaption,
+    });
   };
 
   const typeLabel = EQUIPMENT_TYPE_DEFAULTS[equipment.equipment_type as keyof typeof EQUIPMENT_TYPE_DEFAULTS]?.label || equipment.equipment_type;
