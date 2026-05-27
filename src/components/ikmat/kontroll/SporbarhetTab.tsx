@@ -148,12 +148,23 @@ function RecordCard({
                   {record.receipt_temperature}°C
                 </Badge>
               )}
-              {record.document_path && (
-                <DocumentDownloadButton 
-                  documentPath={record.document_path} 
-                  getDocumentUrl={getDocumentUrl} 
-                />
-              )}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => generateIkMatLabelPdf(record)}
+                  className="gap-2"
+                >
+                  <Printer className="h-4 w-4" />
+                  Merkelapp
+                </Button>
+                {record.document_path && (
+                  <DocumentDownloadButton
+                    documentPath={record.document_path}
+                    getDocumentUrl={getDocumentUrl}
+                  />
+                )}
+              </div>
             </div>
           </div>
 
