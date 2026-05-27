@@ -144,9 +144,14 @@ export function ManageEquipmentDialog({
     });
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (confirm(`Er du sikker på at du vil fjerne "${name}"?`)) {
-      await deleteEquipment.mutateAsync(id);
+  const handleDelete = (id: string, name: string) => {
+    setDeleteTarget({ id, name });
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTarget) {
+      await deleteEquipment.mutateAsync(deleteTarget.id);
+      setDeleteTarget(null);
     }
   };
 
