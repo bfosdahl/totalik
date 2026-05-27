@@ -20,6 +20,8 @@ export interface DailyReport {
   total_crew_count: number;
   work_description: string | null;
   work_areas: string | null;
+  work_start_time: string | null;
+  work_end_time: string | null;
   equipment_used: any[];
   materials_received: any[];
   progress_description: string | null;
