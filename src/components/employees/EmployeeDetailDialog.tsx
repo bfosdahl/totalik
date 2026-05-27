@@ -64,13 +64,23 @@ export function EmployeeDetailDialog({
 }: EmployeeDetailDialogProps) {
   const { profile, company } = useAuth();
   const queryClient = useQueryClient();
+  const { data: nok } = useProfileNextOfKin(employee.id);
+  const updateNok = useUpdateProfileNextOfKin();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     phone: employee.phone || "",
-    next_of_kin_name: employee.next_of_kin_name || "",
-    next_of_kin_phone: employee.next_of_kin_phone || "",
-    next_of_kin_relation: employee.next_of_kin_relation || "",
+    next_of_kin_name: "",
+    next_of_kin_phone: "",
+    next_of_kin_relation: "",
   });
+  useEffect(() => {
+    setEditData((prev) => ({
+      ...prev,
+      next_of_kin_name: nok?.next_of_kin_name || "",
+      next_of_kin_phone: nok?.next_of_kin_phone || "",
+      next_of_kin_relation: nok?.next_of_kin_relation || "",
+    }));
+  }, [nok?.next_of_kin_name, nok?.next_of_kin_phone, nok?.next_of_kin_relation]);
   const [isAddCourseOpen, setIsAddCourseOpen] = useState(false);
   const [isUploadDocOpen, setIsUploadDocOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
