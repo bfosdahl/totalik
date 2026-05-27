@@ -278,6 +278,16 @@ function DailyReportForm({
               <Label className="text-xs">Arbeidsområder</Label>
               <Input value={workAreas} onChange={(e) => setWorkAreas(e.target.value)} placeholder="1. etg, tak, fasade..." />
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Tid fra</Label>
+                <Input type="time" value={workStartTime} onChange={(e) => setWorkStartTime(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-xs">Tid til</Label>
+                <Input type="time" value={workEndTime} onChange={(e) => setWorkEndTime(e.target.value)} />
+              </div>
+            </div>
           </div>
         )}
       </div>
