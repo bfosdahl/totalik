@@ -278,6 +278,16 @@ function DailyReportForm({
               <Label className="text-xs">Arbeidsområder</Label>
               <Input value={workAreas} onChange={(e) => setWorkAreas(e.target.value)} placeholder="1. etg, tak, fasade..." />
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Tid fra</Label>
+                <Input type="time" value={workStartTime} onChange={(e) => setWorkStartTime(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-xs">Tid til</Label>
+                <Input type="time" value={workEndTime} onChange={(e) => setWorkEndTime(e.target.value)} />
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -490,9 +500,10 @@ export default function Ks2Dagsrapport() {
   const handleDownloadPdf = async (report: DailyReport) => {
     setDownloadingId(report.id);
     try {
+      const effectiveProjectId = report.project_id || projectId || null;
       const [{ data: projectData }, { data: companyData }] = await Promise.all([
-        report.project_id
-          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name, partner_name, partner_org_number, partner_logo_url").eq("id", report.project_id).maybeSingle()
+        effectiveProjectId
+          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name, partner_name, partner_org_number, partner_logo_url").eq("id", effectiveProjectId).maybeSingle()
           : Promise.resolve({ data: null } as any),
         supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email, logo_url").eq("id", report.company_id).maybeSingle(),
       ]);
@@ -507,9 +518,10 @@ export default function Ks2Dagsrapport() {
   const handleOpenEmail = async (report: DailyReport) => {
     setPreparingEmail(report.id);
     try {
+      const effectiveProjectId = report.project_id || projectId || null;
       const [{ data: projectData }, { data: companyData }] = await Promise.all([
-        report.project_id
-          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name, partner_name, partner_org_number, partner_logo_url").eq("id", report.project_id).maybeSingle()
+        effectiveProjectId
+          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name, partner_name, partner_org_number, partner_logo_url").eq("id", effectiveProjectId).maybeSingle()
           : Promise.resolve({ data: null } as any),
         supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email, logo_url").eq("id", report.company_id).maybeSingle(),
       ]);
@@ -636,6 +648,12 @@ export default function Ks2Dagsrapport() {
                         <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">Utført arbeid</h4>
                         <p className="text-sm whitespace-pre-wrap">{report.work_description}</p>
                         {report.work_areas && <p className="text-xs text-muted-foreground mt-1">Områder: {report.work_areas}</p>}
+                        {(report.work_start_time || report.work_end_time) && (
+                          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            Tid: {report.work_start_time || "—"} – {report.work_end_time || "—"}
+                          </p>
+                        )}
                       </div>
                     )}
 
