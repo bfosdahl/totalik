@@ -5,6 +5,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,6 +53,7 @@ export function ManageEquipmentDialog({
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<TemperatureEquipment | null>(null);
   const [qrEquipment, setQrEquipment] = useState<TemperatureEquipment | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [newEquipment, setNewEquipment] = useState({
     name: "",
     equipment_type: "fridge",
@@ -133,9 +144,14 @@ export function ManageEquipmentDialog({
     });
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (confirm(`Er du sikker på at du vil fjerne "${name}"?`)) {
-      await deleteEquipment.mutateAsync(id);
+  const handleDelete = (id: string, name: string) => {
+    setDeleteTarget({ id, name });
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTarget) {
+      await deleteEquipment.mutateAsync(deleteTarget.id);
+      setDeleteTarget(null);
     }
   };
 
@@ -388,6 +404,21 @@ export function ManageEquipmentDialog({
           equipment={qrEquipment}
         />
       </DialogContent>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Fjerne utstyr?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Er du sikker på at du vil fjerne "{deleteTarget?.name}"? Denne handlingen kan ikke angres.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Fjern</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
