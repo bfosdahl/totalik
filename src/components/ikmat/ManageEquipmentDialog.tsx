@@ -53,6 +53,7 @@ export function ManageEquipmentDialog({
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<TemperatureEquipment | null>(null);
   const [qrEquipment, setQrEquipment] = useState<TemperatureEquipment | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [newEquipment, setNewEquipment] = useState({
     name: "",
     equipment_type: "fridge",
