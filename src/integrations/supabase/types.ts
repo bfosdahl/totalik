@@ -16827,6 +16827,15 @@ export type Database = {
         Args: { _user_id: string }
         Returns: string[]
       }
+      get_profile_private: {
+        Args: { p_profile_id: string }
+        Returns: {
+          next_of_kin_name: string
+          next_of_kin_phone: string
+          next_of_kin_relation: string
+          signature_data: string
+        }[]
+      }
       get_user_company_id: { Args: { _user_id: string }; Returns: string }
       has_guest_project_access: {
         Args: { project_uuid: string }
