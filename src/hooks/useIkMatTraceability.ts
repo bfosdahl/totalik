@@ -15,9 +15,20 @@ export interface TraceabilityRecord {
   receipt_temperature: number | null;
   document_path: string | null;
   notes: string | null;
+  allergens: string[];
+  expiry_type: 'best_before' | 'use_by';
+  is_internal_production: boolean;
+  internal_shelf_life_days: number | null;
+  produced_by: string | null;
   created_at: string;
   updated_at: string;
 }
+
+export const ALLERGEN_OPTIONS = [
+  'Gluten', 'Skalldyr', 'Egg', 'Fisk', 'Peanøtter', 'Soya',
+  'Melk (laktose)', 'Nøtter', 'Selleri', 'Sennep', 'Sesamfrø',
+  'Svoveldioksid/sulfitter', 'Lupin', 'Bløtdyr'
+] as const;
 
 export const useIkMatTraceability = (companyId: string | undefined) => {
   const { toast } = useToast();

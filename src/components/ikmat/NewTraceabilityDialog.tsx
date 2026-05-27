@@ -6,6 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ALLERGEN_OPTIONS } from "@/hooks/useIkMatTraceability";
 import { Upload, Loader2, Camera, AlertTriangle, CheckCircle, XCircle, Building2, Sparkles } from "lucide-react";
 import { useIkMatTraceability } from "@/hooks/useIkMatTraceability";
 import { useIkMatSuppliers } from "@/hooks/useIkMatSuppliers";
@@ -116,12 +119,59 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
     production_date: "",
     receipt_date: getLocalDateString(),
     expiry_date: "",
+    expiry_type: "best_before" as "best_before" | "use_by",
     receipt_temperature: "",
     product_types: ["kjolevare"] as ProductType[],
     packaging_ok: true,
     temperature_ok: true,
     notes: "",
+    allergens: [] as string[],
+    is_internal_production: false,
+    internal_shelf_life_days: "",
+    produced_by: "",
   });
+
+  const handleAllergenToggle = (allergen: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      allergens: checked
+        ? [...prev.allergens, allergen]
+        : prev.allergens.filter(a => a !== allergen),
+    }));
+  };
+
+  const handleInternalProductionToggle = (checked: boolean) => {
+    setFormData(prev => {
+      const next = { ...prev, is_internal_production: checked };
+      if (checked) {
+        next.supplier_name = next.supplier_name || "Egenprodusert";
+        next.expiry_type = "use_by";
+        next.receipt_date = getLocalDateString();
+        next.production_date = next.production_date || getLocalDateString();
+        // Auto-calculate expiry from shelf life days
+        const days = parseInt(next.internal_shelf_life_days || "3");
+        if (!isNaN(days) && days > 0) {
+          const d = new Date();
+          d.setDate(d.getDate() + days);
+          next.expiry_date = d.toISOString().split("T")[0];
+        }
+      }
+      return next;
+    });
+  };
+
+  const handleShelfLifeChange = (value: string) => {
+    setFormData(prev => {
+      const next = { ...prev, internal_shelf_life_days: value };
+      const days = parseInt(value);
+      if (prev.is_internal_production && !isNaN(days) && days > 0) {
+        const baseDate = prev.production_date ? new Date(prev.production_date) : new Date();
+        baseDate.setDate(baseDate.getDate() + days);
+        next.expiry_date = baseDate.toISOString().split("T")[0];
+      }
+      return next;
+    });
+  };
 
   const handleProductTypeChange = (type: ProductType, checked: boolean) => {
     setFormData(prev => {
@@ -258,6 +308,13 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
         receipt_temperature: tempValue,
         notes: fullNotes || null,
         document_path: null,
+        allergens: formData.allergens,
+        expiry_type: formData.expiry_type,
+        is_internal_production: formData.is_internal_production,
+        internal_shelf_life_days: formData.internal_shelf_life_days
+          ? parseInt(formData.internal_shelf_life_days)
+          : null,
+        produced_by: formData.produced_by || null,
       };
 
       // Upload document if selected
@@ -289,11 +346,16 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
         production_date: "",
         receipt_date: getLocalDateString(),
         expiry_date: "",
+        expiry_type: "best_before",
         receipt_temperature: "",
         product_types: ["kjolevare"],
         packaging_ok: true,
         temperature_ok: true,
         notes: "",
+        allergens: [],
+        is_internal_production: false,
+        internal_shelf_life_days: "",
+        produced_by: "",
       });
       setSelectedFile(null);
       setLabelImageFile(null);
@@ -396,6 +458,48 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
               )}
             </div>
           </div>
+
+          {/* Internal Production Toggle */}
+          <div className="flex items-start justify-between p-4 border rounded-lg bg-muted/30 gap-4">
+            <div className="space-y-0.5">
+              <Label className="text-sm font-semibold">Egenprodusert mat</Label>
+              <p className="text-xs text-muted-foreground">
+                For mat laget på eget kjøkken (f.eks. bolognese, kake, ferdigretter)
+              </p>
+            </div>
+            <Switch
+              checked={formData.is_internal_production}
+              onCheckedChange={handleInternalProductionToggle}
+            />
+          </div>
+
+          {formData.is_internal_production && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 border rounded-lg border-primary/30 bg-primary/5">
+              <div className="space-y-2">
+                <Label htmlFor="produced_by">Laget av</Label>
+                <Input
+                  id="produced_by"
+                  value={formData.produced_by}
+                  onChange={(e) => setFormData({ ...formData, produced_by: e.target.value })}
+                  placeholder="Eks: Kari Nordmann"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="shelf_life">Holdbarhet (dager)</Label>
+                <Input
+                  id="shelf_life"
+                  type="number"
+                  min="1"
+                  value={formData.internal_shelf_life_days}
+                  onChange={(e) => handleShelfLifeChange(e.target.value)}
+                  placeholder="Eks: 3"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Beregner siste forbruksdag automatisk
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Supplier Selection */}
           <div className="space-y-2">
@@ -522,8 +626,22 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="expiry_date">Holdbarhetsdato</Label>
+            <div className="space-y-2 sm:col-span-2">
+              <Label>Holdbarhet</Label>
+              <RadioGroup
+                value={formData.expiry_type}
+                onValueChange={(v) => setFormData({ ...formData, expiry_type: v as "best_before" | "use_by" })}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="best_before" id="best_before" />
+                  <label htmlFor="best_before" className="text-sm cursor-pointer">Best før</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="use_by" id="use_by" />
+                  <label htmlFor="use_by" className="text-sm cursor-pointer">Siste forbruksdag</label>
+                </div>
+              </RadioGroup>
               <Input
                 id="expiry_date"
                 type="date"
@@ -615,6 +733,28 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
             <p className="text-xs text-muted-foreground">
               PDF, JPG eller PNG
             </p>
+          </div>
+
+          {/* Allergens */}
+          <div className="space-y-3 p-4 border rounded-lg">
+            <Label className="text-sm font-medium">Allergener</Label>
+            <p className="text-xs text-muted-foreground -mt-1">
+              Velg de 14 lovpålagte allergenene som finnes i varen
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {ALLERGEN_OPTIONS.map((allergen) => (
+                <div key={allergen} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`allergen-${allergen}`}
+                    checked={formData.allergens.includes(allergen)}
+                    onCheckedChange={(checked) => handleAllergenToggle(allergen, checked === true)}
+                  />
+                  <label htmlFor={`allergen-${allergen}`} className="text-xs cursor-pointer">
+                    {allergen}
+                  </label>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-2">

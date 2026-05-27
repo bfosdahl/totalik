@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, FileText, Package, Calendar, Thermometer, Download, QrCode } from "lucide-react";
+import { Plus, Search, FileText, Package, Calendar, Thermometer, Download, QrCode, Printer } from "lucide-react";
+import { generateIkMatLabelPdf } from "@/utils/ikMatLabelPdf";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIkMatTraceability, TraceabilityRecord } from "@/hooks/useIkMatTraceability";
 import { NewTraceabilityDialog } from "@/components/ikmat/NewTraceabilityDialog";
@@ -82,12 +83,31 @@ function RecordCard({
             )}
           </div>
           
-          {record.document_path && (
-            <DocumentDownloadButton 
-              documentPath={record.document_path} 
-              getDocumentUrl={getDocumentUrl} 
-            />
+          {record.allergens && record.allergens.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {record.allergens.map((a) => (
+                <Badge key={a} variant="secondary" className="text-[10px]">{a}</Badge>
+              ))}
+            </div>
           )}
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => generateIkMatLabelPdf(record)}
+              className="gap-2"
+            >
+              <Printer className="h-4 w-4" />
+              Merkelapp
+            </Button>
+            {record.document_path && (
+              <DocumentDownloadButton
+                documentPath={record.document_path}
+                getDocumentUrl={getDocumentUrl}
+              />
+            )}
+          </div>
           
           {record.notes && (
             <p className="text-xs text-muted-foreground border-t pt-2">
@@ -147,12 +167,23 @@ function RecordCard({
                   {record.receipt_temperature}°C
                 </Badge>
               )}
-              {record.document_path && (
-                <DocumentDownloadButton 
-                  documentPath={record.document_path} 
-                  getDocumentUrl={getDocumentUrl} 
-                />
-              )}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => generateIkMatLabelPdf(record)}
+                  className="gap-2"
+                >
+                  <Printer className="h-4 w-4" />
+                  Merkelapp
+                </Button>
+                {record.document_path && (
+                  <DocumentDownloadButton
+                    documentPath={record.document_path}
+                    getDocumentUrl={getDocumentUrl}
+                  />
+                )}
+              </div>
             </div>
           </div>
 
