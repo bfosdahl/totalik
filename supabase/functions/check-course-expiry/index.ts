@@ -7,6 +7,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const esc = (s: unknown) =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 interface ExpiringCourse {
   id: string;
   course_name: string;
@@ -175,11 +181,11 @@ const handler = async (req: Request): Promise<Response> => {
               <table style="border-collapse: collapse; margin: 20px 0;">
                 <tr>
                   <td style="padding: 8px; border: 1px solid #ddd;"><strong>Kurs:</strong></td>
-                  <td style="padding: 8px; border: 1px solid #ddd;">${course.course_name}</td>
+                  <td style="padding: 8px; border: 1px solid #ddd;">${esc(course.course_name)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px; border: 1px solid #ddd;"><strong>Ansatt:</strong></td>
-                  <td style="padding: 8px; border: 1px solid #ddd;">${employeeName}</td>
+                  <td style="padding: 8px; border: 1px solid #ddd;">${esc(employeeName)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px; border: 1px solid #ddd;"><strong>Utløpsdato:</strong></td>
@@ -187,7 +193,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </tr>
                 <tr>
                   <td style="padding: 8px; border: 1px solid #ddd;"><strong>Bedrift:</strong></td>
-                  <td style="padding: 8px; border: 1px solid #ddd;">${company.name}</td>
+                  <td style="padding: 8px; border: 1px solid #ddd;">${esc(company.name)}</td>
                 </tr>
               </table>
               
