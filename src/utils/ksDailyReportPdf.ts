@@ -55,17 +55,56 @@ export interface DailyReportPdfCompany {
 }
 
 async function loadImageAsDataUrl(url: string): Promise<string | null> {
+  // 1) Try direct fetch (handles same-origin + Supabase signed URLs)
   try {
     const res = await fetch(url);
-    const blob = await res.blob();
-    return await new Promise<string>((resolve, reject) => {
-      const r = new FileReader();
-      r.onloadend = () => resolve(r.result as string);
-      r.onerror = reject;
-      r.readAsDataURL(blob);
-    });
+    if (res.ok) {
+      const blob = await res.blob();
+      return await new Promise<string>((resolve, reject) => {
+        const r = new FileReader();
+        r.onloadend = () => resolve(r.result as string);
+        r.onerror = reject;
+        r.readAsDataURL(blob);
+      });
+    }
   } catch {
-    return null;
+    // fall through to img-based fallback
+  }
+
+  // 2) Fallback: load via <img> (with and without CORS) and snapshot to canvas.
+  // Required when external CDNs lack ACAO header but allow hot-linking.
+  const tryImg = (withCors: boolean): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      if (withCors) img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth || img.width;
+          canvas.height = img.naturalHeight || img.height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return reject(new Error("no ctx"));
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL("image/jpeg", 0.92));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      img.onerror = () => reject(new Error("img load failed"));
+      img.src = url;
+    });
+
+  try {
+    return await tryImg(true);
+  } catch {
+    try {
+      return await tryImg(false);
+    } catch {
+      console.warn(`Could not load logo (CORS or network blocked): ${url}`);
+      return null;
+    }
   }
 }
 
@@ -265,17 +304,20 @@ async function buildDailyReportPdf(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
 
-  // Date banner
+  // Date banner — guard against null/invalid dates so the whole PDF doesn't crash
   doc.setFillColor(241, 245, 249);
   doc.roundedRect(margin, y, pageWidth - 2 * margin, 10, 2, 2, "F");
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(30, 41, 59);
-  doc.text(
-    `Rapportdato: ${format(new Date(report.report_date), "EEEE d. MMMM yyyy", { locale: nb })}`,
-    margin + 3,
-    y + 7
-  );
+  let dateText = "Rapportdato: Ukjent";
+  if (report.report_date) {
+    const d = new Date(report.report_date);
+    if (!isNaN(d.getTime())) {
+      dateText = `Rapportdato: ${format(d, "EEEE d. MMMM yyyy", { locale: nb })}`;
+    }
+  }
+  doc.text(dateText, margin + 3, y + 7);
   y += 16;
   doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "normal");
@@ -401,7 +443,13 @@ async function buildDailyReportPdf(
 
   // Photos — batch + compress to avoid OOM/hang on 40+ images
   if (report.photos?.length > 0) {
-    section(`Vedlagte bilder (${report.photos.length})`);
+    const MAX_PHOTOS = 50;
+    const totalPhotos = report.photos.length;
+    const photos = (report.photos as any[]).slice(0, MAX_PHOTOS);
+    const truncatedNote = totalPhotos > MAX_PHOTOS
+      ? ` (viser ${MAX_PHOTOS} av ${totalPhotos})`
+      : "";
+    section(`Vedlagte bilder (${totalPhotos})${truncatedNote}`);
     const cols = 2;
     const gap = 4;
     const imgW = (pageWidth - 2 * margin - gap) / cols;
@@ -409,7 +457,6 @@ async function buildDailyReportPdf(
     let rowMaxH = 0;
     let rowStartY = y;
 
-    const photos = report.photos as any[];
     const BATCH = 5;
     let processed = 0;
 
@@ -466,7 +513,14 @@ async function buildDailyReportPdf(
 
   addPdfFooter(doc, headerInfo);
 
-  const fileName = `Dagsrapport_${report.report_number}_${format(new Date(report.report_date), "yyyy-MM-dd")}.pdf`;
+  const safeDateForName = (() => {
+    if (report.report_date) {
+      const d = new Date(report.report_date);
+      if (!isNaN(d.getTime())) return format(d, "yyyy-MM-dd");
+    }
+    return "ukjent-dato";
+  })();
+  const fileName = `Dagsrapport_${report.report_number}_${safeDateForName}.pdf`;
   return { doc, fileName };
 }
 

@@ -196,12 +196,18 @@ export function generatePdfHeader(doc: jsPDF, info: PdfHeaderInfo): number {
 /**
  * Adds a professional footer to all pages
  */
-export function addPdfFooter(doc: jsPDF, info: PdfHeaderInfo): void {
+export function addPdfFooter(
+  doc: jsPDF,
+  info: PdfHeaderInfo,
+  pageRange?: { start: number; end: number }
+): void {
   const pageCount = doc.getNumberOfPages();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
+  const start = pageRange?.start ?? 1;
+  const end = pageRange?.end ?? pageCount;
 
-  for (let i = 1; i <= pageCount; i++) {
+  for (let i = start; i <= end; i++) {
     doc.setPage(i);
 
     // Footer line
@@ -213,12 +219,11 @@ export function addPdfFooter(doc: jsPDF, info: PdfHeaderInfo): void {
     doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 116, 139);
 
-    // Left: Document info
-    doc.text(
-      `${info.documentType} ${info.documentNumber} | ${info.project.project_number} - ${info.project.project_name}`,
-      10,
-      pageHeight - 8
-    );
+    // Left: Document info — wrap long names so they don't collide with page number
+    const leftText = `${info.documentType} ${info.documentNumber} | ${info.project.project_number} - ${info.project.project_name}`;
+    const maxLeftWidth = pageWidth - 50; // reserve room for "Side X av Y"
+    const leftLines = doc.splitTextToSize(leftText, maxLeftWidth);
+    doc.text(leftLines[0] ?? leftText, 10, pageHeight - 8);
 
     // Right: Page number
     doc.text(`Side ${i} av ${pageCount}`, pageWidth - 10, pageHeight - 8, { align: "right" });
