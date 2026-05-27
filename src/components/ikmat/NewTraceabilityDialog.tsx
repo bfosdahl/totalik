@@ -346,11 +346,16 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
         production_date: "",
         receipt_date: getLocalDateString(),
         expiry_date: "",
+        expiry_type: "best_before",
         receipt_temperature: "",
         product_types: ["kjolevare"],
         packaging_ok: true,
         temperature_ok: true,
         notes: "",
+        allergens: [],
+        is_internal_production: false,
+        internal_shelf_life_days: "",
+        produced_by: "",
       });
       setSelectedFile(null);
       setLabelImageFile(null);
