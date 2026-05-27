@@ -648,6 +648,12 @@ export default function Ks2Dagsrapport() {
                         <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">Utført arbeid</h4>
                         <p className="text-sm whitespace-pre-wrap">{report.work_description}</p>
                         {report.work_areas && <p className="text-xs text-muted-foreground mt-1">Områder: {report.work_areas}</p>}
+                        {(report.work_start_time || report.work_end_time) && (
+                          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            Tid: {report.work_start_time || "—"} – {report.work_end_time || "—"}
+                          </p>
+                        )}
                       </div>
                     )}
 
