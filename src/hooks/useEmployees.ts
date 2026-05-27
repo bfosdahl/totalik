@@ -366,9 +366,11 @@ export function useUpdateEmployee() {
 
   return useMutation({
     mutationFn: async ({ id, ...data }: Partial<Employee> & { id: string }) => {
+      // Strip fields moved to profiles_next_of_kin (handled separately)
+      const { next_of_kin_name, next_of_kin_phone, next_of_kin_relation, ...rest } = data as any;
       const { error } = await supabase
         .from("profiles")
-        .update(data)
+        .update(rest)
         .eq("id", id);
 
       if (error) throw error;
