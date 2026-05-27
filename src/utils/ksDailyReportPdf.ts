@@ -304,17 +304,20 @@ async function buildDailyReportPdf(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
 
-  // Date banner
+  // Date banner — guard against null/invalid dates so the whole PDF doesn't crash
   doc.setFillColor(241, 245, 249);
   doc.roundedRect(margin, y, pageWidth - 2 * margin, 10, 2, 2, "F");
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(30, 41, 59);
-  doc.text(
-    `Rapportdato: ${format(new Date(report.report_date), "EEEE d. MMMM yyyy", { locale: nb })}`,
-    margin + 3,
-    y + 7
-  );
+  let dateText = "Rapportdato: Ukjent";
+  if (report.report_date) {
+    const d = new Date(report.report_date);
+    if (!isNaN(d.getTime())) {
+      dateText = `Rapportdato: ${format(d, "EEEE d. MMMM yyyy", { locale: nb })}`;
+    }
+  }
+  doc.text(dateText, margin + 3, y + 7);
   y += 16;
   doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "normal");
