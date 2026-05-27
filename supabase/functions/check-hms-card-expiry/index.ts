@@ -183,13 +183,7 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Find and notify company admins
-        const { data: companyAdmins } = await supabase
-          .from('profiles')
-          .select('email, first_name, last_name')
-          .eq('company_id', profile.company_id)
-          .eq('is_active', true)
-
+        // Find company admins for this company only and notify only them
         const { data: adminRoles } = await supabase
           .from('user_roles')
           .select('user_id')
@@ -197,8 +191,14 @@ Deno.serve(async (req) => {
 
         const adminUserIds = new Set((adminRoles || []).map(r => r.user_id))
 
-        for (const admin of (companyAdmins || []) as CompanyAdmin[]) {
-          // Skip the employee themselves
+        const { data: companyAdmins } = await supabase
+          .from('profiles')
+          .select('user_id, email, first_name, last_name')
+          .eq('company_id', profile.company_id)
+          .eq('is_active', true)
+
+        for (const admin of (companyAdmins || []) as (CompanyAdmin & { user_id: string })[]) {
+          if (!admin.user_id || !adminUserIds.has(admin.user_id)) continue;
           if (admin.email && admin.email !== profile.email) {
             try {
               await fetch('https://api.resend.com/emails', {
