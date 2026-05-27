@@ -246,9 +246,14 @@ async function buildDailyReportPdf(
   doc.setFont("helvetica", "bold");
   doc.setTextColor(100, 116, 139);
   doc.text("UTFØRENDE FIRMA", rightCol, rightY2); rightY2 += 5;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 0, 0);
+  doc.text(company?.name || "—", rightCol, rightY2); rightY2 += 5;
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(71, 85, 105);
+  if (company?.org_number) { doc.text(`Org.nr: ${company.org_number}`, rightCol, rightY2); rightY2 += 4; }
   if (company?.address) { doc.text(company.address, rightCol, rightY2); rightY2 += 4; }
   if (company?.postal_code || company?.city) {
     doc.text([company.postal_code, company.city].filter(Boolean).join(" "), rightCol, rightY2);
