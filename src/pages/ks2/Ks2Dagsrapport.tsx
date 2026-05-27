@@ -281,13 +281,18 @@ function DailyReportForm({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">Tid fra</Label>
-                <Input type="time" value={workStartTime} onChange={(e) => setWorkStartTime(e.target.value)} />
+                <Input type="time" value={workStartTime} onChange={(e) => setWorkStartTime(e.target.value)} placeholder="08:00" />
               </div>
               <div>
                 <Label className="text-xs">Tid til</Label>
-                <Input type="time" value={workEndTime} onChange={(e) => setWorkEndTime(e.target.value)} />
+                <Input type="time" value={workEndTime} onChange={(e) => setWorkEndTime(e.target.value)} placeholder="16:00" />
               </div>
             </div>
+            {calculateWorkDuration(workStartTime, workEndTime) && (
+              <p className="text-xs text-muted-foreground -mt-1">
+                Total arbeidstid: {calculateWorkDuration(workStartTime, workEndTime)}
+              </p>
+            )}
           </div>
         )}
       </div>
