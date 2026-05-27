@@ -72,7 +72,7 @@ export function EquipmentQRCodeDialog({
       link.href = canvas.toDataURL("image/png");
       link.click();
     };
-    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+    img.src = "data:image/svg+xml;base64," + btoa(encodeURIComponent(svgData).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode(parseInt(p1, 16))));
   };
 
   const typeLabel = EQUIPMENT_TYPE_DEFAULTS[equipment.equipment_type as keyof typeof EQUIPMENT_TYPE_DEFAULTS]?.label || equipment.equipment_type;
