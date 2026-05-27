@@ -119,12 +119,59 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
     production_date: "",
     receipt_date: getLocalDateString(),
     expiry_date: "",
+    expiry_type: "best_before" as "best_before" | "use_by",
     receipt_temperature: "",
     product_types: ["kjolevare"] as ProductType[],
     packaging_ok: true,
     temperature_ok: true,
     notes: "",
+    allergens: [] as string[],
+    is_internal_production: false,
+    internal_shelf_life_days: "",
+    produced_by: "",
   });
+
+  const handleAllergenToggle = (allergen: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      allergens: checked
+        ? [...prev.allergens, allergen]
+        : prev.allergens.filter(a => a !== allergen),
+    }));
+  };
+
+  const handleInternalProductionToggle = (checked: boolean) => {
+    setFormData(prev => {
+      const next = { ...prev, is_internal_production: checked };
+      if (checked) {
+        next.supplier_name = next.supplier_name || "Egenprodusert";
+        next.expiry_type = "use_by";
+        next.receipt_date = getLocalDateString();
+        next.production_date = next.production_date || getLocalDateString();
+        // Auto-calculate expiry from shelf life days
+        const days = parseInt(next.internal_shelf_life_days || "3");
+        if (!isNaN(days) && days > 0) {
+          const d = new Date();
+          d.setDate(d.getDate() + days);
+          next.expiry_date = d.toISOString().split("T")[0];
+        }
+      }
+      return next;
+    });
+  };
+
+  const handleShelfLifeChange = (value: string) => {
+    setFormData(prev => {
+      const next = { ...prev, internal_shelf_life_days: value };
+      const days = parseInt(value);
+      if (prev.is_internal_production && !isNaN(days) && days > 0) {
+        const baseDate = prev.production_date ? new Date(prev.production_date) : new Date();
+        baseDate.setDate(baseDate.getDate() + days);
+        next.expiry_date = baseDate.toISOString().split("T")[0];
+      }
+      return next;
+    });
+  };
 
   const handleProductTypeChange = (type: ProductType, checked: boolean) => {
     setFormData(prev => {
