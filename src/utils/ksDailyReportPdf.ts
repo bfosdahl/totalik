@@ -105,50 +105,175 @@ async function buildDailyReportPdf(
     completedDate: report.submitted_at,
   };
 
-  let y = generatePdfHeader(doc, headerInfo);
+  // === Pre-load + compress logos so they embed cleanly in the blue header ===
+  onProgress?.(0, 0, "Laster logoer...");
+  const loadLogoCompressed = async (url: string | null | undefined) => {
+    if (!url) return null;
+    const raw = await loadImageAsDataUrl(url);
+    if (!raw) return null;
+    try {
+      // Compress to a reasonable size for header (preserves aspect ratio)
+      const c = await compressDataUrl(raw, 600, 0.92);
+      return c.dataUrl;
+    } catch {
+      return raw;
+    }
+  };
+  const ownLogoData = await loadLogoCompressed(company?.logo_url);
+  const partnerLogoData = await loadLogoCompressed(project?.partner_logo_url);
 
-  // Override title since this is a dagsrapport (header used generic type)
-  doc.setFillColor(255, 255, 255);
-  doc.rect(0, 0, pageWidth, 35, "F");
+  // === CUSTOM BLUE HEADER (replaces generatePdfHeader to avoid overlap) ===
+  const headerH = 44;
   doc.setFillColor(59, 130, 246);
-  doc.rect(0, 0, pageWidth, 35, "F");
+  doc.rect(0, 0, pageWidth, headerH, "F");
+
+  // Own logo: white pill in the blue band, left side
+  let titleX = 15;
+  if (ownLogoData) {
+    const logoBoxW = 40;
+    const logoBoxH = 28;
+    const logoBoxX = 10;
+    const logoBoxY = (headerH - logoBoxH) / 2;
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(logoBoxX, logoBoxY, logoBoxW, logoBoxH, 2, 2, "F");
+    try {
+      const pad = 2;
+      doc.addImage(
+        ownLogoData,
+        "JPEG",
+        logoBoxX + pad,
+        logoBoxY + pad,
+        logoBoxW - pad * 2,
+        logoBoxH - pad * 2,
+        undefined,
+        "FAST"
+      );
+    } catch { /* skip */ }
+    titleX = logoBoxX + logoBoxW + 6;
+  }
+
+  // Title block (left, after logo)
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(16);
+  doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("DAGSRAPPORT", 15, 15);
-  doc.setFontSize(12);
+  doc.text("DAGSRAPPORT", titleX, 17);
+  doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
-  doc.text(`Nr: ${report.report_number}`, 15, 25);
-  // Company info (right side of blue header)
+  doc.text(`Nr: ${report.report_number}`, titleX, 25);
+  doc.setFontSize(8);
+  doc.text(
+    `Generert: ${format(new Date(), "dd.MM.yyyy HH:mm", { locale: nb })}`,
+    titleX,
+    32
+  );
+
+  // Right side: optional partner logo + company name
+  let rightX = pageWidth - 10;
+  if (partnerLogoData) {
+    const pBoxW = 34;
+    const pBoxH = 24;
+    const pBoxX = pageWidth - pBoxW - 10;
+    const pBoxY = (headerH - pBoxH) / 2;
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(pBoxX, pBoxY, pBoxW, pBoxH, 2, 2, "F");
+    try {
+      doc.addImage(
+        partnerLogoData,
+        "JPEG",
+        pBoxX + 2,
+        pBoxY + 2,
+        pBoxW - 4,
+        pBoxH - 4,
+        undefined,
+        "FAST"
+      );
+    } catch { /* skip */ }
+    rightX = pBoxX - 4;
+  }
+
+  let rightY = 14;
+  doc.setTextColor(255, 255, 255);
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
-  doc.text(company?.name || "—", pageWidth - 15, 13, { align: "right" });
-  let headerRightY = 13;
+  doc.text(company?.name || "—", rightX, rightY, { align: "right" });
+  rightY += 4.5;
   if (company?.org_number) {
-    headerRightY += 4;
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
-    doc.text(`Org.nr: ${company.org_number}`, pageWidth - 15, headerRightY, { align: "right" });
+    doc.text(`Org.nr: ${company.org_number}`, rightX, rightY, { align: "right" });
+    rightY += 4;
   }
-  // Partner info (right under company info, in same blue header)
-  if (project?.partner_name || project?.partner_org_number) {
-    headerRightY += 5;
-    doc.setFontSize(9);
+  if (project?.partner_name) {
+    rightY += 1;
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "italic");
+    doc.text("i samarbeid med:", rightX, rightY, { align: "right" });
+    rightY += 4;
     doc.setFont("helvetica", "bold");
-    doc.text(`i samarbeid med:`, pageWidth - 15, headerRightY, { align: "right" });
-    if (project?.partner_name) {
-      headerRightY += 4;
-      doc.setFontSize(10);
-      doc.text(project.partner_name, pageWidth - 15, headerRightY, { align: "right" });
-    }
+    doc.setFontSize(9);
+    doc.text(project.partner_name, rightX, rightY, { align: "right" });
+    rightY += 3.5;
     if (project?.partner_org_number) {
-      headerRightY += 4;
-      doc.setFontSize(8);
       doc.setFont("helvetica", "normal");
-      doc.text(`Org.nr: ${project.partner_org_number}`, pageWidth - 15, headerRightY, { align: "right" });
+      doc.setFontSize(7);
+      doc.text(`Org.nr: ${project.partner_org_number}`, rightX, rightY, { align: "right" });
     }
   }
+
   doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "normal");
+
+  // === INFO CARD ===
+  let y = headerH + 6;
+  const cardH = 48;
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(10, y, pageWidth - 20, cardH, 3, 3, "FD");
+
+  const leftCol = 15;
+  const rightCol = pageWidth / 2 + 5;
+  let leftY = y + 8;
+  let rightY2 = y + 8;
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(100, 116, 139);
+  doc.text("PROSJEKT", leftCol, leftY); leftY += 5;
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text(headerInfo.project.project_name, leftCol, leftY); leftY += 5;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(71, 85, 105);
+  doc.text(`Prosjektnr: ${headerInfo.project.project_number}`, leftCol, leftY); leftY += 5;
+  if (headerInfo.project.address) { doc.text(`Adresse: ${headerInfo.project.address}`, leftCol, leftY); leftY += 5; }
+  if (headerInfo.project.client_name) {
+    doc.setFont("helvetica", "italic");
+    doc.text(`Byggherre: ${headerInfo.project.client_name}`, leftCol, leftY);
+  }
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(100, 116, 139);
+  doc.text("UTFØRENDE FIRMA", rightCol, rightY2); rightY2 += 5;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(71, 85, 105);
+  if (company?.address) { doc.text(company.address, rightCol, rightY2); rightY2 += 4; }
+  if (company?.postal_code || company?.city) {
+    doc.text([company.postal_code, company.city].filter(Boolean).join(" "), rightCol, rightY2);
+    rightY2 += 4;
+  }
+  if (company?.phone) { doc.text(`Tlf: ${company.phone}`, rightCol, rightY2); rightY2 += 4; }
+  if (company?.email) { doc.text(`E-post: ${company.email}`, rightCol, rightY2); rightY2 += 4; }
+  rightY2 += 1;
+  doc.setFont("helvetica", "bold");
+  doc.text(`Ansvarlig: ${report.user_name}`, rightCol, rightY2);
+
+  y += cardH + 6;
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
 
   // Date banner
   doc.setFillColor(241, 245, 249);
@@ -162,28 +287,9 @@ async function buildDailyReportPdf(
     y + 7
   );
   y += 16;
-
-  // Logo strip (own logo + optional partner logo)
-  const logos: { url: string; label: string }[] = [];
-  if (company?.logo_url) logos.push({ url: company.logo_url, label: company?.name || "" });
-  if (project?.partner_logo_url) logos.push({ url: project.partner_logo_url, label: project?.partner_name || "Samarbeidspartner" });
-  if (logos.length > 0) {
-    onProgress?.(0, 0, "Laster logoer...");
-    const logoH = 18;
-    const logoW = 38;
-    const gap = 6;
-    const startX = margin;
-    for (let i = 0; i < logos.length; i++) {
-      const dataUrl = await loadImageAsDataUrl(logos[i].url);
-      if (!dataUrl) continue;
-      try {
-        doc.addImage(dataUrl, "PNG", startX + i * (logoW + gap), y, logoW, logoH, undefined, "FAST");
-      } catch {
-        try { doc.addImage(dataUrl, "JPEG", startX + i * (logoW + gap), y, logoW, logoH, undefined, "FAST"); } catch { /* skip */ }
-      }
-    }
-    y += logoH + 4;
-  }
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
 
   const ensureSpace = (needed: number) => {
     if (y + needed > pageHeight - 25) {
@@ -282,7 +388,7 @@ async function buildDailyReportPdf(
   // HMS
   if (report.hms_incidents?.length > 0 || report.hms_observations || report.safety_meeting_held) {
     section("HMS / Sikkerhet");
-    if (report.safety_meeting_held) para("✓ Sikkerhetsmøte avholdt");
+    if (report.safety_meeting_held) para("- Sikkerhetsmøte avholdt");
     if (report.hms_incidents?.length > 0) {
       report.hms_incidents.forEach((h: any) => para(`• ${h.description || h}`));
     }
