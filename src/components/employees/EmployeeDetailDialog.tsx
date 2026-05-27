@@ -384,19 +384,19 @@ export function EmployeeDetailDialog({
                     </div>
                   ) : (
                     <>
-                      {employee.next_of_kin_name ? (
+                      {nok?.next_of_kin_name ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
                             <p className="text-sm text-muted-foreground">Navn</p>
-                            <p>{employee.next_of_kin_name}</p>
+                            <p>{nok.next_of_kin_name}</p>
                           </div>
                           <div>
                             <p className="text-sm text-muted-foreground">Telefon</p>
-                            <p>{employee.next_of_kin_phone || "Ikke angitt"}</p>
+                            <p>{nok.next_of_kin_phone || "Ikke angitt"}</p>
                           </div>
                           <div>
                             <p className="text-sm text-muted-foreground">Relasjon</p>
-                            <p>{employee.next_of_kin_relation || "Ikke angitt"}</p>
+                            <p>{nok.next_of_kin_relation || "Ikke angitt"}</p>
                           </div>
                         </div>
                       ) : (
