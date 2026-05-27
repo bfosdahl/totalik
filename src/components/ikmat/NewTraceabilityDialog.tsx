@@ -735,6 +735,28 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
             </p>
           </div>
 
+          {/* Allergens */}
+          <div className="space-y-3 p-4 border rounded-lg">
+            <Label className="text-sm font-medium">Allergener</Label>
+            <p className="text-xs text-muted-foreground -mt-1">
+              Velg de 14 lovpålagte allergenene som finnes i varen
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {ALLERGEN_OPTIONS.map((allergen) => (
+                <div key={allergen} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`allergen-${allergen}`}
+                    checked={formData.allergens.includes(allergen)}
+                    onCheckedChange={(checked) => handleAllergenToggle(allergen, checked === true)}
+                  />
+                  <label htmlFor={`allergen-${allergen}`} className="text-xs cursor-pointer">
+                    {allergen}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="notes">Merknader</Label>
             <Textarea
