@@ -58,7 +58,7 @@ import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
 import { DailyReportPhotoUploader, DailyReportPhoto } from "@/components/ks2/DailyReportPhotoUploader";
-import { generateDailyReportPdf, generateDailyReportPdfBase64 } from "@/utils/ksDailyReportPdf";
+import { generateDailyReportPdf, generateDailyReportPdfBase64, calculateWorkDuration } from "@/utils/ksDailyReportPdf";
 import { DailyReportPhotoGallery } from "@/components/ks2/DailyReportPhotoGallery";
 import { supabase } from "@/integrations/supabase/client";
 
