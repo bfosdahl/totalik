@@ -191,31 +191,21 @@ async function buildDailyReportPdf(
     rightX = pBoxX - 4;
   }
 
-  let rightY = 14;
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "bold");
-  doc.text(company?.name || "—", rightX, rightY, { align: "right" });
-  rightY += 4.5;
-  if (company?.org_number) {
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Org.nr: ${company.org_number}`, rightX, rightY, { align: "right" });
-    rightY += 4;
-  }
+  // Partner attribution to the LEFT of the partner logo box (firmanavn vises i info-kortet under)
   if (project?.partner_name) {
-    rightY += 1;
-    doc.setFontSize(7.5);
+    let rightY = 16;
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(8);
     doc.setFont("helvetica", "italic");
-    doc.text("i samarbeid med:", rightX, rightY, { align: "right" });
-    rightY += 4;
+    doc.text("i samarbeid med", rightX, rightY, { align: "right" });
+    rightY += 5;
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.text(project.partner_name, rightX, rightY, { align: "right" });
-    rightY += 3.5;
+    rightY += 4;
     if (project?.partner_org_number) {
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
+      doc.setFontSize(7.5);
       doc.text(`Org.nr: ${project.partner_org_number}`, rightX, rightY, { align: "right" });
     }
   }
@@ -256,9 +246,14 @@ async function buildDailyReportPdf(
   doc.setFont("helvetica", "bold");
   doc.setTextColor(100, 116, 139);
   doc.text("UTFØRENDE FIRMA", rightCol, rightY2); rightY2 += 5;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 0, 0);
+  doc.text(company?.name || "—", rightCol, rightY2); rightY2 += 5;
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(71, 85, 105);
+  if (company?.org_number) { doc.text(`Org.nr: ${company.org_number}`, rightCol, rightY2); rightY2 += 4; }
   if (company?.address) { doc.text(company.address, rightCol, rightY2); rightY2 += 4; }
   if (company?.postal_code || company?.city) {
     doc.text([company.postal_code, company.city].filter(Boolean).join(" "), rightCol, rightY2);
