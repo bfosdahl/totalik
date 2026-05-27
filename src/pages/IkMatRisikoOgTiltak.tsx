@@ -14,6 +14,7 @@ import { RiskDetailSheet } from "@/components/ikmat/RiskDetailSheet";
 import { RiskSummaryCard } from "@/components/ikmat/RiskSummaryCard";
 import { ActionPlanOverview } from "@/components/ikmat/ActionPlanOverview";
 import { ControlPlanOverview } from "@/components/ikmat/ControlPlanOverview";
+import { getLocalDateString } from "@/lib/dateUtils";
 
 const IkMatRisikoOgTiltak = () => {
   const navigate = useNavigate();
@@ -97,7 +98,7 @@ const IkMatRisikoOgTiltak = () => {
       riskId: 'example-1',
       action: 'Innkjøp av digitale steketermometre til alle arbeidsstasjoner',
       responsible: '',
-      deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      deadline: getLocalDateString(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
       status: 'pending',
       actionType: 'preventive',
     },
@@ -106,7 +107,7 @@ const IkMatRisikoOgTiltak = () => {
       riskId: 'example-2',
       action: 'Installere temperaturalarm med varsling til mobil',
       responsible: '',
-      deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      deadline: getLocalDateString(new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)),
       status: 'in_progress',
       actionType: 'preventive',
     },
@@ -115,7 +116,7 @@ const IkMatRisikoOgTiltak = () => {
       riskId: 'example-3',
       action: 'Gjennomføre allergenopplæring for alle kjøkkenansatte',
       responsible: '',
-      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      deadline: getLocalDateString(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)),
       status: 'pending',
       actionType: 'preventive',
     },

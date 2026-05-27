@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { IkMatRisk } from "@/hooks/useIkMatContent";
 import { Calendar, Thermometer, ClipboardCheck, ExternalLink, AlertTriangle } from "lucide-react";
+import { getLocalDateString } from "@/lib/dateUtils";
 
 interface ControlPlanOverviewProps {
   risks: IkMatRisk[];
@@ -23,8 +24,8 @@ const FREQUENCY_LABELS: Record<string, string> = {
 export const ControlPlanOverview = ({ risks, onOpenRisk }: ControlPlanOverviewProps) => {
   const [activeView, setActiveView] = useState<'today' | 'week' | 'all'>('today');
 
-  const today = new Date().toISOString().split('T')[0];
-  const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const today = getLocalDateString();
+  const weekFromNow = getLocalDateString(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
 
   // Group risks by frequency/timing
   const groupedRisks = useMemo(() => {
@@ -179,7 +180,7 @@ interface ControlCardProps {
 }
 
 const ControlCard = ({ risk, onOpenRisk, showDate, showFrequency }: ControlCardProps) => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
   const isOverdue = risk.controlDate && risk.controlDate < today;
 
   const formatDate = (date: string) => {

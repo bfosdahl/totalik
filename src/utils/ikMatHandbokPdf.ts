@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { getLocalDateString } from "@/lib/dateUtils";
 
 interface OrganizationRole {
   id: string;
@@ -676,7 +677,7 @@ export const generateIkMatHandbokPdf = async (data: HandbokPdfData): Promise<voi
 
     // Save PDF
     const companyNameSafe = companyName.replace(/[^a-zA-Z0-9æøåÆØÅ\s-]/g, '').replace(/\s+/g, '-');
-    const fileName = `IK-MAT-Handbok-${companyNameSafe}-${new Date().toISOString().split('T')[0]}.pdf`;
+    const fileName = `IK-MAT-Handbok-${companyNameSafe}-${getLocalDateString()}.pdf`;
     doc.save(fileName);
   } catch (error) {
     console.error('PDF generation error:', error);

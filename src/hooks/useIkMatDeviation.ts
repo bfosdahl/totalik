@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { getLocalDateString } from "@/lib/dateUtils";
 
 // IK-MAT specific deviation categories
 export type IkMatDeviationCategory = 
@@ -90,7 +91,7 @@ export function useIkMatDeviation() {
           status: 'open',
           reporter_id: profile.id,
           reporter_name: reporterName,
-          due_date: dueDate.toISOString().split('T')[0],
+          due_date: getLocalDateString(dueDate),
           incident_location: params.incidentLocation || null,
           immediate_actions: params.immediateActions || null,
           additional_info: params.additionalInfo || null,

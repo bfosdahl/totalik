@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { IkMatActionItem, IkMatRisk } from "@/hooks/useIkMatContent";
 import { AlertCircle, CheckCircle2, Clock, Filter, ExternalLink } from "lucide-react";
+import { getLocalDateString } from "@/lib/dateUtils";
 
 interface ActionPlanOverviewProps {
   actions: IkMatActionItem[];
@@ -26,7 +27,7 @@ export const ActionPlanOverview = ({
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [filterResponsible, setFilterResponsible] = useState<string>('all');
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
 
   // Enhance actions with overdue status
   const enhancedActions = useMemo(() => {

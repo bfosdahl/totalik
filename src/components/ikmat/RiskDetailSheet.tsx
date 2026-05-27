@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { IkMatRisk, IkMatActionItem, getTrafficLight, getTrafficLightLabel, calculateRiskLevel, getActionPlanStatus } from "@/hooks/useIkMatContent";
 import { 
+import { getLocalDateString } from "@/lib/dateUtils";
   ChevronDown, ChevronRight, Plus, Trash2, Calendar, ClipboardCheck, 
   Shield, Target, ArrowRight, CheckCircle2, AlertCircle, Lock
 } from "lucide-react";
@@ -571,7 +572,7 @@ interface ActionCardProps {
 }
 
 const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: ActionCardProps) => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
   const isOverdue = action.status !== 'completed' && action.deadline && action.deadline < today;
 
   return (
