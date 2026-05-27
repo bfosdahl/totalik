@@ -105,93 +105,88 @@ async function buildDailyReportPdf(
     completedDate: report.submitted_at,
   };
 
-  // === Pre-load + compress logos so they embed cleanly in the blue header ===
+  // === Pre-load + compress logos. CRITICAL: keep native aspect ratio ===
   onProgress?.(0, 0, "Laster logoer...");
   const loadLogoCompressed = async (url: string | null | undefined) => {
     if (!url) return null;
     const raw = await loadImageAsDataUrl(url);
     if (!raw) return null;
     try {
-      // Compress to a reasonable size for header (preserves aspect ratio)
-      const c = await compressDataUrl(raw, 600, 0.92);
-      return c.dataUrl;
+      const c = await compressDataUrl(raw, 800, 0.92);
+      return c; // { dataUrl, w, h }
     } catch {
-      return raw;
+      return null;
     }
   };
-  const ownLogoData = await loadLogoCompressed(company?.logo_url);
-  const partnerLogoData = await loadLogoCompressed(project?.partner_logo_url);
+  const ownLogo = await loadLogoCompressed(company?.logo_url);
+  const partnerLogo = await loadLogoCompressed(project?.partner_logo_url);
 
-  // === CUSTOM BLUE HEADER (replaces generatePdfHeader to avoid overlap) ===
+  // Draw a logo centered inside a box, preserving aspect ratio (no stretching)
+  const drawLogoInBox = (
+    logo: { dataUrl: string; w: number; h: number },
+    boxX: number, boxY: number, boxW: number, boxH: number, pad = 3
+  ) => {
+    const availW = boxW - pad * 2;
+    const availH = boxH - pad * 2;
+    const ratio = logo.w / logo.h;
+    let drawW = availW;
+    let drawH = availW / ratio;
+    if (drawH > availH) {
+      drawH = availH;
+      drawW = availH * ratio;
+    }
+    const dx = boxX + (boxW - drawW) / 2;
+    const dy = boxY + (boxH - drawH) / 2;
+    try {
+      doc.addImage(logo.dataUrl, "JPEG", dx, dy, drawW, drawH, undefined, "FAST");
+    } catch { /* skip */ }
+  };
+
+  // === CUSTOM BLUE HEADER ===
   const headerH = 44;
   doc.setFillColor(59, 130, 246);
   doc.rect(0, 0, pageWidth, headerH, "F");
 
-  // Own logo: white pill in the blue band, left side
+  // Own logo: wider white box to accommodate landscape logos
   let titleX = 15;
-  if (ownLogoData) {
-    const logoBoxW = 40;
-    const logoBoxH = 28;
-    const logoBoxX = 10;
+  if (ownLogo) {
+    const logoBoxW = 50;
+    const logoBoxH = 32;
+    const logoBoxX = 8;
     const logoBoxY = (headerH - logoBoxH) / 2;
     doc.setFillColor(255, 255, 255);
     doc.roundedRect(logoBoxX, logoBoxY, logoBoxW, logoBoxH, 2, 2, "F");
-    try {
-      const pad = 2;
-      doc.addImage(
-        ownLogoData,
-        "JPEG",
-        logoBoxX + pad,
-        logoBoxY + pad,
-        logoBoxW - pad * 2,
-        logoBoxH - pad * 2,
-        undefined,
-        "FAST"
-      );
-    } catch { /* skip */ }
+    drawLogoInBox(ownLogo, logoBoxX, logoBoxY, logoBoxW, logoBoxH, 3);
     titleX = logoBoxX + logoBoxW + 6;
   }
 
-  // Title block (left, after logo)
+  // Title block
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("DAGSRAPPORT", titleX, 17);
+  doc.text("DAGSRAPPORT", titleX, 18);
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
-  doc.text(`Nr: ${report.report_number}`, titleX, 25);
+  doc.text(`Nr: ${report.report_number}`, titleX, 26);
   doc.setFontSize(8);
   doc.text(
     `Generert: ${format(new Date(), "dd.MM.yyyy HH:mm", { locale: nb })}`,
-    titleX,
-    32
+    titleX, 32
   );
 
-  // Right side: optional partner logo + company name
+  // Partner logo on right (also wider, aspect-preserved)
   let rightX = pageWidth - 10;
-  if (partnerLogoData) {
-    const pBoxW = 34;
-    const pBoxH = 24;
-    const pBoxX = pageWidth - pBoxW - 10;
+  if (partnerLogo) {
+    const pBoxW = 42;
+    const pBoxH = 28;
+    const pBoxX = pageWidth - pBoxW - 8;
     const pBoxY = (headerH - pBoxH) / 2;
     doc.setFillColor(255, 255, 255);
     doc.roundedRect(pBoxX, pBoxY, pBoxW, pBoxH, 2, 2, "F");
-    try {
-      doc.addImage(
-        partnerLogoData,
-        "JPEG",
-        pBoxX + 2,
-        pBoxY + 2,
-        pBoxW - 4,
-        pBoxH - 4,
-        undefined,
-        "FAST"
-      );
-    } catch { /* skip */ }
+    drawLogoInBox(partnerLogo, pBoxX, pBoxY, pBoxW, pBoxH, 3);
     rightX = pBoxX - 4;
   }
 
-  // Partner attribution to the LEFT of the partner logo box (firmanavn vises i info-kortet under)
   if (project?.partner_name) {
     let rightY = 16;
     doc.setTextColor(255, 255, 255);
