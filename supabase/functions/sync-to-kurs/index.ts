@@ -66,30 +66,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Verify user belongs to this company
-    const { data: userProfile, error: profileError } = await supabase
-      .from('profiles')
-      .select('company_id')
-      .eq('user_id', userId)
-      .single()
-
-    if (profileError || !userProfile) {
-      console.error('Error fetching user profile:', profileError)
-      return new Response(JSON.stringify({ error: 'User profile not found' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
-
-    if (userProfile.company_id !== company_id) {
-      console.error('User attempted to sync a company they do not belong to')
-      return new Response(JSON.stringify({ error: 'Access denied - not authorized for this company' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
-
-    // Check if user is company_admin or system_admin
+    // Check user roles first - system_admin can sync any company
     const { data: roles, error: rolesError } = await supabase
       .from('user_roles')
       .select('role')
@@ -103,14 +80,42 @@ Deno.serve(async (req) => {
       })
     }
 
-    const isAdmin = roles?.some(r => r.role === 'company_admin' || r.role === 'system_admin')
-    if (!isAdmin) {
+    const isSystemAdmin = roles?.some(r => r.role === 'system_admin')
+    const isCompanyAdmin = roles?.some(r => r.role === 'company_admin')
+
+    if (!isSystemAdmin && !isCompanyAdmin) {
       console.error('User does not have admin privileges for sync operation')
       return new Response(JSON.stringify({ error: 'Only company admins can trigger sync' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
+
+    // Company admins must belong to the company they're syncing. System admins bypass this check.
+    if (!isSystemAdmin) {
+      const { data: userProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('company_id')
+        .eq('user_id', userId)
+        .single()
+
+      if (profileError || !userProfile) {
+        console.error('Error fetching user profile:', profileError)
+        return new Response(JSON.stringify({ error: 'User profile not found' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      if (userProfile.company_id !== company_id) {
+        console.error('User attempted to sync a company they do not belong to')
+        return new Response(JSON.stringify({ error: 'Access denied - not authorized for this company' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+    }
+
 
     console.log(`Authorized sync for company: ${company_id} by user: ${userId}`)
 
