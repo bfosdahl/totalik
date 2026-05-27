@@ -83,12 +83,31 @@ function RecordCard({
             )}
           </div>
           
-          {record.document_path && (
-            <DocumentDownloadButton 
-              documentPath={record.document_path} 
-              getDocumentUrl={getDocumentUrl} 
-            />
+          {record.allergens && record.allergens.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {record.allergens.map((a) => (
+                <Badge key={a} variant="secondary" className="text-[10px]">{a}</Badge>
+              ))}
+            </div>
           )}
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => generateIkMatLabelPdf(record)}
+              className="gap-2"
+            >
+              <Printer className="h-4 w-4" />
+              Merkelapp
+            </Button>
+            {record.document_path && (
+              <DocumentDownloadButton
+                documentPath={record.document_path}
+                getDocumentUrl={getDocumentUrl}
+              />
+            )}
+          </div>
           
           {record.notes && (
             <p className="text-xs text-muted-foreground border-t pt-2">
