@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
+import { escapeHtml } from "../_shared/html-escape.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -161,6 +162,8 @@ serve(async (req) => {
       if (resend && resetData?.properties?.action_link) {
         try {
           const userName = firstName || existingProfile?.first_name || "Administrator";
+          const safeUserName = escapeHtml(userName);
+          const safeCompanyName = escapeHtml(company.name);
           const emailResponse = await resend.emails.send({
             from: "Total-IK <noreply@totalik.no>",
             to: [email],
@@ -173,13 +176,13 @@ serve(async (req) => {
                   <h1 style="color: white; margin: 0;">Velkommen som administrator!</h1>
                 </div>
                 <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-                  <p>Hei ${userName},</p>
-                  <p>Du har blitt lagt til som <strong>administrator</strong> for <strong>${company.name}</strong> i Total-IK.</p>
+                  <p>Hei ${safeUserName},</p>
+                  <p>Du har blitt lagt til som <strong>administrator</strong> for <strong>${safeCompanyName}</strong> i Total-IK.</p>
                   <p>Klikk på knappen for å sette/oppdatere passordet og logge inn:</p>
                   <div style="text-align: center; margin: 30px 0;">
                     <a href="${resetData.properties.action_link}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Sett passord og logg inn</a>
                   </div>
-                  <p style="color: #666; font-size: 13px;">Hvis knappen ikke fungerer, kopier denne lenken:<br/><span style="color: #667eea; word-break: break-all;">${resetData.properties.action_link}</span></p>
+                  <p style="color: #666; font-size: 13px;">Hvis knappen ikke fungerer, kopier denne lenken:<br/><span style="color: #667eea; word-break: break-all;">${escapeHtml(resetData.properties.action_link)}</span></p>
                   <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
                   <p style="color: #888; font-size: 12px; text-align: center;">Denne e-posten ble sendt fra Total-IK.</p>
                 </div>
@@ -285,6 +288,9 @@ serve(async (req) => {
       try {
         const companyName = company.name;
         const userName = firstName ? firstName : "Administrator";
+        const safeCompanyName = escapeHtml(companyName);
+        const safeUserName = escapeHtml(userName);
+        const safeEmail = escapeHtml(email);
 
         const emailResponse = await resend.emails.send({
           from: "Total-IK <noreply@totalik.no>",
@@ -303,15 +309,16 @@ serve(async (req) => {
               </div>
               
               <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-                <p style="font-size: 16px;">Hei ${userName},</p>
+                <p style="font-size: 16px;">Hei ${safeUserName},</p>
                 
-                <p>Du har blitt opprettet som <strong>administrator</strong> for <strong>${companyName}</strong> i HMS-systemet.</p>
+                <p>Du har blitt opprettet som <strong>administrator</strong> for <strong>${safeCompanyName}</strong> i HMS-systemet.</p>
                 
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                  <p style="margin: 0;"><strong>Bedrift:</strong> ${companyName}</p>
+                  <p style="margin: 0;"><strong>Bedrift:</strong> ${safeCompanyName}</p>
                   <p style="margin: 10px 0 0 0;"><strong>Din rolle:</strong> Bedriftsadministrator</p>
-                  <p style="margin: 10px 0 0 0;"><strong>E-post:</strong> ${email}</p>
+                  <p style="margin: 10px 0 0 0;"><strong>E-post:</strong> ${safeEmail}</p>
                 </div>
+                
                 
                 <p>Som administrator kan du:</p>
                 <ul>

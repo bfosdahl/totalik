@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { escapeHtml } from "../_shared/html-escape.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -66,11 +67,11 @@ serve(async (req) => {
     if (action && Deno.env.get("RESEND_API_KEY")) {
       const resend = new Resend(Deno.env.get("RESEND_API_KEY")!);
       const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-        <h2>Velkommen til Total-IK, ${firstName}!</h2>
-        <p>Din konto for <strong>${companyName}</strong> er opprettet, og vi har importert HMS-håndboken din fra det gamle systemet.</p>
+        <h2>Velkommen til Total-IK, ${escapeHtml(firstName)}!</h2>
+        <p>Din konto for <strong>${escapeHtml(companyName)}</strong> er opprettet, og vi har importert HMS-håndboken din fra det gamle systemet.</p>
         <p>Klikk på knappen for å sette ditt passord og logge inn:</p>
         <p><a href="${action}" style="background:#1e40af;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;">Sett passord og logg inn</a></p>
-        <p style="color:#666;font-size:13px;">Hvis knappen ikke fungerer, kopier denne lenken: <br/>${action}</p>
+        <p style="color:#666;font-size:13px;">Hvis knappen ikke fungerer, kopier denne lenken: <br/>${escapeHtml(action)}</p>
         <hr/><p style="color:#999;font-size:12px;">Total-IK – Digitalt internkontrollsystem</p>
       </div>`;
       const r = await resend.emails.send({
@@ -84,7 +85,8 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }), {
+    console.error("admin-onboard-user error:", e);
+    return new Response(JSON.stringify({ error: "An unexpected error occurred" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

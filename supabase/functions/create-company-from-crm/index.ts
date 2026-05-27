@@ -308,7 +308,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('CRM sync error:', error);
-    return respond({ error: 'Internal server error', details: String(error) }, 500);
+    return respond({ error: 'Internal server error' }, 500);
   }
 });
 

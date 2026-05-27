@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { requireAuth } from "../_shared/auth-guard.ts";
+import { escapeHtml } from "../_shared/html-escape.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -71,6 +72,8 @@ const handler = async (req: Request): Promise<Response> => {
     const isCrmOrder = source === "crm";
 
     // Different content for CRM customers (immediate access) vs self-signups (needs approval)
+    const safeCompanyName = escapeHtml(companyName);
+    const safeFirstName = escapeHtml(firstName ?? "");
     const bodyContent = isCrmOrder
       ? `
           <p style="color: #333; font-size: 16px;">
@@ -79,7 +82,7 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #28a745;">
             <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">&#10004; Kontoen din er aktiv</h3>
-            <p style="color: #555; margin: 0;">Du har full tilgang til ${companyName} sitt system i Total-IK. Logg inn for &#229; komme i gang.</p>
+            <p style="color: #555; margin: 0;">Du har full tilgang til ${safeCompanyName} sitt system i Total-IK. Logg inn for &#229; komme i gang.</p>
           </div>
         `
       : `
@@ -114,7 +117,8 @@ const handler = async (req: Request): Promise<Response> => {
             <h1 style="color: #1a1a2e; margin: 0;">Velkommen til Total-IK!</h1>
           </div>
           
-          <p style="color: #333; font-size: 16px;">Hei${firstName ? ` ${firstName}` : ''},</p>
+          <p style="color: #333; font-size: 16px;">Hei${firstName ? ` ${safeFirstName}` : ''},</p>
+          
           
           ${bodyContent}
           
@@ -154,7 +158,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error sending welcome email:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "An unexpected error occurred" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
