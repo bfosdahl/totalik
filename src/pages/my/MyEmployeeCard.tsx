@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Employee, useUpdateEmployee, useEmployeeDocuments, useEmployeeCourses } from "@/hooks/useEmployees";
+import { useProfileNextOfKin, useUpdateProfileNextOfKin } from "@/hooks/useProfileNextOfKin";
 import { useAuth } from "@/contexts/AuthContext";
 import { AddCourseDialog } from "@/components/employees/AddCourseDialog";
 import { UploadDocumentDialog } from "@/components/employees/UploadDocumentDialog";
