@@ -459,6 +459,48 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
             </div>
           </div>
 
+          {/* Internal Production Toggle */}
+          <div className="flex items-start justify-between p-4 border rounded-lg bg-muted/30 gap-4">
+            <div className="space-y-0.5">
+              <Label className="text-sm font-semibold">Egenprodusert mat</Label>
+              <p className="text-xs text-muted-foreground">
+                For mat laget på eget kjøkken (f.eks. bolognese, kake, ferdigretter)
+              </p>
+            </div>
+            <Switch
+              checked={formData.is_internal_production}
+              onCheckedChange={handleInternalProductionToggle}
+            />
+          </div>
+
+          {formData.is_internal_production && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 border rounded-lg border-primary/30 bg-primary/5">
+              <div className="space-y-2">
+                <Label htmlFor="produced_by">Laget av</Label>
+                <Input
+                  id="produced_by"
+                  value={formData.produced_by}
+                  onChange={(e) => setFormData({ ...formData, produced_by: e.target.value })}
+                  placeholder="Eks: Kari Nordmann"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="shelf_life">Holdbarhet (dager)</Label>
+                <Input
+                  id="shelf_life"
+                  type="number"
+                  min="1"
+                  value={formData.internal_shelf_life_days}
+                  onChange={(e) => handleShelfLifeChange(e.target.value)}
+                  placeholder="Eks: 3"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Beregner siste forbruksdag automatisk
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Supplier Selection */}
           <div className="space-y-2">
             <Label>Leverandør *</Label>
