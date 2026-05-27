@@ -7993,6 +7993,7 @@ export type Database = {
       }
       ik_mat_traceability_records: {
         Row: {
+          allergens: string[]
           batch_number: string | null
           company_id: string
           created_at: string | null
@@ -8000,8 +8001,12 @@ export type Database = {
           department_id: string | null
           document_path: string | null
           expiry_date: string | null
+          expiry_type: string
           id: string
+          internal_shelf_life_days: number | null
+          is_internal_production: boolean
           notes: string | null
+          produced_by: string | null
           product_name: string
           production_date: string | null
           receipt_date: string
@@ -8010,6 +8015,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          allergens?: string[]
           batch_number?: string | null
           company_id: string
           created_at?: string | null
@@ -8017,8 +8023,12 @@ export type Database = {
           department_id?: string | null
           document_path?: string | null
           expiry_date?: string | null
+          expiry_type?: string
           id?: string
+          internal_shelf_life_days?: number | null
+          is_internal_production?: boolean
           notes?: string | null
+          produced_by?: string | null
           product_name: string
           production_date?: string | null
           receipt_date?: string
@@ -8027,6 +8037,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          allergens?: string[]
           batch_number?: string | null
           company_id?: string
           created_at?: string | null
@@ -8034,8 +8045,12 @@ export type Database = {
           department_id?: string | null
           document_path?: string | null
           expiry_date?: string | null
+          expiry_type?: string
           id?: string
+          internal_shelf_life_days?: number | null
+          is_internal_production?: boolean
           notes?: string | null
+          produced_by?: string | null
           product_name?: string
           production_date?: string | null
           receipt_date?: string
