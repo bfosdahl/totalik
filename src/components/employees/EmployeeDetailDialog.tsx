@@ -194,10 +194,19 @@ export function EmployeeDetailDialog({
     return (first + last).toUpperCase() || "?";
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (employee.company_id) {
+      await updateNok.mutateAsync({
+        profileId: employee.id,
+        companyId: employee.company_id,
+        next_of_kin_name: editData.next_of_kin_name || null,
+        next_of_kin_phone: editData.next_of_kin_phone || null,
+        next_of_kin_relation: editData.next_of_kin_relation || null,
+      });
+    }
     updateEmployee.mutate({
       id: employee.id,
-      ...editData,
+      phone: editData.phone,
     }, {
       onSuccess: () => setIsEditing(false),
     });
@@ -206,9 +215,9 @@ export function EmployeeDetailDialog({
   const handleCancel = () => {
     setEditData({
       phone: employee.phone || "",
-      next_of_kin_name: employee.next_of_kin_name || "",
-      next_of_kin_phone: employee.next_of_kin_phone || "",
-      next_of_kin_relation: employee.next_of_kin_relation || "",
+      next_of_kin_name: nok?.next_of_kin_name || "",
+      next_of_kin_phone: nok?.next_of_kin_phone || "",
+      next_of_kin_relation: nok?.next_of_kin_relation || "",
     });
     setIsEditing(false);
   };
