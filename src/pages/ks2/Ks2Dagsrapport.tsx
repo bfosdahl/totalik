@@ -153,6 +153,8 @@ function DailyReportForm({
     total_crew_count: Number(ownCrew) || 0,
     work_description: workDesc || undefined,
     work_areas: workAreas || undefined,
+    work_start_time: workStartTime || undefined,
+    work_end_time: workEndTime || undefined,
     equipment_used: equipmentText ? equipmentText.split(",").map((e) => ({ name: e.trim() })) : [],
     materials_received: materialsText ? materialsText.split(",").map((m) => ({ name: m.trim() })) : [],
     progress_description: progressDesc || undefined,
