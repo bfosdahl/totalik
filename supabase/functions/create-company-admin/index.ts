@@ -288,6 +288,9 @@ serve(async (req) => {
       try {
         const companyName = company.name;
         const userName = firstName ? firstName : "Administrator";
+        const safeCompanyName = escapeHtml(companyName);
+        const safeUserName = escapeHtml(userName);
+        const safeEmail = escapeHtml(email);
 
         const emailResponse = await resend.emails.send({
           from: "Total-IK <noreply@totalik.no>",
@@ -306,15 +309,16 @@ serve(async (req) => {
               </div>
               
               <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-                <p style="font-size: 16px;">Hei ${userName},</p>
+                <p style="font-size: 16px;">Hei ${safeUserName},</p>
                 
-                <p>Du har blitt opprettet som <strong>administrator</strong> for <strong>${companyName}</strong> i HMS-systemet.</p>
+                <p>Du har blitt opprettet som <strong>administrator</strong> for <strong>${safeCompanyName}</strong> i HMS-systemet.</p>
                 
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                  <p style="margin: 0;"><strong>Bedrift:</strong> ${companyName}</p>
+                  <p style="margin: 0;"><strong>Bedrift:</strong> ${safeCompanyName}</p>
                   <p style="margin: 10px 0 0 0;"><strong>Din rolle:</strong> Bedriftsadministrator</p>
-                  <p style="margin: 10px 0 0 0;"><strong>E-post:</strong> ${email}</p>
+                  <p style="margin: 10px 0 0 0;"><strong>E-post:</strong> ${safeEmail}</p>
                 </div>
+                
                 
                 <p>Som administrator kan du:</p>
                 <ul>
