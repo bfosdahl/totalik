@@ -584,8 +584,22 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="expiry_date">Holdbarhetsdato</Label>
+            <div className="space-y-2 sm:col-span-2">
+              <Label>Holdbarhet</Label>
+              <RadioGroup
+                value={formData.expiry_type}
+                onValueChange={(v) => setFormData({ ...formData, expiry_type: v as "best_before" | "use_by" })}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="best_before" id="best_before" />
+                  <label htmlFor="best_before" className="text-sm cursor-pointer">Best før</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="use_by" id="use_by" />
+                  <label htmlFor="use_by" className="text-sm cursor-pointer">Siste forbruksdag</label>
+                </div>
+              </RadioGroup>
               <Input
                 id="expiry_date"
                 type="date"
