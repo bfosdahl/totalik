@@ -6,6 +6,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+const esc = (s: unknown) =>
+  String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -33,18 +39,18 @@ serve(async (req) => {
 <h2>Ny bestilling av plakater / dokumenter (IK-MAT)</h2>
 
 <table style="border-collapse:collapse;width:100%">
-  <tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold">Bedrift</td><td style="padding:8px;border:1px solid #ddd">${companyName}</td></tr>
-  <tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold">Kontaktperson</td><td style="padding:8px;border:1px solid #ddd">${contactName}</td></tr>
-  <tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold">E-post</td><td style="padding:8px;border:1px solid #ddd">${contactEmail}</td></tr>
-  ${contactPhone ? `<tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold">Telefon</td><td style="padding:8px;border:1px solid #ddd">${contactPhone}</td></tr>` : ''}
+  <tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold">Bedrift</td><td style="padding:8px;border:1px solid #ddd">${esc(companyName)}</td></tr>
+  <tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold">Kontaktperson</td><td style="padding:8px;border:1px solid #ddd">${esc(contactName)}</td></tr>
+  <tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold">E-post</td><td style="padding:8px;border:1px solid #ddd">${esc(contactEmail)}</td></tr>
+  ${contactPhone ? `<tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold">Telefon</td><td style="padding:8px;border:1px solid #ddd">${esc(contactPhone)}</td></tr>` : ''}
 </table>
 
 <h3>Bestilte plakater/dokumenter:</h3>
 <ol>
-${selectedPosters.map((p: string) => `  <li>${p}</li>`).join('\n')}
+${selectedPosters.map((p: string) => `  <li>${esc(p)}</li>`).join('\n')}
 </ol>
 
-${message ? `<h3>Melding fra kunde:</h3><p>${message}</p>` : ''}
+${message ? `<h3>Melding fra kunde:</h3><p>${esc(message)}</p>` : ''}
 
 <hr>
 <p style="color:#666;font-size:12px">Denne bestillingen ble sendt automatisk fra Total-IK systemet.</p>

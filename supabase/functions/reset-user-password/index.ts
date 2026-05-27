@@ -134,6 +134,14 @@ Deno.serve(async (req) => {
 
     // If newPassword is provided, set it directly (admin password reset)
     if (newPassword) {
+      // SECURITY: Only system admins may set passwords directly.
+      // Company admins must use the reset-link path so the user receives it via email.
+      if (!isSystemAdmin) {
+        return new Response(
+          JSON.stringify({ error: "Kun systemadministratorer kan sette passord direkte. Bruk tilbakestillingslenke i stedet." }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       // Validate password length
       if (newPassword.length < 6) {
         return new Response(
