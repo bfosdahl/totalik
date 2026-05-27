@@ -657,6 +657,9 @@ export default function Ks2Dagsrapport() {
                           <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             Tid: {report.work_start_time || "—"} – {report.work_end_time || "—"}
+                            {calculateWorkDuration(report.work_start_time, report.work_end_time) && (
+                              <span className="ml-1">({calculateWorkDuration(report.work_start_time, report.work_end_time)})</span>
+                            )}
                           </p>
                         )}
                       </div>
