@@ -1,7 +1,6 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { format } from 'date-fns';
-import { nb } from 'date-fns/locale';
+import { safeFormatDate } from './safeFormatDate';
 
 interface CheckpointResponse {
   checkpoint: string;
