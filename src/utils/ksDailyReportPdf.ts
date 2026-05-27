@@ -388,7 +388,7 @@ async function buildDailyReportPdf(
   // HMS
   if (report.hms_incidents?.length > 0 || report.hms_observations || report.safety_meeting_held) {
     section("HMS / Sikkerhet");
-    if (report.safety_meeting_held) para("- Sikkerhetsmote avholdt");
+    if (report.safety_meeting_held) para("- Sikkerhetsmøte avholdt");
     if (report.hms_incidents?.length > 0) {
       report.hms_incidents.forEach((h: any) => para(`• ${h.description || h}`));
     }
