@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, FileText, Package, Calendar, Thermometer, Download, QrCode } from "lucide-react";
+import { Plus, Search, FileText, Package, Calendar, Thermometer, Download, QrCode, Printer } from "lucide-react";
+import { generateIkMatLabelPdf } from "@/utils/ikMatLabelPdf";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIkMatTraceability, TraceabilityRecord } from "@/hooks/useIkMatTraceability";
 import { NewTraceabilityDialog } from "@/components/ikmat/NewTraceabilityDialog";
