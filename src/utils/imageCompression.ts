@@ -13,6 +13,18 @@ export async function compressDataUrl(
     img.onload = () => {
       try {
         let { width, height } = img;
+        // Hard cap input dimensions BEFORE allocating canvas — an 8000×6000 image
+        // would allocate ~192MB and crash mobile browsers.
+        const MAX_INPUT_DIMENSION = 4000;
+        if (width > MAX_INPUT_DIMENSION || height > MAX_INPUT_DIMENSION) {
+          if (width >= height) {
+            height = Math.round((height / width) * MAX_INPUT_DIMENSION);
+            width = MAX_INPUT_DIMENSION;
+          } else {
+            width = Math.round((width / height) * MAX_INPUT_DIMENSION);
+            height = MAX_INPUT_DIMENSION;
+          }
+        }
         if (width > maxDimension || height > maxDimension) {
           if (width >= height) {
             height = Math.round((height / width) * maxDimension);
