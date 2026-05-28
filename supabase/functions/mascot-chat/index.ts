@@ -814,7 +814,8 @@ async function executeToolCall(
     }
   } catch (error) {
     console.error(`Error executing tool ${toolName}:`, error);
-    return `❌ Feil ved utføring av handling: ${error instanceof Error ? error.message : String(error)}`;
+    console.error("mascot-chat tool error:", error);
+    return "❌ Handlingen kunne ikke fullføres. Prøv igjen.";
   }
 }
 

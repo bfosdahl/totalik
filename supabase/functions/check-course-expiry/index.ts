@@ -236,7 +236,8 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: unknown) {
     console.error("Error in check-course-expiry:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("check-course-expiry error:", error);
+    const errorMessage = "An unexpected error occurred";
     return new Response(
       JSON.stringify({ error: errorMessage }),
       {

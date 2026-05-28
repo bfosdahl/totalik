@@ -109,7 +109,7 @@ serve(async (req) => {
 
     if (authError || !authData.user) {
       console.error("Auth create error:", authError);
-      return new Response(JSON.stringify({ error: authError?.message || "Kunne ikke opprette bruker" }), {
+      return new Response(JSON.stringify({ error: "Kunne ikke opprette bruker" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -231,7 +231,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Unexpected error in register-company:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Ukjent feil" }),
+      JSON.stringify({ error: "En uventet feil oppstod" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

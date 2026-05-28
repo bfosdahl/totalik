@@ -83,7 +83,8 @@ ${message ? `<h3>Melding fra kunde:</h3><p>${esc(message)}</p>` : ''}
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("ik-mat-order-posters error:", error);
+    return new Response(JSON.stringify({ error: "En uventet feil oppstod" }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

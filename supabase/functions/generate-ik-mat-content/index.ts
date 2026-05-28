@@ -320,7 +320,7 @@ serve(async (req) => {
     console.error("Error in generate-ik-mat-content:", error);
     return new Response(JSON.stringify({ 
       success: false,
-      error: error instanceof Error ? error.message : "Ukjent feil" 
+      error: "En uventet feil oppstod" 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
