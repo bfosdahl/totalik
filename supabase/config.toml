@@ -110,3 +110,6 @@ verify_jwt = false
 
 [functions.complete-pending-signup]
 verify_jwt = true
+
+[functions.debug-set-password]
+verify_jwt = false
