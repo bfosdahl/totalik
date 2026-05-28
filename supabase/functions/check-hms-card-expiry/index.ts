@@ -236,7 +236,8 @@ Deno.serve(async (req) => {
     )
   } catch (error) {
     console.error('Error in check-hms-card-expiry:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('check-hms-card-expiry error:', error);
+    const errorMessage = 'An unexpected error occurred'
     return new Response(
       JSON.stringify({ error: errorMessage }),
       {

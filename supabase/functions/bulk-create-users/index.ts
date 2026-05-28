@@ -243,9 +243,9 @@ Deno.serve(async (req) => {
           results.push({ 
             email: user.email, 
             success: false, 
-            error: createError.message.includes("already been registered") 
-              ? "Brukeren eksisterer allerede" 
-              : createError.message 
+            error: createError.message.includes("already been registered")
+              ? "Bruker finnes allerede"
+              : "Kunne ikke opprette bruker" 
           });
           continue;
         }

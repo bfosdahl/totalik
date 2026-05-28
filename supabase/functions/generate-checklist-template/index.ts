@@ -133,7 +133,8 @@ Lag 8-15 sjekkpunkter som er praktiske, konkrete og relevante for norsk byggebra
     });
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("generate-checklist-template error:", error);
+    return new Response(JSON.stringify({ error: "En uventet feil oppstod" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
