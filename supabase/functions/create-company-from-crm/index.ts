@@ -155,7 +155,7 @@ serve(async (req) => {
 
     if (companyError || !newCompany) {
       console.error('Company create error:', companyError);
-      return respond({ error: 'Kunne ikke opprette bedrift', details: companyError?.message }, 500);
+      return respond({ error: 'Kunne ikke opprette bedrift' }, 500);
     }
 
     // --- 2. Activate modules ---
@@ -177,7 +177,7 @@ serve(async (req) => {
       console.error('Auth create error:', authError);
       // Rollback company
       await supabaseAdmin.from('companies').delete().eq('id', newCompany.id);
-      return respond({ error: 'Kunne ikke opprette bruker', details: authError?.message }, 500);
+      return respond({ error: 'Kunne ikke opprette bruker' }, 500);
     }
 
     const userId = authData.user.id;
