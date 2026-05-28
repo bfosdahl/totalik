@@ -328,7 +328,7 @@ async function executeToolCall(
 
         if (error) {
           console.error('Error adding equipment:', error);
-          return { success: false, message: `Kunne ikke legge til utstyr: ${error.message}` };
+          return { success: false, message: 'Kunne ikke legge til utstyr' };
         }
 
         return { 
@@ -400,7 +400,7 @@ async function executeToolCall(
 
         if (error) {
           console.error('Error logging temperature:', error);
-          return { success: false, message: `Kunne ikke registrere temperatur: ${error.message}` };
+          return { success: false, message: 'Kunne ikke registrere temperatur' };
         }
 
         const status = isAcceptable ? '✅ OK' : '⚠️ AVVIK';
@@ -437,7 +437,7 @@ async function executeToolCall(
 
         if (error) {
           console.error('Error adding cleaning task:', error);
-          return { success: false, message: `Kunne ikke legge til rengjøringsoppgave: ${error.message}` };
+          return { success: false, message: 'Kunne ikke legge til rengjøringsoppgave' };
         }
 
         return { 
@@ -464,7 +464,7 @@ async function executeToolCall(
 
         if (error) {
           console.error('Error adding supplier:', error);
-          return { success: false, message: `Kunne ikke legge til leverandør: ${error.message}` };
+          return { success: false, message: 'Kunne ikke legge til leverandør' };
         }
 
         return { 
@@ -483,7 +483,7 @@ async function executeToolCall(
           .order('sort_order', { ascending: true });
 
         if (error) {
-          return { success: false, message: `Kunne ikke hente utstyrsliste: ${error.message}` };
+          return { success: false, message: 'Kunne ikke hente utstyrsliste' };
         }
 
         if (!data || data.length === 0) {
@@ -601,7 +601,7 @@ async function executeToolCall(
 
         if (saveError) {
           console.error('Error saving risk:', saveError);
-          return { success: false, message: `Kunne ikke lagre risiko: ${saveError.message}` };
+          return { success: false, message: 'Kunne ikke lagre risiko' };
         }
 
         // Determine traffic light

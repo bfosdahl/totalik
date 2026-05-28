@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
 
     if (profileUpdateError) {
       console.error("Error reactivating profile:", profileUpdateError);
-      return new Response(JSON.stringify({ error: profileUpdateError.message }), {
+      return new Response(JSON.stringify({ error: 'Kunne ikke reaktivere brukerprofil' }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
 
     if (unbanError) {
       console.error("Error removing auth ban:", unbanError);
-      return new Response(JSON.stringify({ error: "Failed to remove auth ban: " + unbanError.message }), {
+      return new Response(JSON.stringify({ error: 'Kunne ikke fjerne sperre på brukerkonto' }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("Error in reactivate-user function:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage = 'En uventet feil oppstod';
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
