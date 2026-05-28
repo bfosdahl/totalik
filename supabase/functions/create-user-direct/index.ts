@@ -178,7 +178,7 @@ serve(async (req) => {
         });
       }
       
-      return new Response(JSON.stringify({ error: createError?.message || "Kunne ikke opprette bruker" }), {
+      return new Response(JSON.stringify({ error: "Kunne ikke opprette bruker" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

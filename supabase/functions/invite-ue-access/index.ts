@@ -104,9 +104,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Creating/checking user for:", email);
 
-    // Check if user already exists
-    const { data: existingUsers } = await supabase.auth.admin.listUsers();
-    const existingUser = existingUsers?.users?.find(u => u.email === email);
+    // Check if user already exists via profiles table (avoids listUsers pagination limit)
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("user_id")
+      .ilike("email", email)
+      .maybeSingle();
+    const existingUser = existingProfile?.user_id ? { id: existingProfile.user_id } : null;
 
     let userId: string;
     let recoveryLink: string | null = null;

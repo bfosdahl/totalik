@@ -42,8 +42,7 @@ serve(async (req) => {
     if (userError || !requestingUser) {
       console.error("Auth error:", userError?.message || "No user found");
       return new Response(JSON.stringify({ 
-        error: "Unauthorized", 
-        details: userError?.message || "Session expired. Please log in again." 
+        error: "Unauthorized"
       }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -135,7 +134,7 @@ serve(async (req) => {
 
     if (createError || !newUser.user) {
       console.error("Error creating user:", createError);
-      return new Response(JSON.stringify({ error: createError?.message || "Failed to create user" }), {
+      return new Response(JSON.stringify({ error: "Kunne ikke opprette bruker" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
