@@ -44,7 +44,8 @@ Deno.serve(async (req) => {
     const result = await r.json();
     return json(result, r.status);
   } catch (e) {
-    return json({ error: String(e) }, 500);
+    console.error('admin-provision-from-nextcom error:', e);
+    return json({ error: 'En uventet feil oppstod' }, 500);
   }
 });
 

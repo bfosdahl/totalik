@@ -37,7 +37,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in push-vapid-key:", error);
     return new Response(
-      JSON.stringify({ error: (error as Error).message }),
+      JSON.stringify({ error: 'En uventet feil oppstod' }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

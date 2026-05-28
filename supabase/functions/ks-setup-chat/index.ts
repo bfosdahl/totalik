@@ -229,7 +229,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in ks-setup-chat:", error);
     return new Response(JSON.stringify({
-      error: error instanceof Error ? error.message : "Ukjent feil"
+      error: "En uventet feil oppstod"
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
