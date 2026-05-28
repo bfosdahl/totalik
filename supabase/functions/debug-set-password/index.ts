@@ -1,26 +1,20 @@
-// TEMPORARY DEBUG FUNCTION — DELETE AFTER USE
-// Sets a known password on a user via service role, gated by CRON_SECRET header.
+// TEMPORARY DEBUG FUNCTION — DELETE IMMEDIATELY AFTER USE
+// Hardcoded to Eirik's account only for one-time QA test.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const ALLOWED_EMAIL = "sivertsenssm@gmail.com";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const secret = req.headers.get("x-cron-secret");
-  if (!secret || secret !== Deno.env.get("CRON_SECRET")) {
-    return new Response(JSON.stringify({ error: "forbidden" }), {
-      status: 403,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
-  const { email, password } = await req.json();
-  if (!email || !password) {
-    return new Response(JSON.stringify({ error: "email + password required" }), {
+  const { password } = await req.json().catch(() => ({}));
+  if (!password || password.length < 12) {
+    return new Response(JSON.stringify({ error: "password (min 12 chars) required" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -31,11 +25,10 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  // Find user by email via profiles
   const { data: prof } = await admin
     .from("profiles")
     .select("user_id")
-    .ilike("email", email)
+    .ilike("email", ALLOWED_EMAIL)
     .maybeSingle();
 
   if (!prof?.user_id) {
@@ -53,7 +46,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  return new Response(JSON.stringify({ ok: true, user_id: prof.user_id }), {
+  return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
