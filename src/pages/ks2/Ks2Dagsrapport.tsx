@@ -511,7 +511,7 @@ export default function Ks2Dagsrapport() {
       }
       const [{ data: projectData }, { data: companyData }] = await Promise.all([
         effectiveProjectId
-          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name, partner_name, partner_org_number, partner_logo_url").eq("id", effectiveProjectId).maybeSingle()
+          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, client_name, partner_name, partner_org_number, partner_logo_url").eq("id", effectiveProjectId).maybeSingle()
           : Promise.resolve({ data: null } as any),
         supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email, logo_url").eq("id", report.company_id).maybeSingle(),
       ]);
@@ -532,7 +532,7 @@ export default function Ks2Dagsrapport() {
       }
       const [{ data: projectData }, { data: companyData }] = await Promise.all([
         effectiveProjectId
-          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, saksnr, client_name, partner_name, partner_org_number, partner_logo_url").eq("id", effectiveProjectId).maybeSingle()
+          ? supabase.from("ks_module2_projects").select("project_name, project_number, address, gnr_bnr, client_name, partner_name, partner_org_number, partner_logo_url").eq("id", effectiveProjectId).maybeSingle()
           : Promise.resolve({ data: null } as any),
         supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email, logo_url").eq("id", report.company_id).maybeSingle(),
       ]);
