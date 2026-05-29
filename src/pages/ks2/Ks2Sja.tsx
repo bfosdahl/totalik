@@ -155,7 +155,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
     const writeParagraph = (text: string, opts: { size?: number; bold?: boolean; color?: [number, number, number]; gap?: number } = {}) => {
       const { size = 10, bold = false, color = [40, 40, 40], gap = 4 } = opts;
       doc.setFontSize(size);
-      doc.setFont("helvetica", bold ? "bold" : "normal");
+      doc.setFont("times", bold ? "bold" : "normal");
       doc.setTextColor(...color);
       const lines = doc.splitTextToSize(text, contentWidth);
       ensureSpace(lines.length * (size * 0.45) + gap);
@@ -168,13 +168,13 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
     doc.rect(0, 0, pageWidth, 26, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("times", "bold");
     doc.text("SIKKER JOBB ANALYSE (SJA)", margin, 12);
     doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
+    doc.setFont("times", "normal");
     doc.text(sja.sja_number, pageWidth - margin, 12, { align: "right" });
     doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("times", "bold");
     doc.text(sja.title || "", margin, 21);
     y = 34;
 
@@ -232,13 +232,13 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
 
       // Severity badges line
       doc.setFontSize(9);
-      doc.setFont("helvetica", "italic");
+      doc.setFont("times", "italic");
       doc.setTextColor(110, 110, 110);
       doc.text(`Sannsynlighet: ${r.probability}   |   Konsekvens: ${r.consequence}`, margin, y);
       y += 5;
 
       // Risiko body
-      doc.setFont("helvetica", "bold");
+      doc.setFont("times", "bold");
       doc.setFontSize(10);
       doc.setTextColor(40, 40, 40);
       ensureSpace(6);
@@ -247,7 +247,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
       writeParagraph(r.description || "-", { size: 10, gap: 4 });
 
       // Tiltak
-      doc.setFont("helvetica", "bold");
+      doc.setFont("times", "bold");
       doc.setFontSize(10);
       doc.setTextColor(40, 40, 40);
       ensureSpace(6);
@@ -259,7 +259,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
       } else {
         relatedMeasures.forEach((m) => {
           const bulletText = m.measure || "-";
-          doc.setFont("helvetica", "normal");
+          doc.setFont("times", "normal");
           doc.setFontSize(10);
           doc.setTextColor(40, 40, 40);
           const lines = doc.splitTextToSize(bulletText, contentWidth - 6);
@@ -311,7 +311,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
       } catch { /* skip */ }
       y += 28;
       doc.setFontSize(9);
-      doc.setFont("helvetica", "normal");
+      doc.setFont("times", "normal");
       doc.setTextColor(80, 80, 80);
       doc.text(
         `Signert av ${sja.completed_by_name || "-"} den ${sja.completed_at ? format(new Date(sja.completed_at), "d. MMMM yyyy", { locale: nb }) : "-"}`,
@@ -325,7 +325,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
       doc.setPage(i);
       doc.setFontSize(8);
       doc.setTextColor(140, 140, 140);
-      doc.setFont("helvetica", "normal");
+      doc.setFont("times", "normal");
       doc.text(`${sja.sja_number} – ${sja.title}`, margin, pageHeight - 8);
       doc.text(`Side ${i} av ${pageCount}`, pageWidth - margin, pageHeight - 8, { align: "right" });
     }
