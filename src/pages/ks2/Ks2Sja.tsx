@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import SignatureCanvas from "react-signature-canvas";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { registerPdfFont } from "@/utils/pdfFont";
 
 // === Detail/Edit View ===
 function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void }) {
