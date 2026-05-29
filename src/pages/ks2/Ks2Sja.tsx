@@ -138,8 +138,9 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
       toast.error("Kunne ikke fullføre SJA");
     }
   };
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     const doc = new jsPDF();
+    await registerPdfFont(doc);
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 18;
