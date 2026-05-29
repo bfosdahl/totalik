@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import SignatureCanvas from "react-signature-canvas";
 import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 // === Detail/Edit View ===
 function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void }) {
@@ -136,69 +137,203 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
       toast.error("Kunne ikke fullføre SJA");
     }
   };
-
   const handleDownloadPdf = () => {
     const doc = new jsPDF();
-    const margin = 20;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 18;
+    const contentWidth = pageWidth - margin * 2;
     let y = margin;
 
-    doc.setFontSize(18);
-    doc.text("Sikker Jobb Analyse (SJA)", margin, y);
-    y += 10;
-    doc.setFontSize(10);
-    doc.text(`${sja.sja_number} | ${sja.title}`, margin, y);
-    y += 8;
-    doc.text(`Dato: ${format(new Date(sja.planned_date), "d. MMMM yyyy", { locale: nb })}`, margin, y);
-    y += 6;
-    doc.text(`Ansvarlig: ${sja.responsible_name}`, margin, y);
-    y += 6;
-    if (sja.location) { doc.text(`Lokasjon: ${sja.location}`, margin, y); y += 6; }
-    y += 4;
+    const ensureSpace = (needed: number) => {
+      if (y + needed > pageHeight - margin) {
+        doc.addPage();
+        y = margin;
+      }
+    };
 
-    doc.setFontSize(12);
-    doc.text("Arbeidsbeskrivelse", margin, y); y += 6;
-    doc.setFontSize(10);
-    const descLines = doc.splitTextToSize(workDescription || "-", 170);
-    doc.text(descLines, margin, y); y += descLines.length * 5 + 6;
+    const writeParagraph = (text: string, opts: { size?: number; bold?: boolean; color?: [number, number, number]; gap?: number } = {}) => {
+      const { size = 10, bold = false, color = [40, 40, 40], gap = 4 } = opts;
+      doc.setFontSize(size);
+      doc.setFont("helvetica", bold ? "bold" : "normal");
+      doc.setTextColor(...color);
+      const lines = doc.splitTextToSize(text, contentWidth);
+      ensureSpace(lines.length * (size * 0.45) + gap);
+      doc.text(lines, margin, y);
+      y += lines.length * (size * 0.45) + gap;
+    };
 
-    doc.setFontSize(12);
-    doc.text("Identifiserte risikoer", margin, y); y += 6;
+    // === Header bar ===
+    doc.setFillColor(30, 58, 95);
+    doc.rect(0, 0, pageWidth, 26, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("SIKKER JOBB ANALYSE (SJA)", margin, 12);
     doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(sja.sja_number, pageWidth - margin, 12, { align: "right" });
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text(sja.title || "", margin, 21);
+    y = 34;
+
+    // === Metadata table ===
+    const metaRows: [string, string][] = [
+      ["Prosjekt", sja.title || "-"],
+      ["Lokasjon", sja.location || "-"],
+      ["Ansvarlig", sja.responsible_name || "-"],
+      ["Planlagt dato", sja.planned_date ? format(new Date(sja.planned_date), "d. MMMM yyyy", { locale: nb }) : "-"],
+      ["Deltakere", (sja.participants && sja.participants.length > 0) ? sja.participants.join(", ") : "-"],
+      ["Status", sja.status === "completed" ? "Fullført" : sja.status === "active" ? "Aktiv" : "Utkast"],
+    ];
+    autoTable(doc, {
+      startY: y,
+      body: metaRows,
+      theme: "grid",
+      styles: { fontSize: 9, cellPadding: 2.5, textColor: [40, 40, 40] },
+      columnStyles: {
+        0: { fontStyle: "bold", fillColor: [240, 244, 248], cellWidth: 40 },
+        1: { cellWidth: contentWidth - 40 },
+      },
+      margin: { left: margin, right: margin },
+    });
+    y = (doc as any).lastAutoTable.finalY + 8;
+
+    // === Arbeidsbeskrivelse ===
+    if (workDescription && workDescription.trim()) {
+      writeParagraph("Arbeidsbeskrivelse", { size: 13, bold: true, color: [30, 58, 95], gap: 3 });
+      doc.setDrawColor(30, 58, 95);
+      doc.setLineWidth(0.4);
+      doc.line(margin, y - 1, margin + 30, y - 1);
+      y += 2;
+      writeParagraph(workDescription, { size: 10, gap: 6 });
+    }
+
+    // === Risiko og tiltak ===
+    writeParagraph("Risiko og tiltak", { size: 13, bold: true, color: [30, 58, 95], gap: 3 });
+    doc.setDrawColor(30, 58, 95);
+    doc.setLineWidth(0.4);
+    doc.line(margin, y - 1, margin + 30, y - 1);
+    y += 3;
+
+    if (risks.length === 0) {
+      writeParagraph("Ingen risikoer registrert.", { size: 10, color: [120, 120, 120], gap: 6 });
+    }
+
     risks.forEach((r, i) => {
-      const head = `${i + 1}. (S: ${r.probability}, K: ${r.consequence})`;
-      const lines = doc.splitTextToSize(`${head} ${r.description || ""}`, 170);
-      if (y + lines.length * 5 > 270) { doc.addPage(); y = margin; }
-      doc.text(lines, margin, y);
-      y += lines.length * 5 + 2;
-    });
-    if (risks.length === 0) { doc.text("Ingen risikoer registrert", margin, y); y += 6; }
-    y += 4;
+      const relatedMeasures = measures.filter(m => m.risk === r.description);
 
-    doc.setFontSize(12);
-    doc.text("Risikoreduserende tiltak", margin, y); y += 6;
-    doc.setFontSize(10);
-    measures.forEach((m, i) => {
-      const block = `${i + 1}. ${m.measure || "-"}  (Ansvarlig: ${m.responsible || "-"})\nRisiko: ${m.risk || "-"}`;
-      const lines = doc.splitTextToSize(block, 170);
-      if (y + lines.length * 5 > 270) { doc.addPage(); y = margin; }
-      doc.text(lines, margin, y);
-      y += lines.length * 5 + 3;
-    });
-    if (measures.length === 0) { doc.text("Ingen tiltak registrert", margin, y); y += 6; }
+      ensureSpace(20);
+      // Risk title
+      writeParagraph(`${i + 1}. ${r.description?.split(/[.!?]/)[0]?.slice(0, 80) || "Risiko"}`, {
+        size: 11, bold: true, color: [30, 58, 95], gap: 2,
+      });
 
-    if (sja.status === "completed" && sja.signature_data) {
-      y += 8;
-      doc.setFontSize(12);
-      doc.text("Signatur", margin, y); y += 4;
-      try { doc.addImage(sja.signature_data, "PNG", margin, y, 60, 25); } catch { /* skip */ }
-      y += 30;
+      // Severity badges line
       doc.setFontSize(9);
-      doc.text(`Signert av ${sja.completed_by_name || "-"} den ${sja.completed_at ? format(new Date(sja.completed_at), "d. MMM yyyy", { locale: nb }) : "-"}`, margin, y);
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(110, 110, 110);
+      doc.text(`Sannsynlighet: ${r.probability}   |   Konsekvens: ${r.consequence}`, margin, y);
+      y += 5;
+
+      // Risiko body
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(40, 40, 40);
+      ensureSpace(6);
+      doc.text("Risiko:", margin, y);
+      y += 5;
+      writeParagraph(r.description || "-", { size: 10, gap: 4 });
+
+      // Tiltak
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(40, 40, 40);
+      ensureSpace(6);
+      doc.text("Tiltak:", margin, y);
+      y += 5;
+
+      if (relatedMeasures.length === 0) {
+        writeParagraph("Ingen tiltak registrert.", { size: 10, color: [120, 120, 120], gap: 4 });
+      } else {
+        relatedMeasures.forEach((m) => {
+          const bulletText = m.measure || "-";
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(10);
+          doc.setTextColor(40, 40, 40);
+          const lines = doc.splitTextToSize(bulletText, contentWidth - 6);
+          ensureSpace(lines.length * 5 + 2);
+          doc.text("•", margin, y);
+          doc.text(lines, margin + 5, y);
+          y += lines.length * 5;
+          if (m.responsible) {
+            doc.setFontSize(8);
+            doc.setTextColor(110, 110, 110);
+            doc.text(`Ansvarlig: ${m.responsible}`, margin + 5, y + 1);
+            y += 4;
+          }
+          y += 2;
+        });
+      }
+
+      // Divider between risks
+      y += 3;
+      doc.setDrawColor(220, 226, 232);
+      doc.setLineWidth(0.2);
+      ensureSpace(2);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 5;
+    });
+
+    // === Notes ===
+    if (notes && notes.trim()) {
+      y += 2;
+      writeParagraph("Merknader", { size: 13, bold: true, color: [30, 58, 95], gap: 3 });
+      doc.setDrawColor(30, 58, 95);
+      doc.setLineWidth(0.4);
+      doc.line(margin, y - 1, margin + 30, y - 1);
+      y += 2;
+      writeParagraph(notes, { size: 10, gap: 6 });
+    }
+
+    // === Signature ===
+    if (sja.status === "completed" && sja.signature_data) {
+      ensureSpace(45);
+      y += 4;
+      writeParagraph("Signatur", { size: 13, bold: true, color: [30, 58, 95], gap: 3 });
+      doc.setDrawColor(30, 58, 95);
+      doc.setLineWidth(0.4);
+      doc.line(margin, y - 1, margin + 30, y - 1);
+      y += 3;
+      try {
+        doc.addImage(sja.signature_data, "PNG", margin, y, 60, 25);
+      } catch { /* skip */ }
+      y += 28;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(80, 80, 80);
+      doc.text(
+        `Signert av ${sja.completed_by_name || "-"} den ${sja.completed_at ? format(new Date(sja.completed_at), "d. MMMM yyyy", { locale: nb }) : "-"}`,
+        margin, y,
+      );
+    }
+
+    // === Footer with page numbers ===
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(140, 140, 140);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${sja.sja_number} – ${sja.title}`, margin, pageHeight - 8);
+      doc.text(`Side ${i} av ${pageCount}`, pageWidth - margin, pageHeight - 8, { align: "right" });
     }
 
     doc.save(`SJA_${sja.sja_number}.pdf`);
     toast.success("PDF lastet ned");
   };
+
 
   const steps = [
     { n: 1, title: "Arbeidsbeskrivelse", icon: FileText },
