@@ -23,7 +23,9 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const supabaseUser = createClient(supabaseUrl, supabaseServiceKey, {
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
@@ -96,10 +98,10 @@ Deno.serve(async (req) => {
 
     if (softDeleteError) {
       console.error("Error soft-deleting profile:", softDeleteError);
-      return new Response(JSON.stringify({ error: "An unexpected error occurred" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: `Kunne ikke deaktivere profil: ${softDeleteError.message}` }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     // Remove user roles so they can't access anything
@@ -141,7 +143,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error("Error in delete-user function:", error);
     console.error("delete-user error:", error);
-    return new Response(JSON.stringify({ error: "An unexpected error occurred" }), {
+    return new Response(JSON.stringify({ error: (error as Error)?.message || "An unexpected error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
