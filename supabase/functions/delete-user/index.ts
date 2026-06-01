@@ -98,10 +98,10 @@ Deno.serve(async (req) => {
 
     if (softDeleteError) {
       console.error("Error soft-deleting profile:", softDeleteError);
-      return new Response(JSON.stringify({ error: "An unexpected error occurred" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: `Kunne ikke deaktivere profil: ${softDeleteError.message}` }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     // Remove user roles so they can't access anything
