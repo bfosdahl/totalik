@@ -350,7 +350,22 @@ export default function AdminUsers() {
       const { data, error } = await supabase.functions.invoke("delete-user", {
         body: { userId },
       });
-      if (error) throw error;
+      if (error) {
+        let detail = error.message;
+        try {
+          const ctx: any = (error as any).context;
+          if (ctx?.json) {
+            const body = await ctx.json();
+            if (body?.error) detail = body.error;
+          } else if (ctx?.text) {
+            const txt = await ctx.text();
+            if (txt) detail = txt;
+          }
+        } catch {
+          /* ignore */
+        }
+        throw new Error(detail);
+      }
       if (data?.error) throw new Error(data.error);
       return data;
     },
