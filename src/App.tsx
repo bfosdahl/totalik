@@ -220,6 +220,7 @@ const App = () => (
                   <Route path="/lover-og-forskrifter" element={<ProtectedRoute><LoverOgForskrifter /></ProtectedRoute>} />
                   <Route path="/dokumentsenter" element={<ProtectedRoute><IkHmsDokumentsenter /></ProtectedRoute>} />
                   <Route path="/hms-chat" element={<ProtectedRoute><HmsChat /></ProtectedRoute>} />
+                  <Route path="/hjelp" element={<ProtectedRoute><HjelpFaq /></ProtectedRoute>} />
                   <Route path="/my-courses" element={<ProtectedRoute><MyCourseCard /></ProtectedRoute>} />
                   <Route path="/time-registration" element={<ProtectedRoute><TimeRegistration /></ProtectedRoute>} />
                   <Route path="/time-off" element={<ProtectedRoute><TimeOff /></ProtectedRoute>} />
