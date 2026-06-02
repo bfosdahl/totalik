@@ -1,4 +1,4 @@
-import { User, LogOut, ChevronDown, Menu, Download, Building2, MapPin, Home } from "lucide-react";
+import { User, LogOut, ChevronDown, Menu, Download, Building2, MapPin, Home, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
