@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,26 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ParsedHandbookData, applyHandbookImport, HandbookImportResult } from "@/lib/applyHandbookImport";
+
+const STORAGE_KEY_PREFIX = "handbook-import-state:";
+
+// Keeps the tab from being suspended by the browser. Falls back silently if unsupported.
+async function requestWakeLock(ref: React.MutableRefObject<any>) {
+  try {
+    if ("wakeLock" in navigator) {
+      ref.current = await (navigator as any).wakeLock.request("screen");
+    }
+  } catch (e) {
+    console.warn("Wake lock failed:", e);
+  }
+}
+
+function releaseWakeLock(ref: React.MutableRefObject<any>) {
+  try {
+    ref.current?.release?.();
+  } catch {/* noop */}
+  ref.current = null;
+}
 
 interface HandbookImportUploaderProps {
   companyId: string;
