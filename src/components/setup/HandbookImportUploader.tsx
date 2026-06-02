@@ -289,12 +289,16 @@ function ParsingStep({ fileName }: { fileName: string }) {
           {fileName}
         </p>
         <p className="text-xs text-muted-foreground mt-2">
-          AI-en leser dokumentet og trekker ut all HMS-informasjon. Dette kan ta opptil 30 sekunder.
+          AI-en leser dokumentet og trekker ut all HMS-informasjon. Dette kan ta opptil 60 sekunder.
+        </p>
+        <p className="text-xs text-muted-foreground mt-2 italic">
+          Du kan trygt bytte fane — jobben fortsetter i bakgrunnen, og fremdriften lagres slik at du finner igjen der du var.
         </p>
       </div>
     </div>
   );
 }
+
 
 function PreviewStep({ data, onConfirm, onCancel }: { data: ParsedHandbookData; onConfirm: () => void; onCancel: () => void }) {
   const sections = [
