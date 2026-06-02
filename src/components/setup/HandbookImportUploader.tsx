@@ -43,11 +43,80 @@ interface HandbookImportUploaderProps {
 type ImportStep = 'upload' | 'parsing' | 'preview' | 'importing' | 'done';
 
 export function HandbookImportUploader({ companyId, onImportComplete, className }: HandbookImportUploaderProps) {
+  const storageKey = `${STORAGE_KEY_PREFIX}${companyId}`;
+  const wakeLockRef = useRef<any>(null);
+  const inFlightRef = useRef<boolean>(false);
+
   const [step, setStep] = useState<ImportStep>('upload');
   const [fileName, setFileName] = useState<string>('');
   const [parsedData, setParsedData] = useState<ParsedHandbookData | null>(null);
   const [importResult, setImportResult] = useState<HandbookImportResult | null>(null);
   const [error, setError] = useState<string>('');
+
+  // Restore persisted state (e.g. after tab refresh or browser putting tab to sleep)
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(storageKey);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (saved?.parsedData) setParsedData(saved.parsedData);
+      if (saved?.fileName) setFileName(saved.fileName);
+      // Never restore "parsing"/"importing" — those need an active fetch; drop to preview/upload
+      if (saved?.step === 'preview' && saved?.parsedData) setStep('preview');
+      else if (saved?.step === 'parsing') {
+        setStep('upload');
+        setError('Forrige analyse ble avbrutt fordi fanen ble lukket eller satt i dvale. Last opp håndboken på nytt.');
+      } else if (saved?.step === 'importing' && saved?.parsedData) {
+        setStep('preview');
+        setError('Forrige import ble avbrutt. Trykk "Importer alt" for å fortsette.');
+      } else if (saved?.step) {
+        setStep(saved.step);
+      }
+    } catch {/* ignore */}
+  }, [storageKey]);
+
+  // Persist state across tab suspensions
+  useEffect(() => {
+    try {
+      if (step === 'upload') {
+        sessionStorage.removeItem(storageKey);
+      } else {
+        sessionStorage.setItem(storageKey, JSON.stringify({ step, fileName, parsedData }));
+      }
+    } catch {/* ignore */}
+  }, [step, fileName, parsedData, storageKey]);
+
+  // Wake lock during active work; re-acquire if user comes back to tab while still working
+  useEffect(() => {
+    const isWorking = step === 'parsing' || step === 'importing';
+    if (isWorking) {
+      requestWakeLock(wakeLockRef);
+    } else {
+      releaseWakeLock(wakeLockRef);
+    }
+    const handleVisibility = () => {
+      if (!document.hidden && (step === 'parsing' || step === 'importing')) {
+        requestWakeLock(wakeLockRef);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [step]);
+
+  // Warn user before they navigate away while a job is running
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (inFlightRef.current) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
+  // Release wake lock on unmount
+  useEffect(() => () => releaseWakeLock(wakeLockRef), []);
 
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -62,6 +131,7 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
     setFileName(file.name);
     setStep('parsing');
     setError('');
+    inFlightRef.current = true;
 
     try {
       const base64 = await fileToBase64(file);
@@ -90,6 +160,8 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
       setError(err instanceof Error ? err.message : 'Ukjent feil');
       setStep('upload');
       toast.error("Kunne ikke analysere håndboken. Prøv igjen.");
+    } finally {
+      inFlightRef.current = false;
     }
   }, []);
 
@@ -97,6 +169,7 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
     if (!parsedData) return;
 
     setStep('importing');
+    inFlightRef.current = true;
     try {
       const result = await applyHandbookImport(companyId, parsedData);
       setImportResult(result);
@@ -104,6 +177,7 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
 
       if (result.success) {
         toast.success("Håndboken ble importert!");
+        sessionStorage.removeItem(storageKey);
         onImportComplete(result);
       } else {
         toast.error(result.error || "Feil ved import");
@@ -113,8 +187,10 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
       setError(err instanceof Error ? err.message : 'Ukjent feil');
       setStep('preview');
       toast.error("Feil ved import. Prøv igjen.");
+    } finally {
+      inFlightRef.current = false;
     }
-  }, [parsedData, companyId, onImportComplete]);
+  }, [parsedData, companyId, onImportComplete, storageKey]);
 
   const handleReset = () => {
     setStep('upload');
@@ -122,7 +198,9 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
     setParsedData(null);
     setImportResult(null);
     setError('');
+    try { sessionStorage.removeItem(storageKey); } catch {/* ignore */}
   };
+
 
   return (
     <Card className={className}>
