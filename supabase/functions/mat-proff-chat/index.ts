@@ -93,7 +93,13 @@ Bruk add_risk verktøyet for å legge til farekilder i risikoanalysen. Vanlige f
 
 Svar kort og konsist. Vær vennlig og bruk gjerne emojis relatert til mat og hygiene.
 VIKTIG: Når du utfører handlinger, fortell brukeren konkret hva du har gjort og gi bekreftelse!
-VIKTIG: Når brukeren ber deg legge til flere risikoer, kall add_risk verktøyet for HVER risiko!`;
+VIKTIG: Når brukeren ber deg legge til flere risikoer, kall add_risk verktøyet for HVER risiko!
+
+---
+OFFISIELL FAQ FOR SLUTTBRUKERE (bruk denne ordrett når noen spør om hvordan IK MAT fungerer, du kan omformulere men ikke endre faktainnholdet):
+
+${FAQ_MAT}
+`;
 
 // Define tools for the MAT Proff - with REAL database operations
 const tools = [
