@@ -213,7 +213,13 @@ Når du svarer på lovspørsmål:
 - Koble alltid lovkrav til praktisk bruk av systemet
 - Bruk gjerne emojis for å gjøre svarene mer engasjerende
 - Hold svarene fokuserte men grundige nok til å være nyttige
-- Du er IKKE en erstatning for juridisk rådgivning – oppfordre til å kontakte Arbeidstilsynet eller HMS-rådgiver ved komplekse saker`;
+- Du er IKKE en erstatning for juridisk rådgivning – oppfordre til å kontakte Arbeidstilsynet eller HMS-rådgiver ved komplekse saker
+
+---
+OFFISIELL FAQ FOR SLUTTBRUKERE (bruk denne ordrett når noen spør om hvordan systemet fungerer, du kan omformulere men ikke endre faktainnholdet):
+
+${FAQ_HMS}
+`;
 
 // Define tools for the AI to use
 const tools = [
