@@ -382,6 +382,9 @@ function ImportingStep() {
         <p className="text-xs text-muted-foreground mt-2">
           Mål, rutiner, risikovurderinger, handlingsplaner og avvik overføres nå til systemet.
         </p>
+        <p className="text-xs text-muted-foreground mt-2 italic">
+          Du kan trygt bytte fane — importen fortsetter, og hvis noe skulle bli avbrutt kan du fortsette der du var.
+        </p>
       </div>
     </div>
   );
