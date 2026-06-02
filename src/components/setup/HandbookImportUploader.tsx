@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,26 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ParsedHandbookData, applyHandbookImport, HandbookImportResult } from "@/lib/applyHandbookImport";
 
+const STORAGE_KEY_PREFIX = "handbook-import-state:";
+
+// Keeps the tab from being suspended by the browser. Falls back silently if unsupported.
+async function requestWakeLock(ref: React.MutableRefObject<any>) {
+  try {
+    if ("wakeLock" in navigator) {
+      ref.current = await (navigator as any).wakeLock.request("screen");
+    }
+  } catch (e) {
+    console.warn("Wake lock failed:", e);
+  }
+}
+
+function releaseWakeLock(ref: React.MutableRefObject<any>) {
+  try {
+    ref.current?.release?.();
+  } catch {/* noop */}
+  ref.current = null;
+}
+
 interface HandbookImportUploaderProps {
   companyId: string;
   onImportComplete: (result: HandbookImportResult) => void;
@@ -23,11 +43,80 @@ interface HandbookImportUploaderProps {
 type ImportStep = 'upload' | 'parsing' | 'preview' | 'importing' | 'done';
 
 export function HandbookImportUploader({ companyId, onImportComplete, className }: HandbookImportUploaderProps) {
+  const storageKey = `${STORAGE_KEY_PREFIX}${companyId}`;
+  const wakeLockRef = useRef<any>(null);
+  const inFlightRef = useRef<boolean>(false);
+
   const [step, setStep] = useState<ImportStep>('upload');
   const [fileName, setFileName] = useState<string>('');
   const [parsedData, setParsedData] = useState<ParsedHandbookData | null>(null);
   const [importResult, setImportResult] = useState<HandbookImportResult | null>(null);
   const [error, setError] = useState<string>('');
+
+  // Restore persisted state (e.g. after tab refresh or browser putting tab to sleep)
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(storageKey);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (saved?.parsedData) setParsedData(saved.parsedData);
+      if (saved?.fileName) setFileName(saved.fileName);
+      // Never restore "parsing"/"importing" — those need an active fetch; drop to preview/upload
+      if (saved?.step === 'preview' && saved?.parsedData) setStep('preview');
+      else if (saved?.step === 'parsing') {
+        setStep('upload');
+        setError('Forrige analyse ble avbrutt fordi fanen ble lukket eller satt i dvale. Last opp håndboken på nytt.');
+      } else if (saved?.step === 'importing' && saved?.parsedData) {
+        setStep('preview');
+        setError('Forrige import ble avbrutt. Trykk "Importer alt" for å fortsette.');
+      } else if (saved?.step) {
+        setStep(saved.step);
+      }
+    } catch {/* ignore */}
+  }, [storageKey]);
+
+  // Persist state across tab suspensions
+  useEffect(() => {
+    try {
+      if (step === 'upload') {
+        sessionStorage.removeItem(storageKey);
+      } else {
+        sessionStorage.setItem(storageKey, JSON.stringify({ step, fileName, parsedData }));
+      }
+    } catch {/* ignore */}
+  }, [step, fileName, parsedData, storageKey]);
+
+  // Wake lock during active work; re-acquire if user comes back to tab while still working
+  useEffect(() => {
+    const isWorking = step === 'parsing' || step === 'importing';
+    if (isWorking) {
+      requestWakeLock(wakeLockRef);
+    } else {
+      releaseWakeLock(wakeLockRef);
+    }
+    const handleVisibility = () => {
+      if (!document.hidden && (step === 'parsing' || step === 'importing')) {
+        requestWakeLock(wakeLockRef);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [step]);
+
+  // Warn user before they navigate away while a job is running
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (inFlightRef.current) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
+  // Release wake lock on unmount
+  useEffect(() => () => releaseWakeLock(wakeLockRef), []);
 
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -42,6 +131,7 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
     setFileName(file.name);
     setStep('parsing');
     setError('');
+    inFlightRef.current = true;
 
     try {
       const base64 = await fileToBase64(file);
@@ -70,6 +160,8 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
       setError(err instanceof Error ? err.message : 'Ukjent feil');
       setStep('upload');
       toast.error("Kunne ikke analysere håndboken. Prøv igjen.");
+    } finally {
+      inFlightRef.current = false;
     }
   }, []);
 
@@ -77,6 +169,7 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
     if (!parsedData) return;
 
     setStep('importing');
+    inFlightRef.current = true;
     try {
       const result = await applyHandbookImport(companyId, parsedData);
       setImportResult(result);
@@ -84,6 +177,7 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
 
       if (result.success) {
         toast.success("Håndboken ble importert!");
+        sessionStorage.removeItem(storageKey);
         onImportComplete(result);
       } else {
         toast.error(result.error || "Feil ved import");
@@ -93,8 +187,10 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
       setError(err instanceof Error ? err.message : 'Ukjent feil');
       setStep('preview');
       toast.error("Feil ved import. Prøv igjen.");
+    } finally {
+      inFlightRef.current = false;
     }
-  }, [parsedData, companyId, onImportComplete]);
+  }, [parsedData, companyId, onImportComplete, storageKey]);
 
   const handleReset = () => {
     setStep('upload');
@@ -102,7 +198,9 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
     setParsedData(null);
     setImportResult(null);
     setError('');
+    try { sessionStorage.removeItem(storageKey); } catch {/* ignore */}
   };
+
 
   return (
     <Card className={className}>
@@ -191,12 +289,16 @@ function ParsingStep({ fileName }: { fileName: string }) {
           {fileName}
         </p>
         <p className="text-xs text-muted-foreground mt-2">
-          AI-en leser dokumentet og trekker ut all HMS-informasjon. Dette kan ta opptil 30 sekunder.
+          AI-en leser dokumentet og trekker ut all HMS-informasjon. Dette kan ta opptil 60 sekunder.
+        </p>
+        <p className="text-xs text-muted-foreground mt-2 italic">
+          Du kan trygt bytte fane — jobben fortsetter i bakgrunnen, og fremdriften lagres slik at du finner igjen der du var.
         </p>
       </div>
     </div>
   );
 }
+
 
 function PreviewStep({ data, onConfirm, onCancel }: { data: ParsedHandbookData; onConfirm: () => void; onCancel: () => void }) {
   const sections = [
@@ -279,6 +381,9 @@ function ImportingStep() {
         <p className="font-medium">Importerer data...</p>
         <p className="text-xs text-muted-foreground mt-2">
           Mål, rutiner, risikovurderinger, handlingsplaner og avvik overføres nå til systemet.
+        </p>
+        <p className="text-xs text-muted-foreground mt-2 italic">
+          Du kan trygt bytte fane — importen fortsetter, og hvis noe skulle bli avbrutt kan du fortsette der du var.
         </p>
       </div>
     </div>
