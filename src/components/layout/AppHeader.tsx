@@ -1,4 +1,4 @@
-import { User, LogOut, ChevronDown, Menu, Download, Building2, MapPin, Home } from "lucide-react";
+import { User, LogOut, ChevronDown, Menu, Download, Building2, MapPin, Home, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -209,6 +209,10 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
             <DropdownMenuItem onClick={() => navigate("/install")}>
               <Download className="w-4 h-4 mr-2" />
               {t("auth.downloadApp")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/hjelp")}>
+              <HelpCircle className="w-4 h-4 mr-2" />
+              Hjelp og FAQ
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} className="text-destructive">

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { FAQ_KS } from "../_shared/faq-knowledge.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -69,7 +70,13 @@ FAGKUNNSKAP (SAK10 §10-1):
 - Bokstav e: Dokumenthåndtering
 - Bokstav f: Organisasjonsplan
 - Bokstav g: Oppdatering av kunnskaper
-- Bokstav h: Jevnlig gjennomgang av KS-rutiner`;
+- Bokstav h: Jevnlig gjennomgang av KS-rutiner
+
+---
+OFFISIELL FAQ FOR SLUTTBRUKERE (Bygg Proffen) – bruk denne ordrett når brukeren spør om hvordan KS BYGG-modulen fungerer. Du kan omformulere, men ikke endre faktainnholdet:
+
+${FAQ_KS}
+`;
 
   if (!projectContext) {
     return basePrompt + `\n\nDu er i GENERELL MODUS uten et spesifikt prosjekt. Hjelp brukeren med generelle spørsmål om KS, prosjektoppsett, og byggeprosjekter.`;

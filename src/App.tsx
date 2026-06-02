@@ -26,6 +26,7 @@ const Audits = lazy(() => import("./pages/Audits"));
 const Handbook = lazy(() => import("./pages/Handbook"));
 const Settings = lazy(() => import("./pages/Settings"));
 const HmsChat = lazy(() => import("./pages/HmsChat"));
+const HjelpFaq = lazy(() => import("./pages/HjelpFaq"));
 const MyCourseCard = lazy(() => import("./pages/MyCourseCard"));
 const TimeRegistration = lazy(() => import("./pages/TimeRegistration"));
 const TimeClock = lazy(() => import("./pages/TimeClock"));
@@ -219,6 +220,7 @@ const App = () => (
                   <Route path="/lover-og-forskrifter" element={<ProtectedRoute><LoverOgForskrifter /></ProtectedRoute>} />
                   <Route path="/dokumentsenter" element={<ProtectedRoute><IkHmsDokumentsenter /></ProtectedRoute>} />
                   <Route path="/hms-chat" element={<ProtectedRoute><HmsChat /></ProtectedRoute>} />
+                  <Route path="/hjelp" element={<ProtectedRoute><HjelpFaq /></ProtectedRoute>} />
                   <Route path="/my-courses" element={<ProtectedRoute><MyCourseCard /></ProtectedRoute>} />
                   <Route path="/time-registration" element={<ProtectedRoute><TimeRegistration /></ProtectedRoute>} />
                   <Route path="/time-off" element={<ProtectedRoute><TimeOff /></ProtectedRoute>} />
