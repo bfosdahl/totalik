@@ -70,7 +70,13 @@ FAGKUNNSKAP (SAK10 §10-1):
 - Bokstav e: Dokumenthåndtering
 - Bokstav f: Organisasjonsplan
 - Bokstav g: Oppdatering av kunnskaper
-- Bokstav h: Jevnlig gjennomgang av KS-rutiner`;
+- Bokstav h: Jevnlig gjennomgang av KS-rutiner
+
+---
+OFFISIELL FAQ FOR SLUTTBRUKERE (Bygg Proffen) – bruk denne ordrett når brukeren spør om hvordan KS BYGG-modulen fungerer. Du kan omformulere, men ikke endre faktainnholdet:
+
+${FAQ_KS}
+`;
 
   if (!projectContext) {
     return basePrompt + `\n\nDu er i GENERELL MODUS uten et spesifikt prosjekt. Hjelp brukeren med generelle spørsmål om KS, prosjektoppsett, og byggeprosjekter.`;
