@@ -26,6 +26,7 @@ const Audits = lazy(() => import("./pages/Audits"));
 const Handbook = lazy(() => import("./pages/Handbook"));
 const Settings = lazy(() => import("./pages/Settings"));
 const HmsChat = lazy(() => import("./pages/HmsChat"));
+const HjelpFaq = lazy(() => import("./pages/HjelpFaq"));
 const MyCourseCard = lazy(() => import("./pages/MyCourseCard"));
 const TimeRegistration = lazy(() => import("./pages/TimeRegistration"));
 const TimeClock = lazy(() => import("./pages/TimeClock"));
