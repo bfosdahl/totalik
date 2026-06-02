@@ -210,6 +210,10 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
               <Download className="w-4 h-4 mr-2" />
               {t("auth.downloadApp")}
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/hjelp")}>
+              <HelpCircle className="w-4 h-4 mr-2" />
+              Hjelp og FAQ
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
               <LogOut className="w-4 h-4 mr-2" />
