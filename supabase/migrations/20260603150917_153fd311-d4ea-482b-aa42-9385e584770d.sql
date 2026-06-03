@@ -1,0 +1,1 @@
+SELECT public.invoke_cron_edge_function('admin-send-revision') AS request_id;
