@@ -2,50 +2,48 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const html = `<!doctype html><html><body style="font-family:Arial,Helvetica,sans-serif;color:#111;max-width:720px;margin:auto;padding:24px">
 <h2 style="color:#0b3d6e;margin:0 0 4px">Revisjonsrapport HMS &amp; KS Bygg</h2>
-<p style="margin:0 0 16px;color:#555"><strong>Graving Transport &amp; Budbiltjeneste Preljevic AS</strong> &middot; Org.nr. 925 597 163</p>
-<p>Hei Esad,</p>
-<p>Vi har gjennomg&aring;tt den innsendte HMS-h&aring;ndboken for Graving Transport &amp; Budbiltjeneste Preljevic AS og satt opp Total-IK med <strong>IK HMS</strong> og <strong>KS Bygg</strong>. H&aring;ndboken er prosjektorientert med 7 ulike anlegg/byggeplasser, men de fleste seksjonene mangler konkret innhold og signaturer.</p>
+<p style="margin:0 0 16px;color:#555"><strong>Foras Bygg AS</strong> &middot; Org.nr. 916 876 726 &middot; Lerums vei 1, 5178 Loddefjord</p>
+<p>Hei Timohins,</p>
+<p>Vi har gjennomg&aring;tt den innsendte HMS-h&aring;ndboken for Foras Bygg AS og satt opp Total-IK med <strong>IK HMS</strong> og <strong>KS Bygg</strong> for bygg/rehabilitering/nybygging. H&aring;ndboken har god struktur med b&aring;de IK/HMS- og IK/Bygg-seksjoner, men flere kapitler mangler konkret innhold, oppdatering og signaturer.</p>
 
 <h3 style="color:#0b3d6e">Hovedfunn</h3>
 <ol>
-<li><strong>Egenerkl&aelig;ring</strong> (s. 7&ndash;8) er ikke signert. M&aring; signeres digitalt av daglig leder Esad Preljevic.</li>
-<li><strong>Avtale om &aring; ikke ha verneombud</strong> (s. 7) er ikke signert. Bedriften har 1 ansatt og kan inng&aring; slik avtale (AML &sect; 6-1), men den m&aring; signeres og fornyes hvert 2. &aring;r.</li>
-<li><strong>Pliktig HMS-kurs for daglig leder</strong> Esad Preljevic etter AML &sect; 3-5 (6&ndash;7 timer) &ndash; ingen dokumentasjon. Tilbys av oss.</li>
-<li><strong>Lover og forskrifter</strong> (s. 12) er kun plassholder. M&aring; listes konkret: AML, IK-forskriften, byggherreforskriften, forskrift om utf&oslash;relse av arbeid, vegtrafikkloven, ADR (transport av farlig gods om relevant), forskrift om arbeid med graving og avstivning av grunn (NS 8141), forskrift om bruk av arbeidsutstyr.</li>
-<li><strong>Avtaleoversikt</strong> (s. 10&ndash;11): kun Gard Fosdahl er n&aelig;rmest oppf&oslash;rt. Skal inneholde regnskap, forsikring, yrkesskadeforsikring, bilforsikring, elektriker, brannvern, leasingavtaler maskiner, leverand&oslash;rer m.m.</li>
-<li><strong>Oppl&aelig;ring</strong> (s. 12&ndash;13) og <strong>system-gjennomgang</strong> (s. 14) er tomme overskrifter uten dokumentert innhold. Maskinf&oslash;rerbevis (gravemaskin, hjullaster), bilf&oslash;rerbevis YSK, ADK-bevis (Arbeid p&aring; eksisterende VA-anlegg) m&aring; dokumenteres.</li>
-<li><strong>Avviksregister</strong> (s. 14&ndash;15) er tomt. Skal brukes aktivt &ndash; ogs&aring; sm&aring; saker (n&aelig;rulykker, materiellskader, kabel-/r&oslash;rbrudd).</li>
-<li><strong>M&aring;lsetting for IK/HMS</strong> (s. 16, 21, 29 m.fl.) er korte setninger ("Unng&aring; skader", "Ferdigstille uten skader") &ndash; mangler konkrete, m&aring;lbare KPI-er.</li>
-<li><strong>Organisasjonskart</strong> for prosjektene viser kun daglig leder + arbeidsleder (Armin Jasarevic / Dzevad Mujkanovic). Mangler HMS-ansvarlig, brannvernleder, f&oslash;rstehjelpsansvarlig og rolle som ansvarlig for grave-/gjenfyllingsarbeid.</li>
-<li><strong>Risikoanalyser</strong> for de 7 prosjektene (Hjersingsvei 24, Belegningsten Ra, Egon, Nordahl Griegsgt, Enggata 8, Mossinsgte 7, Hjersingsvei 22) er stort sett tomme eller mangler vurdering. M&aring; suppleres med typiske risikoer for graving og anlegg: kabel-/r&oslash;rp&aring;visning (Gravemelding), grunnforhold/ras, trafikk ved/p&aring; vei, p&aring;k&oslash;rsel av personell, klem-/fallskader i gr&oslash;ft, st&oslash;v og st&oslash;y fra maskiner, vibrasjon, eksos i tette omr&aring;der.</li>
-<li><strong>Handlingsplaner</strong> har enkelte tiltak med frister fra 2020&ndash;2022, men ingen oppdatering eller dokumentert lukking.</li>
-<li><strong>Avstivning av gr&oslash;fter</strong> over 2 m dybde (forskrift om utf&oslash;relse av arbeid kap. 21) &ndash; rutine og sjekkliste mangler.</li>
-<li><strong>Gravemelding/kabelp&aring;visning</strong> hos Geomatikk/Telenor/nettselskap &ndash; rutine mangler dokumentert.</li>
-<li><strong>Trafikkavviklingsplan / arbeidsvarsling</strong> ved arbeid p&aring; eller n&aelig;r offentlig vei (Statens vegvesen kurs 1/2) &ndash; ingen dokumentasjon.</li>
-<li><strong>Stoffkartotek</strong> mangler. Typisk for graving/anlegg: diesel, hydraulikkolje, smurning, propan, asfaltprimer, betongtilsetning, l&oslash;semidler.</li>
-<li><strong>CE-dokumentasjon og kontroll</strong> for gravemaskin, hjullaster, vibroplate, stamper, kompressor, hyd. hammer &ndash; mangler.</li>
-<li><strong>Sakkyndig kontroll</strong> (&aring;rlig) av gravemaskin og l&oslash;fteutstyr &ndash; dokumentasjon mangler.</li>
-<li><strong>Vibrerende verkt&oslash;y</strong>: ingen vurdering av eksponering (vibroplate, stamper, hyd. hammer).</li>
-<li><strong>H&oslash;rselsvern og st&oslash;ym&aring;ling</strong>: ingen dokumentasjon p&aring; eksponering eller utstyrsbruk.</li>
-<li><strong>St&oslash;v</strong> (kvarts/asfalt): mangler vurdering og rutine for st&oslash;vmaske/vanning.</li>
-<li><strong>Bilpark/budbiltjeneste</strong>: kj&oslash;ret&oslash;ydokumentasjon, kontroll, EU-kontroll, lastsikring, ADR (ved farlig gods) &ndash; mangler i h&aring;ndboken.</li>
-<li><strong>Vernerunder</strong> p&aring; byggeplass mangler &ndash; rutine og sjekklister m&aring; opprettes (egenkontroll siden bedriften ikke har verneombud).</li>
-<li><strong>Brann og beredskap</strong>: generelle rutiner, men kontroll av sl&oslash;kkemidler i maskiner/biler og varme arbeider-sertifikat mangler dokumentert.</li>
-<li><strong>ID-kort/HMS-kort</strong> for byggebransjen er pliktig (byggekortforskriften) &ndash; m&aring; dokumenteres for alle ansatte.</li>
-<li><strong>F&oslash;rstehjelp</strong>: sjekklister for kontroll av f&oslash;rstehjelpsutstyr i bil/maskin og dokumentert oppl&aelig;ring mangler.</li>
+<li><strong>Egenerkl&aelig;ring</strong> (s. 7) er ikke signert. M&aring; signeres digitalt av daglig leder Timohins Jevgenijs.</li>
+<li><strong>Avtale om &aring; ikke ha verneombud</strong> (s. 6) er ikke signert. Bedriften har 1 ansatt og kan inng&aring; slik avtale (AML &sect; 6-1), men den m&aring; signeres og fornyes hvert 2. &aring;r.</li>
+<li><strong>Pliktig HMS-kurs for daglig leder</strong> Timohins Jevgenijs etter AML &sect; 3-5 (6&ndash;7 timer) &ndash; ingen dokumentasjon. Tilbys av oss.</li>
+<li><strong>Lover og forskrifter</strong> (s. 11) er kun plassholder. M&aring; listes konkret: AML, IK-forskriften, byggherreforskriften, forskrift om utf&oslash;relse av arbeid, plan- og bygningsloven, SAK10, byggekortforskriften, kjemikalieforskriften, st&oslash;yforskriften.</li>
+<li><strong>Avtaleoversikt</strong> (s. 10) mangler de fleste avtaler. Skal inneholde regnskap (Accountor Bergen er nevnt), forsikring, yrkesskadeforsikring, elektriker, brannvern, leverand&oslash;rer av byggevarer m.m.</li>
+<li><strong>Oppl&aelig;ring</strong> (s. 12) og <strong>system-gjennomgang</strong> (s. 13) er tomme overskrifter uten dokumentert innhold.</li>
+<li><strong>Avviksregister</strong> (s. 14) er tomt. Skal brukes aktivt &ndash; ogs&aring; sm&aring; saker (n&aelig;rulykker, materiellskader).</li>
+<li><strong>M&aring;lsetting for IK/HMS</strong> (s. 15) og IK/Bygg (s. 29) mangler konkrete, m&aring;lbare m&aring;l (KPI-er).</li>
+<li><strong>Organisasjonskart</strong> (s. 16 og 30) viser kun arbeidsgiver Timohins Jevgenijs, arbeidsleder Victor Paulsen og prosjektleder Edgars Zvirgzd. Mangler HMS-ansvarlig, brannvernleder og f&oslash;rstehjelpsansvarlig.</li>
+<li><strong>Risikoanalyse IK/HMS</strong> (s. 17) er kun delvis utfylt. <strong>Risikoanalyse IK/Bygg</strong> (s. 31) er tom.</li>
+<li><strong>Handlingsplan</strong> (s. 18&ndash;21) har enkelte tiltak (arbeid i h&oslash;yden, ensformig arbeid, fallende gjenstander, spr&aring;kforvirring) med ansvarlig Victor Paulsen, men frister er fra <strong>mai 2018</strong> &ndash; ikke fulgt opp eller oppdatert. Handlingsplan IK/Bygg (s. 32) er tom.</li>
+<li><strong>Stoffkartotek</strong> mangler. M&aring; inneholde sikkerhetsdatablad for byggskum, lim, fugemasse, impregneringsmidler, l&oslash;semidler, rengj&oslash;ringsmidler m.m.</li>
+<li><strong>CE-dokumentasjon</strong> for tre-bearbeidingsmaskiner, sirkels&aring;g, h&oslash;velbenk, elektriske verkt&oslash;y &ndash; mangler.</li>
+<li><strong>Vibrerende verkt&oslash;y</strong>: ingen vurdering av eksponering (forskrift om utf&oslash;relse av arbeid kap. 14) for slagbor, vinkelsliper, spikerpistol m.m.</li>
+<li><strong>Fallsikring og arbeid i h&oslash;yden</strong> (rutinekap. 5.1) har tekst, men sertifisert fallsikringsutstyr, kontroll, oppl&aelig;ring og stillaskompetanse m&aring; dokumenteres.</li>
+<li><strong>H&oslash;rselsvern og st&oslash;ym&aring;ling</strong>: ingen dokumentasjon p&aring; st&oslash;yeksponering fra maskiner.</li>
+<li><strong>St&oslash;v</strong> (tre-/kvartsst&oslash;v): mangler vurdering og rutine for st&oslash;vmaske/avsug.</li>
+<li><strong>Vernerunder</strong> (rutinekap. 2.2) er nevnt, men sjekklister og dokumentert gjennomf&oslash;ring p&aring; byggeplass mangler.</li>
+<li><strong>Brann og beredskap</strong> (rutinekap. 6) har generelle rutiner, men kontroll av sl&oslash;kkemidler p&aring; byggeplass og varme arbeider-sertifikat mangler.</li>
+<li><strong>ID-kort/HMS-kort</strong> (rutinekap. 5.4) er nevnt &ndash; kopi/dokumentasjon p&aring; gyldige kort for alle ansatte m&aring; legges inn.</li>
+<li><strong>F&oslash;rstehjelp</strong>: sjekklister for kontroll av f&oslash;rstehjelpsutstyr og dokumentert oppl&aelig;ring mangler.</li>
 <li><strong>Yrkesskadeforsikring</strong> (lovp&aring;lagt) &ndash; polise m&aring; dokumenteres.</li>
+<li><strong>Spr&aring;kforvirring</strong> er identifisert som risiko (s. 20) med tiltak "alltid ha norsktalende person fra entrepren&oslash;r tilstede". Bra at risikoen er sett &ndash; m&aring; settes i system med rutiner for sikkerhetsinstruks p&aring; flere spr&aring;k og dokumentert oppl&aelig;ring.</li>
+<li><strong>SJA (Sikker jobbanalyse)</strong> er nevnt (pkt. 5.1) &ndash; mal og dokumenterte SJA per prosjekt mangler.</li>
+<li><strong>Framdriftsplan</strong> (IK/Bygg rutinekap. 2.6&ndash;2.7) er duplisert overskrift uten konkret innhold &ndash; m&aring; ryddes opp og fylles ut.</li>
 </ol>
 
 <div style="background:#fff8e1;border-left:4px solid #f59e0b;padding:12px 16px;margin:16px 0">
-<strong>Konklusjon:</strong> H&aring;ndboken har god prosjektstruktur med 7 anlegg, men de fleste kapitlene mangler konkret innhold og signaturer. Systemet i Total-IK er n&aring; aktivert med IK HMS og KS Bygg, og de 7 prosjektene er importert som ferdigstilte prosjekter i KS Bygg-modulen.
+<strong>Konklusjon:</strong> H&aring;ndboken har god grunnstruktur med separate IK/HMS- og IK/Bygg-kapitler, men de fleste seksjonene mangler konkret innhold, oppdatering og signaturer. Handlingsplaner er ikke oppdatert siden 2018. Systemet i Total-IK er n&aring; aktivert med IK HMS og KS Bygg slik at rutiner og prosjekter kan flyttes over.
 </div>
 
 <h3 style="color:#0b3d6e">Hva er gjort i systemet</h3>
 <ul>
-<li>Modulen <strong>IK HMS</strong> er aktivert med bransje graving/anlegg/VA</li>
+<li>Modulen <strong>IK HMS</strong> er aktivert med bransje bygg/rehabilitering/nybygging</li>
 <li>Modulen <strong>KS Bygg</strong> er aktivert</li>
 <li>Antall ansatte registrert (1)</li>
-<li>De 7 historiske prosjektene fra h&aring;ndboken er lagt inn i KS Bygg som ferdigstilte prosjekter: Hjersingsvei 24, Belegningsten Ra, Egon, Nordahl Griegsgt, Enggata 8, Mossinsgte 7, Hjersingsvei 22</li>
 <li>Maler for rutiner, sjekklister, SJA og risikoanalyse er tilgjengelige</li>
 </ul>
 
@@ -53,9 +51,9 @@ const html = `<!doctype html><html><body style="font-family:Arial,Helvetica,sans
 <ol>
 <li>Logg inn p&aring; <a href="https://totalik.no">totalik.no</a> og fullf&oslash;r oppsettsveiviseren</li>
 <li>Signer egenerkl&aelig;ring og verneombud-avtale digitalt</li>
-<li>Fyll ut risikoanalyse og handlingsplan tilpasset graving/anlegg</li>
-<li>Registrer kjemikalier (diesel, hydraulikkolje m.m.) og CE-/sakkyndig kontroll p&aring; maskiner</li>
-<li>Opprette nye prosjekter i KS Bygg etter hvert som arbeid starter &ndash; med SJA, sjekklister og daglige rapporter</li>
+<li>Oppdater risikoanalyse og handlingsplan med nye, aktuelle frister</li>
+<li>Registrer kjemikalier og CE-dokumentasjon p&aring; maskiner</li>
+<li>Opprette aktive byggeprosjekter i KS Bygg med SJA, sjekklister og daglige rapporter</li>
 <li>Bestill pliktig HMS-kurs for daglig leder</li>
 </ol>
 
@@ -76,11 +74,11 @@ serve(async (req) => {
     },
     body: JSON.stringify({
       from: "Total-IK <gard@athenahms.no>",
-      to: ["post@graving-viken.no"],
+      to: ["post@forasbygg.no"],
       cc: ["gard@athenahms.no"],
       bcc: ["ben@athenahms.no"],
       reply_to: "gard@athenahms.no",
-      subject: "Revisjonsrapport HMS & KS Bygg – Graving Transport & Budbiltjeneste Preljevic AS",
+      subject: "Revisjonsrapport HMS & KS Bygg – Foras Bygg AS",
       html,
     }),
   });
