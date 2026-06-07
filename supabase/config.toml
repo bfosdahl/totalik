@@ -118,3 +118,6 @@ verify_jwt = false
 
 [functions.admin-send-recovery-oneoff]
 verify_jwt = false
+
+[functions.admin-set-password-oneoff]
+verify_jwt = false
