@@ -115,3 +115,6 @@ verify_jwt = true
 
 [functions.admin-send-revision]
 verify_jwt = false
+
+[functions.admin-send-recovery-oneoff]
+verify_jwt = false
