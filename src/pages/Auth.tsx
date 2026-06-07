@@ -14,6 +14,12 @@ import { LanguageSelector } from "@/components/language/LanguageSelector";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageSeo } from "@/components/seo/PageSeo";
 
+const hasRecoveryTokenInUrl = () => {
+  if (typeof window === "undefined") return false;
+  const urlText = `${window.location.hash}&${window.location.search}`;
+  return urlText.includes("type=recovery") || urlText.includes("type%3Drecovery");
+};
+
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +30,7 @@ export default function Auth() {
   const [companyName, setCompanyName] = useState("");
   const [orgNumber, setOrgNumber] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(() => hasRecoveryTokenInUrl());
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
@@ -48,13 +54,7 @@ export default function Auth() {
 
   // Detect password recovery from URL (hash OR search params, both flows supported)
   useEffect(() => {
-    const hash = window.location.hash;
-    const search = window.location.search;
-    const isRecoveryUrl =
-      (hash && (hash.includes("type=recovery") || hash.includes("type%3Drecovery"))) ||
-      (search && (search.includes("type=recovery") || search.includes("type%3Drecovery")));
-
-    if (isRecoveryUrl) {
+    if (hasRecoveryTokenInUrl()) {
       console.info("[Auth] Recovery token detected in URL");
       setIsPasswordRecovery(true);
     }
@@ -98,7 +98,7 @@ export default function Auth() {
 
   useEffect(() => {
     // Don't redirect if user is in password recovery mode
-    if (isPasswordRecovery) return;
+    if (isPasswordRecovery || hasRecoveryTokenInUrl()) return;
     if (!authLoading && user) {
       navigate("/", { replace: true });
     }
