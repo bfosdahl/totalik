@@ -188,6 +188,26 @@ const Settings = () => {
     );
   }
 
+  if (activeSection === "trash") {
+    return (
+      <AppLayout>
+        <div className="max-w-4xl mx-auto">
+          <CompanyTrashBinSettings onBack={goBack} />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (activeSection === "data") {
+    return (
+      <AppLayout>
+        <div className="max-w-3xl mx-auto">
+          <DataExportSettings onBack={goBack} />
+        </div>
+      </AppLayout>
+    );
+  }
+
   // Render placeholder for other sections
   if (activeSection !== "main" && currentSection) {
     return (
