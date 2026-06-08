@@ -1,12 +1,13 @@
 /**
  * Komprimerer en data-URL ved å skalere lengste side og re-encode som JPEG.
- * Returnerer ny data-URL. Beholder original ved feil.
+ * Returnerer objekt med ny data-URL og endelige dimensjoner.
+ * Faller tilbake til original ved feil.
  */
 export async function compressDataUrl(
   dataUrl: string,
   maxDim = 1600,
   quality = 0.8
-): Promise<string> {
+): Promise<{ dataUrl: string; w: number; h: number }> {
   try {
     const img = await new Promise<HTMLImageElement>((resolve, reject) => {
       const el = new Image();
@@ -21,12 +22,12 @@ export async function compressDataUrl(
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext("2d");
-    if (!ctx) return dataUrl;
+    if (!ctx) return { dataUrl, w: img.width, h: img.height };
     ctx.drawImage(img, 0, 0, w, h);
-    return canvas.toDataURL("image/jpeg", quality);
+    return { dataUrl: canvas.toDataURL("image/jpeg", quality), w, h };
   } catch (e) {
     console.warn("compressDataUrl failed, using original", e);
-    return dataUrl;
+    return { dataUrl, w: 0, h: 0 };
   }
 }
 
