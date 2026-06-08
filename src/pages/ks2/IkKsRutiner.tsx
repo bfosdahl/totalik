@@ -322,6 +322,9 @@ function RoutineCard({
                 {routine.admin_template_id && (
                   <Badge variant="secondary">Fra mal</Badge>
                 )}
+                {routine.is_hidden && (
+                  <Badge variant="outline" className="bg-muted">Skjult</Badge>
+                )}
               </div>
             </div>
           </CardHeader>
