@@ -68,6 +68,7 @@ export default function IkKsSjekklister() {
     selectAdminTemplate,
     deselectAdminTemplate,
     isAdminTemplateSelected,
+    refetch: refetchTemplates,
   } = useCompanyKsChecklistTemplates();
   const { checklistTemplates: adminTemplates } = useAdminKsTemplates();
   
