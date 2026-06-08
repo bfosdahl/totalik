@@ -452,6 +452,8 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                     boxShadow: isSel ? "0 0 0 2px hsl(var(--primary) / 0.3)" : undefined,
                     cursor: calibrating ? "crosshair" : "move",
                     pointerEvents: calibrating ? "none" : "auto",
+                    transform: obj.rotation ? `rotate(${obj.rotation}deg)` : undefined,
+                    transformOrigin: "center center",
                   }}
                 >
                   <span className="px-1 text-center pointer-events-none">{obj.label}</span>
