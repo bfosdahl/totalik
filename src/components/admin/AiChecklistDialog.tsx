@@ -72,36 +72,50 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
 
   const handleSave = async () => {
     if (!result) return;
+    // Prefer the kategori the user explicitly chose/typed in the form;
+    // fall back to whatever the AI returned.
+    const finalCategory = (kategori && kategori.trim())
+      ? kategori.trim()
+      : (result.category || "Generell egenkontroll");
     try {
+      let savedId: string | undefined;
       if (isSystemAdmin) {
-        await createChecklistTemplate.mutateAsync({
+        const created = await createChecklistTemplate.mutateAsync({
           template_name: result.template_name,
           description: result.description,
-          category: result.category || "Generell egenkontroll",
+          category: finalCategory,
           trade: result.trade,
           checkpoints: result.checkpoints || [],
           is_active: true,
         });
+        savedId = (created as any)?.id;
       } else {
         const created = await createCompanyChecklistTemplate({
           template_name: result.template_name,
           description: result.description,
-          category: result.category || "general",
+          category: finalCategory,
           trade: result.trade,
           checkpoints: result.checkpoints || [],
         });
         if (!created) throw new Error("Kunne ikke lagre i bedriftens malbibliotek");
+        savedId = created.id;
       }
+      console.log("[AiChecklistDialog] Saved template id:", savedId, "category:", finalCategory);
       toast.success("Sjekkliste-mal lagret!", {
         description: isSystemAdmin
           ? "Finn den under Admin → Sjekklistemaler"
           : "Finn den under KS Bygg → Sjekklistemaler",
-        duration: 6000,
+        duration: 8000,
+        action: isSystemAdmin ? undefined : {
+          label: "Åpne",
+          onClick: () => navigate("/ks/sjekklister"),
+        },
       });
       await onSaved?.();
       resetForm();
       setOpen(false);
     } catch (err: any) {
+      console.error("[AiChecklistDialog] Save failed:", err);
       toast.error(err?.message || "Kunne ikke lagre mal");
     }
   };
