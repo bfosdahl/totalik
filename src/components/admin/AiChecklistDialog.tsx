@@ -21,9 +21,11 @@ const TRADES = [
 
 interface AiChecklistDialogProps {
   trigger?: React.ReactNode;
+  /** Called after a successful save so parent lists can refetch */
+  onSaved?: () => void | Promise<void>;
 }
 
-export function AiChecklistDialog({ trigger }: AiChecklistDialogProps) {
+export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) {
   const { isSystemAdmin } = useAuth();
   const { createChecklistTemplate } = useAdminKsTemplates();
   const { createTemplate: createCompanyChecklistTemplate } = useCompanyKsChecklistTemplates();
