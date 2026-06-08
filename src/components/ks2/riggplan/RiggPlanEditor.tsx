@@ -515,6 +515,85 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
           {(canvas.height * canvas.scaleMetersPerPixel).toFixed(0)} m · {canvas.objects.length} objekter
         </p>
       </div>
+
+      <Dialog
+        open={!!calibDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCalibDialog(null);
+            setCalibrating(false);
+            setCalibPoints([]);
+          }
+        }}
+      >
+        <DialogContent
+          className="sm:max-w-sm"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle>Kalibrer skala</DialogTitle>
+            <DialogDescription>
+              Oppgi den virkelige avstanden mellom de to punktene du klikket på.
+              {calibDialog && (
+                <span className="block mt-1 text-xs text-muted-foreground">
+                  Pikselavstand: {calibDialog.pixelDist.toFixed(1)} px
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="calib-meters" className="text-xs">Avstand i meter</Label>
+            <Input
+              id="calib-meters"
+              type="number"
+              inputMode="decimal"
+              step="0.1"
+              min="0"
+              autoFocus
+              value={calibMetersInput}
+              onChange={(e) => setCalibMetersInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  document.getElementById("calib-confirm")?.click();
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCalibDialog(null);
+                setCalibrating(false);
+                setCalibPoints([]);
+              }}
+            >
+              Avbryt
+            </Button>
+            <Button
+              id="calib-confirm"
+              onClick={() => {
+                if (!calibDialog) return;
+                const meters = Number((calibMetersInput || "").replace(",", "."));
+                if (meters > 0 && calibDialog.pixelDist > 0) {
+                  const mpp = meters / calibDialog.pixelDist;
+                  setCanvas({ ...canvas, scaleMetersPerPixel: mpp });
+                  toast.success(`Skala satt: 1 px = ${mpp.toFixed(3)} m`);
+                } else {
+                  toast.error("Oppgi et gyldig tall større enn 0");
+                  return;
+                }
+                setCalibDialog(null);
+                setCalibrating(false);
+                setCalibPoints([]);
+              }}
+            >
+              Bekreft
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
