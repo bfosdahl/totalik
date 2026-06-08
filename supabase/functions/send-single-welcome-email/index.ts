@@ -125,7 +125,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (linkErr || !linkData?.properties?.action_link) {
       console.error("Error generating recovery link:", linkErr);
       return new Response(
-        JSON.stringify({ error: `Could not generate recovery link: ${linkErr?.message ?? "unknown"}` }),
+        JSON.stringify({ error: "Could not generate recovery link" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
