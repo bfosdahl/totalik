@@ -83,7 +83,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
       // Komprimer bildet (maks 2400 px lengste side, JPEG kvalitet 0.85) før opplasting
       const compressed = await compressImageFile(file, { maxDim: 2400, quality: 0.85 });
       const ext = compressed.name.split(".").pop() || "jpg";
-      const path = `${profile.company_id}/rigg/${projectId}/${plan.id}-bg-${Date.now()}.${ext}`;
+      const path = `${projectId}/rigg/${plan.id}-bg-${Date.now()}.${ext}`;
       const { error } = await supabase.storage
         .from("ks-module2-files")
         .upload(path, compressed, { upsert: true, contentType: compressed.type });
