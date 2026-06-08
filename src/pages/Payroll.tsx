@@ -108,7 +108,7 @@ export default function Payroll() {
     if (!profile?.company_id) return;
     const { data } = await supabase
       .from("profiles")
-      .select("user_id, email, hourly_rate, first_name, last_name")
+      .select("user_id, email, hourly_rate, first_name, last_name, employee_number")
       .eq("company_id", profile.company_id);
     const map = new Map<string, EmployeeMeta>();
     (data || []).forEach((p: any) => {
@@ -116,6 +116,7 @@ export default function Payroll() {
         user_id: p.user_id,
         email: p.email,
         hourly_rate: p.hourly_rate != null ? Number(p.hourly_rate) : null,
+        employee_number: p.employee_number ?? null,
       });
     });
     setEmployeesMeta(map);
