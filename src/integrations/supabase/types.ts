@@ -15056,6 +15056,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           email: string | null
+          employee_number: string | null
           first_name: string | null
           hms_card_expiry_date: string | null
           hms_card_number: string | null
@@ -15086,6 +15087,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           email?: string | null
+          employee_number?: string | null
           first_name?: string | null
           hms_card_expiry_date?: string | null
           hms_card_number?: string | null
@@ -15116,6 +15118,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           email?: string | null
+          employee_number?: string | null
           first_name?: string | null
           hms_card_expiry_date?: string | null
           hms_card_number?: string | null
