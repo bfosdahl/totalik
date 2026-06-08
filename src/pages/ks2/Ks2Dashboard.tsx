@@ -12,24 +12,30 @@ import { ProjectCard } from "@/components/ks2/ProjectCard";
 import { CopyProjectDialog } from "@/components/ks2/CopyProjectDialog";
 import { supabase } from "@/integrations/supabase/client";
 
-type FilterType = "all" | "mine" | "active" | "completed" | "with_deviations";
+type FilterType = "active" | "mine" | "with_deviations" | "archived" | "all";
 
 export default function Ks2Dashboard() {
   const navigate = useNavigate();
   const { isCompanyAdmin, isSystemAdmin, profile } = useAuth();
   const { projects, isLoading, isSaving, createProject, toggleFavorite, deleteProject, refetch } = useKsModule2Projects();
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  // Default: only show active/in-progress projects (skjuler arkiverte/fullførte)
+  const [activeFilter, setActiveFilter] = useState<FilterType>("active");
   const [isNewProjectOpen, setIsNewProjectOpen] = useState(false);
   const [copyProject, setCopyProject] = useState<KsModule2Project | null>(null);
   const [projectDeviationCounts, setProjectDeviationCounts] = useState<Record<string, number>>({});
 
+  const archivedCount = useMemo(
+    () => projects.filter((p) => p.status === "completed").length,
+    [projects]
+  );
+
   const filterButtons: { key: FilterType; label: string }[] = [
-    { key: "all", label: "Alle" },
-    { key: "mine", label: "Mine" },
     { key: "active", label: "Aktive" },
-    { key: "completed", label: "Fullførte" },
+    { key: "mine", label: "Mine" },
     { key: "with_deviations", label: "Med åpne avvik" },
+    { key: "archived", label: archivedCount > 0 ? `Arkiv (${archivedCount})` : "Arkiv" },
+    { key: "all", label: "Alle (inkl. fullførte)" },
   ];
 
   // Fetch deviation counts for all projects
