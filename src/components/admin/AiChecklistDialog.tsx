@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ interface AiChecklistDialogProps {
 
 export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) {
   const { isSystemAdmin } = useAuth();
+  const navigate = useNavigate();
   const { createChecklistTemplate } = useAdminKsTemplates();
   const { createTemplate: createCompanyChecklistTemplate } = useCompanyKsChecklistTemplates();
   const [open, setOpen] = useState(false);
@@ -70,36 +72,50 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
 
   const handleSave = async () => {
     if (!result) return;
+    // Prefer the kategori the user explicitly chose/typed in the form;
+    // fall back to whatever the AI returned.
+    const finalCategory = (kategori && kategori.trim())
+      ? kategori.trim()
+      : (result.category || "Generell egenkontroll");
     try {
+      let savedId: string | undefined;
       if (isSystemAdmin) {
-        await createChecklistTemplate.mutateAsync({
+        const created = await createChecklistTemplate.mutateAsync({
           template_name: result.template_name,
           description: result.description,
-          category: result.category || "Generell egenkontroll",
+          category: finalCategory,
           trade: result.trade,
           checkpoints: result.checkpoints || [],
           is_active: true,
         });
+        savedId = (created as any)?.id;
       } else {
         const created = await createCompanyChecklistTemplate({
           template_name: result.template_name,
           description: result.description,
-          category: result.category || "general",
+          category: finalCategory,
           trade: result.trade,
           checkpoints: result.checkpoints || [],
         });
         if (!created) throw new Error("Kunne ikke lagre i bedriftens malbibliotek");
+        savedId = created.id;
       }
+      console.log("[AiChecklistDialog] Saved template id:", savedId, "category:", finalCategory);
       toast.success("Sjekkliste-mal lagret!", {
         description: isSystemAdmin
           ? "Finn den under Admin → Sjekklistemaler"
           : "Finn den under KS Bygg → Sjekklistemaler",
-        duration: 6000,
+        duration: 8000,
+        action: isSystemAdmin ? undefined : {
+          label: "Åpne",
+          onClick: () => navigate("/ks/sjekklister"),
+        },
       });
       await onSaved?.();
       resetForm();
       setOpen(false);
     } catch (err: any) {
+      console.error("[AiChecklistDialog] Save failed:", err);
       toast.error(err?.message || "Kunne ikke lagre mal");
     }
   };
@@ -137,12 +153,38 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
     </Button>
   );
 
+  // Defensive: Radix sometimes leaves body styles locked after close. Reset them on unmount.
+  useEffect(() => {
+    return () => {
+      if (typeof document !== "undefined") {
+        document.body.style.pointerEvents = "";
+        document.body.style.overflow = "";
+      }
+    };
+  }, []);
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) {
+          setTimeout(() => {
+            document.body.style.pointerEvents = "";
+            document.body.style.overflow = "";
+          }, 100);
+        }
+      }}
+    >
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+      <DialogContent
+        className="max-w-2xl max-h-[90vh] flex flex-col"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => { if (isGenerating) e.preventDefault(); }}
+      >
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-blue-500" />
