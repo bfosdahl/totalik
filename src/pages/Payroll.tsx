@@ -36,7 +36,7 @@ interface Row {
   status: string;
   approved_by_name: string | null;
   approved_at: string | null;
-  is_overtime: boolean | null;
+  hour_type: string | null;
 }
 
 interface AllowanceRow {
