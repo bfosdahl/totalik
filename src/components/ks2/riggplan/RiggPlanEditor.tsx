@@ -349,9 +349,12 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                 className="flex items-center gap-2 p-2 rounded border hover:border-primary hover:bg-accent transition text-left"
               >
                 <span
-                  className="w-6 h-6 rounded border shrink-0"
+                  className="w-7 h-7 rounded border shrink-0 flex items-center justify-center text-base leading-none"
                   style={{ backgroundColor: s.color }}
-                />
+                  aria-hidden="true"
+                >
+                  {s.emoji}
+                </span>
                 <span className="text-xs font-medium truncate">{s.label}</span>
               </button>
             ))}
