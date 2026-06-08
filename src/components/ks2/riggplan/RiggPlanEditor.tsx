@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Save, Download, Shield, ExternalLink, Plus, Minus, Image as ImageIcon, Ruler, X } from "lucide-react";
+import { Trash2, Save, Download, Shield, ExternalLink, Plus, Minus, Image as ImageIcon, Ruler, X, RotateCw } from "lucide-react";
 import { RIGG_SYMBOLS, getSymbol } from "./riggSymbols";
 import type { RiggCanvasData, RiggObject, RiggPlan } from "@/hooks/useKsRiggPlan";
 import { exportRiggPlanPdf } from "@/utils/riggPlanPdf";
@@ -239,47 +239,52 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
               onChange={(e) => updateObject(selected.id, { color: e.target.value })}
               className="h-8"
             />
-            <Label className="text-xs flex items-center justify-between">
-              <span>Rotasjon</span>
-              <span className="text-muted-foreground">{Math.round(selected.rotation || 0)}°</span>
-            </Label>
-            <div className="flex items-center gap-2">
-              <input
-                type="range"
-                min={-180}
-                max={180}
-                step={1}
-                value={selected.rotation || 0}
-                onChange={(e) => updateObject(selected.id, { rotation: Number(e.target.value) })}
-                className="flex-1 accent-primary"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-7 px-2 text-xs"
-                onClick={() => updateObject(selected.id, { rotation: 0 })}
-              >
-                0°
-              </Button>
-            </div>
-            <div className="flex gap-1">
-              {[-90, -45, 45, 90].map((d) => (
+            <div className="mt-2 rounded-md border border-primary/30 bg-primary/5 p-2 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold flex items-center gap-1.5">
+                  <RotateCw className="h-3.5 w-3.5 text-primary" />
+                  Roter boks
+                </Label>
+                <span className="text-xs font-mono text-primary">{Math.round(selected.rotation || 0)}°</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  min={-180}
+                  max={180}
+                  step={1}
+                  value={selected.rotation || 0}
+                  onChange={(e) => updateObject(selected.id, { rotation: Number(e.target.value) })}
+                  className="flex-1 accent-primary"
+                />
                 <Button
-                  key={d}
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-7 flex-1 text-xs px-1"
-                  onClick={() =>
-                    updateObject(selected.id, {
-                      rotation: Math.max(-180, Math.min(180, (selected.rotation || 0) + d)),
-                    })
-                  }
+                  className="h-7 px-2 text-xs"
+                  onClick={() => updateObject(selected.id, { rotation: 0 })}
                 >
-                  {d > 0 ? `+${d}°` : `${d}°`}
+                  0°
                 </Button>
-              ))}
+              </div>
+              <div className="flex gap-1">
+                {[-90, -45, 45, 90].map((d) => (
+                  <Button
+                    key={d}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 flex-1 text-xs px-1"
+                    onClick={() =>
+                      updateObject(selected.id, {
+                        rotation: Math.max(-180, Math.min(180, (selected.rotation || 0) + d)),
+                      })
+                    }
+                  >
+                    {d > 0 ? `+${d}°` : `${d}°`}
+                  </Button>
+                ))}
+              </div>
             </div>
 
             <div className="mt-3 pt-3 border-t space-y-2">
