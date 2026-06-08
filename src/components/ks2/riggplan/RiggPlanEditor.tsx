@@ -77,18 +77,23 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
     if (!profile?.company_id || !projectId) return;
     setUploadingBg(true);
     try {
-      const ext = file.name.split(".").pop() || "png";
+      // Komprimer bildet (maks 2400 px lengste side, JPEG kvalitet 0.85) før opplasting
+      const compressed = await compressImageFile(file, { maxDim: 2400, quality: 0.85 });
+      const ext = compressed.name.split(".").pop() || "jpg";
       const path = `${profile.company_id}/rigg/${projectId}/${plan.id}-bg-${Date.now()}.${ext}`;
       const { error } = await supabase.storage
         .from("ks-module2-files")
-        .upload(path, file, { upsert: true });
+        .upload(path, compressed, { upsert: true, contentType: compressed.type });
       if (error) throw error;
       // Delete old background if exists
       if (canvas.backgroundImagePath && canvas.backgroundImagePath !== path) {
         await supabase.storage.from("ks-module2-files").remove([canvas.backgroundImagePath]);
       }
       setCanvas({ ...canvas, backgroundImagePath: path, backgroundImageOpacity: canvas.backgroundImageOpacity ?? 0.7 });
-      toast.success("Bakgrunnsbilde lastet opp – husk å lagre");
+      const ratio = (compressed.size / file.size) * 100;
+      toast.success(
+        `Bakgrunnsbilde lastet opp (${(compressed.size / 1024).toFixed(0)} kB, ${ratio.toFixed(0)}% av original) – husk å lagre`
+      );
     } catch (e: any) {
       console.error(e);
       toast.error("Kunne ikke laste opp bilde");
