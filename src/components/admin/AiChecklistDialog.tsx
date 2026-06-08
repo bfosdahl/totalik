@@ -167,16 +167,51 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>Kategori</Label>
-                    <Select value={kategori} onValueChange={setKategori}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Velg kategori" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CHECKLIST_CATEGORIES.map((cat) => (
-                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {isCustomKategori ? (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Skriv egen kategori..."
+                          value={kategori}
+                          onChange={(e) => setKategori(e.target.value)}
+                          autoFocus
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setIsCustomKategori(false);
+                            setKategori("");
+                          }}
+                        >
+                          Avbryt
+                        </Button>
+                      </div>
+                    ) : (
+                      <Select
+                        value={kategori}
+                        onValueChange={(v) => {
+                          if (v === "__custom__") {
+                            setIsCustomKategori(true);
+                            setKategori("");
+                          } else {
+                            setKategori(v);
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Velg kategori" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CHECKLIST_CATEGORIES.map((cat) => (
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                          ))}
+                          <SelectItem value="__custom__" className="text-blue-600 font-medium">
+                            + Egen kategori...
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
                   </div>
                   <div>
                     <Label>Fag / Håndverk</Label>
