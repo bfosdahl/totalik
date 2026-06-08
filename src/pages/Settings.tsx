@@ -12,7 +12,8 @@ import {
   Download,
   Smartphone,
   Layers,
-  Wallet
+  Wallet,
+  Trash2
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -25,8 +26,10 @@ import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { DepartmentSettings } from "@/components/settings/DepartmentSettings";
 import { SettingsPlaceholder } from "@/components/settings/SettingsPlaceholder";
 import { AllowanceTypesSettings } from "@/components/settings/AllowanceTypesSettings";
+import { CompanyTrashBinSettings } from "@/components/settings/CompanyTrashBinSettings";
+import { DataExportSettings } from "@/components/settings/DataExportSettings";
 
-type SettingsSection = "main" | "company" | "users" | "departments" | "notifications" | "security" | "customization" | "data" | "allowances";
+type SettingsSection = "main" | "company" | "users" | "departments" | "notifications" | "security" | "customization" | "data" | "allowances" | "trash";
 
 interface SettingsSectionConfig {
   id: SettingsSection;
