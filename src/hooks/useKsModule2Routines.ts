@@ -18,6 +18,7 @@ export interface KsModule2Routine {
   is_document: boolean;
   approved_by: string | null;
   approved_at: string | null;
+  source_routine_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -275,6 +276,64 @@ export function useKsModule2Routines(projectId?: string) {
     return links.filter(l => l.template_id === templateId).map(l => l.routine_id);
   };
 
+  const importFromCompanyLibrary = async (
+    companyRoutineIds: string[],
+    targetProjectId: string,
+  ): Promise<number> => {
+    if (!profile?.company_id || companyRoutineIds.length === 0) return 0;
+    setIsSaving(true);
+    try {
+      // Fetch source routines
+      const { data: sources, error: srcError } = await supabase
+        .from('company_ks_routines')
+        .select('id, routine_name, description, content, category')
+        .in('id', companyRoutineIds)
+        .eq('company_id', profile.company_id);
+      if (srcError) throw srcError;
+
+      // Already-imported source ids (avoid duplicates in same project)
+      const { data: existing } = await supabase
+        .from('ks_module2_routines')
+        .select('source_routine_id')
+        .eq('project_id', targetProjectId)
+        .in('source_routine_id', companyRoutineIds);
+      const existingIds = new Set((existing || []).map((r: any) => r.source_routine_id));
+
+      const inserts = (sources || [])
+        .filter((s) => !existingIds.has(s.id))
+        .map((s) => ({
+          project_id: targetProjectId,
+          company_id: profile.company_id,
+          name: s.routine_name,
+          description: s.description,
+          content: s.content,
+          category: s.category || 'general',
+          source_routine_id: s.id,
+          routine_number: '',
+        }));
+
+      if (inserts.length === 0) {
+        toast.info('Rutinene er allerede importert til dette prosjektet');
+        return 0;
+      }
+
+      const { error: insError } = await supabase
+        .from('ks_module2_routines')
+        .insert(inserts);
+      if (insError) throw insError;
+
+      toast.success(`${inserts.length} rutine${inserts.length === 1 ? '' : 'r'} importert til prosjektet`);
+      await fetchRoutines();
+      return inserts.length;
+    } catch (error) {
+      console.error('Error importing routines:', error);
+      toast.error('Kunne ikke importere rutiner');
+      return 0;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return {
     routines,
     links,
@@ -289,6 +348,7 @@ export function useKsModule2Routines(projectId?: string) {
     unlinkRoutineFromTemplate,
     getLinkedTemplates,
     getLinkedRoutines,
+    importFromCompanyLibrary,
     refetch: fetchRoutines,
   };
 }

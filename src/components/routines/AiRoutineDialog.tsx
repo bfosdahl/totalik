@@ -148,15 +148,47 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
     }
   };
 
+  // Cleanup: ensure body pointer-events is restored if dialog crashes/unmounts
+  useEffect(() => {
+    return () => {
+      // Radix sometimes leaves body styles after dialog close — defensive cleanup
+      if (typeof document !== "undefined") {
+        document.body.style.pointerEvents = "";
+        document.body.style.overflow = "";
+      }
+    };
+  }, []);
+
   return (
-    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) {
+          reset();
+          // Defensive: clear body styles after close
+          setTimeout(() => {
+            document.body.style.pointerEvents = "";
+            document.body.style.overflow = "";
+          }, 100);
+        }
+      }}
+    >
       <DialogTrigger asChild>
         <Button variant="outline" className="gap-2 border-blue-300 text-blue-700 hover:bg-blue-50">
           <Sparkles className="h-4 w-4" />
           AI-hjelper
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+      <DialogContent
+        className="max-w-2xl max-h-[90vh] flex flex-col"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => {
+          // Prevent accidental close while AI is generating/saving
+          if (isGenerating || isSaving) e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-blue-500" />

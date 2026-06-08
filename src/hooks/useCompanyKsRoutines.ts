@@ -14,6 +14,7 @@ export interface CompanyKsRoutine {
   file_path: string | null;
   version: string;
   is_active: boolean;
+  is_hidden: boolean;
   sort_order: number;
   routine_number: string | null;
   created_at: string;
@@ -29,7 +30,7 @@ export interface NewRoutineInput {
   routine_number?: string;
 }
 
-export function useCompanyKsRoutines() {
+export function useCompanyKsRoutines(includeHidden: boolean = false) {
   const { profile } = useAuth();
   const companyId = profile?.company_id;
   
@@ -42,12 +43,17 @@ export function useCompanyKsRoutines() {
     
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("company_ks_routines")
         .select("*")
         .eq("company_id", companyId)
-        .eq("is_deleted", false)
-        .order("sort_order", { ascending: true });
+        .eq("is_deleted", false);
+
+      if (!includeHidden) {
+        query = query.eq("is_hidden", false);
+      }
+
+      const { data, error } = await query.order("sort_order", { ascending: true });
 
       if (error) throw error;
       setRoutines(data || []);
@@ -56,7 +62,7 @@ export function useCompanyKsRoutines() {
     } finally {
       setIsLoading(false);
     }
-  }, [companyId]);
+  }, [companyId, includeHidden]);
 
   useEffect(() => {
     fetchRoutines();
@@ -171,6 +177,28 @@ export function useCompanyKsRoutines() {
     return data?.signedUrl || null;
   };
 
+  const toggleHidden = async (id: string, hidden: boolean) => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("company_ks_routines")
+        .update({ is_hidden: hidden })
+        .eq("id", id);
+      if (error) throw error;
+      setRoutines(prev =>
+        includeHidden
+          ? prev.map(r => r.id === id ? { ...r, is_hidden: hidden } : r)
+          : prev.filter(r => r.id !== id)
+      );
+      toast({ title: hidden ? "Rutine skjult" : "Rutine vises igjen" });
+    } catch (error) {
+      console.error("Error toggling hidden:", error);
+      toast({ title: "Kunne ikke oppdatere", variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return {
     routines,
     isLoading,
@@ -178,6 +206,7 @@ export function useCompanyKsRoutines() {
     createRoutine,
     updateRoutine,
     deleteRoutine,
+    toggleHidden,
     uploadDocument,
     getDocumentUrl,
     refetch: fetchRoutines,

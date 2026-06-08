@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { BookOpen, Plus, Search, Library, Check, ExternalLink, Eye, UserCheck, Link2, X, ClipboardList, PenLine, Edit, Trash2, Calendar, Hash } from "lucide-react";
+import { BookOpen, Plus, Search, Library, Check, ExternalLink, Eye, UserCheck, Link2, X, ClipboardList, PenLine, Edit, Trash2, Calendar, Hash, FolderInput } from "lucide-react";
 import { useKsModule2ProjectTemplates } from "@/hooks/useKsModule2ProjectTemplates";
 import { useKsModule2Routines, KsModule2Routine } from "@/hooks/useKsModule2Routines";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
+import { ImportCompanyRoutinesDialog } from "@/components/ks2/ImportCompanyRoutinesDialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -81,8 +82,11 @@ export default function Ks2Rutiner() {
     linkRoutineToTemplate,
     unlinkRoutineFromTemplate,
     getLinkedTemplates,
+    importFromCompanyLibrary,
     refetch: refetchCustomRoutines,
   } = useKsModule2Routines(projectId);
+
+  const [showImportDialog, setShowImportDialog] = useState(false);
   
   const { users, getUserDisplayName } = useCompanyUsers();
 
@@ -241,6 +245,12 @@ export default function Ks2Rutiner() {
           <h2 className="text-2xl font-bold">Rutinebank</h2>
           <p className="text-muted-foreground">Rutiner som gjelder for dette prosjektet</p>
         </div>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" onClick={() => setShowImportDialog(true)}>
+            <FolderInput className="h-4 w-4 mr-2" />
+            Hent fra firmabibliotek
+          </Button>
+        </div>
       </div>
 
       {/* Info about Malbibliotek if no routines */}
@@ -250,12 +260,18 @@ export default function Ks2Rutiner() {
             <Library className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">Ingen rutiner lagt til</h3>
             <p className="text-muted-foreground mb-4">
-              Gå til Malbibliotek for å legge til rutiner som skal gjelde for dette prosjektet.
+              Hent inn rutiner fra firmabiblioteket, eller gå til malbiblioteket for admin-maler.
             </p>
-            <Button onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Gå til Malbibliotek
-            </Button>
+            <div className="flex gap-2 justify-center flex-wrap">
+              <Button onClick={() => setShowImportDialog(true)}>
+                <FolderInput className="h-4 w-4 mr-2" />
+                Hent fra firmabibliotek
+              </Button>
+              <Button variant="outline" onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
+                <Library className="h-4 w-4 mr-2" />
+                Åpne malbibliotek
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -1055,6 +1071,18 @@ export default function Ks2Rutiner() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ImportCompanyRoutinesDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        alreadyImportedIds={new Set(customRoutines.map(r => r.source_routine_id).filter(Boolean) as string[])}
+        isSaving={isSavingCustom}
+        onImport={async (ids) => {
+          if (!projectId) return;
+          await importFromCompanyLibrary(ids, projectId);
+          await refetchCustomRoutines();
+        }}
+      />
     </div>
   );
 }

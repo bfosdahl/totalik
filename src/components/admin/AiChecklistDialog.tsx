@@ -21,9 +21,11 @@ const TRADES = [
 
 interface AiChecklistDialogProps {
   trigger?: React.ReactNode;
+  /** Called after a successful save so parent lists can refetch */
+  onSaved?: () => void | Promise<void>;
 }
 
-export function AiChecklistDialog({ trigger }: AiChecklistDialogProps) {
+export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) {
   const { isSystemAdmin } = useAuth();
   const { createChecklistTemplate } = useAdminKsTemplates();
   const { createTemplate: createCompanyChecklistTemplate } = useCompanyKsChecklistTemplates();
@@ -87,7 +89,13 @@ export function AiChecklistDialog({ trigger }: AiChecklistDialogProps) {
         });
         if (!created) throw new Error("Kunne ikke lagre i bedriftens malbibliotek");
       }
-      toast.success("Sjekkliste-mal lagret i malbiblioteket!");
+      toast.success("Sjekkliste-mal lagret!", {
+        description: isSystemAdmin
+          ? "Finn den under Admin → Sjekklistemaler"
+          : "Finn den under KS Bygg → Sjekklister",
+        duration: 6000,
+      });
+      await onSaved?.();
       resetForm();
       setOpen(false);
     } catch (err: any) {

@@ -17,7 +17,9 @@ import {
   Upload,
   Download,
   Loader2,
-  Calendar
+  Calendar,
+  EyeOff,
+  Eye,
 } from "lucide-react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -55,7 +57,8 @@ const CATEGORIES = [
 ];
 
 export default function IkKsRutiner() {
-  const { routines, isLoading, isSaving, createRoutine, updateRoutine, deleteRoutine } = useCompanyKsRoutines();
+  const [showHidden, setShowHidden] = useState(false);
+  const { routines, isLoading, isSaving, createRoutine, updateRoutine, deleteRoutine, toggleHidden } = useCompanyKsRoutines(showHidden);
   
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -78,9 +81,13 @@ export default function IkKsRutiner() {
 
   const handleCreate = async () => {
     if (!newRoutine.routine_name.trim()) return;
-    await createRoutine(newRoutine);
+    const created = await createRoutine(newRoutine);
     setNewRoutine({ routine_name: "", description: "", content: "", category: "general" });
     setShowNewDialog(false);
+    // Auto-expand the newly-created routine so the user can see it without editing
+    if (created?.id) {
+      setExpandedIds(prev => new Set(prev).add(created.id));
+    }
   };
 
   const handleAdoptFromLibrary = async (template: RoutineTemplate) => {
@@ -92,13 +99,16 @@ export default function IkKsRutiner() {
       template.purpose ? `Formål:\n${template.purpose}` : "",
       stepsText ? `\nSjekkliste:\n${stepsText}` : "",
     ].filter(Boolean).join("\n");
-    await createRoutine({
+    const created = await createRoutine({
       routine_name: template.title,
       description: template.description || "",
       content,
       category: template.subcategory || "general",
       routine_number: template.template_number || undefined,
     });
+    if (created?.id) {
+      setExpandedIds(prev => new Set(prev).add(created.id));
+    }
   };
 
   const adoptedKsTemplateIds = new Set(
@@ -130,7 +140,16 @@ export default function IkKsRutiner() {
             </p>
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              variant={showHidden ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowHidden(s => !s)}
+              title={showHidden ? "Skjul de skjulte rutinene" : "Vis skjulte rutiner"}
+            >
+              {showHidden ? <Eye className="w-4 h-4 mr-2" /> : <EyeOff className="w-4 h-4 mr-2" />}
+              {showHidden ? "Skjuler vist" : "Vis skjulte"}
+            </Button>
             <AiRoutineDialog module="ks_ik_bygg" onAdopt={handleAdoptFromLibrary} />
             <RoutineLibraryDialog module="ks_ik_bygg" onAdopt={handleAdoptFromLibrary} adoptedIds={adoptedKsTemplateIds} />
             <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
@@ -230,6 +249,7 @@ export default function IkKsRutiner() {
                 onCancelEdit={() => setEditingId(null)}
                 onUpdate={updateRoutine}
                 onDelete={deleteRoutine}
+                onToggleHidden={toggleHidden}
                 getCategoryLabel={getCategoryLabel}
                 isSaving={isSaving}
               />
@@ -250,6 +270,7 @@ function RoutineCard({
   onCancelEdit,
   onUpdate,
   onDelete,
+  onToggleHidden,
   getCategoryLabel,
   isSaving,
 }: {
@@ -261,6 +282,7 @@ function RoutineCard({
   onCancelEdit: () => void;
   onUpdate: (id: string, updates: Partial<CompanyKsRoutine>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onToggleHidden: (id: string, hidden: boolean) => Promise<void>;
   getCategoryLabel: (value: string) => string;
   isSaving: boolean;
 }) {
@@ -306,6 +328,9 @@ function RoutineCard({
                 <Badge variant="outline">{getCategoryLabel(routine.category)}</Badge>
                 {routine.admin_template_id && (
                   <Badge variant="secondary">Fra mal</Badge>
+                )}
+                {routine.is_hidden && (
+                  <Badge variant="outline" className="bg-muted">Skjult</Badge>
                 )}
               </div>
             </div>
@@ -357,10 +382,23 @@ function RoutineCard({
                 <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap">
                   {routine.content || <span className="text-muted-foreground italic">Ingen innhold</span>}
                 </div>
-                <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
+                <div className="flex justify-end gap-2 mt-4 pt-4 border-t flex-wrap">
                   <Button variant="outline" size="sm" onClick={onEdit}>
                     <Edit2 className="w-4 h-4 mr-1" />
                     Rediger
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onToggleHidden(routine.id, !routine.is_hidden)}
+                    disabled={isSaving}
+                    title={routine.is_hidden ? "Vis denne rutinen igjen" : "Skjul fra listen (kan vises igjen senere)"}
+                  >
+                    {routine.is_hidden ? (
+                      <><Eye className="w-4 h-4 mr-1" />Vis</>
+                    ) : (
+                      <><EyeOff className="w-4 h-4 mr-1" />Skjul</>
+                    )}
                   </Button>
                   <Button 
                     variant="outline" 
