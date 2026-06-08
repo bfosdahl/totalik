@@ -156,10 +156,27 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
     }
   };
 
-  // Cleanup: ensure body pointer-events is restored if dialog crashes/unmounts
+  // Aggressive cleanup: Radix Dialog sometimes leaves body styles
+  // (pointer-events: none / overflow: hidden) after AI generation finishes,
+  // which locks the entire page. Poll repeatedly on key transitions.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const clear = () => {
+      document.body.style.pointerEvents = "";
+      document.body.style.overflow = "";
+    };
+    // Only clear when nothing is actively pending and dialog is closed
+    if (!open && !isGenerating && !isSaving) {
+      const timers = [0, 50, 150, 300, 600, 1200].map((ms) =>
+        window.setTimeout(clear, ms)
+      );
+      return () => timers.forEach((t) => window.clearTimeout(t));
+    }
+  }, [open, isGenerating, isSaving]);
+
+  // Final unmount cleanup
   useEffect(() => {
     return () => {
-      // Radix sometimes leaves body styles after dialog close — defensive cleanup
       if (typeof document !== "undefined") {
         document.body.style.pointerEvents = "";
         document.body.style.overflow = "";
