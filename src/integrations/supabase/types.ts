@@ -15065,6 +15065,7 @@ export type Database = {
           hms_card_reminder_sent_7_days: boolean | null
           hms_card_reminder_sent_90_days: boolean | null
           hms_card_required: boolean | null
+          hourly_rate: number | null
           id: string
           is_active: boolean
           is_assigned_to_main: boolean | null
@@ -15094,6 +15095,7 @@ export type Database = {
           hms_card_reminder_sent_7_days?: boolean | null
           hms_card_reminder_sent_90_days?: boolean | null
           hms_card_required?: boolean | null
+          hourly_rate?: number | null
           id?: string
           is_active?: boolean
           is_assigned_to_main?: boolean | null
@@ -15123,6 +15125,7 @@ export type Database = {
           hms_card_reminder_sent_7_days?: boolean | null
           hms_card_reminder_sent_90_days?: boolean | null
           hms_card_required?: boolean | null
+          hourly_rate?: number | null
           id?: string
           is_active?: boolean
           is_assigned_to_main?: boolean | null
