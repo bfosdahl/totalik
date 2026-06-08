@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
     if (softDeleteError) {
       console.error("Error soft-deleting profile:", softDeleteError);
       return new Response(
-        JSON.stringify({ error: `Kunne ikke deaktivere profil: ${softDeleteError.message}` }),
+        JSON.stringify({ error: "Kunne ikke deaktivere profil" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
