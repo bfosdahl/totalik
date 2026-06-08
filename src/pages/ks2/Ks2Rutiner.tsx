@@ -82,8 +82,11 @@ export default function Ks2Rutiner() {
     linkRoutineToTemplate,
     unlinkRoutineFromTemplate,
     getLinkedTemplates,
+    importFromCompanyLibrary,
     refetch: refetchCustomRoutines,
   } = useKsModule2Routines(projectId);
+
+  const [showImportDialog, setShowImportDialog] = useState(false);
   
   const { users, getUserDisplayName } = useCompanyUsers();
 
