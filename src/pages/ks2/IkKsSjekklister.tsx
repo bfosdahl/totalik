@@ -160,7 +160,7 @@ export default function IkKsSjekklister() {
           </div>
           
           <div className="flex gap-2 flex-wrap">
-            <AiChecklistDialog />
+            <AiChecklistDialog onSaved={refetchTemplates} />
             <Dialog open={showAdminDialog} onOpenChange={setShowAdminDialog}>
               <DialogTrigger asChild>
                 <Button variant="outline">
