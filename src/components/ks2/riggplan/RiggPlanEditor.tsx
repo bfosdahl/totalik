@@ -47,7 +47,19 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
   } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const panStateRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
+  const pinchStateRef = useRef<{
+    pointers: Map<number, { x: number; y: number }>;
+    startDist: number;
+    startZoom: number;
+    startPan: { x: number; y: number };
+    centerX: number;
+    centerY: number;
+  } | null>(null);
   const [bgUrl, setBgUrl] = useState<string | null>(null);
   const [uploadingBg, setUploadingBg] = useState(false);
   const [calibrating, setCalibrating] = useState(false);
