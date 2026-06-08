@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Save, Download, Shield, ExternalLink, Plus, Minus, Image as ImageIcon, Ruler, X } from "lucide-react";
+import { Trash2, Save, Download, Shield, ExternalLink, Plus, Minus, Image as ImageIcon, Ruler, X, RotateCw } from "lucide-react";
 import { RIGG_SYMBOLS, getSymbol } from "./riggSymbols";
 import type { RiggCanvasData, RiggObject, RiggPlan } from "@/hooks/useKsRiggPlan";
 import { exportRiggPlanPdf } from "@/utils/riggPlanPdf";
