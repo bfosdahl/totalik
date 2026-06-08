@@ -462,6 +462,32 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                 </div>
               );
             })}
+
+            {/* Visuell målestokk (skala-strek) */}
+            {(() => {
+              const mpp = canvas.scaleMetersPerPixel || 0.05;
+              // Velg meterlengde slik at streken blir 80-200 px i nåværende zoom
+              const candidates = [1, 2, 5, 10, 20, 50, 100];
+              const targetPx = 140;
+              const meters =
+                candidates.find((m) => (m / mpp) * zoom >= targetPx) || candidates[candidates.length - 1];
+              const widthPx = (meters / mpp) * zoom;
+              return (
+                <div
+                  className="absolute bottom-3 right-3 flex flex-col items-end gap-0.5 pointer-events-none select-none"
+                  aria-label="Målestokk"
+                >
+                  <div className="text-[10px] font-semibold bg-white/90 px-1.5 py-0.5 rounded shadow-sm border">
+                    {meters} m
+                  </div>
+                  <div className="flex items-end h-2.5">
+                    <div className="h-full w-0.5 bg-foreground" />
+                    <div className="h-1 bg-foreground" style={{ width: widthPx }} />
+                    <div className="h-full w-0.5 bg-foreground" />
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </Card>
 
