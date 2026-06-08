@@ -108,7 +108,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
         duration: 8000,
         action: isSystemAdmin ? undefined : {
           label: "Åpne",
-          onClick: () => navigate("/ks/sjekklister"),
+          onClick: () => navigate("/ks/ik-ks/sjekklister"),
         },
       });
       await onSaved?.();
