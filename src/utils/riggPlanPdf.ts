@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import type { RiggCanvasData } from "@/hooks/useKsRiggPlan";
 import { getSymbol } from "@/components/ks2/riggplan/riggSymbols";
+import { supabase } from "@/integrations/supabase/client";
 
 export async function exportRiggPlanPdf(
   planName: string,
@@ -33,10 +34,45 @@ export async function exportRiggPlanPdf(
   const offX = marginX + (availW - drawW) / 2;
   const offY = topY;
 
-  // Background area
+  // Background area frame
   pdf.setDrawColor(120);
   pdf.setLineWidth(0.4);
   pdf.rect(offX, offY, drawW, drawH);
+
+  // Background image (if any) — preserve aspect ratio (object-contain), centered
+  if (canvas.backgroundImagePath) {
+    try {
+      const { data } = await supabase.storage
+        .from("ks-module2-files")
+        .createSignedUrl(canvas.backgroundImagePath, 3600);
+      if (data?.signedUrl) {
+        const img = await loadImage(data.signedUrl);
+        const dataUrl = imageToDataUrl(img);
+        const opacity = canvas.backgroundImageOpacity ?? 0.7;
+        // Fit (contain) inside the canvas area
+        const ratio = Math.min(drawW / img.naturalWidth, drawH / img.naturalHeight);
+        const imgW = img.naturalWidth * ratio;
+        const imgH = img.naturalHeight * ratio;
+        const imgX = offX + (drawW - imgW) / 2;
+        const imgY = offY + (drawH - imgH) / 2;
+        try {
+          // @ts-ignore – GState supported by jspdf
+          const gs = new (pdf as any).GState({ opacity });
+          (pdf as any).setGState(gs);
+        } catch { /* opacity not supported – continue */ }
+        const fmt = dataUrl.startsWith("data:image/png") ? "PNG" : "JPEG";
+        pdf.addImage(dataUrl, fmt, imgX, imgY, imgW, imgH, undefined, "FAST");
+        try {
+          // @ts-ignore reset opacity
+          const gs = new (pdf as any).GState({ opacity: 1 });
+          (pdf as any).setGState(gs);
+        } catch { /* noop */ }
+      }
+    } catch (e) {
+      console.warn("Could not embed background image in PDF", e);
+    }
+  }
+
   pdf.setFontSize(8);
   pdf.setTextColor(80);
   if (canvas.backgroundLabel) {
@@ -80,4 +116,29 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
   const num = parseInt(full, 16);
   return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+}
+
+function loadImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = (e) => reject(e);
+    img.src = url;
+  });
+}
+
+function imageToDataUrl(img: HTMLImageElement): string {
+  const canvasEl = document.createElement("canvas");
+  canvasEl.width = img.naturalWidth;
+  canvasEl.height = img.naturalHeight;
+  const ctx = canvasEl.getContext("2d");
+  if (!ctx) return "";
+  ctx.drawImage(img, 0, 0);
+  // Prefer JPEG for smaller file size
+  try {
+    return canvasEl.toDataURL("image/jpeg", 0.85);
+  } catch {
+    return canvasEl.toDataURL("image/png");
+  }
 }
