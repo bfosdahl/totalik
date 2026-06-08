@@ -133,7 +133,16 @@ export default function IkKsRutiner() {
             </p>
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              variant={showHidden ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowHidden(s => !s)}
+              title={showHidden ? "Skjul de skjulte rutinene" : "Vis skjulte rutiner"}
+            >
+              {showHidden ? <Eye className="w-4 h-4 mr-2" /> : <EyeOff className="w-4 h-4 mr-2" />}
+              {showHidden ? "Skjuler vist" : "Vis skjulte"}
+            </Button>
             <AiRoutineDialog module="ks_ik_bygg" onAdopt={handleAdoptFromLibrary} />
             <RoutineLibraryDialog module="ks_ik_bygg" onAdopt={handleAdoptFromLibrary} adoptedIds={adoptedKsTemplateIds} />
             <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
