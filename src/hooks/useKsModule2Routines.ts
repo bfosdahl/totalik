@@ -18,6 +18,7 @@ export interface KsModule2Routine {
   is_document: boolean;
   approved_by: string | null;
   approved_at: string | null;
+  source_routine_id: string | null;
   created_at: string;
   updated_at: string;
 }
