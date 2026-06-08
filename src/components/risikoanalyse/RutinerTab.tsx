@@ -662,13 +662,44 @@ export const RutinerTab = () => {
                       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         <Button
                           variant="ghost"
-                          size="icon"
-                          onClick={() => setEditingId(editingId === routine.id ? null : routine.id)}
+                          size="sm"
+                          onClick={() => {
+                            if (editingId === routine.id) setEditingId(null);
+                            setExpandedRoutines((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(routine.id)) next.delete(routine.id);
+                              else next.add(routine.id);
+                              return next;
+                            });
+                          }}
+                          title="Vis rutinen (kun lese)"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Vis
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setExpandedRoutines((prev) => {
+                              const next = new Set(prev);
+                              next.add(routine.id);
+                              return next;
+                            });
+                            setEditingId(editingId === routine.id ? null : routine.id);
+                          }}
+                          title="Rediger rutinen"
                         >
                           {editingId === routine.id ? (
-                            <Check className="h-4 w-4" />
+                            <>
+                              <Check className="h-4 w-4 mr-1" />
+                              Ferdig
+                            </>
                           ) : (
-                            <Edit className="h-4 w-4" />
+                            <>
+                              <Edit className="h-4 w-4 mr-1" />
+                              Rediger
+                            </>
                           )}
                         </Button>
                         <Button
