@@ -81,9 +81,13 @@ export default function IkKsRutiner() {
 
   const handleCreate = async () => {
     if (!newRoutine.routine_name.trim()) return;
-    await createRoutine(newRoutine);
+    const created = await createRoutine(newRoutine);
     setNewRoutine({ routine_name: "", description: "", content: "", category: "general" });
     setShowNewDialog(false);
+    // Auto-expand the newly-created routine so the user can see it without editing
+    if (created?.id) {
+      setExpandedIds(prev => new Set(prev).add(created.id));
+    }
   };
 
   const handleAdoptFromLibrary = async (template: RoutineTemplate) => {
@@ -95,13 +99,16 @@ export default function IkKsRutiner() {
       template.purpose ? `Formål:\n${template.purpose}` : "",
       stepsText ? `\nSjekkliste:\n${stepsText}` : "",
     ].filter(Boolean).join("\n");
-    await createRoutine({
+    const created = await createRoutine({
       routine_name: template.title,
       description: template.description || "",
       content,
       category: template.subcategory || "general",
       routine_number: template.template_number || undefined,
     });
+    if (created?.id) {
+      setExpandedIds(prev => new Set(prev).add(created.id));
+    }
   };
 
   const adoptedKsTemplateIds = new Set(
