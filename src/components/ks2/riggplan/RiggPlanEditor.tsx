@@ -349,9 +349,12 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                 className="flex items-center gap-2 p-2 rounded border hover:border-primary hover:bg-accent transition text-left"
               >
                 <span
-                  className="w-6 h-6 rounded border shrink-0"
+                  className="w-7 h-7 rounded border shrink-0 flex items-center justify-center text-base leading-none"
                   style={{ backgroundColor: s.color }}
-                />
+                  aria-hidden="true"
+                >
+                  {s.emoji}
+                </span>
                 <span className="text-xs font-medium truncate">{s.label}</span>
               </button>
             ))}
@@ -664,6 +667,9 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
             ))}
             {canvas.objects.map((obj) => {
               const isSel = obj.id === selectedId;
+              const sym = getSymbol(obj.type);
+              const minSide = Math.min(obj.width, obj.height) * zoom;
+              const showEmoji = !!sym?.emoji && minSide >= 28;
               return (
                 <div
                   key={obj.id}
@@ -674,7 +680,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                     e.stopPropagation();
                     setSelectedId(obj.id);
                   }}
-                  className="absolute flex items-center justify-center text-xs font-medium border-2 select-none"
+                  className="absolute flex flex-col items-center justify-center text-xs font-medium border-2 select-none gap-0.5"
                   style={{
                     left: obj.x * zoom,
                     top: obj.y * zoom,
@@ -689,7 +695,16 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                     transformOrigin: "center center",
                   }}
                 >
-                  <span className="px-1 text-center pointer-events-none">{obj.label}</span>
+                  {showEmoji && (
+                    <span
+                      className="leading-none pointer-events-none"
+                      style={{ fontSize: Math.max(14, Math.min(minSide * 0.45, 36)) }}
+                      aria-hidden="true"
+                    >
+                      {sym!.emoji}
+                    </span>
+                  )}
+                  <span className="px-1 text-center pointer-events-none leading-tight">{obj.label}</span>
                   {isSel && (
                     <div
                       onPointerDown={(e) => onPointerDownObj(e, obj, "resize")}
