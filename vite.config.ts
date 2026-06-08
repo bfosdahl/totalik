@@ -18,6 +18,11 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Strip debug-level console calls in production builds.
+  // console.warn and console.error are kept so real errors stay visible.
+  esbuild: mode === "production"
+    ? { drop: ["debugger"], pure: ["console.log", "console.info", "console.debug", "console.trace"] }
+    : undefined,
   build: {
     modulePreload: false,
     // Raise warning threshold a bit; chunks below this are fine.
