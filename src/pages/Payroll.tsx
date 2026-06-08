@@ -36,6 +36,7 @@ interface Row {
   status: string;
   approved_by_name: string | null;
   approved_at: string | null;
+  hour_type: string | null;
 }
 
 interface AllowanceRow {
@@ -47,6 +48,7 @@ interface EmployeeMeta {
   user_id: string;
   email: string | null;
   hourly_rate: number | null;
+  employee_number: string | null;
 }
 
 function computePeriod(startDay: number, anchor: Date) {
@@ -106,7 +108,7 @@ export default function Payroll() {
     if (!profile?.company_id) return;
     const { data } = await supabase
       .from("profiles")
-      .select("user_id, email, hourly_rate, first_name, last_name")
+      .select("user_id, email, hourly_rate, first_name, last_name, employee_number")
       .eq("company_id", profile.company_id);
     const map = new Map<string, EmployeeMeta>();
     (data || []).forEach((p: any) => {
@@ -114,6 +116,7 @@ export default function Payroll() {
         user_id: p.user_id,
         email: p.email,
         hourly_rate: p.hourly_rate != null ? Number(p.hourly_rate) : null,
+        employee_number: p.employee_number ?? null,
       });
     });
     setEmployeesMeta(map);
@@ -137,7 +140,7 @@ export default function Payroll() {
     (async () => {
       const { data: entries, error } = await supabase
         .from("time_entries")
-        .select("id, user_id, user_name, entry_date, hours, project_name, project_id, description, status, approved_by_name, approved_at")
+        .select("id, user_id, user_name, entry_date, hours, project_name, project_id, description, status, approved_by_name, approved_at, hour_type")
         .eq("company_id", profile.company_id)
         .eq("status", "approved")
         .gte("entry_date", fmt(period.start))
@@ -197,7 +200,9 @@ export default function Payroll() {
         map.set(r.user_id, {
           user_id: r.user_id,
           user_name: r.user_name,
+          employee_number: meta?.employee_number ?? null,
           total_hours: 0,
+          overtime_hours: 0,
           hourly_rate: meta?.hourly_rate ?? null,
           base_amount: 0,
           allowances_amount: 0,
@@ -208,6 +213,9 @@ export default function Payroll() {
       const rec = map.get(r.user_id)!;
       const h = Number(r.hours) || 0;
       rec.total_hours += h;
+      if (r.hour_type && r.hour_type.startsWith("overtime")) {
+        rec.overtime_hours = (rec.overtime_hours ?? 0) + h;
+      }
       rec.allowances_amount += allowanceMap.get(r.id) || 0;
       const proj = r.project_name || "Uten prosjekt";
       rec.perProject.set(proj, (rec.perProject.get(proj) || 0) + h);
@@ -233,10 +241,12 @@ export default function Payroll() {
 
   const totals = useMemo(() => {
     const totalHours = byEmployee.reduce((s, e) => s + e.total_hours, 0);
+    const totalOvertime = byEmployee.reduce((s, e) => s + (e.overtime_hours ?? 0), 0);
     const totalBase = byEmployee.reduce((s, e) => s + e.base_amount, 0);
     const totalAllow = byEmployee.reduce((s, e) => s + e.allowances_amount, 0);
     return {
       hours: totalHours,
+      overtime: totalOvertime,
       base: totalBase,
       allow: totalAllow,
       sum: totalBase + totalAllow,
@@ -252,6 +262,7 @@ export default function Payroll() {
         hours: Number(r.hours),
         hourly_rate: employeesMeta.get(r.user_id)?.hourly_rate ?? null,
         allowances_amount: allowanceMap.get(r.id) || 0,
+        is_overtime: !!(r.hour_type && r.hour_type.startsWith("overtime")),
       })),
     [filteredRows, employeesMeta, allowanceMap]
   );
@@ -270,7 +281,7 @@ export default function Payroll() {
   const handleExportTripletex = () => {
     const empMap: Record<string, { email?: string | null; employee_number?: string | null }> = {};
     employeesMeta.forEach((m, k) => {
-      empMap[k] = { email: m.email };
+      empMap[k] = { email: m.email, employee_number: m.employee_number };
     });
     exportPayrollTripletex(exportEntries, empMap, company?.name || "Bedrift", period.start, period.end);
     toast.success("Tripletex-eksport klar");
@@ -306,7 +317,7 @@ export default function Payroll() {
           </div>
           <div className="flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={() => setRatesOpen(true)}>
-              Timesatser
+              Ansattnr & timesatser
             </Button>
             <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
               <SettingsIcon className="h-4 w-4 mr-1" /> Lønnsperiode
@@ -449,8 +460,10 @@ export default function Payroll() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead>Ansattnr</TableHead>
                           <TableHead>Ansatt</TableHead>
                           <TableHead className="text-right">Timer</TableHead>
+                          <TableHead className="text-right">Herav overtid</TableHead>
                           <TableHead className="text-right">Timesats</TableHead>
                           <TableHead className="text-right">Grunnlønn</TableHead>
                           <TableHead className="text-right">Tillegg</TableHead>
@@ -460,6 +473,7 @@ export default function Payroll() {
                       <TableBody>
                         {byEmployee.map((e) => (
                           <TableRow key={e.user_id}>
+                            <TableCell className="text-xs text-muted-foreground">{e.employee_number || "-"}</TableCell>
                             <TableCell className="font-medium">
                               {e.user_name}
                               {e.hourly_rate == null && (
@@ -467,6 +481,9 @@ export default function Payroll() {
                               )}
                             </TableCell>
                             <TableCell className="text-right">{e.total_hours.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">
+                              {(e.overtime_hours ?? 0) > 0 ? (e.overtime_hours ?? 0).toFixed(2) : "-"}
+                            </TableCell>
                             <TableCell className="text-right">{e.hourly_rate != null ? nok(e.hourly_rate) : "-"}</TableCell>
                             <TableCell className="text-right">{nok(e.base_amount)}</TableCell>
                             <TableCell className="text-right">{nok(e.allowances_amount)}</TableCell>
@@ -474,8 +491,10 @@ export default function Payroll() {
                           </TableRow>
                         ))}
                         <TableRow className="bg-muted/50 font-bold">
+                          <TableCell>-</TableCell>
                           <TableCell>TOTALT</TableCell>
                           <TableCell className="text-right">{totals.hours.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">{totals.overtime > 0 ? totals.overtime.toFixed(2) : "-"}</TableCell>
                           <TableCell className="text-right">-</TableCell>
                           <TableCell className="text-right">{nok(totals.base)}</TableCell>
                           <TableCell className="text-right">{nok(totals.allow)}</TableCell>
@@ -614,7 +633,7 @@ function HourlyRatesDialog({
   companyId?: string | null;
   onSaved: () => void;
 }) {
-  const [list, setList] = useState<Array<{ id: string; name: string; rate: string }>>([]);
+  const [list, setList] = useState<Array<{ id: string; name: string; rate: string; employee_number: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -623,7 +642,7 @@ function HourlyRatesDialog({
     setLoading(true);
     supabase
       .from("profiles")
-      .select("id, first_name, last_name, email, hourly_rate")
+      .select("id, first_name, last_name, email, hourly_rate, employee_number")
       .eq("company_id", companyId)
       .eq("is_active", true)
       .order("first_name", { ascending: true })
@@ -633,6 +652,7 @@ function HourlyRatesDialog({
             id: p.id,
             name: `${p.first_name || ""} ${p.last_name || ""}`.trim() || p.email,
             rate: p.hourly_rate != null ? String(p.hourly_rate) : "",
+            employee_number: p.employee_number || "",
           }))
         );
         setLoading(false);
@@ -645,15 +665,18 @@ function HourlyRatesDialog({
       const updates = list.map((item) =>
         supabase
           .from("profiles")
-          .update({ hourly_rate: item.rate === "" ? null : Number(item.rate) } as any)
+          .update({
+            hourly_rate: item.rate === "" ? null : Number(item.rate),
+            employee_number: item.employee_number.trim() === "" ? null : item.employee_number.trim(),
+          } as any)
           .eq("id", item.id)
       );
       const results = await Promise.all(updates);
       const firstErr = results.find((r) => r.error);
       if (firstErr?.error) {
-        toast.error("Kunne ikke lagre alle satser: " + firstErr.error.message);
+        toast.error("Kunne ikke lagre: " + firstErr.error.message);
       } else {
-        toast.success("Timesatser lagret");
+        toast.success("Lagret");
         onSaved();
         onOpenChange(false);
       }
@@ -664,9 +687,9 @@ function HourlyRatesDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Timesatser per ansatt</DialogTitle>
+          <DialogTitle>Ansattnummer og timesatser</DialogTitle>
         </DialogHeader>
         <div className="max-h-[60vh] overflow-y-auto space-y-2">
           {loading ? (
@@ -674,31 +697,52 @@ function HourlyRatesDialog({
           ) : list.length === 0 ? (
             <p className="text-sm text-muted-foreground">Ingen aktive ansatte.</p>
           ) : (
-            list.map((item, idx) => (
-              <div key={item.id} className="flex items-center gap-3">
-                <span className="flex-1 text-sm truncate">{item.name}</span>
-                <div className="flex items-center gap-1">
+            <>
+              <div className="flex items-center gap-3 px-1 text-xs font-medium text-muted-foreground">
+                <span className="flex-1">Ansatt</span>
+                <span className="w-28">Ansattnr</span>
+                <span className="w-32 text-right">Timesats (kr/t)</span>
+              </div>
+              {list.map((item, idx) => (
+                <div key={item.id} className="flex items-center gap-3">
+                  <span className="flex-1 text-sm truncate">{item.name}</span>
                   <Input
-                    type="number"
-                    inputMode="decimal"
-                    min={0}
-                    step="1"
-                    className="h-9 w-28 text-right"
-                    placeholder="0"
-                    value={item.rate}
+                    type="text"
+                    className="h-9 w-28"
+                    placeholder="—"
+                    value={item.employee_number}
                     onChange={(e) => {
                       const v = e.target.value;
                       setList((prev) => {
                         const next = [...prev];
-                        next[idx] = { ...next[idx], rate: v };
+                        next[idx] = { ...next[idx], employee_number: v };
                         return next;
                       });
                     }}
                   />
-                  <span className="text-xs text-muted-foreground">kr/t</span>
+                  <div className="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      min={0}
+                      step="1"
+                      className="h-9 w-28 text-right"
+                      placeholder="0"
+                      value={item.rate}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setList((prev) => {
+                          const next = [...prev];
+                          next[idx] = { ...next[idx], rate: v };
+                          return next;
+                        });
+                      }}
+                    />
+                    <span className="text-xs text-muted-foreground">kr/t</span>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </>
           )}
         </div>
         <DialogFooter>

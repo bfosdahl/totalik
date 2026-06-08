@@ -15,12 +15,15 @@ export interface PayrollTimeEntry {
   approved_at: string | null;
   hourly_rate?: number | null;
   allowances_amount?: number;
+  is_overtime?: boolean | null;
 }
 
 export interface EmployeeSummary {
   user_id: string;
   user_name: string;
+  employee_number?: string | null;
   total_hours: number;
+  overtime_hours?: number;
   hourly_rate: number | null;
   base_amount: number;
   allowances_amount: number;
@@ -58,8 +61,10 @@ export function exportPayrollGeneric(
 
   // Sheet 1: Sammendrag per ansatt (med kost)
   const summaryRows = employeeSummaries.map((e) => ({
+    Ansattnr: e.employee_number || "",
     Ansatt: e.user_name,
     "Timer (sum)": Number(e.total_hours.toFixed(2)),
+    "Herav overtid": Number((e.overtime_hours ?? 0).toFixed(2)),
     "Timesats (NOK)": e.hourly_rate ?? "",
     "Grunnlønn (NOK)": Number(e.base_amount.toFixed(2)),
     "Tillegg (NOK)": Number(e.allowances_amount.toFixed(2)),
@@ -67,12 +72,15 @@ export function exportPayrollGeneric(
   }));
   // Totals row
   const totalHours = employeeSummaries.reduce((s, e) => s + e.total_hours, 0);
+  const totalOvertime = employeeSummaries.reduce((s, e) => s + (e.overtime_hours ?? 0), 0);
   const totalBase = employeeSummaries.reduce((s, e) => s + e.base_amount, 0);
   const totalAllow = employeeSummaries.reduce((s, e) => s + e.allowances_amount, 0);
   const totalSum = employeeSummaries.reduce((s, e) => s + e.total_amount, 0);
   summaryRows.push({
+    Ansattnr: "",
     Ansatt: "TOTALT",
     "Timer (sum)": Number(totalHours.toFixed(2)),
+    "Herav overtid": Number(totalOvertime.toFixed(2)),
     "Timesats (NOK)": "",
     "Grunnlønn (NOK)": Number(totalBase.toFixed(2)),
     "Tillegg (NOK)": Number(totalAllow.toFixed(2)),
@@ -94,6 +102,7 @@ export function exportPayrollGeneric(
     Dato: format(new Date(entry.entry_date), "dd.MM.yyyy", { locale: nb }),
     Ansatt: entry.user_name,
     Timer: Number(entry.hours),
+    Overtid: entry.is_overtime ? "Ja" : "",
     Prosjekt: entry.project_name || "-",
     Beskrivelse: entry.description || "-",
     Status: statusLabels[entry.status] || entry.status,
@@ -134,7 +143,7 @@ export function exportPayrollTripletex(
       "E-post": emp.email || "",
       Dato: format(new Date(entry.entry_date), "yyyy-MM-dd"),
       Timer: Number(entry.hours),
-      Aktivitet: "Ordinær arbeidstid",
+      Aktivitet: entry.is_overtime ? "Overtid" : "Ordinær arbeidstid",
       Prosjekt: entry.project_name || "",
       Kommentar: entry.description || "",
     };
