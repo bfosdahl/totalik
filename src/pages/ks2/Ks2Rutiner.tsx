@@ -1071,6 +1071,18 @@ export default function Ks2Rutiner() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ImportCompanyRoutinesDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        alreadyImportedIds={new Set(customRoutines.map(r => r.source_routine_id).filter(Boolean) as string[])}
+        isSaving={isSavingCustom}
+        onImport={async (ids) => {
+          if (!projectId) return;
+          await importFromCompanyLibrary(ids, projectId);
+          await refetchCustomRoutines();
+        }}
+      />
     </div>
   );
 }
