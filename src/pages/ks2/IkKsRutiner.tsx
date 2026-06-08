@@ -263,6 +263,7 @@ function RoutineCard({
   onCancelEdit,
   onUpdate,
   onDelete,
+  onToggleHidden,
   getCategoryLabel,
   isSaving,
 }: {
@@ -274,6 +275,7 @@ function RoutineCard({
   onCancelEdit: () => void;
   onUpdate: (id: string, updates: Partial<CompanyKsRoutine>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onToggleHidden: (id: string, hidden: boolean) => Promise<void>;
   getCategoryLabel: (value: string) => string;
   isSaving: boolean;
 }) {
