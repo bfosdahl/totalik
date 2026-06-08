@@ -203,6 +203,129 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
 
   const onPointerUp = () => setDragState(null);
 
+  // ---------- Pan + zoom logic (viewport) ----------
+  const pointersRef = useRef(new Map<number, { x: number; y: number }>());
+  const panMovedRef = useRef(false);
+  const zoomRef = useRef(zoom);
+  const panRef = useRef(pan);
+  useEffect(() => { zoomRef.current = zoom; }, [zoom]);
+  useEffect(() => { panRef.current = pan; }, [pan]);
+
+  const clampZoom = (z: number) => Math.max(0.1, Math.min(5, z));
+
+  const zoomAtPoint = (newZoom: number, viewportX: number, viewportY: number) => {
+    const z0 = zoomRef.current;
+    const z1 = clampZoom(newZoom);
+    const p = panRef.current;
+    setZoom(z1);
+    setPan({
+      x: viewportX - (viewportX - p.x) * (z1 / z0),
+      y: viewportY - (viewportY - p.y) * (z1 / z0),
+    });
+  };
+
+  const fitToView = () => {
+    const vp = viewportRef.current;
+    if (!vp) return;
+    const vw = vp.clientWidth;
+    const vh = vp.clientHeight;
+    const z = clampZoom(Math.min(vw / canvas.width, vh / canvas.height) * 0.95);
+    setZoom(z);
+    setPan({ x: (vw - canvas.width * z) / 2, y: (vh - canvas.height * z) / 2 });
+  };
+
+  const resetView = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  // Non-passive wheel handler so we can preventDefault for ctrl-zoom & pan
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      const rect = el.getBoundingClientRect();
+      const vx = e.clientX - rect.left;
+      const vy = e.clientY - rect.top;
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const factor = Math.exp(-e.deltaY * 0.0015);
+        zoomAtPoint(zoomRef.current * factor, vx, vy);
+      } else {
+        e.preventDefault();
+        const p = panRef.current;
+        setPan({ x: p.x - e.deltaX, y: p.y - e.deltaY });
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
+  const handleViewportPointerDown = (e: React.PointerEvent) => {
+    // Ignore if pointer down originated on an object (object has own handler + stopPropagation)
+    const target = e.target as HTMLElement;
+    if (target.closest("[data-rigg-object]")) return;
+    if (calibrating) return; // let click handler do its thing
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    panMovedRef.current = false;
+
+    if (pointersRef.current.size === 1) {
+      panStateRef.current = {
+        startX: e.clientX,
+        startY: e.clientY,
+        origX: panRef.current.x,
+        origY: panRef.current.y,
+      };
+      setIsPanning(true);
+    } else if (pointersRef.current.size === 2) {
+      const pts = Array.from(pointersRef.current.values());
+      const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+      const rect = viewportRef.current!.getBoundingClientRect();
+      pinchStateRef.current = {
+        pointers: new Map(pointersRef.current),
+        startDist: dist || 1,
+        startZoom: zoomRef.current,
+        startPan: { ...panRef.current },
+        centerX: (pts[0].x + pts[1].x) / 2 - rect.left,
+        centerY: (pts[0].y + pts[1].y) / 2 - rect.top,
+      };
+      panStateRef.current = null;
+    }
+  };
+
+  const handleViewportPointerMove = (e: React.PointerEvent) => {
+    if (!pointersRef.current.has(e.pointerId)) return;
+    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (pinchStateRef.current && pointersRef.current.size >= 2) {
+      const pts = Array.from(pointersRef.current.values()).slice(0, 2);
+      const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+      const ps = pinchStateRef.current;
+      const z1 = clampZoom(ps.startZoom * (dist / ps.startDist));
+      setZoom(z1);
+      setPan({
+        x: ps.centerX - (ps.centerX - ps.startPan.x) * (z1 / ps.startZoom),
+        y: ps.centerY - (ps.centerY - ps.startPan.y) * (z1 / ps.startZoom),
+      });
+      panMovedRef.current = true;
+    } else if (panStateRef.current) {
+      const dx = e.clientX - panStateRef.current.startX;
+      const dy = e.clientY - panStateRef.current.startY;
+      if (Math.abs(dx) + Math.abs(dy) > 3) panMovedRef.current = true;
+      setPan({ x: panStateRef.current.origX + dx, y: panStateRef.current.origY + dy });
+    }
+  };
+
+  const handleViewportPointerUp = (e: React.PointerEvent) => {
+    pointersRef.current.delete(e.pointerId);
+    if (pointersRef.current.size < 2) pinchStateRef.current = null;
+    if (pointersRef.current.size === 0) {
+      panStateRef.current = null;
+      setIsPanning(false);
+    }
+  };
+
   const handleSave = async () => {
     await onSave(canvas, name);
   };
