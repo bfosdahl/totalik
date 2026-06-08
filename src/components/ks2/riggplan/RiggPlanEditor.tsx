@@ -15,6 +15,7 @@ import { DEFAULT_RISK_AREAS } from "@/hooks/useKsModule2ShaPlan";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { compressImageFile } from "@/utils/imageCompression";
 
 
 interface Props {
