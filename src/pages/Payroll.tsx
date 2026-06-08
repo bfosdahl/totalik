@@ -36,6 +36,7 @@ interface Row {
   status: string;
   approved_by_name: string | null;
   approved_at: string | null;
+  is_overtime: boolean | null;
 }
 
 interface AllowanceRow {
@@ -47,6 +48,7 @@ interface EmployeeMeta {
   user_id: string;
   email: string | null;
   hourly_rate: number | null;
+  employee_number: string | null;
 }
 
 function computePeriod(startDay: number, anchor: Date) {
