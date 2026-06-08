@@ -145,6 +145,14 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
       toast.error(err.message || "Kunne ikke lagre rutine");
     } finally {
       setIsSaving(false);
+      // Belt-and-braces: ensure scroll/pointer is always restored,
+      // even if Radix didn't get a chance to clean up.
+      setTimeout(() => {
+        if (typeof document !== "undefined") {
+          document.body.style.pointerEvents = "";
+          document.body.style.overflow = "";
+        }
+      }, 150);
     }
   };
 
