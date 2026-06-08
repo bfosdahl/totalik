@@ -143,7 +143,7 @@ export function exportPayrollTripletex(
       "E-post": emp.email || "",
       Dato: format(new Date(entry.entry_date), "yyyy-MM-dd"),
       Timer: Number(entry.hours),
-      Aktivitet: "Ordinær arbeidstid",
+      Aktivitet: entry.is_overtime ? "Overtid" : "Ordinær arbeidstid",
       Prosjekt: entry.project_name || "",
       Kommentar: entry.description || "",
     };
