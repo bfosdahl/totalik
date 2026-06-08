@@ -2017,6 +2017,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_deleted: boolean
+          is_hidden: boolean
           routine_name: string
           routine_number: string | null
           sort_order: number | null
@@ -2036,6 +2037,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_deleted?: boolean
+          is_hidden?: boolean
           routine_name: string
           routine_number?: string | null
           sort_order?: number | null
@@ -2055,6 +2057,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_deleted?: boolean
+          is_hidden?: boolean
           routine_name?: string
           routine_number?: string | null
           sort_order?: number | null
@@ -11035,6 +11038,7 @@ export type Database = {
           project_id: string
           responsible_role: string | null
           routine_number: string
+          source_routine_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -11053,6 +11057,7 @@ export type Database = {
           project_id: string
           responsible_role?: string | null
           routine_number: string
+          source_routine_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -11071,6 +11076,7 @@ export type Database = {
           project_id?: string
           responsible_role?: string | null
           routine_number?: string
+          source_routine_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -11086,6 +11092,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "ks_module2_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_routines_source_routine_id_fkey"
+            columns: ["source_routine_id"]
+            isOneToOne: false
+            referencedRelation: "company_ks_routines"
             referencedColumns: ["id"]
           },
         ]
