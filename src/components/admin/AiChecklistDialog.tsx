@@ -153,12 +153,38 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
     </Button>
   );
 
+  // Defensive: Radix sometimes leaves body styles locked after close. Reset them on unmount.
+  useEffect(() => {
+    return () => {
+      if (typeof document !== "undefined") {
+        document.body.style.pointerEvents = "";
+        document.body.style.overflow = "";
+      }
+    };
+  }, []);
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) {
+          setTimeout(() => {
+            document.body.style.pointerEvents = "";
+            document.body.style.overflow = "";
+          }, 100);
+        }
+      }}
+    >
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+      <DialogContent
+        className="max-w-2xl max-h-[90vh] flex flex-col"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => { if (isGenerating) e.preventDefault(); }}
+      >
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-blue-500" />
