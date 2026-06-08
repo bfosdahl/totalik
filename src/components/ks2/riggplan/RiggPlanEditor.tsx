@@ -312,6 +312,40 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
               <Plus className="h-4 w-4" />
             </Button>
           </div>
+          <input
+            type="file"
+            accept="image/*"
+            id="rigg-bg-upload"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleUploadBackground(f);
+              e.target.value = "";
+            }}
+          />
+          <Button
+            variant="outline"
+            disabled={uploadingBg}
+            onClick={() => document.getElementById("rigg-bg-upload")?.click()}
+            title="Last opp situasjonskart / bilde som bakgrunn"
+          >
+            <ImageIcon className="h-4 w-4 mr-1" /> {canvas.backgroundImagePath ? "Bytt bilde" : "Last opp kart"}
+          </Button>
+          {canvas.backgroundImagePath && (
+            <Button variant="outline" size="icon" onClick={removeBackground} title="Fjern bakgrunn">
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+          <Button
+            variant={calibrating ? "default" : "outline"}
+            onClick={() => {
+              setCalibrating((v) => !v);
+              setCalibPoints([]);
+            }}
+            title="Kalibrer skala ved å klikke to punkter på kjent avstand"
+          >
+            <Ruler className="h-4 w-4 mr-1" /> {calibrating ? "Avbryt skala" : "Kalibrer skala"}
+          </Button>
           <Button onClick={handleSave} disabled={isSaving}>
             <Save className="h-4 w-4 mr-1" /> Lagre
           </Button>
@@ -320,6 +354,14 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
           </Button>
         </div>
 
+        {calibrating && (
+          <div className="rounded-md border bg-amber-50 border-amber-300 text-amber-900 px-3 py-2 text-xs flex items-center gap-2">
+            <Ruler className="h-4 w-4" />
+            {calibPoints.length === 0 && "Klikk på første punkt med kjent avstand i tegningen."}
+            {calibPoints.length === 1 && "Klikk på andre punkt for å fullføre kalibreringen."}
+          </div>
+        )}
+
         <Card className="p-2 overflow-auto bg-muted/30" ref={containerRef}>
           <div
             className="relative bg-white mx-auto shadow-inner border"
@@ -327,27 +369,71 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
               width: canvas.width * zoom,
               height: canvas.height * zoom,
               minWidth: canvas.width * zoom,
+              cursor: calibrating ? "crosshair" : undefined,
             }}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
-            onClick={() => setSelectedId(null)}
+            onClick={(e) => {
+              if (calibrating) {
+                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                const x = (e.clientX - rect.left) / zoom;
+                const y = (e.clientY - rect.top) / zoom;
+                const next = [...calibPoints, { x, y }];
+                if (next.length < 2) {
+                  setCalibPoints(next);
+                } else {
+                  const dx = next[1].x - next[0].x;
+                  const dy = next[1].y - next[0].y;
+                  const pixelDist = Math.sqrt(dx * dx + dy * dy);
+                  const input = window.prompt("Hvor mange meter er denne avstanden? (f.eks. 10)", "10");
+                  const meters = Number((input || "").replace(",", "."));
+                  if (meters > 0 && pixelDist > 0) {
+                    const mpp = meters / pixelDist;
+                    setCanvas({ ...canvas, scaleMetersPerPixel: mpp });
+                    toast.success(`Skala satt: 1 px = ${mpp.toFixed(3)} m`);
+                  }
+                  setCalibrating(false);
+                  setCalibPoints([]);
+                }
+                return;
+              }
+              setSelectedId(null);
+            }}
           >
+            {bgUrl && (
+              <img
+                src={bgUrl}
+                alt="Bakgrunnskart"
+                draggable={false}
+                className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
+                style={{ opacity: canvas.backgroundImageOpacity ?? 0.7 }}
+              />
+            )}
             {canvas.backgroundLabel && (
               <div className="absolute top-2 left-2 text-xs text-muted-foreground font-medium pointer-events-none">
                 {canvas.backgroundLabel}
               </div>
             )}
+            {/* Calibration markers */}
+            {calibPoints.map((p, i) => (
+              <div
+                key={i}
+                className="absolute w-3 h-3 -ml-1.5 -mt-1.5 rounded-full bg-amber-500 border-2 border-white pointer-events-none"
+                style={{ left: p.x * zoom, top: p.y * zoom }}
+              />
+            ))}
             {canvas.objects.map((obj) => {
               const isSel = obj.id === selectedId;
               return (
                 <div
                   key={obj.id}
-                  onPointerDown={(e) => onPointerDownObj(e, obj, "move")}
+                  onPointerDown={(e) => calibrating ? undefined : onPointerDownObj(e, obj, "move")}
                   onClick={(e) => {
+                    if (calibrating) return;
                     e.stopPropagation();
                     setSelectedId(obj.id);
                   }}
-                  className="absolute flex items-center justify-center text-xs font-medium border-2 cursor-move select-none"
+                  className="absolute flex items-center justify-center text-xs font-medium border-2 select-none"
                   style={{
                     left: obj.x * zoom,
                     top: obj.y * zoom,
@@ -356,6 +442,8 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                     backgroundColor: obj.color,
                     borderColor: isSel ? "hsl(var(--primary))" : "rgba(0,0,0,0.3)",
                     boxShadow: isSel ? "0 0 0 2px hsl(var(--primary) / 0.3)" : undefined,
+                    cursor: calibrating ? "crosshair" : "move",
+                    pointerEvents: calibrating ? "none" : "auto",
                   }}
                 >
                   <span className="px-1 text-center pointer-events-none">{obj.label}</span>
@@ -370,6 +458,23 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
             })}
           </div>
         </Card>
+
+        {canvas.backgroundImagePath && (
+          <div className="flex items-center gap-2">
+            <Label className="text-xs">Bakgrunn transparens</Label>
+            <input
+              type="range"
+              min={0.1}
+              max={1}
+              step={0.05}
+              value={canvas.backgroundImageOpacity ?? 0.7}
+              onChange={(e) => setCanvas({ ...canvas, backgroundImageOpacity: Number(e.target.value) })}
+              className="flex-1 max-w-[240px]"
+            />
+            <span className="text-xs text-muted-foreground w-10">{Math.round((canvas.backgroundImageOpacity ?? 0.7) * 100)}%</span>
+          </div>
+        )}
+
 
         <p className="text-xs text-muted-foreground">
           Område: {(canvas.width * canvas.scaleMetersPerPixel).toFixed(0)} m ×{" "}
