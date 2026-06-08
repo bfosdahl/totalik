@@ -177,6 +177,28 @@ export function useCompanyKsRoutines(includeHidden: boolean = false) {
     return data?.signedUrl || null;
   };
 
+  const toggleHidden = async (id: string, hidden: boolean) => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("company_ks_routines")
+        .update({ is_hidden: hidden })
+        .eq("id", id);
+      if (error) throw error;
+      setRoutines(prev =>
+        includeHidden
+          ? prev.map(r => r.id === id ? { ...r, is_hidden: hidden } : r)
+          : prev.filter(r => r.id !== id)
+      );
+      toast({ title: hidden ? "Rutine skjult" : "Rutine vises igjen" });
+    } catch (error) {
+      console.error("Error toggling hidden:", error);
+      toast({ title: "Kunne ikke oppdatere", variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return {
     routines,
     isLoading,
@@ -184,6 +206,7 @@ export function useCompanyKsRoutines(includeHidden: boolean = false) {
     createRoutine,
     updateRoutine,
     deleteRoutine,
+    toggleHidden,
     uploadDocument,
     getDocumentUrl,
     refetch: fetchRoutines,
