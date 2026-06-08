@@ -260,12 +260,18 @@ export default function Ks2Rutiner() {
             <Library className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">Ingen rutiner lagt til</h3>
             <p className="text-muted-foreground mb-4">
-              Gå til Malbibliotek for å legge til rutiner som skal gjelde for dette prosjektet.
+              Hent inn rutiner fra firmabiblioteket, eller gå til malbiblioteket for admin-maler.
             </p>
-            <Button onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Gå til Malbibliotek
-            </Button>
+            <div className="flex gap-2 justify-center flex-wrap">
+              <Button onClick={() => setShowImportDialog(true)}>
+                <FolderInput className="h-4 w-4 mr-2" />
+                Hent fra firmabibliotek
+              </Button>
+              <Button variant="outline" onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
+                <Library className="h-4 w-4 mr-2" />
+                Åpne malbibliotek
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
