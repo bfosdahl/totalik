@@ -7,11 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Save, Download, RotateCw, Plus, Minus, Shield, ExternalLink } from "lucide-react";
+import { Trash2, Save, Download, Shield, ExternalLink, Plus, Minus, Image as ImageIcon, Ruler, X } from "lucide-react";
 import { RIGG_SYMBOLS, getSymbol } from "./riggSymbols";
 import type { RiggCanvasData, RiggObject, RiggPlan } from "@/hooks/useKsRiggPlan";
 import { exportRiggPlanPdf } from "@/utils/riggPlanPdf";
 import { DEFAULT_RISK_AREAS } from "@/hooks/useKsModule2ShaPlan";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+
 
 interface Props {
   plan: RiggPlan;
@@ -25,6 +29,7 @@ interface Props {
 export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSaving, initialSelectedId }: Props) {
   const navigate = useNavigate();
   const { projectId } = useParams();
+  const { profile } = useAuth();
   const [canvas, setCanvas] = useState<RiggCanvasData>(plan.canvas_data);
   const [name, setName] = useState(plan.name);
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId || null);
@@ -41,6 +46,10 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(1);
+  const [bgUrl, setBgUrl] = useState<string | null>(null);
+  const [uploadingBg, setUploadingBg] = useState(false);
+  const [calibrating, setCalibrating] = useState(false);
+  const [calibPoints, setCalibPoints] = useState<{ x: number; y: number }[]>([]);
 
   useEffect(() => {
     setCanvas(plan.canvas_data);
@@ -50,6 +59,50 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
   useEffect(() => {
     if (initialSelectedId) setSelectedId(initialSelectedId);
   }, [initialSelectedId]);
+
+  // Sign URL for background image
+  useEffect(() => {
+    const path = canvas.backgroundImagePath;
+    if (!path) { setBgUrl(null); return; }
+    let active = true;
+    supabase.storage
+      .from("ks-module2-files")
+      .createSignedUrl(path, 3600)
+      .then(({ data }) => { if (active) setBgUrl(data?.signedUrl || null); });
+    return () => { active = false; };
+  }, [canvas.backgroundImagePath]);
+
+  const handleUploadBackground = async (file: File) => {
+    if (!profile?.company_id || !projectId) return;
+    setUploadingBg(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `${profile.company_id}/rigg/${projectId}/${plan.id}-bg-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("ks-module2-files")
+        .upload(path, file, { upsert: true });
+      if (error) throw error;
+      // Delete old background if exists
+      if (canvas.backgroundImagePath && canvas.backgroundImagePath !== path) {
+        await supabase.storage.from("ks-module2-files").remove([canvas.backgroundImagePath]);
+      }
+      setCanvas({ ...canvas, backgroundImagePath: path, backgroundImageOpacity: canvas.backgroundImageOpacity ?? 0.7 });
+      toast.success("Bakgrunnsbilde lastet opp – husk å lagre");
+    } catch (e: any) {
+      console.error(e);
+      toast.error("Kunne ikke laste opp bilde");
+    } finally {
+      setUploadingBg(false);
+    }
+  };
+
+  const removeBackground = async () => {
+    if (canvas.backgroundImagePath) {
+      await supabase.storage.from("ks-module2-files").remove([canvas.backgroundImagePath]).catch(() => {});
+    }
+    setCanvas({ ...canvas, backgroundImagePath: null });
+  };
+
 
   const selected = canvas.objects.find((o) => o.id === selectedId) || null;
 
