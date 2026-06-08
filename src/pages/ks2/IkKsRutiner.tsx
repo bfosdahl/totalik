@@ -242,6 +242,7 @@ export default function IkKsRutiner() {
                 onCancelEdit={() => setEditingId(null)}
                 onUpdate={updateRoutine}
                 onDelete={deleteRoutine}
+                onToggleHidden={toggleHidden}
                 getCategoryLabel={getCategoryLabel}
                 isSaving={isSaving}
               />
