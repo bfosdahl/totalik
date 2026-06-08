@@ -495,12 +495,38 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
             <Input value={name} onChange={(e) => setName(e.target.value)} className="h-9" />
           </div>
           <div className="flex gap-1 items-center">
-            <Button variant="outline" size="icon" onClick={() => setZoom((z) => Math.max(0.3, z - 0.1))}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => {
+                const vp = viewportRef.current;
+                if (!vp) return setZoom((z) => clampZoom(z - 0.1));
+                const r = vp.getBoundingClientRect();
+                zoomAtPoint(zoomRef.current - 0.1, r.width / 2, r.height / 2);
+              }}
+              title="Zoom ut"
+            >
               <Minus className="h-4 w-4" />
             </Button>
             <span className="text-xs w-12 text-center">{Math.round(zoom * 100)}%</span>
-            <Button variant="outline" size="icon" onClick={() => setZoom((z) => Math.min(2, z + 0.1))}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => {
+                const vp = viewportRef.current;
+                if (!vp) return setZoom((z) => clampZoom(z + 0.1));
+                const r = vp.getBoundingClientRect();
+                zoomAtPoint(zoomRef.current + 0.1, r.width / 2, r.height / 2);
+              }}
+              title="Zoom inn"
+            >
               <Plus className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" onClick={fitToView} title="Tilpass i vindu">
+              <Maximize2 className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={resetView} title="Nullstill zoom og posisjon">
+              <Move className="h-4 w-4" />
             </Button>
           </div>
           <input
