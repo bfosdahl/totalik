@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Save, Download, Shield, ExternalLink, Plus, Minus, Image as ImageIcon, Ruler, X, RotateCw } from "lucide-react";
+import { Trash2, Save, Download, Shield, ExternalLink, Plus, Minus, Image as ImageIcon, Ruler, X, RotateCw, Move, Maximize2 } from "lucide-react";
 import { RIGG_SYMBOLS, getSymbol } from "./riggSymbols";
 import type { RiggCanvasData, RiggObject, RiggPlan } from "@/hooks/useKsRiggPlan";
 import { exportRiggPlanPdf } from "@/utils/riggPlanPdf";
@@ -47,7 +47,19 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
   } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const panStateRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
+  const pinchStateRef = useRef<{
+    pointers: Map<number, { x: number; y: number }>;
+    startDist: number;
+    startZoom: number;
+    startPan: { x: number; y: number };
+    centerX: number;
+    centerY: number;
+  } | null>(null);
   const [bgUrl, setBgUrl] = useState<string | null>(null);
   const [uploadingBg, setUploadingBg] = useState(false);
   const [calibrating, setCalibrating] = useState(false);
@@ -190,6 +202,129 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
   };
 
   const onPointerUp = () => setDragState(null);
+
+  // ---------- Pan + zoom logic (viewport) ----------
+  const pointersRef = useRef(new Map<number, { x: number; y: number }>());
+  const panMovedRef = useRef(false);
+  const zoomRef = useRef(zoom);
+  const panRef = useRef(pan);
+  useEffect(() => { zoomRef.current = zoom; }, [zoom]);
+  useEffect(() => { panRef.current = pan; }, [pan]);
+
+  const clampZoom = (z: number) => Math.max(0.1, Math.min(5, z));
+
+  const zoomAtPoint = (newZoom: number, viewportX: number, viewportY: number) => {
+    const z0 = zoomRef.current;
+    const z1 = clampZoom(newZoom);
+    const p = panRef.current;
+    setZoom(z1);
+    setPan({
+      x: viewportX - (viewportX - p.x) * (z1 / z0),
+      y: viewportY - (viewportY - p.y) * (z1 / z0),
+    });
+  };
+
+  const fitToView = () => {
+    const vp = viewportRef.current;
+    if (!vp) return;
+    const vw = vp.clientWidth;
+    const vh = vp.clientHeight;
+    const z = clampZoom(Math.min(vw / canvas.width, vh / canvas.height) * 0.95);
+    setZoom(z);
+    setPan({ x: (vw - canvas.width * z) / 2, y: (vh - canvas.height * z) / 2 });
+  };
+
+  const resetView = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  // Non-passive wheel handler so we can preventDefault for ctrl-zoom & pan
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      const rect = el.getBoundingClientRect();
+      const vx = e.clientX - rect.left;
+      const vy = e.clientY - rect.top;
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const factor = Math.exp(-e.deltaY * 0.0015);
+        zoomAtPoint(zoomRef.current * factor, vx, vy);
+      } else {
+        e.preventDefault();
+        const p = panRef.current;
+        setPan({ x: p.x - e.deltaX, y: p.y - e.deltaY });
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
+  const handleViewportPointerDown = (e: React.PointerEvent) => {
+    // Ignore if pointer down originated on an object (object has own handler + stopPropagation)
+    const target = e.target as HTMLElement;
+    if (target.closest("[data-rigg-object]")) return;
+    if (calibrating) return; // let click handler do its thing
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    panMovedRef.current = false;
+
+    if (pointersRef.current.size === 1) {
+      panStateRef.current = {
+        startX: e.clientX,
+        startY: e.clientY,
+        origX: panRef.current.x,
+        origY: panRef.current.y,
+      };
+      setIsPanning(true);
+    } else if (pointersRef.current.size === 2) {
+      const pts = Array.from(pointersRef.current.values());
+      const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+      const rect = viewportRef.current!.getBoundingClientRect();
+      pinchStateRef.current = {
+        pointers: new Map(pointersRef.current),
+        startDist: dist || 1,
+        startZoom: zoomRef.current,
+        startPan: { ...panRef.current },
+        centerX: (pts[0].x + pts[1].x) / 2 - rect.left,
+        centerY: (pts[0].y + pts[1].y) / 2 - rect.top,
+      };
+      panStateRef.current = null;
+    }
+  };
+
+  const handleViewportPointerMove = (e: React.PointerEvent) => {
+    if (!pointersRef.current.has(e.pointerId)) return;
+    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (pinchStateRef.current && pointersRef.current.size >= 2) {
+      const pts = Array.from(pointersRef.current.values()).slice(0, 2);
+      const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+      const ps = pinchStateRef.current;
+      const z1 = clampZoom(ps.startZoom * (dist / ps.startDist));
+      setZoom(z1);
+      setPan({
+        x: ps.centerX - (ps.centerX - ps.startPan.x) * (z1 / ps.startZoom),
+        y: ps.centerY - (ps.centerY - ps.startPan.y) * (z1 / ps.startZoom),
+      });
+      panMovedRef.current = true;
+    } else if (panStateRef.current) {
+      const dx = e.clientX - panStateRef.current.startX;
+      const dy = e.clientY - panStateRef.current.startY;
+      if (Math.abs(dx) + Math.abs(dy) > 3) panMovedRef.current = true;
+      setPan({ x: panStateRef.current.origX + dx, y: panStateRef.current.origY + dy });
+    }
+  };
+
+  const handleViewportPointerUp = (e: React.PointerEvent) => {
+    pointersRef.current.delete(e.pointerId);
+    if (pointersRef.current.size < 2) pinchStateRef.current = null;
+    if (pointersRef.current.size === 0) {
+      panStateRef.current = null;
+      setIsPanning(false);
+    }
+  };
 
   const handleSave = async () => {
     await onSave(canvas, name);
@@ -360,12 +495,38 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
             <Input value={name} onChange={(e) => setName(e.target.value)} className="h-9" />
           </div>
           <div className="flex gap-1 items-center">
-            <Button variant="outline" size="icon" onClick={() => setZoom((z) => Math.max(0.3, z - 0.1))}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => {
+                const vp = viewportRef.current;
+                if (!vp) return setZoom((z) => clampZoom(z - 0.1));
+                const r = vp.getBoundingClientRect();
+                zoomAtPoint(zoomRef.current - 0.1, r.width / 2, r.height / 2);
+              }}
+              title="Zoom ut"
+            >
               <Minus className="h-4 w-4" />
             </Button>
             <span className="text-xs w-12 text-center">{Math.round(zoom * 100)}%</span>
-            <Button variant="outline" size="icon" onClick={() => setZoom((z) => Math.min(2, z + 0.1))}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => {
+                const vp = viewportRef.current;
+                if (!vp) return setZoom((z) => clampZoom(z + 0.1));
+                const r = vp.getBoundingClientRect();
+                zoomAtPoint(zoomRef.current + 0.1, r.width / 2, r.height / 2);
+              }}
+              title="Zoom inn"
+            >
               <Plus className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" onClick={fitToView} title="Tilpass i vindu">
+              <Maximize2 className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={resetView} title="Nullstill zoom og posisjon">
+              <Move className="h-4 w-4" />
             </Button>
           </div>
           <input
@@ -418,43 +579,67 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
           </div>
         )}
 
-        <Card className="p-2 overflow-auto bg-muted/30" ref={containerRef}>
+        <Card className="p-0 overflow-hidden bg-muted/30 relative" ref={containerRef}>
           <div
-            className="relative bg-white mx-auto shadow-inner border"
+            ref={viewportRef}
+            className="relative w-full overflow-hidden select-none"
             style={{
-              width: canvas.width * zoom,
-              height: canvas.height * zoom,
-              minWidth: canvas.width * zoom,
-              cursor: calibrating ? "crosshair" : undefined,
+              height: "70vh",
+              minHeight: 480,
+              touchAction: "none",
+              cursor: isPanning ? "grabbing" : calibrating ? "crosshair" : "grab",
             }}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onClick={(e) => {
-              if (calibrating) {
-                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                const x = (e.clientX - rect.left) / zoom;
-                const y = (e.clientY - rect.top) / zoom;
-                const next = [...calibPoints, { x, y }];
-                if (next.length < 2) {
-                  setCalibPoints(next);
-                } else {
-                  const dx = next[1].x - next[0].x;
-                  const dy = next[1].y - next[0].y;
-                  const pixelDist = Math.sqrt(dx * dx + dy * dy);
-                  setCalibPoints(next);
-                  if (pixelDist > 0) {
-                    setCalibMetersInput("10");
-                    setCalibDialog({ pixelDist });
-                  } else {
-                    setCalibrating(false);
-                    setCalibPoints([]);
-                  }
-                }
-                return;
-              }
-              setSelectedId(null);
-            }}
+            onPointerDown={handleViewportPointerDown}
+            onPointerMove={handleViewportPointerMove}
+            onPointerUp={handleViewportPointerUp}
+            onPointerCancel={handleViewportPointerUp}
           >
+            <div className="absolute top-2 left-2 z-10 text-[10px] bg-white/85 border rounded px-1.5 py-0.5 text-muted-foreground pointer-events-none shadow-sm">
+              Dra for å flytte · Ctrl/⌘+scroll for zoom · 2 fingre for knip-zoom
+            </div>
+            <div
+              className="absolute bg-white shadow-inner border"
+              style={{
+                left: 0,
+                top: 0,
+                width: canvas.width * zoom,
+                height: canvas.height * zoom,
+                transform: `translate(${pan.x}px, ${pan.y}px)`,
+                transformOrigin: "0 0",
+                cursor: calibrating ? "crosshair" : undefined,
+              }}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onClick={(e) => {
+                if (panMovedRef.current) {
+                  panMovedRef.current = false;
+                  return;
+                }
+                if (calibrating) {
+                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  const x = (e.clientX - rect.left) / zoom;
+                  const y = (e.clientY - rect.top) / zoom;
+                  const next = [...calibPoints, { x, y }];
+                  if (next.length < 2) {
+                    setCalibPoints(next);
+                  } else {
+                    const dx = next[1].x - next[0].x;
+                    const dy = next[1].y - next[0].y;
+                    const pixelDist = Math.sqrt(dx * dx + dy * dy);
+                    setCalibPoints(next);
+                    if (pixelDist > 0) {
+                      setCalibMetersInput("10");
+                      setCalibDialog({ pixelDist });
+                    } else {
+                      setCalibrating(false);
+                      setCalibPoints([]);
+                    }
+                  }
+                  return;
+                }
+                setSelectedId(null);
+              }}
+            >
             {bgUrl && (
               <img
                 src={bgUrl}
@@ -482,6 +667,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
               return (
                 <div
                   key={obj.id}
+                  data-rigg-object
                   onPointerDown={(e) => calibrating ? undefined : onPointerDownObj(e, obj, "move")}
                   onClick={(e) => {
                     if (calibrating) return;
@@ -539,6 +725,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                 </div>
               );
             })()}
+            </div>
           </div>
         </Card>
 
