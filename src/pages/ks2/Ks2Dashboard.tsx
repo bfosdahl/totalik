@@ -218,16 +218,16 @@ export default function Ks2Dashboard() {
                 <FolderKanban className="h-10 w-10 text-primary" />
               </div>
               <h3 className="text-xl font-semibold mb-2">
-                {searchQuery || activeFilter !== "all"
+                {searchQuery || activeFilter !== "active"
                   ? "Ingen prosjekter funnet"
                   : "Opprett ditt første prosjekt"}
               </h3>
               <p className="text-muted-foreground mb-6 max-w-sm">
-                {searchQuery || activeFilter !== "all"
+                {searchQuery || activeFilter !== "active"
                   ? "Prøv å endre søk eller filter"
                   : "Start med å opprette et nytt prosjekt for å komme i gang med kvalitetssikring"}
               </p>
-              {!searchQuery && activeFilter === "all" && (
+              {!searchQuery && activeFilter === "active" && (
                 <Button onClick={() => setIsNewProjectOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Nytt prosjekt
