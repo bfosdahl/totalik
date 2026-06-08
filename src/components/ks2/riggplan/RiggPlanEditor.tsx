@@ -667,9 +667,6 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
             ))}
             {canvas.objects.map((obj) => {
               const isSel = obj.id === selectedId;
-              const sym = getSymbol(obj.type);
-              const minSide = Math.min(obj.width, obj.height) * zoom;
-              const showEmoji = !!sym?.emoji && minSide >= 28;
               return (
                 <div
                   key={obj.id}
@@ -695,15 +692,6 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                     transformOrigin: "center center",
                   }}
                 >
-                  {showEmoji && (
-                    <span
-                      className="leading-none pointer-events-none"
-                      style={{ fontSize: Math.max(14, Math.min(minSide * 0.45, 36)) }}
-                      aria-hidden="true"
-                    >
-                      {sym!.emoji}
-                    </span>
-                  )}
                   <span className="px-1 text-center pointer-events-none leading-tight">{obj.label}</span>
                   {isSel && (
                     <div
