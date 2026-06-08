@@ -262,6 +262,7 @@ export default function Payroll() {
         hours: Number(r.hours),
         hourly_rate: employeesMeta.get(r.user_id)?.hourly_rate ?? null,
         allowances_amount: allowanceMap.get(r.id) || 0,
+        is_overtime: !!(r.hour_type && r.hour_type.startsWith("overtime")),
       })),
     [filteredRows, employeesMeta, allowanceMap]
   );
