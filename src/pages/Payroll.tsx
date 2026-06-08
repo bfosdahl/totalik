@@ -140,7 +140,7 @@ export default function Payroll() {
     (async () => {
       const { data: entries, error } = await supabase
         .from("time_entries")
-        .select("id, user_id, user_name, entry_date, hours, project_name, project_id, description, status, approved_by_name, approved_at")
+        .select("id, user_id, user_name, entry_date, hours, project_name, project_id, description, status, approved_by_name, approved_at, is_overtime")
         .eq("company_id", profile.company_id)
         .eq("status", "approved")
         .gte("entry_date", fmt(period.start))
