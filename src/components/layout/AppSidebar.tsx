@@ -862,29 +862,50 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             <NavItemList items={personalhandbokItems} locationPathname={pathname} locationSearch={search} navigate={navigate} t={t} />
           </ModuleSection>
 
-          {/* Admin link */}
-          {isSystemAdmin && (
+          {/* Administrasjon */}
+          {(isSystemAdmin || isCompanyAdmin) && (
             <>
               <div className="pt-4 pb-2">
                 {!collapsed && (
                   <span className="px-3 text-xs font-medium text-sidebar-foreground/50 uppercase">Administrasjon</span>
                 )}
               </div>
+              {isSystemAdmin && (
+                <NavLink
+                  to="/admin"
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
+                    collapsed && "justify-center",
+                    pathname.startsWith("/admin")
+                      ? "bg-warning text-warning-foreground shadow-md"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                  )}
+                >
+                  <ShieldCheck className={cn("w-5 h-5 flex-shrink-0 transition-transform", !pathname.startsWith("/admin") && "group-hover:scale-110")} />
+                  <AnimatePresence mode="wait">
+                    {!collapsed && (
+                      <motion.span initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="font-medium text-sm">
+                        Admin Panel
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </NavLink>
+              )}
               <NavLink
-                to="/admin"
+                to="/payroll"
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
                   collapsed && "justify-center",
-                  pathname.startsWith("/admin")
-                    ? "bg-warning text-warning-foreground shadow-md"
+                  pathname === "/payroll"
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                 )}
               >
-                <ShieldCheck className={cn("w-5 h-5 flex-shrink-0 transition-transform", !pathname.startsWith("/admin") && "group-hover:scale-110")} />
+                <Clock className={cn("w-5 h-5 flex-shrink-0 transition-transform text-emerald-600", pathname !== "/payroll" && "group-hover:scale-110")} />
                 <AnimatePresence mode="wait">
                   {!collapsed && (
                     <motion.span initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="font-medium text-sm">
-                      Admin Panel
+                      Lønnsgrunnlag
                     </motion.span>
                   )}
                 </AnimatePresence>
