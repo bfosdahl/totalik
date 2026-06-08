@@ -579,43 +579,67 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
           </div>
         )}
 
-        <Card className="p-2 overflow-auto bg-muted/30" ref={containerRef}>
+        <Card className="p-0 overflow-hidden bg-muted/30 relative" ref={containerRef}>
           <div
-            className="relative bg-white mx-auto shadow-inner border"
+            ref={viewportRef}
+            className="relative w-full overflow-hidden select-none"
             style={{
-              width: canvas.width * zoom,
-              height: canvas.height * zoom,
-              minWidth: canvas.width * zoom,
-              cursor: calibrating ? "crosshair" : undefined,
+              height: "70vh",
+              minHeight: 480,
+              touchAction: "none",
+              cursor: isPanning ? "grabbing" : calibrating ? "crosshair" : "grab",
             }}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onClick={(e) => {
-              if (calibrating) {
-                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                const x = (e.clientX - rect.left) / zoom;
-                const y = (e.clientY - rect.top) / zoom;
-                const next = [...calibPoints, { x, y }];
-                if (next.length < 2) {
-                  setCalibPoints(next);
-                } else {
-                  const dx = next[1].x - next[0].x;
-                  const dy = next[1].y - next[0].y;
-                  const pixelDist = Math.sqrt(dx * dx + dy * dy);
-                  setCalibPoints(next);
-                  if (pixelDist > 0) {
-                    setCalibMetersInput("10");
-                    setCalibDialog({ pixelDist });
-                  } else {
-                    setCalibrating(false);
-                    setCalibPoints([]);
-                  }
-                }
-                return;
-              }
-              setSelectedId(null);
-            }}
+            onPointerDown={handleViewportPointerDown}
+            onPointerMove={handleViewportPointerMove}
+            onPointerUp={handleViewportPointerUp}
+            onPointerCancel={handleViewportPointerUp}
           >
+            <div className="absolute top-2 left-2 z-10 text-[10px] bg-white/85 border rounded px-1.5 py-0.5 text-muted-foreground pointer-events-none shadow-sm">
+              Dra for å flytte · Ctrl/⌘+scroll for zoom · 2 fingre for knip-zoom
+            </div>
+            <div
+              className="absolute bg-white shadow-inner border"
+              style={{
+                left: 0,
+                top: 0,
+                width: canvas.width * zoom,
+                height: canvas.height * zoom,
+                transform: `translate(${pan.x}px, ${pan.y}px)`,
+                transformOrigin: "0 0",
+                cursor: calibrating ? "crosshair" : undefined,
+              }}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onClick={(e) => {
+                if (panMovedRef.current) {
+                  panMovedRef.current = false;
+                  return;
+                }
+                if (calibrating) {
+                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  const x = (e.clientX - rect.left) / zoom;
+                  const y = (e.clientY - rect.top) / zoom;
+                  const next = [...calibPoints, { x, y }];
+                  if (next.length < 2) {
+                    setCalibPoints(next);
+                  } else {
+                    const dx = next[1].x - next[0].x;
+                    const dy = next[1].y - next[0].y;
+                    const pixelDist = Math.sqrt(dx * dx + dy * dy);
+                    setCalibPoints(next);
+                    if (pixelDist > 0) {
+                      setCalibMetersInput("10");
+                      setCalibDialog({ pixelDist });
+                    } else {
+                      setCalibrating(false);
+                      setCalibPoints([]);
+                    }
+                  }
+                  return;
+                }
+                setSelectedId(null);
+              }}
+            >
             {bgUrl && (
               <img
                 src={bgUrl}
