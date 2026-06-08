@@ -667,6 +667,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
               return (
                 <div
                   key={obj.id}
+                  data-rigg-object
                   onPointerDown={(e) => calibrating ? undefined : onPointerDownObj(e, obj, "move")}
                   onClick={(e) => {
                     if (calibrating) return;
