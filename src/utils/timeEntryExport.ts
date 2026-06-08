@@ -102,6 +102,7 @@ export function exportPayrollGeneric(
     Dato: format(new Date(entry.entry_date), "dd.MM.yyyy", { locale: nb }),
     Ansatt: entry.user_name,
     Timer: Number(entry.hours),
+    Overtid: entry.is_overtime ? "Ja" : "",
     Prosjekt: entry.project_name || "-",
     Beskrivelse: entry.description || "-",
     Status: statusLabels[entry.status] || entry.status,
