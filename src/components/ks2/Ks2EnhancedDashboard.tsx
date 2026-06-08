@@ -416,7 +416,16 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
                 {recentCompleted.map((checklist) => (
                   <div
                     key={checklist.id}
-                    className="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => navigate(`/ks/project/${projectId}/egenkontroller?checklistId=${checklist.id}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        navigate(`/ks/project/${projectId}/egenkontroller?checklistId=${checklist.id}`);
+                      }
+                    }}
+                    className="flex items-center gap-3 p-2 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer transition-colors"
                   >
                     <div className="w-10 h-10 rounded bg-green-500/10 flex items-center justify-center shrink-0">
                       <ClipboardCheck className="h-5 w-5 text-green-500" />
