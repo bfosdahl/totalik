@@ -633,7 +633,7 @@ function HourlyRatesDialog({
   companyId?: string | null;
   onSaved: () => void;
 }) {
-  const [list, setList] = useState<Array<{ id: string; name: string; rate: string }>>([]);
+  const [list, setList] = useState<Array<{ id: string; name: string; rate: string; employee_number: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -642,7 +642,7 @@ function HourlyRatesDialog({
     setLoading(true);
     supabase
       .from("profiles")
-      .select("id, first_name, last_name, email, hourly_rate")
+      .select("id, first_name, last_name, email, hourly_rate, employee_number")
       .eq("company_id", companyId)
       .eq("is_active", true)
       .order("first_name", { ascending: true })
@@ -652,6 +652,7 @@ function HourlyRatesDialog({
             id: p.id,
             name: `${p.first_name || ""} ${p.last_name || ""}`.trim() || p.email,
             rate: p.hourly_rate != null ? String(p.hourly_rate) : "",
+            employee_number: p.employee_number || "",
           }))
         );
         setLoading(false);
@@ -664,15 +665,18 @@ function HourlyRatesDialog({
       const updates = list.map((item) =>
         supabase
           .from("profiles")
-          .update({ hourly_rate: item.rate === "" ? null : Number(item.rate) } as any)
+          .update({
+            hourly_rate: item.rate === "" ? null : Number(item.rate),
+            employee_number: item.employee_number.trim() === "" ? null : item.employee_number.trim(),
+          } as any)
           .eq("id", item.id)
       );
       const results = await Promise.all(updates);
       const firstErr = results.find((r) => r.error);
       if (firstErr?.error) {
-        toast.error("Kunne ikke lagre alle satser: " + firstErr.error.message);
+        toast.error("Kunne ikke lagre: " + firstErr.error.message);
       } else {
-        toast.success("Timesatser lagret");
+        toast.success("Lagret");
         onSaved();
         onOpenChange(false);
       }
@@ -683,9 +687,9 @@ function HourlyRatesDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Timesatser per ansatt</DialogTitle>
+          <DialogTitle>Ansattnummer og timesatser</DialogTitle>
         </DialogHeader>
         <div className="max-h-[60vh] overflow-y-auto space-y-2">
           {loading ? (
@@ -693,31 +697,52 @@ function HourlyRatesDialog({
           ) : list.length === 0 ? (
             <p className="text-sm text-muted-foreground">Ingen aktive ansatte.</p>
           ) : (
-            list.map((item, idx) => (
-              <div key={item.id} className="flex items-center gap-3">
-                <span className="flex-1 text-sm truncate">{item.name}</span>
-                <div className="flex items-center gap-1">
+            <>
+              <div className="flex items-center gap-3 px-1 text-xs font-medium text-muted-foreground">
+                <span className="flex-1">Ansatt</span>
+                <span className="w-28">Ansattnr</span>
+                <span className="w-32 text-right">Timesats (kr/t)</span>
+              </div>
+              {list.map((item, idx) => (
+                <div key={item.id} className="flex items-center gap-3">
+                  <span className="flex-1 text-sm truncate">{item.name}</span>
                   <Input
-                    type="number"
-                    inputMode="decimal"
-                    min={0}
-                    step="1"
-                    className="h-9 w-28 text-right"
-                    placeholder="0"
-                    value={item.rate}
+                    type="text"
+                    className="h-9 w-28"
+                    placeholder="—"
+                    value={item.employee_number}
                     onChange={(e) => {
                       const v = e.target.value;
                       setList((prev) => {
                         const next = [...prev];
-                        next[idx] = { ...next[idx], rate: v };
+                        next[idx] = { ...next[idx], employee_number: v };
                         return next;
                       });
                     }}
                   />
-                  <span className="text-xs text-muted-foreground">kr/t</span>
+                  <div className="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      min={0}
+                      step="1"
+                      className="h-9 w-28 text-right"
+                      placeholder="0"
+                      value={item.rate}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setList((prev) => {
+                          const next = [...prev];
+                          next[idx] = { ...next[idx], rate: v };
+                          return next;
+                        });
+                      }}
+                    />
+                    <span className="text-xs text-muted-foreground">kr/t</span>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </>
           )}
         </div>
         <DialogFooter>
