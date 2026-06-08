@@ -104,11 +104,11 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
       toast.success("Sjekkliste-mal lagret!", {
         description: isSystemAdmin
           ? "Finn den under Admin → Sjekklistemaler"
-          : "Finn den under KS Bygg → Sjekklistemaler",
+          : "Finn den under KS Bygg → Sjekklister (Mine maler)",
         duration: 8000,
         action: isSystemAdmin ? undefined : {
           label: "Åpne",
-          onClick: () => navigate("/ks/sjekklister"),
+          onClick: () => navigate("/ks/ik-ks/sjekklister"),
         },
       });
       await onSaved?.();
