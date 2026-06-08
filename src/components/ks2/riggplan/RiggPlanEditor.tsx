@@ -52,6 +52,8 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
   const [uploadingBg, setUploadingBg] = useState(false);
   const [calibrating, setCalibrating] = useState(false);
   const [calibPoints, setCalibPoints] = useState<{ x: number; y: number }[]>([]);
+  const [calibDialog, setCalibDialog] = useState<{ pixelDist: number } | null>(null);
+  const [calibMetersInput, setCalibMetersInput] = useState("10");
 
   useEffect(() => {
     setCanvas(plan.canvas_data);
