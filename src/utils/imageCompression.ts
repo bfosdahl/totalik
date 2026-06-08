@@ -1,4 +1,36 @@
 /**
+ * Komprimerer en data-URL ved å skalere lengste side og re-encode som JPEG.
+ * Returnerer ny data-URL. Beholder original ved feil.
+ */
+export async function compressDataUrl(
+  dataUrl: string,
+  maxDim = 1600,
+  quality = 0.8
+): Promise<string> {
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error("image-load-failed"));
+      el.src = dataUrl;
+    });
+    const ratio = Math.min(1, maxDim / Math.max(img.width, img.height));
+    const w = Math.round(img.width * ratio);
+    const h = Math.round(img.height * ratio);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return dataUrl;
+    ctx.drawImage(img, 0, 0, w, h);
+    return canvas.toDataURL("image/jpeg", quality);
+  } catch (e) {
+    console.warn("compressDataUrl failed, using original", e);
+    return dataUrl;
+  }
+}
+
+/**
  * Komprimerer et bilde i nettleseren før opplasting:
  * - Skalerer lengste side til maxDim (default 2000 px)
  * - Re-encoder som JPEG med gitt kvalitet
