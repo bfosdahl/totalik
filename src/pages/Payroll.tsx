@@ -317,7 +317,7 @@ export default function Payroll() {
           </div>
           <div className="flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={() => setRatesOpen(true)}>
-              Timesatser
+              Ansattnr & timesatser
             </Button>
             <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
               <SettingsIcon className="h-4 w-4 mr-1" /> Lønnsperiode
