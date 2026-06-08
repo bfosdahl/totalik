@@ -200,7 +200,9 @@ export default function Payroll() {
         map.set(r.user_id, {
           user_id: r.user_id,
           user_name: r.user_name,
+          employee_number: meta?.employee_number ?? null,
           total_hours: 0,
+          overtime_hours: 0,
           hourly_rate: meta?.hourly_rate ?? null,
           base_amount: 0,
           allowances_amount: 0,
@@ -211,6 +213,9 @@ export default function Payroll() {
       const rec = map.get(r.user_id)!;
       const h = Number(r.hours) || 0;
       rec.total_hours += h;
+      if (r.hour_type && r.hour_type.startsWith("overtime")) {
+        rec.overtime_hours = (rec.overtime_hours ?? 0) + h;
+      }
       rec.allowances_amount += allowanceMap.get(r.id) || 0;
       const proj = r.project_name || "Uten prosjekt";
       rec.perProject.set(proj, (rec.perProject.get(proj) || 0) + h);
@@ -236,10 +241,12 @@ export default function Payroll() {
 
   const totals = useMemo(() => {
     const totalHours = byEmployee.reduce((s, e) => s + e.total_hours, 0);
+    const totalOvertime = byEmployee.reduce((s, e) => s + (e.overtime_hours ?? 0), 0);
     const totalBase = byEmployee.reduce((s, e) => s + e.base_amount, 0);
     const totalAllow = byEmployee.reduce((s, e) => s + e.allowances_amount, 0);
     return {
       hours: totalHours,
+      overtime: totalOvertime,
       base: totalBase,
       allow: totalAllow,
       sum: totalBase + totalAllow,
