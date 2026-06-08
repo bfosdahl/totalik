@@ -15,12 +15,15 @@ export interface PayrollTimeEntry {
   approved_at: string | null;
   hourly_rate?: number | null;
   allowances_amount?: number;
+  is_overtime?: boolean | null;
 }
 
 export interface EmployeeSummary {
   user_id: string;
   user_name: string;
+  employee_number?: string | null;
   total_hours: number;
+  overtime_hours?: number;
   hourly_rate: number | null;
   base_amount: number;
   allowances_amount: number;
