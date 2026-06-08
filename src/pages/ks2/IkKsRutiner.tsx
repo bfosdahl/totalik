@@ -332,6 +332,17 @@ function RoutineCard({
                 {routine.is_hidden && (
                   <Badge variant="outline" className="bg-muted">Skjult</Badge>
                 )}
+                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onToggle}
+                    title={isExpanded ? "Skjul rutinen" : "Vis rutinen (kun lese)"}
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    {isExpanded ? "Skjul" : "Vis"}
+                  </Button>
+                </div>
               </div>
             </div>
           </CardHeader>
