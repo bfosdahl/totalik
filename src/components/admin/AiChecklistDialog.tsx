@@ -32,6 +32,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
   const [open, setOpen] = useState(false);
   const [tema, setTema] = useState("");
   const [kategori, setKategori] = useState("");
+  const [isCustomKategori, setIsCustomKategori] = useState(false);
   const [trade, setTrade] = useState("");
   const [detaljer, setDetaljer] = useState("");
   const [rutineRef, setRutineRef] = useState("");
