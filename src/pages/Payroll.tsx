@@ -460,8 +460,10 @@ export default function Payroll() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead>Ansattnr</TableHead>
                           <TableHead>Ansatt</TableHead>
                           <TableHead className="text-right">Timer</TableHead>
+                          <TableHead className="text-right">Herav overtid</TableHead>
                           <TableHead className="text-right">Timesats</TableHead>
                           <TableHead className="text-right">Grunnlønn</TableHead>
                           <TableHead className="text-right">Tillegg</TableHead>
@@ -471,6 +473,7 @@ export default function Payroll() {
                       <TableBody>
                         {byEmployee.map((e) => (
                           <TableRow key={e.user_id}>
+                            <TableCell className="text-xs text-muted-foreground">{e.employee_number || "-"}</TableCell>
                             <TableCell className="font-medium">
                               {e.user_name}
                               {e.hourly_rate == null && (
@@ -478,6 +481,9 @@ export default function Payroll() {
                               )}
                             </TableCell>
                             <TableCell className="text-right">{e.total_hours.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">
+                              {(e.overtime_hours ?? 0) > 0 ? (e.overtime_hours ?? 0).toFixed(2) : "-"}
+                            </TableCell>
                             <TableCell className="text-right">{e.hourly_rate != null ? nok(e.hourly_rate) : "-"}</TableCell>
                             <TableCell className="text-right">{nok(e.base_amount)}</TableCell>
                             <TableCell className="text-right">{nok(e.allowances_amount)}</TableCell>
@@ -485,8 +491,10 @@ export default function Payroll() {
                           </TableRow>
                         ))}
                         <TableRow className="bg-muted/50 font-bold">
+                          <TableCell>-</TableCell>
                           <TableCell>TOTALT</TableCell>
                           <TableCell className="text-right">{totals.hours.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">{totals.overtime > 0 ? totals.overtime.toFixed(2) : "-"}</TableCell>
                           <TableCell className="text-right">-</TableCell>
                           <TableCell className="text-right">{nok(totals.base)}</TableCell>
                           <TableCell className="text-right">{nok(totals.allow)}</TableCell>
