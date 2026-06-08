@@ -245,6 +245,12 @@ export default function Ks2Rutiner() {
           <h2 className="text-2xl font-bold">Rutinebank</h2>
           <p className="text-muted-foreground">Rutiner som gjelder for dette prosjektet</p>
         </div>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" onClick={() => setShowImportDialog(true)}>
+            <FolderInput className="h-4 w-4 mr-2" />
+            Hent fra firmabibliotek
+          </Button>
+        </div>
       </div>
 
       {/* Info about Malbibliotek if no routines */}
