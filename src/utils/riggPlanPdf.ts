@@ -102,8 +102,11 @@ export async function exportRiggPlanPdf(
   pdf.setTextColor(0);
   pdf.setFontSize(8);
   const legendY = offY + drawH + 6;
+  const mpp = canvas.scaleMetersPerPixel;
+  // Show as "1 m = X px" for readability, avoid non-WinAnsi chars like ≈
+  const pxPerMeter = mpp > 0 ? (1 / mpp).toFixed(1) : "-";
   pdf.text(
-    `Skala: 1 px ≈ ${canvas.scaleMetersPerPixel} m   |   Område: ${(canvas.width * canvas.scaleMetersPerPixel).toFixed(0)} m × ${(canvas.height * canvas.scaleMetersPerPixel).toFixed(0)} m`,
+    `Skala: 1 m = ${pxPerMeter} px   |   Omraade: ${(canvas.width * mpp).toFixed(0)} m x ${(canvas.height * mpp).toFixed(0)} m`,
     marginX,
     legendY
   );
