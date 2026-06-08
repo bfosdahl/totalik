@@ -239,6 +239,48 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
               onChange={(e) => updateObject(selected.id, { color: e.target.value })}
               className="h-8"
             />
+            <Label className="text-xs flex items-center justify-between">
+              <span>Rotasjon</span>
+              <span className="text-muted-foreground">{Math.round(selected.rotation || 0)}°</span>
+            </Label>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min={-180}
+                max={180}
+                step={1}
+                value={selected.rotation || 0}
+                onChange={(e) => updateObject(selected.id, { rotation: Number(e.target.value) })}
+                className="flex-1 accent-primary"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={() => updateObject(selected.id, { rotation: 0 })}
+              >
+                0°
+              </Button>
+            </div>
+            <div className="flex gap-1">
+              {[-90, -45, 45, 90].map((d) => (
+                <Button
+                  key={d}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 flex-1 text-xs px-1"
+                  onClick={() =>
+                    updateObject(selected.id, {
+                      rotation: Math.max(-180, Math.min(180, (selected.rotation || 0) + d)),
+                    })
+                  }
+                >
+                  {d > 0 ? `+${d}°` : `${d}°`}
+                </Button>
+              ))}
+            </div>
 
             <div className="mt-3 pt-3 border-t space-y-2">
               <div className="flex items-center gap-1.5">
@@ -452,6 +494,8 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                     boxShadow: isSel ? "0 0 0 2px hsl(var(--primary) / 0.3)" : undefined,
                     cursor: calibrating ? "crosshair" : "move",
                     pointerEvents: calibrating ? "none" : "auto",
+                    transform: obj.rotation ? `rotate(${obj.rotation}deg)` : undefined,
+                    transformOrigin: "center center",
                   }}
                 >
                   <span className="px-1 text-center pointer-events-none">{obj.label}</span>
