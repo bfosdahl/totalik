@@ -108,6 +108,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
     setResult(null);
     setTema("");
     setKategori("");
+    setIsCustomKategori(false);
     setTrade("");
     setDetaljer("");
     setRutineRef("");
