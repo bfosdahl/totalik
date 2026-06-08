@@ -394,15 +394,14 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                   const dx = next[1].x - next[0].x;
                   const dy = next[1].y - next[0].y;
                   const pixelDist = Math.sqrt(dx * dx + dy * dy);
-                  const input = window.prompt("Hvor mange meter er denne avstanden? (f.eks. 10)", "10");
-                  const meters = Number((input || "").replace(",", "."));
-                  if (meters > 0 && pixelDist > 0) {
-                    const mpp = meters / pixelDist;
-                    setCanvas({ ...canvas, scaleMetersPerPixel: mpp });
-                    toast.success(`Skala satt: 1 px = ${mpp.toFixed(3)} m`);
+                  setCalibPoints(next);
+                  if (pixelDist > 0) {
+                    setCalibMetersInput("10");
+                    setCalibDialog({ pixelDist });
+                  } else {
+                    setCalibrating(false);
+                    setCalibPoints([]);
                   }
-                  setCalibrating(false);
-                  setCalibPoints([]);
                 }
                 return;
               }
