@@ -2,8 +2,9 @@ import * as XLSX from "xlsx";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
-interface TimeEntry {
+export interface PayrollTimeEntry {
   id: string;
+  user_id: string;
   user_name: string;
   entry_date: string;
   hours: number;
@@ -12,6 +13,18 @@ interface TimeEntry {
   status: string;
   approved_by_name: string | null;
   approved_at: string | null;
+  hourly_rate?: number | null;
+  allowances_amount?: number;
+}
+
+export interface EmployeeSummary {
+  user_id: string;
+  user_name: string;
+  total_hours: number;
+  hourly_rate: number | null;
+  base_amount: number;
+  allowances_amount: number;
+  total_amount: number;
 }
 
 const statusLabels: Record<string, string> = {
@@ -21,35 +34,66 @@ const statusLabels: Record<string, string> = {
   rejected: "Avvist",
 };
 
-export function exportTimeEntriesToExcel(
-  entries: TimeEntry[],
+function buildFilename(companyName: string, startDate?: Date, endDate?: Date, suffix = "") {
+  const dateRange =
+    startDate && endDate
+      ? `_${format(startDate, "yyyy-MM-dd")}_til_${format(endDate, "yyyy-MM-dd")}`
+      : `_${format(new Date(), "yyyy-MM-dd")}`;
+  return `Lonnsgrunnlag${suffix}_${companyName.replace(/\s+/g, "_")}${dateRange}.xlsx`;
+}
+
+/**
+ * Generic export — 3 sheets: Sammendrag per ansatt, Per prosjekt, Alle registreringer.
+ */
+export function exportPayrollGeneric(
+  entries: PayrollTimeEntry[],
+  employeeSummaries: EmployeeSummary[],
   companyName: string,
   startDate?: Date,
   endDate?: Date
 ) {
-  // Filter entries by date range if provided
-  let filteredEntries = entries;
-  if (startDate) {
-    filteredEntries = filteredEntries.filter(
-      (e) => new Date(e.entry_date) >= startDate
-    );
-  }
-  if (endDate) {
-    filteredEntries = filteredEntries.filter(
-      (e) => new Date(e.entry_date) <= endDate
-    );
-  }
-
-  // Sort by date
-  filteredEntries.sort(
+  const sorted = [...entries].sort(
     (a, b) => new Date(a.entry_date).getTime() - new Date(b.entry_date).getTime()
   );
 
-  // Transform data for Excel
-  const excelData = filteredEntries.map((entry) => ({
+  // Sheet 1: Sammendrag per ansatt (med kost)
+  const summaryRows = employeeSummaries.map((e) => ({
+    Ansatt: e.user_name,
+    "Timer (sum)": Number(e.total_hours.toFixed(2)),
+    "Timesats (NOK)": e.hourly_rate ?? "",
+    "Grunnlønn (NOK)": Number(e.base_amount.toFixed(2)),
+    "Tillegg (NOK)": Number(e.allowances_amount.toFixed(2)),
+    "Sum lønn (NOK)": Number(e.total_amount.toFixed(2)),
+  }));
+  // Totals row
+  const totalHours = employeeSummaries.reduce((s, e) => s + e.total_hours, 0);
+  const totalBase = employeeSummaries.reduce((s, e) => s + e.base_amount, 0);
+  const totalAllow = employeeSummaries.reduce((s, e) => s + e.allowances_amount, 0);
+  const totalSum = employeeSummaries.reduce((s, e) => s + e.total_amount, 0);
+  summaryRows.push({
+    Ansatt: "TOTALT",
+    "Timer (sum)": Number(totalHours.toFixed(2)),
+    "Timesats (NOK)": "",
+    "Grunnlønn (NOK)": Number(totalBase.toFixed(2)),
+    "Tillegg (NOK)": Number(totalAllow.toFixed(2)),
+    "Sum lønn (NOK)": Number(totalSum.toFixed(2)),
+  });
+
+  // Sheet 2: per prosjekt
+  const byProject: Record<string, number> = {};
+  sorted.forEach((e) => {
+    const k = e.project_name || "Uten prosjekt";
+    byProject[k] = (byProject[k] || 0) + Number(e.hours);
+  });
+  const projectRows = Object.entries(byProject)
+    .sort((a, b) => b[1] - a[1])
+    .map(([project, hours]) => ({ Prosjekt: project, "Totalt timer": Number(hours.toFixed(2)) }));
+
+  // Sheet 3: alle registreringer
+  const detailRows = sorted.map((entry) => ({
     Dato: format(new Date(entry.entry_date), "dd.MM.yyyy", { locale: nb }),
     Ansatt: entry.user_name,
-    Timer: entry.hours,
+    Timer: Number(entry.hours),
     Prosjekt: entry.project_name || "-",
     Beskrivelse: entry.description || "-",
     Status: statusLabels[entry.status] || entry.status,
@@ -59,56 +103,73 @@ export function exportTimeEntriesToExcel(
       : "-",
   }));
 
-  // Create summary by employee
-  const summaryByEmployee: Record<string, number> = {};
-  filteredEntries.forEach((entry) => {
-    summaryByEmployee[entry.user_name] =
-      (summaryByEmployee[entry.user_name] || 0) + Number(entry.hours);
-  });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), "Sammendrag");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(projectRows), "Per prosjekt");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detailRows), "Registreringer");
 
-  const summaryData = Object.entries(summaryByEmployee).map(([name, hours]) => ({
-    Ansatt: name,
-    "Totalt timer": hours,
-  }));
+  XLSX.writeFile(wb, buildFilename(companyName, startDate, endDate));
+}
 
-  // Create summary by project
-  const summaryByProject: Record<string, number> = {};
-  filteredEntries.forEach((entry) => {
-    const projectName = entry.project_name || "Uten prosjekt";
-    summaryByProject[projectName] =
-      (summaryByProject[projectName] || 0) + Number(entry.hours);
-  });
-
-  const projectSummaryData = Object.entries(summaryByProject).map(
-    ([project, hours]) => ({
-      Prosjekt: project,
-      "Totalt timer": hours,
-    })
+/**
+ * Tripletex-formatert import: én rad per ansatt+dato med fast kolonnerekkefølge
+ * som Tripletex aksepterer for time-import.
+ * Kolonner: Ansattnummer | E-post | Dato | Timer | Aktivitet | Prosjekt | Kommentar
+ */
+export function exportPayrollTripletex(
+  entries: PayrollTimeEntry[],
+  employeesById: Record<string, { email?: string | null; employee_number?: string | null }>,
+  companyName: string,
+  startDate?: Date,
+  endDate?: Date
+) {
+  const sorted = [...entries].sort(
+    (a, b) => new Date(a.entry_date).getTime() - new Date(b.entry_date).getTime()
   );
 
-  // Create workbook
+  const rows = sorted.map((entry) => {
+    const emp = employeesById[entry.user_id] || {};
+    return {
+      Ansattnummer: emp.employee_number || "",
+      "E-post": emp.email || "",
+      Dato: format(new Date(entry.entry_date), "yyyy-MM-dd"),
+      Timer: Number(entry.hours),
+      Aktivitet: "Ordinær arbeidstid",
+      Prosjekt: entry.project_name || "",
+      Kommentar: entry.description || "",
+    };
+  });
+
   const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "Tripletex-import");
+  XLSX.writeFile(wb, buildFilename(companyName, startDate, endDate, "_Tripletex"));
+}
 
-  // Add main data sheet
-  const ws = XLSX.utils.json_to_sheet(excelData);
-  XLSX.utils.book_append_sheet(wb, ws, "Timeregistreringer");
-
-  // Add employee summary sheet
-  const wsSummary = XLSX.utils.json_to_sheet(summaryData);
-  XLSX.utils.book_append_sheet(wb, wsSummary, "Oppsummering ansatte");
-
-  // Add project summary sheet
-  const wsProjectSummary = XLSX.utils.json_to_sheet(projectSummaryData);
-  XLSX.utils.book_append_sheet(wb, wsProjectSummary, "Oppsummering prosjekter");
-
-  // Generate filename
-  const dateRange =
-    startDate && endDate
-      ? `_${format(startDate, "yyyy-MM-dd")}_til_${format(endDate, "yyyy-MM-dd")}`
-      : `_${format(new Date(), "yyyy-MM-dd")}`;
-
-  const filename = `Timeregistrering_${companyName.replace(/\s+/g, "_")}${dateRange}.xlsx`;
-
-  // Download file
-  XLSX.writeFile(wb, filename);
+/**
+ * Bakoverkompatibel wrapper for kall fra TimeRegistration / Ks2Timeregistrering.
+ */
+export function exportTimeEntriesToExcel(
+  entries: PayrollTimeEntry[],
+  companyName: string,
+  startDate?: Date,
+  endDate?: Date
+) {
+  // Bygg minimal summary uten lønn for å gjenbruke generic
+  const map = new Map<string, EmployeeSummary>();
+  entries.forEach((e) => {
+    if (!map.has(e.user_id)) {
+      map.set(e.user_id, {
+        user_id: e.user_id,
+        user_name: e.user_name,
+        total_hours: 0,
+        hourly_rate: null,
+        base_amount: 0,
+        allowances_amount: 0,
+        total_amount: 0,
+      });
+    }
+    const s = map.get(e.user_id)!;
+    s.total_hours += Number(e.hours) || 0;
+  });
+  exportPayrollGeneric(entries, Array.from(map.values()), companyName, startDate, endDate);
 }
