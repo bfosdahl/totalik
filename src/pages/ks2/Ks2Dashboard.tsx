@@ -87,9 +87,10 @@ export default function Ks2Dashboard() {
     // Status filter
     switch (activeFilter) {
       case "active":
-        result = result.filter((p) => p.status === "active" || p.status === "planned");
+        // Aktive + planlagte + handover + warranty (alt unntatt completed)
+        result = result.filter((p) => p.status !== "completed");
         break;
-      case "completed":
+      case "archived":
         result = result.filter((p) => p.status === "completed");
         break;
       case "mine":
@@ -104,6 +105,7 @@ export default function Ks2Dashboard() {
         // Filter projects with open deviations
         result = result.filter((p) => (projectDeviationCounts[p.id] || 0) > 0);
         break;
+      case "all":
       default:
         break;
     }
