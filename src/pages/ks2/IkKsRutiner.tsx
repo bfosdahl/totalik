@@ -57,7 +57,8 @@ const CATEGORIES = [
 ];
 
 export default function IkKsRutiner() {
-  const { routines, isLoading, isSaving, createRoutine, updateRoutine, deleteRoutine } = useCompanyKsRoutines();
+  const [showHidden, setShowHidden] = useState(false);
+  const { routines, isLoading, isSaving, createRoutine, updateRoutine, deleteRoutine, toggleHidden } = useCompanyKsRoutines(showHidden);
   
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
