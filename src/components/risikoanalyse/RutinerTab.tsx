@@ -17,6 +17,7 @@ import {
   ChevronRight,
   Search,
   Edit,
+  Eye,
   Check,
   X,
   BookOpen
