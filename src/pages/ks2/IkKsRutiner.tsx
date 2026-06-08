@@ -375,10 +375,23 @@ function RoutineCard({
                 <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap">
                   {routine.content || <span className="text-muted-foreground italic">Ingen innhold</span>}
                 </div>
-                <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
+                <div className="flex justify-end gap-2 mt-4 pt-4 border-t flex-wrap">
                   <Button variant="outline" size="sm" onClick={onEdit}>
                     <Edit2 className="w-4 h-4 mr-1" />
                     Rediger
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onToggleHidden(routine.id, !routine.is_hidden)}
+                    disabled={isSaving}
+                    title={routine.is_hidden ? "Vis denne rutinen igjen" : "Skjul fra listen (kan vises igjen senere)"}
+                  >
+                    {routine.is_hidden ? (
+                      <><Eye className="w-4 h-4 mr-1" />Vis</>
+                    ) : (
+                      <><EyeOff className="w-4 h-4 mr-1" />Skjul</>
+                    )}
                   </Button>
                   <Button 
                     variant="outline" 
