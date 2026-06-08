@@ -667,6 +667,9 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
             ))}
             {canvas.objects.map((obj) => {
               const isSel = obj.id === selectedId;
+              const sym = getSymbol(obj.type);
+              const minSide = Math.min(obj.width, obj.height) * zoom;
+              const showEmoji = !!sym?.emoji && minSide >= 28;
               return (
                 <div
                   key={obj.id}
@@ -677,7 +680,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                     e.stopPropagation();
                     setSelectedId(obj.id);
                   }}
-                  className="absolute flex items-center justify-center text-xs font-medium border-2 select-none"
+                  className="absolute flex flex-col items-center justify-center text-xs font-medium border-2 select-none gap-0.5"
                   style={{
                     left: obj.x * zoom,
                     top: obj.y * zoom,
@@ -692,7 +695,16 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                     transformOrigin: "center center",
                   }}
                 >
-                  <span className="px-1 text-center pointer-events-none">{obj.label}</span>
+                  {showEmoji && (
+                    <span
+                      className="leading-none pointer-events-none"
+                      style={{ fontSize: Math.max(14, Math.min(minSide * 0.45, 36)) }}
+                      aria-hidden="true"
+                    >
+                      {sym!.emoji}
+                    </span>
+                  )}
+                  <span className="px-1 text-center pointer-events-none leading-tight">{obj.label}</span>
                   {isSel && (
                     <div
                       onPointerDown={(e) => onPointerDownObj(e, obj, "resize")}
