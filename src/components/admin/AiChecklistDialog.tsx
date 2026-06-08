@@ -89,7 +89,13 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
         });
         if (!created) throw new Error("Kunne ikke lagre i bedriftens malbibliotek");
       }
-      toast.success("Sjekkliste-mal lagret i malbiblioteket!");
+      toast.success("Sjekkliste-mal lagret!", {
+        description: isSystemAdmin
+          ? "Finn den under Admin → Sjekklistemaler"
+          : "Finn den under KS Bygg → Sjekklister",
+        duration: 6000,
+      });
+      await onSaved?.();
       resetForm();
       setOpen(false);
     } catch (err: any) {
