@@ -281,7 +281,7 @@ export default function Payroll() {
   const handleExportTripletex = () => {
     const empMap: Record<string, { email?: string | null; employee_number?: string | null }> = {};
     employeesMeta.forEach((m, k) => {
-      empMap[k] = { email: m.email };
+      empMap[k] = { email: m.email, employee_number: m.employee_number };
     });
     exportPayrollTripletex(exportEntries, empMap, company?.name || "Bedrift", period.start, period.end);
     toast.success("Tripletex-eksport klar");
