@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
     if (softDeleteError) {
       console.error("Error soft-deleting profile:", softDeleteError);
       return new Response(
-        JSON.stringify({ error: `Kunne ikke deaktivere profil: ${softDeleteError.message}` }),
+        JSON.stringify({ error: "Kunne ikke deaktivere profil" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error("Error in delete-user function:", error);
     console.error("delete-user error:", error);
-    return new Response(JSON.stringify({ error: (error as Error)?.message || "An unexpected error occurred" }), {
+    return new Response(JSON.stringify({ error: "An unexpected error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

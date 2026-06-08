@@ -125,7 +125,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (linkErr || !linkData?.properties?.action_link) {
       console.error("Error generating recovery link:", linkErr);
       return new Response(
-        JSON.stringify({ error: `Could not generate recovery link: ${linkErr?.message ?? "unknown"}` }),
+        JSON.stringify({ error: "Could not generate recovery link" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -195,7 +195,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in send-single-welcome-email function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "An unexpected error occurred" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

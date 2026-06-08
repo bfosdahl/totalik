@@ -167,7 +167,7 @@ serve(async (req) => {
   } catch (error: any) {
     console.error("Error in send-support-ticket:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "En uventet feil oppstod" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

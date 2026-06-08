@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
     return json({ success: true, companyId: newCompany.id });
   } catch (e) {
     console.error("complete-pending-signup error:", e);
-    return json({ error: e instanceof Error ? e.message : "Ukjent feil" }, 500);
+    return json({ error: "En uventet feil oppstod" }, 500);
   }
 });
 
