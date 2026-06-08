@@ -85,7 +85,13 @@ const settingsSections: SettingsSectionConfig[] = [
     id: "data",
     icon: Database,
     title: "Data og eksport",
-    description: "Sikkerhetskopi og dataeksport",
+    description: "Last ned full kopi av bedriftens data (GDPR)",
+  },
+  {
+    id: "trash",
+    icon: Trash2,
+    title: "Papirkurv",
+    description: "Gjenopprett slettet innhold (90 dager)",
   },
 ];
 
