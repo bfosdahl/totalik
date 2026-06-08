@@ -724,6 +724,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                 </div>
               );
             })()}
+            </div>
           </div>
         </Card>
 
