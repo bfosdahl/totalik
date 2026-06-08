@@ -15,6 +15,7 @@ import { DEFAULT_RISK_AREAS } from "@/hooks/useKsModule2ShaPlan";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { compressImageFile } from "@/utils/imageCompression";
 
 
 interface Props {
@@ -76,18 +77,23 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
     if (!profile?.company_id || !projectId) return;
     setUploadingBg(true);
     try {
-      const ext = file.name.split(".").pop() || "png";
+      // Komprimer bildet (maks 2400 px lengste side, JPEG kvalitet 0.85) før opplasting
+      const compressed = await compressImageFile(file, { maxDim: 2400, quality: 0.85 });
+      const ext = compressed.name.split(".").pop() || "jpg";
       const path = `${profile.company_id}/rigg/${projectId}/${plan.id}-bg-${Date.now()}.${ext}`;
       const { error } = await supabase.storage
         .from("ks-module2-files")
-        .upload(path, file, { upsert: true });
+        .upload(path, compressed, { upsert: true, contentType: compressed.type });
       if (error) throw error;
       // Delete old background if exists
       if (canvas.backgroundImagePath && canvas.backgroundImagePath !== path) {
         await supabase.storage.from("ks-module2-files").remove([canvas.backgroundImagePath]);
       }
       setCanvas({ ...canvas, backgroundImagePath: path, backgroundImageOpacity: canvas.backgroundImageOpacity ?? 0.7 });
-      toast.success("Bakgrunnsbilde lastet opp – husk å lagre");
+      const ratio = (compressed.size / file.size) * 100;
+      toast.success(
+        `Bakgrunnsbilde lastet opp (${(compressed.size / 1024).toFixed(0)} kB, ${ratio.toFixed(0)}% av original) – husk å lagre`
+      );
     } catch (e: any) {
       console.error(e);
       toast.error("Kunne ikke laste opp bilde");
@@ -456,6 +462,32 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                 </div>
               );
             })}
+
+            {/* Visuell målestokk (skala-strek) */}
+            {(() => {
+              const mpp = canvas.scaleMetersPerPixel || 0.05;
+              // Velg meterlengde slik at streken blir 80-200 px i nåværende zoom
+              const candidates = [1, 2, 5, 10, 20, 50, 100];
+              const targetPx = 140;
+              const meters =
+                candidates.find((m) => (m / mpp) * zoom >= targetPx) || candidates[candidates.length - 1];
+              const widthPx = (meters / mpp) * zoom;
+              return (
+                <div
+                  className="absolute bottom-3 right-3 flex flex-col items-end gap-0.5 pointer-events-none select-none"
+                  aria-label="Målestokk"
+                >
+                  <div className="text-[10px] font-semibold bg-white/90 px-1.5 py-0.5 rounded shadow-sm border">
+                    {meters} m
+                  </div>
+                  <div className="flex items-end h-2.5">
+                    <div className="h-full w-0.5 bg-foreground" />
+                    <div className="h-1 bg-foreground" style={{ width: widthPx }} />
+                    <div className="h-full w-0.5 bg-foreground" />
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </Card>
 
