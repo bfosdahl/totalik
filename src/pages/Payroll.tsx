@@ -10,11 +10,18 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { exportTimeEntriesToExcel } from "@/utils/timeEntryExport";
+import {
+  exportPayrollGeneric,
+  exportPayrollTripletex,
+  type PayrollTimeEntry,
+  type EmployeeSummary,
+} from "@/utils/timeEntryExport";
 import { Navigate } from "react-router-dom";
 
 interface Row {
@@ -24,15 +31,25 @@ interface Row {
   entry_date: string;
   hours: number;
   project_name: string | null;
+  project_id: string | null;
   description: string | null;
   status: string;
   approved_by_name: string | null;
   approved_at: string | null;
 }
 
+interface AllowanceRow {
+  time_entry_id: string;
+  amount: number | null;
+}
+
+interface EmployeeMeta {
+  user_id: string;
+  email: string | null;
+  hourly_rate: number | null;
+}
+
 function computePeriod(startDay: number, anchor: Date) {
-  // The period that contains `anchor` based on monthly cycle starting at `startDay`.
-  // E.g. startDay=21 → period is 21.prev → 20.current
   const y = anchor.getFullYear();
   const m = anchor.getMonth();
   const d = anchor.getDate();
@@ -53,18 +70,24 @@ function computePeriod(startDay: number, anchor: Date) {
 
 const fmt = (d: Date) => format(d, "yyyy-MM-dd");
 const fmtNo = (d: Date) => format(d, "d. MMM yyyy", { locale: nb });
+const nok = (n: number) =>
+  new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(n);
 
 export default function Payroll() {
   const { profile, company, isCompanyAdmin, isSystemAdmin, isLoading: authLoading } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
+  const [allowanceMap, setAllowanceMap] = useState<Map<string, number>>(new Map());
+  const [employeesMeta, setEmployeesMeta] = useState<Map<string, EmployeeMeta>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
   const [startDay, setStartDay] = useState<number>(1);
   const [anchor, setAnchor] = useState<Date>(new Date());
   const [customRange, setCustomRange] = useState<{ from: string; to: string } | null>(null);
+  const [projectFilter, setProjectFilter] = useState<string>("all");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [ratesOpen, setRatesOpen] = useState(false);
   const [savedStartDay, setSavedStartDay] = useState<number>(1);
 
-  // Load company payroll setting
+  // Load company payroll setting + employees with hourly_rate
   useEffect(() => {
     if (!company?.id) return;
     supabase
@@ -79,6 +102,27 @@ export default function Payroll() {
       });
   }, [company?.id]);
 
+  const loadEmployees = async () => {
+    if (!profile?.company_id) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("user_id, email, hourly_rate, first_name, last_name")
+      .eq("company_id", profile.company_id);
+    const map = new Map<string, EmployeeMeta>();
+    (data || []).forEach((p: any) => {
+      map.set(p.user_id, {
+        user_id: p.user_id,
+        email: p.email,
+        hourly_rate: p.hourly_rate != null ? Number(p.hourly_rate) : null,
+      });
+    });
+    setEmployeesMeta(map);
+  };
+
+  useEffect(() => {
+    loadEmployees();
+  }, [profile?.company_id]);
+
   const period = useMemo(() => {
     if (customRange) {
       return { start: parseISO(customRange.from), end: parseISO(customRange.to) };
@@ -86,15 +130,16 @@ export default function Payroll() {
     return computePeriod(startDay, anchor);
   }, [customRange, startDay, anchor]);
 
-  // Load time entries for period
+  // Load time entries + allowances for period
   useEffect(() => {
     if (!profile?.company_id) return;
     setIsLoading(true);
     (async () => {
-      const { data, error } = await supabase
+      const { data: entries, error } = await supabase
         .from("time_entries")
-        .select("id, user_id, user_name, entry_date, hours, project_name, description, status, approved_by_name, approved_at")
+        .select("id, user_id, user_name, entry_date, hours, project_name, project_id, description, status, approved_by_name, approved_at")
         .eq("company_id", profile.company_id)
+        .eq("status", "approved")
         .gte("entry_date", fmt(period.start))
         .lte("entry_date", fmt(period.end))
         .order("entry_date", { ascending: true });
@@ -102,49 +147,133 @@ export default function Payroll() {
         console.error(error);
         toast.error("Kunne ikke hente timer");
         setRows([]);
+        setAllowanceMap(new Map());
+        setIsLoading(false);
+        return;
+      }
+      const list = (entries as Row[]) || [];
+      setRows(list);
+
+      // Fetch allowances for these entries
+      if (list.length > 0) {
+        const ids = list.map((r) => r.id);
+        const { data: allowData } = await supabase
+          .from("time_entry_allowances")
+          .select("time_entry_id, amount")
+          .in("time_entry_id", ids);
+        const map = new Map<string, number>();
+        (allowData as AllowanceRow[] | null)?.forEach((a) => {
+          const cur = map.get(a.time_entry_id) || 0;
+          map.set(a.time_entry_id, cur + (Number(a.amount) || 0));
+        });
+        setAllowanceMap(map);
       } else {
-        setRows((data as Row[]) || []);
+        setAllowanceMap(new Map());
       }
       setIsLoading(false);
     })();
   }, [profile?.company_id, period.start.getTime(), period.end.getTime()]);
 
+  // Filtered rows by project
+  const filteredRows = useMemo(() => {
+    if (projectFilter === "all") return rows;
+    if (projectFilter === "_none") return rows.filter((r) => !r.project_name);
+    return rows.filter((r) => r.project_name === projectFilter);
+  }, [rows, projectFilter]);
+
+  // Unique projects list
+  const projects = useMemo(() => {
+    const set = new Set<string>();
+    rows.forEach((r) => r.project_name && set.add(r.project_name));
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "nb"));
+  }, [rows]);
+
   // Aggregations
   const byEmployee = useMemo(() => {
-    const map = new Map<string, { user_id: string; user_name: string; total: number; perProject: Map<string, number> }>();
-    rows.forEach((r) => {
-      const key = r.user_id;
-      if (!map.has(key)) map.set(key, { user_id: r.user_id, user_name: r.user_name, total: 0, perProject: new Map() });
-      const rec = map.get(key)!;
+    const map = new Map<string, EmployeeSummary & { perProject: Map<string, number> }>();
+    filteredRows.forEach((r) => {
+      if (!map.has(r.user_id)) {
+        const meta = employeesMeta.get(r.user_id);
+        map.set(r.user_id, {
+          user_id: r.user_id,
+          user_name: r.user_name,
+          total_hours: 0,
+          hourly_rate: meta?.hourly_rate ?? null,
+          base_amount: 0,
+          allowances_amount: 0,
+          total_amount: 0,
+          perProject: new Map(),
+        });
+      }
+      const rec = map.get(r.user_id)!;
       const h = Number(r.hours) || 0;
-      rec.total += h;
+      rec.total_hours += h;
+      rec.allowances_amount += allowanceMap.get(r.id) || 0;
       const proj = r.project_name || "Uten prosjekt";
       rec.perProject.set(proj, (rec.perProject.get(proj) || 0) + h);
     });
+    // Compute base + total
+    map.forEach((rec) => {
+      rec.base_amount = rec.hourly_rate != null ? rec.total_hours * rec.hourly_rate : 0;
+      rec.total_amount = rec.base_amount + rec.allowances_amount;
+    });
     return Array.from(map.values()).sort((a, b) => a.user_name.localeCompare(b.user_name, "nb"));
-  }, [rows]);
+  }, [filteredRows, employeesMeta, allowanceMap]);
 
   const byProject = useMemo(() => {
     const map = new Map<string, number>();
-    rows.forEach((r) => {
+    filteredRows.forEach((r) => {
       const proj = r.project_name || "Uten prosjekt";
       map.set(proj, (map.get(proj) || 0) + (Number(r.hours) || 0));
     });
     return Array.from(map.entries())
       .map(([project, hours]) => ({ project, hours }))
       .sort((a, b) => b.hours - a.hours);
-  }, [rows]);
+  }, [filteredRows]);
 
-  const totalHours = rows.reduce((s, r) => s + (Number(r.hours) || 0), 0);
-  const employeeCount = byEmployee.length;
+  const totals = useMemo(() => {
+    const totalHours = byEmployee.reduce((s, e) => s + e.total_hours, 0);
+    const totalBase = byEmployee.reduce((s, e) => s + e.base_amount, 0);
+    const totalAllow = byEmployee.reduce((s, e) => s + e.allowances_amount, 0);
+    return {
+      hours: totalHours,
+      base: totalBase,
+      allow: totalAllow,
+      sum: totalBase + totalAllow,
+      employees: byEmployee.length,
+      entries: filteredRows.length,
+    };
+  }, [byEmployee, filteredRows]);
 
-  const handleExport = () => {
-    exportTimeEntriesToExcel(
-      rows.map((r) => ({ ...r, hours: Number(r.hours) })) as any,
+  const exportEntries: PayrollTimeEntry[] = useMemo(
+    () =>
+      filteredRows.map((r) => ({
+        ...r,
+        hours: Number(r.hours),
+        hourly_rate: employeesMeta.get(r.user_id)?.hourly_rate ?? null,
+        allowances_amount: allowanceMap.get(r.id) || 0,
+      })),
+    [filteredRows, employeesMeta, allowanceMap]
+  );
+
+  const handleExportGeneric = () => {
+    exportPayrollGeneric(
+      exportEntries,
+      byEmployee.map(({ perProject, ...e }) => e),
       company?.name || "Bedrift",
       period.start,
       period.end
     );
+    toast.success("Lønnsgrunnlag eksportert");
+  };
+
+  const handleExportTripletex = () => {
+    const empMap: Record<string, { email?: string | null; employee_number?: string | null }> = {};
+    employeesMeta.forEach((m, k) => {
+      empMap[k] = { email: m.email };
+    });
+    exportPayrollTripletex(exportEntries, empMap, company?.name || "Bedrift", period.start, period.end);
+    toast.success("Tripletex-eksport klar");
   };
 
   const handleSaveSettings = async () => {
@@ -172,22 +301,37 @@ export default function Payroll() {
           <div>
             <h1 className="text-xl sm:text-2xl font-bold">Lønnsgrunnlag</h1>
             <p className="text-sm text-muted-foreground">
-              Timer per ansatt og prosjekt for valgt lønnsperiode.
+              Godkjente timer per ansatt og prosjekt for valgt lønnsperiode.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button variant="outline" size="sm" onClick={() => setRatesOpen(true)}>
+              Timesatser
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
               <SettingsIcon className="h-4 w-4 mr-1" /> Lønnsperiode
             </Button>
-            <Button size="sm" onClick={handleExport} disabled={rows.length === 0}>
-              <Download className="h-4 w-4 mr-1" /> Last ned Excel
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" disabled={filteredRows.length === 0}>
+                  <Download className="h-4 w-4 mr-1" /> Last ned Excel
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleExportGeneric}>
+                  Generisk lønnsgrunnlag (.xlsx)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportTripletex}>
+                  Tripletex-importmal (.xlsx)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
-        {/* Period selector */}
+        {/* Period + project filter */}
         <Card>
-          <CardContent className="py-3 flex flex-wrap items-center gap-3">
+          <CardContent className="py-3 flex flex-wrap items-end gap-3">
             <div className="flex items-center gap-1">
               <Button
                 variant="outline"
@@ -214,6 +358,22 @@ export default function Payroll() {
                   Tilbake til lønnsperiode
                 </Button>
               )}
+            </div>
+
+            <div>
+              <Label className="text-xs">Prosjekt</Label>
+              <Select value={projectFilter} onValueChange={setProjectFilter}>
+                <SelectTrigger className="h-9 w-[220px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle prosjekter</SelectItem>
+                  <SelectItem value="_none">Uten prosjekt</SelectItem>
+                  {projects.map((p) => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex items-end gap-2 ml-auto">
@@ -250,18 +410,22 @@ export default function Payroll() {
         </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card><CardContent className="py-4">
-            <p className="text-xs text-muted-foreground">Totale timer</p>
-            <p className="text-2xl font-bold">{totalHours.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground">Timer (godkjent)</p>
+            <p className="text-2xl font-bold">{totals.hours.toFixed(2)}</p>
           </CardContent></Card>
           <Card><CardContent className="py-4">
             <p className="text-xs text-muted-foreground">Ansatte</p>
-            <p className="text-2xl font-bold">{employeeCount}</p>
+            <p className="text-2xl font-bold">{totals.employees}</p>
           </CardContent></Card>
           <Card><CardContent className="py-4">
-            <p className="text-xs text-muted-foreground">Registreringer</p>
-            <p className="text-2xl font-bold">{rows.length}</p>
+            <p className="text-xs text-muted-foreground">Tillegg</p>
+            <p className="text-2xl font-bold">{nok(totals.allow)}</p>
+          </CardContent></Card>
+          <Card><CardContent className="py-4">
+            <p className="text-xs text-muted-foreground">Sum lønn</p>
+            <p className="text-2xl font-bold">{nok(totals.sum)}</p>
           </CardContent></Card>
         </div>
 
@@ -274,40 +438,51 @@ export default function Payroll() {
 
           <TabsContent value="employees">
             <Card>
-              <CardHeader><CardTitle className="text-base">Timer per ansatt og prosjekt</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">Lønnsgrunnlag per ansatt</CardTitle></CardHeader>
               <CardContent>
                 {isLoading ? (
                   <p className="text-sm text-muted-foreground">Laster…</p>
                 ) : byEmployee.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Ingen timer i perioden.</p>
+                  <p className="text-sm text-muted-foreground">Ingen godkjente timer i perioden.</p>
                 ) : (
-                  <div className="space-y-4">
-                    {byEmployee.map((e) => (
-                      <div key={e.user_id} className="border rounded-md p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="font-semibold">{e.user_name}</p>
-                          <Badge variant="secondary">{e.total.toFixed(2)} t</Badge>
-                        </div>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Prosjekt</TableHead>
-                              <TableHead className="text-right">Timer</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {Array.from(e.perProject.entries())
-                              .sort((a, b) => b[1] - a[1])
-                              .map(([proj, h]) => (
-                                <TableRow key={proj}>
-                                  <TableCell>{proj}</TableCell>
-                                  <TableCell className="text-right">{h.toFixed(2)}</TableCell>
-                                </TableRow>
-                              ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    ))}
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Ansatt</TableHead>
+                          <TableHead className="text-right">Timer</TableHead>
+                          <TableHead className="text-right">Timesats</TableHead>
+                          <TableHead className="text-right">Grunnlønn</TableHead>
+                          <TableHead className="text-right">Tillegg</TableHead>
+                          <TableHead className="text-right">Sum</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {byEmployee.map((e) => (
+                          <TableRow key={e.user_id}>
+                            <TableCell className="font-medium">
+                              {e.user_name}
+                              {e.hourly_rate == null && (
+                                <Badge variant="outline" className="ml-2 text-xs">Mangler sats</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">{e.total_hours.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">{e.hourly_rate != null ? nok(e.hourly_rate) : "-"}</TableCell>
+                            <TableCell className="text-right">{nok(e.base_amount)}</TableCell>
+                            <TableCell className="text-right">{nok(e.allowances_amount)}</TableCell>
+                            <TableCell className="text-right font-semibold">{nok(e.total_amount)}</TableCell>
+                          </TableRow>
+                        ))}
+                        <TableRow className="bg-muted/50 font-bold">
+                          <TableCell>TOTALT</TableCell>
+                          <TableCell className="text-right">{totals.hours.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">-</TableCell>
+                          <TableCell className="text-right">{nok(totals.base)}</TableCell>
+                          <TableCell className="text-right">{nok(totals.allow)}</TableCell>
+                          <TableCell className="text-right">{nok(totals.sum)}</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
               </CardContent>
@@ -316,10 +491,10 @@ export default function Payroll() {
 
           <TabsContent value="projects">
             <Card>
-              <CardHeader><CardTitle className="text-base">Totalt timer per prosjekt</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">Timer per prosjekt</CardTitle></CardHeader>
               <CardContent>
                 {byProject.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Ingen timer i perioden.</p>
+                  <p className="text-sm text-muted-foreground">Ingen godkjente timer i perioden.</p>
                 ) : (
                   <Table>
                     <TableHeader>
@@ -335,6 +510,10 @@ export default function Payroll() {
                           <TableCell className="text-right font-medium">{p.hours.toFixed(2)}</TableCell>
                         </TableRow>
                       ))}
+                      <TableRow className="bg-muted/50 font-bold">
+                        <TableCell>TOTALT</TableCell>
+                        <TableCell className="text-right">{totals.hours.toFixed(2)}</TableCell>
+                      </TableRow>
                     </TableBody>
                   </Table>
                 )}
@@ -344,35 +523,37 @@ export default function Payroll() {
 
           <TabsContent value="detail">
             <Card>
-              <CardHeader><CardTitle className="text-base">Alle registreringer</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">Alle godkjente registreringer</CardTitle></CardHeader>
               <CardContent>
-                {rows.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Ingen timer i perioden.</p>
+                {filteredRows.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Ingen godkjente timer i perioden.</p>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Dato</TableHead>
-                        <TableHead>Ansatt</TableHead>
-                        <TableHead>Prosjekt</TableHead>
-                        <TableHead>Beskrivelse</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Timer</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {rows.map((r) => (
-                        <TableRow key={r.id}>
-                          <TableCell>{format(parseISO(r.entry_date), "dd.MM.yyyy")}</TableCell>
-                          <TableCell>{r.user_name}</TableCell>
-                          <TableCell>{r.project_name || "-"}</TableCell>
-                          <TableCell className="max-w-[280px] truncate">{r.description || "-"}</TableCell>
-                          <TableCell>{r.status}</TableCell>
-                          <TableCell className="text-right">{Number(r.hours).toFixed(2)}</TableCell>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Dato</TableHead>
+                          <TableHead>Ansatt</TableHead>
+                          <TableHead>Prosjekt</TableHead>
+                          <TableHead>Beskrivelse</TableHead>
+                          <TableHead className="text-right">Timer</TableHead>
+                          <TableHead className="text-right">Tillegg</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredRows.map((r) => (
+                          <TableRow key={r.id}>
+                            <TableCell>{format(parseISO(r.entry_date), "dd.MM.yyyy")}</TableCell>
+                            <TableCell>{r.user_name}</TableCell>
+                            <TableCell>{r.project_name || "-"}</TableCell>
+                            <TableCell className="max-w-[280px] truncate">{r.description || "-"}</TableCell>
+                            <TableCell className="text-right">{Number(r.hours).toFixed(2)}</TableCell>
+                            <TableCell className="text-right">{nok(allowanceMap.get(r.id) || 0)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -380,6 +561,7 @@ export default function Payroll() {
         </Tabs>
       </div>
 
+      {/* Period settings dialog */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
         <DialogContent>
           <DialogHeader>
@@ -397,7 +579,7 @@ export default function Payroll() {
             <p className="text-xs text-muted-foreground">
               {startDay === 1
                 ? "Hele kalendermåneden (1.–siste dag)."
-                : `Periode: ${startDay}. forrige måned – ${startDay - 1}. inneværende måned. Brukes til å beregne lønn utbetalt den 1.`}
+                : `Periode: ${startDay}. forrige måned – ${startDay - 1}. inneværende måned.`}
             </p>
           </div>
           <DialogFooter>
@@ -408,6 +590,126 @@ export default function Payroll() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Hourly rates dialog */}
+      <HourlyRatesDialog
+        open={ratesOpen}
+        onOpenChange={setRatesOpen}
+        companyId={profile?.company_id}
+        onSaved={loadEmployees}
+      />
     </AppLayout>
+  );
+}
+
+/* ---------------- Hourly rates editor ---------------- */
+function HourlyRatesDialog({
+  open,
+  onOpenChange,
+  companyId,
+  onSaved,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  companyId?: string | null;
+  onSaved: () => void;
+}) {
+  const [list, setList] = useState<Array<{ id: string; name: string; rate: string }>>([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!open || !companyId) return;
+    setLoading(true);
+    supabase
+      .from("profiles")
+      .select("id, first_name, last_name, email, hourly_rate")
+      .eq("company_id", companyId)
+      .eq("is_active", true)
+      .order("first_name", { ascending: true })
+      .then(({ data }) => {
+        setList(
+          (data || []).map((p: any) => ({
+            id: p.id,
+            name: `${p.first_name || ""} ${p.last_name || ""}`.trim() || p.email,
+            rate: p.hourly_rate != null ? String(p.hourly_rate) : "",
+          }))
+        );
+        setLoading(false);
+      });
+  }, [open, companyId]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const updates = list.map((item) =>
+        supabase
+          .from("profiles")
+          .update({ hourly_rate: item.rate === "" ? null : Number(item.rate) } as any)
+          .eq("id", item.id)
+      );
+      const results = await Promise.all(updates);
+      const firstErr = results.find((r) => r.error);
+      if (firstErr?.error) {
+        toast.error("Kunne ikke lagre alle satser: " + firstErr.error.message);
+      } else {
+        toast.success("Timesatser lagret");
+        onSaved();
+        onOpenChange(false);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogHeader>
+          <DialogTitle>Timesatser per ansatt</DialogTitle>
+        </DialogHeader>
+        <div className="max-h-[60vh] overflow-y-auto space-y-2">
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Laster…</p>
+          ) : list.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Ingen aktive ansatte.</p>
+          ) : (
+            list.map((item, idx) => (
+              <div key={item.id} className="flex items-center gap-3">
+                <span className="flex-1 text-sm truncate">{item.name}</span>
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    step="1"
+                    className="h-9 w-28 text-right"
+                    placeholder="0"
+                    value={item.rate}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setList((prev) => {
+                        const next = [...prev];
+                        next[idx] = { ...next[idx], rate: v };
+                        return next;
+                      });
+                    }}
+                  />
+                  <span className="text-xs text-muted-foreground">kr/t</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+            Avbryt
+          </Button>
+          <Button onClick={handleSave} disabled={saving || loading}>
+            {saving ? "Lagrer…" : "Lagre alle"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
