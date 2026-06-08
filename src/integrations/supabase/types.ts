@@ -1214,6 +1214,7 @@ export type Database = {
           logo_url: string | null
           name: string
           org_number: string | null
+          payroll_period_start_day: number
           phone: string | null
           postal_code: string | null
           seller_id: string | null
@@ -1238,6 +1239,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           org_number?: string | null
+          payroll_period_start_day?: number
           phone?: string | null
           postal_code?: string | null
           seller_id?: string | null
@@ -1262,6 +1264,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           org_number?: string | null
+          payroll_period_start_day?: number
           phone?: string | null
           postal_code?: string | null
           seller_id?: string | null
