@@ -1,0 +1,1 @@
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS payroll_period_start_day INTEGER NOT NULL DEFAULT 1 CHECK (payroll_period_start_day BETWEEN 1 AND 28);

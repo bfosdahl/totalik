@@ -25,6 +25,8 @@ export interface RiggCanvasData {
   height: number;
   scaleMetersPerPixel: number;
   backgroundLabel?: string;
+  backgroundImagePath?: string | null;
+  backgroundImageOpacity?: number;
 }
 
 export interface RiggPlan {

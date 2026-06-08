@@ -148,6 +148,7 @@ const personaladministrasjonItems = {
     { icon: Calendar, labelKey: "nav.workSchedule", path: "/work-schedule", color: "text-cyan-500" },
     { icon: CalendarDays, label: "Søndagsrapport (AML §10-8)", path: "/hr/sondagsrapport", color: "text-amber-600" },
     { icon: Clock, labelKey: "nav.approveHours", path: "/time-registration?view=admin", color: "text-indigo-500" },
+    { icon: Clock, label: "Lønnsgrunnlag", path: "/payroll", color: "text-emerald-600" },
     { icon: ShieldAlert, labelKey: "nav.anonymousMessages", path: "/anonymous-messages", color: "text-amber-500" },
   ] as NavItem[],
   mittArbeidsforhold: [
