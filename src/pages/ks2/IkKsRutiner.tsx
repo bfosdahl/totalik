@@ -17,7 +17,9 @@ import {
   Upload,
   Download,
   Loader2,
-  Calendar
+  Calendar,
+  EyeOff,
+  Eye,
 } from "lucide-react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
