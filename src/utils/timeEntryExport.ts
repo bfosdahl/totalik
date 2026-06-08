@@ -61,8 +61,10 @@ export function exportPayrollGeneric(
 
   // Sheet 1: Sammendrag per ansatt (med kost)
   const summaryRows = employeeSummaries.map((e) => ({
+    Ansattnr: e.employee_number || "",
     Ansatt: e.user_name,
     "Timer (sum)": Number(e.total_hours.toFixed(2)),
+    "Herav overtid": Number((e.overtime_hours ?? 0).toFixed(2)),
     "Timesats (NOK)": e.hourly_rate ?? "",
     "Grunnlønn (NOK)": Number(e.base_amount.toFixed(2)),
     "Tillegg (NOK)": Number(e.allowances_amount.toFixed(2)),
@@ -70,12 +72,15 @@ export function exportPayrollGeneric(
   }));
   // Totals row
   const totalHours = employeeSummaries.reduce((s, e) => s + e.total_hours, 0);
+  const totalOvertime = employeeSummaries.reduce((s, e) => s + (e.overtime_hours ?? 0), 0);
   const totalBase = employeeSummaries.reduce((s, e) => s + e.base_amount, 0);
   const totalAllow = employeeSummaries.reduce((s, e) => s + e.allowances_amount, 0);
   const totalSum = employeeSummaries.reduce((s, e) => s + e.total_amount, 0);
   summaryRows.push({
+    Ansattnr: "",
     Ansatt: "TOTALT",
     "Timer (sum)": Number(totalHours.toFixed(2)),
+    "Herav overtid": Number(totalOvertime.toFixed(2)),
     "Timesats (NOK)": "",
     "Grunnlønn (NOK)": Number(totalBase.toFixed(2)),
     "Tillegg (NOK)": Number(totalAllow.toFixed(2)),
