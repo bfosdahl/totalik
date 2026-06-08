@@ -91,11 +91,34 @@ export async function exportRiggPlanPdf(
     pdf.setFillColor(rgb.r, rgb.g, rgb.b);
     pdf.setDrawColor(60);
     pdf.setLineWidth(0.3);
-    pdf.rect(x, y, w, h, "FD");
     pdf.setTextColor(20);
     pdf.setFontSize(8);
     const label = obj.label || sym?.label || obj.type;
-    pdf.text(label, x + w / 2, y + h / 2 + 1, { align: "center", baseline: "middle" });
+    const rot = obj.rotation || 0;
+    if (rot) {
+      // Rotate around the rect center using a transformation matrix
+      const cx = x + w / 2;
+      const cy = y + h / 2;
+      const rad = (rot * Math.PI) / 180;
+      const cos = Math.cos(rad);
+      const sin = Math.sin(rad);
+      try {
+        (pdf as any).saveGraphicsState();
+        const Matrix = (pdf as any).Matrix;
+        const m = new Matrix(cos, sin, -sin, cos, cx - cos * cx + sin * cy, cy - sin * cx - cos * cy);
+        (pdf as any).setCurrentTransformationMatrix(m);
+        pdf.rect(x, y, w, h, "FD");
+        pdf.text(label, x + w / 2, y + h / 2 + 1, { align: "center", baseline: "middle" });
+        (pdf as any).restoreGraphicsState();
+      } catch {
+        // Fallback: draw without rotation if matrix API unavailable
+        pdf.rect(x, y, w, h, "FD");
+        pdf.text(label, x + w / 2, y + h / 2 + 1, { align: "center", baseline: "middle" });
+      }
+    } else {
+      pdf.rect(x, y, w, h, "FD");
+      pdf.text(label, x + w / 2, y + h / 2 + 1, { align: "center", baseline: "middle" });
+    }
   }
 
   // Legend
