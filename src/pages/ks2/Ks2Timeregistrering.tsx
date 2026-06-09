@@ -1,11 +1,13 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { useState, useMemo } from "react";
+import { useParams, Link } from "react-router-dom";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Plus, Download, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List, Users, User } from "lucide-react";
+import { Plus, Download, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List, Users, User, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -13,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useTimeEntries } from "@/hooks/useTimeEntries";
 import { useAuth } from "@/contexts/AuthContext";
 import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
@@ -21,7 +24,7 @@ import { WeeklyTimeView } from "@/components/timeregistration/WeeklyTimeView";
 import { Ks2NewTimeEntryDialog } from "@/components/ks2/Ks2NewTimeEntryDialog";
 import { exportTimeEntriesToExcel } from "@/utils/timeEntryExport";
 
-type DateFilter = "this-week" | "last-week" | "this-month" | "last-month" | "all";
+type DateFilter = "this-week" | "last-week" | "this-month" | "last-month" | "payroll-21" | "custom" | "all";
 
 export default function Ks2Timeregistrering() {
   const { projectId } = useParams<{ projectId: string }>();
