@@ -44,6 +44,11 @@ export default function Ks2Timeregistrering() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilter>("this-month");
   const [viewMode, setViewMode] = useState<"list" | "week">("list");
+  const today = new Date();
+  const defaultCustomFrom = format(new Date(today.getFullYear(), today.getMonth() - 1, 21), "yyyy-MM-dd");
+  const defaultCustomTo = format(new Date(today.getFullYear(), today.getMonth(), 20), "yyyy-MM-dd");
+  const [customFrom, setCustomFrom] = useState<string>(defaultCustomFrom);
+  const [customTo, setCustomTo] = useState<string>(defaultCustomTo);
 
   // Filter entries for this project
   const projectEntries = entries.filter((e) => e.project_id === projectId);
@@ -74,6 +79,22 @@ export default function Ks2Timeregistrering() {
           start: startOfMonth(lastMonth),
           end: endOfMonth(lastMonth),
         };
+      case "payroll-21": {
+        // 21. forrige måned → 20. inneværende måned
+        const d = now.getDate();
+        const y = now.getFullYear();
+        const m = now.getMonth();
+        if (d >= 21) {
+          return { start: new Date(y, m, 21), end: new Date(y, m + 1, 20) };
+        }
+        return { start: new Date(y, m - 1, 21), end: new Date(y, m, 20) };
+      }
+      case "custom":
+        try {
+          return { start: parseISO(customFrom), end: parseISO(customTo) };
+        } catch {
+          return { start: undefined, end: undefined };
+        }
       default:
         return { start: undefined, end: undefined };
     }
@@ -93,6 +114,20 @@ export default function Ks2Timeregistrering() {
   const pendingCount = filteredEntries.filter((e) => e.status === "submitted").length;
   const approvedCount = filteredEntries.filter((e) => e.status === "approved").length;
   const uniqueEmployees = new Set(filteredEntries.map((e) => e.user_id)).size;
+
+  // Per-employee summary for this project in valgt periode
+  const byEmployee = useMemo(() => {
+    const map = new Map<string, { user_id: string; user_name: string; total: number; approved: number; pending: number }>();
+    filteredEntries.forEach((e) => {
+      const cur = map.get(e.user_id) || { user_id: e.user_id, user_name: e.user_name, total: 0, approved: 0, pending: 0 };
+      const h = Number(e.hours) || 0;
+      cur.total += h;
+      if (e.status === "approved") cur.approved += h;
+      if (e.status === "submitted") cur.pending += h;
+      map.set(e.user_id, cur);
+    });
+    return Array.from(map.values()).sort((a, b) => b.total - a.total);
+  }, [filteredEntries]);
 
   const projectName = project?.project_name || "Prosjekt";
 
