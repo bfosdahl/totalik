@@ -1,11 +1,13 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { useState, useMemo } from "react";
+import { useParams, Link } from "react-router-dom";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Plus, Download, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List, Users, User } from "lucide-react";
+import { Plus, Download, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List, Users, User, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -13,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useTimeEntries } from "@/hooks/useTimeEntries";
 import { useAuth } from "@/contexts/AuthContext";
 import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
@@ -21,7 +24,7 @@ import { WeeklyTimeView } from "@/components/timeregistration/WeeklyTimeView";
 import { Ks2NewTimeEntryDialog } from "@/components/ks2/Ks2NewTimeEntryDialog";
 import { exportTimeEntriesToExcel } from "@/utils/timeEntryExport";
 
-type DateFilter = "this-week" | "last-week" | "this-month" | "last-month" | "all";
+type DateFilter = "this-week" | "last-week" | "this-month" | "last-month" | "payroll-21" | "custom" | "all";
 
 export default function Ks2Timeregistrering() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -41,6 +44,11 @@ export default function Ks2Timeregistrering() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilter>("this-month");
   const [viewMode, setViewMode] = useState<"list" | "week">("list");
+  const today = new Date();
+  const defaultCustomFrom = format(new Date(today.getFullYear(), today.getMonth() - 1, 21), "yyyy-MM-dd");
+  const defaultCustomTo = format(new Date(today.getFullYear(), today.getMonth(), 20), "yyyy-MM-dd");
+  const [customFrom, setCustomFrom] = useState<string>(defaultCustomFrom);
+  const [customTo, setCustomTo] = useState<string>(defaultCustomTo);
 
   // Filter entries for this project
   const projectEntries = entries.filter((e) => e.project_id === projectId);
@@ -71,6 +79,22 @@ export default function Ks2Timeregistrering() {
           start: startOfMonth(lastMonth),
           end: endOfMonth(lastMonth),
         };
+      case "payroll-21": {
+        // 21. forrige måned → 20. inneværende måned
+        const d = now.getDate();
+        const y = now.getFullYear();
+        const m = now.getMonth();
+        if (d >= 21) {
+          return { start: new Date(y, m, 21), end: new Date(y, m + 1, 20) };
+        }
+        return { start: new Date(y, m - 1, 21), end: new Date(y, m, 20) };
+      }
+      case "custom":
+        try {
+          return { start: parseISO(customFrom), end: parseISO(customTo) };
+        } catch {
+          return { start: undefined, end: undefined };
+        }
       default:
         return { start: undefined, end: undefined };
     }
@@ -90,6 +114,20 @@ export default function Ks2Timeregistrering() {
   const pendingCount = filteredEntries.filter((e) => e.status === "submitted").length;
   const approvedCount = filteredEntries.filter((e) => e.status === "approved").length;
   const uniqueEmployees = new Set(filteredEntries.map((e) => e.user_id)).size;
+
+  // Per-employee summary for this project in valgt periode
+  const byEmployee = useMemo(() => {
+    const map = new Map<string, { user_id: string; user_name: string; total: number; approved: number; pending: number }>();
+    filteredEntries.forEach((e) => {
+      const cur = map.get(e.user_id) || { user_id: e.user_id, user_name: e.user_name, total: 0, approved: 0, pending: 0 };
+      const h = Number(e.hours) || 0;
+      cur.total += h;
+      if (e.status === "approved") cur.approved += h;
+      if (e.status === "submitted") cur.pending += h;
+      map.set(e.user_id, cur);
+    });
+    return Array.from(map.values()).sort((a, b) => b.total - a.total);
+  }, [filteredEntries]);
 
   const projectName = project?.project_name || "Prosjekt";
 
@@ -129,7 +167,15 @@ export default function Ks2Timeregistrering() {
             Timer registrert på {projectName}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {isCompanyAdmin && (
+            <Button variant="outline" asChild>
+              <Link to="/payroll">
+                <Wallet className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Lønnsgrunnlag</span>
+              </Link>
+            </Button>
+          )}
           <Button variant="outline" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">Eksporter</span>
@@ -168,7 +214,7 @@ export default function Ks2Timeregistrering() {
             <span className="text-sm text-muted-foreground hidden sm:inline">Periode:</span>
           </div>
           <Select value={dateFilter} onValueChange={(v) => setDateFilter(v as DateFilter)}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-[200px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -176,9 +222,29 @@ export default function Ks2Timeregistrering() {
               <SelectItem value="last-week">Forrige uke</SelectItem>
               <SelectItem value="this-month">Denne måneden</SelectItem>
               <SelectItem value="last-month">Forrige måned</SelectItem>
+              <SelectItem value="payroll-21">Lønnsperiode (21–20)</SelectItem>
+              <SelectItem value="custom">Egendefinert periode</SelectItem>
               <SelectItem value="all">Alle</SelectItem>
             </SelectContent>
           </Select>
+          {dateFilter === "custom" && (
+            <div className="flex items-center gap-2">
+              <Label className="text-xs text-muted-foreground">Fra</Label>
+              <Input
+                type="date"
+                value={customFrom}
+                onChange={(e) => setCustomFrom(e.target.value)}
+                className="w-[150px]"
+              />
+              <Label className="text-xs text-muted-foreground">Til</Label>
+              <Input
+                type="date"
+                value={customTo}
+                onChange={(e) => setCustomTo(e.target.value)}
+                className="w-[150px]"
+              />
+            </div>
+          )}
           {start && end && (
             <span className="text-sm text-muted-foreground">
               {format(start, "d. MMM", { locale: nb })} - {format(end, "d. MMM yyyy", { locale: nb })}
@@ -253,12 +319,65 @@ export default function Ks2Timeregistrering() {
               <Users className="h-4 w-4 mr-1" />
               Alle
             </TabsTrigger>
+            <TabsTrigger value="by-employee">
+              <User className="h-4 w-4 mr-1" />
+              Per ansatt
+            </TabsTrigger>
             <TabsTrigger value="pending">Til godkjenning ({pendingCount})</TabsTrigger>
             <TabsTrigger value="mine">
               <User className="h-4 w-4 mr-1" />
               Mine
             </TabsTrigger>
           </TabsList>
+          <TabsContent value="by-employee">
+            <Card>
+              <CardHeader>
+                <CardTitle>Timer per ansatt på prosjektet</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {byEmployee.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Ingen timer registrert i valgt periode
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Ansatt</TableHead>
+                        <TableHead className="text-right">Godkjent</TableHead>
+                        <TableHead className="text-right">Til godkjenning</TableHead>
+                        <TableHead className="text-right">Totalt</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {byEmployee.map((e) => (
+                        <TableRow key={e.user_id}>
+                          <TableCell className="font-medium">{e.user_name}</TableCell>
+                          <TableCell className="text-right">{e.approved.toFixed(1)} t</TableCell>
+                          <TableCell className="text-right">{e.pending.toFixed(1)} t</TableCell>
+                          <TableCell className="text-right font-semibold">{e.total.toFixed(1)} t</TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow className="border-t-2">
+                        <TableCell className="font-bold">TOTALT</TableCell>
+                        <TableCell className="text-right font-bold">
+                          {byEmployee.reduce((s, e) => s + e.approved, 0).toFixed(1)} t
+                        </TableCell>
+                        <TableCell className="text-right font-bold">
+                          {byEmployee.reduce((s, e) => s + e.pending, 0).toFixed(1)} t
+                        </TableCell>
+                        <TableCell className="text-right font-bold">{totalHours.toFixed(1)} t</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                )}
+                <div className="mt-4 text-xs text-muted-foreground">
+                  For totalsum per ansatt på tvers av alle prosjekter, åpne{" "}
+                  <Link to="/payroll" className="underline text-primary">Lønnsgrunnlag</Link>.
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
           <TabsContent value="all">
             <Card>
               <CardHeader>
