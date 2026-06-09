@@ -214,7 +214,7 @@ export default function Ks2Timeregistrering() {
             <span className="text-sm text-muted-foreground hidden sm:inline">Periode:</span>
           </div>
           <Select value={dateFilter} onValueChange={(v) => setDateFilter(v as DateFilter)}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-[200px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -222,9 +222,29 @@ export default function Ks2Timeregistrering() {
               <SelectItem value="last-week">Forrige uke</SelectItem>
               <SelectItem value="this-month">Denne måneden</SelectItem>
               <SelectItem value="last-month">Forrige måned</SelectItem>
+              <SelectItem value="payroll-21">Lønnsperiode (21–20)</SelectItem>
+              <SelectItem value="custom">Egendefinert periode</SelectItem>
               <SelectItem value="all">Alle</SelectItem>
             </SelectContent>
           </Select>
+          {dateFilter === "custom" && (
+            <div className="flex items-center gap-2">
+              <Label className="text-xs text-muted-foreground">Fra</Label>
+              <Input
+                type="date"
+                value={customFrom}
+                onChange={(e) => setCustomFrom(e.target.value)}
+                className="w-[150px]"
+              />
+              <Label className="text-xs text-muted-foreground">Til</Label>
+              <Input
+                type="date"
+                value={customTo}
+                onChange={(e) => setCustomTo(e.target.value)}
+                className="w-[150px]"
+              />
+            </div>
+          )}
           {start && end && (
             <span className="text-sm text-muted-foreground">
               {format(start, "d. MMM", { locale: nb })} - {format(end, "d. MMM yyyy", { locale: nb })}
