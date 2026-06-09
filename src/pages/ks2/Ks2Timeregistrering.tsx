@@ -167,7 +167,15 @@ export default function Ks2Timeregistrering() {
             Timer registrert på {projectName}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {isCompanyAdmin && (
+            <Button variant="outline" asChild>
+              <Link to="/payroll">
+                <Wallet className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Lønnsgrunnlag</span>
+              </Link>
+            </Button>
+          )}
           <Button variant="outline" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">Eksporter</span>
