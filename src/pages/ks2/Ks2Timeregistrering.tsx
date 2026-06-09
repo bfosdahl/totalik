@@ -319,12 +319,65 @@ export default function Ks2Timeregistrering() {
               <Users className="h-4 w-4 mr-1" />
               Alle
             </TabsTrigger>
+            <TabsTrigger value="by-employee">
+              <User className="h-4 w-4 mr-1" />
+              Per ansatt
+            </TabsTrigger>
             <TabsTrigger value="pending">Til godkjenning ({pendingCount})</TabsTrigger>
             <TabsTrigger value="mine">
               <User className="h-4 w-4 mr-1" />
               Mine
             </TabsTrigger>
           </TabsList>
+          <TabsContent value="by-employee">
+            <Card>
+              <CardHeader>
+                <CardTitle>Timer per ansatt på prosjektet</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {byEmployee.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Ingen timer registrert i valgt periode
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Ansatt</TableHead>
+                        <TableHead className="text-right">Godkjent</TableHead>
+                        <TableHead className="text-right">Til godkjenning</TableHead>
+                        <TableHead className="text-right">Totalt</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {byEmployee.map((e) => (
+                        <TableRow key={e.user_id}>
+                          <TableCell className="font-medium">{e.user_name}</TableCell>
+                          <TableCell className="text-right">{e.approved.toFixed(1)} t</TableCell>
+                          <TableCell className="text-right">{e.pending.toFixed(1)} t</TableCell>
+                          <TableCell className="text-right font-semibold">{e.total.toFixed(1)} t</TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow className="border-t-2">
+                        <TableCell className="font-bold">TOTALT</TableCell>
+                        <TableCell className="text-right font-bold">
+                          {byEmployee.reduce((s, e) => s + e.approved, 0).toFixed(1)} t
+                        </TableCell>
+                        <TableCell className="text-right font-bold">
+                          {byEmployee.reduce((s, e) => s + e.pending, 0).toFixed(1)} t
+                        </TableCell>
+                        <TableCell className="text-right font-bold">{totalHours.toFixed(1)} t</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                )}
+                <div className="mt-4 text-xs text-muted-foreground">
+                  For totalsum per ansatt på tvers av alle prosjekter, åpne{" "}
+                  <Link to="/payroll" className="underline text-primary">Lønnsgrunnlag</Link>.
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
           <TabsContent value="all">
             <Card>
               <CardHeader>
