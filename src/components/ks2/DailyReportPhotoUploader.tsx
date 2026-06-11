@@ -53,6 +53,8 @@ export function DailyReportPhotoUploader({ photos, onChange }: Props) {
   const fileInput = useRef<HTMLInputElement>(null);
   const cameraInput = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [phase, setPhase] = useState<"idle" | "compressing" | "uploading">("idle");
+  const [progress, setProgress] = useState<{ done: number; total: number }>({ done: 0, total: 0 });
   const [previews, setPreviews] = useState<Record<string, string>>({});
 
   // Last preview kun for synlige bilder (thumb_path foretrukket)
@@ -77,10 +79,13 @@ export function DailyReportPhotoUploader({ photos, onChange }: Props) {
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0 || !profile?.company_id) return;
     setUploading(true);
+    const total = files.length;
+    setProgress({ done: 0, total });
     const uploaded: DailyReportPhoto[] = [];
     try {
       for (const rawFile of Array.from(files)) {
         // Komprimer original
+        setPhase("compressing");
         const file = await compressImageFile(rawFile, { maxDim: 2000, quality: 0.85 });
         const safeName = sanitize(file.name);
         const baseId = crypto.randomUUID();
