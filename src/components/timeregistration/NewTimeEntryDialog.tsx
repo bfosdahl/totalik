@@ -414,30 +414,46 @@ export function NewTimeEntryDialog({
             </div>
           </div>
 
-          {/* Timetype */}
-          <div className="space-y-2">
-            <Label>Timetype</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {HOUR_TYPE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setHourType(opt.value)}
-                  className={cn(
-                    "rounded-md border px-3 py-2 text-sm transition-colors",
-                    hourType === opt.value
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-input hover:bg-muted"
-                  )}
-                >
-                  <div className="font-medium">{opt.label}</div>
-                  <div className={cn("text-[10px]", hourType === opt.value ? "opacity-90" : "text-muted-foreground")}>
-                    {opt.hint}
-                  </div>
-                </button>
-              ))}
+          {/* Timetype – kun aktiv når ingen overtid-segmenter er definert */}
+          {overtimeSegments.length === 0 && (
+            <div className="space-y-2">
+              <Label>Timetype</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {HOUR_TYPE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setHourType(opt.value)}
+                    className={cn(
+                      "rounded-md border px-3 py-2 text-sm transition-colors",
+                      hourType === opt.value
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-input hover:bg-muted"
+                    )}
+                  >
+                    <div className="font-medium">{opt.label}</div>
+                    <div className={cn("text-[10px]", hourType === opt.value ? "opacity-90" : "text-muted-foreground")}>
+                      {opt.hint}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Eller spesifiser overtid som intervaller under (f.eks. 15–18 som 50%).
+              </p>
             </div>
-          </div>
+          )}
+
+          {/* Overtid-segmenter i samme føring */}
+          <OvertimeSegmentsEditor
+            segments={overtimeSegments}
+            onChange={setOvertimeSegments}
+            mainStart={startTime}
+            mainEnd={endTime}
+          />
+          {overtimeSegments.length > 0 && parseFloat(hours) > 0 && (
+            <SegmentSummary totalHours={parseFloat(hours) || 0} segments={overtimeSegments} />
+          )}
 
           {/* Beskrivelse */}
           <div className="space-y-2">
