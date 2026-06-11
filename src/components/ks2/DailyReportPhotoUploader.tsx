@@ -103,6 +103,7 @@ export function DailyReportPhotoUploader({ photos, onChange }: Props) {
         }
 
         // Last opp original og thumb i parallell
+        setPhase("uploading");
         const uploads: Promise<any>[] = [
           supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type, upsert: false }),
         ];
@@ -119,6 +120,7 @@ export function DailyReportPhotoUploader({ photos, onChange }: Props) {
           uploaded_at: new Date().toISOString(),
           thumb_path: thumbOk ? thumbPath : undefined,
         });
+        setProgress((p) => ({ done: p.done + 1, total: p.total }));
       }
       const next = [...photos, ...uploaded];
       onChange(next);
@@ -128,6 +130,8 @@ export function DailyReportPhotoUploader({ photos, onChange }: Props) {
       toast.error("Kunne ikke laste opp bilde");
     } finally {
       setUploading(false);
+      setPhase("idle");
+      setProgress({ done: 0, total: 0 });
       if (fileInput.current) fileInput.current.value = "";
       if (cameraInput.current) cameraInput.current.value = "";
     }
@@ -157,6 +161,17 @@ export function DailyReportPhotoUploader({ photos, onChange }: Props) {
         <input ref={cameraInput} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleFiles(e.target.files)} />
         <input ref={fileInput} type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} />
       </div>
+
+      {uploading && (
+        <div className="flex items-center gap-2 rounded-md bg-muted/50 border px-3 py-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+          <span>
+            {phase === "compressing" ? "Komprimerer bilde…" : "Laster opp…"}
+            {progress.total > 1 && ` (${progress.done + (phase === "uploading" ? 0 : 0)}/${progress.total})`}
+          </span>
+        </div>
+      )}
+
 
       {photos.length > 0 && (
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
