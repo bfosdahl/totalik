@@ -323,7 +323,7 @@ export function useTimeEntries() {
           .update({
             ...updates,
             updated_at: new Date().toISOString(),
-          })
+          } as any)
           .eq("id", id);
 
         if (error) throw error;
