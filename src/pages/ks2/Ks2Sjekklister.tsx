@@ -35,6 +35,9 @@ import { nb } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
 import { downloadChecklistPdf } from "@/utils/saveChecklistToDocumentation";
 import { useToast } from "@/hooks/use-toast";
+import { ImportCompanyChecklistsDialog } from "@/components/ks2/ImportCompanyChecklistsDialog";
+import type { CompanyKsChecklistTemplate } from "@/hooks/useCompanyKsChecklistTemplates";
+import { FolderInput } from "lucide-react";
 
 export default function Ks2Sjekklister() {
   const { projectId } = useParams();
