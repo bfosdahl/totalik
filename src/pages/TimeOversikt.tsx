@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths, subWeeks } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Clock, Download, Users, Filter } from "lucide-react";
+import { Clock, Download, Users, Filter, FileSpreadsheet } from "lucide-react";
+import * as XLSX from "xlsx";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,8 @@ export default function TimeOversikt() {
   const navigate = useNavigate();
   const [preset, setPreset] = useState<Preset>("this_month");
   const [{ start, end }, setRange] = useState(presetRange("this_month"));
-  const [onlyApproved, setOnlyApproved] = useState(false);
+  // Default til kun godkjente timer siden oversikten brukes til lønnsgrunnlag
+  const [onlyApproved, setOnlyApproved] = useState(true);
   const [search, setSearch] = useState("");
 
   const { data, isLoading } = useAdminHoursSummary({ startDate: start, endDate: end, onlyApproved });
@@ -78,6 +80,21 @@ export default function TimeOversikt() {
     toast.success("CSV lastet ned");
   };
 
+  const exportXlsx = () => {
+    if (!data) return;
+    const aoa: (string | number)[][] = [
+      ["Person", "Normal", "50% overtid", "100% overtid", "Totalt"],
+      ...rows.map((r) => [r.user_name, r.normal, r.overtime_50, r.overtime_100, r.total]),
+      ["TOTALT", data.totals.normal, data.totals.overtime_50, data.totals.overtime_100, data.totals.total],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws["!cols"] = [{ wch: 28 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 10 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Timer");
+    XLSX.writeFile(wb, `timer_${start}_${end}.xlsx`);
+    toast.success("Excel lastet ned");
+  };
+
   if (!canSee) {
     return (
       <AppLayout>
@@ -103,9 +120,13 @@ export default function TimeOversikt() {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigate("/time-registration")}>Til timeføring</Button>
-            <Button onClick={exportCsv} disabled={!data || rows.length === 0}>
+            <Button variant="outline" onClick={exportCsv} disabled={!data || rows.length === 0}>
               <Download className="h-4 w-4 mr-2" />
-              Last ned CSV
+              CSV
+            </Button>
+            <Button onClick={exportXlsx} disabled={!data || rows.length === 0}>
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Excel
             </Button>
           </div>
         </div>
