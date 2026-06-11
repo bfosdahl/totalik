@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths, subWeeks } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Clock, Download, Users, Filter } from "lucide-react";
+import { Clock, Download, Users, Filter, FileSpreadsheet } from "lucide-react";
+import * as XLSX from "xlsx";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,8 @@ export default function TimeOversikt() {
   const navigate = useNavigate();
   const [preset, setPreset] = useState<Preset>("this_month");
   const [{ start, end }, setRange] = useState(presetRange("this_month"));
-  const [onlyApproved, setOnlyApproved] = useState(false);
+  // Default til kun godkjente timer siden oversikten brukes til lønnsgrunnlag
+  const [onlyApproved, setOnlyApproved] = useState(true);
   const [search, setSearch] = useState("");
 
   const { data, isLoading } = useAdminHoursSummary({ startDate: start, endDate: end, onlyApproved });
