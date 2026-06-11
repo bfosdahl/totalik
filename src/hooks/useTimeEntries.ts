@@ -46,6 +46,13 @@ export interface TimeEntry {
   schedule_role?: string | null;
 }
 
+export interface OvertimeSegmentPersist {
+  start: string;
+  end: string;
+  rate: "overtime_50" | "overtime_100";
+  hours: number;
+}
+
 export interface CreateTimeEntry {
   entry_date: string;
   hours: number;
@@ -57,6 +64,7 @@ export interface CreateTimeEntry {
   description?: string;
   status?: "draft" | "submitted";
   allowances?: TimeEntryAllowanceInput[];
+  overtime_segments?: OvertimeSegmentPersist[];
 }
 
 export function useTimeEntries() {
@@ -251,7 +259,8 @@ export function useTimeEntries() {
         hour_type: entry.hour_type || "normal",
         description: entry.description || null,
         status: entry.status || "submitted",
-      }).select("id").single();
+        overtime_segments: entry.overtime_segments && entry.overtime_segments.length > 0 ? entry.overtime_segments : null,
+      } as any).select("id").single();
 
       if (error) throw error;
 
