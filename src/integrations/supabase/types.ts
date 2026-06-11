@@ -16015,6 +16015,7 @@ export type Database = {
           hours: number
           id: string
           ks_project_id: string | null
+          overtime_segments: Json | null
           project_id: string | null
           project_name: string | null
           source: string | null
@@ -16040,6 +16041,7 @@ export type Database = {
           hours: number
           id?: string
           ks_project_id?: string | null
+          overtime_segments?: Json | null
           project_id?: string | null
           project_name?: string | null
           source?: string | null
@@ -16065,6 +16067,7 @@ export type Database = {
           hours?: number
           id?: string
           ks_project_id?: string | null
+          overtime_segments?: Json | null
           project_id?: string | null
           project_name?: string | null
           source?: string | null
