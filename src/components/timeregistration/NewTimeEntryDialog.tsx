@@ -32,6 +32,7 @@ import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useAllowanceTypes, ALLOWANCE_UNIT_LABELS } from "@/hooks/useAllowanceTypes";
 import { CreateTimeEntry, HourType, TimeEntryAllowanceInput } from "@/hooks/useTimeEntries";
+import { OvertimeSegmentsEditor, SegmentSummary, OvertimeSegment, computeSegmentBreakdown } from "./OvertimeSegments";
 
 interface NewTimeEntryDialogProps {
   open: boolean;
@@ -82,6 +83,7 @@ export function NewTimeEntryDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useCustomProject, setUseCustomProject] = useState(false);
   const [allowanceRows, setAllowanceRows] = useState<AllowanceRow[]>([]);
+  const [overtimeSegments, setOvertimeSegments] = useState<OvertimeSegment[]>([]);
 
   const { projects } = useKsModule2Projects();
   const { hasModule } = useCompanyModules();
@@ -115,6 +117,7 @@ export function NewTimeEntryDialog({
       setDescription("");
       setUseCustomProject(false);
       setAllowanceRows([]);
+      setOvertimeSegments([]);
     }
   }, [open, defaultProjectId]);
 
