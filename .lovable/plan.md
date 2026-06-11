@@ -1,71 +1,82 @@
-# Eirik runde 2 — 6 fikser
 
-## 1. Skjul avsluttede prosjekter fra menyen
-**Funn:** `Ks2Dashboard` har allerede filterknapper (Alle / Aktive / Fullførte) men default er "Alle". Sidebar/quick-list kan også vise fullførte.
-**Fiks:**
-- Default-filter endres til **"Aktive"** (status = planned/active).
-- "Alle"-knappen renames til "Aktive + planlagte". Egen "Arkiv"-knapp viser kun completed/handover/warranty.
-- Sjekker også `AppSidebar` — fullførte prosjekter ekskluderes der.
-- Legg til "Marker som fullført"-knapp i prosjektdetalj (hvis ikke finnes) som setter status=completed.
+# Plan: Eiriks tilbakemeldinger – Timeføring, Sjekklister, Bilder
 
-## 2. AI-sjekkliste "vinkelsliper" forsvinner
-**Funn:** `AiChecklistDialog` lagrer til `admin_checklist_templates` hvis systemadmin, ellers til `company_ks_checklist_templates`. Eirik er company_admin → lagres riktig sted, men sannsynligvis vises ikke "company-malene" i KS-malbibliotek-UI.
-**Fiks:**
-- Verifiser at `KsOppsett`/malbibliotek lister både admin-maler OG `company_ks_checklist_templates`.
-- Hvis ikke: legg til seksjon "Mine egne maler" øverst med rediger/slett.
-- Etter generering — vis "Åpne i malbibliotek"-lenke i toast.
+## 1. Admin timeoversikt (HØY)
 
-## 3. Skjerm låses etter AI-rutinegenerering
-**Funn:** Klassisk Radix Dialog scroll-lock-bug. Dialogen setter `pointer-events:none` på body som ikke ryddes opp.
-**Fiks i `AiRoutineDialog`:**
-- `onOpenAutoFocus={(e) => e.preventDefault()}` på DialogContent.
-- Sørg for at body-styles ryddes ved unmount (cleanup-effect).
-- Pakk innholdet i `ScrollArea` med eksplisitt `max-h-[80vh] overflow-y-auto`.
+**Ny side:** `/admin/timer` – full oversikt med filter på periode, person, prosjekt.
+- Kolonner per person: Normaltimer · 50% overtid · 100% overtid · Total · Lønnsgrunnlag (estimert)
+- Periode-presets: Denne uken / Forrige uke / Denne måned / Forrige måned / Egendefinert
+- Eksport til Excel/CSV (bruker eksisterende `timeEntryExport.ts` som mal)
+- Filter: kun godkjente timer (toggle for å vise alle)
 
-## 4. Les/vis rutine uten å gå i redigeringsmodus
-**Fiks:**
-- Legg til "Vis"-knapp (øye-ikon) i rutine-listen ved siden av "Rediger".
-- Åpner read-only dialog med formattert innhold (tittel, formål, ansvar, beskrivelse, sjekkpunkter, lovverk).
-- Knapper i dialog: "Lukk" + "Rediger" (bytter til redigeringsmodus).
+**Dashboard-widget:** Nytt kort på admin-dashboard ("Timer denne måned") med totaltall + lenke til /admin/timer. Vises kun for `company_admin` / `system_admin`.
 
-## 5. Hovedmeny-rutiner ikke synlig i prosjekter
-**Funn:** Hovedrutiner ligger i `company_ks_routines`. Prosjektrutiner i `ks_module2_routines` med `project_id`. To separate tabeller, ingen kobling.
-**Fiks:**
-- I prosjekt → "Rutiner": legg til knapp **"Hent fra firmabibliotek"** som åpner velger med alle aktive `company_ks_routines`.
-- Markerte rutiner kopieres inn i `ks_module2_routines` med `project_id` satt og `source_routine_id` referanse.
-- Endringer i prosjekt-kopi påvirker ikke originalen (snapshot-mønster).
+## 2. Timeføring – overtid i samme føring (HØY)
 
-## 6. Fjerne irrelevante standardrutiner (nybygg, bad, tømring)
-**Funn:** Disse kommer trolig fra default-templates ved oppsett. Kan ikke hard-slettes hvis de er fra admin-template, men kan skjules.
-**Fiks:**
-- Legg til "Skjul"-knapp (eller "Slett" hvis det er company-rutine).
-- Skjuling lagres i ny kolonne `is_hidden` på `company_ks_routines` (migrasjon).
-- Filter-toggle: "Vis skjulte rutiner" i header.
+**`NewTimeEntryDialog`** utvides:
+- Hovedperiode 07:00–18:00 (normaltid beregnes automatisk)
+- Knapp "+ Legg til overtid-segment" → segment med start, slutt, sats (50% / 100%)
+- Flere segmenter mulig. Validering: segmenter må ligge innenfor hovedperioden, ikke overlappe
+- Normaltimer = total – sum(overtid-segmenter)
+- Sammendrag vises live: "8t normal + 3t (50%) + 0t (100%)"
 
-## Tekniske detaljer
+**DB:** `time_entries` har allerede `regular_hours`, `overtime_50_hours`, `overtime_100_hours`. Vi legger til kolonne `overtime_segments jsonb` for detaljert lagring (revisjon/PDF). Eksisterende rader påvirkes ikke.
+
+**Mobil:** Beholder kompakt layout, overtid-segmenter rendres som collapsible kort.
+
+## 3. Sjekklister & Rutiner – gjenbruk på tvers (HØY)
+
+**Problem:** Sjekklister/rutiner laget i hovedmenyen lagres i `company_ks_checklist_templates` / `company_routines` (eller `customer_routine_instances`), mens prosjekt-modal kun viser admin-bibliotek eller prosjekt-spesifikke maler.
+
+**Løsning – «Bedriftsbibliotek»:**
+- Når man inne i et KS-prosjekt åpner "Legg til sjekkliste" / "Legg til rutine", vises nå to faner:
+  1. **Total-IK Bibliotek** (admin-maler – som i dag)
+  2. **Mine bedriftsmaler** (alle globale maler bedriften har laget – ny)
+- Trykk "Legg til" → kopier til prosjektet (eksisterende adopt-logikk gjenbrukes)
+- Hovedmenyens "Opprett sjekkliste/rutine" får tydelig tekst: *"Denne malen blir tilgjengelig i alle prosjekter"*
+
+**Filer som berøres:**
+- `Ks2ProjectDetail` sjekkliste-/rutine-modal → ny tabs-UI
+- Ny hook `useCompanyGlobalTemplates` som henter fra `company_ks_checklist_templates` + `company_routines` filtrert på `company_id` og `is_template = true`
+- Mark eksisterende globalt opprettede rader med `is_template = true` (migration + UI-toggle)
+
+## 4. Dagsrapporter – raskere bilder (MEDIUM)
+
+- **Opplasting:** Wrap `daily-report-photos`-upload med `compressImageFile({ maxDim: 2000, quality: 0.85 })` (allerede finnes) – reduserer typisk 5MB → ~400KB
+- **Thumbnails:** Generer 400px-versjon klient-side, last opp parallelt til samme bucket som `<path>.thumb.jpg`
+- **Visning:** `DailyReportPhotoGallery` laster `.thumb.jpg` i grid, full-size kun ved lightbox-åpning
+- **Caching:** Øk signed-URL fra 1t → 24t, cache i React Query for å unngå re-signing ved re-render
+- **Lazy loading:** `loading="lazy"` på alle `<img>` i grid
+
+## 5. Tekniske endringer
 
 ```text
-Fil-endringer:
-- src/pages/ks2/Ks2Dashboard.tsx       (1: default-filter, sidebar-ekskl.)
-- src/components/layout/AppSidebar.tsx (1: hide completed)
-- src/pages/ks2/KsOppsett.tsx          (2: vis company-checklist-maler)
-- src/components/admin/AiChecklistDialog.tsx (2: bedre toast)
-- src/components/routines/AiRoutineDialog.tsx (3: scroll-lock fix)
-- src/pages/IkKsRutiner.tsx + IkHmsRutiner (4: view-dialog, 6: skjul-knapp)
-- src/hooks/useKsModule2Routines.ts    (5: import-fra-bibliotek)
-- src/components/ks2/RoutineImportDialog.tsx (5: ny komponent)
-- migrasjon: ks_module2_routines + source_routine_id
-- migrasjon: company_ks_routines + is_hidden bool default false
+DB-migration:
+  ALTER TABLE time_entries ADD COLUMN overtime_segments jsonb;
+  ALTER TABLE company_ks_checklist_templates ADD COLUMN is_template boolean DEFAULT true;
+  ALTER TABLE company_routines (sjekk – kanskje allerede der)
+
+Nye filer:
+  src/pages/admin/AdminTimer.tsx
+  src/components/dashboard/AdminHoursWidget.tsx
+  src/components/timeregistration/OvertimeSegments.tsx
+  src/hooks/useCompanyGlobalTemplates.ts
+  src/hooks/useAdminHoursSummary.ts
+
+Endrede filer:
+  src/components/timeregistration/NewTimeEntryDialog.tsx  (overtid-segmenter)
+  src/components/ks2/DailyReportPhotoGallery.tsx          (thumbnails)
+  src/hooks/useKsDailyReports.ts                          (compress + thumb upload)
+  src/components/ks2/Ks2ProjectDetail.tsx (eller subkomp)  (bibliotek-tabs)
+  src/pages/admin/AdminDashboard.tsx                       (widget)
+  App.tsx router                                            (/admin/timer)
 ```
 
-## Rekkefølge
+## Rekkefølge (4 commits)
 
-1+3+4 først (UI-fikser, ingen DB) → publiser → 2+6 (DB-migrasjoner små) → 5 (større, ny dialog + tabell-endring).
+1. **Sjekklister/rutiner-bibliotek** (mest kritisk for daglig bruk)
+2. **Timeføring overtid-segmenter**
+3. **Admin timeoversikt + dashboard-widget**
+4. **Dagsrapport bilde-optimalisering**
 
-Alternativt: kjør alt i én runde og publiser samlet. Foreslår sistnevnte — Eirik nevner alt henger sammen.
-
-## Spørsmål før jeg går i gang
-
-- **Pkt 1 (status "completed"):** Skal vi også vise prosjekter med status `handover`/`warranty` som "Aktive" eller flytte de til "Arkiv"?
-- **Pkt 5 (import-mønster):** Skal prosjekt-kopier av rutiner være **statiske snapshots** (endringer i bibliotek påvirker ikke prosjekt) eller **lenkede** (endringer i bibliotek slår igjennom)? Snapshots er tryggere for revisjonsspor.
-- **Pkt 6 (skjul):** Skjules pr. firma (alle ansatte ser det samme) eller pr. bruker?
+Hver del testes isolert. Jeg gir kort oppsummering etter hver del og en samlet sluttrapport.

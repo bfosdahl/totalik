@@ -29,6 +29,7 @@ const HmsChat = lazy(() => import("./pages/HmsChat"));
 const HjelpFaq = lazy(() => import("./pages/HjelpFaq"));
 const MyCourseCard = lazy(() => import("./pages/MyCourseCard"));
 const TimeRegistration = lazy(() => import("./pages/TimeRegistration"));
+const TimeOversikt = lazy(() => import("./pages/TimeOversikt"));
 const Payroll = lazy(() => import("./pages/Payroll"));
 const TimeClock = lazy(() => import("./pages/TimeClock"));
 const TimeOff = lazy(() => import("./pages/TimeOff"));
@@ -224,6 +225,7 @@ const App = () => (
                   <Route path="/hjelp" element={<ProtectedRoute><HjelpFaq /></ProtectedRoute>} />
                   <Route path="/my-courses" element={<ProtectedRoute><MyCourseCard /></ProtectedRoute>} />
                   <Route path="/time-registration" element={<ProtectedRoute><TimeRegistration /></ProtectedRoute>} />
+                  <Route path="/timer/oversikt" element={<ProtectedRoute><TimeOversikt /></ProtectedRoute>} />
                   <Route path="/payroll" element={<ProtectedRoute><Payroll /></ProtectedRoute>} />
                   <Route path="/time-off" element={<ProtectedRoute><TimeOff /></ProtectedRoute>} />
                   <Route path="/work-schedule" element={<ProtectedRoute><WorkSchedule /></ProtectedRoute>} />

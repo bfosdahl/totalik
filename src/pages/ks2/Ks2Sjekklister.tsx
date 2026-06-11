@@ -35,6 +35,9 @@ import { nb } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
 import { downloadChecklistPdf } from "@/utils/saveChecklistToDocumentation";
 import { useToast } from "@/hooks/use-toast";
+import { ImportCompanyChecklistsDialog } from "@/components/ks2/ImportCompanyChecklistsDialog";
+import type { CompanyKsChecklistTemplate } from "@/hooks/useCompanyKsChecklistTemplates";
+import { FolderInput } from "lucide-react";
 
 export default function Ks2Sjekklister() {
   const { projectId } = useParams();
@@ -49,9 +52,35 @@ export default function Ks2Sjekklister() {
   const [existingChecklist, setExistingChecklist] = useState<KsModule2Checklist | null>(null);
   const [viewingChecklist, setViewingChecklist] = useState<KsModule2Checklist | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
   const { checklistTemplates, isLoading: loadingTemplates } = useKsModule2ProjectTemplates(projectId || "");
-  const { checklists, isLoading: loadingChecklists, refetch: refetchChecklists, updateChecklist } = useKsModule2Checklists(projectId || "");
+  const { checklists, isLoading: loadingChecklists, refetch: refetchChecklists, updateChecklist, createChecklist } = useKsModule2Checklists(projectId || "");
+
+  const handleImportFromLibrary = async (templates: CompanyKsChecklistTemplate[]) => {
+    let ok = 0;
+    for (const t of templates) {
+      const items = (t.checkpoints || []).map((cp: any, idx: number) => ({
+        id: cp.id || `cp-${idx}`,
+        text: cp.text || cp.checkpoint_text || `Punkt ${idx + 1}`,
+        description: cp.description,
+        value: null,
+        required: true,
+      }));
+      const created = await createChecklist({
+        title: t.template_name,
+        template_name: t.template_name,
+        checklist_items: items as any,
+        is_paper_version: false,
+      });
+      if (created) ok++;
+    }
+    if (ok > 0) {
+      toast({ title: `${ok} sjekkliste${ok > 1 ? "r" : ""} lagt til som planlagt` });
+      refetchChecklists();
+      setActiveTab("pagaende");
+    }
+  };
 
   const handleToggleIncludeInReport = async (checklist: KsModule2Checklist) => {
     const newValue = !(checklist.include_in_report ?? true);
@@ -234,13 +263,23 @@ export default function Ks2Sjekklister() {
           <h1 className="text-2xl font-bold">Sjekklister & egenkontroller</h1>
           <p className="text-muted-foreground">Maler, pågående og fullførte kontroller for prosjektet</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" onClick={() => setShowImport(true)}>
+            <FolderInput className="h-4 w-4 mr-2" />
+            Hent fra firmabibliotek
+          </Button>
           <Button onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
             <Library className="h-4 w-4 mr-2" />
-            Velg sjekklister fra malbibliotek
+            Velg fra malbibliotek
           </Button>
         </div>
       </div>
+
+      <ImportCompanyChecklistsDialog
+        open={showImport}
+        onOpenChange={setShowImport}
+        onImport={handleImportFromLibrary}
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

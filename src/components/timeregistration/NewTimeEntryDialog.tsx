@@ -32,6 +32,7 @@ import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useAllowanceTypes, ALLOWANCE_UNIT_LABELS } from "@/hooks/useAllowanceTypes";
 import { CreateTimeEntry, HourType, TimeEntryAllowanceInput } from "@/hooks/useTimeEntries";
+import { OvertimeSegmentsEditor, SegmentSummary, OvertimeSegment, computeSegmentBreakdown } from "./OvertimeSegments";
 
 interface NewTimeEntryDialogProps {
   open: boolean;
@@ -82,6 +83,7 @@ export function NewTimeEntryDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useCustomProject, setUseCustomProject] = useState(false);
   const [allowanceRows, setAllowanceRows] = useState<AllowanceRow[]>([]);
+  const [overtimeSegments, setOvertimeSegments] = useState<OvertimeSegment[]>([]);
 
   const { projects } = useKsModule2Projects();
   const { hasModule } = useCompanyModules();
@@ -115,6 +117,7 @@ export function NewTimeEntryDialog({
       setDescription("");
       setUseCustomProject(false);
       setAllowanceRows([]);
+      setOvertimeSegments([]);
     }
   }, [open, defaultProjectId]);
 
@@ -166,6 +169,57 @@ export function NewTimeEntryDialog({
       .filter((x): x is TimeEntryAllowanceInput => x !== null);
 
     setIsSubmitting(true);
+
+    // Hvis brukeren har lagt inn overtid-segmenter: split inn i flere føringer
+    // (én pr. type), slik at lønnsgrunnlag og statistikk teller riktig.
+    if (overtimeSegments.length > 0) {
+      const breakdown = computeSegmentBreakdown(hoursNum, overtimeSegments);
+      const ot50 = Math.round(breakdown.overtime_50 * 100) / 100;
+      const ot100 = Math.round(breakdown.overtime_100 * 100) / 100;
+      const normal = Math.round(breakdown.normal * 100) / 100;
+
+      if (ot50 + ot100 > hoursNum + 0.001) {
+        toast.error("Overtid overstiger totalt antall timer");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const persistSegments = overtimeSegments.map((s) => ({
+        start: s.start,
+        end: s.end,
+        rate: s.rate,
+        hours: Math.max(0, calcHoursBetween(s.start, s.end)),
+      }));
+
+      const baseDescription = description || undefined;
+      const periodLabel = startTime && endTime ? ` (${startTime}–${endTime})` : "";
+      const entries: { hours: number; hour_type: HourType; description?: string; segs?: typeof persistSegments }[] = [];
+      if (normal > 0) entries.push({ hours: normal, hour_type: "normal", description: baseDescription });
+      if (ot50 > 0) entries.push({ hours: ot50, hour_type: "overtime_50", description: `${baseDescription ? baseDescription + " — " : ""}50% overtid${periodLabel}`, segs: persistSegments });
+      if (ot100 > 0) entries.push({ hours: ot100, hour_type: "overtime_100", description: `${baseDescription ? baseDescription + " — " : ""}100% overtid${periodLabel}`, segs: persistSegments });
+
+      let allOk = true;
+      for (const e of entries) {
+        const ok = await onSubmit({
+          entry_date: format(date, "yyyy-MM-dd"),
+          hours: e.hours,
+          hour_type: e.hour_type,
+          project_name: projectName,
+          project_id: projectId,
+          ks_project_id: ksProjectId || null,
+          customer_name: customerName || null,
+          description: e.description,
+          // Bare på første føring lagrer vi tillegg så de ikke dobles
+          allowances: e === entries[0] ? allowances : [],
+          overtime_segments: e.segs,
+        });
+        if (!ok) { allOk = false; break; }
+      }
+      if (allOk) onOpenChange(false);
+      setIsSubmitting(false);
+      return;
+    }
+
     const success = await onSubmit({
       entry_date: format(date, "yyyy-MM-dd"),
       hours: hoursNum,
@@ -360,30 +414,46 @@ export function NewTimeEntryDialog({
             </div>
           </div>
 
-          {/* Timetype */}
-          <div className="space-y-2">
-            <Label>Timetype</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {HOUR_TYPE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setHourType(opt.value)}
-                  className={cn(
-                    "rounded-md border px-3 py-2 text-sm transition-colors",
-                    hourType === opt.value
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-input hover:bg-muted"
-                  )}
-                >
-                  <div className="font-medium">{opt.label}</div>
-                  <div className={cn("text-[10px]", hourType === opt.value ? "opacity-90" : "text-muted-foreground")}>
-                    {opt.hint}
-                  </div>
-                </button>
-              ))}
+          {/* Timetype – kun aktiv når ingen overtid-segmenter er definert */}
+          {overtimeSegments.length === 0 && (
+            <div className="space-y-2">
+              <Label>Timetype</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {HOUR_TYPE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setHourType(opt.value)}
+                    className={cn(
+                      "rounded-md border px-3 py-2 text-sm transition-colors",
+                      hourType === opt.value
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-input hover:bg-muted"
+                    )}
+                  >
+                    <div className="font-medium">{opt.label}</div>
+                    <div className={cn("text-[10px]", hourType === opt.value ? "opacity-90" : "text-muted-foreground")}>
+                      {opt.hint}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Eller spesifiser overtid som intervaller under (f.eks. 15–18 som 50%).
+              </p>
             </div>
-          </div>
+          )}
+
+          {/* Overtid-segmenter i samme føring */}
+          <OvertimeSegmentsEditor
+            segments={overtimeSegments}
+            onChange={setOvertimeSegments}
+            mainStart={startTime}
+            mainEnd={endTime}
+          />
+          {overtimeSegments.length > 0 && parseFloat(hours) > 0 && (
+            <SegmentSummary totalHours={parseFloat(hours) || 0} segments={overtimeSegments} />
+          )}
 
           {/* Beskrivelse */}
           <div className="space-y-2">

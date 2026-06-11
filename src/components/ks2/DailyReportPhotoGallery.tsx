@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface Photo {
   path: string;
   name: string;
+  thumb_path?: string;
 }
 
 interface Props {
@@ -14,23 +15,35 @@ interface Props {
 const BUCKET = "daily-report-photos";
 
 export function DailyReportPhotoGallery({ photos }: Props) {
-  const [urls, setUrls] = useState<Record<string, string>>({});
+  const [thumbs, setThumbs] = useState<Record<string, string>>({});
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [loadingLightbox, setLoadingLightbox] = useState(false);
 
+  // Last kun thumbnails for grid (24t cache)
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const next: Record<string, string> = {};
       for (const p of photos) {
-        const { data } = await supabase.storage.from(BUCKET).createSignedUrl(p.path, 3600);
+        if (thumbs[p.path]) continue;
+        const key = p.thumb_path || p.path;
+        const { data } = await supabase.storage.from(BUCKET).createSignedUrl(key, 60 * 60 * 24);
         if (data?.signedUrl) next[p.path] = data.signedUrl;
       }
-      if (!cancelled) setUrls(next);
+      if (!cancelled && Object.keys(next).length) setThumbs((prev) => ({ ...prev, ...next }));
     })();
-    return () => {
-      cancelled = true;
-    };
-  }, [photos]);
+    return () => { cancelled = true; };
+  }, [photos]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const openFull = async (photo: Photo) => {
+    setLoadingLightbox(true);
+    try {
+      const { data } = await supabase.storage.from(BUCKET).createSignedUrl(photo.path, 60 * 60);
+      if (data?.signedUrl) setLightbox(data.signedUrl);
+    } finally {
+      setLoadingLightbox(false);
+    }
+  };
 
   if (!photos?.length) return null;
 
@@ -41,11 +54,11 @@ export function DailyReportPhotoGallery({ photos }: Props) {
           <button
             key={photo.path}
             type="button"
-            onClick={() => urls[photo.path] && setLightbox(urls[photo.path])}
+            onClick={() => openFull(photo)}
             className="relative aspect-square rounded-md overflow-hidden border bg-muted hover:opacity-90 transition-opacity"
           >
-            {urls[photo.path] ? (
-              <img src={urls[photo.path]} alt={photo.name} className="w-full h-full object-cover" />
+            {thumbs[photo.path] ? (
+              <img src={thumbs[photo.path]} alt={photo.name} loading="lazy" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <ImageIcon className="h-6 w-6 text-muted-foreground" />
@@ -54,12 +67,16 @@ export function DailyReportPhotoGallery({ photos }: Props) {
           </button>
         ))}
       </div>
-      {lightbox && (
+      {(lightbox || loadingLightbox) && (
         <div
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
           onClick={() => setLightbox(null)}
         >
-          <img src={lightbox} alt="" className="max-w-full max-h-full object-contain" />
+          {lightbox ? (
+            <img src={lightbox} alt="" className="max-w-full max-h-full object-contain" />
+          ) : (
+            <div className="text-white">Laster…</div>
+          )}
         </div>
       )}
     </>

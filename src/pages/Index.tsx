@@ -15,6 +15,7 @@ import { ComplianceProgress } from "@/components/dashboard/ComplianceProgress";
 import { RecentDeviations } from "@/components/dashboard/RecentDeviations";
 import { ExpiryAlerts } from "@/components/dashboard/ExpiryAlerts";
 import { QuickActions } from "@/components/dashboard/QuickActions";
+import { AdminHoursWidget } from "@/components/dashboard/AdminHoursWidget";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useNavigate } from "react-router-dom";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
@@ -164,6 +165,7 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Left column */}
           <div className="lg:col-span-2 space-y-4 md:space-y-6">
+            <AdminHoursWidget />
             <ComplianceProgress />
             <RecentDeviations />
           </div>
