@@ -169,6 +169,57 @@ export function NewTimeEntryDialog({
       .filter((x): x is TimeEntryAllowanceInput => x !== null);
 
     setIsSubmitting(true);
+
+    // Hvis brukeren har lagt inn overtid-segmenter: split inn i flere føringer
+    // (én pr. type), slik at lønnsgrunnlag og statistikk teller riktig.
+    if (overtimeSegments.length > 0) {
+      const breakdown = computeSegmentBreakdown(hoursNum, overtimeSegments);
+      const ot50 = Math.round(breakdown.overtime_50 * 100) / 100;
+      const ot100 = Math.round(breakdown.overtime_100 * 100) / 100;
+      const normal = Math.round(breakdown.normal * 100) / 100;
+
+      if (ot50 + ot100 > hoursNum + 0.001) {
+        toast.error("Overtid overstiger totalt antall timer");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const persistSegments = overtimeSegments.map((s) => ({
+        start: s.start,
+        end: s.end,
+        rate: s.rate,
+        hours: Math.max(0, calcHoursBetween(s.start, s.end)),
+      }));
+
+      const baseDescription = description || undefined;
+      const periodLabel = startTime && endTime ? ` (${startTime}–${endTime})` : "";
+      const entries: { hours: number; hour_type: HourType; description?: string; segs?: typeof persistSegments }[] = [];
+      if (normal > 0) entries.push({ hours: normal, hour_type: "normal", description: baseDescription });
+      if (ot50 > 0) entries.push({ hours: ot50, hour_type: "overtime_50", description: `${baseDescription ? baseDescription + " — " : ""}50% overtid${periodLabel}`, segs: persistSegments });
+      if (ot100 > 0) entries.push({ hours: ot100, hour_type: "overtime_100", description: `${baseDescription ? baseDescription + " — " : ""}100% overtid${periodLabel}`, segs: persistSegments });
+
+      let allOk = true;
+      for (const e of entries) {
+        const ok = await onSubmit({
+          entry_date: format(date, "yyyy-MM-dd"),
+          hours: e.hours,
+          hour_type: e.hour_type,
+          project_name: projectName,
+          project_id: projectId,
+          ks_project_id: ksProjectId || null,
+          customer_name: customerName || null,
+          description: e.description,
+          // Bare på første føring lagrer vi tillegg så de ikke dobles
+          allowances: e === entries[0] ? allowances : [],
+          overtime_segments: e.segs,
+        });
+        if (!ok) { allOk = false; break; }
+      }
+      if (allOk) onOpenChange(false);
+      setIsSubmitting(false);
+      return;
+    }
+
     const success = await onSubmit({
       entry_date: format(date, "yyyy-MM-dd"),
       hours: hoursNum,
