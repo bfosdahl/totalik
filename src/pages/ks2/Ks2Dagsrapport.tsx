@@ -852,6 +852,14 @@ export default function Ks2Dagsrapport() {
                       <Button
                         size="sm"
                         variant="outline"
+                        onClick={() => setEditingReport(report)}
+                      >
+                        <Pencil className="h-3.5 w-3.5 mr-1" />
+                        Rediger
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={() => handleDownloadPdf(report)}
                         disabled={downloadingId === report.id}
                       >
