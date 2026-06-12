@@ -89,20 +89,38 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
   }, [canvas.backgroundImagePath]);
 
   const handleUploadBackground = async (file: File) => {
-    if (!profile?.company_id || !projectId) return;
+    if (!profile?.company_id || !projectId) {
+      toast.error("Mangler bedrift- eller prosjekt-ID. Last siden på nytt.");
+      return;
+    }
+    // Sjekk filtype tidlig (HEIC/HEIF kan ikke vises i nettleser)
+    const lowerName = (file.name || "").toLowerCase();
+    if (lowerName.endsWith(".heic") || lowerName.endsWith(".heif") || file.type === "image/heic" || file.type === "image/heif") {
+      toast.error("HEIC/HEIF-bilder støttes ikke. Konverter til JPG eller PNG først (iPhone: Innstillinger → Kamera → Format → Mest kompatibelt).");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Bare bildefiler er støttet (PNG, JPG). PDF kan ikke brukes som bakgrunn.");
+      return;
+    }
+    if (file.size > 30 * 1024 * 1024) {
+      toast.error("Bildet er for stort (maks 30 MB).");
+      return;
+    }
     setUploadingBg(true);
     try {
       // Komprimer bildet (maks 2400 px lengste side, JPEG kvalitet 0.85) før opplasting
       const compressed = await compressImageFile(file, { maxDim: 2400, quality: 0.85 });
-      const ext = compressed.name.split(".").pop() || "jpg";
+      // Bruk alltid .jpg fra komprimering, ellers original-ext
+      const ext = (compressed.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
       const path = `${projectId}/rigg/${plan.id}-bg-${Date.now()}.${ext}`;
       const { error } = await supabase.storage
         .from("ks-module2-files")
-        .upload(path, compressed, { upsert: true, contentType: compressed.type });
+        .upload(path, compressed, { upsert: false, contentType: compressed.type || "image/jpeg" });
       if (error) throw error;
       // Delete old background if exists
       if (canvas.backgroundImagePath && canvas.backgroundImagePath !== path) {
-        await supabase.storage.from("ks-module2-files").remove([canvas.backgroundImagePath]);
+        await supabase.storage.from("ks-module2-files").remove([canvas.backgroundImagePath]).catch(() => {});
       }
       setCanvas({ ...canvas, backgroundImagePath: path, backgroundImageOpacity: canvas.backgroundImageOpacity ?? 0.7 });
       const ratio = (compressed.size / file.size) * 100;
@@ -110,8 +128,9 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
         `Bakgrunnsbilde lastet opp (${(compressed.size / 1024).toFixed(0)} kB, ${ratio.toFixed(0)}% av original) – husk å lagre`
       );
     } catch (e: any) {
-      console.error(e);
-      toast.error("Kunne ikke laste opp bilde");
+      console.error("[riggplan] upload background failed", e);
+      const msg = e?.message || e?.error || "Ukjent feil";
+      toast.error(`Kunne ikke laste opp bilde: ${msg}`);
     } finally {
       setUploadingBg(false);
     }
