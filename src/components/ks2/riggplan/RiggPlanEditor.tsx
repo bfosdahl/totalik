@@ -553,7 +553,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
           </div>
           <input
             type="file"
-            accept="image/*"
+            accept="image/png,image/jpeg,image/webp"
             id="rigg-bg-upload"
             className="hidden"
             onChange={(e) => {
