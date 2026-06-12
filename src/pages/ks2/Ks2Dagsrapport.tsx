@@ -589,6 +589,18 @@ export default function Ks2Dagsrapport() {
     setIsFormOpen(false);
   };
 
+  const handleUpdate = async (data: CreateDailyReport, asDraft: boolean) => {
+    if (!editingReport) return;
+    await updateReport({
+      id: editingReport.id,
+      updates: {
+        ...data,
+        status: asDraft ? "draft" : "submitted",
+      } as any,
+    });
+    setEditingReport(null);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
