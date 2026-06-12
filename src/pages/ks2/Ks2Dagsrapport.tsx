@@ -492,8 +492,9 @@ function generateReportEmailHtml(report: DailyReport): string {
 
 export default function Ks2Dagsrapport() {
   const { projectId } = useParams();
-  const { reports, isLoading, createReport, deleteReport, submitReport, isCreating } = useKsDailyReports(projectId);
+  const { reports, isLoading, createReport, updateReport, deleteReport, submitReport, isCreating, isUpdating } = useKsDailyReports(projectId);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingReport, setEditingReport] = useState<DailyReport | null>(null);
   const [expandedReport, setExpandedReport] = useState<string | null>(null);
   const [emailReport, setEmailReport] = useState<DailyReport | null>(null);
   const [emailAttachment, setEmailAttachment] = useState<{ filename: string; content: string; contentType: string } | null>(null);
@@ -501,6 +502,36 @@ export default function Ks2Dagsrapport() {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const { users } = useCompanyUsers();
   const { profile } = useAuth();
+
+  const reportToInitial = (r: DailyReport): CreateDailyReport => ({
+    project_id: r.project_id,
+    report_date: r.report_date,
+    weather_conditions: r.weather_conditions || undefined,
+    temperature_celsius: r.temperature_celsius ?? undefined,
+    wind_conditions: r.wind_conditions || undefined,
+    precipitation: r.precipitation || undefined,
+    own_crew_count: r.own_crew_count,
+    total_crew_count: r.total_crew_count,
+    work_description: r.work_description || undefined,
+    work_areas: r.work_areas || undefined,
+    work_start_time: r.work_start_time || undefined,
+    work_end_time: r.work_end_time || undefined,
+    equipment_used: r.equipment_used || [],
+    materials_received: r.materials_received || [],
+    progress_description: r.progress_description || undefined,
+    progress_percentage: r.progress_percentage ?? 0,
+    on_schedule: r.on_schedule,
+    delay_reason: r.delay_reason || undefined,
+    quality_controls: r.quality_controls || [],
+    hms_incidents: r.hms_incidents || [],
+    hms_observations: r.hms_observations || undefined,
+    safety_meeting_held: r.safety_meeting_held,
+    subcontractor_attendance: r.subcontractor_attendance || [],
+    deviations_today: r.deviations_today || [],
+    photos: r.photos || [],
+    notes: r.notes || undefined,
+    status: r.status,
+  });
 
   const handleDownloadPdf = async (report: DailyReport) => {
     setDownloadingId(report.id);
