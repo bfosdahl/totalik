@@ -633,6 +633,24 @@ export default function Ks2Dagsrapport() {
         </Dialog>
       </div>
 
+      {/* Edit dialog */}
+      <Dialog open={!!editingReport} onOpenChange={(o) => !o && setEditingReport(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Rediger dagsrapport {editingReport?.report_number}</DialogTitle>
+          </DialogHeader>
+          {editingReport && (
+            <DailyReportForm
+              key={editingReport.id}
+              onSubmit={handleUpdate}
+              onClose={() => setEditingReport(null)}
+              isSubmitting={isUpdating}
+              initialData={reportToInitial(editingReport)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Reports list */}
       {reports.length === 0 ? (
         <Card>
