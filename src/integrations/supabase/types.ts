@@ -17023,6 +17023,15 @@ export type Database = {
           signature_data: string
         }[]
       }
+      get_profile_sensitive_hr: {
+        Args: { p_profile_id: string }
+        Returns: {
+          employee_number: string
+          hms_card_number: string
+          hourly_rate: number
+          signature_data: string
+        }[]
+      }
       get_trash_items: {
         Args: { p_company_id?: string }
         Returns: {
