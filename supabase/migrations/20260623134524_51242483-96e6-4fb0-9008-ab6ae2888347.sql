@@ -1,0 +1,1 @@
+UPDATE public.companies SET brreg_employee_count = 3 WHERE id = 'ded74711-3f0a-474a-8213-b8d7119c1307';
