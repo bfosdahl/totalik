@@ -7,7 +7,7 @@ Deno.serve(async () => {
   );
   const userId = "3d7efe89-6404-4805-9506-f4e184a9f8c7";
   const email = "hamaroyrenhold@hbasse.no";
-  const password = "sonni123";
+  const password = "Sonni123!";
 
   const { error: updErr } = await admin.auth.admin.updateUserById(userId, { password });
   if (updErr) return new Response(JSON.stringify({ step: "update", error: updErr.message }), { status: 500 });
