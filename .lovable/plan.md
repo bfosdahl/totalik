@@ -1,82 +1,75 @@
+## Automatisk årlig HMS-revisjon
 
-# Plan: Eiriks tilbakemeldinger – Timeføring, Sjekklister, Bilder
+### Konsept
+- **År 1 (håndbok-import):** Gratis. Systemet oppretter en revisjon automatisk basert på importert håndbok og setter `next_audit_due = import_date + 12 mnd`.
+- **År 2+ (12 mnd etter):** Kunden får en pop-up ved innlogging + epost. To valg:
+  1. **Gjør det selv – gratis** → går til revisjonsmodulen, fyller ut 8 punkter, signerer.
+  2. **La Total-IK gjøre jobben – 990,-** → Stripe checkout → support-sak opprettes → Ben + Gard (+ evt. selger) får epost.
 
-## 1. Admin timeoversikt (HØY)
-
-**Ny side:** `/admin/timer` – full oversikt med filter på periode, person, prosjekt.
-- Kolonner per person: Normaltimer · 50% overtid · 100% overtid · Total · Lønnsgrunnlag (estimert)
-- Periode-presets: Denne uken / Forrige uke / Denne måned / Forrige måned / Egendefinert
-- Eksport til Excel/CSV (bruker eksisterende `timeEntryExport.ts` som mal)
-- Filter: kun godkjente timer (toggle for å vise alle)
-
-**Dashboard-widget:** Nytt kort på admin-dashboard ("Timer denne måned") med totaltall + lenke til /admin/timer. Vises kun for `company_admin` / `system_admin`.
-
-## 2. Timeføring – overtid i samme føring (HØY)
-
-**`NewTimeEntryDialog`** utvides:
-- Hovedperiode 07:00–18:00 (normaltid beregnes automatisk)
-- Knapp "+ Legg til overtid-segment" → segment med start, slutt, sats (50% / 100%)
-- Flere segmenter mulig. Validering: segmenter må ligge innenfor hovedperioden, ikke overlappe
-- Normaltimer = total – sum(overtid-segmenter)
-- Sammendrag vises live: "8t normal + 3t (50%) + 0t (100%)"
-
-**DB:** `time_entries` har allerede `regular_hours`, `overtime_50_hours`, `overtime_100_hours`. Vi legger til kolonne `overtime_segments jsonb` for detaljert lagring (revisjon/PDF). Eksisterende rader påvirkes ikke.
-
-**Mobil:** Beholder kompakt layout, overtid-segmenter rendres som collapsible kort.
-
-## 3. Sjekklister & Rutiner – gjenbruk på tvers (HØY)
-
-**Problem:** Sjekklister/rutiner laget i hovedmenyen lagres i `company_ks_checklist_templates` / `company_routines` (eller `customer_routine_instances`), mens prosjekt-modal kun viser admin-bibliotek eller prosjekt-spesifikke maler.
-
-**Løsning – «Bedriftsbibliotek»:**
-- Når man inne i et KS-prosjekt åpner "Legg til sjekkliste" / "Legg til rutine", vises nå to faner:
-  1. **Total-IK Bibliotek** (admin-maler – som i dag)
-  2. **Mine bedriftsmaler** (alle globale maler bedriften har laget – ny)
-- Trykk "Legg til" → kopier til prosjektet (eksisterende adopt-logikk gjenbrukes)
-- Hovedmenyens "Opprett sjekkliste/rutine" får tydelig tekst: *"Denne malen blir tilgjengelig i alle prosjekter"*
-
-**Filer som berøres:**
-- `Ks2ProjectDetail` sjekkliste-/rutine-modal → ny tabs-UI
-- Ny hook `useCompanyGlobalTemplates` som henter fra `company_ks_checklist_templates` + `company_routines` filtrert på `company_id` og `is_template = true`
-- Mark eksisterende globalt opprettede rader med `is_template = true` (migration + UI-toggle)
-
-## 4. Dagsrapporter – raskere bilder (MEDIUM)
-
-- **Opplasting:** Wrap `daily-report-photos`-upload med `compressImageFile({ maxDim: 2000, quality: 0.85 })` (allerede finnes) – reduserer typisk 5MB → ~400KB
-- **Thumbnails:** Generer 400px-versjon klient-side, last opp parallelt til samme bucket som `<path>.thumb.jpg`
-- **Visning:** `DailyReportPhotoGallery` laster `.thumb.jpg` i grid, full-size kun ved lightbox-åpning
-- **Caching:** Øk signed-URL fra 1t → 24t, cache i React Query for å unngå re-signing ved re-render
-- **Lazy loading:** `loading="lazy"` på alle `<img>` i grid
-
-## 5. Tekniske endringer
+### Flyt
 
 ```text
-DB-migration:
-  ALTER TABLE time_entries ADD COLUMN overtime_segments jsonb;
-  ALTER TABLE company_ks_checklist_templates ADD COLUMN is_template boolean DEFAULT true;
-  ALTER TABLE company_routines (sjekk – kanskje allerede der)
-
-Nye filer:
-  src/pages/admin/AdminTimer.tsx
-  src/components/dashboard/AdminHoursWidget.tsx
-  src/components/timeregistration/OvertimeSegments.tsx
-  src/hooks/useCompanyGlobalTemplates.ts
-  src/hooks/useAdminHoursSummary.ts
-
-Endrede filer:
-  src/components/timeregistration/NewTimeEntryDialog.tsx  (overtid-segmenter)
-  src/components/ks2/DailyReportPhotoGallery.tsx          (thumbnails)
-  src/hooks/useKsDailyReports.ts                          (compress + thumb upload)
-  src/components/ks2/Ks2ProjectDetail.tsx (eller subkomp)  (bibliotek-tabs)
-  src/pages/admin/AdminDashboard.tsx                       (widget)
-  App.tsx router                                            (/admin/timer)
+12 mnd etter forrige revisjon
+   │
+   ├─ pg_cron daglig sjekk → audit_schedules.next_due <= today
+   │     └─ opprett audit (status=pending) + send epost til kunde
+   │
+   ├─ Kunde logger inn → AnnualAuditDueDialog (blocker-modal)
+   │     ├─ "Gjør det selv" → /audits/[id]
+   │     └─ "Bestill bistand 990,-" → Stripe checkout
+   │
+   └─ Stripe webhook (paid)
+         ├─ audit.assistance_status = 'paid'
+         ├─ support_ticket opprettes (kategori: 'audit_assistance')
+         └─ epost til ben@athenahms.no + gard + selger (BCC)
 ```
 
-## Rekkefølge (4 commits)
+### Database
 
-1. **Sjekklister/rutiner-bibliotek** (mest kritisk for daglig bruk)
-2. **Timeføring overtid-segmenter**
-3. **Admin timeoversikt + dashboard-widget**
-4. **Dagsrapport bilde-optimalisering**
+**Ny tabell `audit_schedules`:**
+- `company_id`, `module` (default 'ik_hms'), `last_completed_at`, `next_due_at`, `reminder_sent_at`, `is_active`
 
-Hver del testes isolert. Jeg gir kort oppsummering etter hver del og en samlet sluttrapport.
+**Utvidelser av `audits`:**
+- `assistance_requested` (bool), `assistance_status` (`none|paid|in_progress|completed`), `stripe_session_id`, `paid_at`, `paid_amount_nok`
+- `trigger_source` (`manual|handbook_import|annual_auto`)
+
+**Selger-kobling (eksisterer):** `companies.seller_id` → `sellers` tabellen brukes allerede. Henter `sellers.email` for BCC.
+
+### Komponenter
+
+1. **pg_cron daglig** kl 08:00 → edge function `check-annual-audits`:
+   - Finn skjemaer hvor `next_due_at <= today` og ingen aktiv pending audit
+   - Opprett audit + send epost via `send-transactional-email` (ny template `annual-audit-due`)
+   - Sett `reminder_sent_at`
+
+2. **`AnnualAuditDueDialog`** (frontend):
+   - Vises ved innlogging hvis det finnes audit med `status=pending` og `trigger_source=annual_auto`
+   - Kan ikke lukkes uten å velge ett av to alternativer (eller "Påminn meg om 7 dager")
+
+3. **Stripe checkout** (krever Lovable Payments – Stripe):
+   - Engangsbeløp 990,- NOK
+   - Webhook `stripe-audit-webhook` → markerer `paid`, oppretter support_ticket, sender epost
+
+4. **Epost-templates (3 stk):**
+   - `annual-audit-due` → til kunde (gratis vs bistand)
+   - `audit-assistance-purchased` → til Ben (ben@athenahms.no) + Gard + selger
+   - `audit-assistance-completed` → til kunde når Total-IK er ferdig
+
+5. **Admin-dashboard** (`/admin/audit-orders`):
+   - Liste over betalte bistandsbestillinger
+   - Status: pending → in_progress → completed
+   - Link rett til kundens revisjonsskjema for utfylling
+
+6. **Håndbok-import oppdatering:**
+   - Når AI importerer håndbok → opprett `audit_schedules` med `next_due_at = now() + 12 mnd`
+   - Lagre faktiske svar i `audit_form_responses` (fikser dagens placeholder-problem fremover)
+
+### Avklaringer før bygging
+
+1. **Stripe:** Skal jeg sette opp Lovable's innebygde Stripe-integrasjon (990,- engangsbeløp, ingen Stripe-konto trengs nå – kan claimes senere)? Eller fakturering manuelt via eksisterende system (lettere, ingen webhook)?
+
+2. **Selger-kobling:** Finnes `sellers.email` allerede med korrekte adresser, eller må jeg legge inn en mapping?
+
+3. **Påminnelser:** Vil du ha varsel **30 dager før** forfall i tillegg til på selve dagen?
+
+4. **Hvilke moduler:** Kun HMS nå, eller skal IK-Mat, IK-Alkohol, KS-Bygg også få 12-mnd auto-revisjon (samme pris/flyt)?
