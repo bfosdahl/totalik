@@ -892,9 +892,60 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_schedules: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          last_completed_at: string | null
+          module: string
+          next_due_at: string
+          reminder_30_sent_at: string | null
+          reminder_due_sent_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_completed_at?: string | null
+          module?: string
+          next_due_at: string
+          reminder_30_sent_at?: string | null
+          reminder_due_sent_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_completed_at?: string | null
+          module?: string
+          next_due_at?: string
+          reminder_30_sent_at?: string | null
+          reminder_due_sent_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_schedules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audits: {
         Row: {
           area: string | null
+          assistance_completed_at: string | null
+          assistance_requested: boolean
+          assistance_requested_at: string | null
+          assistance_status: string
           audit_number: string
           checklist_completed: number
           checklist_total: number
@@ -904,19 +955,28 @@ export type Database = {
           deleted_by: string | null
           department_id: string | null
           description: string | null
+          dismissed_until: string | null
           form_type: string | null
           id: string
           is_deleted: boolean
+          paid_amount_nok: number | null
           responsible_id: string | null
           responsible_name: string | null
+          schedule_id: string | null
           scheduled_date: string
           status: string
+          stripe_session_id: string | null
           title: string
+          trigger_source: string
           type: string
           updated_at: string
         }
         Insert: {
           area?: string | null
+          assistance_completed_at?: string | null
+          assistance_requested?: boolean
+          assistance_requested_at?: string | null
+          assistance_status?: string
           audit_number: string
           checklist_completed?: number
           checklist_total?: number
@@ -926,19 +986,28 @@ export type Database = {
           deleted_by?: string | null
           department_id?: string | null
           description?: string | null
+          dismissed_until?: string | null
           form_type?: string | null
           id?: string
           is_deleted?: boolean
+          paid_amount_nok?: number | null
           responsible_id?: string | null
           responsible_name?: string | null
+          schedule_id?: string | null
           scheduled_date: string
           status?: string
+          stripe_session_id?: string | null
           title: string
+          trigger_source?: string
           type: string
           updated_at?: string
         }
         Update: {
           area?: string | null
+          assistance_completed_at?: string | null
+          assistance_requested?: boolean
+          assistance_requested_at?: string | null
+          assistance_status?: string
           audit_number?: string
           checklist_completed?: number
           checklist_total?: number
@@ -948,14 +1017,19 @@ export type Database = {
           deleted_by?: string | null
           department_id?: string | null
           description?: string | null
+          dismissed_until?: string | null
           form_type?: string | null
           id?: string
           is_deleted?: boolean
+          paid_amount_nok?: number | null
           responsible_id?: string | null
           responsible_name?: string | null
+          schedule_id?: string | null
           scheduled_date?: string
           status?: string
+          stripe_session_id?: string | null
           title?: string
+          trigger_source?: string
           type?: string
           updated_at?: string
         }
@@ -979,6 +1053,13 @@ export type Database = {
             columns: ["responsible_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audits_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "audit_schedules"
             referencedColumns: ["id"]
           },
         ]
@@ -16970,6 +17051,14 @@ export type Database = {
       copy_inspection_template_seeds: {
         Args: { target_company_id: string }
         Returns: undefined
+      }
+      ensure_audit_schedule: {
+        Args: {
+          p_company_id: string
+          p_module?: string
+          p_next_due_at?: string
+        }
+        Returns: string
       }
       generate_anonymous_message_number: {
         Args: { p_company_id: string }
