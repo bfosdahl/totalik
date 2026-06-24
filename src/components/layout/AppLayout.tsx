@@ -55,6 +55,9 @@ export function AppLayout({ children }: AppLayoutProps) {
         onAccept={acceptTerms}
         isAccepting={isAccepting}
       />
+
+      {/* Årlig HMS-revisjon påminnelse */}
+      {user && hasAcceptedTerms && <AnnualAuditDueDialog />}
     </div>
   );
 }
