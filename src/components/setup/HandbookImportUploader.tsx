@@ -178,6 +178,15 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
       if (result.success) {
         toast.success("Håndboken ble importert!");
         sessionStorage.removeItem(storageKey);
+        // År 1: opprett auto-revisjon-plan for 12 mnd fram i tid
+        try {
+          await supabase.rpc('ensure_audit_schedule', {
+            p_company_id: companyId,
+            p_module: 'ik_hms',
+          });
+        } catch (e) {
+          console.warn('Could not create audit schedule', e);
+        }
         onImportComplete(result);
       } else {
         toast.error(result.error || "Feil ved import");
