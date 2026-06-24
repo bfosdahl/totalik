@@ -5,6 +5,7 @@ import { MascotChatHelper } from "@/components/help/MascotChatHelper";
 import { VersionChecker } from "@/components/VersionChecker";
 import { TermsAcceptanceDialog } from "@/components/terms/TermsAcceptanceDialog";
 import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
+import { AnnualAuditDueDialog } from "@/components/audits/AnnualAuditDueDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { MobileNav } from "@/components/mobile/MobileNav";
 import { useIsMobile } from "@/hooks/use-mobile";
