@@ -255,7 +255,7 @@ export default function TimeOversikt() {
               <Download className="h-4 w-4 mr-2" />
               CSV
             </Button>
-            <Button onClick={exportXlsx} disabled={!data || rows.length === 0}>
+            <Button onClick={exportXlsx} disabled={!data || rows.length === 0 || exporting}>
               <FileSpreadsheet className="h-4 w-4 mr-2" />
               Excel
             </Button>
