@@ -21,8 +21,11 @@ import {
   exportPayrollTripletex,
   type PayrollTimeEntry,
   type EmployeeSummary,
+  type AllowanceDetailRow,
 } from "@/utils/timeEntryExport";
 import { Navigate } from "react-router-dom";
+import { AdminEditTimeEntryDialog, type AdminEditableEntry } from "@/components/timeregistration/AdminEditTimeEntryDialog";
+import { Pencil } from "lucide-react";
 
 interface Row {
   id: string;
@@ -30,6 +33,8 @@ interface Row {
   user_name: string;
   entry_date: string;
   hours: number;
+  start_time: string | null;
+  end_time: string | null;
   project_name: string | null;
   project_id: string | null;
   description: string | null;
@@ -42,6 +47,11 @@ interface Row {
 interface AllowanceRow {
   time_entry_id: string;
   amount: number | null;
+  type_name?: string | null;
+  unit?: string | null;
+  quantity?: number | null;
+  rate_snapshot?: number | null;
+  notes?: string | null;
 }
 
 interface EmployeeMeta {
@@ -79,6 +89,7 @@ export default function Payroll() {
   const { profile, company, isCompanyAdmin, isSystemAdmin, isLoading: authLoading } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
   const [allowanceMap, setAllowanceMap] = useState<Map<string, number>>(new Map());
+  const [allowanceDetailsList, setAllowanceDetailsList] = useState<AllowanceRow[]>([]);
   const [employeesMeta, setEmployeesMeta] = useState<Map<string, EmployeeMeta>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
   const [startDay, setStartDay] = useState<number>(1);
@@ -88,6 +99,8 @@ export default function Payroll() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [ratesOpen, setRatesOpen] = useState(false);
   const [savedStartDay, setSavedStartDay] = useState<number>(1);
+  const [editEntry, setEditEntry] = useState<AdminEditableEntry | null>(null);
+  const [reloadTick, setReloadTick] = useState(0);
 
   // Load company payroll setting + employees with hourly_rate
   useEffect(() => {
@@ -140,7 +153,7 @@ export default function Payroll() {
     (async () => {
       const { data: entries, error } = await supabase
         .from("time_entries")
-        .select("id, user_id, user_name, entry_date, hours, project_name, project_id, description, status, approved_by_name, approved_at, hour_type")
+        .select("id, user_id, user_name, entry_date, hours, start_time, end_time, project_name, project_id, description, status, approved_by_name, approved_at, hour_type")
         .eq("company_id", profile.company_id)
         .eq("status", "approved")
         .gte("entry_date", fmt(period.start))
@@ -151,6 +164,7 @@ export default function Payroll() {
         toast.error("Kunne ikke hente timer");
         setRows([]);
         setAllowanceMap(new Map());
+        setAllowanceDetailsList([]);
         setIsLoading(false);
         return;
       }
@@ -162,7 +176,7 @@ export default function Payroll() {
         const ids = list.map((r) => r.id);
         const { data: allowData } = await supabase
           .from("time_entry_allowances")
-          .select("time_entry_id, amount")
+          .select("time_entry_id, amount, type_name, unit, quantity, rate_snapshot, notes")
           .in("time_entry_id", ids);
         const map = new Map<string, number>();
         (allowData as AllowanceRow[] | null)?.forEach((a) => {
@@ -170,12 +184,14 @@ export default function Payroll() {
           map.set(a.time_entry_id, cur + (Number(a.amount) || 0));
         });
         setAllowanceMap(map);
+        setAllowanceDetailsList((allowData as AllowanceRow[] | null) || []);
       } else {
         setAllowanceMap(new Map());
+        setAllowanceDetailsList([]);
       }
       setIsLoading(false);
     })();
-  }, [profile?.company_id, period.start.getTime(), period.end.getTime()]);
+  }, [profile?.company_id, period.start.getTime(), period.end.getTime(), reloadTick]);
 
   // Filtered rows by project
   const filteredRows = useMemo(() => {
@@ -202,6 +218,9 @@ export default function Payroll() {
           user_name: r.user_name,
           employee_number: meta?.employee_number ?? null,
           total_hours: 0,
+          normal_hours: 0,
+          overtime_50_hours: 0,
+          overtime_100_hours: 0,
           overtime_hours: 0,
           hourly_rate: meta?.hourly_rate ?? null,
           base_amount: 0,
@@ -213,8 +232,14 @@ export default function Payroll() {
       const rec = map.get(r.user_id)!;
       const h = Number(r.hours) || 0;
       rec.total_hours += h;
-      if (r.hour_type && r.hour_type.startsWith("overtime")) {
+      if (r.hour_type === "overtime_50") {
+        rec.overtime_50_hours = (rec.overtime_50_hours ?? 0) + h;
         rec.overtime_hours = (rec.overtime_hours ?? 0) + h;
+      } else if (r.hour_type === "overtime_100") {
+        rec.overtime_100_hours = (rec.overtime_100_hours ?? 0) + h;
+        rec.overtime_hours = (rec.overtime_hours ?? 0) + h;
+      } else {
+        rec.normal_hours = (rec.normal_hours ?? 0) + h;
       }
       rec.allowances_amount += allowanceMap.get(r.id) || 0;
       const proj = r.project_name || "Uten prosjekt";
@@ -241,11 +266,17 @@ export default function Payroll() {
 
   const totals = useMemo(() => {
     const totalHours = byEmployee.reduce((s, e) => s + e.total_hours, 0);
-    const totalOvertime = byEmployee.reduce((s, e) => s + (e.overtime_hours ?? 0), 0);
+    const totalNormal = byEmployee.reduce((s, e) => s + (e.normal_hours ?? 0), 0);
+    const total50 = byEmployee.reduce((s, e) => s + (e.overtime_50_hours ?? 0), 0);
+    const total100 = byEmployee.reduce((s, e) => s + (e.overtime_100_hours ?? 0), 0);
+    const totalOvertime = total50 + total100;
     const totalBase = byEmployee.reduce((s, e) => s + e.base_amount, 0);
     const totalAllow = byEmployee.reduce((s, e) => s + e.allowances_amount, 0);
     return {
       hours: totalHours,
+      normal: totalNormal,
+      overtime_50: total50,
+      overtime_100: total100,
       overtime: totalOvertime,
       base: totalBase,
       allow: totalAllow,
@@ -260,6 +291,9 @@ export default function Payroll() {
       filteredRows.map((r) => ({
         ...r,
         hours: Number(r.hours),
+        start_time: r.start_time,
+        end_time: r.end_time,
+        hour_type: r.hour_type,
         hourly_rate: employeesMeta.get(r.user_id)?.hourly_rate ?? null,
         allowances_amount: allowanceMap.get(r.id) || 0,
         is_overtime: !!(r.hour_type && r.hour_type.startsWith("overtime")),
@@ -267,13 +301,34 @@ export default function Payroll() {
     [filteredRows, employeesMeta, allowanceMap]
   );
 
+  const exportAllowanceDetails: AllowanceDetailRow[] = useMemo(() => {
+    const rowsById = new Map(filteredRows.map((r) => [r.id, r]));
+    return allowanceDetailsList
+      .filter((a) => rowsById.has(a.time_entry_id))
+      .map((a) => {
+        const r = rowsById.get(a.time_entry_id)!;
+        return {
+          time_entry_id: a.time_entry_id,
+          user_name: r.user_name,
+          entry_date: r.entry_date,
+          type_name: a.type_name || "(uten type)",
+          unit: a.unit || "",
+          quantity: Number(a.quantity) || 0,
+          rate_snapshot: Number(a.rate_snapshot) || 0,
+          amount: Number(a.amount) || 0,
+          notes: a.notes || null,
+        };
+      });
+  }, [allowanceDetailsList, filteredRows]);
+
   const handleExportGeneric = () => {
     exportPayrollGeneric(
       exportEntries,
       byEmployee.map(({ perProject, ...e }) => e),
       company?.name || "Bedrift",
       period.start,
-      period.end
+      period.end,
+      exportAllowanceDetails
     );
     toast.success("Lønnsgrunnlag eksportert");
   };
@@ -462,8 +517,10 @@ export default function Payroll() {
                         <TableRow>
                           <TableHead>Ansattnr</TableHead>
                           <TableHead>Ansatt</TableHead>
-                          <TableHead className="text-right">Timer</TableHead>
-                          <TableHead className="text-right">Herav overtid</TableHead>
+                          <TableHead className="text-right">Normaltimer</TableHead>
+                          <TableHead className="text-right">50% overtid</TableHead>
+                          <TableHead className="text-right">100% overtid</TableHead>
+                          <TableHead className="text-right">Timer totalt</TableHead>
                           <TableHead className="text-right">Timesats</TableHead>
                           <TableHead className="text-right">Grunnlønn</TableHead>
                           <TableHead className="text-right">Tillegg</TableHead>
@@ -480,10 +537,14 @@ export default function Payroll() {
                                 <Badge variant="outline" className="ml-2 text-xs">Mangler sats</Badge>
                               )}
                             </TableCell>
-                            <TableCell className="text-right">{e.total_hours.toFixed(2)}</TableCell>
-                            <TableCell className="text-right">
-                              {(e.overtime_hours ?? 0) > 0 ? (e.overtime_hours ?? 0).toFixed(2) : "-"}
+                            <TableCell className="text-right">{(e.normal_hours ?? 0).toFixed(2)}</TableCell>
+                            <TableCell className="text-right text-orange-600">
+                              {(e.overtime_50_hours ?? 0) > 0 ? (e.overtime_50_hours ?? 0).toFixed(2) : "-"}
                             </TableCell>
+                            <TableCell className="text-right text-red-600">
+                              {(e.overtime_100_hours ?? 0) > 0 ? (e.overtime_100_hours ?? 0).toFixed(2) : "-"}
+                            </TableCell>
+                            <TableCell className="text-right font-medium">{e.total_hours.toFixed(2)}</TableCell>
                             <TableCell className="text-right">{e.hourly_rate != null ? nok(e.hourly_rate) : "-"}</TableCell>
                             <TableCell className="text-right">{nok(e.base_amount)}</TableCell>
                             <TableCell className="text-right">{nok(e.allowances_amount)}</TableCell>
@@ -493,8 +554,10 @@ export default function Payroll() {
                         <TableRow className="bg-muted/50 font-bold">
                           <TableCell>-</TableCell>
                           <TableCell>TOTALT</TableCell>
+                          <TableCell className="text-right">{totals.normal.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">{totals.overtime_50 > 0 ? totals.overtime_50.toFixed(2) : "-"}</TableCell>
+                          <TableCell className="text-right">{totals.overtime_100 > 0 ? totals.overtime_100.toFixed(2) : "-"}</TableCell>
                           <TableCell className="text-right">{totals.hours.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">{totals.overtime > 0 ? totals.overtime.toFixed(2) : "-"}</TableCell>
                           <TableCell className="text-right">-</TableCell>
                           <TableCell className="text-right">{nok(totals.base)}</TableCell>
                           <TableCell className="text-right">{nok(totals.allow)}</TableCell>
@@ -553,10 +616,13 @@ export default function Payroll() {
                         <TableRow>
                           <TableHead>Dato</TableHead>
                           <TableHead>Ansatt</TableHead>
+                          <TableHead>Fra–til</TableHead>
+                          <TableHead>Type</TableHead>
                           <TableHead>Prosjekt</TableHead>
                           <TableHead>Beskrivelse</TableHead>
                           <TableHead className="text-right">Timer</TableHead>
                           <TableHead className="text-right">Tillegg</TableHead>
+                          <TableHead className="text-right">Handling</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -564,10 +630,45 @@ export default function Payroll() {
                           <TableRow key={r.id}>
                             <TableCell>{format(parseISO(r.entry_date), "dd.MM.yyyy")}</TableCell>
                             <TableCell>{r.user_name}</TableCell>
+                            <TableCell className="tabular-nums text-xs">
+                              {r.start_time && r.end_time
+                                ? `${r.start_time.substring(0, 5)}–${r.end_time.substring(0, 5)}`
+                                : "—"}
+                            </TableCell>
+                            <TableCell className="text-xs">
+                              {r.hour_type === "overtime_50" ? (
+                                <Badge variant="outline" className="text-orange-600 border-orange-300">50%</Badge>
+                              ) : r.hour_type === "overtime_100" ? (
+                                <Badge variant="outline" className="text-red-600 border-red-300">100%</Badge>
+                              ) : (
+                                <span className="text-muted-foreground">Normal</span>
+                              )}
+                            </TableCell>
                             <TableCell>{r.project_name || "-"}</TableCell>
-                            <TableCell className="max-w-[280px] truncate">{r.description || "-"}</TableCell>
+                            <TableCell className="max-w-[240px] truncate">{r.description || "-"}</TableCell>
                             <TableCell className="text-right">{Number(r.hours).toFixed(2)}</TableCell>
                             <TableCell className="text-right">{nok(allowanceMap.get(r.id) || 0)}</TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() =>
+                                  setEditEntry({
+                                    id: r.id,
+                                    user_name: r.user_name,
+                                    entry_date: r.entry_date,
+                                    hours: Number(r.hours),
+                                    start_time: r.start_time,
+                                    end_time: r.end_time,
+                                    description: r.description,
+                                    hour_type: r.hour_type,
+                                    project_name: r.project_name,
+                                  })
+                                }
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -616,6 +717,16 @@ export default function Payroll() {
         onOpenChange={setRatesOpen}
         companyId={profile?.company_id}
         onSaved={loadEmployees}
+      />
+
+      <AdminEditTimeEntryDialog
+        open={!!editEntry}
+        onOpenChange={(v) => { if (!v) setEditEntry(null); }}
+        entry={editEntry}
+        onSaved={() => {
+          setEditEntry(null);
+          setReloadTick((t) => t + 1);
+        }}
       />
     </AppLayout>
   );

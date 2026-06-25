@@ -16083,6 +16083,9 @@ export type Database = {
       }
       time_entries: {
         Row: {
+          admin_edit_reason: string | null
+          admin_edited_at: string | null
+          admin_edited_by: string | null
           approved_at: string | null
           approved_by: string | null
           approved_by_name: string | null
@@ -16091,6 +16094,7 @@ export type Database = {
           customer_name: string | null
           department_id: string | null
           description: string | null
+          end_time: string | null
           entry_date: string
           hour_type: string
           hours: number
@@ -16100,6 +16104,7 @@ export type Database = {
           project_id: string | null
           project_name: string | null
           source: string | null
+          start_time: string | null
           status: string
           tripletex_synced: boolean | null
           tripletex_synced_at: string | null
@@ -16109,6 +16114,9 @@ export type Database = {
           work_schedule_id: string | null
         }
         Insert: {
+          admin_edit_reason?: string | null
+          admin_edited_at?: string | null
+          admin_edited_by?: string | null
           approved_at?: string | null
           approved_by?: string | null
           approved_by_name?: string | null
@@ -16117,6 +16125,7 @@ export type Database = {
           customer_name?: string | null
           department_id?: string | null
           description?: string | null
+          end_time?: string | null
           entry_date: string
           hour_type?: string
           hours: number
@@ -16126,6 +16135,7 @@ export type Database = {
           project_id?: string | null
           project_name?: string | null
           source?: string | null
+          start_time?: string | null
           status?: string
           tripletex_synced?: boolean | null
           tripletex_synced_at?: string | null
@@ -16135,6 +16145,9 @@ export type Database = {
           work_schedule_id?: string | null
         }
         Update: {
+          admin_edit_reason?: string | null
+          admin_edited_at?: string | null
+          admin_edited_by?: string | null
           approved_at?: string | null
           approved_by?: string | null
           approved_by_name?: string | null
@@ -16143,6 +16156,7 @@ export type Database = {
           customer_name?: string | null
           department_id?: string | null
           description?: string | null
+          end_time?: string | null
           entry_date?: string
           hour_type?: string
           hours?: number
@@ -16152,6 +16166,7 @@ export type Database = {
           project_id?: string | null
           project_name?: string | null
           source?: string | null
+          start_time?: string | null
           status?: string
           tripletex_synced?: boolean | null
           tripletex_synced_at?: string | null

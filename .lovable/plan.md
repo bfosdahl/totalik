@@ -1,75 +1,78 @@
-## Automatisk årlig HMS-revisjon
+# Plan: Forbedringer i timeføring og lønnsgrunnlag
 
-### Konsept
-- **År 1 (håndbok-import):** Gratis. Systemet oppretter en revisjon automatisk basert på importert håndbok og setter `next_audit_due = import_date + 12 mnd`.
-- **År 2+ (12 mnd etter):** Kunden får en pop-up ved innlogging + epost. To valg:
-  1. **Gjør det selv – gratis** → går til revisjonsmodulen, fyller ut 8 punkter, signerer.
-  2. **La Total-IK gjøre jobben – 990,-** → Stripe checkout → support-sak opprettes → Ben + Gard (+ evt. selger) får epost.
+Tre punkter fra Eirik (SSM Marine). Jeg implementerer alt sammen.
 
-### Flyt
+## 1. Fra–til-klokkeslett på timelinjer
 
-```text
-12 mnd etter forrige revisjon
-   │
-   ├─ pg_cron daglig sjekk → audit_schedules.next_due <= today
-   │     └─ opprett audit (status=pending) + send epost til kunde
-   │
-   ├─ Kunde logger inn → AnnualAuditDueDialog (blocker-modal)
-   │     ├─ "Gjør det selv" → /audits/[id]
-   │     └─ "Bestill bistand 990,-" → Stripe checkout
-   │
-   └─ Stripe webhook (paid)
-         ├─ audit.assistance_status = 'paid'
-         ├─ support_ticket opprettes (kategori: 'audit_assistance')
-         └─ epost til ben@athenahms.no + gard + selger (BCC)
+**Status i dag:** `time_entries` lagrer bare `hours` (desimal). Det finnes ingen fra/til-felter. Derfor kan vi ikke vise eller validere det.
+
+**Endring:**
+- Legg til `start_time time` og `end_time time` på `time_entries` (nullable for bakoverkompatibilitet).
+- Oppdater registreringsdialogene (`NewTimeEntryDialog`, `DailyTimeView`, `WeeklyTimeView`) så ansatte velger fra/til; `hours` beregnes automatisk. Hvis man bare vil føre desimaltimer (som før) er feltene valgfrie.
+- Vis `08:00–16:00` ved siden av beskrivelse i alle timelister: `TimeOversikt`, `Payroll`, daglig/ukentlig oversikt, og admin-detaljer.
+
+## 2. Admin redigerer/justerer ansattes timer
+
+**Status i dag:** Admin kan godkjenne/avvise, men ikke endre timer eller beskrivelse i ettertid.
+
+**Endring:**
+- Ny dialog `AdminEditTimeEntryDialog` med felt for: dato, fra–til, timer, prosjekt, beskrivelse, hour_type, og påkrevd **«Årsak til endring»**.
+- Rediger-knapp synlig for `company_admin`/`system_admin` på hver timelinje (i `Payroll` og `TimeRegistration`).
+- Alle endringer logges automatisk i `audit_log` (eksisterende generisk audit-trigger fanger dette opp — vi legger til triggeren på `time_entries` hvis den mangler).
+- Lagrer årsak som en kommentar/note (ny kolonne `admin_edit_reason text` + `admin_edited_by uuid` + `admin_edited_at timestamptz` på `time_entries`).
+
+## 3. Varsel til ansatt når admin endrer
+
+Tre kanaler samtidig:
+- **In-app (bjelle):** Insert i `notification_log` med tittel «Timene dine ble justert av admin» + lenke til dagen.
+- **E-post (Resend):** Ny edge function `notify-time-entry-edited` sender e-post med gammel/ny verdi + årsak. BCC ben@athenahms.no.
+- **Push:** Hvis ansatt har push_subscription, sendes push via eksisterende `send-push-notification`-funksjon.
+
+Alle tre trigges fra edge-funksjonen `admin-edit-time-entry` som også gjør selve oppdateringen (atomisk: oppdater rad → log → varsler).
+
+## 4. Forbedret lønnsgrunnlag-eksport (begge sider)
+
+**TimeOversikt (`/time-oversikt`):**
+- Behold sammendraget Normal/50%/100%/Totalt
+- Legg til kolonner for **tillegg** (diett, km, passasjer, reisetimer, smuss) — hentes fra `time_entry_allowances` + `company_allowance_types`
+- Ny fane **«Detaljer»** med: Dato | Ansatt | Fra | Til | Timer | Type (normal/50%/100%) | Prosjekt | Beskrivelse | Status
+
+**Payroll (`/payroll`):**
+- Splitt «Timer (sum)» i `Normal | 50% overtid | 100% overtid` i sammendraget
+- Behold tillegg/grunnlønn-kolonner
+- Detaljfanen får fra–til + tydelig hour_type-kolonne
+- Ekstra fane **«Tillegg detaljert»**: én rad per tillegg med ansatt, dato, type, antall, sats, beløp
+
+## Teknisk
+
+**Migrering:**
+```sql
+ALTER TABLE public.time_entries
+  ADD COLUMN start_time time,
+  ADD COLUMN end_time time,
+  ADD COLUMN admin_edit_reason text,
+  ADD COLUMN admin_edited_by uuid,
+  ADD COLUMN admin_edited_at timestamptz;
+
+SELECT public.attach_audit_trigger('time_entries');
 ```
 
-### Database
+**Filer som endres:**
+- `supabase/migrations/<ny>.sql`
+- `supabase/functions/admin-edit-time-entry/index.ts` (ny)
+- `supabase/functions/notify-time-entry-edited/index.ts` (ny — e-post)
+- `src/components/timeregistration/NewTimeEntryDialog.tsx`
+- `src/components/timeregistration/DailyTimeView.tsx`, `WeeklyTimeView.tsx` (vis fra–til)
+- `src/components/timeregistration/AdminEditTimeEntryDialog.tsx` (ny)
+- `src/pages/TimeOversikt.tsx` (eksport + detaljfane + rediger-knapp)
+- `src/pages/Payroll.tsx` (rediger-knapp + bedre eksport-kall)
+- `src/utils/timeEntryExport.ts` (ny detalj- og tilleggsfane, splittede overtidskolonner)
+- `src/hooks/useAdminHoursSummary.ts` (returnere fra/til + tilleggsbeløp)
 
-**Ny tabell `audit_schedules`:**
-- `company_id`, `module` (default 'ik_hms'), `last_completed_at`, `next_due_at`, `reminder_sent_at`, `is_active`
+## Rekkefølge
 
-**Utvidelser av `audits`:**
-- `assistance_requested` (bool), `assistance_status` (`none|paid|in_progress|completed`), `stripe_session_id`, `paid_at`, `paid_amount_nok`
-- `trigger_source` (`manual|handbook_import|annual_auto`)
-
-**Selger-kobling (eksisterer):** `companies.seller_id` → `sellers` tabellen brukes allerede. Henter `sellers.email` for BCC.
-
-### Komponenter
-
-1. **pg_cron daglig** kl 08:00 → edge function `check-annual-audits`:
-   - Finn skjemaer hvor `next_due_at <= today` og ingen aktiv pending audit
-   - Opprett audit + send epost via `send-transactional-email` (ny template `annual-audit-due`)
-   - Sett `reminder_sent_at`
-
-2. **`AnnualAuditDueDialog`** (frontend):
-   - Vises ved innlogging hvis det finnes audit med `status=pending` og `trigger_source=annual_auto`
-   - Kan ikke lukkes uten å velge ett av to alternativer (eller "Påminn meg om 7 dager")
-
-3. **Stripe checkout** (krever Lovable Payments – Stripe):
-   - Engangsbeløp 990,- NOK
-   - Webhook `stripe-audit-webhook` → markerer `paid`, oppretter support_ticket, sender epost
-
-4. **Epost-templates (3 stk):**
-   - `annual-audit-due` → til kunde (gratis vs bistand)
-   - `audit-assistance-purchased` → til Ben (ben@athenahms.no) + Gard + selger
-   - `audit-assistance-completed` → til kunde når Total-IK er ferdig
-
-5. **Admin-dashboard** (`/admin/audit-orders`):
-   - Liste over betalte bistandsbestillinger
-   - Status: pending → in_progress → completed
-   - Link rett til kundens revisjonsskjema for utfylling
-
-6. **Håndbok-import oppdatering:**
-   - Når AI importerer håndbok → opprett `audit_schedules` med `next_due_at = now() + 12 mnd`
-   - Lagre faktiske svar i `audit_form_responses` (fikser dagens placeholder-problem fremover)
-
-### Avklaringer før bygging
-
-1. **Stripe:** Skal jeg sette opp Lovable's innebygde Stripe-integrasjon (990,- engangsbeløp, ingen Stripe-konto trengs nå – kan claimes senere)? Eller fakturering manuelt via eksisterende system (lettere, ingen webhook)?
-
-2. **Selger-kobling:** Finnes `sellers.email` allerede med korrekte adresser, eller må jeg legge inn en mapping?
-
-3. **Påminnelser:** Vil du ha varsel **30 dager før** forfall i tillegg til på selve dagen?
-
-4. **Hvilke moduler:** Kun HMS nå, eller skal IK-Mat, IK-Alkohol, KS-Bygg også få 12-mnd auto-revisjon (samme pris/flyt)?
+1. Migrering + edge functions først
+2. Eksportforbedringer (kan ferdigstilles uten UI)
+3. Vis fra–til i UI
+4. Admin-edit-dialog med varslinger
+5. Test med Eirik’s test-konto før vi sier ifra
