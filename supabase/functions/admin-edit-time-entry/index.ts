@@ -200,7 +200,6 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             from: "Total-IK <noreply@totalik.no>",
             to: [employee.email],
-            bcc: ["ben@athenahms.no"],
             subject: `Timene dine for ${datoStr} er justert`,
             html,
           }),
