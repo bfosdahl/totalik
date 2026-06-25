@@ -23,6 +23,8 @@ export interface TimeEntry {
   user_name: string;
   entry_date: string;
   hours: number;
+  start_time?: string | null;
+  end_time?: string | null;
   project_name: string | null;
   project_id: string | null;
   ks_project_id?: string | null;
@@ -41,6 +43,9 @@ export interface TimeEntry {
   clock_out?: string | null;
   total_break_minutes?: number | null;
   work_schedule_id?: string | null;
+  admin_edit_reason?: string | null;
+  admin_edited_by?: string | null;
+  admin_edited_at?: string | null;
   // For work_schedule entries - extra display info
   schedule_location?: string | null;
   schedule_role?: string | null;
@@ -56,6 +61,8 @@ export interface OvertimeSegmentPersist {
 export interface CreateTimeEntry {
   entry_date: string;
   hours: number;
+  start_time?: string | null;
+  end_time?: string | null;
   project_name?: string;
   project_id?: string;
   ks_project_id?: string | null;
@@ -252,6 +259,8 @@ export function useTimeEntries() {
         user_name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email || "Ukjent",
         entry_date: entry.entry_date,
         hours: entry.hours,
+        start_time: entry.start_time || null,
+        end_time: entry.end_time || null,
         project_name: entry.project_name || null,
         project_id: entry.project_id || null,
         ks_project_id: entry.ks_project_id || null,

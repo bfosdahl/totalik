@@ -1,8 +1,7 @@
 import { useState, useMemo } from "react";
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths, subWeeks } from "date-fns";
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths, subWeeks, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Clock, Download, Users, Filter, FileSpreadsheet } from "lucide-react";
-import * as XLSX from "xlsx";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAdminHoursSummary } from "@/hooks/useAdminHoursSummary";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  exportPayrollGeneric,
+  type PayrollTimeEntry,
+  type EmployeeSummary,
+  type AllowanceDetailRow,
+} from "@/utils/timeEntryExport";
 
 type Preset = "this_week" | "last_week" | "this_month" | "last_month" | "custom";
 
@@ -38,13 +44,14 @@ function presetRange(p: Preset): { start: string; end: string } {
 }
 
 export default function TimeOversikt() {
-  const { isCompanyAdmin, isSystemAdmin } = useAuth();
+  const { isCompanyAdmin, isSystemAdmin, profile, company } = useAuth();
   const navigate = useNavigate();
   const [preset, setPreset] = useState<Preset>("this_month");
   const [{ start, end }, setRange] = useState(presetRange("this_month"));
   // Default til kun godkjente timer siden oversikten brukes til lønnsgrunnlag
   const [onlyApproved, setOnlyApproved] = useState(true);
   const [search, setSearch] = useState("");
+  const [exporting, setExporting] = useState(false);
 
   const { data, isLoading } = useAdminHoursSummary({ startDate: start, endDate: end, onlyApproved });
 
@@ -80,19 +87,143 @@ export default function TimeOversikt() {
     toast.success("CSV lastet ned");
   };
 
-  const exportXlsx = () => {
-    if (!data) return;
-    const aoa: (string | number)[][] = [
-      ["Person", "Normal", "50% overtid", "100% overtid", "Totalt"],
-      ...rows.map((r) => [r.user_name, r.normal, r.overtime_50, r.overtime_100, r.total]),
-      ["TOTALT", data.totals.normal, data.totals.overtime_50, data.totals.overtime_100, data.totals.total],
-    ];
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws["!cols"] = [{ wch: 28 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 10 }];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Timer");
-    XLSX.writeFile(wb, `timer_${start}_${end}.xlsx`);
-    toast.success("Excel lastet ned");
+  const exportXlsx = async () => {
+    if (!profile?.company_id) return;
+    setExporting(true);
+    try {
+      // Hent registreringer
+      let q = supabase
+        .from("time_entries")
+        .select("id, user_id, user_name, entry_date, hours, start_time, end_time, project_name, description, status, approved_by_name, approved_at, hour_type")
+        .eq("company_id", profile.company_id)
+        .gte("entry_date", start)
+        .lte("entry_date", end);
+      if (onlyApproved) q = q.eq("status", "approved");
+      const { data: entries, error } = await q.order("entry_date", { ascending: true });
+      if (error) throw error;
+
+      const entryList = (entries || []) as any[];
+      // Filtrer på søk hvis aktivt
+      const filtered = search.trim()
+        ? entryList.filter((e) => (e.user_name || "").toLowerCase().includes(search.toLowerCase()))
+        : entryList;
+
+      // Hent tillegg
+      const ids = filtered.map((r) => r.id);
+      const allowances: AllowanceDetailRow[] = [];
+      const allowanceByEntry = new Map<string, number>();
+      if (ids.length > 0) {
+        const { data: allowData } = await supabase
+          .from("time_entry_allowances")
+          .select("time_entry_id, amount, type_name, unit, quantity, rate_snapshot, notes")
+          .in("time_entry_id", ids);
+        (allowData || []).forEach((a: any) => {
+          const r = filtered.find((x) => x.id === a.time_entry_id);
+          if (!r) return;
+          allowanceByEntry.set(a.time_entry_id, (allowanceByEntry.get(a.time_entry_id) || 0) + Number(a.amount || 0));
+          allowances.push({
+            time_entry_id: a.time_entry_id,
+            user_name: r.user_name,
+            entry_date: r.entry_date,
+            type_name: a.type_name || "(uten type)",
+            unit: a.unit || "",
+            quantity: Number(a.quantity) || 0,
+            rate_snapshot: Number(a.rate_snapshot) || 0,
+            amount: Number(a.amount) || 0,
+            notes: a.notes,
+          });
+        });
+      }
+
+      // Hent timesatser + ansattnummer
+      const userIds = Array.from(new Set(filtered.map((r) => r.user_id)));
+      const empMeta = new Map<string, { rate: number | null; emp_no: string | null }>();
+      if (userIds.length > 0) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("user_id, hourly_rate, employee_number")
+          .in("user_id", userIds);
+        (profs || []).forEach((p: any) => {
+          empMeta.set(p.user_id, {
+            rate: p.hourly_rate != null ? Number(p.hourly_rate) : null,
+            emp_no: p.employee_number ?? null,
+          });
+        });
+      }
+
+      // Bygg PayrollTimeEntry[] og EmployeeSummary[]
+      const payrollEntries: PayrollTimeEntry[] = filtered.map((r) => ({
+        id: r.id,
+        user_id: r.user_id,
+        user_name: r.user_name,
+        entry_date: r.entry_date,
+        hours: Number(r.hours) || 0,
+        start_time: r.start_time,
+        end_time: r.end_time,
+        project_name: r.project_name,
+        description: r.description,
+        status: r.status,
+        approved_by_name: r.approved_by_name,
+        approved_at: r.approved_at,
+        hour_type: r.hour_type,
+        hourly_rate: empMeta.get(r.user_id)?.rate ?? null,
+        allowances_amount: allowanceByEntry.get(r.id) || 0,
+        is_overtime: !!(r.hour_type && r.hour_type.startsWith("overtime")),
+      }));
+
+      const sumMap = new Map<string, EmployeeSummary>();
+      payrollEntries.forEach((e) => {
+        if (!sumMap.has(e.user_id)) {
+          const meta = empMeta.get(e.user_id);
+          sumMap.set(e.user_id, {
+            user_id: e.user_id,
+            user_name: e.user_name,
+            employee_number: meta?.emp_no ?? null,
+            total_hours: 0,
+            normal_hours: 0,
+            overtime_50_hours: 0,
+            overtime_100_hours: 0,
+            overtime_hours: 0,
+            hourly_rate: meta?.rate ?? null,
+            base_amount: 0,
+            allowances_amount: 0,
+            total_amount: 0,
+          });
+        }
+        const s = sumMap.get(e.user_id)!;
+        const h = Number(e.hours) || 0;
+        s.total_hours += h;
+        if (e.hour_type === "overtime_50") {
+          s.overtime_50_hours = (s.overtime_50_hours || 0) + h;
+          s.overtime_hours = (s.overtime_hours || 0) + h;
+        } else if (e.hour_type === "overtime_100") {
+          s.overtime_100_hours = (s.overtime_100_hours || 0) + h;
+          s.overtime_hours = (s.overtime_hours || 0) + h;
+        } else {
+          s.normal_hours = (s.normal_hours || 0) + h;
+        }
+        s.allowances_amount += e.allowances_amount || 0;
+      });
+      sumMap.forEach((s) => {
+        s.base_amount = s.hourly_rate != null ? s.total_hours * s.hourly_rate : 0;
+        s.total_amount = s.base_amount + s.allowances_amount;
+      });
+
+      exportPayrollGeneric(
+        payrollEntries,
+        Array.from(sumMap.values()).sort((a, b) => a.user_name.localeCompare(b.user_name, "nb")),
+        company?.name || "Bedrift",
+        parseISO(start),
+        parseISO(end),
+        allowances
+      );
+      toast.success("Excel lastet ned");
+    } catch (e: any) {
+      console.error(e);
+      toast.error("Kunne ikke laste ned Excel: " + (e?.message || "ukjent feil"));
+    } finally {
+      setExporting(false);
+    }
   };
 
   if (!canSee) {
@@ -124,7 +255,7 @@ export default function TimeOversikt() {
               <Download className="h-4 w-4 mr-2" />
               CSV
             </Button>
-            <Button onClick={exportXlsx} disabled={!data || rows.length === 0}>
+            <Button onClick={exportXlsx} disabled={!data || rows.length === 0 || exporting}>
               <FileSpreadsheet className="h-4 w-4 mr-2" />
               Excel
             </Button>

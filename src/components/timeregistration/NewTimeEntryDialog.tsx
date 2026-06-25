@@ -223,6 +223,8 @@ export function NewTimeEntryDialog({
     const success = await onSubmit({
       entry_date: format(date, "yyyy-MM-dd"),
       hours: hoursNum,
+      start_time: startTime || null,
+      end_time: endTime || null,
       hour_type: hourType,
       project_name: projectName,
       project_id: projectId,
