@@ -20,26 +20,40 @@ serve(async (req) => {
 
   const authResult = await requireAuth(req, corsHeaders);
   if (authResult instanceof Response) return authResult;
+  const callerUserId = (authResult as { userId: string | null }).userId;
 
   try {
-    const { requestId, employeeName, status, startDate, endDate } = await req.json();
-    
-    console.log("Sending time off approval notification:", { requestId, employeeName, status, startDate, endDate });
+    const { requestId } = await req.json();
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get the employee's email
+    // Fetch trusted fields from DB - never trust client body for content
     const { data: request } = await supabase
       .from('time_off_requests')
-      .select('employee_id')
+      .select('employee_id, company_id, status, start_date, end_date')
       .eq('id', requestId)
       .single();
 
     if (!request?.employee_id) {
       throw new Error('Could not find time off request');
+    }
+
+    // Authorization: caller must belong to the same company (skip for cron)
+    if (callerUserId) {
+      const { data: callerProfile } = await supabase
+        .from('profiles')
+        .select('company_id')
+        .eq('user_id', callerUserId)
+        .single();
+      if (!callerProfile?.company_id || callerProfile.company_id !== request.company_id) {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     const { data: employee } = await supabase
@@ -63,11 +77,12 @@ serve(async (req) => {
       if (company?.name) companyName = company.name;
     }
 
+    const status = request.status;
     const statusText = status === 'approved' ? 'godkjent' : 'avslått';
     const statusEmoji = status === 'approved' ? '✅' : '❌';
     const statusColor = status === 'approved' ? '#10b981' : '#ef4444';
-    const formattedStart = new Date(startDate).toLocaleDateString('nb-NO');
-    const formattedEnd = new Date(endDate).toLocaleDateString('nb-NO');
+    const formattedStart = new Date(request.start_date).toLocaleDateString('nb-NO');
+    const formattedEnd = new Date(request.end_date).toLocaleDateString('nb-NO');
 
     let emailSent = false;
 
