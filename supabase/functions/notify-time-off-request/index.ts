@@ -20,11 +20,10 @@ serve(async (req) => {
 
   const authResult = await requireAuth(req, corsHeaders);
   if (authResult instanceof Response) return authResult;
+  const callerUserId = (authResult as { userId: string | null }).userId;
 
   try {
     const { requestId, employeeName, startDate, endDate, type } = await req.json();
-    
-    console.log("Sending time off request notification:", { requestId, employeeName, startDate, endDate, type });
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -34,12 +33,27 @@ serve(async (req) => {
     // Get employee profile and company
     const { data: profile } = await supabase
       .from('profiles')
-      .select('company_id')
+      .select('company_id, user_id')
       .eq('id', requestId)
       .single();
 
     if (!profile?.company_id) {
       throw new Error('Could not find company for employee');
+    }
+
+    // Authorization: caller must be the employee themselves or in the same company
+    if (callerUserId) {
+      const { data: callerProfile } = await supabase
+        .from('profiles')
+        .select('company_id')
+        .eq('user_id', callerUserId)
+        .single();
+      if (!callerProfile?.company_id || callerProfile.company_id !== profile.company_id) {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // Get company name
