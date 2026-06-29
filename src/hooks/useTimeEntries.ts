@@ -322,7 +322,7 @@ export function useTimeEntries() {
 
         const { error } = await supabase
           .from("time_clock_entries")
-          .update(clockUpdates)
+          .update(clockUpdates as any)
           .eq("id", realId);
 
         if (error) throw error;

@@ -348,11 +348,12 @@ export function useIkAlkohol() {
   const upsertRiskControl = useMutation({
     mutationFn: async (control: Partial<AlkoholRiskControl>) => {
       if (!companyId) throw new Error("No company");
+      const { compliance_item, ...rest } = control as any;
       
       if (control.id) {
         const { data, error } = await supabase
           .from("ik_alkohol_risk_controls")
-          .update(control)
+          .update(rest as any)
           .eq("id", control.id)
           .select()
           .single();
@@ -361,7 +362,7 @@ export function useIkAlkohol() {
       } else {
         const { data, error } = await supabase
           .from("ik_alkohol_risk_controls")
-          .insert({ ...control, company_id: companyId })
+          .insert({ ...rest, company_id: companyId } as any)
           .select()
           .single();
         if (error) throw error;

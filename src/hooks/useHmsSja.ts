@@ -142,7 +142,7 @@ export function useHmsSja() {
       
       const { data, error } = await supabase
         .from("hms_sja")
-        .update(updateData)
+        .update(updateData as any)
         .eq("id", id)
         .select()
         .single();

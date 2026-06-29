@@ -196,9 +196,10 @@ export const useOrgChart = () => {
   // Update node
   const updateNode = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<OrgChartNode> & { id: string }) => {
+      const { persons, children, ...rest } = updates as any;
       const { data, error } = await supabase
         .from('org_chart_nodes')
-        .update(updates)
+        .update(rest as any)
         .eq('id', id)
         .select()
         .single();

@@ -128,7 +128,7 @@ export function useKsModule2Vernerunder(projectId: string | undefined) {
       
       const { data, error } = await supabase
         .from("ks_module2_vernerunder")
-        .update(updatePayload)
+        .update(updatePayload as any)
         .eq("id", id)
         .select()
         .single();
