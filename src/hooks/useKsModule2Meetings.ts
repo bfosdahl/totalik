@@ -178,7 +178,7 @@ export function useKsModule2Meetings(projectId: string | null) {
       }
       const { error } = await supabase
         .from("ks_module2_meetings")
-        .update(dbUpdates)
+        .update(dbUpdates as any)
         .eq("id", id);
 
       if (error) throw error;

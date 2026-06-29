@@ -208,7 +208,7 @@ export function useUpdateErgonomicAssessment() {
 
       const { data, error } = await supabase
         .from("ergonomic_risk_assessments")
-        .update(dbUpdates)
+        .update(dbUpdates as any)
         .eq("id", id)
         .select()
         .single();

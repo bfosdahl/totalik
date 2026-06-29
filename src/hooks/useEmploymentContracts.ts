@@ -257,7 +257,7 @@ export function useEmploymentContracts() {
       
       const { data, error } = await supabase
         .from('employment_contracts')
-        .update(cleanUpdates)
+        .update(cleanUpdates as any)
         .eq('id', id)
         .select()
         .single();
@@ -326,7 +326,7 @@ export function useEmploymentContracts() {
 
       const { data, error } = await supabase
         .from('employment_contracts')
-        .update(updates)
+        .update(updates as any)
         .eq('id', id)
         .select()
         .single();

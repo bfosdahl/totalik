@@ -105,7 +105,7 @@ export function useFdvRiskAssessments(buildingId?: string) {
       
       const { error } = await supabase
         .from("fdv_risk_assessments")
-        .update(dbUpdates)
+        .update(dbUpdates as any)
         .eq("id", id);
 
       if (error) throw error;

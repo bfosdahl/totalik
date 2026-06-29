@@ -124,7 +124,7 @@ export function useKsModule2ChecklistTemplates(projectId?: string) {
 
       const { error } = await supabase
         .from('ks_module2_checklist_templates')
-        .update(updateData)
+        .update(updateData as any)
         .eq('id', id);
 
       if (error) throw error;

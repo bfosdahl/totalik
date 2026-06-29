@@ -152,9 +152,10 @@ export function useCompanyKsDocuments() {
   const updateDocument = async (id: string, updates: Partial<CompanyKsDocument>) => {
     setIsSaving(true);
     try {
+      const { project, ...rest } = updates as any;
       const { error } = await supabase
         .from("company_ks_documents")
-        .update(updates)
+        .update(rest)
         .eq("id", id);
 
       if (error) throw error;

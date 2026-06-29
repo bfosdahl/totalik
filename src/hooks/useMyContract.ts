@@ -51,7 +51,7 @@ export function useMyContract() {
 
       const { data, error } = await supabase
         .from('employment_contracts')
-        .update(updates)
+        .update(updates as any)
         .eq('id', contract.id)
         .select()
         .single();
