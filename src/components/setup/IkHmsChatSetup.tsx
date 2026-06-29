@@ -786,6 +786,59 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           } else { orgContent = typeof data.organization === 'string' ? data.organization : JSON.stringify(data.organization); }
           await supabase.from("company_organization").upsert({ company_id: companyId, custom_content: orgContent, is_custom: true }, { onConflict: "company_id" });
         }
+
+        // Universal fallback: ensure company_organization is populated from org_chart_nodes
+        // so the handbook/dashboard shows "Organisering" as completed even when the AI JSON
+        // didn't include a `data.organization` block.
+        try {
+          const { data: existingOrg } = await supabase
+            .from("company_organization")
+            .select("custom_content, is_custom")
+            .eq("company_id", companyId)
+            .maybeSingle();
+
+          const hasContent = !!(existingOrg?.is_custom && existingOrg?.custom_content && existingOrg.custom_content.trim().length > 0);
+
+          if (!hasContent) {
+            const { data: nodes } = await supabase
+              .from("org_chart_nodes")
+              .select("id, role_title, role_description, sort_order")
+              .eq("company_id", companyId)
+              .order("sort_order", { ascending: true });
+
+            if (nodes && nodes.length > 0) {
+              const nodeIds = nodes.map(n => n.id);
+              const { data: persons } = await supabase
+                .from("org_chart_node_persons")
+                .select("node_id, person_name")
+                .in("node_id", nodeIds);
+
+              const personByNode = new Map<string, string>();
+              for (const p of persons || []) {
+                if (!personByNode.has(p.node_id) && p.person_name?.trim()) {
+                  personByNode.set(p.node_id, p.person_name.trim());
+                }
+              }
+
+              const orgContent = JSON.stringify({
+                roles: nodes.map((n, idx) => ({
+                  id: n.id,
+                  title: n.role_title || '',
+                  personName: personByNode.get(n.id) || '',
+                  description: n.role_description || '',
+                  sortOrder: n.sort_order ?? idx,
+                })),
+                description: '',
+              });
+
+              await supabase
+                .from("company_organization")
+                .upsert({ company_id: companyId, custom_content: orgContent, is_custom: true }, { onConflict: "company_id" });
+            }
+          }
+        } catch (orgSyncError) {
+          console.error("Failed to sync company_organization from org chart (non-critical):", orgSyncError);
+        }
         if (data.risks?.length > 0) {
           const { data: existing } = await supabase.from("company_risk_assessments").select("risks").eq("company_id", companyId).maybeSingle();
           const userRisks = (existing?.risks as Array<Record<string, unknown>> || []).filter(r => !r.is_ai_generated);
