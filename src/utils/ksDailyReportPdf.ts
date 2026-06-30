@@ -595,9 +595,10 @@ export async function generateDailyReportPdf(
 export async function generateDailyReportPdfBase64(
   report: DailyReport,
   project: DailyReportPdfProject | null,
-  company: DailyReportPdfCompany | null
+  company: DailyReportPdfCompany | null,
+  onProgress?: PdfProgressCallback
 ): Promise<{ base64: string; fileName: string }> {
-  const { doc, fileName } = await buildDailyReportPdf(report, project, company);
+  const { doc, fileName } = await buildDailyReportPdf(report, project, company, onProgress);
   const dataUri = doc.output("datauristring");
   const base64 = dataUri.split(",")[1] || "";
   return { base64, fileName };
