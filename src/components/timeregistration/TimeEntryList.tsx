@@ -151,6 +151,14 @@ export function TimeEntryList({
                   </div>
                 </TableCell>
                 {showEmployee && <TableCell>{entry.user_name}</TableCell>}
+                <TableCell className="font-mono text-sm whitespace-nowrap text-muted-foreground">
+                  {(() => {
+                    const fmt = (s?: string | null) => (s ? String(s).substring(0, 5) : null);
+                    const from = fmt(entry.start_time) || (entry.clock_in ? format(new Date(entry.clock_in), "HH:mm") : null);
+                    const to = fmt(entry.end_time) || (entry.clock_out ? format(new Date(entry.clock_out), "HH:mm") : null);
+                    return from && to ? `${from}–${to}` : "–";
+                  })()}
+                </TableCell>
                 <TableCell className="text-right font-mono">
                   {Number(entry.hours).toFixed(1)}
                 </TableCell>
