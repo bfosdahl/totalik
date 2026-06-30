@@ -35,6 +35,8 @@ interface TimeEntry {
   source?: "manual" | "qr_clock" | "work_schedule";
   clock_in?: string | null;
   clock_out?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
   total_break_minutes?: number | null;
   work_schedule_id?: string | null;
   schedule_location?: string | null;
