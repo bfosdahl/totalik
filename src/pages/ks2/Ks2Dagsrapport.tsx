@@ -580,7 +580,9 @@ export default function Ks2Dagsrapport() {
           : Promise.resolve({ data: null } as any),
         supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email, logo_url").eq("id", report.company_id).maybeSingle(),
       ]);
-      const { base64, fileName } = await generateDailyReportPdfBase64(report, projectData as any, companyData as any);
+      const { base64, fileName } = await generateDailyReportPdfBase64(report, projectData as any, companyData as any, (cur, tot) => {
+        toast.loading(`Forbereder e-post (${cur} / ${tot} bilder)…`, { id: toastId });
+      });
       setEmailAttachment({ filename: fileName, content: base64, contentType: "application/pdf" });
       setEmailReport(report);
       toast.success("E-post klar", { id: toastId });
