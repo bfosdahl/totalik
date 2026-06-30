@@ -94,6 +94,7 @@ export function TimeEntryList({
           <TableRow>
             <TableHead>Dato</TableHead>
             {showEmployee && <TableHead>Ansatt</TableHead>}
+            <TableHead className="whitespace-nowrap">Fra–Til</TableHead>
             <TableHead className="text-right">Timer</TableHead>
             <TableHead>Prosjekt</TableHead>
             <TableHead className="hidden md:table-cell">Beskrivelse</TableHead>
