@@ -35,6 +35,8 @@ interface TimeEntry {
   source?: "manual" | "qr_clock" | "work_schedule";
   clock_in?: string | null;
   clock_out?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
   total_break_minutes?: number | null;
   work_schedule_id?: string | null;
   schedule_location?: string | null;
@@ -92,6 +94,7 @@ export function TimeEntryList({
           <TableRow>
             <TableHead>Dato</TableHead>
             {showEmployee && <TableHead>Ansatt</TableHead>}
+            <TableHead className="whitespace-nowrap">Fra–Til</TableHead>
             <TableHead className="text-right">Timer</TableHead>
             <TableHead>Prosjekt</TableHead>
             <TableHead className="hidden md:table-cell">Beskrivelse</TableHead>
@@ -148,6 +151,14 @@ export function TimeEntryList({
                   </div>
                 </TableCell>
                 {showEmployee && <TableCell>{entry.user_name}</TableCell>}
+                <TableCell className="font-mono text-sm whitespace-nowrap text-muted-foreground">
+                  {(() => {
+                    const fmt = (s?: string | null) => (s ? String(s).substring(0, 5) : null);
+                    const from = fmt(entry.start_time) || (entry.clock_in ? format(new Date(entry.clock_in), "HH:mm") : null);
+                    const to = fmt(entry.end_time) || (entry.clock_out ? format(new Date(entry.clock_out), "HH:mm") : null);
+                    return from && to ? `${from}–${to}` : "–";
+                  })()}
+                </TableCell>
                 <TableCell className="text-right font-mono">
                   {Number(entry.hours).toFixed(1)}
                 </TableCell>
