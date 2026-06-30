@@ -536,6 +536,10 @@ export default function Ks2Dagsrapport() {
 
   const handleDownloadPdf = async (report: DailyReport) => {
     setDownloadingId(report.id);
+    const photoCount = report.photos?.length || 0;
+    const toastId = photoCount > 5
+      ? toast.loading(`Genererer PDF (0 / ${photoCount} bilder)…`)
+      : toast.loading("Genererer PDF…");
     try {
       const effectiveProjectId = report.project_id || projectId || null;
       if (!report.project_id && projectId) {
@@ -547,9 +551,13 @@ export default function Ks2Dagsrapport() {
           : Promise.resolve({ data: null } as any),
         supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email, logo_url").eq("id", report.company_id).maybeSingle(),
       ]);
-      await generateDailyReportPdf(report, projectData as any, companyData as any);
+      await generateDailyReportPdf(report, projectData as any, companyData as any, (cur, tot) => {
+        toast.loading(`Genererer PDF (${cur} / ${tot} bilder)…`, { id: toastId });
+      });
+      toast.success("PDF lastet ned", { id: toastId });
     } catch (err) {
       console.error("PDF generation failed", err);
+      toast.error("Kunne ikke generere PDF", { id: toastId });
     } finally {
       setDownloadingId(null);
     }
@@ -557,6 +565,10 @@ export default function Ks2Dagsrapport() {
 
   const handleOpenEmail = async (report: DailyReport) => {
     setPreparingEmail(report.id);
+    const photoCount = report.photos?.length || 0;
+    const toastId = photoCount > 5
+      ? toast.loading(`Forbereder e-post (0 / ${photoCount} bilder)…`)
+      : toast.loading("Forbereder e-post…");
     try {
       const effectiveProjectId = report.project_id || projectId || null;
       if (!report.project_id && projectId) {
@@ -571,8 +583,10 @@ export default function Ks2Dagsrapport() {
       const { base64, fileName } = await generateDailyReportPdfBase64(report, projectData as any, companyData as any);
       setEmailAttachment({ filename: fileName, content: base64, contentType: "application/pdf" });
       setEmailReport(report);
+      toast.success("E-post klar", { id: toastId });
     } catch (err) {
       console.error("Failed to prepare PDF for email", err);
+      toast.error("Kunne ikke forberede vedlegg — sender uten", { id: toastId });
       // Still allow sending without attachment
       setEmailAttachment(null);
       setEmailReport(report);
