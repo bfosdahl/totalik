@@ -61,6 +61,7 @@ import { DailyReportPhotoUploader, DailyReportPhoto } from "@/components/ks2/Dai
 import { generateDailyReportPdf, generateDailyReportPdfBase64, calculateWorkDuration } from "@/utils/ksDailyReportPdf";
 import { DailyReportPhotoGallery } from "@/components/ks2/DailyReportPhotoGallery";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const weatherIcons: Record<string, React.ReactNode> = {
   sol: <Sun className="h-4 w-4 text-amber-500" />,
