@@ -15,11 +15,33 @@ interface Message {
   isBot: boolean;
 }
 
+const STORAGE_PREFIX = "mascot-chat:";
+const OPEN_STORAGE_KEY = "mascot-chat:isOpen";
+
+const loadPersistedMessages = (proffId: string): Message[] | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(`${STORAGE_PREFIX}${proffId}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
 export const MascotChatHelper = () => {
   const location = useLocation();
   const [proffConfig, setProffConfig] = useState<ProffConfig>(() => getProffConfig(location.pathname));
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [isOpen, setIsOpen] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem(OPEN_STORAGE_KEY) === "1";
+  });
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const persisted = loadPersistedMessages(proffConfig.id);
+    if (persisted && persisted.length > 0) return persisted;
+    return [{ id: "welcome", content: proffConfig.welcomeMessage, isBot: true }];
+  });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [currentTip, setCurrentTip] = useState(0);
@@ -34,45 +56,42 @@ export const MascotChatHelper = () => {
   const speech = useSpeech({
     lang: 'nb-NO',
     onResult: (transcript) => {
-      // Store the final transcript and trigger send
       pendingTranscriptRef.current = transcript;
       setInput(transcript);
       setInterimText("");
     },
     onInterimResult: (transcript) => {
-      // Show interim results for visual feedback
       setInterimText(transcript);
     },
   });
 
-  // Update proff config when route changes
+  // Persist open state across route changes
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(OPEN_STORAGE_KEY, isOpen ? "1" : "0");
+    } catch { /* ignore */ }
+  }, [isOpen]);
+
+  // Persist messages per proff id so tab/route switches don't wipe history
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(`${STORAGE_PREFIX}${proffConfig.id}`, JSON.stringify(messages));
+    } catch { /* ignore */ }
+  }, [messages, proffConfig.id]);
+
+  // Update proff config when route changes; load that proff's history
   useEffect(() => {
     const newConfig = getProffConfig(location.pathname);
     if (newConfig.id !== proffConfig.id) {
       setProffConfig(newConfig);
-      // Reset messages when switching proffs
-      setMessages([
-        {
-          id: "welcome",
-          content: newConfig.welcomeMessage,
-          isBot: true,
-        },
-      ]);
+      const persisted = loadPersistedMessages(newConfig.id);
+      setMessages(
+        persisted && persisted.length > 0
+          ? persisted
+          : [{ id: "welcome", content: newConfig.welcomeMessage, isBot: true }]
+      );
     }
   }, [location.pathname, proffConfig.id]);
-
-  // Initialize welcome message
-  useEffect(() => {
-    if (messages.length === 0) {
-      setMessages([
-        {
-          id: "welcome",
-          content: proffConfig.welcomeMessage,
-          isBot: true,
-        },
-      ]);
-    }
-  }, [proffConfig.welcomeMessage, messages.length]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
