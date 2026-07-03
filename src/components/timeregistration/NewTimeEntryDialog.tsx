@@ -253,6 +253,8 @@ export function NewTimeEntryDialog({
       customer_name: customerName || null,
       description: description || undefined,
       allowances,
+      on_behalf_user_id: onBehalfId,
+      on_behalf_user_name: onBehalfName,
     });
 
     if (success) onOpenChange(false);
