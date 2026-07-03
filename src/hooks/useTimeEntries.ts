@@ -257,10 +257,21 @@ export function useTimeEntries() {
     }
 
     try {
+      const isOnBehalf = !!entry.on_behalf_user_id && entry.on_behalf_user_id !== user.id;
+      if (isOnBehalf && !isCompanyAdmin) {
+        toast.error("Bare admin kan føre timer for andre ansatte");
+        return false;
+      }
+
+      const targetUserId = isOnBehalf ? entry.on_behalf_user_id! : user.id;
+      const targetUserName = isOnBehalf
+        ? (entry.on_behalf_user_name || "Ukjent ansatt")
+        : (`${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email || "Ukjent");
+
       const { data: inserted, error } = await supabase.from("time_entries").insert({
         company_id: profile.company_id,
-        user_id: user.id,
-        user_name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email || "Ukjent",
+        user_id: targetUserId,
+        user_name: targetUserName,
         entry_date: entry.entry_date,
         hours: entry.hours,
         start_time: entry.start_time || null,
@@ -273,6 +284,9 @@ export function useTimeEntries() {
         description: entry.description || null,
         status: entry.status || "submitted",
         overtime_segments: entry.overtime_segments && entry.overtime_segments.length > 0 ? entry.overtime_segments : null,
+        admin_edit_reason: isOnBehalf ? `Registrert av admin på vegne av ${targetUserName}` : null,
+        admin_edited_by: isOnBehalf ? user.id : null,
+        admin_edited_at: isOnBehalf ? new Date().toISOString() : null,
       } as any).select("id").single();
 
       if (error) throw error;
