@@ -299,6 +299,34 @@ export function NewTimeEntryDialog({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Admin: Registrer for annen ansatt */}
+          {canRegisterForOthers && companyUsers.length > 0 && (
+            <div className="space-y-2 rounded-md border border-primary/30 bg-primary/5 p-3">
+              <Label className="text-xs uppercase tracking-wide text-primary">Ansatt</Label>
+              <Select value={onBehalfUserId} onValueChange={setOnBehalfUserId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Velg ansatt" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__self__">Meg selv</SelectItem>
+                  {companyUsers
+                    .filter((u) => u.user_id !== user?.id)
+                    .sort((a, b) => getUserDisplayName(a).localeCompare(getUserDisplayName(b)))
+                    .map((u) => (
+                      <SelectItem key={u.user_id} value={u.user_id}>
+                        {getUserDisplayName(u)}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              {onBehalfUserId !== "__self__" && (
+                <p className="text-[11px] text-muted-foreground">
+                  Timene registreres på valgt ansatt. Handlingen logges automatisk.
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Prosjekt */}
           <div className="space-y-2">
             <Label>Prosjekt <span className="text-destructive">*</span></Label>
