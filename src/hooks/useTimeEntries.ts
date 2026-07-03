@@ -72,6 +72,10 @@ export interface CreateTimeEntry {
   status?: "draft" | "submitted";
   allowances?: TimeEntryAllowanceInput[];
   overtime_segments?: OvertimeSegmentPersist[];
+  /** Admin only: register hours on behalf of another employee (profile.user_id) */
+  on_behalf_user_id?: string | null;
+  /** Admin only: display name for the employee (falls back to lookup) */
+  on_behalf_user_name?: string | null;
 }
 
 export function useTimeEntries() {
