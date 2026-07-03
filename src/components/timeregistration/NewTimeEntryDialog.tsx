@@ -86,6 +86,11 @@ export function NewTimeEntryDialog({
   const [useCustomProject, setUseCustomProject] = useState(false);
   const [allowanceRows, setAllowanceRows] = useState<AllowanceRow[]>([]);
   const [overtimeSegments, setOvertimeSegments] = useState<OvertimeSegment[]>([]);
+  const [onBehalfUserId, setOnBehalfUserId] = useState<string>("__self__");
+
+  const { user, profile, isCompanyAdmin, isSystemAdmin } = useAuth();
+  const canRegisterForOthers = isCompanyAdmin || isSystemAdmin;
+  const { users: companyUsers, getUserDisplayName } = useCompanyUsers();
 
   const { projects } = useKsModule2Projects();
   const { hasModule } = useCompanyModules();
