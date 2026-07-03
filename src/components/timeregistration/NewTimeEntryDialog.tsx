@@ -125,6 +125,7 @@ export function NewTimeEntryDialog({
       setUseCustomProject(false);
       setAllowanceRows([]);
       setOvertimeSegments([]);
+      setOnBehalfUserId("__self__");
     }
   }, [open, defaultProjectId]);
 
