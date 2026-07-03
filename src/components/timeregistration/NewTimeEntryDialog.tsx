@@ -31,6 +31,8 @@ import { toast } from "sonner";
 import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useAllowanceTypes, ALLOWANCE_UNIT_LABELS } from "@/hooks/useAllowanceTypes";
+import { useCompanyUsers } from "@/hooks/useCompanyUsers";
+import { useAuth } from "@/contexts/AuthContext";
 import { CreateTimeEntry, HourType, TimeEntryAllowanceInput } from "@/hooks/useTimeEntries";
 import { OvertimeSegmentsEditor, SegmentSummary, OvertimeSegment, computeSegmentBreakdown } from "./OvertimeSegments";
 
@@ -84,6 +86,11 @@ export function NewTimeEntryDialog({
   const [useCustomProject, setUseCustomProject] = useState(false);
   const [allowanceRows, setAllowanceRows] = useState<AllowanceRow[]>([]);
   const [overtimeSegments, setOvertimeSegments] = useState<OvertimeSegment[]>([]);
+  const [onBehalfUserId, setOnBehalfUserId] = useState<string>("__self__");
+
+  const { user, profile, isCompanyAdmin, isSystemAdmin } = useAuth();
+  const canRegisterForOthers = isCompanyAdmin || isSystemAdmin;
+  const { users: companyUsers, getUserDisplayName } = useCompanyUsers();
 
   const { projects } = useKsModule2Projects();
   const { hasModule } = useCompanyModules();
@@ -118,6 +125,7 @@ export function NewTimeEntryDialog({
       setUseCustomProject(false);
       setAllowanceRows([]);
       setOvertimeSegments([]);
+      setOnBehalfUserId("__self__");
     }
   }, [open, defaultProjectId]);
 
@@ -170,6 +178,17 @@ export function NewTimeEntryDialog({
 
     setIsSubmitting(true);
 
+    // Admin: on behalf of another user?
+    let onBehalfId: string | null = null;
+    let onBehalfName: string | null = null;
+    if (canRegisterForOthers && onBehalfUserId && onBehalfUserId !== "__self__") {
+      const u = companyUsers.find((x) => x.user_id === onBehalfUserId);
+      if (u) {
+        onBehalfId = u.user_id;
+        onBehalfName = getUserDisplayName(u);
+      }
+    }
+
     // Hvis brukeren har lagt inn overtid-segmenter: split inn i flere føringer
     // (én pr. type), slik at lønnsgrunnlag og statistikk teller riktig.
     if (overtimeSegments.length > 0) {
@@ -212,6 +231,8 @@ export function NewTimeEntryDialog({
           // Bare på første føring lagrer vi tillegg så de ikke dobles
           allowances: e === entries[0] ? allowances : [],
           overtime_segments: e.segs,
+          on_behalf_user_id: onBehalfId,
+          on_behalf_user_name: onBehalfName,
         });
         if (!ok) { allOk = false; break; }
       }
@@ -232,6 +253,8 @@ export function NewTimeEntryDialog({
       customer_name: customerName || null,
       description: description || undefined,
       allowances,
+      on_behalf_user_id: onBehalfId,
+      on_behalf_user_name: onBehalfName,
     });
 
     if (success) onOpenChange(false);
@@ -276,6 +299,34 @@ export function NewTimeEntryDialog({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Admin: Registrer for annen ansatt */}
+          {canRegisterForOthers && companyUsers.length > 0 && (
+            <div className="space-y-2 rounded-md border border-primary/30 bg-primary/5 p-3">
+              <Label className="text-xs uppercase tracking-wide text-primary">Ansatt</Label>
+              <Select value={onBehalfUserId} onValueChange={setOnBehalfUserId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Velg ansatt" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__self__">Meg selv</SelectItem>
+                  {companyUsers
+                    .filter((u) => u.user_id !== user?.id)
+                    .sort((a, b) => getUserDisplayName(a).localeCompare(getUserDisplayName(b)))
+                    .map((u) => (
+                      <SelectItem key={u.user_id} value={u.user_id}>
+                        {getUserDisplayName(u)}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              {onBehalfUserId !== "__self__" && (
+                <p className="text-[11px] text-muted-foreground">
+                  Timene registreres på valgt ansatt. Handlingen logges automatisk.
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Prosjekt */}
           <div className="space-y-2">
             <Label>Prosjekt <span className="text-destructive">*</span></Label>
