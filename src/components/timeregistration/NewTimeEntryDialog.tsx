@@ -178,6 +178,17 @@ export function NewTimeEntryDialog({
 
     setIsSubmitting(true);
 
+    // Admin: on behalf of another user?
+    let onBehalfId: string | null = null;
+    let onBehalfName: string | null = null;
+    if (canRegisterForOthers && onBehalfUserId && onBehalfUserId !== "__self__") {
+      const u = companyUsers.find((x) => x.user_id === onBehalfUserId);
+      if (u) {
+        onBehalfId = u.user_id;
+        onBehalfName = getUserDisplayName(u);
+      }
+    }
+
     // Hvis brukeren har lagt inn overtid-segmenter: split inn i flere føringer
     // (én pr. type), slik at lønnsgrunnlag og statistikk teller riktig.
     if (overtimeSegments.length > 0) {
