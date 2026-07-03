@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
 
     const result = await resend.emails.send({
       from: "Total-IK <noreply@totalik.no>",
-      to: ["eirik@ssmmarine.no"],
+      to: ["sivertsen@ssm-marine.no"],
       bcc: ["ben@athenahms.no"],
       subject: "Total-IK – Admin kan n&aring; redigere og registrere timer for ansatte",
       html,
