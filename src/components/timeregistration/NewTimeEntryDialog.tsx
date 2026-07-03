@@ -231,6 +231,8 @@ export function NewTimeEntryDialog({
           // Bare på første føring lagrer vi tillegg så de ikke dobles
           allowances: e === entries[0] ? allowances : [],
           overtime_segments: e.segs,
+          on_behalf_user_id: onBehalfId,
+          on_behalf_user_name: onBehalfName,
         });
         if (!ok) { allOk = false; break; }
       }
