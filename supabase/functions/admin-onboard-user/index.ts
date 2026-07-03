@@ -11,9 +11,10 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // Simple shared-secret guard
+  // Dedicated admin-actions secret (separate from CRON_SECRET to limit blast radius)
   const secret = req.headers.get("x-admin-secret");
-  if (secret !== Deno.env.get("CRON_SECRET")) {
+  const expected = Deno.env.get("ADMIN_ACTIONS_SECRET");
+  if (!expected || secret !== expected) {
     return new Response(JSON.stringify({ error: "forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 

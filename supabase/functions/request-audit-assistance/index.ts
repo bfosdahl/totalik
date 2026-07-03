@@ -61,15 +61,23 @@ serve(async (req) => {
       });
     }
 
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("first_name, last_name, email, phone, company_id")
+      .eq("user_id", user.id).maybeSingle();
+
+    // Cross-tenant guard: caller must belong to the audit's company
+    if (!profile?.company_id || profile.company_id !== audit.company_id) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
     const { data: company } = await supabase
       .from("companies")
       .select("name, org_number, seller_id")
       .eq("id", audit.company_id).single();
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("first_name, last_name, email, phone")
-      .eq("user_id", user.id).maybeSingle();
 
     // Seller lookup
     let sellerEmail: string | null = null;
