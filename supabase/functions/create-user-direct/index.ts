@@ -154,11 +154,12 @@ serve(async (req) => {
       });
     }
 
-    // Random unguessable password — recovery link below lets user set their own
-    const tempPassword = crypto.randomUUID() + "Aa1!";
+    // Default password for new users. Admin/systemadmin can reset from Ansatte-siden.
+    // Recovery-links via e-post var upålitelige (Outlook forhåndsklikker og forbruker dem).
+    const DEFAULT_PASSWORD = "Abc_1234";
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
-      password: tempPassword,
+      password: DEFAULT_PASSWORD,
       email_confirm: true,
       user_metadata: {
         first_name: firstName || "",
@@ -212,29 +213,11 @@ serve(async (req) => {
       }
     }
 
-    // Generate a secure password reset link.
-    // SECURITY: Do NOT derive redirect origin from the Origin header — a caller can spoof it
-    // to point the recovery email at a phishing site. Use a fixed, trusted origin instead.
-    const loginUrl = "https://totalik.no";
-    const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'recovery',
-      email: email,
-      options: {
-        redirectTo: `${loginUrl}/auth`
-      }
-    });
+    const loginUrl = "https://totalik.no/auth";
 
-    if (resetError) {
-      console.error("Error generating reset link:", resetError);
-      // User was created but we couldn't generate a reset link - still return success
-      // but log the error
-    }
-
-    const resetLink = resetData?.properties?.action_link;
-
-    // Send welcome email with password reset link (NOT plaintext password)
+    // Send welcome email with the default password (no recovery link)
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (resendApiKey && resetLink) {
+    if (resendApiKey) {
       try {
         const resend = new Resend(resendApiKey);
         
@@ -250,24 +233,28 @@ serve(async (req) => {
         await resend.emails.send({
           from: `${companyName} <noreply@totalik.no>`,
           to: [email],
-          subject: `Velkommen til ${companyName} - Sett ditt passord`,
+          subject: `Velkommen til ${companyName} - Innloggingsinfo`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <h1 style="color: #333;">Velkommen til ${esc(companyName)}!</h1>
               <p>Hei ${esc(firstName || "")},</p>
-              <p>Din brukerkonto har blitt opprettet.</p>
-              <p>Klikk på knappen nedenfor for å sette ditt passord:</p>
+              <p>Din brukerkonto er opprettet i Total-IK.</p>
+
+              <div style="background:#f4f7fb;border:1px solid #d0d7e2;border-radius:8px;padding:20px;margin:24px 0;">
+                <p style="margin:0 0 8px 0;"><strong>Innloggingsside:</strong></p>
+                <p style="margin:0 0 16px 0;"><a href="${loginUrl}" style="color:#0066cc;">${loginUrl}</a></p>
+                <p style="margin:0 0 8px 0;"><strong>E-post:</strong> ${esc(email)}</p>
+                <p style="margin:0;"><strong>Midlertidig passord:</strong> <code style="background:#fff;padding:4px 8px;border-radius:4px;border:1px solid #d0d7e2;">${DEFAULT_PASSWORD}</code></p>
+              </div>
+
               <p style="margin: 30px 0;">
-                <a href="${resetLink}" style="background-color: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Sett passord</a>
+                <a href="${loginUrl}" style="background-color: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Logg inn</a>
               </p>
-              <p style="color: #666; font-size: 14px;">
-                Lenken utløper om 24 timer.
+
+              <p style="color:#b8500a;font-size:14px;background:#fff8ec;border-left:4px solid #f0a020;padding:12px 16px;border-radius:0 8px 8px 0;">
+                <strong>Viktig:</strong> Bytt passord etter første innlogging (Innstillinger &rarr; Passord).
               </p>
-              <p style="color: #666; font-size: 14px;">
-                Hvis du ikke kan klikke på knappen, kopier og lim inn denne lenken i nettleseren:<br>
-                <span style="word-break: break-all; color: #0066cc;">${resetLink}</span>
-              </p>
-              
+
               ${getTermsNoticeHtml()}
               
               ${getTermsHtml()}
@@ -285,13 +272,11 @@ serve(async (req) => {
             </div>
           `,
         });
-        console.log(`Welcome email with password reset link sent to ${email}`);
+        console.log(`Welcome email with default password sent to ${email}`);
       } catch (emailError) {
         console.error("Error sending welcome email:", emailError);
         // Don't fail the request if email fails
       }
-    } else if (!resetLink) {
-      console.warn(`Could not send welcome email to ${email} - reset link generation failed`);
     }
 
     console.log(`User ${email} created for company ${requestingProfile.company_id}`);

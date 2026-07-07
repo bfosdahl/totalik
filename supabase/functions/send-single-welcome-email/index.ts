@@ -114,29 +114,27 @@ const handler = async (req: Request): Promise<Response> => {
     const companyName = (profile.companies as any)?.name || "Total-IK";
     const firstName = profile.first_name || "";
     const loginUrl = "https://totalik.no/auth";
+    const DEFAULT_PASSWORD = "Abc_1234";
 
-    // Generate a secure recovery link instead of resetting to a known password
-    const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
-      type: "recovery",
-      email: profile.email,
-      options: { redirectTo: loginUrl },
+    // Reset password to a known default so admin/user don't get stuck on expired recovery links.
+    // User is told to change it after first login.
+    const { error: pwErr } = await supabase.auth.admin.updateUserById(profile.user_id, {
+      password: DEFAULT_PASSWORD,
     });
-
-    if (linkErr || !linkData?.properties?.action_link) {
-      console.error("Error generating recovery link:", linkErr);
+    if (pwErr) {
+      console.error("Error setting default password:", pwErr);
       return new Response(
-        JSON.stringify({ error: "Could not generate recovery link" }),
+        JSON.stringify({ error: "Kunne ikke sette passord: " + pwErr.message }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const resetLink = linkData.properties.action_link;
     const resend = new Resend(resendApiKey);
 
     await resend.emails.send({
       from: `Total-IK <noreply@totalik.no>`,
       to: [profile.email],
-      subject: `Velkommen til ${companyName} - Sett ditt passord`,
+      subject: `Velkommen til ${companyName} - Innloggingsinfo`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
@@ -149,18 +147,22 @@ const handler = async (req: Request): Promise<Response> => {
             Du har fått en brukerkonto hos ${companyName} i Total-IK systemet.
           </p>
 
-          <p style="color: #333; font-size: 16px;">
-            Klikk på knappen nedenfor for å sette ditt passord og logge inn. Lenken er gyldig i 24 timer.
-          </p>
+          <div style="background: #f4f7fb; border: 1px solid #d0d7e2; border-radius: 8px; padding: 20px; margin: 24px 0;">
+            <p style="margin: 0 0 8px 0; color: #333; font-size: 15px;"><strong>Innloggingsside:</strong></p>
+            <p style="margin: 0 0 16px 0;"><a href="${loginUrl}" style="color: #0066cc; font-size: 15px;">${loginUrl}</a></p>
+            <p style="margin: 0 0 8px 0; color: #333; font-size: 15px;"><strong>E-post:</strong> ${profile.email}</p>
+            <p style="margin: 0; color: #333; font-size: 15px;"><strong>Midlertidig passord:</strong> <code style="background:#fff;padding:4px 8px;border-radius:4px;border:1px solid #d0d7e2;font-size:15px;">${DEFAULT_PASSWORD}</code></p>
+          </div>
 
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetLink}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
-              Sett passord og logg inn
+            <a href="${loginUrl}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
+              Logg inn
             </a>
           </div>
 
-          <p style="color: #666; font-size: 14px;">Hvis knappen ikke fungerer, kopier denne lenken inn i nettleseren:</p>
-          <p style="color: #0066cc; font-size: 12px; word-break: break-all;">${resetLink}</p>
+          <p style="color: #b8500a; font-size: 14px; background:#fff8ec; border-left:4px solid #f0a020; padding:12px 16px; border-radius:0 8px 8px 0;">
+            <strong>Viktig:</strong> Bytt passord med en gang du logger inn (Innstillinger &rarr; Passord).
+          </p>
 
           ${getTermsNoticeHtml()}
 
