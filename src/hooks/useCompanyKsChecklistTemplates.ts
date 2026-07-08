@@ -127,7 +127,10 @@ export function useCompanyKsChecklistTemplates() {
         checkpoints: parseCheckpoints(data.checkpoints),
       };
       setTemplates(prev => [parsed, ...prev]);
-      toast({ title: "Sjekklistemal opprettet" });
+      toast({
+        title: "Lagret i firmabiblioteket",
+        description: "Sjekklisten er nå tilgjengelig i alle prosjekter under \"Dine sjekklister\".",
+      });
       return parsed;
     } catch (error) {
       console.error("Error creating template:", error);

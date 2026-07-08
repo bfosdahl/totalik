@@ -565,7 +565,7 @@ export default function Ks2Malbibliotek() {
               </div>
               <div>
                 <p className="text-xl sm:text-2xl font-bold">{companyRoutines.length}</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Firmarut.</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Dine rutiner</p>
               </div>
             </div>
           </CardContent>
@@ -578,7 +578,7 @@ export default function Ks2Malbibliotek() {
               </div>
               <div>
                 <p className="text-xl sm:text-2xl font-bold">{companyChecklistTemplates.length}</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Firmasjekk.</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Dine sjekklister</p>
               </div>
             </div>
           </CardContent>
@@ -606,8 +606,8 @@ export default function Ks2Malbibliotek() {
           </TabsTrigger>
           <TabsTrigger value="custom-checklists" className="gap-2">
             <PenLine className="h-4 w-4" />
-            <span className="hidden sm:inline">Firmaets sjekklister</span>
-            <span className="sm:hidden">Firma</span>
+            <span className="hidden sm:inline">Dine sjekklister</span>
+            <span className="sm:hidden">Dine</span>
           </TabsTrigger>
           <TabsTrigger value="routines" className="gap-2">
             <BookOpen className="h-4 w-4" />
@@ -615,8 +615,8 @@ export default function Ks2Malbibliotek() {
           </TabsTrigger>
           <TabsTrigger value="custom-routines" className="gap-2">
             <PenLine className="h-4 w-4" />
-            <span className="hidden sm:inline">Firmaets rutiner</span>
-            <span className="sm:hidden">Firma</span>
+            <span className="hidden sm:inline">Dine rutiner</span>
+            <span className="sm:hidden">Dine</span>
           </TabsTrigger>
           <TabsTrigger value="documents" className="gap-2">
             <FolderOpen className="h-4 w-4" />
@@ -768,7 +768,7 @@ export default function Ks2Malbibliotek() {
         <TabsContent value="custom-checklists" className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Opprett og administrer firmaets egne sjekkliste-maler. De kan brukes i alle prosjekter.
+              Sjekklister du oppretter her lagres i firmabiblioteket og er tilgjengelig i <strong>alle prosjekter</strong>.
             </p>
             <Button onClick={openCreateCustomChecklist}>
               <Plus className="h-4 w-4 mr-2" />
@@ -955,7 +955,7 @@ export default function Ks2Malbibliotek() {
         <TabsContent value="custom-routines" className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Opprett og administrer firmaets egne rutiner. De kan hentes inn i alle prosjekter.
+              Rutiner du oppretter her lagres i firmabiblioteket og er tilgjengelig i <strong>alle prosjekter</strong>.
             </p>
             <Button onClick={openCreateCustomRoutine}>
               <Plus className="h-4 w-4 mr-2" />
