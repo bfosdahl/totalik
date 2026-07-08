@@ -565,7 +565,7 @@ export default function Ks2Malbibliotek() {
               </div>
               <div>
                 <p className="text-xl sm:text-2xl font-bold">{companyRoutines.length}</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Firmarut.</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Dine rutiner</p>
               </div>
             </div>
           </CardContent>
