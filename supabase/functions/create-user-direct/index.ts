@@ -216,24 +216,7 @@ serve(async (req) => {
 
     const loginUrl = "https://totalik.no/auth";
 
-    // Generate a one-time recovery link so the user sets their own password.
-    let recoveryLink = loginUrl;
-    try {
-      const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
-        type: "recovery",
-        email,
-        options: { redirectTo: loginUrl },
-      });
-      if (linkErr) {
-        console.error("Error generating recovery link:", linkErr);
-      } else if (linkData?.properties?.action_link) {
-        recoveryLink = linkData.properties.action_link;
-      }
-    } catch (e) {
-      console.error("generateLink threw:", e);
-    }
-
-    // Send welcome email with the recovery link (no password in email)
+    // Send welcome email with the fixed default password (no recovery link — SafeLinks konsumerer dem).
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (resendApiKey) {
       try {
@@ -250,22 +233,26 @@ serve(async (req) => {
         await resend.emails.send({
           from: `${companyName} <noreply@totalik.no>`,
           to: [email],
-          subject: `Velkommen til ${companyName} - Sett passord`,
+          subject: `Velkommen til ${companyName} - Innloggingsinfo`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <h1 style="color: #333;">Velkommen til ${esc(companyName)}!</h1>
               <p>Hei ${esc(firstName || "")},</p>
-              <p>Din brukerkonto er opprettet i Total-IK. Klikk p&aring; knappen under for &aring; sette ditt eget passord og logge inn.</p>
+              <p>Din brukerkonto er opprettet i Total-IK.</p>
 
-              <p style="margin: 30px 0; text-align:center;">
-                <a href="${recoveryLink}" style="background-color: #0066cc; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight:600;">Sett passord og logg inn</a>
+              <div style="background:#f4f7fb;border:1px solid #d0d7e2;border-radius:8px;padding:20px;margin:24px 0;">
+                <p style="margin:0 0 8px 0;"><strong>Innloggingsside:</strong></p>
+                <p style="margin:0 0 16px 0;"><a href="${loginUrl}" style="color:#0066cc;">${loginUrl}</a></p>
+                <p style="margin:0 0 8px 0;"><strong>E-post:</strong> ${esc(email)}</p>
+                <p style="margin:0;"><strong>Midlertidig passord:</strong> <code style="background:#fff;padding:4px 8px;border-radius:4px;border:1px solid #d0d7e2;">${DEFAULT_PASSWORD}</code></p>
+              </div>
+
+              <p style="margin: 30px 0;">
+                <a href="${loginUrl}" style="background-color: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Logg inn</a>
               </p>
 
-              <p style="font-size:13px;color:#666;">Fungerer ikke knappen? Kopier denne lenken inn i nettleseren:</p>
-              <p style="font-size:12px;color:#0066cc;word-break:break-all;">${recoveryLink}</p>
-
               <p style="color:#b8500a;font-size:14px;background:#fff8ec;border-left:4px solid #f0a020;padding:12px 16px;border-radius:0 8px 8px 0;">
-                <strong>Merk:</strong> Lenken er gyldig i 24 timer. Trenger du en ny lenke, be en administrator sette nytt passord fra <em>Ansatte</em>-siden.
+                <strong>Viktig:</strong> Bytt passord etter f&oslash;rste innlogging (Innstillinger &rarr; Passord).
               </p>
 
               ${getTermsNoticeHtml()}
@@ -285,7 +272,7 @@ serve(async (req) => {
             </div>
           `,
         });
-        console.log(`Welcome email with recovery link sent to ${email}`);
+        console.log(`Welcome email with default password sent to ${email}`);
       } catch (emailError) {
         console.error("Error sending welcome email:", emailError);
       }
