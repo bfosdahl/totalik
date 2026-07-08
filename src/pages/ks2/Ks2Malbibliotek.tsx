@@ -768,7 +768,7 @@ export default function Ks2Malbibliotek() {
         <TabsContent value="custom-checklists" className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Opprett og administrer firmaets egne sjekkliste-maler. De kan brukes i alle prosjekter.
+              Sjekklister du oppretter her lagres i firmabiblioteket og er tilgjengelig i <strong>alle prosjekter</strong>.
             </p>
             <Button onClick={openCreateCustomChecklist}>
               <Plus className="h-4 w-4 mr-2" />
