@@ -606,8 +606,8 @@ export default function Ks2Malbibliotek() {
           </TabsTrigger>
           <TabsTrigger value="custom-checklists" className="gap-2">
             <PenLine className="h-4 w-4" />
-            <span className="hidden sm:inline">Firmaets sjekklister</span>
-            <span className="sm:hidden">Firma</span>
+            <span className="hidden sm:inline">Dine sjekklister</span>
+            <span className="sm:hidden">Dine</span>
           </TabsTrigger>
           <TabsTrigger value="routines" className="gap-2">
             <BookOpen className="h-4 w-4" />
@@ -615,8 +615,8 @@ export default function Ks2Malbibliotek() {
           </TabsTrigger>
           <TabsTrigger value="custom-routines" className="gap-2">
             <PenLine className="h-4 w-4" />
-            <span className="hidden sm:inline">Firmaets rutiner</span>
-            <span className="sm:hidden">Firma</span>
+            <span className="hidden sm:inline">Dine rutiner</span>
+            <span className="sm:hidden">Dine</span>
           </TabsTrigger>
           <TabsTrigger value="documents" className="gap-2">
             <FolderOpen className="h-4 w-4" />
