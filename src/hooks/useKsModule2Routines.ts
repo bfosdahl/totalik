@@ -58,6 +58,7 @@ export function useKsModule2Routines(projectId?: string) {
         .select('*')
         .eq('project_id', projectId)
         .eq('company_id', profile.company_id)
+        .eq('is_deleted', false)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -167,17 +168,13 @@ export function useKsModule2Routines(projectId?: string) {
 
   const deleteRoutine = async (id: string) => {
     try {
-      // First delete the document if exists
-      const routine = routines.find(r => r.id === id);
-      if (routine?.document_path) {
-        await supabase.storage
-          .from('ks-module2-routines')
-          .remove([routine.document_path]);
-      }
-
       const { error } = await supabase
         .from('ks_module2_routines')
-        .delete()
+        .update({
+          is_deleted: true,
+          deleted_at: new Date().toISOString(),
+          deleted_by: (profile as any)?.user_id || null,
+        })
         .eq('id', id);
 
       if (error) throw error;
@@ -288,7 +285,8 @@ export function useKsModule2Routines(projectId?: string) {
         .from('company_ks_routines')
         .select('id, routine_name, description, content, category')
         .in('id', companyRoutineIds)
-        .eq('company_id', profile.company_id);
+        .eq('company_id', profile.company_id)
+        .eq('is_deleted', false);
       if (srcError) throw srcError;
 
       // Already-imported source ids (avoid duplicates in same project)
@@ -296,6 +294,7 @@ export function useKsModule2Routines(projectId?: string) {
         .from('ks_module2_routines')
         .select('source_routine_id')
         .eq('project_id', targetProjectId)
+        .eq('is_deleted', false)
         .in('source_routine_id', companyRoutineIds);
       const existingIds = new Set((existing || []).map((r: any) => r.source_routine_id));
 

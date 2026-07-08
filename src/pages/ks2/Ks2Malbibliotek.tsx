@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,6 +16,7 @@ import {
   ClipboardList, 
   Download, 
   Eye,
+  EyeOff,
   FolderOpen,
   File,
   FileImage,
@@ -37,13 +38,15 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Ks2ChecklistWizard, PreSelectedTemplate } from "@/components/ks2/Ks2ChecklistWizard";
 import { useAdminTemplatesForCustomers, AdminChecklistTemplate, AdminRoutineTemplate, AdminDocument } from "@/hooks/useAdminTemplatesForCustomers";
 import { useKsModule2ProjectTemplates } from "@/hooks/useKsModule2ProjectTemplates";
-import { useKsModule2Routines, KsModule2Routine } from "@/hooks/useKsModule2Routines";
-import { useKsModule2ChecklistTemplates, KsModule2ChecklistTemplate, ChecklistCheckpoint } from "@/hooks/useKsModule2ChecklistTemplates";
+import { useKsModule2Routines } from "@/hooks/useKsModule2Routines";
+import { useCompanyKsRoutines, CompanyKsRoutine } from "@/hooks/useCompanyKsRoutines";
+import { useCompanyKsChecklistTemplates, CompanyKsChecklistTemplate, Checkpoint } from "@/hooks/useCompanyKsChecklistTemplates";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Select,
   SelectContent,
@@ -113,6 +116,7 @@ const getFileIcon = (fileType: string | null) => {
 
 export default function Ks2Malbibliotek() {
   const { projectId } = useParams();
+  const { profile } = useAuth();
   const { checklistTemplates, routineTemplates, documents, folders, folderTree, isLoading } = useAdminTemplatesForCustomers('ks-bygg');
   const { 
     checklistTemplates: projectChecklists,
@@ -132,23 +136,29 @@ export default function Ks2Malbibliotek() {
   } = useKsModule2ProjectTemplates(projectId);
 
   const {
-    routines: customRoutines,
-    createRoutine,
-    updateRoutine,
-    deleteRoutine,
-    isLoading: isLoadingCustomRoutines,
-    isSaving: isSavingCustomRoutine,
+    importFromCompanyLibrary,
+    isLoading: isLoadingProjectRoutines,
+    isSaving: isImportingRoutine,
   } = useKsModule2Routines(projectId);
 
   const {
-    templates: customChecklistTemplates,
+    routines: companyRoutines,
+    createRoutine: createCompanyRoutine,
+    updateRoutine: updateCompanyRoutine,
+    deleteRoutine: deleteCompanyRoutine,
+    isLoading: isLoadingCompanyRoutines,
+    isSaving: isSavingCompanyRoutine,
+  } = useCompanyKsRoutines(false);
+
+  const {
+    templates: companyChecklistTemplates,
     customCategories: existingCustomCategories,
-    createTemplate: createChecklistTemplate,
-    updateTemplate: updateChecklistTemplate,
-    deleteTemplate: deleteChecklistTemplate,
-    isLoading: isLoadingCustomChecklists,
-    isSaving: isSavingCustomChecklist,
-  } = useKsModule2ChecklistTemplates(projectId);
+    createTemplate: createCompanyChecklistTemplate,
+    updateTemplate: updateCompanyChecklistTemplate,
+    deleteTemplate: deleteCompanyChecklistTemplate,
+    isLoading: isLoadingCompanyChecklists,
+    isSaving: isSavingCompanyChecklist,
+  } = useCompanyKsChecklistTemplates();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("checklists");
@@ -165,7 +175,7 @@ export default function Ks2Malbibliotek() {
   
   // Custom routine dialog
   const [showCustomRoutineDialog, setShowCustomRoutineDialog] = useState(false);
-  const [editingCustomRoutine, setEditingCustomRoutine] = useState<KsModule2Routine | null>(null);
+  const [editingCustomRoutine, setEditingCustomRoutine] = useState<CompanyKsRoutine | null>(null);
   const [customRoutineName, setCustomRoutineName] = useState("");
   const [customRoutineDescription, setCustomRoutineDescription] = useState("");
   const [customRoutineContent, setCustomRoutineContent] = useState("");
@@ -173,19 +183,89 @@ export default function Ks2Malbibliotek() {
 
   // Custom checklist template dialog
   const [showCustomChecklistDialog, setShowCustomChecklistDialog] = useState(false);
-  const [editingCustomChecklist, setEditingCustomChecklist] = useState<KsModule2ChecklistTemplate | null>(null);
+  const [editingCustomChecklist, setEditingCustomChecklist] = useState<CompanyKsChecklistTemplate | null>(null);
   const [customChecklistName, setCustomChecklistName] = useState("");
   const [customChecklistDescription, setCustomChecklistDescription] = useState("");
   const [customChecklistCategory, setCustomChecklistCategory] = useState("general");
   const [customChecklistUseNewCategory, setCustomChecklistUseNewCategory] = useState(false);
   const [customChecklistNewCategory, setCustomChecklistNewCategory] = useState("");
-  const [customChecklistCheckpoints, setCustomChecklistCheckpoints] = useState<ChecklistCheckpoint[]>([]);
+  const [customChecklistCheckpoints, setCustomChecklistCheckpoints] = useState<Checkpoint[]>([]);
+  const [hiddenSystemTemplates, setHiddenSystemTemplates] = useState<Set<string>>(new Set());
+  const [showHiddenSystemTemplates, setShowHiddenSystemTemplates] = useState(false);
 
   // Checklist wizard state
   const [showChecklistWizard, setShowChecklistWizard] = useState(false);
   const [selectedTemplateForWizard, setSelectedTemplateForWizard] = useState<PreSelectedTemplate | null>(null);
 
-  const handleStartCustomChecklist = (template: KsModule2ChecklistTemplate) => {
+  const hiddenSystemCount = hiddenSystemTemplates.size;
+  const hiddenKey = (type: "checklist" | "routine", id: string) => `${type}:${id}`;
+  const isSystemTemplateHidden = (type: "checklist" | "routine", id: string) => hiddenSystemTemplates.has(hiddenKey(type, id));
+
+  useEffect(() => {
+    const fetchHiddenSystemTemplates = async () => {
+      if (!profile?.company_id) return;
+      const { data, error } = await supabase
+        .from("company_ks_selected_templates")
+        .select("template_type, admin_template_id")
+        .eq("company_id", profile.company_id)
+        .in("template_type", ["hidden_checklist", "hidden_routine"]);
+
+      if (error) {
+        console.error("Error fetching hidden KS templates:", error);
+        return;
+      }
+
+      setHiddenSystemTemplates(new Set((data || []).map((row: any) => {
+        const type = row.template_type === "hidden_checklist" ? "checklist" : "routine";
+        return hiddenKey(type, row.admin_template_id);
+      })));
+    };
+
+    fetchHiddenSystemTemplates();
+  }, [profile?.company_id]);
+
+  const toggleSystemTemplateHidden = async (type: "checklist" | "routine", id: string, hidden: boolean) => {
+    if (!profile?.company_id) return;
+    const templateType = hidden ? `hidden_${type}` : `hidden_${type}`;
+    const key = hiddenKey(type, id);
+
+    try {
+      if (hidden) {
+        const { error } = await supabase
+          .from("company_ks_selected_templates")
+          .insert({
+            company_id: profile.company_id,
+            template_type: templateType,
+            admin_template_id: id,
+            selected_by_id: profile.id,
+          });
+
+        if (error && error.code !== "23505") throw error;
+        setHiddenSystemTemplates(prev => new Set(prev).add(key));
+        toast.success("Mal skjult fra biblioteket");
+      } else {
+        const { error } = await supabase
+          .from("company_ks_selected_templates")
+          .delete()
+          .eq("company_id", profile.company_id)
+          .eq("template_type", templateType)
+          .eq("admin_template_id", id);
+
+        if (error) throw error;
+        setHiddenSystemTemplates(prev => {
+          const next = new Set(prev);
+          next.delete(key);
+          return next;
+        });
+        toast.success("Mal vises igjen");
+      }
+    } catch (error) {
+      console.error("Error toggling hidden KS template:", error);
+      toast.error("Kunne ikke oppdatere synlighet");
+    }
+  };
+
+  const handleStartCustomChecklist = (template: CompanyKsChecklistTemplate) => {
     setSelectedTemplateForWizard({
       id: template.id,
       template_name: template.template_name,
@@ -202,7 +282,10 @@ export default function Ks2Malbibliotek() {
   };
 
   // Filter checklist templates
-  const filteredChecklists = checklistTemplates.filter(t => {
+  const visibleSystemChecklists = checklistTemplates.filter(t => showHiddenSystemTemplates || !isSystemTemplateHidden("checklist", t.id));
+  const visibleSystemRoutines = routineTemplates.filter(r => showHiddenSystemTemplates || !isSystemTemplateHidden("routine", r.id));
+
+  const filteredChecklists = visibleSystemChecklists.filter(t => {
     const matchesSearch = t.template_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (t.description?.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesCategory = selectedChecklistCategory === "all" || t.category === selectedChecklistCategory;
@@ -210,7 +293,7 @@ export default function Ks2Malbibliotek() {
   });
 
   // Filter routine templates
-  const filteredRoutines = routineTemplates.filter(r => {
+  const filteredRoutines = visibleSystemRoutines.filter(r => {
     const matchesSearch = r.routine_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (r.description?.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesCategory = selectedRoutineCategory === "all" || r.category === selectedRoutineCategory;
@@ -218,8 +301,8 @@ export default function Ks2Malbibliotek() {
   });
 
   // Filter custom routines
-  const filteredCustomRoutines = customRoutines.filter(r => {
-    const matchesSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredCustomRoutines = companyRoutines.filter(r => {
+    const matchesSearch = r.routine_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (r.description?.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesSearch;
   });
@@ -257,9 +340,9 @@ export default function Ks2Malbibliotek() {
     setShowCustomRoutineDialog(true);
   };
 
-  const openEditCustomRoutine = (routine: KsModule2Routine) => {
+  const openEditCustomRoutine = (routine: CompanyKsRoutine) => {
     setEditingCustomRoutine(routine);
-    setCustomRoutineName(routine.name);
+    setCustomRoutineName(routine.routine_name);
     setCustomRoutineDescription(routine.description || "");
     setCustomRoutineContent(routine.content || "");
     setCustomRoutineCategory(routine.category || "general");
@@ -273,16 +356,15 @@ export default function Ks2Malbibliotek() {
     }
 
     if (editingCustomRoutine) {
-      await updateRoutine(editingCustomRoutine.id, {
-        name: customRoutineName,
+      await updateCompanyRoutine(editingCustomRoutine.id, {
+        routine_name: customRoutineName,
         description: customRoutineDescription || null,
-        content: customRoutineContent || null,
+        content: customRoutineContent || "",
         category: customRoutineCategory,
       });
     } else {
-      await createRoutine({
-        project_id: projectId!,
-        name: customRoutineName,
+      await createCompanyRoutine({
+        routine_name: customRoutineName,
         description: customRoutineDescription || undefined,
         content: customRoutineContent || undefined,
         category: customRoutineCategory,
@@ -291,10 +373,15 @@ export default function Ks2Malbibliotek() {
     setShowCustomRoutineDialog(false);
   };
 
-  const handleDeleteCustomRoutine = async (routine: KsModule2Routine) => {
+  const handleDeleteCustomRoutine = async (routine: CompanyKsRoutine) => {
     if (confirm("Er du sikker på at du vil slette denne rutinen?")) {
-      await deleteRoutine(routine.id);
+      await deleteCompanyRoutine(routine.id);
     }
+  };
+
+  const handleAddCompanyRoutineToProject = async (routine: CompanyKsRoutine) => {
+    if (!projectId) return;
+    await importFromCompanyLibrary([routine.id], projectId);
   };
 
   // Custom checklist template handlers
@@ -305,11 +392,11 @@ export default function Ks2Malbibliotek() {
     setCustomChecklistCategory("general");
     setCustomChecklistUseNewCategory(false);
     setCustomChecklistNewCategory("");
-    setCustomChecklistCheckpoints([{ checkpoint_text: "", help_text: "" }]);
+    setCustomChecklistCheckpoints([{ id: crypto.randomUUID(), text: "", description: "" }]);
     setShowCustomChecklistDialog(true);
   };
 
-  const openEditCustomChecklist = (checklist: KsModule2ChecklistTemplate) => {
+  const openEditCustomChecklist = (checklist: CompanyKsChecklistTemplate) => {
     setEditingCustomChecklist(checklist);
     setCustomChecklistName(checklist.template_name);
     setCustomChecklistDescription(checklist.description || "");
@@ -319,7 +406,7 @@ export default function Ks2Malbibliotek() {
     setCustomChecklistCheckpoints(
       checklist.checkpoints.length > 0 
         ? checklist.checkpoints 
-        : [{ checkpoint_text: "", help_text: "" }]
+        : [{ id: crypto.randomUUID(), text: "", description: "" }]
     );
     setShowCustomChecklistDialog(true);
   };
@@ -330,7 +417,13 @@ export default function Ks2Malbibliotek() {
       return;
     }
 
-    const validCheckpoints = customChecklistCheckpoints.filter(cp => cp.checkpoint_text.trim());
+    const validCheckpoints = customChecklistCheckpoints
+      .filter(cp => cp.text.trim())
+      .map(cp => ({
+        id: cp.id || crypto.randomUUID(),
+        text: cp.text.trim(),
+        description: cp.description?.trim() || undefined,
+      }));
     if (validCheckpoints.length === 0) {
       toast.error("Legg til minst ett sjekkpunkt");
       return;
@@ -341,15 +434,14 @@ export default function Ks2Malbibliotek() {
       : customChecklistCategory;
 
     if (editingCustomChecklist) {
-      await updateChecklistTemplate(editingCustomChecklist.id, {
+      await updateCompanyChecklistTemplate(editingCustomChecklist.id, {
         template_name: customChecklistName,
         description: customChecklistDescription || null,
         category: finalCategory,
         checkpoints: validCheckpoints,
       });
     } else {
-      await createChecklistTemplate({
-        project_id: projectId!,
+      await createCompanyChecklistTemplate({
         template_name: customChecklistName,
         description: customChecklistDescription || undefined,
         category: finalCategory,
@@ -359,17 +451,17 @@ export default function Ks2Malbibliotek() {
     setShowCustomChecklistDialog(false);
   };
 
-  const handleDeleteCustomChecklist = async (checklist: KsModule2ChecklistTemplate) => {
+  const handleDeleteCustomChecklist = async (checklist: CompanyKsChecklistTemplate) => {
     if (confirm("Er du sikker på at du vil slette denne sjekkliste-malen?")) {
-      await deleteChecklistTemplate(checklist.id);
+      await deleteCompanyChecklistTemplate(checklist.id);
     }
   };
 
   const addCheckpoint = () => {
-    setCustomChecklistCheckpoints([...customChecklistCheckpoints, { checkpoint_text: "", help_text: "" }]);
+    setCustomChecklistCheckpoints([...customChecklistCheckpoints, { id: crypto.randomUUID(), text: "", description: "" }]);
   };
 
-  const updateCheckpoint = (index: number, field: keyof ChecklistCheckpoint, value: string) => {
+  const updateCheckpoint = (index: number, field: keyof Checkpoint, value: string) => {
     const updated = [...customChecklistCheckpoints];
     updated[index] = { ...updated[index], [field]: value };
     setCustomChecklistCheckpoints(updated);
@@ -382,8 +474,8 @@ export default function Ks2Malbibliotek() {
   };
 
   // Get unique categories that exist in the data
-  const checklistCategoriesInUse = [...new Set(checklistTemplates.map(t => t.category))];
-  const routineCategoriesInUse = [...new Set(routineTemplates.map(r => r.category))];
+  const checklistCategoriesInUse = [...new Set(filteredChecklists.map(t => t.category))];
+  const routineCategoriesInUse = [...new Set(filteredRoutines.map(r => r.category))];
   const documentCategoriesInUse = [...new Set(documents.map(d => d.category).filter(Boolean))];
 
   // All available categories for custom checklists (predefined + custom)
@@ -399,7 +491,7 @@ export default function Ks2Malbibliotek() {
     setShowAddDialog(true);
   };
 
-  if (isLoading || isLoadingProject || isLoadingCustomRoutines || isLoadingCustomChecklists) {
+  if (isLoading || isLoadingProject || isLoadingProjectRoutines || isLoadingCompanyRoutines || isLoadingCompanyChecklists) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-muted-foreground">Laster malbibliotek...</div>
@@ -469,8 +561,8 @@ export default function Ks2Malbibliotek() {
                 <PenLine className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
               </div>
               <div>
-                <p className="text-xl sm:text-2xl font-bold">{customRoutines.length}</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Egne rut.</p>
+                <p className="text-xl sm:text-2xl font-bold">{companyRoutines.length}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Firmarut.</p>
               </div>
             </div>
           </CardContent>
@@ -482,8 +574,8 @@ export default function Ks2Malbibliotek() {
                 <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5 text-cyan-500" />
               </div>
               <div>
-                <p className="text-xl sm:text-2xl font-bold">{customChecklistTemplates.length}</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Egne sjekk.</p>
+                <p className="text-xl sm:text-2xl font-bold">{companyChecklistTemplates.length}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Firmasjekk.</p>
               </div>
             </div>
           </CardContent>
@@ -511,8 +603,8 @@ export default function Ks2Malbibliotek() {
           </TabsTrigger>
           <TabsTrigger value="custom-checklists" className="gap-2">
             <PenLine className="h-4 w-4" />
-            <span className="hidden sm:inline">Egne sjekklister</span>
-            <span className="sm:hidden">Egne</span>
+            <span className="hidden sm:inline">Firmaets sjekklister</span>
+            <span className="sm:hidden">Firma</span>
           </TabsTrigger>
           <TabsTrigger value="routines" className="gap-2">
             <BookOpen className="h-4 w-4" />
@@ -520,8 +612,8 @@ export default function Ks2Malbibliotek() {
           </TabsTrigger>
           <TabsTrigger value="custom-routines" className="gap-2">
             <PenLine className="h-4 w-4" />
-            <span className="hidden sm:inline">Egne rutiner</span>
-            <span className="sm:hidden">Egne</span>
+            <span className="hidden sm:inline">Firmaets rutiner</span>
+            <span className="sm:hidden">Firma</span>
           </TabsTrigger>
           <TabsTrigger value="documents" className="gap-2">
             <FolderOpen className="h-4 w-4" />
@@ -529,6 +621,18 @@ export default function Ks2Malbibliotek() {
             <span className="sm:hidden">Dok.</span>
           </TabsTrigger>
         </TabsList>
+
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowHiddenSystemTemplates(v => !v)}
+            disabled={hiddenSystemCount === 0}
+          >
+            {showHiddenSystemTemplates ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
+            {showHiddenSystemTemplates ? "Skjul skjulte maler" : `Vis skjulte maler (${hiddenSystemCount})`}
+          </Button>
+        </div>
 
         {/* Checklist Templates Tab */}
         <TabsContent value="checklists" className="space-y-2">
@@ -570,6 +674,7 @@ export default function Ks2Malbibliotek() {
                       <div className="ml-6 border-l pl-3 space-y-0.5 mb-2">
                         {categoryTemplates.map((template) => {
                           const isAdded = addedChecklistIds.includes(template.id);
+                          const isHidden = isSystemTemplateHidden("checklist", template.id);
                           const projectTemplate = projectChecklists.find(
                             pt => pt.admin_checklist_template_id === template.id
                           );
@@ -579,7 +684,8 @@ export default function Ks2Malbibliotek() {
                               key={template.id}
                               className={cn(
                                 "flex items-center justify-between gap-3 px-3 py-2 rounded-md hover:bg-muted/50 transition-colors group",
-                                isAdded && "bg-primary/5"
+                                isAdded && "bg-primary/5",
+                                isHidden && "opacity-60"
                               )}
                             >
                               <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -593,13 +699,16 @@ export default function Ks2Malbibliotek() {
                                     {template.is_locked && (
                                       <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
                                     )}
+                                    {isHidden && (
+                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">Skjult</Badge>
+                                    )}
                                   </div>
                                   {template.description && (
                                     <p className="text-xs text-muted-foreground truncate">{template.description}</p>
                                   )}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="flex items-center gap-1.5 shrink-0">
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -629,6 +738,16 @@ export default function Ks2Malbibliotek() {
                                     Legg til
                                   </Button>
                                 )}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs"
+                                  onClick={() => toggleSystemTemplateHidden("checklist", template.id, !isHidden)}
+                                  disabled={isSaving}
+                                  title={isHidden ? "Vis malen igjen" : "Skjul irrelevant mal"}
+                                >
+                                  {isHidden ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                                </Button>
                               </div>
                             </div>
                           );
@@ -646,7 +765,7 @@ export default function Ks2Malbibliotek() {
         <TabsContent value="custom-checklists" className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Opprett og administrer egne sjekkliste-maler for dette prosjektet
+              Opprett og administrer firmaets egne sjekkliste-maler. De kan brukes i alle prosjekter.
             </p>
             <Button onClick={openCreateCustomChecklist}>
               <Plus className="h-4 w-4 mr-2" />
@@ -654,7 +773,7 @@ export default function Ks2Malbibliotek() {
             </Button>
           </div>
 
-          {customChecklistTemplates.length === 0 ? (
+          {companyChecklistTemplates.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <ClipboardList className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -664,7 +783,7 @@ export default function Ks2Malbibliotek() {
             </Card>
           ) : (
             <div className="space-y-0.5">
-              {customChecklistTemplates.map((template) => (
+              {companyChecklistTemplates.map((template) => (
                 <div
                   key={template.id}
                   className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md hover:bg-muted/50 transition-colors group"
@@ -685,7 +804,7 @@ export default function Ks2Malbibliotek() {
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <span className="text-xs text-muted-foreground mr-1">{template.checkpoints.length} pkt</span>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                    <div className="flex gap-1">
                       <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => handleStartCustomChecklist(template)}>
                         <Play className="h-3 w-3" />
                       </Button>
@@ -742,6 +861,7 @@ export default function Ks2Malbibliotek() {
                       <div className="ml-6 border-l pl-3 space-y-0.5 mb-2">
                         {categoryRoutines.map((routine) => {
                           const isAdded = addedRoutineIds.includes(routine.id);
+                          const isHidden = isSystemTemplateHidden("routine", routine.id);
                           const projectTemplate = projectRoutines.find(
                             pt => pt.admin_routine_template_id === routine.id
                           );
@@ -751,7 +871,8 @@ export default function Ks2Malbibliotek() {
                               key={routine.id}
                               className={cn(
                                 "flex items-center justify-between gap-3 px-3 py-2 rounded-md hover:bg-muted/50 transition-colors group",
-                                isAdded && "bg-purple-500/5"
+                                isAdded && "bg-purple-500/5",
+                                isHidden && "opacity-60"
                               )}
                             >
                               <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -765,13 +886,16 @@ export default function Ks2Malbibliotek() {
                                     {routine.is_locked && (
                                       <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
                                     )}
+                                    {isHidden && (
+                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">Skjult</Badge>
+                                    )}
                                   </div>
                                   {routine.description && (
                                     <p className="text-xs text-muted-foreground truncate">{routine.description}</p>
                                   )}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="flex items-center gap-1.5 shrink-0">
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -801,6 +925,16 @@ export default function Ks2Malbibliotek() {
                                     Legg til
                                   </Button>
                                 )}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs"
+                                  onClick={() => toggleSystemTemplateHidden("routine", routine.id, !isHidden)}
+                                  disabled={isSaving}
+                                  title={isHidden ? "Vis rutinen igjen" : "Skjul irrelevant rutine"}
+                                >
+                                  {isHidden ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                                </Button>
                               </div>
                             </div>
                           );
@@ -818,7 +952,7 @@ export default function Ks2Malbibliotek() {
         <TabsContent value="custom-routines" className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Opprett og administrer egne rutiner for dette prosjektet
+              Opprett og administrer firmaets egne rutiner. De kan hentes inn i alle prosjekter.
             </p>
             <Button onClick={openCreateCustomRoutine}>
               <Plus className="h-4 w-4 mr-2" />
@@ -845,7 +979,7 @@ export default function Ks2Malbibliotek() {
                     <PenLine className="h-4 w-4 text-green-500 shrink-0" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium truncate">{routine.name}</span>
+                        <span className="text-sm font-medium truncate">{routine.routine_name}</span>
                         <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">
                           {ROUTINE_CATEGORIES[routine.category || 'general'] || routine.category}
                         </Badge>
@@ -859,7 +993,17 @@ export default function Ks2Malbibliotek() {
                     <span className="text-xs text-muted-foreground mr-1">
                       {format(parseISO(routine.created_at), "dd.MM.yy", { locale: nb })}
                     </span>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => handleAddCompanyRoutineToProject(routine)}
+                        disabled={isImportingRoutine}
+                        title="Legg til i dette prosjektet"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
                       <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openEditCustomRoutine(routine)}>
                         <Edit className="h-3 w-3" />
                       </Button>
@@ -1308,9 +1452,9 @@ export default function Ks2Malbibliotek() {
             </Button>
             <Button 
               onClick={handleSaveCustomRoutine}
-              disabled={isSavingCustomRoutine || !customRoutineName.trim()}
+              disabled={isSavingCompanyRoutine || !customRoutineName.trim()}
             >
-              {isSavingCustomRoutine ? "Lagrer..." : (editingCustomRoutine ? "Lagre endringer" : "Opprett rutine")}
+              {isSavingCompanyRoutine ? "Lagrer..." : (editingCustomRoutine ? "Lagre endringer" : "Opprett rutine")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1391,13 +1535,13 @@ export default function Ks2Malbibliotek() {
                   <div key={index} className="flex gap-2 items-start">
                     <div className="flex-1 space-y-1">
                       <Input
-                        value={cp.checkpoint_text}
-                        onChange={(e) => updateCheckpoint(index, 'checkpoint_text', e.target.value)}
+                        value={cp.text}
+                        onChange={(e) => updateCheckpoint(index, 'text', e.target.value)}
                         placeholder={`Sjekkpunkt ${index + 1}`}
                       />
                       <Input
-                        value={cp.help_text || ""}
-                        onChange={(e) => updateCheckpoint(index, 'help_text', e.target.value)}
+                        value={cp.description || ""}
+                        onChange={(e) => updateCheckpoint(index, 'description', e.target.value)}
                         placeholder="Hjelpetekst (valgfritt)"
                         className="text-sm"
                       />
@@ -1425,9 +1569,9 @@ export default function Ks2Malbibliotek() {
             </Button>
             <Button 
               onClick={handleSaveCustomChecklist}
-              disabled={isSavingCustomChecklist || !customChecklistName.trim()}
+              disabled={isSavingCompanyChecklist || !customChecklistName.trim()}
             >
-              {isSavingCustomChecklist ? "Lagrer..." : (editingCustomChecklist ? "Lagre endringer" : "Opprett sjekkliste-mal")}
+              {isSavingCompanyChecklist ? "Lagrer..." : (editingCustomChecklist ? "Lagre endringer" : "Opprett sjekkliste-mal")}
             </Button>
           </DialogFooter>
         </DialogContent>
