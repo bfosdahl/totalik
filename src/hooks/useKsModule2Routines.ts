@@ -155,8 +155,24 @@ export function useKsModule2Routines(projectId?: string) {
         .eq('id', id);
 
       if (error) throw error;
-      
-      toast.success('Rutine oppdatert');
+
+      // Mirror content changes back to firmabiblioteket so ALL projects get the update.
+      const source = routines.find(r => r.id === id);
+      if (source?.source_routine_id) {
+        const mirror: Record<string, unknown> = {};
+        if (updates.name !== undefined) mirror.routine_name = updates.name;
+        if (updates.description !== undefined) mirror.description = updates.description;
+        if (updates.content !== undefined) mirror.content = updates.content;
+        if (updates.category !== undefined) mirror.category = updates.category;
+        if (Object.keys(mirror).length > 0) {
+          await supabase
+            .from('company_ks_routines')
+            .update(mirror)
+            .eq('id', source.source_routine_id);
+        }
+      }
+
+      toast.success('Rutine oppdatert i firmabiblioteket – gjelder alle prosjekter');
       fetchRoutines();
     } catch (error) {
       console.error('Error updating routine:', error);
