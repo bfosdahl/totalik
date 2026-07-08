@@ -159,7 +159,12 @@ export function useKsModule2Routines(projectId?: string) {
       // Mirror content changes back to firmabiblioteket so ALL projects get the update.
       const source = routines.find(r => r.id === id);
       if (source?.source_routine_id) {
-        const mirror: Record<string, unknown> = {};
+        const mirror: {
+          routine_name?: string;
+          description?: string | null;
+          content?: string | null;
+          category?: string;
+        } = {};
         if (updates.name !== undefined) mirror.routine_name = updates.name;
         if (updates.description !== undefined) mirror.description = updates.description;
         if (updates.content !== undefined) mirror.content = updates.content;
