@@ -296,6 +296,7 @@ const App = () => (
                   {/* KS Bygg routes */}
                   <Route path="/ks" element={<ProtectedRoute><Ks2Dashboard /></ProtectedRoute>} />
                   <Route path="/ks/statistikk" element={<ProtectedRoute><Ks2Statistikk /></ProtectedRoute>} />
+                  <Route path="/ks/dagsrapport-oversikt" element={<ProtectedRoute><Ks2DagsrapportOversikt /></ProtectedRoute>} />
                   <Route path="/ks/project/:projectId/*" element={<ProtectedRoute><Ks2ProjectDetail /></ProtectedRoute>} />
                   <Route path="/ks/admin" element={<ProtectedRoute><Ks2Admin /></ProtectedRoute>} />
                   <Route path="/ks/befaring" element={<ProtectedRoute><Ks2Befaring /></ProtectedRoute>} />
