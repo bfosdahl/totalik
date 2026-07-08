@@ -162,7 +162,7 @@ export function useKsModule2Routines(projectId?: string) {
         const mirror: {
           routine_name?: string;
           description?: string | null;
-          content?: string | null;
+          content?: string;
           category?: string;
         } = {};
         if (updates.name !== undefined) mirror.routine_name = updates.name;
