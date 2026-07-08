@@ -154,11 +154,13 @@ serve(async (req) => {
       });
     }
 
-    // Generate an unguessable random password. The user will set their own via recovery link.
-    const randomPassword = crypto.randomUUID() + "Aa1!";
+    // NOTE: Bevisst valg — vi bruker et fast midlertidig passord fordi engangs-recovery-lenker
+    // ofte blir forbrukt av Outlook/SafeLinks før mottakeren rekker å klikke. Admin/systemadmin
+    // kan sette nytt passord fra Ansatte-siden ved behov. IKKE endre uten å avklare med Ben.
+    const DEFAULT_PASSWORD = "Abc_1234";
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
-      password: randomPassword,
+      password: DEFAULT_PASSWORD,
       email_confirm: true,
       user_metadata: {
         first_name: firstName || "",
