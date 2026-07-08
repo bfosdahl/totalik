@@ -154,12 +154,11 @@ serve(async (req) => {
       });
     }
 
-    // Default password for new users. Admin/systemadmin can reset from Ansatte-siden.
-    // Recovery-links via e-post var upålitelige (Outlook forhåndsklikker og forbruker dem).
-    const DEFAULT_PASSWORD = "Abc_1234";
+    // Generate an unguessable random password. The user will set their own via recovery link.
+    const randomPassword = crypto.randomUUID() + "Aa1!";
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
-      password: DEFAULT_PASSWORD,
+      password: randomPassword,
       email_confirm: true,
       user_metadata: {
         first_name: firstName || "",
