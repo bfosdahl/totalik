@@ -105,6 +105,7 @@ const IkKsEgenerklaering = lazy(() => import("./pages/ks2/IkKsEgenerklaering"));
 const IkKsHandbok = lazy(() => import("./pages/ks2/IkKsHandbok"));
 const KsUtfylteSjekklister = lazy(() => import("./pages/ks2/KsUtfylteSjekklister"));
 const KsOppsett = lazy(() => import("./pages/ks2/KsOppsett"));
+const Ks2DagsrapportOversikt = lazy(() => import("./pages/ks2/Ks2DagsrapportOversikt"));
 
 // Mine prosjekter
 const MineProsjekterDashboard = lazy(() => import("./pages/mineprosjekter/MineProsjekterDashboard"));
@@ -295,6 +296,7 @@ const App = () => (
                   {/* KS Bygg routes */}
                   <Route path="/ks" element={<ProtectedRoute><Ks2Dashboard /></ProtectedRoute>} />
                   <Route path="/ks/statistikk" element={<ProtectedRoute><Ks2Statistikk /></ProtectedRoute>} />
+                  <Route path="/ks/dagsrapport-oversikt" element={<ProtectedRoute><Ks2DagsrapportOversikt /></ProtectedRoute>} />
                   <Route path="/ks/project/:projectId/*" element={<ProtectedRoute><Ks2ProjectDetail /></ProtectedRoute>} />
                   <Route path="/ks/admin" element={<ProtectedRoute><Ks2Admin /></ProtectedRoute>} />
                   <Route path="/ks/befaring" element={<ProtectedRoute><Ks2Befaring /></ProtectedRoute>} />

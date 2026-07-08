@@ -834,6 +834,15 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               )}
             </AnimatePresence>
             <NavItemList items={ksByggItems} locationPathname={pathname} locationSearch={search} navigate={navigate} t={t} />
+            {(isSystemAdmin || isCompanyAdmin) && (
+              <NavItemList
+                items={[{ label: "Dagsrapporter (admin)", path: "/ks/dagsrapport-oversikt" }]}
+                locationPathname={pathname}
+                locationSearch={search}
+                navigate={navigate}
+                t={t}
+              />
+            )}
           </ModuleSection>
 
           {/* ── IK/FDV ── */}
