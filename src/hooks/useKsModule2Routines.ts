@@ -167,7 +167,7 @@ export function useKsModule2Routines(projectId?: string) {
         } = {};
         if (updates.name !== undefined) mirror.routine_name = updates.name;
         if (updates.description !== undefined) mirror.description = updates.description;
-        if (updates.content !== undefined) mirror.content = updates.content;
+        if (updates.content !== undefined) mirror.content = updates.content ?? '';
         if (updates.category !== undefined) mirror.category = updates.category;
         if (Object.keys(mirror).length > 0) {
           await supabase
