@@ -105,6 +105,7 @@ const IkKsEgenerklaering = lazy(() => import("./pages/ks2/IkKsEgenerklaering"));
 const IkKsHandbok = lazy(() => import("./pages/ks2/IkKsHandbok"));
 const KsUtfylteSjekklister = lazy(() => import("./pages/ks2/KsUtfylteSjekklister"));
 const KsOppsett = lazy(() => import("./pages/ks2/KsOppsett"));
+const Ks2DagsrapportOversikt = lazy(() => import("./pages/ks2/Ks2DagsrapportOversikt"));
 
 // Mine prosjekter
 const MineProsjekterDashboard = lazy(() => import("./pages/mineprosjekter/MineProsjekterDashboard"));
