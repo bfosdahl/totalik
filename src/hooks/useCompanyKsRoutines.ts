@@ -95,7 +95,10 @@ export function useCompanyKsRoutines(includeHidden: boolean = false) {
       if (error) throw error;
       
       setRoutines(prev => [...prev, data]);
-      toast({ title: "Rutine opprettet" });
+      toast({
+        title: "Lagret i firmabiblioteket",
+        description: "Rutinen er nå tilgjengelig i alle prosjekter under \"Dine rutiner\".",
+      });
       return data;
     } catch (error) {
       console.error("Error creating routine:", error);
