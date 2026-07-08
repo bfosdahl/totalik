@@ -1,3 +1,11 @@
+# Parkert senere: frittstående nyhetsbrev-løsning
+
+Bygg ett eget Lovable-prosjekt for nyhetsbrev, f.eks. `nyhetsbrev.athenahms.no`, som henter kontaktlister fra Total-IK, Kurskontoret og fremtidige prosjekter via API. Første MVP bør ha kontakt-sync, segmenter, enkel kampanjeoversikt og sending via Resend/Audiences/Broadcasts, slik at editor, statistikk og avmelding slipper å bygges fra scratch i Total-IK og Kurskontoret.
+
+Når vi tar dette opp igjen: start med alternativ A/hybrid — sync til Resend Audiences først, og bygg eventuell egen full modul senere hvis behovet blir stort nok.
+
+---
+
 # Plan: Forbedringer i timeføring og lønnsgrunnlag
 
 Tre punkter fra Eirik (SSM Marine). Jeg implementerer alt sammen.

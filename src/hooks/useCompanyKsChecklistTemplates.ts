@@ -66,6 +66,7 @@ export function useCompanyKsChecklistTemplates() {
           .from("company_ks_checklist_templates")
           .select("*")
           .eq("company_id", companyId)
+          .eq("is_deleted", false)
           .order("created_at", { ascending: false }),
         supabase
           .from("company_ks_selected_templates")
@@ -167,7 +168,11 @@ export function useCompanyKsChecklistTemplates() {
     try {
       const { error } = await supabase
         .from("company_ks_checklist_templates")
-        .delete()
+        .update({
+          is_deleted: true,
+          deleted_at: new Date().toISOString(),
+          deleted_by: (profile as any)?.user_id || null,
+        })
         .eq("id", id);
 
       if (error) throw error;
@@ -277,8 +282,11 @@ export function useCompanyKsChecklistTemplates() {
       .map(t => t.admin_template_id);
   };
 
+  const customCategories = [...new Set(templates.map(t => t.category))];
+
   return {
     templates,
+    customCategories,
     selectedAdminTemplates,
     isLoading,
     isSaving,
