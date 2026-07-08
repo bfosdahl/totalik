@@ -363,12 +363,15 @@ export default function Ks2Malbibliotek() {
         category: customRoutineCategory,
       });
     } else {
-      await createCompanyRoutine({
+      const created = await createCompanyRoutine({
         routine_name: customRoutineName,
         description: customRoutineDescription || undefined,
         content: customRoutineContent || undefined,
         category: customRoutineCategory,
       });
+      if (created?.id && projectId) {
+        await importFromCompanyLibrary([created.id], projectId);
+      }
     }
     setShowCustomRoutineDialog(false);
   };
