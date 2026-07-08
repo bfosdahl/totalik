@@ -955,7 +955,7 @@ export default function Ks2Malbibliotek() {
         <TabsContent value="custom-routines" className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Opprett og administrer firmaets egne rutiner. De kan hentes inn i alle prosjekter.
+              Rutiner du oppretter her lagres i firmabiblioteket og er tilgjengelig i <strong>alle prosjekter</strong>.
             </p>
             <Button onClick={openCreateCustomRoutine}>
               <Plus className="h-4 w-4 mr-2" />
