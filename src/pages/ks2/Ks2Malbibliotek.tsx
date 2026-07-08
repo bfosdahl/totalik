@@ -578,7 +578,7 @@ export default function Ks2Malbibliotek() {
               </div>
               <div>
                 <p className="text-xl sm:text-2xl font-bold">{companyChecklistTemplates.length}</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Firmasjekk.</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Dine sjekklister</p>
               </div>
             </div>
           </CardContent>
