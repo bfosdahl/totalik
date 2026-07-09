@@ -187,7 +187,7 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
       };
 
       // ─── README ──────────────────────────────────────────────────────────
-      const orgnr = company?.organization_number || "";
+      const orgnr = company?.org_number || "";
       const readme = `ARBEIDSTILSYN-PAKKE
 ====================
 Bedrift: ${company?.name || companyName}
