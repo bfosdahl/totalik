@@ -117,7 +117,8 @@ const getFileIcon = (fileType: string | null) => {
 
 export default function Ks2Malbibliotek() {
   const { projectId } = useParams();
-  const { profile } = useAuth();
+  const { profile, company } = useAuth();
+  const companyIndustries: string[] = ((company as any)?.industries as string[]) || [];
   const { checklistTemplates, routineTemplates, documents, folders, folderTree, isLoading } = useAdminTemplatesForCustomers('ks-bygg');
   const { 
     checklistTemplates: projectChecklists,
