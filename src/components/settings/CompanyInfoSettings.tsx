@@ -463,8 +463,23 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
             </div>
           </div>
 
+          {/* Industries */}
+          <div className="space-y-2 pt-2 border-t border-border">
+            <Label>Bransjer</Label>
+            <p className="text-sm text-muted-foreground">
+              Velg bransjene bedriften jobber innen. Malbiblioteket filtreres da automatisk til
+              relevante sjekklister og rutiner. Du kan velge flere hvis dere har f.eks. både
+              tømrere, malere og elektrikere. La stå tomt for å vise alt.
+            </p>
+            <IndustriesMultiSelect
+              value={formData.industries}
+              onChange={(v) => setFormData((p) => ({ ...p, industries: v }))}
+            />
+          </div>
+
           {/* Save Button */}
           <div className="flex justify-end pt-4 border-t border-border">
+
             <Button onClick={handleSave} disabled={saving}>
               {saving ? (
                 <>
