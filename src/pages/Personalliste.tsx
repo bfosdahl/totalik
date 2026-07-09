@@ -212,6 +212,12 @@ export default function Personalliste() {
         </TabsContent>
 
         {/* ─── AUDIT ────────────────────────────────────────────────────── */}
+        {/* ─── ARBEIDSTILSYN EKSPORT ────────────────────────────────────── */}
+        <TabsContent value="export">
+          <ArbeidstilsynExport companyId={companyId!} companyName={company?.name || ""} />
+        </TabsContent>
+
+        {/* ─── AUDIT ────────────────────────────────────────────────────── */}
         <TabsContent value="audit">
           <Card>
             <CardHeader>
