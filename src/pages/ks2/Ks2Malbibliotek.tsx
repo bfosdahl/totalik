@@ -194,6 +194,7 @@ export default function Ks2Malbibliotek() {
   const [customChecklistCheckpoints, setCustomChecklistCheckpoints] = useState<Checkpoint[]>([]);
   const [hiddenSystemTemplates, setHiddenSystemTemplates] = useState<Set<string>>(new Set());
   const [showHiddenSystemTemplates, setShowHiddenSystemTemplates] = useState(false);
+  const [showAllIndustries, setShowAllIndustries] = useState(false);
 
   // Checklist wizard state
   const [showChecklistWizard, setShowChecklistWizard] = useState(false);
