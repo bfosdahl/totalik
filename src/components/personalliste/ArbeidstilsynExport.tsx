@@ -98,7 +98,7 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
       // 5) Bedriftsinnstillinger (pauserutine)
       const { data: company } = await supabase
         .from("companies")
-        .select("name, organization_number, break_policy_paid, break_policy_default_minutes, break_policy_description")
+        .select("name, org_number, break_policy_paid, break_policy_default_minutes, break_policy_description")
         .eq("id", companyId)
         .maybeSingle();
 
