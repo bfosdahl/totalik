@@ -125,10 +125,11 @@ export default function Personalliste() {
       </div>
 
       <Tabs defaultValue="live" className="w-full">
-        <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full">
           <TabsTrigger value="live"><Users className="mr-1 h-4 w-4" />Inne nå ({activeEntries.length})</TabsTrigger>
           <TabsTrigger value="guest"><UserPlus className="mr-1 h-4 w-4" />Innleid/vikar</TabsTrigger>
           <TabsTrigger value="employees">Ansatte</TabsTrigger>
+          <TabsTrigger value="export"><FileArchive className="mr-1 h-4 w-4" />Arbeidstilsyn</TabsTrigger>
           <TabsTrigger value="audit">Endringslogg</TabsTrigger>
           <TabsTrigger value="settings"><SettingsIcon className="mr-1 h-4 w-4" />Innstillinger</TabsTrigger>
         </TabsList>
