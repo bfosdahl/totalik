@@ -107,7 +107,10 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
       const timerRows = (entries || []).map((e: any) => {
         const bList = breakMap.get(e.id) || [];
         const pauser = bList.length
-          ? bList.map((b) => `${format(new Date(b.break_start), "HH:mm")}–${b.break_end ? format(new Date(b.break_end), "HH:mm") : "pågår"} (${b.minutes ?? "?"} min)`).join(" | ")
+          ? bList.map((b) => {
+              const mins = b.break_end ? Math.round((new Date(b.break_end).getTime() - new Date(b.break_start).getTime()) / 60000) : null;
+              return `${format(new Date(b.break_start), "HH:mm")}–${b.break_end ? format(new Date(b.break_end), "HH:mm") : "pågår"} (${mins ?? "?"} min)`;
+            }).join(" | ")
           : e.break_start
             ? `${format(new Date(e.break_start), "HH:mm")}–${e.break_end ? format(new Date(e.break_end), "HH:mm") : "pågår"}`
             : "";
