@@ -1323,6 +1323,9 @@ export type Database = {
         Row: {
           accent_color: string | null
           address: string | null
+          break_policy_default_minutes: number
+          break_policy_description: string | null
+          break_policy_paid: boolean
           brreg_employee_count: number | null
           brreg_synced_at: string | null
           city: string | null
@@ -1336,6 +1339,7 @@ export type Database = {
           name: string
           org_number: string | null
           payroll_period_start_day: number
+          personalliste_enabled: boolean
           phone: string | null
           postal_code: string | null
           seller_id: string | null
@@ -1349,6 +1353,9 @@ export type Database = {
         Insert: {
           accent_color?: string | null
           address?: string | null
+          break_policy_default_minutes?: number
+          break_policy_description?: string | null
+          break_policy_paid?: boolean
           brreg_employee_count?: number | null
           brreg_synced_at?: string | null
           city?: string | null
@@ -1362,6 +1369,7 @@ export type Database = {
           name: string
           org_number?: string | null
           payroll_period_start_day?: number
+          personalliste_enabled?: boolean
           phone?: string | null
           postal_code?: string | null
           seller_id?: string | null
@@ -1375,6 +1383,9 @@ export type Database = {
         Update: {
           accent_color?: string | null
           address?: string | null
+          break_policy_default_minutes?: number
+          break_policy_description?: string | null
+          break_policy_paid?: boolean
           brreg_employee_count?: number | null
           brreg_synced_at?: string | null
           city?: string | null
@@ -1388,6 +1399,7 @@ export type Database = {
           name?: string
           org_number?: string | null
           payroll_period_start_day?: number
+          personalliste_enabled?: boolean
           phone?: string | null
           postal_code?: string | null
           seller_id?: string | null
@@ -15147,6 +15159,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accommodation_address: string | null
+          accommodation_provided: boolean
           avatar_url: string | null
           company_id: string | null
           created_at: string
@@ -15178,6 +15192,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          accommodation_address?: string | null
+          accommodation_provided?: boolean
           avatar_url?: string | null
           company_id?: string | null
           created_at?: string
@@ -15209,6 +15225,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          accommodation_address?: string | null
+          accommodation_provided?: boolean
           avatar_url?: string | null
           company_id?: string | null
           created_at?: string
@@ -15252,6 +15270,54 @@ export type Database = {
             columns: ["primary_department_id"]
             isOneToOne: false
             referencedRelation: "company_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles_national_id: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          id_type: string
+          national_id: string
+          profile_id: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          id_type?: string
+          national_id: string
+          profile_id: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          id_type?: string
+          national_id?: string
+          profile_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_national_id_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_national_id_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -15967,6 +16033,57 @@ export type Database = {
           },
         ]
       }
+      time_clock_breaks: {
+        Row: {
+          break_end: string | null
+          break_start: string
+          company_id: string
+          created_at: string
+          entry_id: string
+          id: string
+          is_paid: boolean
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          break_end?: string | null
+          break_start?: string
+          company_id: string
+          created_at?: string
+          entry_id: string
+          id?: string
+          is_paid?: boolean
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          break_end?: string | null
+          break_start?: string
+          company_id?: string
+          created_at?: string
+          entry_id?: string
+          id?: string
+          is_paid?: boolean
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_clock_breaks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_clock_breaks_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "time_clock_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       time_clock_entries: {
         Row: {
           approval_status: string | null
@@ -15974,19 +16091,28 @@ export type Database = {
           approved_by: string | null
           approved_by_name: string | null
           break_end: string | null
+          break_paid: boolean | null
           break_start: string | null
           clock_in: string
           clock_out: string | null
           company_id: string
           created_at: string
+          edit_reason: string | null
+          edited_at: string | null
+          edited_by: string | null
+          guest_employer: string | null
+          guest_name: string | null
+          guest_national_id: string | null
+          guest_role: string | null
           hours_worked: number | null
           id: string
+          is_guest_worker: boolean
           notes: string | null
           qr_code_id: string | null
           status: string
           total_break_minutes: number | null
           updated_at: string
-          user_id: string
+          user_id: string | null
           user_name: string
         }
         Insert: {
@@ -15995,19 +16121,28 @@ export type Database = {
           approved_by?: string | null
           approved_by_name?: string | null
           break_end?: string | null
+          break_paid?: boolean | null
           break_start?: string | null
           clock_in?: string
           clock_out?: string | null
           company_id: string
           created_at?: string
+          edit_reason?: string | null
+          edited_at?: string | null
+          edited_by?: string | null
+          guest_employer?: string | null
+          guest_name?: string | null
+          guest_national_id?: string | null
+          guest_role?: string | null
           hours_worked?: number | null
           id?: string
+          is_guest_worker?: boolean
           notes?: string | null
           qr_code_id?: string | null
           status?: string
           total_break_minutes?: number | null
           updated_at?: string
-          user_id: string
+          user_id?: string | null
           user_name: string
         }
         Update: {
@@ -16016,19 +16151,28 @@ export type Database = {
           approved_by?: string | null
           approved_by_name?: string | null
           break_end?: string | null
+          break_paid?: boolean | null
           break_start?: string | null
           clock_in?: string
           clock_out?: string | null
           company_id?: string
           created_at?: string
+          edit_reason?: string | null
+          edited_at?: string | null
+          edited_by?: string | null
+          guest_employer?: string | null
+          guest_name?: string | null
+          guest_national_id?: string | null
+          guest_role?: string | null
           hours_worked?: number | null
           id?: string
+          is_guest_worker?: boolean
           notes?: string | null
           qr_code_id?: string | null
           status?: string
           total_break_minutes?: number | null
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
           user_name?: string
         }
         Relationships: [
