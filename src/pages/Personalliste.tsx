@@ -111,6 +111,9 @@ export default function Personalliste() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6 max-w-7xl">
+      <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-2 -ml-2">
+        <ArrowLeft className="mr-2 h-4 w-4" /> Tilbake
+      </Button>
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
