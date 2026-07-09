@@ -180,7 +180,8 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
           phone: formData.phone.trim() || null,
           email: formData.email.trim() || null,
           logo_url: formData.logo_url || null,
-        })
+          industries: formData.industries,
+        } as any)
         .eq("id", company.id);
 
       if (error) throw error;
