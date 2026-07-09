@@ -47,6 +47,7 @@ import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
+import { isTemplateRelevant, INDUSTRY_LABEL } from "@/lib/industries";
 import {
   Select,
   SelectContent,
@@ -116,7 +117,8 @@ const getFileIcon = (fileType: string | null) => {
 
 export default function Ks2Malbibliotek() {
   const { projectId } = useParams();
-  const { profile } = useAuth();
+  const { profile, company } = useAuth();
+  const companyIndustries: string[] = ((company as any)?.industries as string[]) || [];
   const { checklistTemplates, routineTemplates, documents, folders, folderTree, isLoading } = useAdminTemplatesForCustomers('ks-bygg');
   const { 
     checklistTemplates: projectChecklists,
@@ -192,6 +194,7 @@ export default function Ks2Malbibliotek() {
   const [customChecklistCheckpoints, setCustomChecklistCheckpoints] = useState<Checkpoint[]>([]);
   const [hiddenSystemTemplates, setHiddenSystemTemplates] = useState<Set<string>>(new Set());
   const [showHiddenSystemTemplates, setShowHiddenSystemTemplates] = useState(false);
+  const [showAllIndustries, setShowAllIndustries] = useState(false);
 
   // Checklist wizard state
   const [showChecklistWizard, setShowChecklistWizard] = useState(false);
@@ -282,8 +285,15 @@ export default function Ks2Malbibliotek() {
   };
 
   // Filter checklist templates
-  const visibleSystemChecklists = checklistTemplates.filter(t => showHiddenSystemTemplates || !isSystemTemplateHidden("checklist", t.id));
-  const visibleSystemRoutines = routineTemplates.filter(r => showHiddenSystemTemplates || !isSystemTemplateHidden("routine", r.id));
+  const industryFilterActive = !showAllIndustries && companyIndustries.length > 0;
+  const visibleSystemChecklists = checklistTemplates.filter(t =>
+    (showHiddenSystemTemplates || !isSystemTemplateHidden("checklist", t.id)) &&
+    (!industryFilterActive || isTemplateRelevant(t.industries, companyIndustries))
+  );
+  const visibleSystemRoutines = routineTemplates.filter(r =>
+    (showHiddenSystemTemplates || !isSystemTemplateHidden("routine", r.id)) &&
+    (!industryFilterActive || isTemplateRelevant(r.industries, companyIndustries))
+  );
 
   const filteredChecklists = visibleSystemChecklists.filter(t => {
     const matchesSearch = t.template_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -625,7 +635,30 @@ export default function Ks2Malbibliotek() {
           </TabsTrigger>
         </TabsList>
 
-        <div className="flex justify-end">
+        <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            {companyIndustries.length > 0 ? (
+              <>
+                <span className="text-muted-foreground">Bransjer:</span>
+                {companyIndustries.map((k) => (
+                  <Badge key={k} variant="secondary" className="text-xs">
+                    {INDUSTRY_LABEL[k] || k}
+                  </Badge>
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAllIndustries(v => !v)}
+                >
+                  {showAllIndustries ? "Vis kun mine bransjer" : "Vis alle bransjer"}
+                </Button>
+              </>
+            ) : (
+              <span className="text-muted-foreground text-xs">
+                Tips: Velg bransjer under Innstillinger → Bedriftsinformasjon for å filtrere biblioteket.
+              </span>
+            )}
+          </div>
           <Button
             variant="outline"
             size="sm"
@@ -636,6 +669,7 @@ export default function Ks2Malbibliotek() {
             {showHiddenSystemTemplates ? "Skjul skjulte maler" : `Vis skjulte maler (${hiddenSystemCount})`}
           </Button>
         </div>
+
 
         {/* Checklist Templates Tab */}
         <TabsContent value="checklists" className="space-y-2">

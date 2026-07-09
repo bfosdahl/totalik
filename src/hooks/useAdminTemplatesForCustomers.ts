@@ -13,6 +13,7 @@ export interface AdminChecklistTemplate {
   valid_from: string | null;
   valid_to: string | null;
   created_at: string;
+  industries?: string[];
 }
 
 export interface AdminRoutineTemplate {
@@ -28,6 +29,7 @@ export interface AdminRoutineTemplate {
   valid_from: string | null;
   valid_to: string | null;
   created_at: string;
+  industries?: string[];
 }
 
 export interface AdminDocument {

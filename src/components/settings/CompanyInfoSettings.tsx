@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LogoUpload } from "@/components/setup/LogoUpload";
 import { useNavigate } from "react-router-dom";
 import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
+import { IndustriesMultiSelect } from "@/components/settings/IndustriesMultiSelect";
 
 interface CompanyInfoSettingsProps {
   onBack: () => void;
@@ -31,6 +32,7 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
     phone: "",
     email: "",
     logo_url: "",
+    industries: [] as string[],
   });
 
   // Refresh company data on mount to ensure we have the latest
@@ -57,6 +59,7 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
         phone: company.phone || "",
         email: company.email || "",
         logo_url: company.logo_url || "",
+        industries: (company as any).industries || [],
       });
     }
   }, [company, isCreating]);
@@ -177,7 +180,8 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
           phone: formData.phone.trim() || null,
           email: formData.email.trim() || null,
           logo_url: formData.logo_url || null,
-        })
+          industries: formData.industries,
+        } as any)
         .eq("id", company.id);
 
       if (error) throw error;
@@ -459,8 +463,23 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
             </div>
           </div>
 
+          {/* Industries */}
+          <div className="space-y-2 pt-2 border-t border-border">
+            <Label>Bransjer</Label>
+            <p className="text-sm text-muted-foreground">
+              Velg bransjene bedriften jobber innen. Malbiblioteket filtreres da automatisk til
+              relevante sjekklister og rutiner. Du kan velge flere hvis dere har f.eks. både
+              tømrere, malere og elektrikere. La stå tomt for å vise alt.
+            </p>
+            <IndustriesMultiSelect
+              value={formData.industries}
+              onChange={(v) => setFormData((p) => ({ ...p, industries: v }))}
+            />
+          </div>
+
           {/* Save Button */}
           <div className="flex justify-end pt-4 border-t border-border">
+
             <Button onClick={handleSave} disabled={saving}>
               {saving ? (
                 <>

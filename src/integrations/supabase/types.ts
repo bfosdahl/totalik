@@ -164,6 +164,7 @@ export type Database = {
           deleted_by: string | null
           description: string | null
           id: string
+          industries: string[]
           is_active: boolean
           is_deleted: boolean
           is_locked: boolean | null
@@ -186,6 +187,7 @@ export type Database = {
           deleted_by?: string | null
           description?: string | null
           id?: string
+          industries?: string[]
           is_active?: boolean
           is_deleted?: boolean
           is_locked?: boolean | null
@@ -208,6 +210,7 @@ export type Database = {
           deleted_by?: string | null
           description?: string | null
           id?: string
+          industries?: string[]
           is_active?: boolean
           is_deleted?: boolean
           is_locked?: boolean | null
@@ -283,6 +286,7 @@ export type Database = {
           file_type: string | null
           folder_id: string | null
           id: string
+          industries: string[]
           is_deleted: boolean
           is_mandatory: boolean | null
           template_number: string | null
@@ -305,6 +309,7 @@ export type Database = {
           file_type?: string | null
           folder_id?: string | null
           id?: string
+          industries?: string[]
           is_deleted?: boolean
           is_mandatory?: boolean | null
           template_number?: string | null
@@ -327,6 +332,7 @@ export type Database = {
           file_type?: string | null
           folder_id?: string | null
           id?: string
+          industries?: string[]
           is_deleted?: boolean
           is_mandatory?: boolean | null
           template_number?: string | null
@@ -432,6 +438,7 @@ export type Database = {
           description: string | null
           file_path: string | null
           id: string
+          industries: string[]
           is_active: boolean
           is_locked: boolean | null
           is_mandatory: boolean | null
@@ -448,6 +455,7 @@ export type Database = {
           description?: string | null
           file_path?: string | null
           id?: string
+          industries?: string[]
           is_active?: boolean
           is_locked?: boolean | null
           is_mandatory?: boolean | null
@@ -464,6 +472,7 @@ export type Database = {
           description?: string | null
           file_path?: string | null
           id?: string
+          industries?: string[]
           is_active?: boolean
           is_locked?: boolean | null
           is_mandatory?: boolean | null
@@ -485,6 +494,7 @@ export type Database = {
           description: string | null
           frequency: string | null
           id: string
+          industries: string[]
           is_deleted: boolean
           is_global_default: boolean
           legal_refs: Json | null
@@ -509,6 +519,7 @@ export type Database = {
           description?: string | null
           frequency?: string | null
           id?: string
+          industries?: string[]
           is_deleted?: boolean
           is_global_default?: boolean
           legal_refs?: Json | null
@@ -533,6 +544,7 @@ export type Database = {
           description?: string | null
           frequency?: string | null
           id?: string
+          industries?: string[]
           is_deleted?: boolean
           is_global_default?: boolean
           legal_refs?: Json | null
@@ -1319,6 +1331,7 @@ export type Database = {
           employee_count: number | null
           has_departments: boolean
           id: string
+          industries: string[]
           logo_url: string | null
           name: string
           org_number: string | null
@@ -1344,6 +1357,7 @@ export type Database = {
           employee_count?: number | null
           has_departments?: boolean
           id?: string
+          industries?: string[]
           logo_url?: string | null
           name: string
           org_number?: string | null
@@ -1369,6 +1383,7 @@ export type Database = {
           employee_count?: number | null
           has_departments?: boolean
           id?: string
+          industries?: string[]
           logo_url?: string | null
           name?: string
           org_number?: string | null
