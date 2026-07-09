@@ -227,6 +227,7 @@ const App = () => (
                   <Route path="/hjelp" element={<ProtectedRoute><HjelpFaq /></ProtectedRoute>} />
                   <Route path="/my-courses" element={<ProtectedRoute><MyCourseCard /></ProtectedRoute>} />
                   <Route path="/time-registration" element={<ProtectedRoute><TimeRegistration /></ProtectedRoute>} />
+                  <Route path="/personalliste" element={<ProtectedRoute><Personalliste /></ProtectedRoute>} />
                   <Route path="/timer/oversikt" element={<ProtectedRoute><TimeOversikt /></ProtectedRoute>} />
                   <Route path="/payroll" element={<ProtectedRoute><Payroll /></ProtectedRoute>} />
                   <Route path="/time-off" element={<ProtectedRoute><TimeOff /></ProtectedRoute>} />
