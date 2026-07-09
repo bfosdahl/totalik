@@ -46,15 +46,16 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
         .order("clock_in");
       if (entErr) throw entErr;
 
+      const entryIds = (entries || []).map((e: any) => e.id);
       const { data: breaks = [] } = await supabase
         .from("time_clock_breaks")
-        .select("time_clock_entry_id, break_start, break_end, minutes")
-        .in("time_clock_entry_id", (entries || []).map((e) => e.id).length ? (entries || []).map((e) => e.id) : ["00000000-0000-0000-0000-000000000000"]);
+        .select("entry_id, break_start, break_end, is_paid")
+        .in("entry_id", entryIds.length ? entryIds : ["00000000-0000-0000-0000-000000000000"]);
       const breakMap = new Map<string, any[]>();
-      (breaks || []).forEach((b) => {
-        const arr = breakMap.get(b.time_clock_entry_id) || [];
+      (breaks || []).forEach((b: any) => {
+        const arr = breakMap.get(b.entry_id) || [];
         arr.push(b);
-        breakMap.set(b.time_clock_entry_id, arr);
+        breakMap.set(b.entry_id, arr);
       });
 
       // Fallback til time_entries (manuelle timer) for perioden
