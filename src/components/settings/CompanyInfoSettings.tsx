@@ -32,6 +32,7 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
     phone: "",
     email: "",
     logo_url: "",
+    industries: [] as string[],
   });
 
   // Refresh company data on mount to ensure we have the latest
