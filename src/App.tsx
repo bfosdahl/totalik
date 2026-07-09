@@ -32,6 +32,7 @@ const TimeRegistration = lazy(() => import("./pages/TimeRegistration"));
 const TimeOversikt = lazy(() => import("./pages/TimeOversikt"));
 const Payroll = lazy(() => import("./pages/Payroll"));
 const TimeClock = lazy(() => import("./pages/TimeClock"));
+const Personalliste = lazy(() => import("./pages/Personalliste"));
 const TimeOff = lazy(() => import("./pages/TimeOff"));
 const WorkSchedule = lazy(() => import("./pages/WorkSchedule"));
 const InstallApp = lazy(() => import("./pages/InstallApp"));
