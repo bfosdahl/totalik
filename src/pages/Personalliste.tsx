@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { format, formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Clock, Users, UserPlus, Settings as SettingsIcon, Printer, RefreshCw, ShieldCheck, Coffee, LogOut, FileArchive } from "lucide-react";
+import { Clock, Users, UserPlus, Settings as SettingsIcon, Printer, RefreshCw, ShieldCheck, Coffee, LogOut, FileArchive, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { ArbeidstilsynExport } from "@/components/personalliste/ArbeidstilsynExport";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +26,7 @@ import { z } from "zod";
  * krav om oversikt over hvem som er på jobb, fnr, innkvartering, og pauser.
  */
 export default function Personalliste() {
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -109,6 +111,9 @@ export default function Personalliste() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6 max-w-7xl">
+      <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-2 -ml-2">
+        <ArrowLeft className="mr-2 h-4 w-4" /> Tilbake
+      </Button>
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
