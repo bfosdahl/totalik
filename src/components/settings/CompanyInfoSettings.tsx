@@ -59,6 +59,7 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
         phone: company.phone || "",
         email: company.email || "",
         logo_url: company.logo_url || "",
+        industries: (company as any).industries || [],
       });
     }
   }, [company, isCreating]);
