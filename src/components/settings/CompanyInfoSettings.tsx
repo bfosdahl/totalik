@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LogoUpload } from "@/components/setup/LogoUpload";
 import { useNavigate } from "react-router-dom";
 import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
+import { IndustriesMultiSelect } from "@/components/settings/IndustriesMultiSelect";
 
 interface CompanyInfoSettingsProps {
   onBack: () => void;
