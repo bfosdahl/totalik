@@ -173,7 +173,7 @@ const detectActiveSection = (pathname: string): SectionKey => {
   if (pathname.startsWith('/gdpr')) return 'gdpr';
   if (pathname.startsWith('/apenhetsloven')) return 'apenhetsloven';
   if (pathname.startsWith('/personalhandbok')) return 'personalhandbok';
-  const personalPaths = ['/employees', '/hr/', '/time-registration', '/time-off', '/work-schedule', '/my/'];
+  const personalPaths = ['/employees', '/hr/', '/time-registration', '/time-off', '/work-schedule', '/my/', '/personalliste'];
   if (personalPaths.some(p => pathname === p || pathname.startsWith(p))) return 'personal';
   const hmsPaths = ['/setup', '/deviations', '/audits', '/handbook', '/hms-chat', '/stoffkartotek', '/lover-og-forskrifter', '/dokumentsenter', '/risikoanalyse', '/rutiner', '/maalsetting', '/organisering'];
   if (hmsPaths.some(p => pathname === p || pathname.startsWith(p))) return 'ikHms';
