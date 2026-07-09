@@ -635,7 +635,30 @@ export default function Ks2Malbibliotek() {
           </TabsTrigger>
         </TabsList>
 
-        <div className="flex justify-end">
+        <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            {companyIndustries.length > 0 ? (
+              <>
+                <span className="text-muted-foreground">Bransjer:</span>
+                {companyIndustries.map((k) => (
+                  <Badge key={k} variant="secondary" className="text-xs">
+                    {INDUSTRY_LABEL[k] || k}
+                  </Badge>
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAllIndustries(v => !v)}
+                >
+                  {showAllIndustries ? "Vis kun mine bransjer" : "Vis alle bransjer"}
+                </Button>
+              </>
+            ) : (
+              <span className="text-muted-foreground text-xs">
+                Tips: Velg bransjer under Innstillinger → Bedriftsinformasjon for å filtrere biblioteket.
+              </span>
+            )}
+          </div>
           <Button
             variant="outline"
             size="sm"
@@ -646,6 +669,7 @@ export default function Ks2Malbibliotek() {
             {showHiddenSystemTemplates ? "Skjul skjulte maler" : `Vis skjulte maler (${hiddenSystemCount})`}
           </Button>
         </div>
+
 
         {/* Checklist Templates Tab */}
         <TabsContent value="checklists" className="space-y-2">
