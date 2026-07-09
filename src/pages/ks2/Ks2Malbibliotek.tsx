@@ -47,6 +47,7 @@ import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
+import { isTemplateRelevant, INDUSTRY_LABEL } from "@/lib/industries";
 import {
   Select,
   SelectContent,
