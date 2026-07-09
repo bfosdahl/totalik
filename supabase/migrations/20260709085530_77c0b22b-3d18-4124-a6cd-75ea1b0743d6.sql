@@ -1,0 +1,2 @@
+DELETE FROM public.time_clock_entries WHERE company_id='be8a06dc-4a3c-490f-8e58-9800fd1d35a5' AND is_guest_worker = true AND guest_name = 'Test Vikar Ola';
+DELETE FROM public.profiles_national_id WHERE national_id='01019012345';
