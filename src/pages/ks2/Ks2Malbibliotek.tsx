@@ -285,8 +285,15 @@ export default function Ks2Malbibliotek() {
   };
 
   // Filter checklist templates
-  const visibleSystemChecklists = checklistTemplates.filter(t => showHiddenSystemTemplates || !isSystemTemplateHidden("checklist", t.id));
-  const visibleSystemRoutines = routineTemplates.filter(r => showHiddenSystemTemplates || !isSystemTemplateHidden("routine", r.id));
+  const industryFilterActive = !showAllIndustries && companyIndustries.length > 0;
+  const visibleSystemChecklists = checklistTemplates.filter(t =>
+    (showHiddenSystemTemplates || !isSystemTemplateHidden("checklist", t.id)) &&
+    (!industryFilterActive || isTemplateRelevant(t.industries, companyIndustries))
+  );
+  const visibleSystemRoutines = routineTemplates.filter(r =>
+    (showHiddenSystemTemplates || !isSystemTemplateHidden("routine", r.id)) &&
+    (!industryFilterActive || isTemplateRelevant(r.industries, companyIndustries))
+  );
 
   const filteredChecklists = visibleSystemChecklists.filter(t => {
     const matchesSearch = t.template_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
