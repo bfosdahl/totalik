@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { format, formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Clock, Users, UserPlus, Settings as SettingsIcon, Printer, RefreshCw, ShieldCheck, Coffee, LogOut } from "lucide-react";
+import { Clock, Users, UserPlus, Settings as SettingsIcon, Printer, RefreshCw, ShieldCheck, Coffee, LogOut, FileArchive } from "lucide-react";
+import { ArbeidstilsynExport } from "@/components/personalliste/ArbeidstilsynExport";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
