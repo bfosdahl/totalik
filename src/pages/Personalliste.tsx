@@ -26,6 +26,7 @@ import { z } from "zod";
  * krav om oversikt over hvem som er på jobb, fnr, innkvartering, og pauser.
  */
 export default function Personalliste() {
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
