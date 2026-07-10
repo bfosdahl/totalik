@@ -670,7 +670,131 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
   );
 }
 
+
+// === Additional Signatures Section ===
+function AdditionalSignaturesSection({ sja }: { sja: KsModule2Sja }) {
+  const { projectId } = useParams();
+  const { updateSja } = useKsModule2Sja(projectId);
+  const [showForm, setShowForm] = useState(false);
+  const [name, setName] = useState("");
+  const [role, setRole] = useState("");
+  const sigRef = useRef<SignatureCanvas>(null);
+  const existing = sja.additional_signatures || [];
+
+  const handleAdd = async () => {
+    if (!name.trim()) {
+      toast.error("Navn er påkrevd");
+      return;
+    }
+    if (!sigRef.current || sigRef.current.isEmpty()) {
+      toast.error("Signatur er påkrevd");
+      return;
+    }
+    const newSig = {
+      name: name.trim(),
+      role: role.trim() || undefined,
+      signature_data: sigRef.current.toDataURL(),
+      signed_at: new Date().toISOString(),
+    };
+    try {
+      await updateSja.mutateAsync({
+        id: sja.id,
+        additional_signatures: [...existing, newSig],
+      } as any);
+      setName("");
+      setRole("");
+      sigRef.current?.clear();
+      setShowForm(false);
+      toast.success("Signatur lagt til");
+    } catch {
+      toast.error("Kunne ikke lagre signatur");
+    }
+  };
+
+  const handleRemove = async (index: number) => {
+    const updated = existing.filter((_, i) => i !== index);
+    try {
+      await updateSja.mutateAsync({ id: sja.id, additional_signatures: updated } as any);
+      toast.success("Signatur fjernet");
+    } catch {
+      toast.error("Kunne ikke fjerne");
+    }
+  };
+
+  return (
+    <div className="space-y-3 border-t pt-4">
+      <div className="flex items-center justify-between">
+        <Label className="text-base">Flere signaturer ({existing.length})</Label>
+        {!showForm && (
+          <Button size="sm" variant="outline" onClick={() => setShowForm(true)}>
+            <Plus className="h-4 w-4 mr-1" /> Legg til signatur
+          </Button>
+        )}
+      </div>
+
+      {existing.length > 0 && (
+        <div className="space-y-2">
+          {existing.map((s, i) => (
+            <div key={i} className="border rounded-lg p-3 flex items-start gap-3 bg-muted/30">
+              <img src={s.signature_data} alt={s.name} className="border rounded bg-white max-h-20" />
+              <div className="flex-1 text-sm">
+                <p className="font-medium">{s.name}</p>
+                {s.role && <p className="text-muted-foreground">{s.role}</p>}
+                <p className="text-xs text-muted-foreground">
+                  {format(new Date(s.signed_at), "d. MMMM yyyy HH:mm", { locale: nb })}
+                </p>
+              </div>
+              <Button size="sm" variant="ghost" onClick={() => handleRemove(i)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showForm && (
+        <div className="space-y-3 border rounded-lg p-3 bg-background">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <Label>Navn *</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Fullt navn" />
+            </div>
+            <div>
+              <Label>Rolle</Label>
+              <Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="F.eks. Tømrer" />
+            </div>
+          </div>
+          <div>
+            <Label>Signatur *</Label>
+            <div className="border rounded-lg bg-white mt-1 touch-none">
+              <SignatureCanvas
+                ref={sigRef}
+                canvasProps={{
+                  className: "w-full h-40 touch-none",
+                  style: { width: "100%", height: "160px", touchAction: "none" },
+                }}
+              />
+            </div>
+            <Button variant="ghost" size="sm" className="mt-1" onClick={() => sigRef.current?.clear()}>
+              Tøm signatur
+            </Button>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => { setShowForm(false); setName(""); setRole(""); sigRef.current?.clear(); }}>
+              Avbryt
+            </Button>
+            <Button size="sm" onClick={handleAdd} disabled={updateSja.isPending}>
+              <CheckCircle2 className="h-4 w-4 mr-1" /> Lagre signatur
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // === Main List View ===
+
 export default function Ks2Sja() {
   const { projectId } = useParams();
   const [searchQuery, setSearchQuery] = useState("");
