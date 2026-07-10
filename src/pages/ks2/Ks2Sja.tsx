@@ -621,6 +621,8 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                       <img src={sja.signature_data} alt="Signatur" className="border rounded-lg max-h-32 bg-white mt-1" />
                     </div>
                   )}
+
+                  <AdditionalSignaturesSection sja={sja} />
                 </div>
               ) : (
                 <>
@@ -633,10 +635,13 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
 
                   <div>
                     <Label>Din signatur *</Label>
-                    <div className="border rounded-lg bg-white mt-1">
+                    <div className="border rounded-lg bg-white mt-1 touch-none">
                       <SignatureCanvas
                         ref={sigRef}
-                        canvasProps={{ className: "w-full h-40", style: { width: "100%", height: "160px" } }}
+                        canvasProps={{
+                          className: "w-full h-40 touch-none",
+                          style: { width: "100%", height: "160px", touchAction: "none" },
+                        }}
                       />
                     </div>
                     <Button variant="ghost" size="sm" className="mt-1" onClick={() => sigRef.current?.clear()}>
