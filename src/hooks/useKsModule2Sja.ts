@@ -23,6 +23,7 @@ export interface KsModule2Sja {
   completed_by_name: string | null;
   completed_by_id: string | null;
   signature_data: string | null;
+  additional_signatures: { name: string; role?: string; signature_data: string; signed_at: string }[];
   notes: string | null;
   created_at: string;
   updated_at: string;
