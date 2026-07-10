@@ -319,6 +319,30 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
         `Signert av ${sja.completed_by_name || "-"} den ${sja.completed_at ? format(new Date(sja.completed_at), "d. MMMM yyyy", { locale: nb }) : "-"}`,
         margin, y,
       );
+      y += 6;
+
+      // Additional signatures
+      const extras = sja.additional_signatures || [];
+      if (extras.length > 0) {
+        y += 2;
+        writeParagraph(`Flere signaturer (${extras.length})`, { size: 12, bold: true, color: [30, 58, 95], gap: 3 });
+        for (const s of extras) {
+          ensureSpace(35);
+          try {
+            doc.addImage(s.signature_data, "PNG", margin, y, 50, 20);
+          } catch { /* skip */ }
+          doc.setFontSize(9);
+          doc.setFont("Inter", "normal");
+          doc.setTextColor(60, 60, 60);
+          doc.text(`${s.name}${s.role ? ` - ${s.role}` : ""}`, margin + 55, y + 8);
+          doc.setTextColor(120, 120, 120);
+          doc.text(
+            format(new Date(s.signed_at), "d. MMMM yyyy HH:mm", { locale: nb }),
+            margin + 55, y + 14,
+          );
+          y += 24;
+        }
+      }
     }
 
     // === Footer with page numbers ===
