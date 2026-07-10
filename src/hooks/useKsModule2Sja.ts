@@ -65,6 +65,7 @@ export function useKsModule2Sja(projectId: string | undefined) {
         ...item,
         identified_risks: Array.isArray(item.identified_risks) ? item.identified_risks : [],
         risk_reducing_measures: Array.isArray(item.risk_reducing_measures) ? item.risk_reducing_measures : [],
+        additional_signatures: Array.isArray((item as any).additional_signatures) ? (item as any).additional_signatures : [],
       })) as unknown as KsModule2Sja[];
     },
     enabled: !!projectId,
