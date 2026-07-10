@@ -1,0 +1,1 @@
+ALTER TABLE public.ks_module2_sja ADD COLUMN IF NOT EXISTS additional_signatures jsonb NOT NULL DEFAULT '[]'::jsonb;
