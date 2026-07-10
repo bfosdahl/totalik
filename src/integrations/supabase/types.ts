@@ -11610,6 +11610,7 @@ export type Database = {
       }
       ks_module2_sja: {
         Row: {
+          additional_signatures: Json
           company_id: string
           completed_at: string | null
           completed_by_id: string | null
@@ -11637,6 +11638,7 @@ export type Database = {
           work_description: string | null
         }
         Insert: {
+          additional_signatures?: Json
           company_id: string
           completed_at?: string | null
           completed_by_id?: string | null
@@ -11664,6 +11666,7 @@ export type Database = {
           work_description?: string | null
         }
         Update: {
+          additional_signatures?: Json
           company_id?: string
           completed_at?: string | null
           completed_by_id?: string | null
