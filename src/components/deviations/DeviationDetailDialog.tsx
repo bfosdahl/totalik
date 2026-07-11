@@ -337,7 +337,40 @@ export function DeviationDetailDialog({
     last_name: u.last_name || ""
   })).filter(u => u.email);
 
-  const handleDownloadPDF = () => {
+  const { getAttachmentUrl } = useDeviationAttachments(deviation?.id || null);
+
+  const fetchAsDataUrl = async (path: string): Promise<string | null> => {
+    try {
+      const url = await getAttachmentUrl(path);
+      if (!url) return null;
+      const resp = await fetch(url);
+      const blob = await resp.blob();
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (e) {
+      console.warn("Kunne ikke laste bilde for PDF:", e);
+      return null;
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    // Fetch image data urls for image attachments so they embed in the PDF
+    const attachmentsForPdf = await Promise.all(
+      attachments.map(async (a) => {
+        const isImage = (a.file_type || "").startsWith("image/");
+        const dataUrl = isImage ? await fetchAsDataUrl(a.file_path) : null;
+        return {
+          file_name: a.file_name,
+          file_type: a.file_type,
+          image_data_url: dataUrl || undefined,
+        };
+      })
+    );
+
     exportSingleDeviationToPDF({
       id: deviation.id,
       deviation_number: deviation.deviation_number,
@@ -366,12 +399,13 @@ export function DeviationDetailDialog({
       additional_info: deviation.additional_info,
       notify_arbeidstilsynet: deviation.notify_arbeidstilsynet ?? undefined,
       notify_insurance: deviation.notify_insurance ?? undefined,
-    }, 
+    },
     company?.name,
-    attachments.map(a => ({ file_name: a.file_name, file_type: a.file_type })),
+    attachmentsForPdf,
     comments.map(c => ({ user_name: c.user_name, content: c.content, created_at: c.created_at }))
     );
   };
+
 
   const formatDate = (dateStr: string) => {
     try {
