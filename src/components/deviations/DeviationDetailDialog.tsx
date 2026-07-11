@@ -337,7 +337,7 @@ export function DeviationDetailDialog({
     last_name: u.last_name || ""
   })).filter(u => u.email);
 
-  const { getAttachmentUrl } = useDeviationAttachments(deviation?.id || null);
+  
 
   const fetchAsDataUrl = async (path: string): Promise<string | null> => {
     try {
