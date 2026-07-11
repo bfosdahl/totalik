@@ -937,7 +937,7 @@ export default function Ks2Sja() {
             <Card
               key={sja.id}
               className="hover:border-success/50 transition-colors cursor-pointer"
-              onClick={() => setSelectedSja(sja)}
+              onClick={() => setSelectedSjaId(sja.id)}
             >
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-4">
