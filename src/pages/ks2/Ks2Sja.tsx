@@ -823,7 +823,7 @@ export default function Ks2Sja() {
   const { projectId } = useParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewDialog, setShowNewDialog] = useState(false);
-  const [selectedSja, setSelectedSja] = useState<KsModule2Sja | null>(null);
+  const [selectedSjaId, setSelectedSjaId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<CreateSjaInput>>({
     title: "",
     work_description: "",
@@ -882,7 +882,7 @@ export default function Ks2Sja() {
 
     // Open the detail view immediately so user can add risks
     if (result) {
-      setSelectedSja(result as unknown as KsModule2Sja);
+      setSelectedSjaId((result as any).id);
     }
   };
 
@@ -900,9 +900,10 @@ export default function Ks2Sja() {
     );
   }
 
-  // Show detail view
+  // Show detail view — always read live sja from list so updates (like added signatures) reflect immediately
+  const selectedSja = selectedSjaId ? sjaList.find((s) => s.id === selectedSjaId) ?? null : null;
   if (selectedSja) {
-    return <Ks2SjaDetail sja={selectedSja} onClose={() => setSelectedSja(null)} />;
+    return <Ks2SjaDetail sja={selectedSja} onClose={() => setSelectedSjaId(null)} />;
   }
 
   return (
@@ -936,7 +937,7 @@ export default function Ks2Sja() {
             <Card
               key={sja.id}
               className="hover:border-success/50 transition-colors cursor-pointer"
-              onClick={() => setSelectedSja(sja)}
+              onClick={() => setSelectedSjaId(sja.id)}
             >
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-4">
@@ -975,7 +976,7 @@ export default function Ks2Sja() {
                   </span>
                 </div>
                 <div className="flex gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
-                  <Button variant="outline" size="sm" onClick={() => setSelectedSja(sja)}>
+                  <Button variant="outline" size="sm" onClick={() => setSelectedSjaId(sja.id)}>
                     {sja.status === "completed" ? <Eye className="h-4 w-4 mr-2" /> : <Edit className="h-4 w-4 mr-2" />}
                     {sja.status === "completed" ? "Vis" : "Rediger"}
                   </Button>
