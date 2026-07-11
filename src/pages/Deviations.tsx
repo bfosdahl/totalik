@@ -625,7 +625,9 @@ const Deviations = () => {
         onAssigneeChange={handleAssigneeChange}
         onFollowUpChange={handleFollowUpChange}
         onDelete={handleDeleteDeviation}
+        onUpdate={handleUpdateDeviation}
       />
+
 
       {/* Work Accident Dialog */}
       <WorkAccidentDialog
