@@ -976,7 +976,7 @@ export default function Ks2Sja() {
                   </span>
                 </div>
                 <div className="flex gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
-                  <Button variant="outline" size="sm" onClick={() => setSelectedSja(sja)}>
+                  <Button variant="outline" size="sm" onClick={() => setSelectedSjaId(sja.id)}>
                     {sja.status === "completed" ? <Eye className="h-4 w-4 mr-2" /> : <Edit className="h-4 w-4 mr-2" />}
                     {sja.status === "completed" ? "Vis" : "Rediger"}
                   </Button>
