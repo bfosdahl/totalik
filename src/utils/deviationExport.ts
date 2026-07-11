@@ -181,7 +181,9 @@ export interface SingleDeviationExport {
 export interface DeviationAttachmentExport {
   file_name: string;
   file_type: string | null;
+  image_data_url?: string;
 }
+
 
 export interface DeviationCommentExport {
   user_name: string;
