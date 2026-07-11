@@ -181,7 +181,9 @@ export interface SingleDeviationExport {
 export interface DeviationAttachmentExport {
   file_name: string;
   file_type: string | null;
+  image_data_url?: string;
 }
+
 
 export interface DeviationCommentExport {
   user_name: string;
@@ -377,8 +379,41 @@ export const exportSingleDeviationToPDF = (
       doc.text(`• ${att.file_name}`, 14, yPos);
       yPos += 5;
     });
-    yPos += 8;
+    yPos += 4;
+
+    // Embed image previews for image attachments
+    const images = attachments.filter((a) => a.image_data_url);
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const maxImgW = pageWidth - 28;
+    const maxImgH = 90;
+    for (const img of images) {
+      try {
+        const props = doc.getImageProperties(img.image_data_url!);
+        const ratio = props.width / props.height;
+        let w = maxImgW;
+        let h = w / ratio;
+        if (h > maxImgH) {
+          h = maxImgH;
+          w = h * ratio;
+        }
+        if (yPos + h + 10 > pageHeight - 15) {
+          doc.addPage();
+          yPos = 20;
+        }
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        doc.text(img.file_name, 14, yPos);
+        yPos += 4;
+        const fmt = (img.file_type || "").toLowerCase().includes("png") ? "PNG" : "JPEG";
+        doc.addImage(img.image_data_url!, fmt, 14, yPos, w, h);
+        yPos += h + 8;
+      } catch (e) {
+        console.warn("Could not embed image in PDF:", img.file_name, e);
+      }
+    }
   }
+
 
   // Comments section
   if (comments && comments.length > 0) {

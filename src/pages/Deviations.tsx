@@ -315,6 +315,23 @@ const Deviations = () => {
     return success;
   };
 
+  // Update deviation fields (title, description, priority etc.)
+  const handleUpdateDeviation = async (
+    id: string,
+    updates: { title?: string; description?: string; category?: string; priority?: string; due_date?: string }
+  ): Promise<boolean> => {
+    const success = await updateDeviation(id, updates as any);
+    if (success) {
+      setSelectedDeviation(prev => prev ? {
+        ...prev,
+        ...(updates.title && { title: updates.title }),
+        ...(updates.description !== undefined && { description: updates.description }),
+        ...(updates.priority && { priority: updates.priority as any }),
+      } : null);
+    }
+    return success;
+  };
+
   // Delete a single deviation
   const handleDeleteDeviation = async (id: string) => {
     if (!confirm("Er du sikker på at du vil slette dette avviket?")) return;
@@ -325,6 +342,7 @@ const Deviations = () => {
       setSelectedDeviation(null);
     }
   };
+
 
   if (isLoading) {
     return (
@@ -607,7 +625,9 @@ const Deviations = () => {
         onAssigneeChange={handleAssigneeChange}
         onFollowUpChange={handleFollowUpChange}
         onDelete={handleDeleteDeviation}
+        onUpdate={handleUpdateDeviation}
       />
+
 
       {/* Work Accident Dialog */}
       <WorkAccidentDialog
