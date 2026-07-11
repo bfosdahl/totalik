@@ -823,7 +823,7 @@ export default function Ks2Sja() {
   const { projectId } = useParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewDialog, setShowNewDialog] = useState(false);
-  const [selectedSja, setSelectedSja] = useState<KsModule2Sja | null>(null);
+  const [selectedSjaId, setSelectedSjaId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<CreateSjaInput>>({
     title: "",
     work_description: "",
