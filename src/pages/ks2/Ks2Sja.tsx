@@ -882,7 +882,7 @@ export default function Ks2Sja() {
 
     // Open the detail view immediately so user can add risks
     if (result) {
-      setSelectedSja(result as unknown as KsModule2Sja);
+      setSelectedSjaId((result as any).id);
     }
   };
 
@@ -900,9 +900,10 @@ export default function Ks2Sja() {
     );
   }
 
-  // Show detail view
+  // Show detail view — always read live sja from list so updates (like added signatures) reflect immediately
+  const selectedSja = selectedSjaId ? sjaList.find((s) => s.id === selectedSjaId) ?? null : null;
   if (selectedSja) {
-    return <Ks2SjaDetail sja={selectedSja} onClose={() => setSelectedSja(null)} />;
+    return <Ks2SjaDetail sja={selectedSja} onClose={() => setSelectedSjaId(null)} />;
   }
 
   return (
