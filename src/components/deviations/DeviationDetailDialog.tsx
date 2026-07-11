@@ -149,7 +149,7 @@ export function DeviationDetailDialog({
   const { users, getUserDisplayName } = useCompanyUsers();
   const { company } = useAuth();
   const { toast } = useToast();
-  const { attachments } = useDeviationAttachments(deviation?.id || null);
+  const { attachments, getAttachmentUrl } = useDeviationAttachments(deviation?.id || null);
   const { comments } = useDeviationComments(deviation?.id || null);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [isSavingFollowUp, setIsSavingFollowUp] = useState(false);
