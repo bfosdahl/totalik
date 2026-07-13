@@ -548,7 +548,7 @@ export default function Ks2AvvikIntegrated() {
                 
                 {pendingPhotos.length > 0 && (
                   <div className="grid grid-cols-3 gap-2 mt-4">
-                    {pendingPhotos.map((url, index) => (
+                    {pendingPhotos.map((photo, index) => (
                       <div key={index} className="relative group">
                         <img
                           src={url}
