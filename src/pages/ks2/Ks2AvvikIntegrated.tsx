@@ -761,6 +761,10 @@ function AvvikContent({
                     )}
                   </div>
                   <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" onClick={() => handleViewAvvik(avvik)}>
+                      <Eye className="h-4 w-4 mr-1" />
+                      Vis
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => handleDownloadAvvikPdf(avvik)}>
                       <FileDown className="h-4 w-4 mr-1" />
                       PDF
