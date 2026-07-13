@@ -28,6 +28,7 @@ import { DeviationDetailDialog } from "@/components/deviations/DeviationDetailDi
 import { ProjectAvvikSection } from "@/components/deviations/ProjectAvvikSection";
 import { WorkAccidentDialog, WorkAccidentData } from "@/components/deviations/WorkAccidentDialog";
 import { useDeviations, Deviation as DeviationType, NewDeviationInput, DeviationStatus } from "@/hooks/useDeviations";
+import { computeAvvikStats } from "@/utils/avvikStats";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useToast } from "@/hooks/use-toast";
 import { exportDeviationsToPDF, exportDeviationsToExcel } from "@/utils/deviationExport";
