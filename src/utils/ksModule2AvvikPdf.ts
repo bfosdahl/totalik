@@ -86,7 +86,7 @@ interface GenerateAvvikPdfOptions {
   company: Company;
 }
 
-export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions): Promise<{ blob: Blob; fileName: string }> {
+export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions): Promise<{ blob: Blob; fileName: string; failedPhotos: PhotoLoadFailure[] }> {
   const { avvik, project, company } = options;
   const doc = new jsPDF();
 
