@@ -173,12 +173,9 @@ const Deviations = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const stats = {
-    total: deviations.length,
-    open: deviations.filter((d) => d.status === "open").length,
-    inProgress: deviations.filter((d) => d.status === "in-progress").length,
-    resolved: deviations.filter((d) => d.status === "resolved").length,
-  };
+  const rawStats = computeAvvikStats(deviations as any);
+  const stats = { ...rawStats, resolved: deviations.filter((d) => d.status === "resolved").length };
+
 
   const handleNewDeviation = async (input: NewDeviation) => {
     // Find assignee user by name if not provided by ID
