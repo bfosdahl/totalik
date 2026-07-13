@@ -208,10 +208,45 @@ export default function Ks2AvvikIntegrated() {
   };
 
   const handleCloseAvvik = (avvik: KsModule2Avvik) => {
-    const closedByName = profile?.first_name && profile?.last_name 
-      ? `${profile.first_name} ${profile.last_name}` 
-      : profile?.email || "Ukjent";
-    closeAvvik({ id: avvik.id, closedByName });
+    setClosingAvvik(avvik);
+    setCloseComment("");
+  };
+
+  const handleConfirmClose = async () => {
+    if (!closingAvvik) return;
+    if (!closeComment.trim()) {
+      toast.error("Skriv en kort kommentar om hvordan avviket ble løst");
+      return;
+    }
+    setIsClosing(true);
+    try {
+      const closedByName = profile?.first_name && profile?.last_name
+        ? `${profile.first_name} ${profile.last_name}`
+        : profile?.email || "Ukjent";
+      const existing = closingAvvik.corrective_action || "";
+      const newAction = existing
+        ? `${existing}\n\n🔒 Lukkekommentar (${closedByName}): ${closeComment.trim()}`
+        : `🔒 Lukkekommentar (${closedByName}): ${closeComment.trim()}`;
+      await new Promise<void>((resolve, reject) => {
+        updateAvvik(
+          { id: closingAvvik.id, corrective_action: newAction },
+          { onSuccess: () => resolve(), onError: (e) => reject(e) } as any
+        );
+      });
+      closeAvvik({ id: closingAvvik.id, closedByName });
+      setClosingAvvik(null);
+      setCloseComment("");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsClosing(false);
+    }
+  };
+
+  const handleDeleteAvvik = (id: string) => {
+    if (confirm("Er du sikker på at du vil slette dette avviket?")) {
+      deleteAvvik(id);
+    }
   };
 
   const handleDeleteAvvik = (id: string) => {
