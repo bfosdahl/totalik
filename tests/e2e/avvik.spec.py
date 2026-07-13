@@ -59,6 +59,15 @@ async def run(viewport_label: str, viewport: dict) -> list[str]:
         await page.wait_for_timeout(3000)
         await page.screenshot(path=str(OUT / f"{viewport_label}_deviations.png"))
 
+        # Auth guard: if we were redirected to /auth, skip functional assertions.
+        if "/auth" in page.url:
+            print(f"[{viewport_label}] SKIP — no active session (landed on {page.url}). "
+                  "Sign in via the Lovable preview and re-run.")
+            await ctx.close()
+            await browser.close()
+            return errors
+
+
         for label in REQUIRED_LABELS:
             count = await page.get_by_text(label, exact=True).count()
             if count == 0:
