@@ -386,14 +386,17 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
   return { blob, fileName, failedPhotos };
 }
 
-export async function downloadKsModule2AvvikPdf(options: GenerateAvvikPdfOptions): Promise<void> {
-  const { blob, fileName } = await generateKsModule2AvvikPdf(options);
+export async function downloadKsModule2AvvikPdf(
+  options: GenerateAvvikPdfOptions
+): Promise<{ failedPhotos: PhotoLoadFailure[] }> {
+  const { blob, fileName, failedPhotos } = await generateKsModule2AvvikPdf(options);
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
   link.download = fileName;
   link.click();
   URL.revokeObjectURL(url);
+  return { failedPhotos };
 }
 
 // Export multiple avvik to PDF
