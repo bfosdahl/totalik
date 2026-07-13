@@ -136,6 +136,25 @@ interface DeviationDetailDialogProps {
   }) => Promise<boolean>;
 }
 
+// Categories editable in the UI (HMS + IK-MAT)
+const editableCategories: { value: DeviationCategory; label: string }[] = [
+  { value: "safety", label: "HMS / Sikkerhet" },
+  { value: "quality", label: "Kvalitet" },
+  { value: "environment", label: "Miljø" },
+  { value: "process", label: "Prosess" },
+  { value: "equipment", label: "Utstyr" },
+  { value: "personnel", label: "Personell" },
+  { value: "documentation", label: "Dokumentasjon" },
+  { value: "temperature", label: "Temperaturavvik" },
+  { value: "cleaning", label: "Renhold" },
+  { value: "hygiene", label: "Hygiene" },
+  { value: "storage", label: "Lagring" },
+  { value: "traceability", label: "Sporbarhet" },
+  { value: "allergen", label: "Allergen" },
+  { value: "pest_control", label: "Skadedyr" },
+  { value: "other", label: "Annet" },
+];
+
 export function DeviationDetailDialog({ 
   deviation, 
   open, 
@@ -150,7 +169,7 @@ export function DeviationDetailDialog({
   const { company } = useAuth();
   const { toast } = useToast();
   const { attachments, getAttachmentUrl } = useDeviationAttachments(deviation?.id || null);
-  const { comments } = useDeviationComments(deviation?.id || null);
+  const { comments, addComment } = useDeviationComments(deviation?.id || null);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [isSavingFollowUp, setIsSavingFollowUp] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -160,6 +179,8 @@ export function DeviationDetailDialog({
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editPriority, setEditPriority] = useState<Deviation["priority"]>("medium");
+  const [editCategory, setEditCategory] = useState<DeviationCategory>("other");
+  const [editDueDate, setEditDueDate] = useState("");
   
   // Local state for follow-up fields
   const [immediateActions, setImmediateActions] = useState("");
@@ -168,6 +189,11 @@ export function DeviationDetailDialog({
   
   // Track if any follow-up field has been modified
   const [hasFollowUpChanges, setHasFollowUpChanges] = useState(false);
+
+  // Closure comment dialog state
+  const [closureDialogOpen, setClosureDialogOpen] = useState(false);
+  const [closureComment, setClosureComment] = useState("");
+  const [isClosing, setIsClosing] = useState(false);
 
   // Initialize fields when deviation changes
   useEffect(() => {
@@ -179,6 +205,10 @@ export function DeviationDetailDialog({
       setEditTitle(deviation.title);
       setEditDescription(deviation.description || "");
       setEditPriority(deviation.priority);
+      setEditCategory(deviation.category);
+      // dueDate comes as ISO or YYYY-MM-DD, normalize to YYYY-MM-DD for date input
+      const d = deviation.dueDate ? new Date(deviation.dueDate) : null;
+      setEditDueDate(d && !isNaN(d.getTime()) ? d.toISOString().slice(0, 10) : "");
       setIsEditing(false);
     }
   }, [deviation]);
@@ -224,6 +254,8 @@ export function DeviationDetailDialog({
         title: editTitle.trim(),
         description: editDescription.trim(),
         priority: editPriority,
+        category: editCategory,
+        due_date: editDueDate || undefined,
       });
       if (success) {
         setIsEditing(false);
@@ -234,6 +266,36 @@ export function DeviationDetailDialog({
       }
     } finally {
       setIsSavingEdit(false);
+    }
+  };
+
+  // Intercept status changes: require a closure comment when closing an avvik
+  const handleStatusSelect = (newStatus: Deviation["status"]) => {
+    if (newStatus === "closed" && deviation.status !== "closed") {
+      setClosureComment("");
+      setClosureDialogOpen(true);
+      return;
+    }
+    onStatusChange(deviation.id, newStatus);
+  };
+
+  const handleConfirmClosure = async () => {
+    if (!closureComment.trim()) {
+      toast({
+        title: "Kommentar mangler",
+        description: "Skriv en kort beskrivelse av hvordan avviket ble løst.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsClosing(true);
+    try {
+      await addComment(`🔒 Lukkekommentar: ${closureComment.trim()}`);
+      onStatusChange(deviation.id, "closed");
+      setClosureDialogOpen(false);
+      setClosureComment("");
+    } finally {
+      setIsClosing(false);
     }
   };
 
@@ -469,24 +531,54 @@ export function DeviationDetailDialog({
         </DialogHeader>
 
         <div className="space-y-4 sm:space-y-6 overflow-y-auto flex-1 min-h-0 pr-1">
-          {/* Priority selector in edit mode */}
+          {/* Priority / Category / Due date selectors in edit mode */}
           {isEditing && (
-            <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
-              <div className="flex items-center gap-2">
-                <Flag className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Prioritet</span>
+            <div className="space-y-3 p-4 bg-secondary/30 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Flag className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Prioritet</span>
+                </div>
+                <Select value={editPriority} onValueChange={(v) => setEditPriority(v as Deviation["priority"])}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Lav</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">Høy</SelectItem>
+                    <SelectItem value="critical">Kritisk</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <Select value={editPriority} onValueChange={(v) => setEditPriority(v as Deviation["priority"])}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Lav</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">Høy</SelectItem>
-                  <SelectItem value="critical">Kritisk</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Kategori</span>
+                </div>
+                <Select value={editCategory} onValueChange={(v) => setEditCategory(v as DeviationCategory)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {editableCategories.map(c => (
+                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Frist</span>
+                </div>
+                <Input
+                  type="date"
+                  value={editDueDate}
+                  onChange={(e) => setEditDueDate(e.target.value)}
+                  className="w-[180px]"
+                />
+              </div>
             </div>
           )}
 
@@ -498,7 +590,7 @@ export function DeviationDetailDialog({
             </div>
             <Select 
               value={deviation.status} 
-              onValueChange={(value) => onStatusChange(deviation.id, value as Deviation["status"])}
+              onValueChange={(value) => handleStatusSelect(value as Deviation["status"])}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue />
@@ -726,6 +818,38 @@ export function DeviationDetailDialog({
         users={emailUsers}
         companyName={company?.name}
       />
+
+      {/* Closure comment dialog */}
+      <Dialog open={closureDialogOpen} onOpenChange={(open) => {
+        if (!isClosing) setClosureDialogOpen(open);
+      }}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Lukk avvik</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">
+              Beskriv kort hvordan avviket ble løst eller lukket. Kommentaren lagres på avviket.
+            </p>
+            <Textarea
+              value={closureComment}
+              onChange={(e) => setClosureComment(e.target.value)}
+              placeholder="F.eks. Feilen ble utbedret, rutinen oppdatert og informert til teamet."
+              className="min-h-[120px]"
+              autoFocus
+            />
+          </div>
+          <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setClosureDialogOpen(false)} disabled={isClosing}>
+              Avbryt
+            </Button>
+            <Button onClick={handleConfirmClosure} disabled={isClosing || !closureComment.trim()}>
+              {isClosing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ClipboardCheck className="w-4 h-4 mr-2" />}
+              Lukk avvik
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
