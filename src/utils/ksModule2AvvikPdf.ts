@@ -216,37 +216,30 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
     yPos += rootLines.length * 5 + 10;
   }
 
-  // Corrective action
-  if (avvik.corrective_action) {
-    if (yPos > 240) {
-      doc.addPage();
-      yPos = 20;
-    }
+  // Split closure comment (stored with 🔒 Lukkekommentar: prefix) out of corrective action
+  const { corrective, closure } = splitClosureComment(avvik.corrective_action);
 
+  // Corrective action
+  if (corrective) {
+    if (yPos > 240) { doc.addPage(); yPos = 20; }
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     doc.text("Korrigerende tiltak", 15, yPos);
     yPos += 7;
-
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    const corrLines = doc.splitTextToSize(avvik.corrective_action, 180);
+    const corrLines = doc.splitTextToSize(corrective, 180);
     doc.text(corrLines, 15, yPos);
     yPos += corrLines.length * 5 + 10;
   }
 
   // Preventive action
   if (avvik.preventive_action) {
-    if (yPos > 240) {
-      doc.addPage();
-      yPos = 20;
-    }
-
+    if (yPos > 240) { doc.addPage(); yPos = 20; }
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     doc.text("Forebyggende tiltak", 15, yPos);
     yPos += 7;
-
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     const prevLines = doc.splitTextToSize(avvik.preventive_action, 180);
@@ -254,23 +247,63 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
     yPos += prevLines.length * 5 + 10;
   }
 
-  // Closure info
+  // Closure info + closure comment
   if (avvik.closed_at && avvik.closed_by_name) {
-    if (yPos > 250) {
-      doc.addPage();
-      yPos = 20;
-    }
+    const closureLines = closure ? doc.splitTextToSize(closure, 170) : [];
+    const boxHeight = 22 + (closureLines.length ? closureLines.length * 5 + 6 : 0);
+    if (yPos + boxHeight > 275) { doc.addPage(); yPos = 20; }
 
-    doc.setFillColor(34, 197, 94, 30);
-    doc.roundedRect(15, yPos, 180, 20, 3, 3, "F");
+    doc.setFillColor(220, 252, 231);
+    doc.roundedRect(15, yPos, 180, boxHeight, 3, 3, "F");
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
+    doc.setTextColor(21, 128, 61);
     doc.text("Avvik lukket", 20, yPos + 8);
 
     doc.setFont("helvetica", "normal");
+    doc.setTextColor(0, 0, 0);
     doc.text(`Lukket av: ${avvik.closed_by_name}`, 20, yPos + 15);
     doc.text(`Dato: ${format(new Date(avvik.closed_at), "dd.MM.yyyy HH:mm", { locale: nb })}`, 100, yPos + 15);
+
+    if (closureLines.length) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Lukkekommentar:", 20, yPos + 22);
+      doc.setFont("helvetica", "normal");
+      doc.text(closureLines, 20, yPos + 27);
+    }
+    yPos += boxHeight + 8;
+  }
+
+  // Photos
+  const photoPaths: string[] = Array.isArray((avvik as any).photo_paths) ? (avvik as any).photo_paths : [];
+  if (photoPaths.length > 0) {
+    doc.addPage();
+    yPos = 20;
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Bilder (${photoPaths.length})`, 15, yPos);
+    yPos += 8;
+
+    const imgWidth = 85;
+    const imgHeight = 65;
+    const gap = 8;
+    let col = 0;
+
+    for (const p of photoPaths) {
+      const img = await pathToDataUrl(p);
+      if (!img) continue;
+      if (yPos + imgHeight > 280) { doc.addPage(); yPos = 20; col = 0; }
+      const x = 15 + col * (imgWidth + gap);
+      try {
+        doc.addImage(img.dataUrl, img.type, x, yPos, imgWidth, imgHeight, undefined, "FAST");
+      } catch {
+        // skip broken images
+      }
+      col += 1;
+      if (col >= 2) { col = 0; yPos += imgHeight + gap; }
+    }
+    if (col !== 0) yPos += imgHeight + gap;
   }
 
   // Add footer to all pages
@@ -282,8 +315,8 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
   return { blob, fileName };
 }
 
-export function downloadKsModule2AvvikPdf(options: GenerateAvvikPdfOptions): void {
-  const { blob, fileName } = generateKsModule2AvvikPdf(options);
+export async function downloadKsModule2AvvikPdf(options: GenerateAvvikPdfOptions): Promise<void> {
+  const { blob, fileName } = await generateKsModule2AvvikPdf(options);
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
