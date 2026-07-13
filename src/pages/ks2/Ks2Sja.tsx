@@ -139,8 +139,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
     }
   };
   const handleDownloadPdf = async () => {
-    // Refetch latest SJA to ensure signatures added just now are included
-    let latestSja: KsModule2Sja = sja;
+    // Refetch latest SJA to ensure signatures added just now are included in PDF
     try {
       const { supabase } = await import("@/integrations/supabase/client");
       const { data: fresh } = await supabase
@@ -149,18 +148,15 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
         .eq("id", sja.id)
         .maybeSingle();
       if (fresh) {
-        latestSja = {
-          ...sja,
-          ...(fresh as any),
+        Object.assign(sja, fresh, {
           additional_signatures: Array.isArray((fresh as any).additional_signatures)
             ? (fresh as any).additional_signatures
             : [],
-        };
+        });
       }
     } catch (e) {
       console.warn("Kunne ikke hente ferskeste SJA-data, bruker cached:", e);
     }
-    sja = latestSja;
     const doc = new jsPDF();
     await registerPdfFont(doc);
     const pageWidth = doc.internal.pageSize.getWidth();
