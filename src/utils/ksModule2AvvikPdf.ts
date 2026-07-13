@@ -5,6 +5,44 @@ import { nb } from "date-fns/locale";
 import { generatePdfHeader, addPdfFooter, PdfHeaderInfo } from "./ksModule2PdfHeader";
 import { KsModule2Avvik } from "@/hooks/useKsModule2Avvik";
 import { KsModule2Project } from "@/hooks/useKsModule2Projects";
+import { supabase } from "@/integrations/supabase/client";
+
+const CLOSURE_PREFIX = "🔒 Lukkekommentar:";
+
+async function pathToDataUrl(pathOrUrl: string): Promise<{ dataUrl: string; type: string } | null> {
+  try {
+    let url = pathOrUrl;
+    if (!/^https?:\/\//i.test(pathOrUrl)) {
+      const { data, error } = await supabase.storage
+        .from("ks-module2-avvik-photos")
+        .createSignedUrl(pathOrUrl, 3600);
+      if (error || !data?.signedUrl) return null;
+      url = data.signedUrl;
+    }
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    const type = blob.type.includes("png") ? "PNG" : "JPEG";
+    const dataUrl: string = await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onloadend = () => resolve(r.result as string);
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+    return { dataUrl, type };
+  } catch {
+    return null;
+  }
+}
+
+function splitClosureComment(text: string | null | undefined): { corrective: string; closure: string | null } {
+  if (!text) return { corrective: "", closure: null };
+  const idx = text.indexOf(CLOSURE_PREFIX);
+  if (idx === -1) return { corrective: text, closure: null };
+  const closure = text.slice(idx + CLOSURE_PREFIX.length).trim();
+  const corrective = text.slice(0, idx).trim();
+  return { corrective, closure: closure || null };
+}
 
 interface Company {
   name: string;
