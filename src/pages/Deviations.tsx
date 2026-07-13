@@ -442,6 +442,8 @@ const Deviations = () => {
           ))}
         </motion.div>
 
+        <ProjectAvvikSection />
+
         {/* Filters */}
         <motion.div
           initial={{ opacity: 0 }}
