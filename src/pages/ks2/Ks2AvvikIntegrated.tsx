@@ -280,9 +280,18 @@ export default function Ks2AvvikIntegrated() {
 
 
   const handleDownloadAvvikPdf = async (avvik: KsModule2Avvik) => {
-    if (!project || !company) return;
+    if (!project || !company) {
+      toast.error("Kan ikke lage PDF", { description: "Mangler prosjekt- eller bedriftsdata." });
+      return;
+    }
+    setPdfLoadingId(avvik.id);
+    const loadingToast = toast.loading(`Genererer PDF for ${avvik.avvik_number}…`, {
+      description: (avvik.photo_paths?.length ?? 0) > 0
+        ? `Henter ${avvik.photo_paths!.length} bilde(r) fra lager…`
+        : "Bygger dokument…",
+    });
     try {
-      await downloadKsModule2AvvikPdf({
+      const { failedPhotos } = await downloadKsModule2AvvikPdf({
         avvik,
         project,
         company: {
@@ -295,10 +304,31 @@ export default function Ks2AvvikIntegrated() {
           email: company.email,
         },
       });
-      toast.success("PDF lastet ned");
-    } catch (e) {
-      console.error(e);
-      toast.error("Kunne ikke lage PDF");
+      toast.dismiss(loadingToast);
+      if (failedPhotos.length > 0) {
+        const signCount = failedPhotos.filter(f => f.reason === "sign").length;
+        const fetchCount = failedPhotos.filter(f => f.reason === "fetch" || f.reason === "decode").length;
+        const parts: string[] = [];
+        if (signCount) parts.push(`${signCount} bilde-signering feilet`);
+        if (fetchCount) parts.push(`${fetchCount} bilde kunne ikke lastes`);
+        toast.warning("PDF lastet ned med advarsler", {
+          description: `${parts.join(" · ")}. Bildene mangler i PDF-en.`,
+          action: { label: "Prøv igjen", onClick: () => handleDownloadAvvikPdf(avvik) },
+          duration: 10000,
+        });
+      } else {
+        toast.success("PDF lastet ned");
+      }
+    } catch (e: any) {
+      console.error("PDF generation failed:", e);
+      toast.dismiss(loadingToast);
+      toast.error("Kunne ikke lage PDF", {
+        description: e?.message || "Ukjent feil under generering.",
+        action: { label: "Prøv igjen", onClick: () => handleDownloadAvvikPdf(avvik) },
+        duration: 10000,
+      });
+    } finally {
+      setPdfLoadingId(null);
     }
   };
 
