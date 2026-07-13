@@ -6,8 +6,13 @@ import { generatePdfHeader, addPdfFooter, PdfHeaderInfo } from "./ksModule2PdfHe
 import { KsModule2Avvik } from "@/hooks/useKsModule2Avvik";
 import { KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { supabase } from "@/integrations/supabase/client";
-
-const CLOSURE_PREFIX = "🔒 Lukkekommentar:";
+import {
+  splitClosureComment,
+  buildAvvikHistoryRows,
+  CLOSURE_PREFIX,
+  AVVIK_STATUS_LABELS,
+  AVVIK_SEVERITY_LABELS,
+} from "./avvikHistory";
 
 export type PhotoLoadFailure = { path: string; reason: "sign" | "fetch" | "decode" };
 
@@ -39,15 +44,6 @@ async function pathToDataUrl(
   }
 }
 
-function splitClosureComment(text: string | null | undefined): { corrective: string; closure: string | null } {
-  if (!text) return { corrective: "", closure: null };
-  const idx = text.indexOf(CLOSURE_PREFIX);
-  if (idx === -1) return { corrective: text, closure: null };
-  const closure = text.slice(idx + CLOSURE_PREFIX.length).trim();
-  const corrective = text.slice(0, idx).trim();
-  return { corrective, closure: closure || null };
-}
-
 interface Company {
   name: string;
   address?: string | null;
@@ -67,18 +63,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   annet: "Annet",
 };
 
-const SEVERITY_LABELS: Record<string, string> = {
-  low: "Lav",
-  medium: "Medium",
-  high: "Høy",
-  critical: "Kritisk",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  open: "Åpen",
-  in_progress: "Under arbeid",
-  closed: "Lukket",
-};
+const SEVERITY_LABELS = AVVIK_SEVERITY_LABELS;
+const STATUS_LABELS = AVVIK_STATUS_LABELS;
 
 interface GenerateAvvikPdfOptions {
   avvik: KsModule2Avvik;
@@ -328,51 +314,8 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
   }
 
   // Endringshistorikk — compact timeline built from timestamps and known responsibles
-  const history: Array<{ date: string; event: string; who: string }> = [];
-  if (avvik.created_at) {
-    history.push({
-      date: format(new Date(avvik.created_at), "dd.MM.yyyy HH:mm", { locale: nb }),
-      event: "Avvik opprettet",
-      who: avvik.reported_by_name || "-",
-    });
-  }
-  if (corrective) {
-    history.push({
-      date: updatedLabel || "-",
-      event: "Korrigerende tiltak registrert",
-      who: responsibleLabel,
-    });
-  }
-  if (avvik.preventive_action) {
-    history.push({
-      date: updatedLabel || "-",
-      event: "Forebyggende tiltak registrert",
-      who: responsibleLabel,
-    });
-  }
-  if (avvik.updated_at && avvik.updated_at !== avvik.created_at && !corrective && !avvik.preventive_action) {
-    history.push({
-      date: updatedLabel || "-",
-      event: "Avvik oppdatert",
-      who: responsibleLabel,
-    });
-  }
-  if (closure) {
-    history.push({
-      date: avvik.closed_at
-        ? format(new Date(avvik.closed_at), "dd.MM.yyyy HH:mm", { locale: nb })
-        : (updatedLabel || "-"),
-      event: "Lukkekommentar lagt til",
-      who: avvik.closed_by_name || responsibleLabel,
-    });
-  }
-  if (avvik.closed_at && avvik.closed_by_name) {
-    history.push({
-      date: format(new Date(avvik.closed_at), "dd.MM.yyyy HH:mm", { locale: nb }),
-      event: "Avvik lukket",
-      who: avvik.closed_by_name,
-    });
-  }
+  const history = buildAvvikHistoryRows(avvik as any);
+
 
   if (history.length > 0) {
     if (yPos > 230) { doc.addPage(); yPos = 20; }

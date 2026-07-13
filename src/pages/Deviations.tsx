@@ -28,6 +28,7 @@ import { DeviationDetailDialog } from "@/components/deviations/DeviationDetailDi
 import { ProjectAvvikSection } from "@/components/deviations/ProjectAvvikSection";
 import { WorkAccidentDialog, WorkAccidentData } from "@/components/deviations/WorkAccidentDialog";
 import { useDeviations, Deviation as DeviationType, NewDeviationInput, DeviationStatus } from "@/hooks/useDeviations";
+import { computeAvvikStats } from "@/utils/avvikStats";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useToast } from "@/hooks/use-toast";
 import { exportDeviationsToPDF, exportDeviationsToExcel } from "@/utils/deviationExport";
@@ -173,12 +174,9 @@ const Deviations = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const stats = {
-    total: deviations.length,
-    open: deviations.filter((d) => d.status === "open").length,
-    inProgress: deviations.filter((d) => d.status === "in-progress").length,
-    resolved: deviations.filter((d) => d.status === "resolved").length,
-  };
+  const rawStats = computeAvvikStats(deviations as any);
+  const stats = { ...rawStats, resolved: deviations.filter((d) => d.status === "resolved").length };
+
 
   const handleNewDeviation = async (input: NewDeviation) => {
     // Find assignee user by name if not provided by ID
