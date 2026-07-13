@@ -89,6 +89,8 @@ interface GenerateAvvikPdfOptions {
 export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions): Promise<{ blob: Blob; fileName: string; failedPhotos: PhotoLoadFailure[] }> {
   const { avvik, project, company } = options;
   const doc = new jsPDF();
+  const failedPhotos: PhotoLoadFailure[] = [];
+
 
   const headerInfo: PdfHeaderInfo = {
     documentType: "AVVIKSMELDING",
