@@ -742,6 +742,7 @@ function AvvikContent({
   handleCloseAvvik,
   handleDeleteAvvik,
   handleDownloadAvvikPdf,
+  pdfLoadingId,
   handleViewAvvik,
   project,
   company,
