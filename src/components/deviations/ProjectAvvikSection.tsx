@@ -100,7 +100,7 @@ export function ProjectAvvikSection() {
         {visible.map((r) => (
           <Link
             key={r.id}
-            to={`/ks/prosjekter/${r.project_id}/avvik`}
+            to={`/ks/project/${r.project_id}/avvik`}
             className="flex items-center gap-3 p-4 hover:bg-muted/50 transition-colors"
           >
             <div className="flex-1 min-w-0">
