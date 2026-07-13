@@ -84,10 +84,11 @@ export default function Ks2AvvikIntegrated() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
-  const [pendingPhotos, setPendingPhotos] = useState<string[]>([]);
+  const [pendingPhotos, setPendingPhotos] = useState<{ path: string; previewUrl: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [project, setProject] = useState<KsModule2Project | null>(null);
   const [viewAvvik, setViewAvvik] = useState<KsModule2Avvik | null>(null);
+  const [viewPhotoUrls, setViewPhotoUrls] = useState<string[]>([]);
   const [closingAvvik, setClosingAvvik] = useState<KsModule2Avvik | null>(null);
   const [closeComment, setCloseComment] = useState("");
   const [isClosing, setIsClosing] = useState(false);
@@ -104,6 +105,31 @@ export default function Ks2AvvikIntegrated() {
         });
     }
   }, [projectId]);
+
+  // Resolve stored photo paths to signed URLs when opening the view dialog.
+  // Legacy records may already contain a full URL — pass those through.
+  useEffect(() => {
+    let cancelled = false;
+    async function resolve() {
+      if (!viewAvvik?.photo_paths || viewAvvik.photo_paths.length === 0) {
+        setViewPhotoUrls([]);
+        return;
+      }
+      const urls = await Promise.all(
+        viewAvvik.photo_paths.map(async (p) => {
+          if (/^https?:\/\//i.test(p)) return p;
+          const { data, error } = await supabase.storage
+            .from('ks-module2-avvik-photos')
+            .createSignedUrl(p, 3600);
+          if (error || !data) return '';
+          return data.signedUrl;
+        })
+      );
+      if (!cancelled) setViewPhotoUrls(urls.filter(Boolean));
+    }
+    resolve();
+    return () => { cancelled = true; };
+  }, [viewAvvik]);
   
   const [newAvvik, setNewAvvik] = useState({
     title: "",
@@ -138,7 +164,7 @@ export default function Ks2AvvikIntegrated() {
     if (!files || files.length === 0) return;
     
     setUploadingPhotos(true);
-    const uploadedPaths: string[] = [];
+    const uploaded: { path: string; previewUrl: string }[] = [];
     
     try {
       for (const file of Array.from(files)) {
@@ -153,13 +179,13 @@ export default function Ks2AvvikIntegrated() {
         
         const { data: signedUrlData, error: signedUrlError } = await supabase.storage
           .from('ks-module2-avvik-photos')
-          .createSignedUrl(fileName, 86400); // 24 hour expiry
+          .createSignedUrl(fileName, 3600);
           
         if (signedUrlError) throw signedUrlError;
-        uploadedPaths.push(signedUrlData.signedUrl);
+        uploaded.push({ path: fileName, previewUrl: signedUrlData.signedUrl });
       }
       
-      setPendingPhotos(prev => [...prev, ...uploadedPaths]);
+      setPendingPhotos(prev => [...prev, ...uploaded]);
       toast.success(`${files.length} bilde(r) lastet opp`);
     } catch (error) {
       console.error('Error uploading photos:', error);
@@ -197,7 +223,7 @@ export default function Ks2AvvikIntegrated() {
       root_cause: newAvvik.root_cause || null,
       corrective_action: newAvvik.corrective_action || null,
       preventive_action: null,
-      photo_paths: pendingPhotos.length > 0 ? pendingPhotos : null,
+      photo_paths: pendingPhotos.length > 0 ? pendingPhotos.map(p => p.path) : null,
     }, {
       onSuccess: () => {
         setNewAvvik({ title: "", description: "", category: avvikType === "ks" ? "kvalitet" : "Personlig verneutstyr", severity: "medium", location: "", deadline: "", responsible_name: "", corrective_action: "", root_cause: "" });
@@ -547,10 +573,10 @@ export default function Ks2AvvikIntegrated() {
                 
                 {pendingPhotos.length > 0 && (
                   <div className="grid grid-cols-3 gap-2 mt-4">
-                    {pendingPhotos.map((url, index) => (
+                    {pendingPhotos.map((photo, index) => (
                       <div key={index} className="relative group">
                         <img
-                          src={url}
+                          src={photo.previewUrl}
                           alt={`Bilde ${index + 1}`}
                           className="w-full h-24 object-cover rounded-md"
                         />
@@ -621,7 +647,7 @@ export default function Ks2AvvikIntegrated() {
                 <div>
                   <Label className="text-xs">Bilder ({viewAvvik.photo_paths.length})</Label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
-                    {viewAvvik.photo_paths.map((url, i) => (
+                    {viewPhotoUrls.map((url, i) => (
                       <a key={i} href={url} target="_blank" rel="noopener noreferrer">
                         <img src={url} alt={`Bilde ${i + 1}`} className="w-full h-32 object-cover rounded-md border" />
                       </a>
