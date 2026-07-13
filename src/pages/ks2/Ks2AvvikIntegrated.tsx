@@ -551,7 +551,7 @@ export default function Ks2AvvikIntegrated() {
                     {pendingPhotos.map((photo, index) => (
                       <div key={index} className="relative group">
                         <img
-                          src={url}
+                          src={photo.previewUrl}
                           alt={`Bilde ${index + 1}`}
                           className="w-full h-24 object-cover rounded-md"
                         />
