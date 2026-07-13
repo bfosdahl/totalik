@@ -278,22 +278,27 @@ export default function Ks2AvvikIntegrated() {
   };
 
 
-  const handleDownloadAvvikPdf = (avvik: KsModule2Avvik) => {
+  const handleDownloadAvvikPdf = async (avvik: KsModule2Avvik) => {
     if (!project || !company) return;
-    downloadKsModule2AvvikPdf({
-      avvik,
-      project,
-      company: {
-        name: company.name,
-        address: company.address,
-        postal_code: company.postal_code,
-        city: company.city,
-        org_number: company.org_number,
-        phone: company.phone,
-        email: company.email,
-      },
-    });
-    toast.success("PDF lastet ned");
+    try {
+      await downloadKsModule2AvvikPdf({
+        avvik,
+        project,
+        company: {
+          name: company.name,
+          address: company.address,
+          postal_code: company.postal_code,
+          city: company.city,
+          org_number: company.org_number,
+          phone: company.phone,
+          email: company.email,
+        },
+      });
+      toast.success("PDF lastet ned");
+    } catch (e) {
+      console.error(e);
+      toast.error("Kunne ikke lage PDF");
+    }
   };
 
   const handleDownloadAllAvvikPdf = () => {
