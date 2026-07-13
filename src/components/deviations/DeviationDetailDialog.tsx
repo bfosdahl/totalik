@@ -136,6 +136,25 @@ interface DeviationDetailDialogProps {
   }) => Promise<boolean>;
 }
 
+// Categories editable in the UI (HMS + IK-MAT)
+const editableCategories: { value: DeviationCategory; label: string }[] = [
+  { value: "safety", label: "HMS / Sikkerhet" },
+  { value: "quality", label: "Kvalitet" },
+  { value: "environment", label: "Miljø" },
+  { value: "process", label: "Prosess" },
+  { value: "equipment", label: "Utstyr" },
+  { value: "personnel", label: "Personell" },
+  { value: "documentation", label: "Dokumentasjon" },
+  { value: "temperature", label: "Temperaturavvik" },
+  { value: "cleaning", label: "Renhold" },
+  { value: "hygiene", label: "Hygiene" },
+  { value: "storage", label: "Lagring" },
+  { value: "traceability", label: "Sporbarhet" },
+  { value: "allergen", label: "Allergen" },
+  { value: "pest_control", label: "Skadedyr" },
+  { value: "other", label: "Annet" },
+];
+
 export function DeviationDetailDialog({ 
   deviation, 
   open, 
