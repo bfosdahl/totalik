@@ -430,6 +430,7 @@ export default function Ks2AvvikIntegrated() {
             handleCloseAvvik={handleCloseAvvik}
             handleDeleteAvvik={handleDeleteAvvik}
             handleDownloadAvvikPdf={handleDownloadAvvikPdf}
+            pdfLoadingId={pdfLoadingId}
             handleViewAvvik={setViewAvvik}
             project={project}
             company={company}
