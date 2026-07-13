@@ -362,7 +362,7 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
           doc.text("(kunne ikke laste bilde)", x, rowTop + captionHeight + 10);
         }
       } else {
-        failedPhotosInline.push({ path: p, reason: img.reason });
+        failedPhotosInline.push({ path: p, reason: (img as { reason: PhotoLoadFailure["reason"] }).reason });
         doc.setFontSize(8);
         doc.text("(bilde utilgjengelig)", x, rowTop + captionHeight + 10);
       }
