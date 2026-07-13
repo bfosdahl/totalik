@@ -219,15 +219,29 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
   // Split closure comment (stored with 🔒 Lukkekommentar: prefix) out of corrective action
   const { corrective, closure } = splitClosureComment(avvik.corrective_action);
 
+  const updatedLabel = avvik.updated_at
+    ? format(new Date(avvik.updated_at), "dd.MM.yyyy HH:mm", { locale: nb })
+    : null;
+  const responsibleLabel = avvik.responsible_name || "Ikke tildelt";
+
   // Corrective action
   if (corrective) {
-    if (yPos > 240) { doc.addPage(); yPos = 20; }
+    if (yPos > 235) { doc.addPage(); yPos = 20; }
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     doc.text("Korrigerende tiltak", 15, yPos);
-    yPos += 7;
-    doc.setFontSize(10);
+    yPos += 6;
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+      `Ansvarlig: ${responsibleLabel}${updatedLabel ? `   ·   Sist endret: ${updatedLabel}` : ""}`,
+      15,
+      yPos
+    );
+    doc.setTextColor(0, 0, 0);
+    yPos += 6;
+    doc.setFontSize(10);
     const corrLines = doc.splitTextToSize(corrective, 180);
     doc.text(corrLines, 15, yPos);
     yPos += corrLines.length * 5 + 10;
@@ -235,13 +249,18 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
 
   // Preventive action
   if (avvik.preventive_action) {
-    if (yPos > 240) { doc.addPage(); yPos = 20; }
+    if (yPos > 235) { doc.addPage(); yPos = 20; }
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     doc.text("Forebyggende tiltak", 15, yPos);
-    yPos += 7;
-    doc.setFontSize(10);
+    yPos += 6;
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 116, 139);
+    doc.text(`Ansvarlig: ${responsibleLabel}`, 15, yPos);
+    doc.setTextColor(0, 0, 0);
+    yPos += 6;
+    doc.setFontSize(10);
     const prevLines = doc.splitTextToSize(avvik.preventive_action, 180);
     doc.text(prevLines, 15, yPos);
     yPos += prevLines.length * 5 + 10;
@@ -273,6 +292,16 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
       doc.text(closureLines, 20, yPos + 27);
     }
     yPos += boxHeight + 8;
+  } else if (updatedLabel && avvik.updated_at !== avvik.created_at) {
+    // No closure yet, but show last-edited metadata to match dialog footer
+    if (yPos > 260) { doc.addPage(); yPos = 20; }
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(100, 116, 139);
+    doc.text(`Sist endret: ${updatedLabel}   ·   Ansvarlig: ${responsibleLabel}`, 15, yPos);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+    yPos += 8;
   }
 
   // Photos - each with a clear title in the same order as shown in the View/Close dialog
