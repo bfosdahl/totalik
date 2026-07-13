@@ -8,7 +8,10 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e:avvik": "python3 tests/e2e/avvik.spec.py"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
