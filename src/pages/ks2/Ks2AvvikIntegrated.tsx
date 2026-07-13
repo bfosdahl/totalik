@@ -87,6 +87,10 @@ export default function Ks2AvvikIntegrated() {
   const [pendingPhotos, setPendingPhotos] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [project, setProject] = useState<KsModule2Project | null>(null);
+  const [viewAvvik, setViewAvvik] = useState<KsModule2Avvik | null>(null);
+  const [closingAvvik, setClosingAvvik] = useState<KsModule2Avvik | null>(null);
+  const [closeComment, setCloseComment] = useState("");
+  const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
     if (projectId) {
@@ -204,10 +208,39 @@ export default function Ks2AvvikIntegrated() {
   };
 
   const handleCloseAvvik = (avvik: KsModule2Avvik) => {
-    const closedByName = profile?.first_name && profile?.last_name 
-      ? `${profile.first_name} ${profile.last_name}` 
-      : profile?.email || "Ukjent";
-    closeAvvik({ id: avvik.id, closedByName });
+    setClosingAvvik(avvik);
+    setCloseComment("");
+  };
+
+  const handleConfirmClose = async () => {
+    if (!closingAvvik) return;
+    if (!closeComment.trim()) {
+      toast.error("Skriv en kort kommentar om hvordan avviket ble løst");
+      return;
+    }
+    setIsClosing(true);
+    try {
+      const closedByName = profile?.first_name && profile?.last_name
+        ? `${profile.first_name} ${profile.last_name}`
+        : profile?.email || "Ukjent";
+      const existing = closingAvvik.corrective_action || "";
+      const newAction = existing
+        ? `${existing}\n\n🔒 Lukkekommentar (${closedByName}): ${closeComment.trim()}`
+        : `🔒 Lukkekommentar (${closedByName}): ${closeComment.trim()}`;
+      await new Promise<void>((resolve, reject) => {
+        updateAvvik(
+          { id: closingAvvik.id, corrective_action: newAction },
+          { onSuccess: () => resolve(), onError: (e) => reject(e) } as any
+        );
+      });
+      closeAvvik({ id: closingAvvik.id, closedByName });
+      setClosingAvvik(null);
+      setCloseComment("");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsClosing(false);
+    }
   };
 
   const handleDeleteAvvik = (id: string) => {
@@ -215,6 +248,7 @@ export default function Ks2AvvikIntegrated() {
       deleteAvvik(id);
     }
   };
+
 
   const handleDownloadAvvikPdf = (avvik: KsModule2Avvik) => {
     if (!project || !company) return;
@@ -332,6 +366,7 @@ export default function Ks2AvvikIntegrated() {
             handleCloseAvvik={handleCloseAvvik}
             handleDeleteAvvik={handleDeleteAvvik}
             handleDownloadAvvikPdf={handleDownloadAvvikPdf}
+            handleViewAvvik={setViewAvvik}
             project={project}
             company={company}
             accentColor="primary"
@@ -353,6 +388,7 @@ export default function Ks2AvvikIntegrated() {
             handleCloseAvvik={handleCloseAvvik}
             handleDeleteAvvik={handleDeleteAvvik}
             handleDownloadAvvikPdf={handleDownloadAvvikPdf}
+            handleViewAvvik={setViewAvvik}
             project={project}
             company={company}
             accentColor="emerald"
@@ -546,6 +582,81 @@ export default function Ks2AvvikIntegrated() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* View Detail Dialog */}
+      <Dialog open={!!viewAvvik} onOpenChange={(o) => !o && setViewAvvik(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{viewAvvik?.avvik_number} — {viewAvvik?.title}</DialogTitle>
+          </DialogHeader>
+          {viewAvvik && (
+            <div className="space-y-4 py-2 text-sm">
+              <div className="flex flex-wrap gap-2">
+                {getSeverityBadge(viewAvvik.severity)}
+                <Badge variant="outline">{viewAvvik.category}</Badge>
+                <Badge>{getStatusInfo(viewAvvik.status).label}</Badge>
+              </div>
+              {viewAvvik.description && (
+                <div><Label className="text-xs">Beskrivelse</Label><p className="whitespace-pre-wrap">{viewAvvik.description}</p></div>
+              )}
+              {viewAvvik.location && (
+                <div><Label className="text-xs">Lokasjon</Label><p>{viewAvvik.location}</p></div>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-xs">Oppdaget</Label><p>{format(new Date(viewAvvik.discovered_date), "dd.MM.yyyy")}</p></div>
+                {viewAvvik.deadline && <div><Label className="text-xs">Frist</Label><p>{format(new Date(viewAvvik.deadline), "dd.MM.yyyy")}</p></div>}
+                <div><Label className="text-xs">Rapportert av</Label><p>{viewAvvik.reported_by_name}</p></div>
+                {viewAvvik.responsible_name && <div><Label className="text-xs">Ansvarlig</Label><p>{viewAvvik.responsible_name}</p></div>}
+              </div>
+              {viewAvvik.root_cause && (
+                <div><Label className="text-xs">Årsak</Label><p className="whitespace-pre-wrap">{viewAvvik.root_cause}</p></div>
+              )}
+              {viewAvvik.corrective_action && (
+                <div><Label className="text-xs">Korrigerende tiltak / kommentar</Label><p className="whitespace-pre-wrap">{viewAvvik.corrective_action}</p></div>
+              )}
+              {viewAvvik.closed_at && (
+                <div><Label className="text-xs">Lukket</Label><p>{format(new Date(viewAvvik.closed_at), "dd.MM.yyyy HH:mm")} av {viewAvvik.closed_by_name || "Ukjent"}</p></div>
+              )}
+              {viewAvvik.photo_paths && viewAvvik.photo_paths.length > 0 && (
+                <div>
+                  <Label className="text-xs">Bilder ({viewAvvik.photo_paths.length})</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
+                    {viewAvvik.photo_paths.map((url, i) => (
+                      <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                        <img src={url} alt={`Bilde ${i + 1}`} className="w-full h-32 object-cover rounded-md border" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Close With Comment Dialog */}
+      <Dialog open={!!closingAvvik} onOpenChange={(o) => !o && setClosingAvvik(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Lukk avvik {closingAvvik?.avvik_number}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <Label>Hvordan ble avviket løst? *</Label>
+            <Textarea
+              value={closeComment}
+              onChange={(e) => setCloseComment(e.target.value)}
+              rows={4}
+              placeholder="Kort beskrivelse av hvordan avviket ble lukket..."
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setClosingAvvik(null)} disabled={isClosing}>Avbryt</Button>
+            <Button onClick={handleConfirmClose} disabled={isClosing || !closeComment.trim()}>
+              {isClosing ? "Lukker..." : "Lukk avvik"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -565,6 +676,7 @@ function AvvikContent({
   handleCloseAvvik,
   handleDeleteAvvik,
   handleDownloadAvvikPdf,
+  handleViewAvvik,
   project,
   company,
   accentColor,
@@ -582,6 +694,7 @@ function AvvikContent({
   handleCloseAvvik: (a: KsModule2Avvik) => void;
   handleDeleteAvvik: (id: string) => void;
   handleDownloadAvvikPdf: (a: KsModule2Avvik) => void;
+  handleViewAvvik: (a: KsModule2Avvik) => void;
   project: KsModule2Project | null;
   company: any;
   accentColor: "primary" | "emerald";
@@ -727,6 +840,10 @@ function AvvikContent({
                     )}
                   </div>
                   <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" onClick={() => handleViewAvvik(avvik)}>
+                      <Eye className="h-4 w-4 mr-1" />
+                      Vis
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => handleDownloadAvvikPdf(avvik)}>
                       <FileDown className="h-4 w-4 mr-1" />
                       PDF

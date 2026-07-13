@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { NewDeviationDialog, NewDeviation } from "@/components/deviations/NewDeviationDialog";
 import { DeviationDetailDialog } from "@/components/deviations/DeviationDetailDialog";
+import { ProjectAvvikSection } from "@/components/deviations/ProjectAvvikSection";
 import { WorkAccidentDialog, WorkAccidentData } from "@/components/deviations/WorkAccidentDialog";
 import { useDeviations, Deviation as DeviationType, NewDeviationInput, DeviationStatus } from "@/hooks/useDeviations";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
@@ -440,6 +441,8 @@ const Deviations = () => {
             </div>
           ))}
         </motion.div>
+
+        <ProjectAvvikSection />
 
         {/* Filters */}
         <motion.div
