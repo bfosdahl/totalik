@@ -139,6 +139,28 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
     }
   };
   const handleDownloadPdf = async () => {
+    // Refetch latest SJA to ensure signatures added just now are included
+    let latestSja: KsModule2Sja = sja;
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data: fresh } = await supabase
+        .from("ks_module2_sja")
+        .select("*")
+        .eq("id", sja.id)
+        .maybeSingle();
+      if (fresh) {
+        latestSja = {
+          ...sja,
+          ...(fresh as any),
+          additional_signatures: Array.isArray((fresh as any).additional_signatures)
+            ? (fresh as any).additional_signatures
+            : [],
+        };
+      }
+    } catch (e) {
+      console.warn("Kunne ikke hente ferskeste SJA-data, bruker cached:", e);
+    }
+    sja = latestSja;
     const doc = new jsPDF();
     await registerPdfFont(doc);
     const pageWidth = doc.internal.pageSize.getWidth();
