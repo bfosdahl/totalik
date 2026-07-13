@@ -87,6 +87,10 @@ export default function Ks2AvvikIntegrated() {
   const [pendingPhotos, setPendingPhotos] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [project, setProject] = useState<KsModule2Project | null>(null);
+  const [viewAvvik, setViewAvvik] = useState<KsModule2Avvik | null>(null);
+  const [closingAvvik, setClosingAvvik] = useState<KsModule2Avvik | null>(null);
+  const [closeComment, setCloseComment] = useState("");
+  const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
     if (projectId) {
