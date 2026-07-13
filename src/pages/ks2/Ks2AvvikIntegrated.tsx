@@ -761,6 +761,7 @@ function AvvikContent({
   handleCloseAvvik: (a: KsModule2Avvik) => void;
   handleDeleteAvvik: (id: string) => void;
   handleDownloadAvvikPdf: (a: KsModule2Avvik) => void;
+  pdfLoadingId: string | null;
   handleViewAvvik: (a: KsModule2Avvik) => void;
   project: KsModule2Project | null;
   company: any;
