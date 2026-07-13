@@ -198,7 +198,7 @@ export default function Ks2AvvikIntegrated() {
       root_cause: newAvvik.root_cause || null,
       corrective_action: newAvvik.corrective_action || null,
       preventive_action: null,
-      photo_paths: pendingPhotos.length > 0 ? pendingPhotos : null,
+      photo_paths: pendingPhotos.length > 0 ? pendingPhotos.map(p => p.path) : null,
     }, {
       onSuccess: () => {
         setNewAvvik({ title: "", description: "", category: avvikType === "ks" ? "kvalitet" : "Personlig verneutstyr", severity: "medium", location: "", deadline: "", responsible_name: "", corrective_action: "", root_cause: "" });
