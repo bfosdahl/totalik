@@ -582,6 +582,81 @@ export default function Ks2AvvikIntegrated() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* View Detail Dialog */}
+      <Dialog open={!!viewAvvik} onOpenChange={(o) => !o && setViewAvvik(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{viewAvvik?.avvik_number} — {viewAvvik?.title}</DialogTitle>
+          </DialogHeader>
+          {viewAvvik && (
+            <div className="space-y-4 py-2 text-sm">
+              <div className="flex flex-wrap gap-2">
+                {getSeverityBadge(viewAvvik.severity)}
+                <Badge variant="outline">{viewAvvik.category}</Badge>
+                <Badge>{getStatusInfo(viewAvvik.status).label}</Badge>
+              </div>
+              {viewAvvik.description && (
+                <div><Label className="text-xs">Beskrivelse</Label><p className="whitespace-pre-wrap">{viewAvvik.description}</p></div>
+              )}
+              {viewAvvik.location && (
+                <div><Label className="text-xs">Lokasjon</Label><p>{viewAvvik.location}</p></div>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-xs">Oppdaget</Label><p>{format(new Date(viewAvvik.discovered_date), "dd.MM.yyyy")}</p></div>
+                {viewAvvik.deadline && <div><Label className="text-xs">Frist</Label><p>{format(new Date(viewAvvik.deadline), "dd.MM.yyyy")}</p></div>}
+                <div><Label className="text-xs">Rapportert av</Label><p>{viewAvvik.reported_by_name}</p></div>
+                {viewAvvik.responsible_name && <div><Label className="text-xs">Ansvarlig</Label><p>{viewAvvik.responsible_name}</p></div>}
+              </div>
+              {viewAvvik.root_cause && (
+                <div><Label className="text-xs">Årsak</Label><p className="whitespace-pre-wrap">{viewAvvik.root_cause}</p></div>
+              )}
+              {viewAvvik.corrective_action && (
+                <div><Label className="text-xs">Korrigerende tiltak / kommentar</Label><p className="whitespace-pre-wrap">{viewAvvik.corrective_action}</p></div>
+              )}
+              {viewAvvik.closed_at && (
+                <div><Label className="text-xs">Lukket</Label><p>{format(new Date(viewAvvik.closed_at), "dd.MM.yyyy HH:mm")} av {viewAvvik.closed_by_name || "Ukjent"}</p></div>
+              )}
+              {viewAvvik.photo_paths && viewAvvik.photo_paths.length > 0 && (
+                <div>
+                  <Label className="text-xs">Bilder ({viewAvvik.photo_paths.length})</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
+                    {viewAvvik.photo_paths.map((url, i) => (
+                      <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                        <img src={url} alt={`Bilde ${i + 1}`} className="w-full h-32 object-cover rounded-md border" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Close With Comment Dialog */}
+      <Dialog open={!!closingAvvik} onOpenChange={(o) => !o && setClosingAvvik(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Lukk avvik {closingAvvik?.avvik_number}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <Label>Hvordan ble avviket løst? *</Label>
+            <Textarea
+              value={closeComment}
+              onChange={(e) => setCloseComment(e.target.value)}
+              rows={4}
+              placeholder="Kort beskrivelse av hvordan avviket ble lukket..."
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setClosingAvvik(null)} disabled={isClosing}>Avbryt</Button>
+            <Button onClick={handleConfirmClose} disabled={isClosing || !closeComment.trim()}>
+              {isClosing ? "Lukker..." : "Lukk avvik"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
