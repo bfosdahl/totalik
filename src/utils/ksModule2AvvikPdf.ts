@@ -118,28 +118,47 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
 
   let yPos = generatePdfHeader(doc, headerInfo);
 
-  // Title
-  yPos += 5;
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "bold");
-  doc.text(avvik.title, 15, yPos);
-  yPos += 12;
-
-  // Status and severity badges
+  // Color maps
   const severityColors: Record<string, [number, number, number]> = {
     low: [34, 197, 94],
     medium: [234, 179, 8],
     high: [249, 115, 22],
     critical: [239, 68, 68],
   };
-
   const statusColors: Record<string, [number, number, number]> = {
     open: [239, 68, 68],
     in_progress: [234, 179, 8],
     closed: [34, 197, 94],
   };
 
-  // Severity badge
+  // Prominent STATUS banner at the very top
+  yPos += 4;
+  const statColor = statusColors[avvik.status] || [156, 163, 175];
+  const statusLabel = (STATUS_LABELS[avvik.status] || avvik.status).toUpperCase();
+  doc.setFillColor(...statColor);
+  doc.roundedRect(15, yPos, 180, 12, 2, 2, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(255, 255, 255);
+  doc.text("STATUS:", 20, yPos + 8);
+  doc.setFontSize(13);
+  doc.text(statusLabel, 45, yPos + 8);
+  if (avvik.status === "closed" && avvik.closed_at) {
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    const closedTxt = `Lukket ${format(new Date(avvik.closed_at), "dd.MM.yyyy HH:mm", { locale: nb })}`;
+    doc.text(closedTxt, 190, yPos + 8, { align: "right" });
+  }
+  doc.setTextColor(0, 0, 0);
+  yPos += 18;
+
+  // Title
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text(avvik.title, 15, yPos);
+  yPos += 10;
+
+  // Severity + status pill (kept for redundancy)
   const sevColor = severityColors[avvik.severity] || [156, 163, 175];
   doc.setFillColor(...sevColor);
   doc.roundedRect(15, yPos, 25, 7, 2, 2, "F");
@@ -148,8 +167,6 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
   doc.setFont("helvetica", "bold");
   doc.text(SEVERITY_LABELS[avvik.severity] || avvik.severity, 17, yPos + 5);
 
-  // Status badge
-  const statColor = statusColors[avvik.status] || [156, 163, 175];
   doc.setFillColor(...statColor);
   doc.roundedRect(45, yPos, 30, 7, 2, 2, "F");
   doc.text(STATUS_LABELS[avvik.status] || avvik.status, 47, yPos + 5);
