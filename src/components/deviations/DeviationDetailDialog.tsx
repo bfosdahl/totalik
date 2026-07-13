@@ -169,7 +169,7 @@ export function DeviationDetailDialog({
   const { company } = useAuth();
   const { toast } = useToast();
   const { attachments, getAttachmentUrl } = useDeviationAttachments(deviation?.id || null);
-  const { comments } = useDeviationComments(deviation?.id || null);
+  const { comments, addComment } = useDeviationComments(deviation?.id || null);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [isSavingFollowUp, setIsSavingFollowUp] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -179,6 +179,8 @@ export function DeviationDetailDialog({
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editPriority, setEditPriority] = useState<Deviation["priority"]>("medium");
+  const [editCategory, setEditCategory] = useState<DeviationCategory>("other");
+  const [editDueDate, setEditDueDate] = useState("");
   
   // Local state for follow-up fields
   const [immediateActions, setImmediateActions] = useState("");
@@ -187,6 +189,11 @@ export function DeviationDetailDialog({
   
   // Track if any follow-up field has been modified
   const [hasFollowUpChanges, setHasFollowUpChanges] = useState(false);
+
+  // Closure comment dialog state
+  const [closureDialogOpen, setClosureDialogOpen] = useState(false);
+  const [closureComment, setClosureComment] = useState("");
+  const [isClosing, setIsClosing] = useState(false);
 
   // Initialize fields when deviation changes
   useEffect(() => {
@@ -198,6 +205,10 @@ export function DeviationDetailDialog({
       setEditTitle(deviation.title);
       setEditDescription(deviation.description || "");
       setEditPriority(deviation.priority);
+      setEditCategory(deviation.category);
+      // dueDate comes as ISO or YYYY-MM-DD, normalize to YYYY-MM-DD for date input
+      const d = deviation.dueDate ? new Date(deviation.dueDate) : null;
+      setEditDueDate(d && !isNaN(d.getTime()) ? d.toISOString().slice(0, 10) : "");
       setIsEditing(false);
     }
   }, [deviation]);
