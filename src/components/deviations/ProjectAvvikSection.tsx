@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, ExternalLink, Loader2 } from "lucide-react";
+import { AlertTriangle, ExternalLink, FolderKanban, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 
 interface ProjectAvvikRow {
