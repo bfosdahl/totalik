@@ -598,12 +598,6 @@ export function DeviationDetailDialog({
               <SelectContent>
                 <SelectItem value="open">Åpen</SelectItem>
                 <SelectItem value="in-progress">Under arbeid</SelectItem>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="open">Åpen</SelectItem>
-                <SelectItem value="in-progress">Under arbeid</SelectItem>
                 <SelectItem value="resolved">Løst</SelectItem>
                 <SelectItem value="closed">Lukket</SelectItem>
               </SelectContent>
