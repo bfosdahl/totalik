@@ -912,9 +912,19 @@ function AvvikContent({
                       <Eye className="h-4 w-4 mr-1" />
                       Vis
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDownloadAvvikPdf(avvik)}>
-                      <FileDown className="h-4 w-4 mr-1" />
-                      PDF
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownloadAvvikPdf(avvik)}
+                      disabled={pdfLoadingId === avvik.id}
+                      aria-busy={pdfLoadingId === avvik.id}
+                    >
+                      {pdfLoadingId === avvik.id ? (
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      ) : (
+                        <FileDown className="h-4 w-4 mr-1" />
+                      )}
+                      {pdfLoadingId === avvik.id ? "Genererer…" : "PDF"}
                     </Button>
                     {avvik.status !== "closed" && (
                       <Button 
