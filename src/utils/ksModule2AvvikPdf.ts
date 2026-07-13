@@ -9,18 +9,22 @@ import { supabase } from "@/integrations/supabase/client";
 
 const CLOSURE_PREFIX = "🔒 Lukkekommentar:";
 
-async function pathToDataUrl(pathOrUrl: string): Promise<{ dataUrl: string; type: string } | null> {
+export type PhotoLoadFailure = { path: string; reason: "sign" | "fetch" | "decode" };
+
+async function pathToDataUrl(
+  pathOrUrl: string
+): Promise<{ ok: true; dataUrl: string; type: string } | { ok: false; reason: PhotoLoadFailure["reason"] }> {
   try {
     let url = pathOrUrl;
     if (!/^https?:\/\//i.test(pathOrUrl)) {
       const { data, error } = await supabase.storage
         .from("ks-module2-avvik-photos")
         .createSignedUrl(pathOrUrl, 3600);
-      if (error || !data?.signedUrl) return null;
+      if (error || !data?.signedUrl) return { ok: false, reason: "sign" };
       url = data.signedUrl;
     }
     const res = await fetch(url);
-    if (!res.ok) return null;
+    if (!res.ok) return { ok: false, reason: "fetch" };
     const blob = await res.blob();
     const type = blob.type.includes("png") ? "PNG" : "JPEG";
     const dataUrl: string = await new Promise((resolve, reject) => {
@@ -29,9 +33,9 @@ async function pathToDataUrl(pathOrUrl: string): Promise<{ dataUrl: string; type
       r.onerror = reject;
       r.readAsDataURL(blob);
     });
-    return { dataUrl, type };
+    return { ok: true, dataUrl, type };
   } catch {
-    return null;
+    return { ok: false, reason: "decode" };
   }
 }
 
