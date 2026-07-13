@@ -94,6 +94,7 @@ export default function Ks2AvvikIntegrated() {
   const [closingAvvik, setClosingAvvik] = useState<KsModule2Avvik | null>(null);
   const [closeComment, setCloseComment] = useState("");
   const [isClosing, setIsClosing] = useState(false);
+  const [pdfLoadingId, setPdfLoadingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (projectId) {
