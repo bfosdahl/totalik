@@ -275,7 +275,7 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
     yPos += boxHeight + 8;
   }
 
-  // Photos
+  // Photos - each with a clear title in the same order as shown in the View/Close dialog
   const photoPaths: string[] = Array.isArray((avvik as any).photo_paths) ? (avvik as any).photo_paths : [];
   if (photoPaths.length > 0) {
     doc.addPage();
@@ -283,27 +283,59 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.text(`Bilder (${photoPaths.length})`, 15, yPos);
-    yPos += 8;
+    yPos += 10;
 
     const imgWidth = 85;
     const imgHeight = 65;
+    const captionHeight = 10;
+    const blockHeight = captionHeight + imgHeight + 6;
     const gap = 8;
     let col = 0;
+    let rowTop = yPos;
 
-    for (const p of photoPaths) {
+    for (let i = 0; i < photoPaths.length; i++) {
+      const p = photoPaths[i];
       const img = await pathToDataUrl(p);
-      if (!img) continue;
-      if (yPos + imgHeight > 280) { doc.addPage(); yPos = 20; col = 0; }
-      const x = 15 + col * (imgWidth + gap);
-      try {
-        doc.addImage(img.dataUrl, img.type, x, yPos, imgWidth, imgHeight, undefined, "FAST");
-      } catch {
-        // skip broken images
+      if (col === 0) rowTop = yPos;
+      if (rowTop + blockHeight > 285) {
+        doc.addPage();
+        yPos = 20;
+        rowTop = yPos;
+        col = 0;
       }
+      const x = 15 + col * (imgWidth + gap);
+      const fileName = (p.split("/").pop() || `bilde-${i + 1}`).slice(0, 40);
+
+      // Caption above image
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(30, 41, 59);
+      doc.text(`Bilde ${i + 1} av ${photoPaths.length}`, x, rowTop + 4);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(100, 116, 139);
+      doc.text(fileName, x, rowTop + 8);
+      doc.setTextColor(0, 0, 0);
+
+      if (img) {
+        try {
+          doc.addImage(img.dataUrl, img.type, x, rowTop + captionHeight, imgWidth, imgHeight, undefined, "FAST");
+        } catch {
+          doc.setFontSize(8);
+          doc.text("(kunne ikke laste bilde)", x, rowTop + captionHeight + 10);
+        }
+      } else {
+        doc.setFontSize(8);
+        doc.text("(bilde utilgjengelig)", x, rowTop + captionHeight + 10);
+      }
+
       col += 1;
-      if (col >= 2) { col = 0; yPos += imgHeight + gap; }
+      if (col >= 2) {
+        col = 0;
+        yPos = rowTop + blockHeight;
+      }
     }
-    if (col !== 0) yPos += imgHeight + gap;
+    if (col !== 0) yPos = rowTop + blockHeight;
   }
 
   // Add footer to all pages
