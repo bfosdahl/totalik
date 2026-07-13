@@ -314,51 +314,8 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
   }
 
   // Endringshistorikk — compact timeline built from timestamps and known responsibles
-  const history: Array<{ date: string; event: string; who: string }> = [];
-  if (avvik.created_at) {
-    history.push({
-      date: format(new Date(avvik.created_at), "dd.MM.yyyy HH:mm", { locale: nb }),
-      event: "Avvik opprettet",
-      who: avvik.reported_by_name || "-",
-    });
-  }
-  if (corrective) {
-    history.push({
-      date: updatedLabel || "-",
-      event: "Korrigerende tiltak registrert",
-      who: responsibleLabel,
-    });
-  }
-  if (avvik.preventive_action) {
-    history.push({
-      date: updatedLabel || "-",
-      event: "Forebyggende tiltak registrert",
-      who: responsibleLabel,
-    });
-  }
-  if (avvik.updated_at && avvik.updated_at !== avvik.created_at && !corrective && !avvik.preventive_action) {
-    history.push({
-      date: updatedLabel || "-",
-      event: "Avvik oppdatert",
-      who: responsibleLabel,
-    });
-  }
-  if (closure) {
-    history.push({
-      date: avvik.closed_at
-        ? format(new Date(avvik.closed_at), "dd.MM.yyyy HH:mm", { locale: nb })
-        : (updatedLabel || "-"),
-      event: "Lukkekommentar lagt til",
-      who: avvik.closed_by_name || responsibleLabel,
-    });
-  }
-  if (avvik.closed_at && avvik.closed_by_name) {
-    history.push({
-      date: format(new Date(avvik.closed_at), "dd.MM.yyyy HH:mm", { locale: nb }),
-      event: "Avvik lukket",
-      who: avvik.closed_by_name,
-    });
-  }
+  const history = buildAvvikHistoryRows(avvik as any);
+
 
   if (history.length > 0) {
     if (yPos > 230) { doc.addPage(); yPos = 20; }
