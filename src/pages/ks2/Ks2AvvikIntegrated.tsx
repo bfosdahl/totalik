@@ -601,6 +601,7 @@ function AvvikContent({
   handleCloseAvvik,
   handleDeleteAvvik,
   handleDownloadAvvikPdf,
+  handleViewAvvik,
   project,
   company,
   accentColor,
@@ -618,6 +619,7 @@ function AvvikContent({
   handleCloseAvvik: (a: KsModule2Avvik) => void;
   handleDeleteAvvik: (id: string) => void;
   handleDownloadAvvikPdf: (a: KsModule2Avvik) => void;
+  handleViewAvvik: (a: KsModule2Avvik) => void;
   project: KsModule2Project | null;
   company: any;
   accentColor: "primary" | "emerald";
