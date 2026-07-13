@@ -87,7 +87,9 @@ export default function Ks2AvvikIntegrated() {
   const [pendingPhotos, setPendingPhotos] = useState<{ path: string; previewUrl: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [project, setProject] = useState<KsModule2Project | null>(null);
-  const [viewAvvik, setViewAvvik] = useState<KsModule2Avvik | null>(null);
+  const [viewAvvikId, setViewAvvikId] = useState<string | null>(null);
+  const viewAvvik = viewAvvikId ? avvikList.find((a) => a.id === viewAvvikId) ?? null : null;
+  const setViewAvvik = (a: KsModule2Avvik | null) => setViewAvvikId(a?.id ?? null);
   const [viewPhotoUrls, setViewPhotoUrls] = useState<string[]>([]);
   const [closingAvvik, setClosingAvvik] = useState<KsModule2Avvik | null>(null);
   const [closeComment, setCloseComment] = useState("");
