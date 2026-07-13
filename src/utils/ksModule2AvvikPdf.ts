@@ -44,15 +44,6 @@ async function pathToDataUrl(
   }
 }
 
-function splitClosureComment(text: string | null | undefined): { corrective: string; closure: string | null } {
-  if (!text) return { corrective: "", closure: null };
-  const idx = text.indexOf(CLOSURE_PREFIX);
-  if (idx === -1) return { corrective: text, closure: null };
-  const closure = text.slice(idx + CLOSURE_PREFIX.length).trim();
-  const corrective = text.slice(0, idx).trim();
-  return { corrective, closure: closure || null };
-}
-
 interface Company {
   name: string;
   address?: string | null;
@@ -72,18 +63,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   annet: "Annet",
 };
 
-const SEVERITY_LABELS: Record<string, string> = {
-  low: "Lav",
-  medium: "Medium",
-  high: "Høy",
-  critical: "Kritisk",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  open: "Åpen",
-  in_progress: "Under arbeid",
-  closed: "Lukket",
-};
+const SEVERITY_LABELS = AVVIK_SEVERITY_LABELS;
+const STATUS_LABELS = AVVIK_STATUS_LABELS;
 
 interface GenerateAvvikPdfOptions {
   avvik: KsModule2Avvik;
