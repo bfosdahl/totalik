@@ -254,6 +254,8 @@ export function DeviationDetailDialog({
         title: editTitle.trim(),
         description: editDescription.trim(),
         priority: editPriority,
+        category: editCategory,
+        due_date: editDueDate || undefined,
       });
       if (success) {
         setIsEditing(false);
@@ -264,6 +266,36 @@ export function DeviationDetailDialog({
       }
     } finally {
       setIsSavingEdit(false);
+    }
+  };
+
+  // Intercept status changes: require a closure comment when closing an avvik
+  const handleStatusSelect = (newStatus: Deviation["status"]) => {
+    if (newStatus === "closed" && deviation.status !== "closed") {
+      setClosureComment("");
+      setClosureDialogOpen(true);
+      return;
+    }
+    onStatusChange(deviation.id, newStatus);
+  };
+
+  const handleConfirmClosure = async () => {
+    if (!closureComment.trim()) {
+      toast({
+        title: "Kommentar mangler",
+        description: "Skriv en kort beskrivelse av hvordan avviket ble løst.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsClosing(true);
+    try {
+      await addComment(`🔒 Lukkekommentar: ${closureComment.trim()}`);
+      onStatusChange(deviation.id, "closed");
+      setClosureDialogOpen(false);
+      setClosureComment("");
+    } finally {
+      setIsClosing(false);
     }
   };
 
