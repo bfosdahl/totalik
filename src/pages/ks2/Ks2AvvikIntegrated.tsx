@@ -622,7 +622,7 @@ export default function Ks2AvvikIntegrated() {
                 <div>
                   <Label className="text-xs">Bilder ({viewAvvik.photo_paths.length})</Label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
-                    {viewAvvik.photo_paths.map((url, i) => (
+                    {viewPhotoUrls.map((url, i) => (
                       <a key={i} href={url} target="_blank" rel="noopener noreferrer">
                         <img src={url} alt={`Bilde ${i + 1}`} className="w-full h-32 object-cover rounded-md border" />
                       </a>
