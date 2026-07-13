@@ -326,6 +326,7 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
     let col = 0;
     let rowTop = yPos;
 
+    const failedPhotosInline: PhotoLoadFailure[] = [];
     for (let i = 0; i < photoPaths.length; i++) {
       const p = photoPaths[i];
       const img = await pathToDataUrl(p);
@@ -350,14 +351,16 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
       doc.text(fileName, x, rowTop + 8);
       doc.setTextColor(0, 0, 0);
 
-      if (img) {
+      if (img.ok) {
         try {
           doc.addImage(img.dataUrl, img.type, x, rowTop + captionHeight, imgWidth, imgHeight, undefined, "FAST");
         } catch {
+          failedPhotosInline.push({ path: p, reason: "decode" });
           doc.setFontSize(8);
           doc.text("(kunne ikke laste bilde)", x, rowTop + captionHeight + 10);
         }
       } else {
+        failedPhotosInline.push({ path: p, reason: img.reason });
         doc.setFontSize(8);
         doc.text("(bilde utilgjengelig)", x, rowTop + captionHeight + 10);
       }
@@ -369,6 +372,7 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
       }
     }
     if (col !== 0) yPos = rowTop + blockHeight;
+    failedPhotos.push(...failedPhotosInline);
   }
 
   // Add footer to all pages
@@ -377,7 +381,7 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
   const fileName = `Avvik_${avvik.avvik_number}_${project.project_number}_${format(new Date(), "yyyyMMdd")}.pdf`;
   const blob = doc.output("blob");
 
-  return { blob, fileName };
+  return { blob, fileName, failedPhotos };
 }
 
 export async function downloadKsModule2AvvikPdf(options: GenerateAvvikPdfOptions): Promise<void> {
