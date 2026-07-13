@@ -531,24 +531,54 @@ export function DeviationDetailDialog({
         </DialogHeader>
 
         <div className="space-y-4 sm:space-y-6 overflow-y-auto flex-1 min-h-0 pr-1">
-          {/* Priority selector in edit mode */}
+          {/* Priority / Category / Due date selectors in edit mode */}
           {isEditing && (
-            <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
-              <div className="flex items-center gap-2">
-                <Flag className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Prioritet</span>
+            <div className="space-y-3 p-4 bg-secondary/30 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Flag className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Prioritet</span>
+                </div>
+                <Select value={editPriority} onValueChange={(v) => setEditPriority(v as Deviation["priority"])}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Lav</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">Høy</SelectItem>
+                    <SelectItem value="critical">Kritisk</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <Select value={editPriority} onValueChange={(v) => setEditPriority(v as Deviation["priority"])}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Lav</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">Høy</SelectItem>
-                  <SelectItem value="critical">Kritisk</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Kategori</span>
+                </div>
+                <Select value={editCategory} onValueChange={(v) => setEditCategory(v as DeviationCategory)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {editableCategories.map(c => (
+                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Frist</span>
+                </div>
+                <Input
+                  type="date"
+                  value={editDueDate}
+                  onChange={(e) => setEditDueDate(e.target.value)}
+                  className="w-[180px]"
+                />
+              </div>
             </div>
           )}
 
@@ -560,8 +590,14 @@ export function DeviationDetailDialog({
             </div>
             <Select 
               value={deviation.status} 
-              onValueChange={(value) => onStatusChange(deviation.id, value as Deviation["status"])}
+              onValueChange={(value) => handleStatusSelect(value as Deviation["status"])}
             >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="open">Åpen</SelectItem>
+                <SelectItem value="in-progress">Under arbeid</SelectItem>
               <SelectTrigger className="w-[180px]">
                 <SelectValue />
               </SelectTrigger>
