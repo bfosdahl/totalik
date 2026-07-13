@@ -327,6 +327,79 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
     yPos += 8;
   }
 
+  // Endringshistorikk — compact timeline built from timestamps and known responsibles
+  const history: Array<{ date: string; event: string; who: string }> = [];
+  if (avvik.created_at) {
+    history.push({
+      date: format(new Date(avvik.created_at), "dd.MM.yyyy HH:mm", { locale: nb }),
+      event: "Avvik opprettet",
+      who: avvik.reported_by_name || "-",
+    });
+  }
+  if (corrective) {
+    history.push({
+      date: updatedLabel || "-",
+      event: "Korrigerende tiltak registrert",
+      who: responsibleLabel,
+    });
+  }
+  if (avvik.preventive_action) {
+    history.push({
+      date: updatedLabel || "-",
+      event: "Forebyggende tiltak registrert",
+      who: responsibleLabel,
+    });
+  }
+  if (avvik.updated_at && avvik.updated_at !== avvik.created_at && !corrective && !avvik.preventive_action) {
+    history.push({
+      date: updatedLabel || "-",
+      event: "Avvik oppdatert",
+      who: responsibleLabel,
+    });
+  }
+  if (closure) {
+    history.push({
+      date: avvik.closed_at
+        ? format(new Date(avvik.closed_at), "dd.MM.yyyy HH:mm", { locale: nb })
+        : (updatedLabel || "-"),
+      event: "Lukkekommentar lagt til",
+      who: avvik.closed_by_name || responsibleLabel,
+    });
+  }
+  if (avvik.closed_at && avvik.closed_by_name) {
+    history.push({
+      date: format(new Date(avvik.closed_at), "dd.MM.yyyy HH:mm", { locale: nb }),
+      event: "Avvik lukket",
+      who: avvik.closed_by_name,
+    });
+  }
+
+  if (history.length > 0) {
+    if (yPos > 230) { doc.addPage(); yPos = 20; }
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text("Endringshistorikk", 15, yPos);
+    yPos += 4;
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [["Dato", "Hendelse", "Ansvarlig"]],
+      body: history.map(h => [h.date, h.event, h.who]),
+      theme: "grid",
+      styles: { fontSize: 8, cellPadding: 2.5 },
+      headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: "bold", fontSize: 8 },
+      columnStyles: {
+        0: { cellWidth: 38 },
+        1: { cellWidth: 92 },
+        2: { cellWidth: 50 },
+      },
+    });
+    yPos = (doc as any).lastAutoTable.finalY + 8;
+  }
+
+
+
   // Photos - each with a clear title in the same order as shown in the View/Close dialog
   const photoPaths: string[] = Array.isArray((avvik as any).photo_paths) ? (avvik as any).photo_paths : [];
   if (photoPaths.length > 0) {
