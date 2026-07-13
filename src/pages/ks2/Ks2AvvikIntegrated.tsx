@@ -139,7 +139,7 @@ export default function Ks2AvvikIntegrated() {
     if (!files || files.length === 0) return;
     
     setUploadingPhotos(true);
-    const uploadedPaths: string[] = [];
+    const uploaded: { path: string; previewUrl: string }[] = [];
     
     try {
       for (const file of Array.from(files)) {
@@ -154,13 +154,13 @@ export default function Ks2AvvikIntegrated() {
         
         const { data: signedUrlData, error: signedUrlError } = await supabase.storage
           .from('ks-module2-avvik-photos')
-          .createSignedUrl(fileName, 86400); // 24 hour expiry
+          .createSignedUrl(fileName, 3600);
           
         if (signedUrlError) throw signedUrlError;
-        uploadedPaths.push(signedUrlData.signedUrl);
+        uploaded.push({ path: fileName, previewUrl: signedUrlData.signedUrl });
       }
       
-      setPendingPhotos(prev => [...prev, ...uploadedPaths]);
+      setPendingPhotos(prev => [...prev, ...uploaded]);
       toast.success(`${files.length} bilde(r) lastet opp`);
     } catch (error) {
       console.error('Error uploading photos:', error);
