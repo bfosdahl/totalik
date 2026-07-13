@@ -105,6 +105,31 @@ export default function Ks2AvvikIntegrated() {
         });
     }
   }, [projectId]);
+
+  // Resolve stored photo paths to signed URLs when opening the view dialog.
+  // Legacy records may already contain a full URL — pass those through.
+  useEffect(() => {
+    let cancelled = false;
+    async function resolve() {
+      if (!viewAvvik?.photo_paths || viewAvvik.photo_paths.length === 0) {
+        setViewPhotoUrls([]);
+        return;
+      }
+      const urls = await Promise.all(
+        viewAvvik.photo_paths.map(async (p) => {
+          if (/^https?:\/\//i.test(p)) return p;
+          const { data, error } = await supabase.storage
+            .from('ks-module2-avvik-photos')
+            .createSignedUrl(p, 3600);
+          if (error || !data) return '';
+          return data.signedUrl;
+        })
+      );
+      if (!cancelled) setViewPhotoUrls(urls.filter(Boolean));
+    }
+    resolve();
+    return () => { cancelled = true; };
+  }, [viewAvvik]);
   
   const [newAvvik, setNewAvvik] = useState({
     title: "",
