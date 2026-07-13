@@ -94,6 +94,7 @@ export default function Ks2AvvikIntegrated() {
   const [closingAvvik, setClosingAvvik] = useState<KsModule2Avvik | null>(null);
   const [closeComment, setCloseComment] = useState("");
   const [isClosing, setIsClosing] = useState(false);
+  const [pdfLoadingId, setPdfLoadingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (projectId) {
@@ -279,9 +280,18 @@ export default function Ks2AvvikIntegrated() {
 
 
   const handleDownloadAvvikPdf = async (avvik: KsModule2Avvik) => {
-    if (!project || !company) return;
+    if (!project || !company) {
+      toast.error("Kan ikke lage PDF", { description: "Mangler prosjekt- eller bedriftsdata." });
+      return;
+    }
+    setPdfLoadingId(avvik.id);
+    const loadingToast = toast.loading(`Genererer PDF for ${avvik.avvik_number}…`, {
+      description: (avvik.photo_paths?.length ?? 0) > 0
+        ? `Henter ${avvik.photo_paths!.length} bilde(r) fra lager…`
+        : "Bygger dokument…",
+    });
     try {
-      await downloadKsModule2AvvikPdf({
+      const { failedPhotos } = await downloadKsModule2AvvikPdf({
         avvik,
         project,
         company: {
@@ -294,10 +304,31 @@ export default function Ks2AvvikIntegrated() {
           email: company.email,
         },
       });
-      toast.success("PDF lastet ned");
-    } catch (e) {
-      console.error(e);
-      toast.error("Kunne ikke lage PDF");
+      toast.dismiss(loadingToast);
+      if (failedPhotos.length > 0) {
+        const signCount = failedPhotos.filter(f => f.reason === "sign").length;
+        const fetchCount = failedPhotos.filter(f => f.reason === "fetch" || f.reason === "decode").length;
+        const parts: string[] = [];
+        if (signCount) parts.push(`${signCount} bilde-signering feilet`);
+        if (fetchCount) parts.push(`${fetchCount} bilde kunne ikke lastes`);
+        toast.warning("PDF lastet ned med advarsler", {
+          description: `${parts.join(" · ")}. Bildene mangler i PDF-en.`,
+          action: { label: "Prøv igjen", onClick: () => handleDownloadAvvikPdf(avvik) },
+          duration: 10000,
+        });
+      } else {
+        toast.success("PDF lastet ned");
+      }
+    } catch (e: any) {
+      console.error("PDF generation failed:", e);
+      toast.dismiss(loadingToast);
+      toast.error("Kunne ikke lage PDF", {
+        description: e?.message || "Ukjent feil under generering.",
+        action: { label: "Prøv igjen", onClick: () => handleDownloadAvvikPdf(avvik) },
+        duration: 10000,
+      });
+    } finally {
+      setPdfLoadingId(null);
     }
   };
 
@@ -399,6 +430,7 @@ export default function Ks2AvvikIntegrated() {
             handleCloseAvvik={handleCloseAvvik}
             handleDeleteAvvik={handleDeleteAvvik}
             handleDownloadAvvikPdf={handleDownloadAvvikPdf}
+            pdfLoadingId={pdfLoadingId}
             handleViewAvvik={setViewAvvik}
             project={project}
             company={company}
@@ -421,6 +453,7 @@ export default function Ks2AvvikIntegrated() {
             handleCloseAvvik={handleCloseAvvik}
             handleDeleteAvvik={handleDeleteAvvik}
             handleDownloadAvvikPdf={handleDownloadAvvikPdf}
+            pdfLoadingId={pdfLoadingId}
             handleViewAvvik={setViewAvvik}
             project={project}
             company={company}
@@ -709,6 +742,7 @@ function AvvikContent({
   handleCloseAvvik,
   handleDeleteAvvik,
   handleDownloadAvvikPdf,
+  pdfLoadingId,
   handleViewAvvik,
   project,
   company,
@@ -727,6 +761,7 @@ function AvvikContent({
   handleCloseAvvik: (a: KsModule2Avvik) => void;
   handleDeleteAvvik: (id: string) => void;
   handleDownloadAvvikPdf: (a: KsModule2Avvik) => void;
+  pdfLoadingId: string | null;
   handleViewAvvik: (a: KsModule2Avvik) => void;
   project: KsModule2Project | null;
   company: any;
@@ -877,9 +912,19 @@ function AvvikContent({
                       <Eye className="h-4 w-4 mr-1" />
                       Vis
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDownloadAvvikPdf(avvik)}>
-                      <FileDown className="h-4 w-4 mr-1" />
-                      PDF
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownloadAvvikPdf(avvik)}
+                      disabled={pdfLoadingId === avvik.id}
+                      aria-busy={pdfLoadingId === avvik.id}
+                    >
+                      {pdfLoadingId === avvik.id ? (
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      ) : (
+                        <FileDown className="h-4 w-4 mr-1" />
+                      )}
+                      {pdfLoadingId === avvik.id ? "Genererer…" : "PDF"}
                     </Button>
                     {avvik.status !== "closed" && (
                       <Button 

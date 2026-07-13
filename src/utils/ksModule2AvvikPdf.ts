@@ -9,18 +9,22 @@ import { supabase } from "@/integrations/supabase/client";
 
 const CLOSURE_PREFIX = "🔒 Lukkekommentar:";
 
-async function pathToDataUrl(pathOrUrl: string): Promise<{ dataUrl: string; type: string } | null> {
+export type PhotoLoadFailure = { path: string; reason: "sign" | "fetch" | "decode" };
+
+async function pathToDataUrl(
+  pathOrUrl: string
+): Promise<{ ok: true; dataUrl: string; type: string } | { ok: false; reason: PhotoLoadFailure["reason"] }> {
   try {
     let url = pathOrUrl;
     if (!/^https?:\/\//i.test(pathOrUrl)) {
       const { data, error } = await supabase.storage
         .from("ks-module2-avvik-photos")
         .createSignedUrl(pathOrUrl, 3600);
-      if (error || !data?.signedUrl) return null;
+      if (error || !data?.signedUrl) return { ok: false, reason: "sign" };
       url = data.signedUrl;
     }
     const res = await fetch(url);
-    if (!res.ok) return null;
+    if (!res.ok) return { ok: false, reason: "fetch" };
     const blob = await res.blob();
     const type = blob.type.includes("png") ? "PNG" : "JPEG";
     const dataUrl: string = await new Promise((resolve, reject) => {
@@ -29,9 +33,9 @@ async function pathToDataUrl(pathOrUrl: string): Promise<{ dataUrl: string; type
       r.onerror = reject;
       r.readAsDataURL(blob);
     });
-    return { dataUrl, type };
+    return { ok: true, dataUrl, type };
   } catch {
-    return null;
+    return { ok: false, reason: "decode" };
   }
 }
 
@@ -82,9 +86,11 @@ interface GenerateAvvikPdfOptions {
   company: Company;
 }
 
-export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions): Promise<{ blob: Blob; fileName: string }> {
+export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions): Promise<{ blob: Blob; fileName: string; failedPhotos: PhotoLoadFailure[] }> {
   const { avvik, project, company } = options;
   const doc = new jsPDF();
+  const failedPhotos: PhotoLoadFailure[] = [];
+
 
   const headerInfo: PdfHeaderInfo = {
     documentType: "AVVIKSMELDING",
@@ -322,6 +328,7 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
     let col = 0;
     let rowTop = yPos;
 
+    const failedPhotosInline: PhotoLoadFailure[] = [];
     for (let i = 0; i < photoPaths.length; i++) {
       const p = photoPaths[i];
       const img = await pathToDataUrl(p);
@@ -346,14 +353,16 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
       doc.text(fileName, x, rowTop + 8);
       doc.setTextColor(0, 0, 0);
 
-      if (img) {
+      if (img.ok) {
         try {
           doc.addImage(img.dataUrl, img.type, x, rowTop + captionHeight, imgWidth, imgHeight, undefined, "FAST");
         } catch {
+          failedPhotosInline.push({ path: p, reason: "decode" });
           doc.setFontSize(8);
           doc.text("(kunne ikke laste bilde)", x, rowTop + captionHeight + 10);
         }
       } else {
+        failedPhotosInline.push({ path: p, reason: (img as { reason: PhotoLoadFailure["reason"] }).reason });
         doc.setFontSize(8);
         doc.text("(bilde utilgjengelig)", x, rowTop + captionHeight + 10);
       }
@@ -365,6 +374,7 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
       }
     }
     if (col !== 0) yPos = rowTop + blockHeight;
+    failedPhotos.push(...failedPhotosInline);
   }
 
   // Add footer to all pages
@@ -373,17 +383,20 @@ export async function generateKsModule2AvvikPdf(options: GenerateAvvikPdfOptions
   const fileName = `Avvik_${avvik.avvik_number}_${project.project_number}_${format(new Date(), "yyyyMMdd")}.pdf`;
   const blob = doc.output("blob");
 
-  return { blob, fileName };
+  return { blob, fileName, failedPhotos };
 }
 
-export async function downloadKsModule2AvvikPdf(options: GenerateAvvikPdfOptions): Promise<void> {
-  const { blob, fileName } = await generateKsModule2AvvikPdf(options);
+export async function downloadKsModule2AvvikPdf(
+  options: GenerateAvvikPdfOptions
+): Promise<{ failedPhotos: PhotoLoadFailure[] }> {
+  const { blob, fileName, failedPhotos } = await generateKsModule2AvvikPdf(options);
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
   link.download = fileName;
   link.click();
   URL.revokeObjectURL(url);
+  return { failedPhotos };
 }
 
 // Export multiple avvik to PDF
