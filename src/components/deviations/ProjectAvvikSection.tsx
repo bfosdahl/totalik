@@ -98,24 +98,35 @@ export function ProjectAvvikSection() {
       </div>
       <div className="divide-y divide-border">
         {visible.map((r) => (
-          <Link
+          <div
             key={r.id}
-            to={`/ks/project/${r.project_id}/avvik`}
-            className="flex items-center gap-3 p-4 hover:bg-muted/50 transition-colors"
+            className="flex items-start gap-3 p-4 hover:bg-muted/30 transition-colors"
           >
             <div className="flex-1 min-w-0">
+              <Link
+                to={`/ks/project/${r.project_id}`}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline mb-2"
+              >
+                <FolderKanban className="w-3.5 h-3.5" />
+                {r.project_number ? `${r.project_number} · ` : ""}
+                {r.project_name || "Ukjent prosjekt"}
+              </Link>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-mono text-muted-foreground">{r.avvik_number}</span>
                 <Badge className={severityColor[r.severity] || "bg-muted"}>{r.severity}</Badge>
                 <Badge variant="outline">{statusLabel[r.status] || r.status}</Badge>
+                <span className="text-xs text-muted-foreground">
+                  {format(new Date(r.discovered_date), "dd.MM.yyyy")}
+                </span>
               </div>
               <p className="font-medium mt-1 truncate">{r.title}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {r.project_number} · {r.project_name} · {format(new Date(r.discovered_date), "dd.MM.yyyy")}
-              </p>
             </div>
-            <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          </Link>
+            <Button asChild variant="outline" size="sm" className="flex-shrink-0">
+              <Link to={`/ks/project/${r.project_id}/avvik`}>
+                Åpne <ExternalLink className="w-3.5 h-3.5 ml-1" />
+              </Link>
+            </Button>
+          </div>
         ))}
       </div>
     </div>
