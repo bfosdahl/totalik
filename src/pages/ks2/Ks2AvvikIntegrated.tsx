@@ -249,11 +249,6 @@ export default function Ks2AvvikIntegrated() {
     }
   };
 
-  const handleDeleteAvvik = (id: string) => {
-    if (confirm("Er du sikker på at du vil slette dette avviket?")) {
-      deleteAvvik(id);
-    }
-  };
 
   const handleDownloadAvvikPdf = (avvik: KsModule2Avvik) => {
     if (!project || !company) return;
