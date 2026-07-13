@@ -818,6 +818,38 @@ export function DeviationDetailDialog({
         users={emailUsers}
         companyName={company?.name}
       />
+
+      {/* Closure comment dialog */}
+      <Dialog open={closureDialogOpen} onOpenChange={(open) => {
+        if (!isClosing) setClosureDialogOpen(open);
+      }}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Lukk avvik</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">
+              Beskriv kort hvordan avviket ble løst eller lukket. Kommentaren lagres på avviket.
+            </p>
+            <Textarea
+              value={closureComment}
+              onChange={(e) => setClosureComment(e.target.value)}
+              placeholder="F.eks. Feilen ble utbedret, rutinen oppdatert og informert til teamet."
+              className="min-h-[120px]"
+              autoFocus
+            />
+          </div>
+          <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setClosureDialogOpen(false)} disabled={isClosing}>
+              Avbryt
+            </Button>
+            <Button onClick={handleConfirmClosure} disabled={isClosing || !closureComment.trim()}>
+              {isClosing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ClipboardCheck className="w-4 h-4 mr-2" />}
+              Lukk avvik
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
