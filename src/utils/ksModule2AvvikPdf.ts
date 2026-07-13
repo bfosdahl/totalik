@@ -6,8 +6,13 @@ import { generatePdfHeader, addPdfFooter, PdfHeaderInfo } from "./ksModule2PdfHe
 import { KsModule2Avvik } from "@/hooks/useKsModule2Avvik";
 import { KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { supabase } from "@/integrations/supabase/client";
-
-const CLOSURE_PREFIX = "🔒 Lukkekommentar:";
+import {
+  splitClosureComment,
+  buildAvvikHistoryRows,
+  CLOSURE_PREFIX,
+  AVVIK_STATUS_LABELS,
+  AVVIK_SEVERITY_LABELS,
+} from "./avvikHistory";
 
 export type PhotoLoadFailure = { path: string; reason: "sign" | "fetch" | "decode" };
 
