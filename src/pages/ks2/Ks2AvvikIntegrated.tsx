@@ -131,7 +131,7 @@ export default function Ks2AvvikIntegrated() {
     }
     resolve();
     return () => { cancelled = true; };
-  }, [viewAvvik]);
+  }, [viewAvvikId, JSON.stringify(viewAvvik?.photo_paths ?? [])]);
   
   const [newAvvik, setNewAvvik] = useState({
     title: "",
