@@ -263,9 +263,10 @@ export function exportTimeEntriesToExcel(
     const s = map.get(e.user_id)!;
     const h = Number(e.hours) || 0;
     s.total_hours += h;
-    if (e.hour_type === "overtime_50") s.overtime_50_hours = (s.overtime_50_hours || 0) + h;
-    else if (e.hour_type === "overtime_100") s.overtime_100_hours = (s.overtime_100_hours || 0) + h;
-    else s.normal_hours = (s.normal_hours || 0) + h;
+    const b = getHourBreakdown(e);
+    s.normal_hours = (s.normal_hours || 0) + b.normal;
+    s.overtime_50_hours = (s.overtime_50_hours || 0) + b.overtime_50;
+    s.overtime_100_hours = (s.overtime_100_hours || 0) + b.overtime_100;
   });
   exportPayrollGeneric(entries, Array.from(map.values()), companyName, startDate, endDate);
 }
