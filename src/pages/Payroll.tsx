@@ -23,6 +23,7 @@ import {
   type EmployeeSummary,
   type AllowanceDetailRow,
 } from "@/utils/timeEntryExport";
+import { getHourBreakdown } from "@/utils/hourBreakdown";
 import { Navigate } from "react-router-dom";
 import { AdminEditTimeEntryDialog, type AdminEditableEntry } from "@/components/timeregistration/AdminEditTimeEntryDialog";
 import { Pencil } from "lucide-react";
