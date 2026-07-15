@@ -94,7 +94,7 @@ export default function TimeOversikt() {
       // Hent registreringer
       let q = supabase
         .from("time_entries")
-        .select("id, user_id, user_name, entry_date, hours, start_time, end_time, project_name, description, status, approved_by_name, approved_at, hour_type")
+        .select("id, user_id, user_name, entry_date, hours, start_time, end_time, project_name, description, status, approved_by_name, approved_at, hour_type, overtime_segments")
         .eq("company_id", profile.company_id)
         .gte("entry_date", start)
         .lte("entry_date", end);
