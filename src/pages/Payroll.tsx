@@ -233,15 +233,11 @@ export default function Payroll() {
       const rec = map.get(r.user_id)!;
       const h = Number(r.hours) || 0;
       rec.total_hours += h;
-      if (r.hour_type === "overtime_50") {
-        rec.overtime_50_hours = (rec.overtime_50_hours ?? 0) + h;
-        rec.overtime_hours = (rec.overtime_hours ?? 0) + h;
-      } else if (r.hour_type === "overtime_100") {
-        rec.overtime_100_hours = (rec.overtime_100_hours ?? 0) + h;
-        rec.overtime_hours = (rec.overtime_hours ?? 0) + h;
-      } else {
-        rec.normal_hours = (rec.normal_hours ?? 0) + h;
-      }
+      const b = getHourBreakdown(r);
+      rec.normal_hours = (rec.normal_hours ?? 0) + b.normal;
+      rec.overtime_50_hours = (rec.overtime_50_hours ?? 0) + b.overtime_50;
+      rec.overtime_100_hours = (rec.overtime_100_hours ?? 0) + b.overtime_100;
+      rec.overtime_hours = (rec.overtime_hours ?? 0) + b.overtime_50 + b.overtime_100;
       rec.allowances_amount += allowanceMap.get(r.id) || 0;
       const proj = r.project_name || "Uten prosjekt";
       rec.perProject.set(proj, (rec.perProject.get(proj) || 0) + h);
