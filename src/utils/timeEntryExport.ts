@@ -147,7 +147,7 @@ export function exportPayrollGeneric(
     Fra: fmtTime(entry.start_time),
     Til: fmtTime(entry.end_time),
     Timer: Number(entry.hours),
-    Type: hourTypeLabel(entry.hour_type),
+    Type: hourBreakdownLabel(entry),
     Prosjekt: entry.project_name || "-",
     Beskrivelse: entry.description || "-",
     Status: statusLabels[entry.status] || entry.status,
