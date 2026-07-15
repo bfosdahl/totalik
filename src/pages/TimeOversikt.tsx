@@ -194,15 +194,11 @@ export default function TimeOversikt() {
         const s = sumMap.get(e.user_id)!;
         const h = Number(e.hours) || 0;
         s.total_hours += h;
-        if (e.hour_type === "overtime_50") {
-          s.overtime_50_hours = (s.overtime_50_hours || 0) + h;
-          s.overtime_hours = (s.overtime_hours || 0) + h;
-        } else if (e.hour_type === "overtime_100") {
-          s.overtime_100_hours = (s.overtime_100_hours || 0) + h;
-          s.overtime_hours = (s.overtime_hours || 0) + h;
-        } else {
-          s.normal_hours = (s.normal_hours || 0) + h;
-        }
+        const b = getHourBreakdown(e);
+        s.normal_hours = (s.normal_hours || 0) + b.normal;
+        s.overtime_50_hours = (s.overtime_50_hours || 0) + b.overtime_50;
+        s.overtime_100_hours = (s.overtime_100_hours || 0) + b.overtime_100;
+        s.overtime_hours = (s.overtime_hours || 0) + b.overtime_50 + b.overtime_100;
         s.allowances_amount += e.allowances_amount || 0;
       });
       sumMap.forEach((s) => {
