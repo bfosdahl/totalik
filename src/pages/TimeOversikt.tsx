@@ -166,9 +166,10 @@ export default function TimeOversikt() {
         approved_by_name: r.approved_by_name,
         approved_at: r.approved_at,
         hour_type: r.hour_type,
+        overtime_segments: r.overtime_segments,
         hourly_rate: empMeta.get(r.user_id)?.rate ?? null,
         allowances_amount: allowanceByEntry.get(r.id) || 0,
-        is_overtime: !!(r.hour_type && r.hour_type.startsWith("overtime")),
+        is_overtime: !!(r.hour_type && r.hour_type.startsWith("overtime")) || (Array.isArray(r.overtime_segments) && r.overtime_segments.length > 0),
       }));
 
       const sumMap = new Map<string, EmployeeSummary>();
