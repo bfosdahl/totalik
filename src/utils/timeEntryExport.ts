@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { getHourBreakdown, hourBreakdownLabel } from "./hourBreakdown";
 
 export interface PayrollTimeEntry {
   id: string;
@@ -19,6 +20,7 @@ export interface PayrollTimeEntry {
   allowances_amount?: number;
   hour_type?: string | null;
   is_overtime?: boolean | null;
+  overtime_segments?: any;
 }
 
 export interface AllowanceDetailRow {
@@ -145,7 +147,7 @@ export function exportPayrollGeneric(
     Fra: fmtTime(entry.start_time),
     Til: fmtTime(entry.end_time),
     Timer: Number(entry.hours),
-    Type: hourTypeLabel(entry.hour_type),
+    Type: hourBreakdownLabel(entry),
     Prosjekt: entry.project_name || "-",
     Beskrivelse: entry.description || "-",
     Status: statusLabels[entry.status] || entry.status,
@@ -208,24 +210,24 @@ export function exportPayrollTripletex(
     (a, b) => new Date(a.entry_date).getTime() - new Date(b.entry_date).getTime()
   );
 
-  const rows = sorted.map((entry) => {
+  const rows: Record<string, any>[] = [];
+  sorted.forEach((entry) => {
     const emp = employeesById[entry.user_id] || {};
-    return {
+    const base = {
       Ansattnummer: emp.employee_number || "",
       "E-post": emp.email || "",
       Dato: format(new Date(entry.entry_date), "yyyy-MM-dd"),
-      Timer: Number(entry.hours),
-      Aktivitet:
-        entry.hour_type === "overtime_50"
-          ? "Overtid 50%"
-          : entry.hour_type === "overtime_100"
-            ? "Overtid 100%"
-            : entry.is_overtime
-              ? "Overtid"
-              : "Ordinær arbeidstid",
       Prosjekt: entry.project_name || "",
       Kommentar: entry.description || "",
     };
+    const b = getHourBreakdown(entry);
+    // Split én linje per timetype for korrekt Tripletex-import
+    if (b.normal > 0) rows.push({ ...base, Timer: b.normal, Aktivitet: "Ordinær arbeidstid" });
+    if (b.overtime_50 > 0) rows.push({ ...base, Timer: b.overtime_50, Aktivitet: "Overtid 50%" });
+    if (b.overtime_100 > 0) rows.push({ ...base, Timer: b.overtime_100, Aktivitet: "Overtid 100%" });
+    if (b.normal === 0 && b.overtime_50 === 0 && b.overtime_100 === 0) {
+      rows.push({ ...base, Timer: Number(entry.hours) || 0, Aktivitet: "Ordinær arbeidstid" });
+    }
   });
 
   const wb = XLSX.utils.book_new();
@@ -261,9 +263,10 @@ export function exportTimeEntriesToExcel(
     const s = map.get(e.user_id)!;
     const h = Number(e.hours) || 0;
     s.total_hours += h;
-    if (e.hour_type === "overtime_50") s.overtime_50_hours = (s.overtime_50_hours || 0) + h;
-    else if (e.hour_type === "overtime_100") s.overtime_100_hours = (s.overtime_100_hours || 0) + h;
-    else s.normal_hours = (s.normal_hours || 0) + h;
+    const b = getHourBreakdown(e);
+    s.normal_hours = (s.normal_hours || 0) + b.normal;
+    s.overtime_50_hours = (s.overtime_50_hours || 0) + b.overtime_50;
+    s.overtime_100_hours = (s.overtime_100_hours || 0) + b.overtime_100;
   });
   exportPayrollGeneric(entries, Array.from(map.values()), companyName, startDate, endDate);
 }

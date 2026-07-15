@@ -189,8 +189,9 @@ export function NewTimeEntryDialog({
       }
     }
 
-    // Hvis brukeren har lagt inn overtid-segmenter: split inn i flere føringer
-    // (én pr. type), slik at lønnsgrunnlag og statistikk teller riktig.
+    // Hvis brukeren har lagt inn overtid-segmenter: lagre som ÉN føring med
+    // totale timer + segmenter i jsonb. Da beholdes fra-til, og aggregeringer
+    // (lønn/oversikt/eksport) splitter automatisk via getHourBreakdown().
     if (overtimeSegments.length > 0) {
       const breakdown = computeSegmentBreakdown(hoursNum, overtimeSegments);
       const ot50 = Math.round(breakdown.overtime_50 * 100) / 100;
@@ -210,33 +211,29 @@ export function NewTimeEntryDialog({
         hours: Math.max(0, calcHoursBetween(s.start, s.end)),
       }));
 
-      const baseDescription = description || undefined;
-      const periodLabel = startTime && endTime ? ` (${startTime}–${endTime})` : "";
-      const entries: { hours: number; hour_type: HourType; description?: string; segs?: typeof persistSegments }[] = [];
-      if (normal > 0) entries.push({ hours: normal, hour_type: "normal", description: baseDescription });
-      if (ot50 > 0) entries.push({ hours: ot50, hour_type: "overtime_50", description: `${baseDescription ? baseDescription + " — " : ""}50% overtid${periodLabel}`, segs: persistSegments });
-      if (ot100 > 0) entries.push({ hours: ot100, hour_type: "overtime_100", description: `${baseDescription ? baseDescription + " — " : ""}100% overtid${periodLabel}`, segs: persistSegments });
+      // Setter hoved-hour_type slik at "er dette en overtidsføring"-flagg
+      // fortsatt fungerer. Selve fordelingen leses fra overtime_segments.
+      const primaryHourType: HourType =
+        normal > 0 ? "normal" : ot100 > 0 ? "overtime_100" : "overtime_50";
 
-      let allOk = true;
-      for (const e of entries) {
-        const ok = await onSubmit({
-          entry_date: format(date, "yyyy-MM-dd"),
-          hours: e.hours,
-          hour_type: e.hour_type,
-          project_name: projectName,
-          project_id: projectId,
-          ks_project_id: ksProjectId || null,
-          customer_name: customerName || null,
-          description: e.description,
-          // Bare på første føring lagrer vi tillegg så de ikke dobles
-          allowances: e === entries[0] ? allowances : [],
-          overtime_segments: e.segs,
-          on_behalf_user_id: onBehalfId,
-          on_behalf_user_name: onBehalfName,
-        });
-        if (!ok) { allOk = false; break; }
-      }
-      if (allOk) onOpenChange(false);
+      const ok = await onSubmit({
+        entry_date: format(date, "yyyy-MM-dd"),
+        hours: hoursNum,
+        start_time: startTime || null,
+        end_time: endTime || null,
+        hour_type: primaryHourType,
+        project_name: projectName,
+        project_id: projectId,
+        ks_project_id: ksProjectId || null,
+        customer_name: customerName || null,
+        description: description || undefined,
+        allowances,
+        overtime_segments: persistSegments,
+        on_behalf_user_id: onBehalfId,
+        on_behalf_user_name: onBehalfName,
+      });
+
+      if (ok) onOpenChange(false);
       setIsSubmitting(false);
       return;
     }

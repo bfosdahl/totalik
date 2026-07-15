@@ -21,6 +21,7 @@ import {
   type EmployeeSummary,
   type AllowanceDetailRow,
 } from "@/utils/timeEntryExport";
+import { getHourBreakdown } from "@/utils/hourBreakdown";
 
 type Preset = "this_week" | "last_week" | "this_month" | "last_month" | "custom";
 
@@ -94,7 +95,7 @@ export default function TimeOversikt() {
       // Hent registreringer
       let q = supabase
         .from("time_entries")
-        .select("id, user_id, user_name, entry_date, hours, start_time, end_time, project_name, description, status, approved_by_name, approved_at, hour_type")
+        .select("id, user_id, user_name, entry_date, hours, start_time, end_time, project_name, description, status, approved_by_name, approved_at, hour_type, overtime_segments")
         .eq("company_id", profile.company_id)
         .gte("entry_date", start)
         .lte("entry_date", end);
@@ -166,9 +167,10 @@ export default function TimeOversikt() {
         approved_by_name: r.approved_by_name,
         approved_at: r.approved_at,
         hour_type: r.hour_type,
+        overtime_segments: r.overtime_segments,
         hourly_rate: empMeta.get(r.user_id)?.rate ?? null,
         allowances_amount: allowanceByEntry.get(r.id) || 0,
-        is_overtime: !!(r.hour_type && r.hour_type.startsWith("overtime")),
+        is_overtime: !!(r.hour_type && r.hour_type.startsWith("overtime")) || (Array.isArray(r.overtime_segments) && r.overtime_segments.length > 0),
       }));
 
       const sumMap = new Map<string, EmployeeSummary>();
@@ -193,15 +195,11 @@ export default function TimeOversikt() {
         const s = sumMap.get(e.user_id)!;
         const h = Number(e.hours) || 0;
         s.total_hours += h;
-        if (e.hour_type === "overtime_50") {
-          s.overtime_50_hours = (s.overtime_50_hours || 0) + h;
-          s.overtime_hours = (s.overtime_hours || 0) + h;
-        } else if (e.hour_type === "overtime_100") {
-          s.overtime_100_hours = (s.overtime_100_hours || 0) + h;
-          s.overtime_hours = (s.overtime_hours || 0) + h;
-        } else {
-          s.normal_hours = (s.normal_hours || 0) + h;
-        }
+        const b = getHourBreakdown(e);
+        s.normal_hours = (s.normal_hours || 0) + b.normal;
+        s.overtime_50_hours = (s.overtime_50_hours || 0) + b.overtime_50;
+        s.overtime_100_hours = (s.overtime_100_hours || 0) + b.overtime_100;
+        s.overtime_hours = (s.overtime_hours || 0) + b.overtime_50 + b.overtime_100;
         s.allowances_amount += e.allowances_amount || 0;
       });
       sumMap.forEach((s) => {
