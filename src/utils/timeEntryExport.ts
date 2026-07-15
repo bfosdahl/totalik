@@ -20,6 +20,7 @@ export interface PayrollTimeEntry {
   allowances_amount?: number;
   hour_type?: string | null;
   is_overtime?: boolean | null;
+  overtime_segments?: any;
 }
 
 export interface AllowanceDetailRow {
