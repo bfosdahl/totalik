@@ -210,24 +210,24 @@ export function exportPayrollTripletex(
     (a, b) => new Date(a.entry_date).getTime() - new Date(b.entry_date).getTime()
   );
 
-  const rows = sorted.map((entry) => {
+  const rows: Record<string, any>[] = [];
+  sorted.forEach((entry) => {
     const emp = employeesById[entry.user_id] || {};
-    return {
+    const base = {
       Ansattnummer: emp.employee_number || "",
       "E-post": emp.email || "",
       Dato: format(new Date(entry.entry_date), "yyyy-MM-dd"),
-      Timer: Number(entry.hours),
-      Aktivitet:
-        entry.hour_type === "overtime_50"
-          ? "Overtid 50%"
-          : entry.hour_type === "overtime_100"
-            ? "Overtid 100%"
-            : entry.is_overtime
-              ? "Overtid"
-              : "Ordinær arbeidstid",
       Prosjekt: entry.project_name || "",
       Kommentar: entry.description || "",
     };
+    const b = getHourBreakdown(entry);
+    // Split én linje per timetype for korrekt Tripletex-import
+    if (b.normal > 0) rows.push({ ...base, Timer: b.normal, Aktivitet: "Ordinær arbeidstid" });
+    if (b.overtime_50 > 0) rows.push({ ...base, Timer: b.overtime_50, Aktivitet: "Overtid 50%" });
+    if (b.overtime_100 > 0) rows.push({ ...base, Timer: b.overtime_100, Aktivitet: "Overtid 100%" });
+    if (b.normal === 0 && b.overtime_50 === 0 && b.overtime_100 === 0) {
+      rows.push({ ...base, Timer: Number(entry.hours) || 0, Aktivitet: "Ordinær arbeidstid" });
+    }
   });
 
   const wb = XLSX.utils.book_new();
