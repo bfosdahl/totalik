@@ -21,6 +21,7 @@ import {
   type EmployeeSummary,
   type AllowanceDetailRow,
 } from "@/utils/timeEntryExport";
+import { getHourBreakdown } from "@/utils/hourBreakdown";
 
 type Preset = "this_week" | "last_week" | "this_month" | "last_month" | "custom";
 
