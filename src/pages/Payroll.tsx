@@ -42,6 +42,7 @@ interface Row {
   approved_by_name: string | null;
   approved_at: string | null;
   hour_type: string | null;
+  overtime_segments: any;
 }
 
 interface AllowanceRow {
