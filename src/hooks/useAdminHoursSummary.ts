@@ -36,7 +36,7 @@ export function useAdminHoursSummary({ startDate, endDate, onlyApproved, project
     queryFn: async () => {
       let q = supabase
         .from("time_entries")
-        .select("user_id,user_name,hours,hour_type,status")
+        .select("user_id,user_name,hours,hour_type,status,overtime_segments")
         .eq("company_id", companyId)
         .gte("entry_date", startDate)
         .lte("entry_date", endDate);
@@ -56,10 +56,10 @@ export function useAdminHoursSummary({ startDate, endDate, onlyApproved, project
           map.set(id, { user_id: id, user_name: row.user_name || "Ukjent", normal: 0, overtime_50: 0, overtime_100: 0, total: 0 });
         }
         const p = map.get(id)!;
-        const h = Number(row.hours) || 0;
-        if (row.hour_type === "overtime_50") { p.overtime_50 += h; t50 += h; }
-        else if (row.hour_type === "overtime_100") { p.overtime_100 += h; t100 += h; }
-        else { p.normal += h; tN += h; }
+        const b = getHourBreakdown(row as any);
+        p.normal += b.normal; tN += b.normal;
+        p.overtime_50 += b.overtime_50; t50 += b.overtime_50;
+        p.overtime_100 += b.overtime_100; t100 += b.overtime_100;
         p.total = p.normal + p.overtime_50 + p.overtime_100;
       }
 
