@@ -10,7 +10,15 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    name: e2e (${{ matrix.browser }})
+    env:
+      E2E_BROWSER: ${{ matrix.browser }}
+      E2E_BASE_URL: http://localhost:8080
     steps:
       - uses: actions/checkout@v4
 
@@ -27,10 +35,10 @@ jobs:
       - name: Install project dependencies
         run: bun install --frozen-lockfile || bun install
 
-      - name: Install Playwright (Python)
+      - name: Install Playwright (Python) + browser
         run: |
           pip install playwright
-          playwright install --with-deps chromium
+          playwright install --with-deps ${{ matrix.browser }}
 
       - name: Create .env for Vite build
         run: |
@@ -52,49 +60,43 @@ jobs:
           tail -n 100 /tmp/dev.log
           exit 1
 
-      - name: Run SJA E2E
+      - name: Run SJA E2E (${{ matrix.browser }})
         id: sja
         run: python3 tests/e2e/sja.spec.py
-        env:
-          E2E_BASE_URL: http://localhost:8080
 
       - name: Upload SJA debug artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-sja-${{ github.run_attempt }}
+          name: e2e-sja-${{ matrix.browser }}-${{ github.run_attempt }}
           path: /tmp/browser/sja-e2e/
           if-no-files-found: ignore
           retention-days: 14
 
-      - name: Run Sjekklister E2E
+      - name: Run Sjekklister E2E (${{ matrix.browser }})
         id: sjekk
         if: always()
         run: python3 tests/e2e/sjekklister.spec.py
-        env:
-          E2E_BASE_URL: http://localhost:8080
 
       - name: Upload Sjekklister debug artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-sjekklister-${{ github.run_attempt }}
+          name: e2e-sjekklister-${{ matrix.browser }}-${{ github.run_attempt }}
           path: /tmp/browser/sjekklister-e2e/
           if-no-files-found: ignore
           retention-days: 14
 
-      - name: Run Dagsrapport E2E
+      - name: Run Dagsrapport E2E (${{ matrix.browser }})
         id: dr
         if: always()
         run: python3 tests/e2e/dagsrapport.spec.py
-        env:
-          E2E_BASE_URL: http://localhost:8080
 
       - name: Upload Dagsrapport debug artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-dagsrapport-${{ github.run_attempt }}
+          name: e2e-dagsrapport-${{ matrix.browser }}-${{ github.run_attempt }}
           path: /tmp/browser/dagsrapport-e2e/
           if-no-files-found: ignore
           retention-days: 14
@@ -102,7 +104,7 @@ jobs:
       - name: Aggregate failure summary
         if: failure()
         run: |
-          echo "## E2E failure summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "## E2E failure summary — browser=${{ matrix.browser }}" >> "$GITHUB_STEP_SUMMARY"
           for f in /tmp/browser/*/*/summary.txt; do
             echo "### $f" >> "$GITHUB_STEP_SUMMARY"
             echo '```' >> "$GITHUB_STEP_SUMMARY"
@@ -118,7 +120,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: dev-server-log-${{ github.run_attempt }}
+          name: dev-server-log-${{ matrix.browser }}-${{ github.run_attempt }}
           path: /tmp/dev.log
           if-no-files-found: ignore
 

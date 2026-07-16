@@ -30,10 +30,29 @@ Usage:
 from __future__ import annotations
 
 import json
+import os
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
+
+async def launch_browser(playwright, headless: bool = True):
+    """Launch the engine named by the E2E_BROWSER env var.
+
+    Supported values: 'chromium' (default), 'webkit', 'firefox'.
+    Centralised so every spec runs on whichever engine the CI matrix picks,
+    giving us Chromium + WebKit coverage against mobile/touch regressions.
+    """
+    name = (os.environ.get("E2E_BROWSER") or "chromium").strip().lower()
+    if name == "webkit":
+        engine = playwright.webkit
+    elif name == "firefox":
+        engine = playwright.firefox
+    else:
+        engine = playwright.chromium
+    print(f"[debug] launching browser: {name}", flush=True)
+    return await engine.launch(headless=headless)
 
 
 @dataclass

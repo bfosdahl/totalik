@@ -20,7 +20,7 @@ from pathlib import Path
 from playwright.async_api import async_playwright, TimeoutError as PWTimeout
 
 sys.path.insert(0, str(Path(__file__).parent))
-from _debug import new_debug_context, finalize_context, assert_step  # noqa: E402
+from _debug import new_debug_context, finalize_context, assert_step, launch_browser  # noqa: E402
 
 OUT = Path("/tmp/browser/dagsrapport-e2e")
 OUT.mkdir(parents=True, exist_ok=True)
@@ -54,7 +54,7 @@ async def install_session(ctx, page):
 
 async def smoke(label, viewport):
     async with async_playwright() as p:
-        b = await p.chromium.launch(headless=True)
+        b = await launch_browser(p, headless=True)
         ctx, pg, sink = await new_debug_context(
             b, OUT, f"smoke_{label}", viewport=viewport, has_touch=True
         )
@@ -79,7 +79,7 @@ async def smoke(label, viewport):
 
 async def deep_flow(label, viewport):
     async with async_playwright() as p:
-        b = await p.chromium.launch(headless=True)
+        b = await launch_browser(p, headless=True)
         ctx, pg, sink = await new_debug_context(
             b, OUT, f"deep_{label}", viewport=viewport, has_touch=True, accept_downloads=True
         )

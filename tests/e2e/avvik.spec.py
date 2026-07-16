@@ -17,7 +17,10 @@ import os
 import sys
 from pathlib import Path
 
-from playwright.async_api import async_playwright
+sys.path.insert(0, str(Path(__file__).parent))
+
+from playwright.async_api import async_playwright  # noqa: E402
+from _debug import launch_browser  # noqa: E402
 
 OUT = Path("/tmp/browser/avvik-e2e")
 OUT.mkdir(parents=True, exist_ok=True)
@@ -29,7 +32,7 @@ REQUIRED_LABELS = ["Totalt", "Åpne", "Under arbeid", "Løst"]
 async def run(viewport_label: str, viewport: dict) -> list[str]:
     errors: list[str] = []
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await launch_browser(p, headless=True)
         ctx = await browser.new_context(viewport=viewport)
         page = await ctx.new_page()
 
