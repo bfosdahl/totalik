@@ -106,14 +106,15 @@ async def smoke(label: str, profile: dict) -> list[str]:
     return sink.page_errors + sink.console_errors if not passed else []
 
 
-async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
+async def deep_flow(label: str, profile: dict) -> tuple[bool, str, dict]:
     async with async_playwright() as p:
         b = await launch_browser(p, headless=True)
         ctx, pg, sink = await new_debug_context(
-            b, OUT, f"deep_{label}", viewport=viewport, has_touch=True
+            b, OUT, f"deep_{label}", **context_kwargs_from_profile(profile)
         )
         passed = False
         summary = ""
+        result: dict = {"device": label, "card_visible": False, "sig_img": False, "multi_sig": False, "completed": False}
         try:
             await install_session(ctx, pg)
             await pg.goto(f"{BASE_URL}/ks", wait_until="domcontentloaded")
