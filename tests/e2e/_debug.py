@@ -97,8 +97,32 @@ def _wire_listeners(page, sink: DebugSink) -> None:
     page.on("requestfailed", _on_request_failed)
 
 
+def _env_bool(name: str) -> bool | None:
+    """Parse a boolean env var. Returns None when unset so callers can
+    distinguish 'no override' from an explicit true/false."""
+    raw = os.environ.get(name)
+    if raw is None or raw == "":
+        return None
+    return raw.strip().lower() in ("1", "true", "yes", "on", "touch")
+
+
+def resolve_has_touch(default: bool) -> bool:
+    """Env-driven override for `has_touch` so CI can flip touch/mouse
+    without editing each spec. Set E2E_HAS_TOUCH=1|0 to force."""
+    override = _env_bool("E2E_HAS_TOUCH")
+    return default if override is None else override
+
+
 async def new_debug_context(browser, out_dir: Path, label: str, **ctx_kwargs):
-    """Create a fully instrumented context + page. Returns (ctx, page, sink)."""
+    """Create a fully instrumented context + page. Returns (ctx, page, sink).
+
+    Honours the E2E_HAS_TOUCH env var: when set it overrides any `has_touch`
+    passed by the caller, so the same spec runs under both touch and mouse
+    contexts across CI matrix rows.
+    """
+    default_touch = bool(ctx_kwargs.get("has_touch", False))
+    ctx_kwargs["has_touch"] = resolve_has_touch(default_touch)
+
     run_dir = Path(out_dir) / label
     (run_dir / "video").mkdir(parents=True, exist_ok=True)
 
@@ -108,6 +132,11 @@ async def new_debug_context(browser, out_dir: Path, label: str, **ctx_kwargs):
 
     page = await ctx.new_page()
     sink = DebugSink(label=label)
+    sink.steps.append({
+        "name": "context_input_mode",
+        "ok": True,
+        "detail": f"has_touch={ctx_kwargs['has_touch']} browser={os.environ.get('E2E_BROWSER', 'chromium')}",
+    })
     _wire_listeners(page, sink)
     return ctx, page, sink
 
