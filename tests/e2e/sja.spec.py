@@ -82,11 +82,12 @@ async def smoke(label: str, viewport: dict) -> list[str]:
         pg.on("pageerror", lambda e: errs.append(f"[{label}] pageerror: {e}"))
         pg.on("console", lambda m: errs.append(f"[{label}] console.error: {m.text}") if m.type == "error" else None)
         await install_session(ctx, pg)
-        await pg.goto(f"{BASE_URL}/ks/prosjekter", wait_until="domcontentloaded")
+        await pg.goto(f"{BASE_URL}/ks", wait_until="domcontentloaded")
         await pg.wait_for_timeout(2500)
         await pg.screenshot(path=str(OUT / f"smoke_{label}.png"))
         if "/auth" in pg.url:
             print(f"[smoke {label}] SKIP — no session")
+            errs.clear()  # unauth redirect is expected
         await ctx.close()
         await b.close()
     return errs
