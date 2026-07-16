@@ -140,6 +140,8 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
       return;
     }
     try {
+      // Flush any pending autosave so latest risks/measures/notes are persisted before completion
+      await flushAutoSave();
       await completeSja.mutateAsync({
         id: sja.id,
         signature_data: sigRef.current.toDataURL(),
@@ -150,7 +152,10 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
     }
   };
   const handleDownloadPdf = async () => {
-    // Refetch latest SJA to ensure signatures added just now are included in PDF
+    // Flush pending autosave first, then refetch latest SJA to ensure everything is included
+    try {
+      await flushAutoSave();
+    } catch { /* continue anyway */ }
     try {
       const { supabase } = await import("@/integrations/supabase/client");
       const { data: fresh } = await supabase
