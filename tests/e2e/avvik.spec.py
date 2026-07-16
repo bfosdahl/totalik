@@ -1,5 +1,4 @@
 """End-to-end smoke test for the Avvik (Deviations) page.
-from _debug import launch_browser
 
 Run against a running dev server:
     npm run e2e:avvik        # or: python3 tests/e2e/avvik.spec.py
@@ -18,7 +17,10 @@ import os
 import sys
 from pathlib import Path
 
-from playwright.async_api import async_playwright
+sys.path.insert(0, str(Path(__file__).parent))
+
+from playwright.async_api import async_playwright  # noqa: E402
+from _debug import launch_browser  # noqa: E402
 
 OUT = Path("/tmp/browser/avvik-e2e")
 OUT.mkdir(parents=True, exist_ok=True)
