@@ -66,6 +66,17 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
     saveTimeoutRef.current = setTimeout(() => autoSave(...args), 2000);
   }, [autoSave]);
 
+  // Flush pending autosave immediately (used before critical actions like complete/PDF/step-change)
+  const flushAutoSave = useCallback(async () => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+    if (!isCompleted) {
+      await autoSave();
+    }
+  }, [autoSave, isCompleted]);
+
   useEffect(() => {
     return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current); };
   }, []);
