@@ -1,0 +1,22 @@
+name: 💡 Ønske / forbedring
+description: Foreslå en ny funksjon eller forbedring
+title: "[Ønske]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: onske
+    attributes:
+      label: Hva ønsker du?
+      description: Beskriv funksjonen eller forbedringen.
+    validations:
+      required: true
+  - type: textarea
+    id: hvorfor
+    attributes:
+      label: Hvorfor er dette viktig?
+      placeholder: "Hvem har nytte av det, og hvordan?"
+  - type: input
+    id: modul
+    attributes:
+      label: Hvilken modul gjelder det?
+      placeholder: "F.eks. KS Bygg, IK HMS, Timeføring"
