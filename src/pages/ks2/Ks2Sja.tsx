@@ -66,6 +66,17 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
     saveTimeoutRef.current = setTimeout(() => autoSave(...args), 2000);
   }, [autoSave]);
 
+  // Flush pending autosave immediately (used before critical actions like complete/PDF/step-change)
+  const flushAutoSave = useCallback(async () => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+    if (!isCompleted) {
+      await autoSave();
+    }
+  }, [autoSave, isCompleted]);
+
   useEffect(() => {
     return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current); };
   }, []);
@@ -129,6 +140,8 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
       return;
     }
     try {
+      // Flush any pending autosave so latest risks/measures/notes are persisted before completion
+      await flushAutoSave();
       await completeSja.mutateAsync({
         id: sja.id,
         signature_data: sigRef.current.toDataURL(),
@@ -139,7 +152,10 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
     }
   };
   const handleDownloadPdf = async () => {
-    // Refetch latest SJA to ensure signatures added just now are included in PDF
+    // Flush pending autosave first, then refetch latest SJA to ensure everything is included
+    try {
+      await flushAutoSave();
+    } catch { /* continue anyway */ }
     try {
       const { supabase } = await import("@/integrations/supabase/client");
       const { data: fresh } = await supabase
@@ -690,6 +706,9 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                       Tøm signatur
                     </Button>
                   </div>
+
+                  {/* La arbeidslaget signere også FØR SJA fullføres */}
+                  <AdditionalSignaturesSection sja={sja} />
 
                   <div className="flex justify-between pt-4">
                     <Button variant="outline" onClick={() => setStep(3)}>Tilbake</Button>
