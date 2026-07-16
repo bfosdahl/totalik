@@ -91,10 +91,12 @@ async def deep_flow(label, viewport):
             await pg.goto(f"{BASE_URL}/ks", wait_until="domcontentloaded")
             await pg.wait_for_timeout(2500)
             if "/auth" in pg.url:
+                passed = True
                 return True, f"[deep {label}] SKIP — no session"
 
             plink = pg.locator('a[href*="/ks/project/"]').first
-            if await plink.count() == 0:
+            if not assert_step(sink, "ks_project_available", await plink.count() > 0):
+                passed = True
                 return True, f"[deep {label}] SKIP — no KS project"
             href = await plink.get_attribute("href")
             pid = href.split("/ks/project/")[1].split("/")[0]
@@ -103,15 +105,14 @@ async def deep_flow(label, viewport):
             await pg.wait_for_timeout(2500)
             await pg.screenshot(path=str(OUT / f"deep_{label}_1_list.png"))
 
-            # Open create dialog
             new_btn = pg.locator('button:has-text("Ny dagsrapport"), button:has-text("Opprett dagsrapport")').first
-            if await new_btn.count() == 0:
+            if not assert_step(sink, "create_dagsrapport_button", await new_btn.count() > 0):
+                passed = True
                 return True, f"[deep {label}] SKIP — no create button"
             await new_btn.click()
             await pg.wait_for_timeout(800)
 
             dlg = pg.locator('[role="dialog"]')
-            # Expand "Utført arbeid" section if collapsed
             work_hdr = dlg.locator('button:has-text("Utført arbeid")').first
             if await work_hdr.count():
                 await work_hdr.click()
@@ -119,15 +120,15 @@ async def deep_flow(label, viewport):
             work_ta = dlg.locator('textarea[placeholder*="Beskrivelse av dagens arbeid"]').first
             await work_ta.fill(UNIQUE_MARK + " – initial arbeidsbeskrivelse")
 
-            # Send inn
             await dlg.locator('button:has-text("Send inn")').click()
             await pg.wait_for_timeout(3000)
             await pg.screenshot(path=str(OUT / f"deep_{label}_2_created.png"))
+            created_visible = await pg.locator(f'text=/{UNIQUE_MARK}/').count() > 0
+            assert_step(sink, "initial_report_visible_after_create", created_visible,
+                        detail=f'mark="{UNIQUE_MARK}"')
 
-            # Find the newly created card by unique text
             card_btn = pg.locator(f'button:has-text("{UNIQUE_MARK}")').first
             if await card_btn.count() == 0:
-                # Try locating by expanding first card
                 first_card = pg.locator('[class*="Card"]').first
                 await first_card.click()
                 await pg.wait_for_timeout(400)
@@ -136,57 +137,57 @@ async def deep_flow(label, viewport):
                 await pg.wait_for_timeout(400)
             await pg.screenshot(path=str(OUT / f"deep_{label}_3_expanded.png"))
 
-            # Click Rediger
             edit_btn = pg.locator('button:has-text("Rediger")').first
-            if await edit_btn.count() == 0:
-                return False, f"[deep {label}] FAIL — no Rediger button"
+            if not assert_step(sink, "edit_button_visible", await edit_btn.count() > 0):
+                summary = f"[deep {label}] FAIL — no Rediger button"
+                return False, summary
             await edit_btn.click()
             await pg.wait_for_timeout(800)
 
             edlg = pg.locator('[role="dialog"]:has-text("Rediger dagsrapport")')
-            # Update work description
+            assert_step(sink, "edit_dialog_opened", await edlg.count() > 0)
             work_ta2 = edlg.locator('textarea[placeholder*="Beskrivelse av dagens arbeid"]').first
             await work_ta2.fill(UPDATED_MARK + " – oppdatert med flere detaljer")
 
-            # Expand Photos section and upload
             photo_hdr = edlg.locator('button:has-text("Bilder")').first
             if await photo_hdr.count():
                 await photo_hdr.click()
                 await pg.wait_for_timeout(300)
             file_inputs = edlg.locator('input[type="file"]')
+            upload_ok = False
             if await file_inputs.count() > 0:
                 try:
-                    # Use non-capture one (index 1 = gallery, no capture=environment)
                     idx = 1 if await file_inputs.count() > 1 else 0
                     await file_inputs.nth(idx).set_input_files(str(PHOTO))
-                    await pg.wait_for_timeout(3500)  # storage upload
+                    await pg.wait_for_timeout(3500)
+                    upload_ok = True
                 except Exception as e:
                     errs.append(f"photo upload failed: {e}")
+            assert_step(sink, "photo_upload_succeeded", upload_ok)
             await pg.screenshot(path=str(OUT / f"deep_{label}_4_edit_filled.png"))
 
-            # Save (Send inn to keep status)
             save_btn = edlg.locator('button:has-text("Send inn"), button:has-text("Lagre")').first
             await save_btn.click()
             await pg.wait_for_timeout(3500)
             await pg.screenshot(path=str(OUT / f"deep_{label}_5_after_save.png"))
 
-            # Reload and verify
             await pg.goto(f"{BASE_URL}/ks/project/{pid}/dagsrapport", wait_until="domcontentloaded")
             await pg.wait_for_timeout(2500)
 
             updated_card = pg.locator(f'text=/{UPDATED_MARK}/').first
             updated_ok = await updated_card.count() > 0
+            assert_step(sink, "updated_text_persisted_after_reload", updated_ok,
+                        detail=f'mark="{UPDATED_MARK}"')
             if updated_ok:
-                # Expand to see photos & PDF button
                 await updated_card.click()
                 await pg.wait_for_timeout(600)
             await pg.screenshot(path=str(OUT / f"deep_{label}_6_reload.png"))
 
-            # Verify photo gallery / count badge (text like "Bilder (1)")
             photo_ok = await pg.locator('text=/Bilder \\(\\d+\\)/').count() > 0
+            assert_step(sink, "photo_badge_visible", photo_ok)
 
-            # PDF download check
             pdf_ok = False
+            pdf_size = 0
             pdf_btn = pg.locator('button:has-text("Last ned PDF")').first
             if await pdf_btn.count():
                 try:
@@ -195,23 +196,28 @@ async def deep_flow(label, viewport):
                     dl = await dl_info.value
                     save_to = OUT / f"deep_{label}_report.pdf"
                     await dl.save_as(str(save_to))
-                    pdf_ok = save_to.exists() and save_to.stat().st_size > 500
+                    pdf_size = save_to.stat().st_size if save_to.exists() else 0
+                    pdf_ok = pdf_size > 500
                 except PWTimeout:
                     pass
+            assert_step(sink, "pdf_download_ok", pdf_ok, detail=f"size={pdf_size}B")
             await pg.screenshot(path=str(OUT / f"deep_{label}_7_pdf.png"))
+            assert_step(sink, "no_console_errors_during_flow",
+                        not sink.has_console_or_page_errors,
+                        detail=f"page={len(sink.page_errors)} console={len(sink.console_errors)}")
 
             summary = (
                 f"[deep {label}] updated_text_visible={updated_ok} photo_badge={photo_ok} "
-                f"pdf_download_ok={pdf_ok} console_errors={len(errs)}"
+                f"pdf_download_ok={pdf_ok} pdf_bytes={pdf_size} "
+                f"console_errors={len(sink.console_errors)} page_errors={len(sink.page_errors)}"
             )
-            if errs:
-                print(summary)
-                for e in errs[:5]:
+            if sink.has_console_or_page_errors:
+                for e in (sink.page_errors + sink.console_errors)[:5]:
                     print("  •", e)
-            passed = updated_ok and (photo_ok or pdf_ok) and not errs
+            passed = updated_ok and (photo_ok or pdf_ok) and not sink.has_console_or_page_errors
             return passed, summary
         finally:
-            await ctx.close()
+            await finalize_context(ctx, sink, OUT, f"deep_{label}", passed)
             await b.close()
 
 
