@@ -62,7 +62,7 @@ jobs:
           tail -n 100 /tmp/dev.log
           exit 1
 
-      - name: Run SJA E2E (${{ matrix.browser }})
+      - name: Run SJA E2E (${{ matrix.browser }} · ${{ matrix.input_mode }})
         id: sja
         run: python3 tests/e2e/sja.spec.py
 
@@ -70,12 +70,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-sja-${{ matrix.browser }}-${{ github.run_attempt }}
+          name: e2e-sja-${{ matrix.browser }}-${{ matrix.input_mode }}-${{ github.run_attempt }}
           path: /tmp/browser/sja-e2e/
           if-no-files-found: ignore
           retention-days: 14
 
-      - name: Run Sjekklister E2E (${{ matrix.browser }})
+      - name: Run Sjekklister E2E (${{ matrix.browser }} · ${{ matrix.input_mode }})
         id: sjekk
         if: always()
         run: python3 tests/e2e/sjekklister.spec.py
@@ -84,12 +84,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-sjekklister-${{ matrix.browser }}-${{ github.run_attempt }}
+          name: e2e-sjekklister-${{ matrix.browser }}-${{ matrix.input_mode }}-${{ github.run_attempt }}
           path: /tmp/browser/sjekklister-e2e/
           if-no-files-found: ignore
           retention-days: 14
 
-      - name: Run Dagsrapport E2E (${{ matrix.browser }})
+      - name: Run Dagsrapport E2E (${{ matrix.browser }} · ${{ matrix.input_mode }})
         id: dr
         if: always()
         run: python3 tests/e2e/dagsrapport.spec.py
@@ -98,7 +98,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-dagsrapport-${{ matrix.browser }}-${{ github.run_attempt }}
+          name: e2e-dagsrapport-${{ matrix.browser }}-${{ matrix.input_mode }}-${{ github.run_attempt }}
           path: /tmp/browser/dagsrapport-e2e/
           if-no-files-found: ignore
           retention-days: 14
@@ -106,7 +106,7 @@ jobs:
       - name: Aggregate failure summary
         if: failure()
         run: |
-          echo "## E2E failure summary — browser=${{ matrix.browser }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "## E2E failure summary — browser=${{ matrix.browser }} input=${{ matrix.input_mode }}" >> "$GITHUB_STEP_SUMMARY"
           for f in /tmp/browser/*/*/summary.txt; do
             echo "### $f" >> "$GITHUB_STEP_SUMMARY"
             echo '```' >> "$GITHUB_STEP_SUMMARY"
@@ -122,7 +122,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: dev-server-log-${{ matrix.browser }}-${{ github.run_attempt }}
+          name: dev-server-log-${{ matrix.browser }}-${{ matrix.input_mode }}-${{ github.run_attempt }}
           path: /tmp/dev.log
           if-no-files-found: ignore
 
