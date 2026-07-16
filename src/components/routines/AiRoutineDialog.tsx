@@ -347,7 +347,7 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
               </div>
             </div>
           )}
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
