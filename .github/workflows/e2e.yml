@@ -10,14 +10,16 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
         browser: [chromium, webkit]
-    name: e2e (${{ matrix.browser }})
+        input_mode: [touch, mouse]
+    name: e2e (${{ matrix.browser }} · ${{ matrix.input_mode }})
     env:
       E2E_BROWSER: ${{ matrix.browser }}
+      E2E_HAS_TOUCH: ${{ matrix.input_mode == 'touch' && '1' || '0' }}
       E2E_BASE_URL: http://localhost:8080
     steps:
       - uses: actions/checkout@v4
