@@ -20,7 +20,10 @@ from pathlib import Path
 from playwright.async_api import async_playwright, TimeoutError as PWTimeout
 
 sys.path.insert(0, str(Path(__file__).parent))
-from _debug import new_debug_context, finalize_context, assert_step, launch_browser  # noqa: E402
+from _debug import (  # noqa: E402
+    new_debug_context, finalize_context, assert_step, launch_browser,
+    selected_device_profiles, context_kwargs_from_profile,
+)
 
 OUT = Path("/tmp/browser/sja-e2e")
 OUT.mkdir(parents=True, exist_ok=True)
