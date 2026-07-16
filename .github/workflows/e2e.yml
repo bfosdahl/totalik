@@ -10,7 +10,7 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -39,7 +39,7 @@ jobs:
 
       - name: Start dev server
         run: |
-          bun run dev &
+          bun run dev > /tmp/dev.log 2>&1 &
           echo $! > /tmp/dev.pid
           for i in {1..60}; do
             if curl -sf http://localhost:8080 > /dev/null; then
@@ -48,30 +48,78 @@ jobs:
             fi
             sleep 2
           done
-          echo "Dev server failed to start"
+          echo "Dev server failed to start — tailing log:"
+          tail -n 100 /tmp/dev.log
           exit 1
 
       - name: Run SJA E2E
+        id: sja
         run: python3 tests/e2e/sja.spec.py
         env:
           E2E_BASE_URL: http://localhost:8080
 
+      - name: Upload SJA debug artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-sja-${{ github.run_attempt }}
+          path: /tmp/browser/sja-e2e/
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Run Sjekklister E2E
+        id: sjekk
+        if: always()
         run: python3 tests/e2e/sjekklister.spec.py
         env:
           E2E_BASE_URL: http://localhost:8080
 
+      - name: Upload Sjekklister debug artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-sjekklister-${{ github.run_attempt }}
+          path: /tmp/browser/sjekklister-e2e/
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Run Dagsrapport E2E
+        id: dr
+        if: always()
         run: python3 tests/e2e/dagsrapport.spec.py
         env:
           E2E_BASE_URL: http://localhost:8080
 
-      - name: Upload screenshots on failure
+      - name: Upload Dagsrapport debug artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-screenshots
-          path: /tmp/browser/
+          name: e2e-dagsrapport-${{ github.run_attempt }}
+          path: /tmp/browser/dagsrapport-e2e/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Aggregate failure summary
+        if: failure()
+        run: |
+          echo "## E2E failure summary" >> "$GITHUB_STEP_SUMMARY"
+          for f in /tmp/browser/*/*/summary.txt; do
+            echo "### $f" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            cat "$f" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          done
+          echo "### Dev server log (tail)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -n 200 /tmp/dev.log >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload dev server log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-server-log-${{ github.run_attempt }}
+          path: /tmp/dev.log
           if-no-files-found: ignore
 
       - name: Stop dev server
