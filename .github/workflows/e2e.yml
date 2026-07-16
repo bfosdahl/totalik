@@ -1,0 +1,79 @@
+name: E2E Playwright (SJA · Sjekklister · Dagsrapport)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install project dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Install Playwright (Python)
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+
+      - name: Create .env for Vite build
+        run: |
+          echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL || 'https://sffkcqclfiffnpxorodd.supabase.co' }}" >> .env
+          echo "VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmZmtjcWNsZmlmZm5weG9yb2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMTI4MzIsImV4cCI6MjA3OTc4ODgzMn0.Gx3CZwKvWLtNyLPhyJXv5qalkr9CjDrzGkNsfrajF-s' }}" >> .env
+
+      - name: Start dev server
+        run: |
+          bun run dev &
+          echo $! > /tmp/dev.pid
+          for i in {1..60}; do
+            if curl -sf http://localhost:8080 > /dev/null; then
+              echo "Dev server ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Dev server failed to start"
+          exit 1
+
+      - name: Run SJA E2E
+        run: python3 tests/e2e/sja.spec.py
+        env:
+          E2E_BASE_URL: http://localhost:8080
+
+      - name: Run Sjekklister E2E
+        run: python3 tests/e2e/sjekklister.spec.py
+        env:
+          E2E_BASE_URL: http://localhost:8080
+
+      - name: Run Dagsrapport E2E
+        run: python3 tests/e2e/dagsrapport.spec.py
+        env:
+          E2E_BASE_URL: http://localhost:8080
+
+      - name: Upload screenshots on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots
+          path: /tmp/browser/
+          if-no-files-found: ignore
+
+      - name: Stop dev server
+        if: always()
+        run: kill $(cat /tmp/dev.pid) || true
