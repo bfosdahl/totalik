@@ -105,18 +105,70 @@ jobs:
 
       - name: Aggregate failure summary
         if: failure()
+        id: agg
         run: |
-          echo "## E2E failure summary — browser=${{ matrix.browser }} input=${{ matrix.input_mode }}" >> "$GITHUB_STEP_SUMMARY"
-          for f in /tmp/browser/*/*/summary.txt; do
-            echo "### $f" >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-            cat "$f" >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-          done
-          echo "### Dev server log (tail)" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          tail -n 200 /tmp/dev.log >> "$GITHUB_STEP_SUMMARY" || true
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## E2E failure summary — browser=${{ matrix.browser }} input=${{ matrix.input_mode }}"
+            for f in /tmp/browser/*/*/summary.txt; do
+              echo "### $f"
+              echo '```'
+              cat "$f"
+              echo '```'
+            done
+            echo "### Dev server log (tail)"
+            echo '```'
+            tail -n 200 /tmp/dev.log || true
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY" > /tmp/failure-summary.txt
+
+      - name: Notify by email on failure
+        if: failure()
+        env:
+          E2E_NOTIFY_TOKEN: ${{ secrets.E2E_NOTIFY_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          COMMIT_MSG: ${{ github.event.head_commit.message || github.event.pull_request.title }}
+        run: |
+          if [ -z "$E2E_NOTIFY_TOKEN" ]; then
+            echo "E2E_NOTIFY_TOKEN not set — skipping email notification"
+            exit 0
+          fi
+          SUMMARY=$(head -c 4000 /tmp/failure-summary.txt 2>/dev/null || echo "")
+          python3 - <<'PY'
+          import json, os, urllib.request
+          payload = {
+            "repo": os.environ.get("GITHUB_REPOSITORY", ""),
+            "workflow": os.environ.get("GITHUB_WORKFLOW", ""),
+            "branch": os.environ.get("GITHUB_REF_NAME", ""),
+            "commit": os.environ.get("GITHUB_SHA", ""),
+            "commitMessage": os.environ.get("COMMIT_MSG", ""),
+            "actor": os.environ.get("GITHUB_ACTOR", ""),
+            "runId": os.environ.get("GITHUB_RUN_ID", ""),
+            "runUrl": f"{os.environ.get('GITHUB_SERVER_URL','')}/{os.environ.get('GITHUB_REPOSITORY','')}/actions/runs/{os.environ.get('GITHUB_RUN_ID','')}",
+            "prNumber": os.environ.get("PR_NUMBER") or None,
+            "prTitle": os.environ.get("PR_TITLE", ""),
+            "prUrl": os.environ.get("PR_URL", ""),
+            "browser": "${{ matrix.browser }}",
+            "inputMode": "${{ matrix.input_mode }}",
+            "failedJob": "${{ github.job }}",
+            "summary": open("/tmp/failure-summary.txt").read()[:4000] if os.path.exists("/tmp/failure-summary.txt") else "",
+          }
+          req = urllib.request.Request(
+            "https://sffkcqclfiffnpxorodd.supabase.co/functions/v1/notify-e2e-failure",
+            data=json.dumps(payload).encode(),
+            headers={
+              "Content-Type": "application/json",
+              "X-Notify-Token": os.environ["E2E_NOTIFY_TOKEN"],
+            },
+            method="POST",
+          )
+          try:
+            with urllib.request.urlopen(req, timeout=15) as r:
+              print("Notify OK", r.status, r.read().decode()[:200])
+          except Exception as e:
+            print("Notify failed:", e)
+          PY
 
       - name: Upload dev server log
         if: always()

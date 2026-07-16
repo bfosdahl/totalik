@@ -121,3 +121,6 @@ verify_jwt = false
 
 [functions.admin-set-password-oneoff]
 verify_jwt = false
+
+[functions.notify-e2e-failure]
+verify_jwt = false
