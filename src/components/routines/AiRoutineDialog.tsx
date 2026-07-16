@@ -226,7 +226,7 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
           )}
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0 pr-3">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain pr-3 -mr-3" style={{ WebkitOverflowScrolling: "touch" }}>
           {!result ? (
             <div className="space-y-4 pb-4">
               <div>
