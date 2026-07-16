@@ -53,34 +53,39 @@ async def install_session(ctx, page):
 
 
 async def smoke(label, viewport):
-    errs = []
     async with async_playwright() as p:
         b = await p.chromium.launch(headless=True)
-        ctx = await b.new_context(viewport=viewport, has_touch=True)
-        pg = await ctx.new_page()
-        pg.on("pageerror", lambda e: errs.append(f"[{label}] pageerror: {e}"))
-        pg.on("console", lambda m: errs.append(f"[{label}] console.error: {m.text}") if m.type == "error" else None)
-        await install_session(ctx, pg)
-        await pg.goto(f"{BASE_URL}/ks", wait_until="domcontentloaded")
-        await pg.wait_for_timeout(2500)
-        await pg.screenshot(path=str(OUT / f"smoke_{label}.png"))
-        if "/auth" in pg.url:
-            print(f"[smoke {label}] SKIP — no session")
-            errs.clear()
-        await ctx.close()
-        await b.close()
-    return errs
+        ctx, pg, sink = await new_debug_context(
+            b, OUT, f"smoke_{label}", viewport=viewport, has_touch=True
+        )
+        passed = True
+        try:
+            await install_session(ctx, pg)
+            await pg.goto(f"{BASE_URL}/ks", wait_until="domcontentloaded")
+            await pg.wait_for_timeout(2500)
+            await pg.screenshot(path=str(OUT / f"smoke_{label}.png"))
+            if "/auth" in pg.url:
+                print(f"[smoke {label}] SKIP — no session")
+                sink.page_errors.clear()
+                sink.console_errors.clear()
+            assert_step(sink, "no_page_errors", not sink.page_errors)
+            assert_step(sink, "no_console_errors", not sink.console_errors)
+            passed = not sink.has_console_or_page_errors
+        finally:
+            await finalize_context(ctx, sink, OUT, f"smoke_{label}", passed)
+            await b.close()
+    return sink.page_errors + sink.console_errors if not passed else []
 
 
 async def deep_flow(label, viewport):
     async with async_playwright() as p:
         b = await p.chromium.launch(headless=True)
-        ctx = await b.new_context(viewport=viewport, has_touch=True, accept_downloads=True)
-        pg = await ctx.new_page()
-        errs = []
-        pg.on("pageerror", lambda e: errs.append(f"pageerror: {e}"))
-        pg.on("console", lambda m: errs.append(f"console.error: {m.text}") if m.type == "error" else None)
-
+        ctx, pg, sink = await new_debug_context(
+            b, OUT, f"deep_{label}", viewport=viewport, has_touch=True, accept_downloads=True
+        )
+        errs = sink.page_errors  # alias
+        passed = False
+        summary = ""
         try:
             await install_session(ctx, pg)
             await pg.goto(f"{BASE_URL}/ks", wait_until="domcontentloaded")
