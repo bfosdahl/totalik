@@ -131,9 +131,12 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
       setIsPaper(existingChecklist.is_paper_version);
       // Sikre at hvert punkt har en unik id, ellers vil oppdateringer (bilder, svar, kommentarer)
       // treffe alle punkter med samme/manglende id.
-      const normalizedItems = (existingChecklist.checklist_items || []).map((item, idx) => ({
+      const normalizedItems = (existingChecklist.checklist_items || []).map((item: any, idx) => ({
         ...item,
         id: item.id && String(item.id).trim() !== "" ? String(item.id) : `item-${idx + 1}`,
+        // Sikre at type alltid er satt — ellers vil ikke Ja/Nei/N/A-valgene rendres
+        type: (item.type as ChecklistItem["type"]) || "yes_no",
+        required: item.required !== false,
       }));
       // Hvis det finnes duplikate id-er, gjør dem unike
       const seen = new Set<string>();
