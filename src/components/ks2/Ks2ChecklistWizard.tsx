@@ -131,9 +131,21 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
       setIsPaper(existingChecklist.is_paper_version);
       // Sikre at hvert punkt har en unik id, ellers vil oppdateringer (bilder, svar, kommentarer)
       // treffe alle punkter med samme/manglende id.
+      // Coerce text/label objects to readable string (fixes "[object Object]" corruption)
+      const coerceText = (raw: any, idx: number): string => {
+        if (typeof raw === "string") {
+          if (raw === "[object Object]" || raw.trim() === "") return `Punkt ${idx + 1}`;
+          return raw;
+        }
+        if (raw && typeof raw === "object") {
+          return raw.no || raw.nb || raw.text || raw.checkpoint_text || raw.label || `Punkt ${idx + 1}`;
+        }
+        return `Punkt ${idx + 1}`;
+      };
       const normalizedItems = (existingChecklist.checklist_items || []).map((item: any, idx) => ({
         ...item,
         id: item.id && String(item.id).trim() !== "" ? String(item.id) : `item-${idx + 1}`,
+        text: coerceText(item.text ?? item.checkpoint_text ?? item.label, idx),
         // Sikre at type alltid er satt — ellers vil ikke Ja/Nei/N/A-valgene rendres
         type: (item.type as ChecklistItem["type"]) || "yes_no",
         required: item.required !== false,
