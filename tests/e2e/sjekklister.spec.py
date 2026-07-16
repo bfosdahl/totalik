@@ -54,45 +54,46 @@ async def install_session(ctx, page):
 
 
 async def smoke(label: str, viewport: dict) -> list[str]:
-    errors: list[str] = []
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        ctx = await browser.new_context(viewport=viewport)
-        page = await ctx.new_page()
-        page.on("pageerror", lambda e: errors.append(f"[{label}] pageerror: {e}"))
-        page.on(
-            "console",
-            lambda m: errors.append(f"[{label}] console.error: {m.text}")
-            if m.type == "error" else None,
+        ctx, page, sink = await new_debug_context(
+            browser, OUT, f"smoke_{label}", viewport=viewport
         )
-        await install_session(ctx, page)
-        await page.goto(f"{BASE_URL}/ks/utfylte-sjekklister", wait_until="domcontentloaded")
-        await page.wait_for_timeout(3000)
-        await page.screenshot(path=str(OUT / f"smoke_{label}.png"))
-        if "/auth" in page.url:
-            print(f"[smoke {label}] SKIP — no session ({page.url})")
-        else:
-            if await page.get_by_text("sjekkliste", exact=False).count() == 0:
-                errors.append(f"[{label}] missing 'sjekkliste' text on page")
-        await ctx.close()
-        await browser.close()
-    return errors
+        passed = True
+        try:
+            await install_session(ctx, page)
+            await page.goto(f"{BASE_URL}/ks/utfylte-sjekklister", wait_until="domcontentloaded")
+            await page.wait_for_timeout(3000)
+            await page.screenshot(path=str(OUT / f"smoke_{label}.png"))
+            if "/auth" in page.url:
+                print(f"[smoke {label}] SKIP — no session ({page.url})")
+                sink.page_errors.clear()
+                sink.console_errors.clear()
+            else:
+                has_text = await page.get_by_text("sjekkliste", exact=False).count() > 0
+                assert_step(sink, "sjekkliste_text_visible", has_text)
+                if not has_text:
+                    passed = False
+            assert_step(sink, "no_page_errors", not sink.page_errors)
+            assert_step(sink, "no_console_errors", not sink.console_errors)
+            if sink.has_console_or_page_errors:
+                passed = False
+        finally:
+            await finalize_context(ctx, sink, OUT, f"smoke_{label}", passed)
+            await browser.close()
+    return sink.page_errors + sink.console_errors if not passed else []
 
 
 async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
     """Returns (passed, message). passed=True means either success or clean skip."""
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        ctx = await browser.new_context(viewport=viewport)
-        page = await ctx.new_page()
-        page_errors: list[str] = []
-        page.on("pageerror", lambda e: page_errors.append(str(e)))
-        page.on(
-            "console",
-            lambda m: page_errors.append(f"console.error: {m.text}")
-            if m.type == "error" else None,
+        ctx, page, sink = await new_debug_context(
+            browser, OUT, f"deep_{label}", viewport=viewport
         )
-
+        page_errors = sink.page_errors  # alias for backwards-compat below
+        passed = False
+        summary = ""
         try:
             await install_session(ctx, page)
 
