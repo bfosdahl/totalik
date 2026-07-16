@@ -1,7 +1,7 @@
 """E2E for KS-SJA.
 
 Phases:
-  1. Smoke — /ks/prosjekter mounts without errors on desktop + mobile.
+  1. Smoke — /ks mounts without errors on desktop + mobile.
   2. Deep flow (best-effort) — open first KS project's SJA tab, create a
      new SJA via dialog, walk steps 1-4, draw main signature on the
      touch-canvas via pointer events, add a second signature (multi-sig),
@@ -104,7 +104,7 @@ async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
 
         try:
             await install_session(ctx, pg)
-            await pg.goto(f"{BASE_URL}/ks/prosjekter", wait_until="domcontentloaded")
+            await pg.goto(f"{BASE_URL}/ks", wait_until="domcontentloaded")
             await pg.wait_for_timeout(2500)
             if "/auth" in pg.url:
                 return True, f"[deep {label}] SKIP — no session"
