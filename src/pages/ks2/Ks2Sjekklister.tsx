@@ -60,13 +60,20 @@ export default function Ks2Sjekklister() {
   const handleImportFromLibrary = async (templates: CompanyKsChecklistTemplate[]) => {
     let ok = 0;
     for (const t of templates) {
-      const items = (t.checkpoints || []).map((cp: any, idx: number) => ({
-        id: cp.id || `cp-${idx}`,
-        text: cp.text || cp.checkpoint_text || `Punkt ${idx + 1}`,
-        description: cp.description,
-        value: null,
-        required: true,
-      }));
+      const items = (t.checkpoints || []).map((cp: any, idx: number) => {
+        const rawText = cp.checkpoint_text ?? cp.text ?? cp.label;
+        const text =
+          typeof rawText === "string" && rawText.trim() !== "" && rawText !== "[object Object]"
+            ? rawText
+            : (rawText && typeof rawText === "object" ? (rawText.no || rawText.nb || rawText.text || `Punkt ${idx + 1}`) : `Punkt ${idx + 1}`);
+        return {
+          id: cp.id || `cp-${idx}`,
+          text,
+          description: cp.description,
+          value: null,
+          required: true,
+        };
+      });
       const created = await createChecklist({
         title: t.template_name,
         template_name: t.template_name,
