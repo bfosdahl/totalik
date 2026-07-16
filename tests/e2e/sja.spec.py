@@ -79,11 +79,11 @@ async def draw_on_canvas(page, canvas_selector: str) -> bool:
     return bool(ok)
 
 
-async def smoke(label: str, viewport: dict) -> list[str]:
+async def smoke(label: str, profile: dict) -> list[str]:
     async with async_playwright() as p:
         b = await launch_browser(p, headless=True)
         ctx, pg, sink = await new_debug_context(
-            b, OUT, f"smoke_{label}", viewport=viewport, has_touch=True
+            b, OUT, f"smoke_{label}", **context_kwargs_from_profile(profile)
         )
         passed = True
         try:
