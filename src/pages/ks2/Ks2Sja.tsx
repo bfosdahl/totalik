@@ -707,6 +707,9 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                     </Button>
                   </div>
 
+                  {/* La arbeidslaget signere også FØR SJA fullføres */}
+                  <AdditionalSignaturesSection sja={sja} />
+
                   <div className="flex justify-between pt-4">
                     <Button variant="outline" onClick={() => setStep(3)}>Tilbake</Button>
                     <Button
