@@ -122,13 +122,15 @@ async def deep_flow(label: str, profile: dict) -> tuple[bool, str, dict]:
             if "/auth" in pg.url:
                 passed = True
                 summary = f"[deep {label}] SKIP — no session"
-                return True, summary
+                result["skipped"] = "no_session"
+                return True, summary, result
 
             plink = pg.locator('a[href*="/ks/project/"]').first
             if not assert_step(sink, "found_ks_project", await plink.count() > 0):
                 passed = True
                 summary = f"[deep {label}] SKIP — no KS project"
-                return True, summary
+                result["skipped"] = "no_project"
+                return True, summary, result
             href = await plink.get_attribute("href")
             pid = href.split("/ks/project/")[1].split("/")[0]
 
@@ -141,7 +143,8 @@ async def deep_flow(label: str, profile: dict) -> tuple[bool, str, dict]:
             if not assert_step(sink, "ny_sja_button_visible", await new_btn.count() > 0):
                 passed = True
                 summary = f"[deep {label}] SKIP — no 'Ny SJA' button"
-                return True, summary
+                result["skipped"] = "no_ny_sja_button"
+                return True, summary, result
             await new_btn.click()
             await pg.wait_for_timeout(800)
 
@@ -194,12 +197,12 @@ async def deep_flow(label: str, profile: dict) -> tuple[bool, str, dict]:
                         detail=f"canvas_count={n_canvas}")
             if n_canvas == 0:
                 summary = f"[deep {label}] FAIL — no signature canvas found"
-                return False, summary
+                return False, summary, result
             drew = await draw_on_canvas(pg, 'canvas')
             assert_step(sink, "main_signature_drawn", drew)
             if not drew:
                 summary = f"[deep {label}] FAIL — could not draw main signature"
-                return False, summary
+                return False, summary, result
             await pg.wait_for_timeout(300)
 
             add_sig_btn = pg.locator('button:has-text("Legg til signatur")').first
@@ -227,6 +230,7 @@ async def deep_flow(label: str, profile: dict) -> tuple[bool, str, dict]:
                 await pg.wait_for_timeout(3500)
                 completed_clicked = True
             assert_step(sink, "complete_clicked", completed_clicked)
+            result["completed"] = completed_clicked
             await pg.screenshot(path=str(OUT / f"deep_{label}_6_completed.png"))
 
             await pg.goto(f"{BASE_URL}/ks/project/{pid}/sja", wait_until="domcontentloaded")
@@ -264,31 +268,53 @@ async def deep_flow(label: str, profile: dict) -> tuple[bool, str, dict]:
                         not sink.has_console_or_page_errors,
                         detail=f"page={len(sink.page_errors)} console={len(sink.console_errors)}")
 
+            result["card_visible"] = card_visible
+            result["sig_img"] = sig_img_ok
+            result["multi_sig"] = multi_ok
             summary = (
                 f"[deep {label}] baseline={baseline_completed} card_visible={card_visible} "
                 f"sig_img={sig_img_ok} multi_sig_section={multi_ok} "
                 f"console_errors={len(sink.console_errors)} page_errors={len(sink.page_errors)}"
             )
             passed = card_visible and (sig_img_ok or multi_ok) and not sink.has_console_or_page_errors
-            return passed, summary
+            return passed, summary, result
         finally:
             await finalize_context(ctx, sink, OUT, f"deep_{label}", passed)
             await b.close()
 
 
 async def main():
-    all_errs: list[str] = []
-    for label, vp in [("desktop", {"width": 1280, "height": 1800}),
-                      ("mobile", {"width": 390, "height": 844})]:
-        all_errs += await smoke(label, vp)
+    devices = selected_device_profiles()
+    print(f"[sja] running device matrix: {[n for n, _ in devices]}")
 
-    failures = []
-    for label, vp in [("desktop", {"width": 1280, "height": 1800}),
-                      ("mobile", {"width": 390, "height": 844})]:
-        passed, msg = await deep_flow(label, vp)
+    all_errs: list[str] = []
+    for name, profile in devices:
+        all_errs += await smoke(name, profile)
+
+    failures: list[str] = []
+    results: list[dict] = []
+    for name, profile in devices:
+        passed, msg, res = await deep_flow(name, profile)
         print(msg)
+        results.append(res)
         if not passed:
             failures.append(msg)
+
+    # Cross-device parity check: every non-skipped profile must reach
+    # the same signing outcome (card visible + sig persisted + multi-sig).
+    scored = [r for r in results if "skipped" not in r]
+    if len(scored) >= 2:
+        keys = ("card_visible", "sig_img", "multi_sig", "completed")
+        signatures = {r["device"]: {k: r.get(k) for k in keys} for r in scored}
+        first = next(iter(signatures.values()))
+        mismatched = {d: s for d, s in signatures.items() if s != first}
+        print(f"[parity] signatures per device: {json.dumps(signatures)}")
+        if mismatched:
+            failures.append(
+                f"Parity mismatch across devices: {json.dumps(signatures)}"
+            )
+
+    (OUT / "device_matrix_results.json").write_text(json.dumps(results, indent=2))
 
     if all_errs:
         print("Smoke errors:")
@@ -300,7 +326,7 @@ async def main():
         for f in failures:
             print("  •", f)
         sys.exit(1)
-    print("SJA E2E OK — smoke + deep flow (or clean SKIP) passed.")
+    print(f"SJA E2E OK — device matrix ({', '.join(n for n, _ in devices)}) passed with parity.")
 
 
 if __name__ == "__main__":
