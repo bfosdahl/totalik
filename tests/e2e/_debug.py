@@ -55,6 +55,83 @@ async def launch_browser(playwright, headless: bool = True):
     return await engine.launch(headless=headless)
 
 
+# --- Device profiles ---------------------------------------------------------
+# Lightweight device presets we test against. Kept in-repo (instead of
+# importing playwright.devices) so behaviour is stable across Playwright
+# versions and clearly scoped to what our SJA/checklist flows actually need.
+DEVICE_PROFILES: dict[str, dict] = {
+    "iphone": {
+        "label": "iPhone 13",
+        "viewport": {"width": 390, "height": 844},
+        "device_scale_factor": 3,
+        "is_mobile": True,
+        "has_touch": True,
+        "user_agent": (
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
+            "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 "
+            "Mobile/15E148 Safari/604.1"
+        ),
+    },
+    "android": {
+        "label": "Pixel 7 (Android)",
+        "viewport": {"width": 412, "height": 915},
+        "device_scale_factor": 2.625,
+        "is_mobile": True,
+        "has_touch": True,
+        "user_agent": (
+            "Mozilla/5.0 (Linux; Android 14; Pixel 7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/126.0.0.0 Mobile Safari/537.36"
+        ),
+    },
+    "desktop": {
+        "label": "Desktop 1280",
+        "viewport": {"width": 1280, "height": 1800},
+        "device_scale_factor": 1,
+        "is_mobile": False,
+        "has_touch": False,
+        "user_agent": None,
+    },
+}
+
+
+def selected_device_profiles() -> list[tuple[str, dict]]:
+    """Return the list of (name, profile) to run.
+
+    Honours env E2E_DEVICE: unset/'all' → iphone + android;
+    'iphone'|'android'|'desktop' → just that one;
+    comma-list → each named profile.
+    Firefox/webkit combos that don't support is_mobile are auto-relaxed.
+    """
+    raw = (os.environ.get("E2E_DEVICE") or "all").strip().lower()
+    if raw in ("", "all"):
+        names = ["iphone", "android"]
+    else:
+        names = [n.strip() for n in raw.split(",") if n.strip() in DEVICE_PROFILES]
+    engine = (os.environ.get("E2E_BROWSER") or "chromium").strip().lower()
+    out: list[tuple[str, dict]] = []
+    for n in names:
+        prof = dict(DEVICE_PROFILES[n])
+        # Firefox in Playwright doesn't support is_mobile / device_scale_factor
+        if engine == "firefox":
+            prof.pop("is_mobile", None)
+            prof.pop("device_scale_factor", None)
+        out.append((n, prof))
+    return out
+
+
+def context_kwargs_from_profile(profile: dict) -> dict:
+    """Build kwargs safe to pass to browser.new_context() from a profile."""
+    kw: dict = {"viewport": profile["viewport"], "has_touch": profile.get("has_touch", False)}
+    if profile.get("user_agent"):
+        kw["user_agent"] = profile["user_agent"]
+    if profile.get("device_scale_factor") is not None:
+        kw["device_scale_factor"] = profile["device_scale_factor"]
+    if profile.get("is_mobile") is not None:
+        kw["is_mobile"] = profile["is_mobile"]
+    return kw
+
+
 @dataclass
 class DebugSink:
     label: str
