@@ -55,7 +55,7 @@ async def install_session(ctx, page):
 
 async def smoke(label: str, viewport: dict) -> list[str]:
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await launch_browser(p, headless=True)
         ctx, page, sink = await new_debug_context(
             browser, OUT, f"smoke_{label}", viewport=viewport
         )
@@ -87,7 +87,7 @@ async def smoke(label: str, viewport: dict) -> list[str]:
 async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
     """Returns (passed, message). passed=True means either success or clean skip."""
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await launch_browser(p, headless=True)
         ctx, page, sink = await new_debug_context(
             browser, OUT, f"deep_{label}", viewport=viewport
         )

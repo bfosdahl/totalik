@@ -1,4 +1,5 @@
 """End-to-end smoke test for the Avvik (Deviations) page.
+from _debug import launch_browser
 
 Run against a running dev server:
     npm run e2e:avvik        # or: python3 tests/e2e/avvik.spec.py
@@ -29,7 +30,7 @@ REQUIRED_LABELS = ["Totalt", "Åpne", "Under arbeid", "Løst"]
 async def run(viewport_label: str, viewport: dict) -> list[str]:
     errors: list[str] = []
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await launch_browser(p, headless=True)
         ctx = await browser.new_context(viewport=viewport)
         page = await ctx.new_page()
 

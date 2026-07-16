@@ -78,7 +78,7 @@ async def draw_on_canvas(page, canvas_selector: str) -> bool:
 
 async def smoke(label: str, viewport: dict) -> list[str]:
     async with async_playwright() as p:
-        b = await p.chromium.launch(headless=True)
+        b = await launch_browser(p, headless=True)
         ctx, pg, sink = await new_debug_context(
             b, OUT, f"smoke_{label}", viewport=viewport, has_touch=True
         )
@@ -105,7 +105,7 @@ async def smoke(label: str, viewport: dict) -> list[str]:
 
 async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
     async with async_playwright() as p:
-        b = await p.chromium.launch(headless=True)
+        b = await launch_browser(p, headless=True)
         ctx, pg, sink = await new_debug_context(
             b, OUT, f"deep_{label}", viewport=viewport, has_touch=True
         )
