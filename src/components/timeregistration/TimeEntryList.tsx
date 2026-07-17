@@ -3,6 +3,8 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Check, X, Clock, Trash2, QrCode, CalendarCheck, MapPin, Pencil } from "lucide-react";
 import { EditTimeEntryDialog } from "./EditTimeEntryDialog";
+import { getHourBreakdown } from "@/utils/hourBreakdown";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,7 +43,10 @@ interface TimeEntry {
   work_schedule_id?: string | null;
   schedule_location?: string | null;
   schedule_role?: string | null;
+  hour_type?: string | null;
+  overtime_segments?: any;
 }
+
 
 interface TimeEntryListProps {
   entries: TimeEntry[];
@@ -160,8 +165,23 @@ export function TimeEntryList({
                   })()}
                 </TableCell>
                 <TableCell className="text-right font-mono">
-                  {Number(entry.hours).toFixed(1)}
+                  {(() => {
+                    const b = getHourBreakdown(entry as any);
+                    return (
+                      <div className="flex flex-col items-end leading-tight">
+                        <span>{Number(entry.hours).toFixed(1)}</span>
+                        {b.hasOvertime && (
+                          <span className="text-[10px] font-sans font-normal flex gap-1 mt-0.5">
+                            {b.normal > 0 && <span className="text-muted-foreground">N {b.normal.toFixed(1)}</span>}
+                            {b.overtime_50 > 0 && <span className="text-orange-600">50% {b.overtime_50.toFixed(1)}</span>}
+                            {b.overtime_100 > 0 && <span className="text-red-600">100% {b.overtime_100.toFixed(1)}</span>}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </TableCell>
+
                 <TableCell>{entry.project_name || "-"}</TableCell>
                 <TableCell className="hidden md:table-cell max-w-[200px] truncate">
                   {entry.description || "-"}

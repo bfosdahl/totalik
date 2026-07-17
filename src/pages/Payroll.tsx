@@ -98,6 +98,8 @@ export default function Payroll() {
   const [anchor, setAnchor] = useState<Date>(new Date());
   const [customRange, setCustomRange] = useState<{ from: string; to: string } | null>(null);
   const [projectFilter, setProjectFilter] = useState<string>("all");
+  const [employeeFilter, setEmployeeFilter] = useState<string>("all");
+
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [ratesOpen, setRatesOpen] = useState(false);
   const [savedStartDay, setSavedStartDay] = useState<number>(1);
@@ -195,12 +197,14 @@ export default function Payroll() {
     })();
   }, [profile?.company_id, period.start.getTime(), period.end.getTime(), reloadTick]);
 
-  // Filtered rows by project
+  // Filtered rows by project + employee
   const filteredRows = useMemo(() => {
-    if (projectFilter === "all") return rows;
-    if (projectFilter === "_none") return rows.filter((r) => !r.project_name);
-    return rows.filter((r) => r.project_name === projectFilter);
-  }, [rows, projectFilter]);
+    let r = rows;
+    if (projectFilter === "_none") r = r.filter((x) => !x.project_name);
+    else if (projectFilter !== "all") r = r.filter((x) => x.project_name === projectFilter);
+    if (employeeFilter !== "all") r = r.filter((x) => x.user_id === employeeFilter);
+    return r;
+  }, [rows, projectFilter, employeeFilter]);
 
   // Unique projects list
   const projects = useMemo(() => {
@@ -208,6 +212,16 @@ export default function Payroll() {
     rows.forEach((r) => r.project_name && set.add(r.project_name));
     return Array.from(set).sort((a, b) => a.localeCompare(b, "nb"));
   }, [rows]);
+
+  // Unique employees list (from actual entries in the period)
+  const employeeOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    rows.forEach((r) => { if (r.user_id) map.set(r.user_id, r.user_name || "Ukjent"); });
+    return Array.from(map.entries())
+      .map(([user_id, user_name]) => ({ user_id, user_name }))
+      .sort((a, b) => a.user_name.localeCompare(b.user_name, "nb"));
+  }, [rows]);
+
 
   // Aggregations
   const byEmployee = useMemo(() => {
@@ -439,6 +453,22 @@ export default function Payroll() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div>
+              <Label className="text-xs">Ansatt</Label>
+              <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
+                <SelectTrigger className="h-9 w-[220px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle ansatte</SelectItem>
+                  {employeeOptions.map((e) => (
+                    <SelectItem key={e.user_id} value={e.user_id}>{e.user_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
 
             <div className="flex items-end gap-2 ml-auto">
               <div>
