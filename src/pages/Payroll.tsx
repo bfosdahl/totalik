@@ -438,10 +438,10 @@ export default function Payroll() {
               )}
             </div>
 
-            <div>
+            <div className="w-full sm:w-auto">
               <Label className="text-xs">Prosjekt</Label>
               <Select value={projectFilter} onValueChange={setProjectFilter}>
-                <SelectTrigger className="h-9 w-[220px]">
+                <SelectTrigger className="h-9 w-full sm:w-[220px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -454,10 +454,10 @@ export default function Payroll() {
               </Select>
             </div>
 
-            <div>
+            <div className="w-full sm:w-auto">
               <Label className="text-xs">Ansatt</Label>
               <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
-                <SelectTrigger className="h-9 w-[220px]">
+                <SelectTrigger className="h-9 w-full sm:w-[220px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -468,6 +468,7 @@ export default function Payroll() {
                 </SelectContent>
               </Select>
             </div>
+
 
 
             <div className="flex items-end gap-2 ml-auto">
