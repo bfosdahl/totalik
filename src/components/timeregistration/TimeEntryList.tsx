@@ -165,8 +165,23 @@ export function TimeEntryList({
                   })()}
                 </TableCell>
                 <TableCell className="text-right font-mono">
-                  {Number(entry.hours).toFixed(1)}
+                  {(() => {
+                    const b = getHourBreakdown(entry as any);
+                    return (
+                      <div className="flex flex-col items-end leading-tight">
+                        <span>{Number(entry.hours).toFixed(1)}</span>
+                        {b.hasOvertime && (
+                          <span className="text-[10px] font-sans font-normal flex gap-1 mt-0.5">
+                            {b.normal > 0 && <span className="text-muted-foreground">N {b.normal.toFixed(1)}</span>}
+                            {b.overtime_50 > 0 && <span className="text-orange-600">50% {b.overtime_50.toFixed(1)}</span>}
+                            {b.overtime_100 > 0 && <span className="text-red-600">100% {b.overtime_100.toFixed(1)}</span>}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </TableCell>
+
                 <TableCell>{entry.project_name || "-"}</TableCell>
                 <TableCell className="hidden md:table-cell max-w-[200px] truncate">
                   {entry.description || "-"}
