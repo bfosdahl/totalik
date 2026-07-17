@@ -98,6 +98,8 @@ export default function Payroll() {
   const [anchor, setAnchor] = useState<Date>(new Date());
   const [customRange, setCustomRange] = useState<{ from: string; to: string } | null>(null);
   const [projectFilter, setProjectFilter] = useState<string>("all");
+  const [employeeFilter, setEmployeeFilter] = useState<string>("all");
+
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [ratesOpen, setRatesOpen] = useState(false);
   const [savedStartDay, setSavedStartDay] = useState<number>(1);
