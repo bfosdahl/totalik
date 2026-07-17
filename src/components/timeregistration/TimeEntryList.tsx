@@ -93,8 +93,9 @@ export function TimeEntryList({
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="border rounded-lg overflow-x-auto">
       <Table>
+
         <TableHeader>
           <TableRow>
             <TableHead>Dato</TableHead>
