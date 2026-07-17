@@ -454,6 +454,22 @@ export default function Payroll() {
               </Select>
             </div>
 
+            <div>
+              <Label className="text-xs">Ansatt</Label>
+              <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
+                <SelectTrigger className="h-9 w-[220px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle ansatte</SelectItem>
+                  {employeeOptions.map((e) => (
+                    <SelectItem key={e.user_id} value={e.user_id}>{e.user_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+
             <div className="flex items-end gap-2 ml-auto">
               <div>
                 <Label className="text-xs">Fra</Label>
