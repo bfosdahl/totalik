@@ -43,7 +43,10 @@ interface TimeEntry {
   work_schedule_id?: string | null;
   schedule_location?: string | null;
   schedule_role?: string | null;
+  hour_type?: string | null;
+  overtime_segments?: any;
 }
+
 
 interface TimeEntryListProps {
   entries: TimeEntry[];
