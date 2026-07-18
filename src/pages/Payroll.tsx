@@ -123,17 +123,20 @@ export default function Payroll() {
 
   const loadEmployees = async () => {
     if (!profile?.company_id) return;
-    const { data } = await supabase
-      .from("profiles")
-      .select("user_id, email, hourly_rate, first_name, last_name, employee_number")
-      .eq("company_id", profile.company_id);
+    const [{ data: safe }, { data: sens }] = await Promise.all([
+      supabase.from("profiles").select("user_id, email, first_name, last_name").eq("company_id", profile.company_id),
+      supabase.rpc("get_company_profiles_sensitive", { p_company_id: profile.company_id }),
+    ]);
+    const sensMap = new Map<string, any>();
+    (sens || []).forEach((s: any) => sensMap.set(s.user_id, s));
     const map = new Map<string, EmployeeMeta>();
-    (data || []).forEach((p: any) => {
+    (safe || []).forEach((p: any) => {
+      const s = sensMap.get(p.user_id) || {};
       map.set(p.user_id, {
         user_id: p.user_id,
         email: p.email,
-        hourly_rate: p.hourly_rate != null ? Number(p.hourly_rate) : null,
-        employee_number: p.employee_number ?? null,
+        hourly_rate: s.hourly_rate != null ? Number(s.hourly_rate) : null,
+        employee_number: s.employee_number ?? null,
       });
     });
     setEmployeesMeta(map);
@@ -780,23 +783,31 @@ function HourlyRatesDialog({
   useEffect(() => {
     if (!open || !companyId) return;
     setLoading(true);
-    supabase
-      .from("profiles")
-      .select("id, first_name, last_name, email, hourly_rate, employee_number")
-      .eq("company_id", companyId)
-      .eq("is_active", true)
-      .order("first_name", { ascending: true })
-      .then(({ data }) => {
-        setList(
-          (data || []).map((p: any) => ({
+    (async () => {
+      const [{ data: safe }, { data: sens }] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, first_name, last_name, email")
+          .eq("company_id", companyId)
+          .eq("is_active", true)
+          .order("first_name", { ascending: true }),
+        supabase.rpc("get_company_profiles_sensitive", { p_company_id: companyId }),
+      ]);
+      const sensMap = new Map<string, any>();
+      (sens || []).forEach((s: any) => sensMap.set(s.id, s));
+      setList(
+        (safe || []).map((p: any) => {
+          const s = sensMap.get(p.id) || {};
+          return {
             id: p.id,
             name: `${p.first_name || ""} ${p.last_name || ""}`.trim() || p.email,
-            rate: p.hourly_rate != null ? String(p.hourly_rate) : "",
-            employee_number: p.employee_number || "",
-          }))
-        );
-        setLoading(false);
-      });
+            rate: s.hourly_rate != null ? String(s.hourly_rate) : "",
+            employee_number: s.employee_number || "",
+          };
+        })
+      );
+      setLoading(false);
+    })();
   }, [open, companyId]);
 
   const handleSave = async () => {

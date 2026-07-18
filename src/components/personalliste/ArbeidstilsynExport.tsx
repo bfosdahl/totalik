@@ -77,10 +77,16 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
         .order("work_date");
 
       // 3) Ansatte
-      const { data: profiles = [] } = await supabase
+      const { data: profilesSafe = [] } = await supabase
         .from("profiles")
-        .select("id, first_name, last_name, email, phone, is_active, accommodation_provided, accommodation_address")
+        .select("id, first_name, last_name, email, phone, is_active")
         .eq("company_id", companyId);
+      const { data: sens = [] } = await supabase.rpc("get_company_profiles_sensitive", { p_company_id: companyId });
+      const sensMap = new Map((sens || []).map((s: any) => [s.id, s]));
+      const profiles = (profilesSafe || []).map((p: any) => {
+        const s: any = sensMap.get(p.id) || {};
+        return { ...p, accommodation_provided: s.accommodation_provided ?? false, accommodation_address: s.accommodation_address ?? null };
+      });
 
       const ids = (profiles || []).map((p) => p.id);
       const { data: nids = [] } = await supabase

@@ -44,14 +44,14 @@ export default function MyCourseCard() {
         setCourses(coursesData as EmployeeCourse[]);
       }
 
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("hms_card_obtained, hms_card_number, hms_card_expiry_date")
-        .eq("id", profile.id)
-        .single();
-
-      if (!profileError && profileData) {
-        setHmsCard(profileData as HmsCardInfo);
+      const { data: sens } = await supabase.rpc("get_profile_sensitive_full", { p_profile_id: profile.id });
+      const s = Array.isArray(sens) ? sens[0] : sens;
+      if (s) {
+        setHmsCard({
+          hms_card_obtained: s.hms_card_obtained,
+          hms_card_number: s.hms_card_number,
+          hms_card_expiry_date: s.hms_card_expiry_date,
+        } as HmsCardInfo);
       }
 
       setIsLoading(false);

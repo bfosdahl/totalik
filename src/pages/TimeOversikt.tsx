@@ -139,16 +139,15 @@ export default function TimeOversikt() {
       // Hent timesatser + ansattnummer
       const userIds = Array.from(new Set(filtered.map((r) => r.user_id)));
       const empMeta = new Map<string, { rate: number | null; emp_no: string | null }>();
-      if (userIds.length > 0) {
-        const { data: profs } = await supabase
-          .from("profiles")
-          .select("user_id, hourly_rate, employee_number")
-          .in("user_id", userIds);
-        (profs || []).forEach((p: any) => {
-          empMeta.set(p.user_id, {
-            rate: p.hourly_rate != null ? Number(p.hourly_rate) : null,
-            emp_no: p.employee_number ?? null,
-          });
+      if (userIds.length > 0 && profile?.company_id) {
+        const { data: sens } = await supabase.rpc("get_company_profiles_sensitive", { p_company_id: profile.company_id });
+        (sens || []).forEach((p: any) => {
+          if (userIds.includes(p.user_id)) {
+            empMeta.set(p.user_id, {
+              rate: p.hourly_rate != null ? Number(p.hourly_rate) : null,
+              emp_no: p.employee_number ?? null,
+            });
+          }
         });
       }
 
