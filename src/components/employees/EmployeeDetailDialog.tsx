@@ -172,7 +172,7 @@ export function EmployeeDetailDialog({
     const fetchMainAssignment = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("*")
+        .select("is_assigned_to_main")
         .eq("id", employee.id)
         .single();
       

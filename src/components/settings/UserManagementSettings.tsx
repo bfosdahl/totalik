@@ -136,7 +136,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       // Get all profiles for this company
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, user_id, company_id, first_name, last_name, email, phone, avatar_url, is_active, created_at, updated_at, is_verneombud, is_hms_responsible, primary_department_id, status, is_assigned_to_main, preferred_language, deleted_at")
         .eq("company_id", company.id);
 
       if (profilesError) throw profilesError;

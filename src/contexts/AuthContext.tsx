@@ -192,7 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Fetch profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, user_id, company_id, first_name, last_name, email, phone, avatar_url, is_active, created_at, updated_at, hms_card_required, hms_card_obtained, hms_card_reminder_sent_30_days, hms_card_reminder_sent_7_days, hms_card_reminder_sent_90_days, hms_card_reminder_sent_60_days, is_verneombud, is_hms_responsible, primary_department_id, status, is_assigned_to_main, preferred_language, deleted_at")
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -373,7 +373,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, user_id, company_id, first_name, last_name, email, phone, avatar_url, is_active, created_at, updated_at, hms_card_required, hms_card_obtained, hms_card_reminder_sent_30_days, hms_card_reminder_sent_7_days, hms_card_reminder_sent_90_days, hms_card_reminder_sent_60_days, is_verneombud, is_hms_responsible, primary_department_id, status, is_assigned_to_main, preferred_language, deleted_at")
         .eq("user_id", user.id)
         .maybeSingle();
 
