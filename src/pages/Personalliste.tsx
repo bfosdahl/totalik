@@ -74,18 +74,23 @@ export default function Personalliste() {
       if (!companyId) return [];
       const { data: profiles, error } = await supabase
         .from("profiles")
-        .select("id, first_name, last_name, email, accommodation_provided, accommodation_address")
+        .select("id, first_name, last_name, email")
         .eq("company_id", companyId)
         .eq("is_active", true)
         .order("first_name");
       if (error) throw error;
       const ids = (profiles || []).map((p) => p.id);
-      const { data: nids } = await supabase
-        .from("profiles_national_id")
-        .select("profile_id, id_type, national_id")
-        .in("profile_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
+      const [{ data: nids }, { data: sens }] = await Promise.all([
+        supabase.from("profiles_national_id").select("profile_id, id_type, national_id")
+          .in("profile_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]),
+        supabase.rpc("get_company_profiles_sensitive", { p_company_id: companyId }),
+      ]);
       const nidMap = new Map((nids || []).map((n) => [n.profile_id, n]));
-      return (profiles || []).map((p) => ({ ...p, national_id: nidMap.get(p.id) }));
+      const sensMap = new Map((sens || []).map((s: any) => [s.id, s]));
+      return (profiles || []).map((p) => {
+        const s: any = sensMap.get(p.id) || {};
+        return { ...p, accommodation_provided: s.accommodation_provided ?? false, accommodation_address: s.accommodation_address ?? null, national_id: nidMap.get(p.id) };
+      });
     },
     enabled: !!companyId,
   });

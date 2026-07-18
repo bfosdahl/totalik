@@ -17280,12 +17280,40 @@ export type Database = {
         Args: { _user_id: string }
         Returns: string[]
       }
+      get_company_profiles_sensitive: {
+        Args: { p_company_id: string }
+        Returns: {
+          accommodation_address: string
+          accommodation_provided: boolean
+          employee_number: string
+          hms_card_expiry_date: string
+          hms_card_number: string
+          hms_card_obtained: boolean
+          hourly_rate: number
+          id: string
+          signature_data: string
+          user_id: string
+        }[]
+      }
       get_profile_private: {
         Args: { p_profile_id: string }
         Returns: {
           next_of_kin_name: string
           next_of_kin_phone: string
           next_of_kin_relation: string
+          signature_data: string
+        }[]
+      }
+      get_profile_sensitive_full: {
+        Args: { p_profile_id: string }
+        Returns: {
+          accommodation_address: string
+          accommodation_provided: boolean
+          employee_number: string
+          hms_card_expiry_date: string
+          hms_card_number: string
+          hms_card_obtained: boolean
+          hourly_rate: number
           signature_data: string
         }[]
       }

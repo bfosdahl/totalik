@@ -166,23 +166,27 @@ export function EmployeeDetailDialog({
   
   // Check if user is assigned to main company
   const [isAssignedToMain, setIsAssignedToMain] = useState(true);
-  
-  // Fetch is_assigned_to_main status
+  const [existingSignature, setExistingSignature] = useState<string | null>(null);
+
+  // Fetch is_assigned_to_main status + signature (admin/owner only via RPC)
   useEffect(() => {
     const fetchMainAssignment = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("*")
+        .select("is_assigned_to_main")
         .eq("id", employee.id)
         .single();
-      
+
       if (data) {
-        // Use type assertion since is_assigned_to_main was recently added
         const profileData = data as typeof data & { is_assigned_to_main?: boolean };
         setIsAssignedToMain(profileData.is_assigned_to_main ?? true);
       }
+
+      const { data: sens } = await supabase.rpc("get_profile_sensitive_full", { p_profile_id: employee.id });
+      const s = Array.isArray(sens) ? sens[0] : sens;
+      setExistingSignature(s?.signature_data ?? null);
     };
-    
+
     if (employee.id && open) {
       fetchMainAssignment();
     }
@@ -814,7 +818,7 @@ export function EmployeeDetailDialog({
             <TabsContent value="signature" className="space-y-4 mt-4">
               <SignatureManager
                 employeeId={employee.id}
-                existingSignature={employee.signature_data}
+                existingSignature={existingSignature}
                 canManage={canManage || employee.id === profile?.id}
                 onSignatureUpdated={() => {
                   // Trigger refetch by closing and reopening could work,

@@ -35,11 +35,13 @@ export default function MyEmployeeCard() {
       if (!profile?.id) return null;
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, user_id, company_id, first_name, last_name, email, phone, avatar_url, is_active, created_at, updated_at, hms_card_required, hms_card_obtained, hms_card_reminder_sent_30_days, hms_card_reminder_sent_7_days, hms_card_reminder_sent_90_days, hms_card_reminder_sent_60_days, is_verneombud, is_hms_responsible, primary_department_id, status, is_assigned_to_main, preferred_language, deleted_at")
         .eq("id", profile.id)
         .single();
       if (error) throw error;
-      return data as Employee;
+      const { data: sens } = await supabase.rpc("get_profile_sensitive_full", { p_profile_id: profile.id });
+      const s = Array.isArray(sens) ? sens[0] : sens;
+      return { ...data, ...(s || {}) } as Employee;
     },
     enabled: !!profile?.id,
   });
@@ -115,7 +117,7 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
     const fetchMainAssignment = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("*")
+        .select("is_assigned_to_main")
         .eq("id", employee.id)
         .single();
       if (data) {

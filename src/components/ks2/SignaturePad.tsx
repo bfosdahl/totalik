@@ -31,18 +31,13 @@ export function SignaturePad({
   const [savedSignature, setSavedSignature] = useState<string | null>(null);
   const [usingSavedSignature, setUsingSavedSignature] = useState(false);
 
-  // Fetch user's saved signature
   useEffect(() => {
     if (enableSavedSignature && profile?.id) {
       supabase
-        .from("profiles")
-        .select("signature_data")
-        .eq("id", profile.id)
-        .single()
+        .rpc("get_profile_sensitive_full", { p_profile_id: profile.id })
         .then(({ data }) => {
-          if (data?.signature_data) {
-            setSavedSignature(data.signature_data);
-          }
+          const s = Array.isArray(data) ? data[0] : data;
+          if (s?.signature_data) setSavedSignature(s.signature_data);
         });
     }
   }, [enableSavedSignature, profile?.id]);

@@ -46,18 +46,13 @@ export function HmsSelfDeclarationDialog({
   
   const managerSigRef = useRef<SignatureCanvas | null>(null);
 
-  // Fetch current user's saved signature
   useEffect(() => {
     if (profile?.id) {
       supabase
-        .from("profiles")
-        .select("signature_data")
-        .eq("id", profile.id)
-        .single()
+        .rpc("get_profile_sensitive_full", { p_profile_id: profile.id })
         .then(({ data }) => {
-          if (data?.signature_data) {
-            setSavedSignature(data.signature_data);
-          }
+          const s = Array.isArray(data) ? data[0] : data;
+          if (s?.signature_data) setSavedSignature(s.signature_data);
         });
     }
   }, [profile?.id]);

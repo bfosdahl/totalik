@@ -60,8 +60,11 @@ export function InlineVerneombudStep({
     });
 
     if (profile?.id) {
-      supabase.from("profiles").select("signature_data").eq("id", profile.id).single()
-        .then(({ data }) => { if (data?.signature_data) setSavedSignature(data.signature_data); });
+      supabase.rpc("get_profile_sensitive_full", { p_profile_id: profile.id })
+        .then(({ data }) => {
+          const s = Array.isArray(data) ? data[0] : data;
+          if (s?.signature_data) setSavedSignature(s.signature_data);
+        });
     }
   }, [companyId, profile?.id]);
 
