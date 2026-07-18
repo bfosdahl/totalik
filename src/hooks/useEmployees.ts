@@ -90,7 +90,7 @@ export function useEmployees() {
         .order("first_name");
 
       if (error) throw error;
-      return data as Employee[];
+      return (data || []) as unknown as Employee[];
     },
     enabled: !!company?.id,
   });
