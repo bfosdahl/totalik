@@ -17,6 +17,7 @@ import asyncio
 import base64
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -97,29 +98,35 @@ async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
         try:
             await install_session(ctx, page)
 
-            await page.goto(f"{BASE_URL}/ks/prosjekter", wait_until="domcontentloaded")
+            await page.goto(f"{BASE_URL}/ks", wait_until="domcontentloaded")
             await page.wait_for_timeout(2500)
             if "/auth" in page.url:
                 passed = True
                 return True, f"[deep {label}] SKIP — no session"
 
             proj_link = page.locator('a[href*="/ks/project/"]').first
-            if not assert_step(sink, "ks_project_available", await proj_link.count() > 0):
+            card = page.locator('[data-testid="ks-project-card"]').first
+            has_link = await proj_link.count() > 0
+            has_card = await card.count() > 0
+            if not assert_step(sink, "ks_project_available", has_link or has_card):
                 passed = True
                 await page.screenshot(path=str(OUT / f"deep_{label}_no_project.png"))
                 return True, f"[deep {label}] SKIP — no KS project available"
-            href = await proj_link.get_attribute("href")
-            if not href:
-                passed = True
-                return True, f"[deep {label}] SKIP — project link has no href"
-            project_id = href.split("/ks/project/")[1].split("/")[0]
+            if has_link:
+                href = await proj_link.get_attribute("href")
+                if not href:
+                    passed = True
+                    return True, f"[deep {label}] SKIP — project link has no href"
+                project_id = href.split("/ks/project/")[1].split("/")[0]
+            else:
+                project_id = await card.get_attribute("data-project-id")
 
             await page.goto(f"{BASE_URL}/ks/project/{project_id}/sjekklister", wait_until="domcontentloaded")
             await page.wait_for_timeout(2500)
             await page.screenshot(path=str(OUT / f"deep_{label}_1_list.png"))
             baseline_completed = await page.locator("text=/Fullført/i").count()
 
-            new_btn = page.get_by_role("button", name=lambda n: n and ("Ny sjekkliste" in n or "Opprett" in n or "Ny " in n))
+            new_btn = page.get_by_role("button", name=re.compile(r"(Ny sjekkliste|Opprett|Ny )", re.I))
             if await new_btn.count() == 0:
                 new_btn = page.locator('button:has-text("Ny sjekkliste"), button:has-text("Opprett")').first
             if not assert_step(sink, "new_checklist_button_visible", await new_btn.count() > 0):

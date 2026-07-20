@@ -95,11 +95,17 @@ async def deep_flow(label, viewport):
                 return True, f"[deep {label}] SKIP — no session"
 
             plink = pg.locator('a[href*="/ks/project/"]').first
-            if not assert_step(sink, "ks_project_available", await plink.count() > 0):
+            card = pg.locator('[data-testid="ks-project-card"]').first
+            has_link = await plink.count() > 0
+            has_card = await card.count() > 0
+            if not assert_step(sink, "ks_project_available", has_link or has_card):
                 passed = True
                 return True, f"[deep {label}] SKIP — no KS project"
-            href = await plink.get_attribute("href")
-            pid = href.split("/ks/project/")[1].split("/")[0]
+            if has_link:
+                href = await plink.get_attribute("href")
+                pid = href.split("/ks/project/")[1].split("/")[0]
+            else:
+                pid = await card.get_attribute("data-project-id")
 
             await pg.goto(f"{BASE_URL}/ks/project/{pid}/dagsrapport", wait_until="domcontentloaded")
             await pg.wait_for_timeout(2500)
