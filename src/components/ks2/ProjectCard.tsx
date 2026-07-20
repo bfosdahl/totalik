@@ -42,6 +42,8 @@ export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDele
     <Card
       className="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/30 active:scale-[0.98] relative overflow-hidden"
       onClick={onClick}
+      data-testid="ks-project-card"
+      data-project-id={project.id}
     >
       {/* Action buttons - always visible on mobile */}
       <div className="absolute top-2 right-2 z-10 flex gap-1">
