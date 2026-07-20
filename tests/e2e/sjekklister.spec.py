@@ -125,7 +125,7 @@ async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
             await page.screenshot(path=str(OUT / f"deep_{label}_1_list.png"))
             baseline_completed = await page.locator("text=/Fullført/i").count()
 
-            new_btn = page.get_by_role("button", name=lambda n: n and ("Ny sjekkliste" in n or "Opprett" in n or "Ny " in n))
+            new_btn = page.get_by_role("button", name=re.compile(r"(Ny sjekkliste|Opprett|Ny )", re.I))
             if await new_btn.count() == 0:
                 new_btn = page.locator('button:has-text("Ny sjekkliste"), button:has-text("Opprett")').first
             if not assert_step(sink, "new_checklist_button_visible", await new_btn.count() > 0):
