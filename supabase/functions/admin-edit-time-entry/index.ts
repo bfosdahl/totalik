@@ -110,116 +110,131 @@ Deno.serve(async (req) => {
       return json({ error: updErr.message }, 500);
     }
 
-    // Hent oppdatert + ansattprofil
-    const { data: updated } = await admin
-      .from("time_entries")
-      .select("*")
-      .eq("id", body.time_entry_id)
-      .maybeSingle();
-    const { data: employee } = await admin
-      .from("profiles")
-      .select("user_id, email, first_name, last_name")
-      .eq("user_id", existing.user_id)
-      .maybeSingle();
+    let updated: any = { ...existing, ...patch };
 
-    const adminName = `${adminProfile?.first_name || ""} ${adminProfile?.last_name || ""}`.trim() || adminProfile?.email || "Admin";
-    const empName = `${employee?.first_name || ""} ${employee?.last_name || ""}`.trim() || employee?.email || "Ansatt";
-
-    const datoStr = (updated?.entry_date as string) || existing.entry_date;
-
-    // Bygg diff-tekst
-    const diffLines: string[] = [];
-    const fmtVal = (v: any) => (v == null || v === "" ? "—" : String(v));
-    const fmtTime = (v: any) => (v == null || v === "" ? "—" : String(v).substring(0, 5));
-    if (c.entry_date !== undefined && c.entry_date !== existing.entry_date) diffLines.push(`Dato: ${fmtVal(existing.entry_date)} → ${fmtVal(c.entry_date)}`);
-    if (c.hours !== undefined && Number(c.hours) !== Number(existing.hours)) diffLines.push(`Timer: ${fmtVal(existing.hours)} → ${fmtVal(c.hours)}`);
-    if (c.start_time !== undefined && c.start_time !== existing.start_time) diffLines.push(`Fra: ${fmtTime(existing.start_time)} → ${fmtTime(c.start_time)}`);
-    if (c.end_time !== undefined && c.end_time !== existing.end_time) diffLines.push(`Til: ${fmtTime(existing.end_time)} → ${fmtTime(c.end_time)}`);
-    if (c.hour_type !== undefined && c.hour_type !== existing.hour_type) diffLines.push(`Type: ${fmtVal(existing.hour_type)} → ${fmtVal(c.hour_type)}`);
-    if (c.description !== undefined && c.description !== existing.description) diffLines.push(`Beskrivelse: «${fmtVal(existing.description)}» → «${fmtVal(c.description)}»`);
-    if (c.project_name !== undefined && c.project_name !== existing.project_name) diffLines.push(`Prosjekt: «${fmtVal(existing.project_name)}» → «${fmtVal(c.project_name)}»`);
-
-    const diffText = diffLines.length > 0 ? diffLines.join("\n") : "(ingen synlige feltendringer)";
-
-    // 1) In-app varsel (best effort - må aldri blokkere selve timeendringen)
+    // Everything after the DB update is best-effort. A notification/e-mail/push failure must never
+    // make the admin see "Edge Function returned a non-2xx status code" after the hours are saved.
     try {
-      await admin.from("notification_log").insert({
-        user_id: existing.user_id,
-        company_id: existing.company_id,
-        notification_type: "status_change",
-        title: "Timene dine er justert av admin",
-        body: `${adminName} endret timene dine for ${datoStr}. Årsak: ${body.reason.trim()}`,
-        link: "/time-registration",
-      });
-    } catch (e) {
-      console.error("notification_log insert error", stringifyError(e));
-    }
+      // Hent oppdatert + ansattprofil
+      const { data: updatedRow, error: updatedErr } = await admin
+        .from("time_entries")
+        .select("*")
+        .eq("id", body.time_entry_id)
+        .maybeSingle();
+      if (updatedErr) console.error("updated row lookup error", updatedErr.message);
+      if (updatedRow) updated = updatedRow;
 
-    // 2) Push (best effort)
-    try {
-      const cronSecret = Deno.env.get("CRON_SECRET");
-      if (cronSecret) {
-        await fetch(`${SUPABASE_URL}/functions/v1/send-push-notification`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-cron-secret": cronSecret,
-          },
-          body: JSON.stringify({
-            user_id: existing.user_id,
-            title: "Timene dine er justert",
-            body: `${adminName} endret timene dine ${datoStr}. Trykk for å se.`,
-            notification_type: "status_change",
-            link: "/time-registration",
-          }),
-        }).catch((e) => console.error("push fetch", stringifyError(e)));
-      }
-    } catch (e) {
-      console.error("push error", stringifyError(e));
-    }
+      const { data: employee, error: employeeErr } = await admin
+        .from("profiles")
+        .select("user_id, email, first_name, last_name")
+        .eq("user_id", existing.user_id)
+        .eq("company_id", existing.company_id)
+        .maybeSingle();
+      if (employeeErr) console.error("employee lookup error", employeeErr.message);
 
-    // 3) E-post via Resend
-    try {
-      const resendKey = Deno.env.get("RESEND_API_KEY");
-      const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-      if (resendKey && lovableKey && employee?.email) {
-        const html = `
-          <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
-            <h2 style="color:#1e3a8a">Timene dine er justert</h2>
-            <p>Hei ${empName},</p>
-            <p><strong>${adminName}</strong> har justert dine registrerte timer for <strong>${datoStr}</strong>.</p>
-            <div style="background:#f3f4f6;border-left:4px solid #1e3a8a;padding:12px;margin:16px 0">
-              <strong>Årsak:</strong><br>${escapeHtml(body.reason.trim())}
-            </div>
-            <div style="background:#fef3c7;padding:12px;margin:16px 0;border-radius:6px">
-              <strong>Endringer:</strong>
-              <pre style="white-space:pre-wrap;font-family:inherit;margin:8px 0 0 0">${escapeHtml(diffText)}</pre>
-            </div>
-            <p>Du kan se timene dine i Total-IK under «Timeregistrering».</p>
-            <p style="color:#6b7280;font-size:12px;margin-top:24px">
-              Dette er en automatisk melding fra Total-IK. Spørsmål? Kontakt din leder.
-            </p>
-          </div>`;
-        const emailResponse = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${lovableKey}`,
-            "X-Connection-Api-Key": resendKey,
-          },
-          body: JSON.stringify({
-            from: "Total-IK <noreply@totalik.no>",
-            to: [employee.email],
-            subject: `Timene dine for ${datoStr} er justert`,
-            html,
-          }),
+      const adminName = `${adminProfile?.first_name || ""} ${adminProfile?.last_name || ""}`.trim() || adminProfile?.email || "Admin";
+      const empName = `${employee?.first_name || ""} ${employee?.last_name || ""}`.trim() || employee?.email || "Ansatt";
+
+      const datoStr = (updated?.entry_date as string) || existing.entry_date;
+
+      // Bygg diff-tekst
+      const diffLines: string[] = [];
+      const fmtVal = (v: any) => (v == null || v === "" ? "—" : String(v));
+      const fmtTime = (v: any) => (v == null || v === "" ? "—" : String(v).substring(0, 5));
+      if (c.entry_date !== undefined && c.entry_date !== existing.entry_date) diffLines.push(`Dato: ${fmtVal(existing.entry_date)} → ${fmtVal(c.entry_date)}`);
+      if (c.hours !== undefined && Number(c.hours) !== Number(existing.hours)) diffLines.push(`Timer: ${fmtVal(existing.hours)} → ${fmtVal(c.hours)}`);
+      if (c.start_time !== undefined && c.start_time !== existing.start_time) diffLines.push(`Fra: ${fmtTime(existing.start_time)} → ${fmtTime(c.start_time)}`);
+      if (c.end_time !== undefined && c.end_time !== existing.end_time) diffLines.push(`Til: ${fmtTime(existing.end_time)} → ${fmtTime(c.end_time)}`);
+      if (c.hour_type !== undefined && c.hour_type !== existing.hour_type) diffLines.push(`Type: ${fmtVal(existing.hour_type)} → ${fmtVal(c.hour_type)}`);
+      if (c.description !== undefined && c.description !== existing.description) diffLines.push(`Beskrivelse: «${fmtVal(existing.description)}» → «${fmtVal(c.description)}»`);
+      if (c.project_name !== undefined && c.project_name !== existing.project_name) diffLines.push(`Prosjekt: «${fmtVal(existing.project_name)}» → «${fmtVal(c.project_name)}»`);
+
+      const diffText = diffLines.length > 0 ? diffLines.join("\n") : "(ingen synlige feltendringer)";
+
+      // 1) In-app varsel (best effort)
+      try {
+        const { error: notificationErr } = await admin.from("notification_log").insert({
+          user_id: existing.user_id,
+          company_id: existing.company_id,
+          notification_type: "status_change",
+          title: "Timene dine er justert av admin",
+          body: `${adminName} endret timene dine for ${datoStr}. Årsak: ${body.reason.trim()}`,
+          link: "/time-registration",
         });
-        if (!emailResponse.ok) {
-          console.error("resend failed", emailResponse.status, await emailResponse.text());
+        if (notificationErr) console.error("notification_log insert error", notificationErr.message);
+      } catch (e) {
+        console.error("notification_log insert error", stringifyError(e));
+      }
+
+      // 2) Push (best effort)
+      try {
+        const cronSecret = Deno.env.get("CRON_SECRET");
+        if (cronSecret) {
+          const pushResponse = await fetch(`${SUPABASE_URL}/functions/v1/send-push-notification`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-cron-secret": cronSecret,
+            },
+            body: JSON.stringify({
+              user_id: existing.user_id,
+              title: "Timene dine er justert",
+              body: `${adminName} endret timene dine ${datoStr}. Trykk for å se.`,
+              notification_type: "status_change",
+              link: "/time-registration",
+            }),
+          });
+          if (!pushResponse.ok) console.error("push failed", pushResponse.status, await pushResponse.text());
         }
+      } catch (e) {
+        console.error("push error", stringifyError(e));
+      }
+
+      // 3) E-post via Resend (best effort)
+      try {
+        const resendKey = Deno.env.get("RESEND_API_KEY");
+        const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+        if (resendKey && lovableKey && employee?.email) {
+          const html = `
+            <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+              <h2 style="color:#1e3a8a">Timene dine er justert</h2>
+              <p>Hei ${empName},</p>
+              <p><strong>${adminName}</strong> har justert dine registrerte timer for <strong>${datoStr}</strong>.</p>
+              <div style="background:#f3f4f6;border-left:4px solid #1e3a8a;padding:12px;margin:16px 0">
+                <strong>Årsak:</strong><br>${escapeHtml(body.reason.trim())}
+              </div>
+              <div style="background:#fef3c7;padding:12px;margin:16px 0;border-radius:6px">
+                <strong>Endringer:</strong>
+                <pre style="white-space:pre-wrap;font-family:inherit;margin:8px 0 0 0">${escapeHtml(diffText)}</pre>
+              </div>
+              <p>Du kan se timene dine i Total-IK under «Timeregistrering».</p>
+              <p style="color:#6b7280;font-size:12px;margin-top:24px">
+                Dette er en automatisk melding fra Total-IK. Spørsmål? Kontakt din leder.
+              </p>
+            </div>`;
+          const emailResponse = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${lovableKey}`,
+              "X-Connection-Api-Key": resendKey,
+            },
+            body: JSON.stringify({
+              from: "Total-IK <noreply@totalik.no>",
+              to: [employee.email],
+              subject: `Timene dine for ${datoStr} er justert`,
+              html,
+            }),
+          });
+          if (!emailResponse.ok) {
+            console.error("resend failed", emailResponse.status, await emailResponse.text());
+          }
+        }
+      } catch (e) {
+        console.error("email error", stringifyError(e));
       }
     } catch (e) {
-      console.error("email error", stringifyError(e));
+      console.error("post-update notification flow error", stringifyError(e));
     }
 
     return json({ ok: true, updated });
