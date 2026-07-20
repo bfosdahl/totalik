@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
 
     const diffText = diffLines.length > 0 ? diffLines.join("\n") : "(ingen synlige feltendringer)";
 
-    // 1) In-app varsel
+    // 1) In-app varsel (best effort - må aldri blokkere selve timeendringen)
     try {
       await admin.from("notification_log").insert({
         user_id: existing.user_id,
@@ -152,7 +152,7 @@ Deno.serve(async (req) => {
         link: "/time-registration",
       });
     } catch (e) {
-      console.error("notification_log insert error", e);
+      console.error("notification_log insert error", stringifyError(e));
     }
 
     // 2) Push (best effort)
@@ -172,10 +172,10 @@ Deno.serve(async (req) => {
             notification_type: "status_change",
             link: "/time-registration",
           }),
-        }).catch((e) => console.error("push fetch", e));
+        }).catch((e) => console.error("push fetch", stringifyError(e)));
       }
     } catch (e) {
-      console.error("push error", e);
+      console.error("push error", stringifyError(e));
     }
 
     // 3) E-post via Resend
@@ -200,7 +200,7 @@ Deno.serve(async (req) => {
               Dette er en automatisk melding fra Total-IK. Spørsmål? Kontakt din leder.
             </p>
           </div>`;
-        await fetch("https://connector-gateway.lovable.dev/resend/emails", {
+        const emailResponse = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -213,15 +213,18 @@ Deno.serve(async (req) => {
             subject: `Timene dine for ${datoStr} er justert`,
             html,
           }),
-        }).catch((e) => console.error("resend fetch", e));
+        });
+        if (!emailResponse.ok) {
+          console.error("resend failed", emailResponse.status, await emailResponse.text());
+        }
       }
     } catch (e) {
-      console.error("email error", e);
+      console.error("email error", stringifyError(e));
     }
 
     return json({ ok: true, updated });
   } catch (e: any) {
-    console.error("admin-edit-time-entry", e);
+    console.error("admin-edit-time-entry", stringifyError(e));
     return json({ error: e?.message || "Internal error" }, 500);
   }
 });
@@ -235,4 +238,13 @@ function json(data: unknown, status = 200) {
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+}
+
+function stringifyError(e: unknown): string {
+  if (e instanceof Error) return `${e.name}: ${e.message}\n${e.stack || ""}`;
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
 }
