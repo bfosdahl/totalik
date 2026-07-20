@@ -104,15 +104,21 @@ async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
                 return True, f"[deep {label}] SKIP — no session"
 
             proj_link = page.locator('a[href*="/ks/project/"]').first
-            if not assert_step(sink, "ks_project_available", await proj_link.count() > 0):
+            card = page.locator('[data-testid="ks-project-card"]').first
+            has_link = await proj_link.count() > 0
+            has_card = await card.count() > 0
+            if not assert_step(sink, "ks_project_available", has_link or has_card):
                 passed = True
                 await page.screenshot(path=str(OUT / f"deep_{label}_no_project.png"))
                 return True, f"[deep {label}] SKIP — no KS project available"
-            href = await proj_link.get_attribute("href")
-            if not href:
-                passed = True
-                return True, f"[deep {label}] SKIP — project link has no href"
-            project_id = href.split("/ks/project/")[1].split("/")[0]
+            if has_link:
+                href = await proj_link.get_attribute("href")
+                if not href:
+                    passed = True
+                    return True, f"[deep {label}] SKIP — project link has no href"
+                project_id = href.split("/ks/project/")[1].split("/")[0]
+            else:
+                project_id = await card.get_attribute("data-project-id")
 
             await page.goto(f"{BASE_URL}/ks/project/{project_id}/sjekklister", wait_until="domcontentloaded")
             await page.wait_for_timeout(2500)
