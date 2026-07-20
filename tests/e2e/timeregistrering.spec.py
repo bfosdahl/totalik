@@ -184,20 +184,27 @@ async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
                         detail=f"hours={hours_val}")
 
             # ---- Project: use "Annet (fritekst)" if available, else the free-text input ----
-            proj_select_trigger = dialog.locator('button[role="combobox"]').first
+            # There may be multiple comboboxes (Ansatt, Prosjekt) — pick the one
+            # showing the "Velg prosjekt" placeholder.
             wrote_custom = False
-            if await proj_select_trigger.count() > 0:
+            proj_trigger = dialog.locator(
+                'button[role="combobox"]:has-text("Velg prosjekt"), '
+                'button[role="combobox"]:has-text("prosjekt")'
+            ).first
+            if await proj_trigger.count() > 0:
                 try:
-                    await proj_select_trigger.click(timeout=1500)
-                    await page.wait_for_timeout(300)
+                    await proj_trigger.click(timeout=1500)
+                    await page.wait_for_timeout(400)
                     annet = page.locator('[role="option"]:has-text("Annet")').first
                     if await annet.count() > 0:
                         await annet.click()
-                        await page.wait_for_timeout(200)
+                        await page.wait_for_timeout(300)
                 except PWTimeout:
                     pass
-            # After selecting Annet (or when no KS projects exist) a free-text input appears
-            custom_input = dialog.locator('input[placeholder*="prosjektnavn" i], input[placeholder*="Kundeprosjekt" i]').first
+            # Free-text input appears either after "Annet" or when no KS projects exist.
+            custom_input = dialog.locator(
+                'input[placeholder*="prosjektnavn" i], input[placeholder*="Kundeprosjekt" i]'
+            ).first
             if await custom_input.count() > 0:
                 await custom_input.fill(f"E2E prosjekt {os.getpid()}")
                 wrote_custom = True
