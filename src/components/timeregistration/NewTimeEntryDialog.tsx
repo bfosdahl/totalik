@@ -110,24 +110,27 @@ export function NewTimeEntryDialog({
     }
   }, [selectedProjectId, projects]);
 
-  // Reset on open
+  // Reset kun når dialogen ÅPNES (transisjon false→true).
+  // Tidligere lå `defaultProjectId` i deps, som førte til at datoen ble
+  // resatt til i dag hvis parent-komponenten re-rendret mens dialogen var
+  // åpen — det er hovedårsaken til at "føring tilbake i tid" havnet på i dag.
   useEffect(() => {
-    if (open) {
-      setDate(new Date());
-      setStartTime("");
-      setEndTime("");
-      setHours("");
-      setHourType("normal");
-      setSelectedProjectId(defaultProjectId || "");
-      setCustomProjectName("");
-      setCustomerName("");
-      setDescription("");
-      setUseCustomProject(false);
-      setAllowanceRows([]);
-      setOvertimeSegments([]);
-      setOnBehalfUserId("__self__");
-    }
-  }, [open, defaultProjectId]);
+    if (!open) return;
+    setDate(new Date());
+    setStartTime("");
+    setEndTime("");
+    setHours("");
+    setHourType("normal");
+    setSelectedProjectId(defaultProjectId || "");
+    setCustomProjectName("");
+    setCustomerName("");
+    setDescription("");
+    setUseCustomProject(false);
+    setAllowanceRows([]);
+    setOvertimeSegments([]);
+    setOnBehalfUserId("__self__");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
