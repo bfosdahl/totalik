@@ -49,13 +49,6 @@ Deno.serve(async (req) => {
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    // Sjekk at brukeren er admin og hent profil
-    const { data: adminProfile } = await admin
-      .from("profiles")
-      .select("company_id, first_name, last_name, email")
-      .eq("user_id", adminId)
-      .maybeSingle();
-
     const { data: roleRows } = await admin
       .from("user_roles")
       .select("role")
@@ -74,7 +67,21 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (exErr || !existing) return json({ error: "Fant ikke timeregistrering" }, 404);
 
-    if (!isSystemAdmin && existing.company_id !== adminProfile?.company_id) {
+    // Hent adminprofil for samme selskap som timen. Viktig for brukere med flere selskaper:
+    // .maybeSingle() kun på user_id kan feile eller velge feil selskap.
+    const { data: adminProfile, error: adminProfileErr } = await admin
+      .from("profiles")
+      .select("company_id, first_name, last_name, email")
+      .eq("user_id", adminId)
+      .eq("company_id", existing.company_id)
+      .maybeSingle();
+
+    if (adminProfileErr) {
+      console.error("admin profile lookup error", adminProfileErr);
+      return json({ error: "Kunne ikke verifisere admin-tilgang" }, 500);
+    }
+
+    if (!isSystemAdmin && !adminProfile) {
       return json({ error: "Forbidden: annet selskap" }, 403);
     }
 
@@ -98,7 +105,10 @@ Deno.serve(async (req) => {
       .from("time_entries")
       .update(patch)
       .eq("id", body.time_entry_id);
-    if (updErr) return json({ error: updErr.message }, 500);
+    if (updErr) {
+      console.error("time_entries update error", updErr);
+      return json({ error: updErr.message }, 500);
+    }
 
     // Hent oppdatert + ansattprofil
     const { data: updated } = await admin
