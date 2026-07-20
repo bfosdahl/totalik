@@ -237,14 +237,20 @@ async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
             await page.screenshot(path=str(OUT / f"deep_{label}_3_after_save.png"))
 
             # ---- Verify entry appears with the note AND correct (past) date ----
-            # Filter usually defaults to "this-week"; switch to "this-month" so a
-            # 5-days-ago entry is visible even if the week just started.
+            # Switch to list view so past-date entries are visible, then set
+            # filter to "Alle" so the 5-days-ago entry is definitely in scope.
             try:
-                filter_trigger = page.locator('button[role="combobox"]:has-text("Denne uken"), button[role="combobox"]:has-text("Denne")').first
+                list_btn = page.locator('button:has-text("Liste"), button:has([class*="lucide-list"])').first
+                if await list_btn.count() > 0:
+                    await list_btn.click(timeout=1500)
+                    await page.wait_for_timeout(500)
+                filter_trigger = page.locator('button[role="combobox"]').filter(
+                    has_text=re.compile(r"uken|måned|Alle|Denne", re.I)
+                ).first
                 if await filter_trigger.count() > 0:
                     await filter_trigger.click(timeout=1500)
                     await page.wait_for_timeout(300)
-                    opt = page.locator('[role="option"]:has-text("måned")').first
+                    opt = page.locator('[role="option"]:has-text("Alle")').first
                     if await opt.count() > 0:
                         await opt.click()
                         await page.wait_for_timeout(800)
