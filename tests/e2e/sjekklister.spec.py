@@ -126,14 +126,25 @@ async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
             await page.screenshot(path=str(OUT / f"deep_{label}_1_list.png"))
             baseline_completed = await page.locator("text=/Fullført/i").count()
 
-            new_btn = page.get_by_role("button", name=re.compile(r"(Ny sjekkliste|Opprett|Ny )", re.I))
+            # Prefer starting a template; else fall back to continuing an ongoing checklist.
+            new_btn = page.locator('[data-testid="ks-start-checklist"]').first
             if await new_btn.count() == 0:
-                new_btn = page.locator('button:has-text("Ny sjekkliste"), button:has-text("Opprett")').first
+                # Try "Pågående" tab and continue an existing checklist
+                pag_tab = page.get_by_role("tab", name=re.compile(r"Pågående", re.I)).first
+                if await pag_tab.count() > 0:
+                    try:
+                        await pag_tab.click(timeout=2000)
+                        await page.wait_for_timeout(600)
+                    except PWTimeout:
+                        pass
+                new_btn = page.locator('[data-testid="ks-continue-checklist"]').first
+            if await new_btn.count() == 0:
+                new_btn = page.get_by_role("button", name=re.compile(r"(Start|Fortsett|Ny sjekkliste|Opprett)", re.I)).first
             if not assert_step(sink, "new_checklist_button_visible", await new_btn.count() > 0):
                 passed = True
                 await page.screenshot(path=str(OUT / f"deep_{label}_no_new_btn.png"))
-                return True, f"[deep {label}] SKIP — no 'Ny sjekkliste' button"
-            await new_btn.first.click()
+                return True, f"[deep {label}] SKIP — no Start/Fortsett button"
+            await new_btn.click()
             await page.wait_for_timeout(1200)
             await page.screenshot(path=str(OUT / f"deep_{label}_2_wizard_open.png"))
             assert_step(sink, "wizard_dialog_open",
@@ -161,9 +172,11 @@ async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
                     break
             await page.screenshot(path=str(OUT / f"deep_{label}_3_items.png"))
 
-            yes_radios = page.locator('[role="dialog"] input[type="radio"][value="yes"]')
-            no_radios = page.locator('[role="dialog"] input[type="radio"][value="no"]')
-            na_radios = page.locator('[role="dialog"] input[type="radio"][value="na"]')
+
+            # Radix RadioGroupItem renders as button[role="radio"] with id ending in -yes/-no/-na
+            yes_radios = page.locator('[role="dialog"] [role="radio"][id$="-yes"]')
+            no_radios = page.locator('[role="dialog"] [role="radio"][id$="-no"]')
+            na_radios = page.locator('[role="dialog"] [role="radio"][id$="-na"]')
             item_count = await yes_radios.count()
             if not assert_step(sink, "yes_no_items_present", item_count > 0,
                                detail=f"items={item_count}"):
@@ -174,17 +187,9 @@ async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
             answered = 0
             for i in range(item_count):
                 target = [yes_radios, no_radios, na_radios][i % 3].nth(i)
-                rid = await target.get_attribute("id")
-                if rid:
-                    label_el = page.locator(f'[role="dialog"] label[for="{rid}"]').first
-                    try:
-                        await label_el.click(timeout=1500)
-                        answered += 1
-                        continue
-                    except PWTimeout:
-                        pass
                 try:
-                    await target.check(force=True, timeout=1500)
+                    await target.scroll_into_view_if_needed(timeout=1500)
+                    await target.click(timeout=1500)
                     answered += 1
                 except PWTimeout:
                     pass
@@ -210,11 +215,74 @@ async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
             )
             assert_step(sink, "photo_visible_in_dialog", photo_ok)
 
+            # Advance through wizard steps: "Gå til signering" -> signature -> "Fullfør"
             for _ in range(4):
-                nb = page.locator('[role="dialog"] button:has-text("Neste")').first
+                nb = page.locator(
+                    '[role="dialog"] button:has-text("Neste"), '
+                    '[role="dialog"] button:has-text("Gå til signering")'
+                ).first
                 if await nb.count() and await nb.is_visible() and await nb.is_enabled():
                     await nb.click()
-                    await page.wait_for_timeout(600)
+                    await page.wait_for_timeout(700)
+                else:
+                    break
+
+            # Sign on any canvas that appears (signature step)
+            canvases = page.locator('[role="dialog"] canvas')
+            if await canvases.count() > 0:
+                try:
+                    box = await canvases.first.bounding_box()
+                    if box:
+                        cx, cy = box["x"] + box["width"] / 2, box["y"] + box["height"] / 2
+                        await page.mouse.move(cx - 40, cy - 20)
+                        await page.mouse.down()
+                        for dx, dy in [(20, 10), (20, -10), (20, 15), (20, -5)]:
+                            await page.mouse.move(cx + dx - 40, cy + dy - 20)
+                        await page.mouse.up()
+                        await page.wait_for_timeout(400)
+                except Exception as e:
+                    page_errors.append(f"signature draw failed: {e}")
+
+            # Fill any required name/role via Radix Select trigger (UserSelect) OR plain input
+            for ph in ["Velg eller skriv inn navn", "Skriv inn navn", "Ditt navn", "Navn", "Rolle", "Tittel"]:
+                inp = page.locator(f'[role="dialog"] input[placeholder*="{ph}" i]').first
+                if await inp.count() and await inp.is_visible():
+                    try:
+                        await inp.fill("E2E Tester", timeout=1500)
+                    except PWTimeout:
+                        pass
+            # Handle Radix Select trigger for name
+            name_trigger = page.locator('[role="dialog"] [role="combobox"]').first
+            if await name_trigger.count() and await name_trigger.is_visible():
+                try:
+                    await name_trigger.click(timeout=1500)
+                    await page.wait_for_timeout(400)
+                    # Prefer "+ Annen person" so we don't depend on user list
+                    custom = page.get_by_role("option", name=re.compile(r"Annen person|fritekst", re.I)).first
+                    if await custom.count():
+                        await custom.click(timeout=1500)
+                    else:
+                        first_opt = page.locator('[role="option"]').first
+                        if await first_opt.count():
+                            await first_opt.click(timeout=1500)
+                    await page.wait_for_timeout(300)
+                    # If custom input appeared, fill it
+                    custom_inp = page.locator('[role="dialog"] input[placeholder*="Skriv inn navn" i]').first
+                    if await custom_inp.count() and await custom_inp.is_visible():
+                        await custom_inp.fill("E2E Tester", timeout=1500)
+                except PWTimeout:
+                    pass
+
+            # One more advance if there's still a "Neste"/"Gå til signering"/"Gå til oppsummering"
+            for _ in range(3):
+                nb = page.locator(
+                    '[role="dialog"] button:has-text("Neste"), '
+                    '[role="dialog"] button:has-text("Gå til signering"), '
+                    '[role="dialog"] button:has-text("Gå til oppsummering")'
+                ).first
+                if await nb.count() and await nb.is_visible() and await nb.is_enabled():
+                    await nb.click()
+                    await page.wait_for_timeout(700)
                 else:
                     break
 
@@ -227,7 +295,7 @@ async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
             if await done_btn.count():
                 try:
                     await done_btn.click(timeout=3000)
-                    await page.wait_for_timeout(2500)
+                    await page.wait_for_timeout(3000)
                     saved = True
                 except PWTimeout:
                     pass

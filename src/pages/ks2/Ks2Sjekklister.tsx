@@ -245,7 +245,7 @@ export default function Ks2Sjekklister() {
               </div>
             </div>
           ) : (
-            <Button size="sm" onClick={() => handleContinueChecklist(checklist)}>
+            <Button size="sm" onClick={() => handleContinueChecklist(checklist)} data-testid="ks-continue-checklist">
               <Play className="h-4 w-4 mr-1" />
               {checklist.status === "in_progress" ? "Fortsett" : "Start"}
             </Button>
@@ -400,7 +400,7 @@ export default function Ks2Sjekklister() {
                           <Eye className="h-4 w-4 mr-1" />
                           Vis
                         </Button>
-                        <Button size="sm" className="flex-1" onClick={() => handleStartChecklist(template)}>
+                        <Button size="sm" className="flex-1" onClick={() => handleStartChecklist(template)} data-testid="ks-start-checklist">
                           <Plus className="h-4 w-4 mr-1" />
                           Start
                         </Button>
