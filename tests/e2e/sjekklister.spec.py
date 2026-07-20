@@ -97,7 +97,7 @@ async def deep_flow(label: str, viewport: dict) -> tuple[bool, str]:
         try:
             await install_session(ctx, page)
 
-            await page.goto(f"{BASE_URL}/ks/prosjekter", wait_until="domcontentloaded")
+            await page.goto(f"{BASE_URL}/ks", wait_until="domcontentloaded")
             await page.wait_for_timeout(2500)
             if "/auth" in page.url:
                 passed = True
