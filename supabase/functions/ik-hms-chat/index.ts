@@ -455,7 +455,8 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .maybeSingle();
     
-    const companyId = clientCompanyId || profile?.company_id;
+    // Security: always use the authenticated user's company_id, never trust client-supplied value
+    const companyId = profile?.company_id;
 
     // Fetch company employees for the current user
     let employeeListPrompt = "";
