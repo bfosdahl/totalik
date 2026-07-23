@@ -508,7 +508,8 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .maybeSingle();
     
-    const companyId = clientCompanyId || profile?.company_id;
+    // Security: always use the authenticated user's company_id, never trust client-supplied value
+    const companyId = profile?.company_id;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
