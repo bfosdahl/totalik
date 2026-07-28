@@ -10,6 +10,7 @@ import SavedFormsList from "./SavedFormsList";
 import EditableChecklistSection, { ChecklistQuestion, ChecklistAnswer } from "./EditableChecklistSection";
 import { useAuditFormResponses, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import type { Json } from "@/integrations/supabase/types";
+import { getLocalDateString } from "@/lib/dateUtils";
 
 interface SectionData {
   title: string;

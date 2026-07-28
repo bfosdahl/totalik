@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Save, FileText, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
 import { useAuditFormResponses, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import type { Json } from "@/integrations/supabase/types";
+import { getLocalDateString } from "@/lib/dateUtils";
 import ResponsiveChecklist, { type ChecklistRow } from "./ResponsiveChecklist";
 import ResponsiveActionTable from "./ResponsiveActionTable";
 import SavedFormsList from "./SavedFormsList";
@@ -118,7 +119,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
   
   const getInitialFormData = (): FormData => ({
     companyName: company?.name || "",
-    revisionDate: new Date().toISOString().split('T')[0],
+    revisionDate: getLocalDateString(),
     revisionYear: new Date().getFullYear().toString(),
     participants: "",
     auditor: "",
