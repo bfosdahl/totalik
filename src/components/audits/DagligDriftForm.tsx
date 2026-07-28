@@ -217,7 +217,9 @@ const DagligDriftForm = () => {
     await handleSaveCompleted();
   };
 
+  if (!showForm) {
     return (
+
       <SavedFormsList
         responses={formTypeResponses}
         onDelete={handleDelete}
