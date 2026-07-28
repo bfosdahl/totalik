@@ -45,16 +45,6 @@ import {
   ArrowLeft
 } from 'lucide-react';
 
-interface SectionQuestions {
-  [sectionId: string]: ChecklistQuestion[];
-}
-
-interface ChecklistAnswers {
-  [sectionId: string]: {
-    [questionId: string]: ChecklistAnswer;
-  };
-}
-
 interface FormData {
   companyName: string;
   date: string;
@@ -66,6 +56,7 @@ interface FormData {
   auditorSignature: string;
   managerSignature: string;
 }
+
 
 // Define all sections with their questions
 const sections = [
