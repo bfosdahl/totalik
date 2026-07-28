@@ -1,15 +1,22 @@
-import { useState } from 'react';
+import { useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useAuditFormResponses, type AuditFormResponse } from '@/hooks/useAuditFormResponses';
-import type { Json } from '@/integrations/supabase/types';
+import { useAuditFormBase } from '@/hooks/useAuditFormBase';
+import {
+  useChecklistSectionsState,
+  initChecklistState,
+  type SectionQuestions,
+  type ChecklistAnswers,
+} from '@/hooks/useChecklistSectionsState';
+import { getLocalDateString } from '@/lib/dateUtils';
 import SavedFormsList from './SavedFormsList';
-import EditableChecklistSection, { type ChecklistQuestion, type ChecklistAnswer } from './EditableChecklistSection';
+import EditableChecklistSection from './EditableChecklistSection';
 import UserSelect from './UserSelect';
+
 import { 
   MessageSquare, 
   Users, 
