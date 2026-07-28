@@ -78,7 +78,7 @@ const ElKontrollForm: React.FC = () => {
 
   const getInitialFormData = (): FormData => ({
     companyName: company?.name || "",
-    controlDate: new Date().toISOString().split("T")[0],
+    controlDate: getLocalDateString(),
     location: "",
     controlledBy: profile ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() : "",
     sections: {
