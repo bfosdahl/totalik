@@ -1,15 +1,22 @@
-import { useState } from 'react';
+import { useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useAuditFormResponses, type AuditFormResponse } from '@/hooks/useAuditFormResponses';
-import type { Json } from '@/integrations/supabase/types';
+import { useAuditFormBase } from '@/hooks/useAuditFormBase';
+import {
+  useChecklistSectionsState,
+  initChecklistState,
+  type SectionQuestions,
+  type ChecklistAnswers,
+} from '@/hooks/useChecklistSectionsState';
+import { getLocalDateString } from '@/lib/dateUtils';
 import SavedFormsList from './SavedFormsList';
-import EditableChecklistSection, { type ChecklistQuestion, type ChecklistAnswer } from './EditableChecklistSection';
+import EditableChecklistSection from './EditableChecklistSection';
 import UserSelect from './UserSelect';
+
 import { 
   MessageSquare, 
   Users, 
@@ -28,16 +35,6 @@ import {
   ArrowLeft
 } from 'lucide-react';
 
-interface SectionQuestions {
-  [sectionId: string]: ChecklistQuestion[];
-}
-
-interface ChecklistAnswers {
-  [sectionId: string]: {
-    [questionId: string]: ChecklistAnswer;
-  };
-}
-
 interface FormData {
   companyName: string;
   date: string;
@@ -49,6 +46,7 @@ interface FormData {
   auditorSignature: string;
   managerSignature: string;
 }
+
 
 // Define all sections with their default questions
 const sections = [
@@ -165,185 +163,63 @@ const sections = [
   },
 ];
 
-function initializeSectionQuestions(): SectionQuestions {
-  const sectionQuestions: SectionQuestions = {};
-  sections.forEach(section => {
-    sectionQuestions[section.id] = section.questions.map(q => ({
-      id: q.id,
-      question: q.question
-    }));
-  });
-  return sectionQuestions;
-}
-
-function initializeChecklistAnswers(sectionQuestions: SectionQuestions): ChecklistAnswers {
-  const answers: ChecklistAnswers = {};
-  Object.keys(sectionQuestions).forEach(sectionId => {
-    answers[sectionId] = {};
-    sectionQuestions[sectionId].forEach(q => {
-      answers[sectionId][q.id] = { answer: '', comment: '' };
-    });
-  });
-  return answers;
-}
-
 const DagligDriftForm = () => {
   const { company } = useAuth();
-  const { responses, saveFormResponse, deleteFormResponse, isSaving } = useAuditFormResponses();
-  const [existingId, setExistingId] = useState<string | undefined>();
-  const [showForm, setShowForm] = useState(false);
 
-  const getInitialFormData = (): FormData => {
-    const sectionQuestions = initializeSectionQuestions();
+  const getInitialFormData = useCallback((): FormData => {
+    const { sectionQuestions, checklistAnswers } = initChecklistState(sections);
     return {
       companyName: company?.name || '',
-      date: new Date().toISOString().split('T')[0],
+      date: getLocalDateString(),
       participants: '',
       auditor: '',
       sectionQuestions,
-      checklistAnswers: initializeChecklistAnswers(sectionQuestions),
+      checklistAnswers,
       otherComments: '',
       auditorSignature: '',
       managerSignature: '',
     };
-  };
+  }, [company?.name]);
 
-  const [formData, setFormData] = useState<FormData>(getInitialFormData());
-  const formTypeResponses = responses.filter(r => r.form_type === "daglig_drift");
+  const {
+    formData,
+    setFormData,
+    isSaving,
+    showForm,
+    formTypeResponses,
+    handleCreateNew,
+    handleSelectResponse,
+    handleDelete,
+    handleBackToList,
+    handleSaveDraft,
+    handleSaveCompleted,
+  } = useAuditFormBase<FormData>({
+    formType: 'daglig_drift',
+    getInitialData: getInitialFormData,
+    buildMetadata: (data) => ({
+      revision_date: data.date,
+      participants: data.participants,
+      auditor_name: data.auditor,
+      manager_name: data.managerSignature,
+    }),
+    hydrate: (initial, saved) => ({
+      ...initial,
+      ...saved,
+      companyName: saved.companyName || company?.name || '',
+    }),
+  });
 
-  const handleCreateNew = () => {
-    setFormData(getInitialFormData());
-    setExistingId(undefined);
-    setShowForm(true);
-  };
-
-  const handleSelectResponse = (response: AuditFormResponse) => {
-    if (response.form_data) {
-      const savedData = response.form_data as unknown as FormData;
-      setFormData({
-        ...getInitialFormData(),
-        ...savedData,
-        companyName: savedData.companyName || company?.name || "",
-      });
-    }
-    setExistingId(response.id);
-    setShowForm(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    await deleteFormResponse(id);
-    if (existingId === id) {
-      setExistingId(undefined);
-      setShowForm(false);
-    }
-  };
-
-  const handleBackToList = () => {
-    setShowForm(false);
-  };
-
-  const updateChecklistAnswer = (sectionId: string, questionId: string, field: 'answer' | 'comment', value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      checklistAnswers: {
-        ...prev.checklistAnswers,
-        [sectionId]: {
-          ...prev.checklistAnswers[sectionId],
-          [questionId]: {
-            ...prev.checklistAnswers[sectionId]?.[questionId] || { answer: '', comment: '' },
-            [field]: value
-          }
-        }
-      }
-    }));
-  };
-
-  const handleAddQuestion = (sectionId: string, question: string) => {
-    const newId = `custom_${Date.now()}`;
-    setFormData(prev => ({
-      ...prev,
-      sectionQuestions: {
-        ...prev.sectionQuestions,
-        [sectionId]: [
-          ...prev.sectionQuestions[sectionId],
-          { id: newId, question }
-        ]
-      },
-      checklistAnswers: {
-        ...prev.checklistAnswers,
-        [sectionId]: {
-          ...prev.checklistAnswers[sectionId],
-          [newId]: { answer: '', comment: '' }
-        }
-      }
-    }));
-  };
-
-  const handleEditQuestion = (sectionId: string, questionId: string, newQuestion: string) => {
-    setFormData(prev => ({
-      ...prev,
-      sectionQuestions: {
-        ...prev.sectionQuestions,
-        [sectionId]: prev.sectionQuestions[sectionId].map(q =>
-          q.id === questionId ? { ...q, question: newQuestion } : q
-        )
-      }
-    }));
-  };
-
-  const handleDeleteQuestion = (sectionId: string, questionId: string) => {
-    setFormData(prev => {
-      const { [questionId]: removed, ...remainingAnswers } = prev.checklistAnswers[sectionId] || {};
-      return {
-        ...prev,
-        sectionQuestions: {
-          ...prev.sectionQuestions,
-          [sectionId]: prev.sectionQuestions[sectionId].filter(q => q.id !== questionId)
-        },
-        checklistAnswers: {
-          ...prev.checklistAnswers,
-          [sectionId]: remainingAnswers
-        }
-      };
-    });
-  };
-
-  const handleSaveDraft = async () => {
-    await saveFormResponse(
-      "daglig_drift",
-      formData as unknown as Json,
-      {
-        revision_date: formData.date,
-        participants: formData.participants,
-        auditor_name: formData.auditor,
-        manager_name: formData.managerSignature,
-      },
-      "draft",
-      existingId
-    );
-  };
+  const { updateAnswer, addQuestion, editQuestion, deleteQuestion } =
+    useChecklistSectionsState<FormData>(setFormData);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await saveFormResponse(
-      "daglig_drift",
-      formData as unknown as Json,
-      {
-        revision_date: formData.date,
-        participants: formData.participants,
-        auditor_name: formData.auditor,
-        manager_name: formData.managerSignature,
-      },
-      "completed",
-      existingId
-    );
-    if (result) {
-      setExistingId(result.id);
-    }
+    await handleSaveCompleted();
   };
 
   if (!showForm) {
     return (
+
       <SavedFormsList
         responses={formTypeResponses}
         onDelete={handleDelete}
@@ -448,14 +324,15 @@ const DagligDriftForm = () => {
             icon={section.icon}
             questions={formData.sectionQuestions[section.id] || []}
             answers={formData.checklistAnswers[section.id] || {}}
-            onAnswerChange={(questionId, field, value) => 
-              updateChecklistAnswer(section.id, questionId, field, value)
+            onAnswerChange={(questionId, field, value) =>
+              updateAnswer(section.id, questionId, field, value)
             }
-            onAddQuestion={(question) => handleAddQuestion(section.id, question)}
-            onEditQuestion={(questionId, newQuestion) => 
-              handleEditQuestion(section.id, questionId, newQuestion)
+            onAddQuestion={(question) => addQuestion(section.id, question)}
+            onEditQuestion={(questionId, newQuestion) =>
+              editQuestion(section.id, questionId, newQuestion)
             }
-            onDeleteQuestion={(questionId) => handleDeleteQuestion(section.id, questionId)}
+            onDeleteQuestion={(questionId) => deleteQuestion(section.id, questionId)}
+
           />
         );
       })}

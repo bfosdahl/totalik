@@ -10,6 +10,7 @@ import SavedFormsList from "./SavedFormsList";
 import EditableChecklistSection, { ChecklistQuestion, ChecklistAnswer } from "./EditableChecklistSection";
 import { useAuditFormResponses, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import type { Json } from "@/integrations/supabase/types";
+import { getLocalDateString } from "@/lib/dateUtils";
 
 interface SectionData {
   title: string;
@@ -78,7 +79,7 @@ const ElKontrollForm: React.FC = () => {
 
   const getInitialFormData = (): FormData => ({
     companyName: company?.name || "",
-    controlDate: new Date().toISOString().split("T")[0],
+    controlDate: getLocalDateString(),
     location: "",
     controlledBy: profile ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() : "",
     sections: {
