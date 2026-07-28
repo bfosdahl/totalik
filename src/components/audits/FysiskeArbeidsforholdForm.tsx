@@ -512,14 +512,15 @@ const FysiskeArbeidsforholdForm = () => {
             icon={section.icon}
             questions={formData.sectionQuestions[section.id] || []}
             answers={formData.checklistAnswers[section.id] || {}}
-            onAnswerChange={(questionId, field, value) => 
-              updateChecklistAnswer(section.id, questionId, field, value)
+            onAnswerChange={(questionId, field, value) =>
+              updateAnswer(section.id, questionId, field, value)
             }
-            onAddQuestion={(question) => handleAddQuestion(section.id, question)}
-            onEditQuestion={(questionId, newQuestion) => 
-              handleEditQuestion(section.id, questionId, newQuestion)
+            onAddQuestion={(question) => addQuestion(section.id, question)}
+            onEditQuestion={(questionId, newQuestion) =>
+              editQuestion(section.id, questionId, newQuestion)
             }
-            onDeleteQuestion={(questionId) => handleDeleteQuestion(section.id, questionId)}
+            onDeleteQuestion={(questionId) => deleteQuestion(section.id, questionId)}
+
           />
         );
       })}
