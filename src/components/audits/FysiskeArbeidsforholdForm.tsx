@@ -351,183 +351,60 @@ const sections = [
   },
 ];
 
-function initializeSectionQuestions(): SectionQuestions {
-  const sectionQuestions: SectionQuestions = {};
-  sections.forEach(section => {
-    sectionQuestions[section.id] = section.questions.map(q => ({
-      id: q.id,
-      question: q.question
-    }));
-  });
-  return sectionQuestions;
-}
-
-function initializeChecklistAnswers(sectionQuestions: SectionQuestions): ChecklistAnswers {
-  const answers: ChecklistAnswers = {};
-  Object.keys(sectionQuestions).forEach(sectionId => {
-    answers[sectionId] = {};
-    sectionQuestions[sectionId].forEach(q => {
-      answers[sectionId][q.id] = { answer: '', comment: '' };
-    });
-  });
-  return answers;
-}
-
 const FysiskeArbeidsforholdForm = () => {
   const { company } = useAuth();
-  const { responses, saveFormResponse, deleteFormResponse, isSaving } = useAuditFormResponses();
-  const [existingId, setExistingId] = useState<string | undefined>();
-  const [showForm, setShowForm] = useState(false);
 
-  const getInitialFormData = (): FormData => {
-    const sectionQuestions = initializeSectionQuestions();
+  const getInitialFormData = useCallback((): FormData => {
+    const { sectionQuestions, checklistAnswers } = initChecklistState(sections);
     return {
       companyName: company?.name || '',
-      date: new Date().toISOString().split('T')[0],
+      date: getLocalDateString(),
       participants: '',
       auditor: '',
       sectionQuestions,
-      checklistAnswers: initializeChecklistAnswers(sectionQuestions),
+      checklistAnswers,
       otherComments: '',
       auditorSignature: '',
       managerSignature: '',
     };
-  };
+  }, [company?.name]);
 
-  const [formData, setFormData] = useState<FormData>(getInitialFormData());
-  const formTypeResponses = responses.filter(r => r.form_type === "fysiske_forhold");
+  const {
+    formData,
+    setFormData,
+    isSaving,
+    showForm,
+    formTypeResponses,
+    handleCreateNew,
+    handleSelectResponse,
+    handleDelete,
+    handleBackToList,
+    handleSaveDraft,
+    handleSaveCompleted,
+  } = useAuditFormBase<FormData>({
+    formType: 'fysiske_forhold',
+    getInitialData: getInitialFormData,
+    buildMetadata: (data) => ({
+      revision_date: data.date,
+      participants: data.participants,
+      auditor_name: data.auditor,
+      manager_name: data.managerSignature,
+    }),
+    hydrate: (initial, saved) => ({
+      ...initial,
+      ...saved,
+      companyName: saved.companyName || company?.name || '',
+    }),
+  });
 
-  const handleCreateNew = () => {
-    setFormData(getInitialFormData());
-    setExistingId(undefined);
-    setShowForm(true);
-  };
-
-  const handleSelectResponse = (response: AuditFormResponse) => {
-    if (response.form_data) {
-      const savedData = response.form_data as unknown as FormData;
-      setFormData({
-        ...getInitialFormData(),
-        ...savedData,
-        companyName: savedData.companyName || company?.name || "",
-      });
-    }
-    setExistingId(response.id);
-    setShowForm(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    await deleteFormResponse(id);
-    if (existingId === id) {
-      setExistingId(undefined);
-      setShowForm(false);
-    }
-  };
-
-  const handleBackToList = () => {
-    setShowForm(false);
-  };
-
-  const updateChecklistAnswer = (sectionId: string, questionId: string, field: 'answer' | 'comment', value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      checklistAnswers: {
-        ...prev.checklistAnswers,
-        [sectionId]: {
-          ...prev.checklistAnswers[sectionId],
-          [questionId]: {
-            ...prev.checklistAnswers[sectionId][questionId],
-            [field]: value
-          }
-        }
-      }
-    }));
-  };
-
-  const handleAddQuestion = (sectionId: string, question: string) => {
-    const newId = `custom_${Date.now()}`;
-    setFormData(prev => ({
-      ...prev,
-      sectionQuestions: {
-        ...prev.sectionQuestions,
-        [sectionId]: [
-          ...prev.sectionQuestions[sectionId],
-          { id: newId, question }
-        ]
-      },
-      checklistAnswers: {
-        ...prev.checklistAnswers,
-        [sectionId]: {
-          ...prev.checklistAnswers[sectionId],
-          [newId]: { answer: '', comment: '' }
-        }
-      }
-    }));
-  };
-
-  const handleEditQuestion = (sectionId: string, questionId: string, newQuestion: string) => {
-    setFormData(prev => ({
-      ...prev,
-      sectionQuestions: {
-        ...prev.sectionQuestions,
-        [sectionId]: prev.sectionQuestions[sectionId].map(q =>
-          q.id === questionId ? { ...q, question: newQuestion } : q
-        )
-      }
-    }));
-  };
-
-  const handleDeleteQuestion = (sectionId: string, questionId: string) => {
-    setFormData(prev => {
-      const { [questionId]: removed, ...remainingAnswers } = prev.checklistAnswers[sectionId];
-      return {
-        ...prev,
-        sectionQuestions: {
-          ...prev.sectionQuestions,
-          [sectionId]: prev.sectionQuestions[sectionId].filter(q => q.id !== questionId)
-        },
-        checklistAnswers: {
-          ...prev.checklistAnswers,
-          [sectionId]: remainingAnswers
-        }
-      };
-    });
-  };
-
-  const handleSaveDraft = async () => {
-    console.log("[FysiskeArbeidsforhold] handleSaveDraft triggered, existingId:", existingId, "isSaving:", isSaving);
-    const result = await saveFormResponse(
-      "fysiske_forhold",
-      formData as unknown as Json,
-      {
-        revision_date: formData.date,
-        participants: formData.participants,
-        auditor_name: formData.auditor,
-        manager_name: formData.managerSignature,
-      },
-      "draft",
-      existingId
-    );
-  };
+  const { updateAnswer, addQuestion, editQuestion, deleteQuestion } =
+    useChecklistSectionsState<FormData>(setFormData);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await saveFormResponse(
-      "fysiske_forhold",
-      formData as unknown as Json,
-      {
-        revision_date: formData.date,
-        participants: formData.participants,
-        auditor_name: formData.auditor,
-        manager_name: formData.managerSignature,
-      },
-      "completed",
-      existingId
-    );
-    if (result) {
-      setExistingId(result.id);
-    }
+    await handleSaveCompleted();
   };
+
 
   if (!showForm) {
     return (
