@@ -148,6 +148,26 @@ async function loadImageAsDataUrl(url: string): Promise<string | null> {
 }
 
 // Shared helper — handles night shifts (end < start crosses midnight)
+/**
+ * Skalerer et bilde inn i en celle uten å strekke det (contain).
+ * Returnerer tegnebredde/-høyde samt x-offset for horisontal sentrering.
+ */
+export function fitImageInCell(
+  natW: number,
+  natH: number,
+  cellW: number,
+  maxH: number,
+): { drawW: number; drawH: number; offsetX: number } {
+  const ratio = natW > 0 && natH > 0 ? natW / natH : 4 / 3; // bredde/høyde
+  let drawW = cellW;
+  let drawH = cellW / ratio;
+  if (drawH > maxH) {
+    drawH = maxH;
+    drawW = maxH * ratio;
+  }
+  return { drawW, drawH, offsetX: (cellW - drawW) / 2 };
+}
+
 export function calculateWorkDuration(start?: string | null, end?: string | null): string | null {
   if (!start || !end) return null;
   const [sh, sm] = start.split(":").map(Number);
@@ -540,13 +560,8 @@ async function buildDailyReportPdf(
             natW = 4; natH = 3;
           }
         }
-        const ratio = natW > 0 && natH > 0 ? natW / natH : 4 / 3; // bredde/høyde
-        let drawW = cellW;
-        let drawH = cellW / ratio;
-        if (drawH > MAX_H) {
-          drawH = MAX_H;
-          drawW = MAX_H * ratio;
-        }
+        const fit = fitImageInCell(natW, natH, cellW, MAX_H);
+        const { drawW, drawH } = fit;
         const imgH = drawH;
 
         if (col === 0) {
@@ -558,7 +573,7 @@ async function buildDailyReportPdf(
         }
 
 
-        const x = margin + col * (cellW + gap) + (cellW - drawW) / 2;
+        const x = margin + col * (cellW + gap) + fit.offsetX;
         try {
           doc.addImage(data.dataUrl, "JPEG", x, rowStartY, drawW, drawH, undefined, "FAST");
         } catch (e) {

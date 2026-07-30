@@ -1,0 +1,62 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`fitImageInCell — sideforhold i dagsrapport-PDF > matcher layout-snapshot for alle formater 1`] = `
+[
+  {
+    "drawH": 66,
+    "drawW": 88,
+    "format": "4:3 landskap",
+    "offsetX": 0,
+    "ratioAvvik": 0,
+  },
+  {
+    "drawH": 80,
+    "drawW": 60,
+    "format": "3:4 portrett",
+    "offsetX": 14,
+    "ratioAvvik": 0,
+  },
+  {
+    "drawH": 80,
+    "drawW": 80,
+    "format": "kvadrat 1:1",
+    "offsetX": 4,
+    "ratioAvvik": 0,
+  },
+  {
+    "drawH": 49.5,
+    "drawW": 88,
+    "format": "16:9 panorama",
+    "offsetX": 0,
+    "ratioAvvik": 0,
+  },
+  {
+    "drawH": 29.333,
+    "drawW": 88,
+    "format": "ultrapanorama 3:1",
+    "offsetX": 0,
+    "ratioAvvik": 0,
+  },
+  {
+    "drawH": 80,
+    "drawW": 20,
+    "format": "ekstremt høyt 1:4",
+    "offsetX": 34,
+    "ratioAvvik": 0,
+  },
+  {
+    "drawH": 66,
+    "drawW": 88,
+    "format": "liten miniatyr",
+    "offsetX": 0,
+    "ratioAvvik": 0,
+  },
+  {
+    "drawH": 80,
+    "drawW": 57.143,
+    "format": "odde 5:7",
+    "offsetX": 15.429,
+    "ratioAvvik": 0,
+  },
+]
+`;
