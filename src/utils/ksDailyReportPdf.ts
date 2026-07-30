@@ -525,8 +525,17 @@ async function buildDailyReportPdf(
         processed++;
         onProgress?.(processed, photos.length, `Behandler bilde ${processed} av ${photos.length}…`);
         if (!data) continue;
-        const ratio = data.h / data.w;
-        const imgH = Math.min(imgW * ratio, 80);
+        // Behold korrekt sideforhold: skaler inn i cellen (contain), ingen strekk
+        const MAX_H = 80;
+        const cellW = imgW;
+        const ratio = data.w > 0 && data.h > 0 ? data.w / data.h : 4 / 3; // bredde/høyde
+        let drawW = cellW;
+        let drawH = cellW / ratio;
+        if (drawH > MAX_H) {
+          drawH = MAX_H;
+          drawW = MAX_H * ratio;
+        }
+        const imgH = drawH;
 
         if (col === 0) {
           ensureSpace(imgH + 6);
@@ -534,13 +543,14 @@ async function buildDailyReportPdf(
           rowMaxH = 0;
         }
 
-        const x = margin + col * (imgW + gap);
+        const x = margin + col * (cellW + gap) + (cellW - drawW) / 2;
         try {
-          doc.addImage(data.dataUrl, "JPEG", x, rowStartY, imgW, imgH, undefined, "FAST");
+          doc.addImage(data.dataUrl, "JPEG", x, rowStartY, drawW, drawH, undefined, "FAST");
         } catch (e) {
           console.warn("addImage failed", e);
         }
         rowMaxH = Math.max(rowMaxH, imgH);
+
 
         col++;
         if (col >= cols) {
