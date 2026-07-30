@@ -49,12 +49,56 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get user's company info if they have one
+    // Get target user's profile (company + registered email)
     const { data: profile } = await supabase
       .from("profiles")
-      .select("company_id")
+      .select("company_id, email")
       .eq("user_id", userId)
       .single();
+
+    // ===== AUTHORIZATION =====
+    // Cron/server-to-server (auth.userId === null) is trusted.
+    // Otherwise: caller must be the user themselves, or an admin of that user's company.
+    if (auth.userId) {
+      const isSelf = auth.userId === userId;
+      if (!isSelf) {
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", auth.userId);
+        const isSystemAdmin = roles?.some((r) => r.role === "system_admin");
+        const isCompanyAdmin = roles?.some((r) => r.role === "company_admin");
+
+        let allowed = !!isSystemAdmin;
+        if (!allowed && isCompanyAdmin) {
+          const { data: callerProfile } = await supabase
+            .from("profiles")
+            .select("company_id")
+            .eq("user_id", auth.userId)
+            .single();
+          allowed = !!callerProfile?.company_id &&
+            !!profile?.company_id &&
+            callerProfile.company_id === profile.company_id;
+        }
+
+        if (!allowed) {
+          return new Response(
+            JSON.stringify({ error: "Forbidden" }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+      }
+    }
+
+    // Never send to an attacker-supplied address: always use the registered email.
+    const recipientEmail = profile?.email ?? email;
+    if (auth.userId && recipientEmail !== email) {
+      return new Response(
+        JSON.stringify({ error: "Email does not match the user account" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    // =========================
 
     let companyName = "Total-IK";
     if (profile?.company_id) {
