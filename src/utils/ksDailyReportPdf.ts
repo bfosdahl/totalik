@@ -560,13 +560,8 @@ async function buildDailyReportPdf(
             natW = 4; natH = 3;
           }
         }
-        const ratio = natW > 0 && natH > 0 ? natW / natH : 4 / 3; // bredde/høyde
-        let drawW = cellW;
-        let drawH = cellW / ratio;
-        if (drawH > MAX_H) {
-          drawH = MAX_H;
-          drawW = MAX_H * ratio;
-        }
+        const fit = fitImageInCell(natW, natH, cellW, MAX_H);
+        const { drawW, drawH } = fit;
         const imgH = drawH;
 
         if (col === 0) {
