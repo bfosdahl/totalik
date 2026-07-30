@@ -528,7 +528,19 @@ async function buildDailyReportPdf(
         // Behold korrekt sideforhold: skaler inn i cellen (contain), ingen strekk
         const MAX_H = 80;
         const cellW = imgW;
-        const ratio = data.w > 0 && data.h > 0 ? data.w / data.h : 4 / 3; // bredde/høyde
+        // Fallback: hvis komprimering ikke ga dimensjoner, les dem fra selve bildet
+        let natW = data.w;
+        let natH = data.h;
+        if (!(natW > 0 && natH > 0)) {
+          try {
+            const props = doc.getImageProperties(data.dataUrl);
+            natW = props.width;
+            natH = props.height;
+          } catch {
+            natW = 4; natH = 3;
+          }
+        }
+        const ratio = natW > 0 && natH > 0 ? natW / natH : 4 / 3; // bredde/høyde
         let drawW = cellW;
         let drawH = cellW / ratio;
         if (drawH > MAX_H) {
@@ -538,10 +550,13 @@ async function buildDailyReportPdf(
         const imgH = drawH;
 
         if (col === 0) {
-          ensureSpace(imgH + 6);
+          // Reserver plass for verste tilfelle i raden, slik at et høyt bilde
+          // i kolonne 2 ikke renner utenfor siden
+          ensureSpace(MAX_H + 6);
           rowStartY = y;
           rowMaxH = 0;
         }
+
 
         const x = margin + col * (cellW + gap) + (cellW - drawW) / 2;
         try {
