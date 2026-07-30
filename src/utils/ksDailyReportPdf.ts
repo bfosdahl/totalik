@@ -573,7 +573,7 @@ async function buildDailyReportPdf(
         }
 
 
-        const x = margin + col * (cellW + gap) + (cellW - drawW) / 2;
+        const x = margin + col * (cellW + gap) + fit.offsetX;
         try {
           doc.addImage(data.dataUrl, "JPEG", x, rowStartY, drawW, drawH, undefined, "FAST");
         } catch (e) {
