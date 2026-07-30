@@ -528,7 +528,7 @@ async function buildDailyReportPdf(
         // Behold korrekt sideforhold: skaler inn i cellen (contain), ingen strekk
         const MAX_H = 80;
         const cellW = imgW;
-        const ratio = data.w / data.h; // bredde/høyde
+        const ratio = data.w > 0 && data.h > 0 ? data.w / data.h : 4 / 3; // bredde/høyde
         let drawW = cellW;
         let drawH = cellW / ratio;
         if (drawH > MAX_H) {
