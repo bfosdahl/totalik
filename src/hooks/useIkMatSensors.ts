@@ -8,6 +8,8 @@ export interface SensorEndpoint {
   company_id: string;
   department_id: string | null;
   token: string;
+  name: string | null;
+  alert_emails: string[];
   is_active: boolean;
   last_received_at: string | null;
   last_error: string | null;
@@ -23,10 +25,37 @@ export interface IkMatSensor {
   external_id: string;
   name: string | null;
   provider: string | null;
+  location: string | null;
   is_active: boolean;
+  is_offline: boolean;
   last_reading_at: string | null;
   last_temperature: number | null;
   last_battery: number | null;
+  alert_emails: string[];
+  min_temp_override: number | null;
+  max_temp_override: number | null;
+  breach_grace_minutes: number;
+  offline_after_minutes: number;
+  low_battery_threshold: number;
+  breach_started_at: string | null;
+  last_temp_alert_at: string | null;
+  last_offline_alert_at: string | null;
+  last_battery_alert_at: string | null;
+  created_at: string;
+}
+
+export interface SensorAlert {
+  id: string;
+  company_id: string;
+  sensor_id: string | null;
+  equipment_id: string | null;
+  alert_type: string;
+  severity: string;
+  message: string;
+  temperature: number | null;
+  deviation_number: string | null;
+  recipients: string[];
+  email_status: string | null;
   created_at: string;
 }
 
