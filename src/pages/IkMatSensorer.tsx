@@ -356,6 +356,61 @@ export default function IkMatSensorer() {
           </CardContent>
         </Card>
 
+        {/* Varslingslogg */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5" /> Varslingslogg
+            </CardTitle>
+            <CardDescription>
+              Dokumentasjon på at alarmer er sendt — kan vises fram ved tilsyn.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {alerts.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Ingen varsler er sendt ennå.</p>
+            ) : (
+              alerts.map((a) => (
+                <div key={a.id} className="rounded-lg border p-3 text-sm space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className={
+                        a.severity === 'high'
+                          ? 'bg-destructive/10 text-destructive border-destructive/30'
+                          : ''
+                      }
+                    >
+                      {a.alert_type === 'offline'
+                        ? 'Offline'
+                        : a.alert_type === 'low_battery'
+                        ? 'Lavt batteri'
+                        : 'Temperatur'}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(a.created_at).toLocaleString('nb-NO')}
+                    </span>
+                    {a.deviation_number && (
+                      <Badge variant="secondary">{a.deviation_number}</Badge>
+                    )}
+                    {a.email_status && (
+                      <Badge variant="outline" className="text-xs">
+                        E-post: {a.email_status === 'sent' ? 'sendt' : a.email_status}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="whitespace-pre-line">{a.message}</p>
+                  {a.recipients?.length > 0 && (
+                    <p className="text-xs text-muted-foreground">Til: {a.recipients.join(', ')}</p>
+                  )}
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+
+
         {/* Help */}
         <Card>
           <CardHeader>
