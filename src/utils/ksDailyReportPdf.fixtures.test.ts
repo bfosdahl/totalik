@@ -1,8 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { jsPDF } from "jspdf";
 import { fitImageInCell } from "./ksDailyReportPdf";
 import { FIXTURE_REPORTS, FIXTURE_PHOTOS } from "./__fixtures__/dailyReports";
 import { writeAspectDiffImage } from "./__fixtures__/pdfDiffImage";
+import { savePdfArtifact, writeBeforeAfterOverlay } from "./__fixtures__/pdfArtifacts";
 
 /**
  * Ende-til-ende-verifisering: bygger ekte PDF-er med jsPDF for et sett
@@ -141,6 +142,26 @@ describe("dagsrapport-PDF — fixtures med ekte bilder", () => {
     const doc = buildReportPdf(report.photos);
     const placements = readImagePlacements(doc);
 
+    // Lagrer den faktisk genererte PDF-en naar en test i denne rapporten feiler,
+    // slik at den kan aapnes direkte fra CI-artefaktene.
+    afterEach((ctx) => {
+      if (ctx.task.result?.state === "fail") {
+        savePdfArtifact(`${report.report_number}-${report.name}`, doc);
+      }
+    });
+
+    /** For/etter-overlay + crop av kildebildet ved avvik. */
+    const dumpOverlay = (photo: (typeof report.photos)[number], pl: Placement, suffix: string) =>
+      writeBeforeAfterOverlay({
+        name: `${report.report_number}-${photo.id ?? photo.label}-${suffix}`,
+        sourceWidth: photo.width,
+        sourceHeight: photo.height,
+        sourceDataUrl: photo.dataUrl,
+        actualW: pl.wMm,
+        actualH: pl.hMm,
+        notes: [`Rapport: ${report.name}`, `Bilde: ${photo.label} (${photo.mime})`],
+      });
+
     it("tegner alle bildene", () => {
       expect(placements).toHaveLength(report.photos.length);
     });
@@ -158,6 +179,8 @@ describe("dagsrapport-PDF — fixtures med ekte bilder", () => {
             actualW: pl.wMm,
             actualH: pl.hMm,
           });
+          const overlay = dumpOverlay(photo, pl, "sideforhold");
+          const pdf = savePdfArtifact(`${report.report_number}-${report.name}`, doc);
           throw new Error(
             [
               `SIDEFORHOLD-REGRESJON i dagsrapport-PDF`,
@@ -167,6 +190,8 @@ describe("dagsrapport-PDF — fixtures med ekte bilder", () => {
               `  Faktisk:   ${actual.toFixed(4)} (${pl.wMm.toFixed(2)}x${pl.hMm.toFixed(2)} mm)`,
               `  Avvik:     ${(deviation * 100).toFixed(2)} % (maks ${(MAX_RATIO_DEVIATION * 100).toFixed(2)} %)`,
               `  Diffbilde: ${file}`,
+              `  For/etter: ${overlay.png}`,
+              `  PDF:       ${pdf}`,
             ].join("\n"),
           );
         }
@@ -187,6 +212,8 @@ describe("dagsrapport-PDF — fixtures med ekte bilder", () => {
             actualW: pl.wMm,
             actualH: pl.hMm,
           });
+          const overlay = dumpOverlay(photo, pl, "strekk");
+          const pdf = savePdfArtifact(`${report.report_number}-${report.name}`, doc);
           throw new Error(
             [
               `BILDESTREKK i dagsrapport-PDF`,
@@ -194,6 +221,8 @@ describe("dagsrapport-PDF — fixtures med ekte bilder", () => {
               `  Bilde:     ${photo.label} (${photo.width}x${photo.height})`,
               `  Strekk:    ${stretch.toFixed(5)} (maks ${MAX_STRETCH})`,
               `  Diffbilde: ${file}`,
+              `  For/etter: ${overlay.png}`,
+              `  PDF:       ${pdf}`,
             ].join("\n"),
           );
         }
