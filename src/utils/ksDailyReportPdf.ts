@@ -165,7 +165,6 @@ export function fitImageInCell(
     drawH = maxH;
     drawW = maxH * ratio;
   }
-  drawW = drawW * 1.15; // BUG-SIMULERING
   return { drawW, drawH, offsetX: (cellW - drawW) / 2 };
 }
 

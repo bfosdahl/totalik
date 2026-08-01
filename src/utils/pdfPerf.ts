@@ -159,7 +159,7 @@ export const PDF_PERF_SCENARIOS: PerfScenario[] = [
   {
     id: "dagsrapport-30-bilder",
     name: "Dagsrapport med 30 bilder",
-    budget: { maxUnits: 0.001, maxHeapMb: 220 },
+    budget: { maxUnits: 45, maxHeapMb: 220 },
     run: () => buildPhotoGridPdf(30),
   },
   {
