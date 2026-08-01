@@ -9,7 +9,7 @@ import {
   MessageCircle, ListChecks, Clock, CalendarDays, Calendar, Briefcase,
   UserCircle, FileText, UserCheck, BarChart3, HeartPulse, ShieldAlert, Scale,
   FlaskConical, ShoppingCart, FolderOpen, Target, Wine, Thermometer, SprayCan,
-  Wheat, Handshake, Search, Mail, Car, Printer, Download, Award, IdCard, LayoutGrid, Wand2,
+  Wheat, Handshake, Search, Mail, Car, Printer, Download, Award, IdCard, LayoutGrid, Wand2, Radio,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -72,6 +72,7 @@ const ikMatItems: NavItem[] = [
   { icon: AlertTriangle, labelKey: "nav.riskAndMeasures", path: "/ik-mat/risiko-og-tiltak", color: "text-orange-500" },
   { icon: ListChecks, labelKey: "nav.routines", path: "/ik-mat/rutiner", color: "text-teal-500" },
   { icon: ClipboardCheck, labelKey: "nav.control", path: "/ik-mat/kontroll", color: "text-emerald-500" },
+  { icon: Radio, label: "Sensorer", path: "/ik-mat/sensorer", color: "text-blue-500" },
   { icon: AlertTriangle, labelKey: "nav.deviations", path: "/ik-mat/avvik", color: "text-red-500" },
   { icon: Wheat, labelKey: "nav.allergens", path: "/ik-mat/allergener", color: "text-amber-500" },
   { icon: LayoutGrid, labelKey: "nav.kitchenLayout", path: "/ik-mat/kjokkenplan", color: "text-cyan-500" },
