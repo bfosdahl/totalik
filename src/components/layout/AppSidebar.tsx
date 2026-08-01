@@ -9,7 +9,7 @@ import {
   MessageCircle, ListChecks, Clock, CalendarDays, Calendar, Briefcase,
   UserCircle, FileText, UserCheck, BarChart3, HeartPulse, ShieldAlert, Scale,
   FlaskConical, ShoppingCart, FolderOpen, Target, Wine, Thermometer, SprayCan,
-  Wheat, Handshake, Search, Mail, Car, Printer, Download, Award, IdCard, LayoutGrid, Wand2,
+  Wheat, Handshake, Search, Mail, Car, Printer, Download, Award, IdCard, LayoutGrid, Wand2, Radio,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
