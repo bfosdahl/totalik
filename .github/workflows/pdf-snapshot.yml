@@ -50,7 +50,7 @@ jobs:
                 echo '```'
               done
               echo ""
-              echo "Forskjellsbildene (PNG: grønn ramme = forventet, rød ramme = faktisk) ligger i artefakten **pdf-diff-images**."
+              echo "Forskjellsbildene (PNG: grønn ramme = forventet, rød ramme = faktisk), før/etter-overlay og de faktisk genererte PDF-ene ligger i artefakten **pdf-diff-images**."
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -103,6 +103,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pdf-perf-log-${{ github.run_attempt }}
-          path: /tmp/pdf-perf.log
+          path: |
+            /tmp/pdf-perf.log
+            test-artifacts/pdf-diff/
           if-no-files-found: warn
           retention-days: 14

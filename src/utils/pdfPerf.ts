@@ -34,6 +34,8 @@ export interface PerfResult {
   heapMb: number;
   bytes: number;
   budget: PerfBudget;
+  /** Den genererte PDF-en, lagres som artefakt hvis testen feiler. */
+  buffer: ArrayBuffer;
 }
 
 const PAGE_W = 210;
@@ -201,6 +203,7 @@ export async function measureScenario(
     heapMb: Math.max(0, (heapAfter - heapBefore) / (1024 * 1024)),
     bytes: buffer.byteLength,
     budget: scenario.budget,
+    buffer,
   };
 }
 

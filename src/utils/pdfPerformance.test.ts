@@ -1,4 +1,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
+import { writeFileSync, mkdirSync } from "node:fs";
+import path from "node:path";
+import { ARTIFACT_DIR, artifactSlug, saveTextArtifact } from "./__fixtures__/pdfArtifacts";
 import {
   PDF_PERF_SCENARIOS,
   measureScenario,
@@ -35,15 +38,35 @@ describe("PDF-ytelse (dagsrapport, handbok, avvik)", () => {
         // eslint-disable-next-line no-console
         console.log(formatPerfRow(result));
 
-        expect(result.bytes).toBeGreaterThan(1000);
-        expect(
-          result.units,
-          `Ytelsesregresjon i genereringstid - ${formatPerfRow(result)}`,
-        ).toBeLessThanOrEqual(scenario.budget.maxUnits);
-        expect(
-          result.heapMb,
-          `Ytelsesregresjon i minnebruk - ${formatPerfRow(result)}`,
-        ).toBeLessThanOrEqual(scenario.budget.maxHeapMb);
+        // Lagre den genererte PDF-en + maaletall hvis noe sprekker
+        const dumpArtifacts = () => {
+          mkdirSync(ARTIFACT_DIR, { recursive: true });
+          const slug = artifactSlug(`ytelse-${result.id}`);
+          const pdf = path.join(ARTIFACT_DIR, `${slug}.pdf`);
+          writeFileSync(pdf, Buffer.from(result.buffer));
+          const txt = saveTextArtifact(slug, [
+            formatPerfRow(result),
+            `Kalibrering: ${calibrationMs.toFixed(1)} ms pr. kalibreringsenhet (KE)`,
+            `Budsjett: ${scenario.budget.maxUnits} KE / ${scenario.budget.maxHeapMb} MB`,
+            `Generert PDF: ${pdf}`,
+          ]);
+          return { pdf, txt };
+        };
+
+        try {
+          expect(result.bytes).toBeGreaterThan(1000);
+          expect(
+            result.units,
+            `Ytelsesregresjon i genereringstid - ${formatPerfRow(result)}`,
+          ).toBeLessThanOrEqual(scenario.budget.maxUnits);
+          expect(
+            result.heapMb,
+            `Ytelsesregresjon i minnebruk - ${formatPerfRow(result)}`,
+          ).toBeLessThanOrEqual(scenario.budget.maxHeapMb);
+        } catch (err) {
+          const { pdf } = dumpArtifacts();
+          throw new Error(`${(err as Error).message}\n  Generert PDF: ${pdf}`);
+        }
       },
       60_000,
     );
