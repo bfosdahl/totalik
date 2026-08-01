@@ -7885,6 +7885,126 @@ export type Database = {
           },
         ]
       }
+      ik_mat_sensor_endpoints: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          id: string
+          is_active: boolean
+          last_error: string | null
+          last_received_at: string | null
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          id?: string
+          is_active?: boolean
+          last_error?: string | null
+          last_received_at?: string | null
+          token: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          id?: string
+          is_active?: boolean
+          last_error?: string | null
+          last_received_at?: string | null
+          token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_sensor_endpoints_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_mat_sensors: {
+        Row: {
+          company_id: string
+          created_at: string
+          department_id: string | null
+          endpoint_id: string | null
+          equipment_id: string | null
+          external_id: string
+          id: string
+          is_active: boolean
+          last_battery: number | null
+          last_reading_at: string | null
+          last_temperature: number | null
+          name: string | null
+          provider: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          department_id?: string | null
+          endpoint_id?: string | null
+          equipment_id?: string | null
+          external_id: string
+          id?: string
+          is_active?: boolean
+          last_battery?: number | null
+          last_reading_at?: string | null
+          last_temperature?: number | null
+          name?: string | null
+          provider?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          department_id?: string | null
+          endpoint_id?: string | null
+          equipment_id?: string | null
+          external_id?: string
+          id?: string
+          is_active?: boolean
+          last_battery?: number | null
+          last_reading_at?: string | null
+          last_temperature?: number | null
+          name?: string | null
+          provider?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_sensors_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_sensors_endpoint_id_fkey"
+            columns: ["endpoint_id"]
+            isOneToOne: false
+            referencedRelation: "ik_mat_sensor_endpoints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_sensors_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "ik_mat_temperature_equipment"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_mat_suppliers: {
         Row: {
           company_id: string
