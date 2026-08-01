@@ -151,6 +151,12 @@ Deno.serve(async (req) => {
     }
 
     const companyId = endpoint.company_id as string;
+    const { data: companyRow } = await supabase
+      .from('companies')
+      .select('name')
+      .eq('id', companyId)
+      .maybeSingle();
+    const companyName: string = companyRow?.name || 'Total-IK';
     const results: any[] = [];
 
     for (const reading of readings) {
