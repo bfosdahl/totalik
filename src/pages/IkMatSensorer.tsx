@@ -308,6 +308,7 @@ export default function IkMatSensorer() {
                   </div>
 
                   <div className="flex flex-wrap gap-2 text-xs">
+                    {renderStatus(sensor)}
                     {sensor.last_temperature !== null && (
                       <Badge variant="secondary" className="gap-1">
                         <Thermometer className="h-3 w-3" /> {sensor.last_temperature} °C
@@ -342,6 +343,12 @@ export default function IkMatSensorer() {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <SensorAlarmSettings
+                    sensor={sensor}
+                    onSave={(patch) => updateSensor.mutate(patch)}
+                    isSaving={updateSensor.isPending}
+                  />
                 </div>
               ))
             )}
