@@ -59,6 +59,23 @@ export default function IkMatSensorer() {
   };
 
   const unmappedCount = sensors.filter((s) => !s.equipment_id).length;
+  const statuses = sensors.map((s) => sensorStatus(s));
+  const counts = {
+    ok: statuses.filter((s) => s === 'ok').length,
+    alarm: statuses.filter((s) => s === 'alarm').length,
+    offline: statuses.filter((s) => s === 'offline').length,
+    unmapped: statuses.filter((s) => s === 'unmapped').length,
+  };
+
+  const renderStatus = (sensor: IkMatSensor) => {
+    const meta = STATUS_META[sensorStatus(sensor)];
+    const Icon = meta.Icon;
+    return (
+      <Badge variant="outline" className={`gap-1 ${meta.className}`}>
+        <Icon className="h-3 w-3" /> {meta.label}
+      </Badge>
+    );
+  };
 
   return (
     <AppLayout>
@@ -69,10 +86,52 @@ export default function IkMatSensorer() {
             Automatiske sensorer
           </h1>
           <p className="text-muted-foreground mt-1">
-            Koble trådløse temperatursensorer til IK-Mat. Målinger logges automatisk, og avvik opprettes
-            når temperaturen går utenfor grensene.
+            Koble trådløse temperatursensorer til IK-Mat. Målinger logges automatisk, avvik opprettes
+            og ansvarlige varsles på e-post når noe er galt — også når en sensor slutter å svare.
           </p>
         </div>
+
+        {/* Live driftsstatus */}
+        {sensors.length > 0 && (
+          <Card>
+            <CardHeader className="flex flex-row items-start justify-between gap-4">
+              <div>
+                <CardTitle>Driftsstatus</CardTitle>
+                <CardDescription>Oppdateres automatisk hvert minutt.</CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => runWatchdog.mutate()}
+                disabled={runWatchdog.isPending}
+              >
+                <ShieldAlert className="h-4 w-4 mr-2" /> Kjør sensorsjekk
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="rounded-lg border p-3">
+                  <p className="text-2xl font-bold text-primary">{counts.ok}</p>
+                  <p className="text-xs text-muted-foreground">I orden</p>
+                </div>
+                <div className="rounded-lg border p-3">
+                  <p className="text-2xl font-bold text-destructive">{counts.alarm}</p>
+                  <p className="text-xs text-muted-foreground">Temperaturalarm</p>
+                </div>
+                <div className="rounded-lg border p-3">
+                  <p className="text-2xl font-bold">{counts.offline}</p>
+                  <p className="text-xs text-muted-foreground">Offline</p>
+                </div>
+                <div className="rounded-lg border p-3">
+                  <p className="text-2xl font-bold">{counts.unmapped}</p>
+                  <p className="text-xs text-muted-foreground">Ikke koblet</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+
 
         {/* Endpoint */}
         <Card>
