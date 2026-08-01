@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { Copy, RefreshCw, Radio, Plus, Trash2, Thermometer, BatteryMedium, Info, ShieldAlert, WifiOff, CheckCircle2, AlertTriangle, Bell } from 'lucide-react';
 import { useIkMatSensors, getWebhookUrl, sensorStatus, type IkMatSensor } from '@/hooks/useIkMatSensors';
 import { useIkMatTemperature } from '@/hooks/useIkMatTemperature';
+import { SensorAlarmSettings } from '@/components/ik-mat/SensorAlarmSettings';
 
 const UNMAPPED = '__none__';
 
