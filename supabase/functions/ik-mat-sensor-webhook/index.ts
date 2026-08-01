@@ -90,19 +90,7 @@ function parseReadings(payload: any): Reading[] {
   return readings;
 }
 
-async function nextDeviationNumber(supabase: any, companyId: string): Promise<string> {
-  const { data } = await supabase
-    .from('deviations')
-    .select('deviation_number')
-    .eq('company_id', companyId)
-    .like('deviation_number', 'IKM-%');
-  let max = 0;
-  for (const row of data ?? []) {
-    const m = String(row.deviation_number).match(/IKM-(\d+)/);
-    if (m) max = Math.max(max, parseInt(m[1], 10));
-  }
-  return `IKM-${String(max + 1).padStart(3, '0')}`;
-}
+const nextDeviationNumber = sharedNextDeviationNumber;
 
 function localDateString(d: Date): string {
   const p = (n: number) => String(n).padStart(2, '0');
