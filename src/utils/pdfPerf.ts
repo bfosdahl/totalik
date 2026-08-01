@@ -72,22 +72,22 @@ export function buildPhotoGridPdf(photoCount: number): jsPDF {
   for (let i = 0; i < photoCount; i++) {
     const photo = FIXTURE_PHOTOS[Math.floor(rnd() * FIXTURE_PHOTOS.length)];
     const fit = fitImageInCell(photo.width, photo.height, CELL_W, MAX_H);
-    if (y + fit.height > PAGE_H - 20) {
+    if (y + fit.drawH > PAGE_H - 20) {
       doc.addPage();
       y = 20;
       x = MARGIN;
       rowH = 0;
     }
-    const offsetX = x + (CELL_W - fit.width) / 2;
+    const offsetX = x + fit.offsetX;
     doc.addImage(
       photo.dataUrl,
       photo.mime === "image/png" ? "PNG" : "JPEG",
       offsetX,
       y,
-      fit.width,
-      fit.height,
+      fit.drawW,
+      fit.drawH,
     );
-    rowH = Math.max(rowH, fit.height);
+    rowH = Math.max(rowH, fit.drawH);
     if (i % COLS === COLS - 1) {
       x = MARGIN;
       y += rowH + GAP + 5;
