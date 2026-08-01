@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { jsPDF } from "jspdf";
 import { fitImageInCell } from "./ksDailyReportPdf";
 import { FIXTURE_REPORTS, FIXTURE_PHOTOS } from "./__fixtures__/dailyReports";
+import { writeAspectDiffImage } from "./__fixtures__/pdfDiffImage";
 
 /**
  * Ende-til-ende-verifisering: bygger ekte PDF-er med jsPDF for et sett
