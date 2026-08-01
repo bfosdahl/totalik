@@ -1,5 +1,10 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import {
+  sendSensorAlert,
+  resolveRecipients,
+  nextDeviationNumber as sharedNextDeviationNumber,
+} from '../_shared/sensorAlerts.ts';
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -85,19 +90,7 @@ function parseReadings(payload: any): Reading[] {
   return readings;
 }
 
-async function nextDeviationNumber(supabase: any, companyId: string): Promise<string> {
-  const { data } = await supabase
-    .from('deviations')
-    .select('deviation_number')
-    .eq('company_id', companyId)
-    .like('deviation_number', 'IKM-%');
-  let max = 0;
-  for (const row of data ?? []) {
-    const m = String(row.deviation_number).match(/IKM-(\d+)/);
-    if (m) max = Math.max(max, parseInt(m[1], 10));
-  }
-  return `IKM-${String(max + 1).padStart(3, '0')}`;
-}
+const nextDeviationNumber = sharedNextDeviationNumber;
 
 function localDateString(d: Date): string {
   const p = (n: number) => String(n).padStart(2, '0');
@@ -158,6 +151,12 @@ Deno.serve(async (req) => {
     }
 
     const companyId = endpoint.company_id as string;
+    const { data: companyRow } = await supabase
+      .from('companies')
+      .select('name')
+      .eq('id', companyId)
+      .maybeSingle();
+    const companyName: string = companyRow?.name || 'Total-IK';
     const results: any[] = [];
 
     for (const reading of readings) {
@@ -185,20 +184,58 @@ Deno.serve(async (req) => {
         results.push({ sensor: reading.externalId, status: 'registered_unmapped' });
       }
 
-      await supabase
-        .from('ik_mat_sensors')
-        .update({
-          last_reading_at: reading.measuredAt,
-          last_temperature: reading.temperature,
-          last_battery: reading.battery,
-        })
-        .eq('id', sensor.id);
+      const sensorUpdate: Record<string, unknown> = {
+        last_reading_at: reading.measuredAt,
+        last_temperature: reading.temperature,
+        last_battery: reading.battery,
+      };
+      if (sensor.is_offline) {
+        sensorUpdate.is_offline = false;
+        sensorUpdate.last_offline_alert_at = null;
+      }
 
       if (!sensor.is_active) {
+        await supabase.from('ik_mat_sensors').update(sensorUpdate).eq('id', sensor.id);
         results.push({ sensor: reading.externalId, status: 'inactive_skipped' });
         continue;
       }
+
+      const sensorName = sensor.name || reading.externalId;
+
+      // Lavt batteri -> varsel maks en gang per doegn
+      const batteryThreshold = sensor.low_battery_threshold ?? 20;
+      if (
+        reading.battery !== null &&
+        batteryThreshold > 0 &&
+        reading.battery <= batteryThreshold
+      ) {
+        const lastBatteryAlert = sensor.last_battery_alert_at
+          ? new Date(sensor.last_battery_alert_at).getTime()
+          : 0;
+        if (Date.now() - lastBatteryAlert > 24 * 60 * 60 * 1000) {
+          await sendSensorAlert(supabase, {
+            companyId,
+            companyName,
+            sensorId: sensor.id,
+            sensorName,
+            equipmentId: sensor.equipment_id,
+            alertType: 'low_battery',
+            severity: 'medium',
+            subject: `Lavt batteri pa sensor: ${sensorName}`,
+            lines: [
+              `Sensor: ${sensorName}`,
+              `Batterinivaa: ${reading.battery} %`,
+              `Varselgrense: ${batteryThreshold} %`,
+              'Bytt batteri for aa unngaa hull i temperaturloggen.',
+            ],
+            recipients: await resolveRecipients(supabase, companyId, sensor.alert_emails, endpoint.alert_emails),
+          });
+          sensorUpdate.last_battery_alert_at = new Date().toISOString();
+        }
+      }
+
       if (!sensor.equipment_id) {
+        await supabase.from('ik_mat_sensors').update(sensorUpdate).eq('id', sensor.id);
         results.push({ sensor: reading.externalId, status: 'unmapped' });
         continue;
       }
@@ -210,13 +247,24 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (!equipment) {
+        await supabase.from('ik_mat_sensors').update(sensorUpdate).eq('id', sensor.id);
         results.push({ sensor: reading.externalId, status: 'equipment_missing' });
         continue;
       }
 
+      const minTemp = sensor.min_temp_override ?? equipment.min_temp;
+      const maxTemp = sensor.max_temp_override ?? equipment.max_temp;
+
       let isAcceptable = true;
-      if (equipment.min_temp !== null && reading.temperature < equipment.min_temp) isAcceptable = false;
-      if (equipment.max_temp !== null && reading.temperature > equipment.max_temp) isAcceptable = false;
+      let breachType: 'temp_low' | 'temp_high' | null = null;
+      if (minTemp !== null && minTemp !== undefined && reading.temperature < minTemp) {
+        isAcceptable = false;
+        breachType = 'temp_low';
+      }
+      if (maxTemp !== null && maxTemp !== undefined && reading.temperature > maxTemp) {
+        isAcceptable = false;
+        breachType = 'temp_high';
+      }
 
       await supabase.from('ik_mat_temperature_logs').insert({
         company_id: companyId,
@@ -225,54 +273,108 @@ Deno.serve(async (req) => {
         temperature: reading.temperature,
         is_acceptable: isAcceptable,
         measured_by_id: null,
-        measured_by_name: `Sensor: ${sensor.name || reading.externalId}`,
+        measured_by_name: `Sensor: ${sensorName}`,
         measured_at: reading.measuredAt,
         notes: 'Automatisk måling fra sensor',
       });
 
       let deviationNumber: string | null = null;
+      let alerted = false;
+
       if (!isAcceptable) {
-        // Avoid spamming: only one open sensor deviation per equipment per 6 hours.
-        const since = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
-        const { data: recent } = await supabase
-          .from('deviations')
-          .select('id')
-          .eq('company_id', companyId)
-          .eq('type', 'ik_mat')
-          .eq('category', 'temperature')
-          .eq('status', 'open')
-          .gte('created_at', since)
-          .ilike('title', `%${equipment.name}%`)
-          .limit(1);
-
-        if (!recent || recent.length === 0) {
-          deviationNumber = await nextDeviationNumber(supabase, companyId);
-          const due = new Date();
-          due.setDate(due.getDate() + 1);
-          let description = 'Automatisk registrert temperaturavvik fra sensor.\n\n';
-          description += `Utstyr: ${equipment.name}\n`;
-          description += `Sensor: ${sensor.name || reading.externalId}\n`;
-          description += `Målt temperatur: ${reading.temperature} °C\n`;
-          if (equipment.min_temp !== null) description += `Min. tillatt: ${equipment.min_temp} °C\n`;
-          if (equipment.max_temp !== null) description += `Maks. tillatt: ${equipment.max_temp} °C\n`;
-          description += `Måletidspunkt: ${new Date(reading.measuredAt).toLocaleString('nb-NO')}\n`;
-
-          await supabase.from('deviations').insert({
-            company_id: companyId,
-            deviation_number: deviationNumber,
-            title: `Temperaturavvik (sensor): ${equipment.name} (${reading.temperature} °C)`,
-            description,
-            category: 'temperature',
-            type: 'ik_mat',
-            priority: 'high',
-            status: 'open',
-            reporter_name: `Sensor: ${sensor.name || reading.externalId}`,
-            due_date: localDateString(due),
-            incident_location: equipment.location || null,
-            department_id: sensor.department_id ?? null,
-          });
+        // Karenstid: kortvarige utslag (doeraapning, avriming) skal ikke gi alarm.
+        const graceMinutes = sensor.breach_grace_minutes ?? 0;
+        const breachStarted = sensor.breach_started_at
+          ? new Date(sensor.breach_started_at).getTime()
+          : Date.now();
+        if (!sensor.breach_started_at) {
+          sensorUpdate.breach_started_at = new Date().toISOString();
         }
+        const breachDurationMin = (Date.now() - breachStarted) / 60000;
+
+        if (breachDurationMin >= graceMinutes) {
+          // Unngaa spam: maks ett aapent sensoravvik per utstyr per 6 timer.
+          const since = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+          const { data: recent } = await supabase
+            .from('deviations')
+            .select('id')
+            .eq('company_id', companyId)
+            .eq('type', 'ik_mat')
+            .eq('category', 'temperature')
+            .eq('status', 'open')
+            .gte('created_at', since)
+            .ilike('title', `%${equipment.name}%`)
+            .limit(1);
+
+          if (!recent || recent.length === 0) {
+            deviationNumber = await nextDeviationNumber(supabase, companyId);
+            const due = new Date();
+            due.setDate(due.getDate() + 1);
+            let description = 'Automatisk registrert temperaturavvik fra sensor.\n\n';
+            description += `Utstyr: ${equipment.name}\n`;
+            description += `Sensor: ${sensorName}\n`;
+            description += `Målt temperatur: ${reading.temperature} °C\n`;
+            if (minTemp !== null && minTemp !== undefined) description += `Min. tillatt: ${minTemp} °C\n`;
+            if (maxTemp !== null && maxTemp !== undefined) description += `Maks. tillatt: ${maxTemp} °C\n`;
+            description += `Varighet før varsel: ${Math.round(breachDurationMin)} min (karenstid ${graceMinutes} min)\n`;
+            description += `Måletidspunkt: ${new Date(reading.measuredAt).toLocaleString('nb-NO')}\n`;
+
+            await supabase.from('deviations').insert({
+              company_id: companyId,
+              deviation_number: deviationNumber,
+              title: `Temperaturavvik (sensor): ${equipment.name} (${reading.temperature} °C)`,
+              description,
+              category: 'temperature',
+              type: 'ik_mat',
+              priority: 'high',
+              status: 'open',
+              reporter_name: `Sensor: ${sensorName}`,
+              due_date: localDateString(due),
+              incident_location: equipment.location || null,
+              department_id: sensor.department_id ?? null,
+            });
+          }
+
+          // E-postvarsel maks hver 2. time per sensor
+          const lastTempAlert = sensor.last_temp_alert_at
+            ? new Date(sensor.last_temp_alert_at).getTime()
+            : 0;
+          if (Date.now() - lastTempAlert > 2 * 60 * 60 * 1000) {
+            await sendSensorAlert(supabase, {
+              companyId,
+              companyName,
+              sensorId: sensor.id,
+              sensorName,
+              equipmentId: equipment.id,
+              equipmentName: equipment.name,
+              location: equipment.location,
+              alertType: breachType ?? 'temp_high',
+              severity: 'high',
+              subject: `Temperaturalarm: ${equipment.name} (${reading.temperature} °C)`,
+              lines: [
+                `Utstyr: ${equipment.name}`,
+                equipment.location ? `Plassering: ${equipment.location}` : 'Plassering: ikke angitt',
+                `Sensor: ${sensorName}`,
+                `Malt temperatur: ${reading.temperature} °C`,
+                `Tillatt omraade: ${minTemp ?? '-'} til ${maxTemp ?? '-'} °C`,
+                `Varighet: ${Math.round(breachDurationMin)} minutter`,
+                deviationNumber ? `Avvik opprettet: ${deviationNumber}` : 'Avvik er allerede registrert',
+                'Sjekk utstyret og varene umiddelbart.',
+              ],
+              temperature: reading.temperature,
+              deviationNumber,
+              recipients: await resolveRecipients(supabase, companyId, sensor.alert_emails, endpoint.alert_emails),
+            });
+            sensorUpdate.last_temp_alert_at = new Date().toISOString();
+            alerted = true;
+          }
+        }
+      } else if (sensor.breach_started_at) {
+        sensorUpdate.breach_started_at = null;
+        sensorUpdate.last_temp_alert_at = null;
       }
+
+      await supabase.from('ik_mat_sensors').update(sensorUpdate).eq('id', sensor.id);
 
       results.push({
         sensor: reading.externalId,
@@ -280,6 +382,7 @@ Deno.serve(async (req) => {
         temperature: reading.temperature,
         acceptable: isAcceptable,
         deviation: deviationNumber,
+        alerted,
       });
     }
 

@@ -8,6 +8,8 @@ export interface SensorEndpoint {
   company_id: string;
   department_id: string | null;
   token: string;
+  name: string | null;
+  alert_emails: string[];
   is_active: boolean;
   last_received_at: string | null;
   last_error: string | null;
@@ -23,10 +25,37 @@ export interface IkMatSensor {
   external_id: string;
   name: string | null;
   provider: string | null;
+  location: string | null;
   is_active: boolean;
+  is_offline: boolean;
   last_reading_at: string | null;
   last_temperature: number | null;
   last_battery: number | null;
+  alert_emails: string[];
+  min_temp_override: number | null;
+  max_temp_override: number | null;
+  breach_grace_minutes: number;
+  offline_after_minutes: number;
+  low_battery_threshold: number;
+  breach_started_at: string | null;
+  last_temp_alert_at: string | null;
+  last_offline_alert_at: string | null;
+  last_battery_alert_at: string | null;
+  created_at: string;
+}
+
+export interface SensorAlert {
+  id: string;
+  company_id: string;
+  sensor_id: string | null;
+  equipment_id: string | null;
+  alert_type: string;
+  severity: string;
+  message: string;
+  temperature: number | null;
+  deviation_number: string | null;
+  recipients: string[];
+  email_status: string | null;
   created_at: string;
 }
 
@@ -74,6 +103,38 @@ export function useIkMatSensors() {
       return (data ?? []) as IkMatSensor[];
     },
     enabled: !!company?.id,
+    refetchInterval: 60_000,
+  });
+
+  const alertsQuery = useQuery({
+    queryKey: ['ik-mat-sensor-alerts', company?.id],
+    queryFn: async () => {
+      if (!company?.id) return [];
+      const { data, error } = await supabase
+        .from('ik_mat_sensor_alerts')
+        .select('*')
+        .eq('company_id', company.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data ?? []) as SensorAlert[];
+    },
+    enabled: !!company?.id,
+    refetchInterval: 60_000,
+  });
+
+  const runWatchdog = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('ik-mat-sensor-watchdog', { body: {} });
+      if (error) throw error;
+      return data as { checked: number; results: unknown[] };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-sensors'] });
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-sensor-alerts'] });
+      toast.success(`Sensorsjekk fullført (${data?.checked ?? 0} sensorer kontrollert)`);
+    },
+    onError: (e: Error) => toast.error('Kunne ikke kjøre sensorsjekk: ' + e.message),
   });
 
   const createEndpoint = useMutation({
@@ -174,6 +235,7 @@ export function useIkMatSensors() {
   return {
     endpoint: endpointQuery.data ?? null,
     sensors: sensorsQuery.data ?? [],
+    alerts: alertsQuery.data ?? [],
     isLoading: endpointQuery.isLoading || sensorsQuery.isLoading,
     createEndpoint,
     updateEndpoint,
@@ -181,5 +243,17 @@ export function useIkMatSensors() {
     addSensor,
     updateSensor,
     deleteSensor,
+    runWatchdog,
   };
+}
+
+/** Beregner driftsstatus for en sensor i frontend (uavhengig av vakthunden). */
+export function sensorStatus(sensor: IkMatSensor): 'offline' | 'alarm' | 'ok' | 'unmapped' | 'inactive' {
+  if (!sensor.is_active) return 'inactive';
+  const offlineMs = (sensor.offline_after_minutes || 120) * 60 * 1000;
+  const last = sensor.last_reading_at ? new Date(sensor.last_reading_at).getTime() : 0;
+  if (!last || Date.now() - last > offlineMs) return 'offline';
+  if (!sensor.equipment_id) return 'unmapped';
+  if (sensor.breach_started_at) return 'alarm';
+  return 'ok';
 }
