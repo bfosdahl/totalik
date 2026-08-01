@@ -235,6 +235,7 @@ export function useIkMatSensors() {
   return {
     endpoint: endpointQuery.data ?? null,
     sensors: sensorsQuery.data ?? [],
+    alerts: alertsQuery.data ?? [],
     isLoading: endpointQuery.isLoading || sensorsQuery.isLoading,
     createEndpoint,
     updateEndpoint,
@@ -242,5 +243,17 @@ export function useIkMatSensors() {
     addSensor,
     updateSensor,
     deleteSensor,
+    runWatchdog,
   };
+}
+
+/** Beregner driftsstatus for en sensor i frontend (uavhengig av vakthunden). */
+export function sensorStatus(sensor: IkMatSensor): 'offline' | 'alarm' | 'ok' | 'unmapped' | 'inactive' {
+  if (!sensor.is_active) return 'inactive';
+  const offlineMs = (sensor.offline_after_minutes || 120) * 60 * 1000;
+  const last = sensor.last_reading_at ? new Date(sensor.last_reading_at).getTime() : 0;
+  if (!last || Date.now() - last > offlineMs) return 'offline';
+  if (!sensor.equipment_id) return 'unmapped';
+  if (sensor.breach_started_at) return 'alarm';
+  return 'ok';
 }
