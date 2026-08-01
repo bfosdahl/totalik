@@ -28,7 +28,7 @@ function chunk(type: string, data: Buffer): Buffer {
   return Buffer.concat([len, typeBuf, data, crcBuf]);
 }
 
-function encodePng(width: number, height: number, rgb: Uint8Array): Buffer {
+export function encodePng(width: number, height: number, rgb: Uint8Array): Buffer {
   const raw = Buffer.alloc((width * 3 + 1) * height);
   for (let y = 0; y < height; y++) {
     raw[y * (width * 3 + 1)] = 0; // filter: none
@@ -50,18 +50,18 @@ function encodePng(width: number, height: number, rgb: Uint8Array): Buffer {
   ]);
 }
 
-interface Canvas {
+export interface Canvas {
   w: number;
   h: number;
   px: Uint8Array;
 }
 
-function createCanvas(w: number, h: number): Canvas {
+export function createCanvas(w: number, h: number): Canvas {
   const px = new Uint8Array(w * h * 3).fill(255);
   return { w, h, px };
 }
 
-function setPx(c: Canvas, x: number, y: number, rgb: [number, number, number]) {
+export function setPx(c: Canvas, x: number, y: number, rgb: [number, number, number]) {
   if (x < 0 || y < 0 || x >= c.w || y >= c.h) return;
   const i = (y * c.w + x) * 3;
   c.px[i] = rgb[0];
@@ -69,7 +69,7 @@ function setPx(c: Canvas, x: number, y: number, rgb: [number, number, number]) {
   c.px[i + 2] = rgb[2];
 }
 
-function fillRect(
+export function fillRect(
   c: Canvas,
   x: number,
   y: number,
@@ -89,7 +89,7 @@ function fillRect(
   }
 }
 
-function strokeRect(
+export function strokeRect(
   c: Canvas,
   x: number,
   y: number,
