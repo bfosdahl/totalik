@@ -35,7 +35,7 @@ export function SensorAlarmSettings({ sensor, onSave, isSaving }: Props) {
       battery: (sensor.low_battery_threshold ?? 20).toString(),
       emails: (sensor.alert_emails ?? []).join(', '),
     });
-  }, [sensor.id, sensor.updated_at as unknown as string]);
+  }, [sensor.id]);
 
   const save = () => {
     onSave({
