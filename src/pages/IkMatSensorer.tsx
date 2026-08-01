@@ -11,17 +11,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Copy, RefreshCw, Radio, Plus, Trash2, Thermometer, BatteryMedium, Info } from 'lucide-react';
-import { useIkMatSensors, getWebhookUrl } from '@/hooks/useIkMatSensors';
+import { Copy, RefreshCw, Radio, Plus, Trash2, Thermometer, BatteryMedium, Info, ShieldAlert, WifiOff, CheckCircle2, AlertTriangle, Bell } from 'lucide-react';
+import { useIkMatSensors, getWebhookUrl, sensorStatus, type IkMatSensor } from '@/hooks/useIkMatSensors';
 import { useIkMatTemperature } from '@/hooks/useIkMatTemperature';
 
 const UNMAPPED = '__none__';
 
+const STATUS_META: Record<string, { label: string; className: string; Icon: typeof CheckCircle2 }> = {
+  ok: { label: 'OK', className: 'bg-primary/10 text-primary border-primary/30', Icon: CheckCircle2 },
+  alarm: { label: 'Alarm', className: 'bg-destructive/10 text-destructive border-destructive/30', Icon: AlertTriangle },
+  offline: { label: 'Offline', className: 'bg-muted text-muted-foreground border-border', Icon: WifiOff },
+  unmapped: { label: 'Ikke koblet', className: 'bg-accent text-accent-foreground border-border', Icon: Info },
+  inactive: { label: 'Deaktivert', className: 'bg-muted text-muted-foreground border-border', Icon: Info },
+};
+
 export default function IkMatSensorer() {
   const {
-    endpoint, sensors, isLoading,
+    endpoint, sensors, alerts, isLoading,
     createEndpoint, updateEndpoint, regenerateToken,
-    addSensor, updateSensor, deleteSensor,
+    addSensor, updateSensor, deleteSensor, runWatchdog,
   } = useIkMatSensors();
   const { equipment } = useIkMatTemperature();
 
