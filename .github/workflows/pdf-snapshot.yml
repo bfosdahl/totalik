@@ -1,0 +1,66 @@
+name: PDF snapshot-tester (dagsrapport)
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  pdf-snapshots:
+    name: Dagsrapport-PDF · sideforhold & strekk
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Kjør snapshot-tester for dagsrapport-PDF
+        id: tests
+        run: |
+          set -o pipefail
+          bunx vitest run src/utils/ksDailyReportPdf.test.ts src/utils/ksDailyReportPdf.fixtures.test.ts \
+            --reporter=verbose 2>&1 | tee /tmp/pdf-tests.log
+
+      - name: Feilrapport i job-sammendrag
+        if: failure()
+        run: |
+          {
+            echo "## ❌ Dagsrapport-PDF: snapshot-testene feilet"
+            echo ""
+            echo "Bildene i PDF-eksporten har feil sideforhold eller blir strukket."
+            echo ""
+            echo "### Testlogg (siste 200 linjer)"
+            echo '```'
+            tail -n 200 /tmp/pdf-tests.log || true
+            echo '```'
+            if ls test-artifacts/pdf-diff/*.txt >/dev/null 2>&1; then
+              echo "### Forskjeller pr. bilde"
+              for f in test-artifacts/pdf-diff/*.txt; do
+                echo '```'
+                cat "$f"
+                echo '```'
+              done
+              echo ""
+              echo "Forskjellsbildene (PNG: grønn ramme = forventet, rød ramme = faktisk) ligger i artefakten **pdf-diff-images**."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Last opp forskjellsbilder
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-diff-images-${{ github.run_attempt }}
+          path: |
+            test-artifacts/pdf-diff/
+            /tmp/pdf-tests.log
+          if-no-files-found: warn
+          retention-days: 14
