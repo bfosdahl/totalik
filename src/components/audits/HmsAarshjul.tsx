@@ -44,7 +44,7 @@ const activityRoutes: Record<string, { route: string; formType?: string }> = {
   "el-kontroll": { route: "/audits", formType: "el-kontroll" },
   "brannvern": { route: "/audits", formType: "brannvern" },
   "fysiske-forhold": { route: "/audits", formType: "fysiske-arbeidsforhold" },
-  "stoffkartotek": { route: "/ik-hms/stoffkartotek" },
+  "stoffkartotek": { route: "/stoffkartotek" },
   "risikovurdering": { route: "/setup", formType: "risk" },
   "hms-opplaering": { route: "/employees" },
   "medarbeidersamtaler": { route: "/hr/meetings" },
