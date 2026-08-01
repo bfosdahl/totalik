@@ -204,9 +204,8 @@ export function writeBeforeAfterOverlay(input: BeforeAfterInput): { png: string;
   const boxMax = PANEL - 40;
 
   // Venstre: FOR (korrekt sideforhold)
-  const eScale = Math.min(boxMax / expectedRatio > boxMax ? boxMax : boxMax, boxMax);
-  let eW = eScale;
-  let eH = eScale / expectedRatio;
+  let eW = boxMax;
+  let eH = boxMax / expectedRatio;
   if (eH > boxMax) {
     eH = boxMax;
     eW = boxMax * expectedRatio;
