@@ -64,3 +64,45 @@ jobs:
             /tmp/pdf-tests.log
           if-no-files-found: warn
           retention-days: 14
+
+  pdf-performance:
+    name: PDF-ytelse · tid & minne (dagsrapport, håndbok, avvik)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Kjør ytelsestester for PDF-eksport
+        run: |
+          set -o pipefail
+          bunx vitest run src/utils/pdfPerformance.test.ts --reporter=verbose 2>&1 | tee /tmp/pdf-perf.log
+
+      - name: Ytelsestall i job-sammendrag
+        if: always()
+        run: |
+          {
+            echo "## PDF-ytelse"
+            echo ""
+            echo '```'
+            grep -E "KE / budsjett" /tmp/pdf-perf.log || tail -n 40 /tmp/pdf-perf.log
+            echo '```'
+            echo ""
+            echo "Feiler jobben er det en ytelsesregresjon: genereringstid (normalisert mot kalibreringsjobb) eller minnebruk overskrider budsjettet i \`src/utils/pdfPerf.ts\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Last opp ytelseslogg
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-perf-log-${{ github.run_attempt }}
+          path: /tmp/pdf-perf.log
+          if-no-files-found: warn
+          retention-days: 14
