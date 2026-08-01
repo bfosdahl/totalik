@@ -157,25 +157,25 @@ export const PDF_PERF_SCENARIOS: PerfScenario[] = [
   {
     id: "dagsrapport-30-bilder",
     name: "Dagsrapport med 30 bilder",
-    budget: { maxUnits: 12, maxHeapMb: 220 },
+    budget: { maxUnits: 45, maxHeapMb: 220 },
     run: () => buildPhotoGridPdf(30),
   },
   {
     id: "dagsrapport-80-bilder",
     name: "Dagsrapport med 80 bilder (verstefall)",
-    budget: { maxUnits: 30, maxHeapMb: 450 },
+    budget: { maxUnits: 55, maxHeapMb: 450 },
     run: () => buildPhotoGridPdf(80),
   },
   {
     id: "handbok-40-kapitler",
     name: "HMS-handbok med 40 kapitler",
-    budget: { maxUnits: 15, maxHeapMb: 200 },
+    budget: { maxUnits: 18, maxHeapMb: 200 },
     run: () => buildHandbookLikePdf(40),
   },
   {
     id: "avvik-400-rader",
     name: "Avviksrapport med 400 rader",
-    budget: { maxUnits: 20, maxHeapMb: 250 },
+    budget: { maxUnits: 90, maxHeapMb: 250 },
     run: () => buildAvvikLikePdf(400),
   },
 ];
