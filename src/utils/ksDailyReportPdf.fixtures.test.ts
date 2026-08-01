@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { jsPDF } from "jspdf";
 import { fitImageInCell } from "./ksDailyReportPdf";
 import { FIXTURE_REPORTS, FIXTURE_PHOTOS } from "./__fixtures__/dailyReports";
+import { writeAspectDiffImage } from "./__fixtures__/pdfDiffImage";
 
 /**
  * Ende-til-ende-verifisering: bygger ekte PDF-er med jsPDF for et sett
@@ -150,10 +151,25 @@ describe("dagsrapport-PDF — fixtures med ekte bilder", () => {
         const expected = photo.width / photo.height;
         const actual = pl.wMm / pl.hMm;
         const deviation = Math.abs(actual - expected) / expected;
-        expect(
-          deviation,
-          `${photo.label}: forventet ${expected.toFixed(4)}, fikk ${actual.toFixed(4)}`,
-        ).toBeLessThanOrEqual(MAX_RATIO_DEVIATION);
+        if (deviation > MAX_RATIO_DEVIATION) {
+          const file = writeAspectDiffImage({
+            name: `${report.name}-${photo.label}-sideforhold`,
+            expectedRatio: expected,
+            actualW: pl.wMm,
+            actualH: pl.hMm,
+          });
+          throw new Error(
+            [
+              `SIDEFORHOLD-REGRESJON i dagsrapport-PDF`,
+              `  Rapport:   ${report.name}`,
+              `  Bilde:     ${photo.label} (${photo.width}x${photo.height}, ${photo.mime})`,
+              `  Forventet: ${expected.toFixed(4)}`,
+              `  Faktisk:   ${actual.toFixed(4)} (${pl.wMm.toFixed(2)}x${pl.hMm.toFixed(2)} mm)`,
+              `  Avvik:     ${(deviation * 100).toFixed(2)} % (maks ${(MAX_RATIO_DEVIATION * 100).toFixed(2)} %)`,
+              `  Diffbilde: ${file}`,
+            ].join("\n"),
+          );
+        }
       });
     });
 
@@ -164,11 +180,26 @@ describe("dagsrapport-PDF — fixtures med ekte bilder", () => {
         const sx = pl.wMm / photo.width;
         const sy = pl.hMm / photo.height;
         const stretch = Math.max(sx / sy, sy / sx);
-        expect(stretch, `${photo.label}: strekk ${stretch.toFixed(5)}`).toBeLessThanOrEqual(
-          MAX_STRETCH,
-        );
+        if (stretch > MAX_STRETCH) {
+          const file = writeAspectDiffImage({
+            name: `${report.name}-${photo.label}-strekk`,
+            expectedRatio: photo.width / photo.height,
+            actualW: pl.wMm,
+            actualH: pl.hMm,
+          });
+          throw new Error(
+            [
+              `BILDESTREKK i dagsrapport-PDF`,
+              `  Rapport:   ${report.name}`,
+              `  Bilde:     ${photo.label} (${photo.width}x${photo.height})`,
+              `  Strekk:    ${stretch.toFixed(5)} (maks ${MAX_STRETCH})`,
+              `  Diffbilde: ${file}`,
+            ].join("\n"),
+          );
+        }
       });
     });
+
 
     it("holder alle bilder innenfor cellen og siden", () => {
       for (const pl of placements) {
