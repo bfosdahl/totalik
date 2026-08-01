@@ -7885,8 +7885,62 @@ export type Database = {
           },
         ]
       }
+      ik_mat_sensor_alerts: {
+        Row: {
+          alert_type: string
+          company_id: string
+          created_at: string
+          deviation_number: string | null
+          email_status: string | null
+          equipment_id: string | null
+          id: string
+          message: string
+          recipients: string[]
+          sensor_id: string | null
+          severity: string
+          temperature: number | null
+        }
+        Insert: {
+          alert_type: string
+          company_id: string
+          created_at?: string
+          deviation_number?: string | null
+          email_status?: string | null
+          equipment_id?: string | null
+          id?: string
+          message: string
+          recipients?: string[]
+          sensor_id?: string | null
+          severity?: string
+          temperature?: number | null
+        }
+        Update: {
+          alert_type?: string
+          company_id?: string
+          created_at?: string
+          deviation_number?: string | null
+          email_status?: string | null
+          equipment_id?: string | null
+          id?: string
+          message?: string
+          recipients?: string[]
+          sensor_id?: string | null
+          severity?: string
+          temperature?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_sensor_alerts_sensor_id_fkey"
+            columns: ["sensor_id"]
+            isOneToOne: false
+            referencedRelation: "ik_mat_sensors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ik_mat_sensor_endpoints: {
         Row: {
+          alert_emails: string[]
           company_id: string
           created_at: string
           created_by: string | null
@@ -7895,10 +7949,12 @@ export type Database = {
           is_active: boolean
           last_error: string | null
           last_received_at: string | null
+          name: string | null
           token: string
           updated_at: string
         }
         Insert: {
+          alert_emails?: string[]
           company_id: string
           created_at?: string
           created_by?: string | null
@@ -7907,10 +7963,12 @@ export type Database = {
           is_active?: boolean
           last_error?: string | null
           last_received_at?: string | null
+          name?: string | null
           token: string
           updated_at?: string
         }
         Update: {
+          alert_emails?: string[]
           company_id?: string
           created_at?: string
           created_by?: string | null
@@ -7919,6 +7977,7 @@ export type Database = {
           is_active?: boolean
           last_error?: string | null
           last_received_at?: string | null
+          name?: string | null
           token?: string
           updated_at?: string
         }
@@ -7934,6 +7993,9 @@ export type Database = {
       }
       ik_mat_sensors: {
         Row: {
+          alert_emails: string[]
+          breach_grace_minutes: number
+          breach_started_at: string | null
           company_id: string
           created_at: string
           department_id: string | null
@@ -7942,14 +8004,26 @@ export type Database = {
           external_id: string
           id: string
           is_active: boolean
+          is_offline: boolean
           last_battery: number | null
+          last_battery_alert_at: string | null
+          last_offline_alert_at: string | null
           last_reading_at: string | null
+          last_temp_alert_at: string | null
           last_temperature: number | null
+          location: string | null
+          low_battery_threshold: number
+          max_temp_override: number | null
+          min_temp_override: number | null
           name: string | null
+          offline_after_minutes: number
           provider: string | null
           updated_at: string
         }
         Insert: {
+          alert_emails?: string[]
+          breach_grace_minutes?: number
+          breach_started_at?: string | null
           company_id: string
           created_at?: string
           department_id?: string | null
@@ -7958,14 +8032,26 @@ export type Database = {
           external_id: string
           id?: string
           is_active?: boolean
+          is_offline?: boolean
           last_battery?: number | null
+          last_battery_alert_at?: string | null
+          last_offline_alert_at?: string | null
           last_reading_at?: string | null
+          last_temp_alert_at?: string | null
           last_temperature?: number | null
+          location?: string | null
+          low_battery_threshold?: number
+          max_temp_override?: number | null
+          min_temp_override?: number | null
           name?: string | null
+          offline_after_minutes?: number
           provider?: string | null
           updated_at?: string
         }
         Update: {
+          alert_emails?: string[]
+          breach_grace_minutes?: number
+          breach_started_at?: string | null
           company_id?: string
           created_at?: string
           department_id?: string | null
@@ -7974,10 +8060,19 @@ export type Database = {
           external_id?: string
           id?: string
           is_active?: boolean
+          is_offline?: boolean
           last_battery?: number | null
+          last_battery_alert_at?: string | null
+          last_offline_alert_at?: string | null
           last_reading_at?: string | null
+          last_temp_alert_at?: string | null
           last_temperature?: number | null
+          location?: string | null
+          low_battery_threshold?: number
+          max_temp_override?: number | null
+          min_temp_override?: number | null
           name?: string | null
+          offline_after_minutes?: number
           provider?: string | null
           updated_at?: string
         }
