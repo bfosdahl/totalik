@@ -103,6 +103,38 @@ export function useIkMatSensors() {
       return (data ?? []) as IkMatSensor[];
     },
     enabled: !!company?.id,
+    refetchInterval: 60_000,
+  });
+
+  const alertsQuery = useQuery({
+    queryKey: ['ik-mat-sensor-alerts', company?.id],
+    queryFn: async () => {
+      if (!company?.id) return [];
+      const { data, error } = await supabase
+        .from('ik_mat_sensor_alerts')
+        .select('*')
+        .eq('company_id', company.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data ?? []) as SensorAlert[];
+    },
+    enabled: !!company?.id,
+    refetchInterval: 60_000,
+  });
+
+  const runWatchdog = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('ik-mat-sensor-watchdog', { body: {} });
+      if (error) throw error;
+      return data as { checked: number; results: unknown[] };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-sensors'] });
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-sensor-alerts'] });
+      toast.success(`Sensorsjekk fullført (${data?.checked ?? 0} sensorer kontrollert)`);
+    },
+    onError: (e: Error) => toast.error('Kunne ikke kjøre sensorsjekk: ' + e.message),
   });
 
   const createEndpoint = useMutation({
