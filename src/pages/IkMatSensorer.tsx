@@ -409,6 +409,13 @@ export default function IkMatSensorer() {
           </CardContent>
         </Card>
 
+        <SensorIntegrations
+          endpointId={endpoint?.id ?? null}
+          signatureSecret={(endpoint as unknown as { signature_secret?: string | null })?.signature_secret ?? null}
+          signatureHeader={(endpoint as unknown as { signature_header?: string | null })?.signature_header ?? 'x-signature'}
+          debugLogging={(endpoint as unknown as { debug_logging?: boolean })?.debug_logging ?? true}
+          onUpdateEndpoint={(patch) => updateEndpoint.mutate(patch as never)}
+        />
 
 
         {/* Help */}
