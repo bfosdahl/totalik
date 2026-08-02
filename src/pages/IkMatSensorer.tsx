@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,12 +11,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Copy, RefreshCw, Radio, Plus, Trash2, Thermometer, BatteryMedium, Info, ShieldAlert, WifiOff, CheckCircle2, AlertTriangle, Bell } from 'lucide-react';
+import {
+  Copy, RefreshCw, Radio, Plus, Trash2, Thermometer, BatteryMedium, Info, ShieldAlert,
+  WifiOff, CheckCircle2, AlertTriangle, Bell, Download, Filter, Activity, BookOpen, PlayCircle,
+} from 'lucide-react';
 import { useIkMatSensors, getWebhookUrl, sensorStatus, type IkMatSensor } from '@/hooks/useIkMatSensors';
 import { useIkMatTemperature } from '@/hooks/useIkMatTemperature';
 import { SensorAlarmSettings } from '@/components/ik-mat/SensorAlarmSettings';
 import { SensorIntegrations } from '@/components/ik-mat/SensorIntegrations';
-
+import { SensorVendorDocs } from '@/components/ik-mat/SensorVendorDocs';
+import { SensorNotificationCard } from '@/components/ik-mat/SensorNotificationCard';
+import { useQuery } from '@tanstack/react-query';
 
 const UNMAPPED = '__none__';
 
@@ -28,16 +33,77 @@ const STATUS_META: Record<string, { label: string; className: string; Icon: type
   inactive: { label: 'Deaktivert', className: 'bg-muted text-muted-foreground border-border', Icon: Info },
 };
 
+const SCENARIOS: { value: string; label: string }[] = [
+  { value: 'normal', label: 'Normal måling' },
+  { value: 'high_temp', label: 'Høy temperatur' },
+  { value: 'low_temp', label: 'Lav temperatur' },
+  { value: 'offline', label: 'Offline' },
+  { value: 'low_battery', label: 'Lavt batteri' },
+];
+
+function SensorMiniGraph({ sensor, getSensorLogs }: { sensor: IkMatSensor; getSensorLogs: (equipment_id: string) => Promise<{ temperature: number; measured_at: string; is_acceptable: boolean }[]> }) {
+  const { data: logs = [] } = useQuery({
+    queryKey: ['sensor-mini-graph', sensor.id, sensor.equipment_id],
+    queryFn: async () => {
+      if (!sensor.equipment_id) return [];
+      return getSensorLogs(sensor.equipment_id);
+    },
+    enabled: !!sensor.equipment_id,
+    refetchInterval: 60_000,
+  });
+
+  if (!sensor.equipment_id) return null;
+  if (logs.length === 0) {
+    return <p className="text-xs text-muted-foreground">Ingen målinger siste 24 timer.</p>;
+  }
+
+  const temps = logs.map((l) => l.temperature);
+  const min = Math.min(...temps);
+  const max = Math.max(...temps);
+  const range = Math.max(max - min, 0.5);
+  const width = 200;
+  const height = 48;
+  const points = logs.map((l, i) => {
+    const x = (i / (logs.length - 1 || 1)) * width;
+    const y = height - ((l.temperature - min) / range) * height;
+    return `${x},${y}`;
+  }).join(' ');
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Activity className="h-3 w-3" /> Siste 24 timer
+      </div>
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-12 rounded-md border bg-muted/50">
+        <polyline
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          points={points}
+          className="text-primary"
+        />
+      </svg>
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span>{min.toFixed(1)} °C</span>
+        <span>{max.toFixed(1)} °C</span>
+      </div>
+    </div>
+  );
+}
+
 export default function IkMatSensorer() {
   const {
-    endpoint, sensors, alerts, isLoading,
+    endpoint, sensors, alerts, isLoading, notificationSettings,
     createEndpoint, updateEndpoint, regenerateToken,
-    addSensor, updateSensor, deleteSensor, runWatchdog,
+    addSensor, updateSensor, deleteSensor, runWatchdog, simulateSensor,
+    updateNotificationSettings, getSensorLogs,
   } = useIkMatSensors();
   const { equipment } = useIkMatTemperature();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newSensor, setNewSensor] = useState({ external_id: '', name: '', provider: '', equipment_id: UNMAPPED });
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [search, setSearch] = useState('');
 
   const webhookUrl = endpoint ? getWebhookUrl(endpoint.token) : '';
 
@@ -61,6 +127,15 @@ export default function IkMatSensorer() {
     setDialogOpen(false);
   };
 
+  const filteredSensors = useMemo(() => {
+    return sensors.filter((s) => {
+      const status = sensorStatus(s);
+      if (statusFilter !== 'all' && status !== statusFilter) return false;
+      const hay = `${s.name || ''} ${s.external_id} ${s.provider || ''}`.toLowerCase();
+      return hay.includes(search.toLowerCase());
+    });
+  }, [sensors, statusFilter, search]);
+
   const unmappedCount = sensors.filter((s) => !s.equipment_id).length;
   const statuses = sensors.map((s) => sensorStatus(s));
   const counts = {
@@ -78,6 +153,34 @@ export default function IkMatSensorer() {
         <Icon className="h-3 w-3" /> {meta.label}
       </Badge>
     );
+  };
+
+  const exportCsv = () => {
+    const rows = alerts.map((a) => ({
+      Tid: new Date(a.created_at).toLocaleString('nb-NO'),
+      Type: a.alert_type,
+      Alvorlighet: a.severity,
+      Melding: a.message,
+      Avvik: a.deviation_number || '',
+      Mottakere: (a.recipients || []).join(', '),
+      Epoststatus: a.email_status || '',
+    }));
+    if (rows.length === 0) {
+      toast.info('Ingen varsler å eksportere');
+      return;
+    }
+    const headers = Object.keys(rows[0]);
+    const csv = [headers.join(';'), ...rows.map((r) => headers.map((h) => r[h as keyof typeof r]).join(';'))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sensorvarsler_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast.success('CSV lastet ned');
   };
 
   return (
@@ -133,8 +236,6 @@ export default function IkMatSensorer() {
             </CardContent>
           </Card>
         )}
-
-
 
         {/* Endpoint */}
         <Card>
@@ -197,6 +298,13 @@ export default function IkMatSensorer() {
             )}
           </CardContent>
         </Card>
+
+        {/* Company notification settings */}
+        <SensorNotificationCard
+          settings={notificationSettings}
+          onSave={(patch) => updateNotificationSettings.mutate(patch as never)}
+          isSaving={updateNotificationSettings.isPending}
+        />
 
         {/* Sensors */}
         <Card>
@@ -268,7 +376,7 @@ export default function IkMatSensorer() {
               </DialogContent>
             </Dialog>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             {unmappedCount > 0 && (
               <Alert>
                 <Info className="h-4 w-4" />
@@ -279,12 +387,39 @@ export default function IkMatSensorer() {
               </Alert>
             )}
 
-            {sensors.length === 0 ? (
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Søk etter navn, ID eller leverandør..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-44">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle statuser</SelectItem>
+                  <SelectItem value="ok">I orden</SelectItem>
+                  <SelectItem value="alarm">Alarm</SelectItem>
+                  <SelectItem value="offline">Offline</SelectItem>
+                  <SelectItem value="unmapped">Ikke koblet</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" onClick={exportCsv}>
+                <Download className="h-4 w-4 mr-2" /> Eksporter varsler
+              </Button>
+            </div>
+
+            {filteredSensors.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                Ingen sensorer ennå. Nye sensorer dukker opp automatisk her første gang de sender data.
+                Ingen sensorer matcher filteret. Nye sensorer dukker opp automatisk her første gang de sender data.
               </p>
             ) : (
-              sensors.map((sensor) => (
+              filteredSensors.map((sensor) => (
                 <div key={sensor.id} className="rounded-lg border p-4 space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -292,6 +427,11 @@ export default function IkMatSensorer() {
                       <p className="text-xs text-muted-foreground font-mono">ID: {sensor.external_id}</p>
                       {sensor.provider && (
                         <p className="text-xs text-muted-foreground">{sensor.provider}</p>
+                      )}
+                      {sensor.simulation_mode && (
+                        <Badge variant="outline" className="mt-1 gap-1 text-xs">
+                          <PlayCircle className="h-3 w-3" /> Simulering
+                        </Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -329,23 +469,48 @@ export default function IkMatSensorer() {
                     </Badge>
                   </div>
 
-                  <div className="space-y-1">
-                    <Label className="text-xs">Koblet til utstyr</Label>
-                    <Select
-                      value={sensor.equipment_id ?? UNMAPPED}
-                      onValueChange={(v) =>
-                        updateSensor.mutate({ id: sensor.id, equipment_id: v === UNMAPPED ? null : v })
-                      }
-                    >
-                      <SelectTrigger><SelectValue placeholder="Velg utstyr" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={UNMAPPED}>Ikke koblet</SelectItem>
-                        {equipment.map((eq) => (
-                          <SelectItem key={eq.id} value={eq.id}>{eq.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Koblet til utstyr</Label>
+                      <Select
+                        value={sensor.equipment_id ?? UNMAPPED}
+                        onValueChange={(v) =>
+                          updateSensor.mutate({ id: sensor.id, equipment_id: v === UNMAPPED ? null : v })
+                        }
+                      >
+                        <SelectTrigger><SelectValue placeholder="Velg utstyr" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={UNMAPPED}>Ikke koblet</SelectItem>
+                          {equipment.map((eq) => (
+                            <SelectItem key={eq.id} value={eq.id}>{eq.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Simuler scenario</Label>
+                      <Select
+                        value=""
+                        onValueChange={(scenario) => {
+                          if (!scenario) return;
+                          simulateSensor.mutate({ sensor_id: sensor.id, scenario });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Velg scenario" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SCENARIOS.map((s) => (
+                            <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
+
+                  {sensor.equipment_id && (
+                    <SensorMiniGraph sensor={sensor} getSensorLogs={getSensorLogs} />
+                  )}
 
                   <SensorAlarmSettings
                     sensor={sensor}
@@ -419,11 +584,14 @@ export default function IkMatSensorer() {
           onUpdateEndpoint={(patch) => updateEndpoint.mutate(patch as never)}
         />
 
+        <SensorVendorDocs webhookUrl={webhookUrl} />
 
         {/* Help */}
         <Card>
           <CardHeader>
-            <CardTitle>Slik kommer du i gang</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" /> Slik kommer du i gang
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Accordion type="single" collapsible>
