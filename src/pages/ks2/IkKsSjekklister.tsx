@@ -447,26 +447,31 @@ function TemplateCard({
     <Card className="overflow-hidden">
       <Collapsible open={isExpanded} onOpenChange={onToggle}>
         <CollapsibleTrigger asChild>
-          <div className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors">
-            <div className="shrink-0">
+          <div className="flex items-start gap-3 px-3 py-3 sm:px-4 cursor-pointer hover:bg-muted/50 transition-colors">
+            <div className="shrink-0 mt-0.5">
               {isExpanded ? (
                 <ChevronDown className="w-4 h-4 text-muted-foreground" />
               ) : (
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
               )}
             </div>
-            <ClipboardList className="w-4 h-4 text-primary shrink-0" />
+            <ClipboardList className="w-4 h-4 text-primary shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm truncate">{template.template_name}</p>
+              <p className="font-medium text-sm break-words sm:truncate">{template.template_name}</p>
               {template.description && !isExpanded && (
                 <p className="text-xs text-muted-foreground truncate">{template.description}</p>
               )}
+              <div className="flex flex-wrap items-center gap-2 mt-2 sm:hidden">
+                <Badge variant="outline" className="text-xs">{getCategoryLabel(template.category)}</Badge>
+                <Badge variant="secondary" className="text-xs">{template.checkpoints.length} punkter</Badge>
+              </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="hidden sm:flex items-center gap-2 shrink-0">
               <Badge variant="outline" className="text-xs">{getCategoryLabel(template.category)}</Badge>
               <Badge variant="secondary" className="text-xs">{template.checkpoints.length} punkter</Badge>
             </div>
           </div>
+
         </CollapsibleTrigger>
         <CollapsibleContent>
           <CardContent className="pt-0 pb-4 px-4 border-t">
