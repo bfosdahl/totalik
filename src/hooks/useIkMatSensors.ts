@@ -72,8 +72,8 @@ export interface SensorNotificationSettings {
   sensor_alarm_email: boolean;
   sensor_alarm_email_recipients: string[];
   sensor_alarm_sms: boolean;
-  sensor_alarm_sms_recipients: string[];
 }
+
 
 
 const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ik-mat-sensor-webhook`;
