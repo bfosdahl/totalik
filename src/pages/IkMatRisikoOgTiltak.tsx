@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useIkMatContent, IkMatRisk, IkMatActionItem, calculateRiskLevel } from "@/hooks/useIkMatContent";
@@ -22,6 +22,7 @@ const IkMatRisikoOgTiltak = () => {
   const { content, isLoading, isSaving, saveContent } = useIkMatContent();
   const { employees } = useEmployees();
   
+  const examplesSeededRef = useRef(false);
   const [risks, setRisks] = useState<IkMatRisk[]>([]);
   const [actionPlan, setActionPlan] = useState<IkMatActionItem[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
