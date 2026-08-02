@@ -130,25 +130,83 @@ Deno.serve(async (req) => {
     if (!endpoint.is_active) return json({ error: 'Endepunkt er deaktivert' }, 403);
 
     let payload: any = null;
+    let rawBody = '';
     if (req.method === 'GET') {
       payload = Object.fromEntries(url.searchParams.entries());
     } else {
-      const text = await req.text();
+      rawBody = await req.text();
       try {
-        payload = JSON.parse(text);
+        payload = JSON.parse(rawBody);
       } catch {
-        payload = Object.fromEntries(new URLSearchParams(text).entries());
+        payload = Object.fromEntries(new URLSearchParams(rawBody).entries());
+      }
+    }
+
+    const headerSnapshot: Record<string, string> = {};
+    for (const [k, v] of req.headers.entries()) {
+      const lower = k.toLowerCase();
+      if (lower === 'authorization' || lower === 'x-sensor-token' || lower === 'cookie') continue;
+      headerSnapshot[lower] = v.slice(0, 300);
+    }
+
+    const logPayload = async (
+      status: string,
+      httpStatus: number,
+      readingCount: number,
+      errorText: string | null,
+    ) => {
+      if (endpoint.debug_logging === false) return;
+      await supabase.from('ik_mat_sensor_payload_log').insert({
+        company_id: endpoint.company_id,
+        endpoint_id: endpoint.id,
+        direction: 'inbound',
+        source: headerSnapshot['x-internal-source'] || headerSnapshot['user-agent'] || 'ukjent',
+        http_status: httpStatus,
+        status,
+        reading_count: readingCount,
+        error: errorText,
+        headers: headerSnapshot,
+        payload,
+      });
+    };
+
+    // Signaturverifisering (HMAC) naar leverandoeren stotter det
+    if (endpoint.signature_secret) {
+      const headerName = (endpoint.signature_header || 'x-signature').toLowerCase();
+      const provided = (req.headers.get(headerName) || '').trim().replace(/^sha256=/i, '');
+      const key = await crypto.subtle.importKey(
+        'raw',
+        new TextEncoder().encode(endpoint.signature_secret),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign'],
+      );
+      const mac = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(rawBody));
+      const bytes = new Uint8Array(mac);
+      const hex = Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+      const b64 = btoa(String.fromCharCode(...bytes));
+      if (!provided || (provided !== hex && provided !== b64)) {
+        await logPayload('signature_failed', 401, 0, 'Ugyldig eller manglende signatur');
+        await supabase
+          .from('ik_mat_sensor_endpoints')
+          .update({ last_error: 'Ugyldig signatur på innkommende data', last_received_at: new Date().toISOString() })
+          .eq('id', endpoint.id);
+        return json({ error: 'Ugyldig signatur' }, 401);
       }
     }
 
     const readings = parseReadings(payload);
     if (readings.length === 0) {
+      await logPayload('parse_failed', 400, 0, 'Kunne ikke lese målinger fra mottatt data');
       await supabase
         .from('ik_mat_sensor_endpoints')
         .update({ last_error: 'Kunne ikke lese målinger fra mottatt data', last_received_at: new Date().toISOString() })
         .eq('id', endpoint.id);
       return json({ error: 'Fant ingen gyldige målinger i forespørselen' }, 400);
     }
+
+    await logPayload('ok', 200, readings.length, null);
+
 
     const companyId = endpoint.company_id as string;
     const { data: companyRow } = await supabase
