@@ -101,6 +101,13 @@ function parseReadings(payload: any): Reading[] {
   for (const raw of items) {
     if (!raw || typeof raw !== 'object') continue;
     const item: any = raw;
+
+    const ttn = parseTtnUplink(item);
+    if (ttn) {
+      readings.push(ttn);
+      continue;
+    }
+
     const nested = item.data ?? item.temperature_event ?? item.event ?? {};
 
     const externalId = pickString(
@@ -118,7 +125,7 @@ function parseReadings(payload: any): Reading[] {
 
     const measuredAtRaw = pickString(
       item.measured_at, item.measuredAt, item.timestamp, item.time, item.recorded_at,
-      item.datetime, nested.timestamp, nested.updateTime,
+      item.datetime, item.received_at, nested.timestamp, nested.updateTime,
     );
     let measuredAt = new Date().toISOString();
     if (measuredAtRaw) {
@@ -133,10 +140,13 @@ function parseReadings(payload: any): Reading[] {
       externalId,
       temperature,
       measuredAt,
-      battery: pickNumber(item.battery, item.battery_level, item.batteryLevel, nested.battery),
+      battery: normaliseBattery(
+        pickNumber(item.battery, item.battery_level, item.batteryLevel, item.battery_voltage, nested.battery),
+      ),
       name: pickString(item.name, item.sensor_name, item.label, item.display_name),
     });
   }
+
   return readings;
 }
 
