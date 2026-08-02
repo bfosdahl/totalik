@@ -152,7 +152,7 @@ Deno.serve(async (req) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            from: "Total IK Monitoring <alerts@notify.totalik.no>",
+            from: "Total-IK Monitoring <noreply@totalik.no>",
             to: [ALERT_EMAIL],
             subject: `[MONITORING] ${problems.length} problem(er) med alarmjobbene`,
             html: `
