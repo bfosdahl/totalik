@@ -32,7 +32,7 @@ export interface IkMatSensor {
   is_active: boolean;
   is_offline: boolean;
   simulation_mode: boolean;
-  simulated_payload: Record<string, unknown> | null;
+  simulated_payload: Json | null;
   last_reading_at: string | null;
   last_temperature: number | null;
   last_battery: number | null;
