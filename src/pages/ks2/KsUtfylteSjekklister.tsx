@@ -170,33 +170,39 @@ export default function KsUtfylteSjekklister() {
   const renderChecklistRow = (checklist: FilledChecklist) => (
     <Card key={checklist.id} className="overflow-hidden">
       <Collapsible open={expandedId === checklist.id} onOpenChange={() => setExpandedId(expandedId === checklist.id ? null : checklist.id)}>
-        <div className="flex items-center gap-3 px-4 py-3">
+        <div className="flex flex-wrap items-center gap-2 px-3 py-3 sm:flex-nowrap sm:gap-3 sm:px-4">
           <CollapsibleTrigger asChild>
-            <div className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer hover:bg-muted/50 -m-3 p-3 rounded transition-colors">
-              <div className="shrink-0">
+            <div className="flex w-full items-start gap-2 sm:w-auto sm:flex-1 min-w-0 cursor-pointer hover:bg-muted/50 rounded p-1 -m-1 sm:-m-3 sm:p-3 transition-colors">
+              <div className="shrink-0 mt-0.5">
                 {expandedId === checklist.id ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
               </div>
-              <ClipboardCheck className="w-4 h-4 text-primary shrink-0" />
+              <ClipboardCheck className="w-4 h-4 text-primary shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{checklist.title}</p>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Calendar className="w-3 h-3" />
-                  {format(new Date(checklist.created_at), "dd. MMM yyyy", { locale: nb })}
+                <p className="font-medium text-sm break-words sm:truncate">{checklist.title}</p>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground mt-0.5">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3 shrink-0" />
+                    {format(new Date(checklist.created_at), "dd. MMM yyyy", { locale: nb })}
+                  </span>
                   {checklist.responsible_user_name && (
-                    <>
-                      <span>•</span>
-                      <User className="w-3 h-3" />
-                      {checklist.responsible_user_name}
-                    </>
+                    <span className="flex items-center gap-1 min-w-0">
+                      <User className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{checklist.responsible_user_name}</span>
+                    </span>
                   )}
                 </div>
+                <div className="flex flex-wrap items-center gap-2 mt-2 sm:hidden">
+                  {getStatusBadge(checklist.status)}
+                  <Badge variant="secondary" className="text-xs">{checklist.progress_percent}%</Badge>
+                </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="hidden sm:flex items-center gap-2 shrink-0">
                 {getStatusBadge(checklist.status)}
                 <Badge variant="secondary" className="text-xs">{checklist.progress_percent}%</Badge>
               </div>
             </div>
           </CollapsibleTrigger>
+
           {checklist.status !== "completed" && (
             <Button
               variant="outline"
@@ -298,28 +304,29 @@ export default function KsUtfylteSjekklister() {
               const isExpanded = expandedProjects.has(projectId);
               return (
                 <div key={projectId} className="space-y-2">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <button
                       onClick={() => toggleProject(projectId)}
-                      className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors"
+                      className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors min-w-0 max-w-full"
                     >
-                      {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                      <FolderOpen className="w-4 h-4 text-primary" />
-                      {project?.project_number && <span className="text-muted-foreground">{project.project_number}</span>}
-                      <span>{project?.project_name || "Ukjent prosjekt"}</span>
-                      <Badge variant="secondary" className="text-xs ml-1">{items.length}</Badge>
+                      {isExpanded ? <ChevronDown className="w-4 h-4 shrink-0" /> : <ChevronRight className="w-4 h-4 shrink-0" />}
+                      <FolderOpen className="w-4 h-4 text-primary shrink-0" />
+                      {project?.project_number && <span className="text-muted-foreground shrink-0">{project.project_number}</span>}
+                      <span className="truncate">{project?.project_name || "Ukjent prosjekt"}</span>
+                      <Badge variant="secondary" className="text-xs ml-1 shrink-0">{items.length}</Badge>
                     </button>
                     <Button
                       variant="outline"
                       size="sm"
                       disabled={downloadingProject === projectId}
                       onClick={() => downloadProjectAll(projectId)}
-                      className="text-xs"
+                      className="text-xs w-full sm:w-auto shrink-0"
                     >
                       {downloadingProject === projectId ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Download className="w-3 h-3 mr-1" />}
                       Last ned alle ({items.length})
                     </Button>
                   </div>
+
                   {isExpanded && (
                     <div className="space-y-2 pl-2">
                       {items.map(renderChecklistRow)}

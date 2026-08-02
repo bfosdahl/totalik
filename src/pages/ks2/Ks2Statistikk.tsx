@@ -87,7 +87,7 @@ export default function Ks2Statistikk() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
       >
         {/* Projects KPI */}
         <Card>
@@ -120,7 +120,7 @@ export default function Ks2Statistikk() {
               </div>
             </div>
             <div className="mt-4">
-              <div className="flex items-center justify-between text-sm mb-1">
+              <div className="flex items-center justify-between gap-2 text-sm mb-1">
                 <span className="text-muted-foreground">Fullføringsgrad</span>
                 <span className="font-medium">{stats.checklistCompletionRate}%</span>
               </div>
@@ -143,7 +143,7 @@ export default function Ks2Statistikk() {
               </div>
             </div>
             <div className="mt-4">
-              <div className="flex items-center justify-between text-sm mb-1">
+              <div className="flex items-center justify-between gap-2 text-sm mb-1">
                 <span className="text-muted-foreground">Lukkingsgrad</span>
                 <span className="font-medium">{stats.deviationClosureRate}%</span>
               </div>
@@ -165,7 +165,7 @@ export default function Ks2Statistikk() {
               </div>
             </div>
             <div className="mt-4">
-              <div className="flex items-center justify-between text-sm mb-1">
+              <div className="flex items-center justify-between gap-2 text-sm mb-1">
                 <span className="text-muted-foreground">Gjennomføringsgrad</span>
                 <span className="font-medium">{stats.vernerundeCompletionRate}%</span>
               </div>
@@ -189,7 +189,7 @@ export default function Ks2Statistikk() {
             <CardDescription>Åpnede og lukkede avvik siste 6 måneder</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[250px] sm:h-[300px]">
+            <div className="h-[250px] sm:h-[300px] overflow-hidden">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={stats.deviationTrend.map(d => ({ ...d, month: formatMonth(d.month) }))}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -232,7 +232,7 @@ export default function Ks2Statistikk() {
             <CardDescription>Fullførte og totale sjekklister</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[250px] sm:h-[300px]">
+            <div className="h-[250px] sm:h-[300px] overflow-hidden">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats.checklistsByMonth.map(d => ({ ...d, month: formatMonth(d.month) }))}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />

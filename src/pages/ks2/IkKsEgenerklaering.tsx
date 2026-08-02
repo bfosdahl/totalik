@@ -145,13 +145,14 @@ export default function IkKsEgenerklaering() {
         transition={{ delay: 0.1 }}
       >
         <Card>
-          <CardContent className="p-6 md:p-10">
+          <CardContent className="p-4 sm:p-6 md:p-10">
             {/* Status + actions bar */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
               <Badge variant={hasSelfDeclaration ? "default" : "secondary"} className="text-xs">
                 {hasSelfDeclaration ? "Signert" : "Ikke signert"}
               </Badge>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+
                 <Button variant="outline" size="sm" onClick={() => setShowDialog(true)}>
                   <PenLine className="w-4 h-4 mr-2" />
                   {hasSelfDeclaration ? "Signer på nytt" : "Signer"}

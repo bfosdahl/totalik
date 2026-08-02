@@ -302,12 +302,12 @@ function RoutineCard({
       <Collapsible open={isExpanded} onOpenChange={onToggle}>
         <CollapsibleTrigger asChild>
           <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-start gap-3 min-w-0">
                 {isExpanded ? (
-                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                  <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
                 ) : (
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
                 )}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -316,11 +316,12 @@ function RoutineCard({
                         {routine.routine_number}
                       </Badge>
                     )}
-                    <CardTitle className="text-base">{routine.routine_name}</CardTitle>
+                    <CardTitle className="text-base break-words">{routine.routine_name}</CardTitle>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap lg:shrink-0">
+
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   {format(new Date(routine.created_at), "dd.MM.yyyy", { locale: nb })}

@@ -850,12 +850,12 @@ export default function IkKsHandbok() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-card rounded-xl border border-border p-5 shadow-card"
       >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-primary/10">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-4 min-w-0">
+            <div className="p-3 rounded-xl bg-primary/10 shrink-0">
               <BookOpen className="w-6 h-6 text-primary" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h2 className="text-lg font-semibold mb-1">KS Håndbok</h2>
               <p className="text-muted-foreground text-sm">
                 Last ned bedriftens samlede kvalitetssikringshåndbok som PDF. 
@@ -863,7 +863,7 @@ export default function IkKsHandbok() {
               </p>
             </div>
           </div>
-          <Button onClick={handleGeneratePdf} disabled={isGenerating}>
+          <Button onClick={handleGeneratePdf} disabled={isGenerating} className="w-full sm:w-auto shrink-0">
             {isGenerating ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             ) : (
@@ -872,6 +872,7 @@ export default function IkKsHandbok() {
             Last ned KS Håndbok
           </Button>
         </div>
+
       </motion.div>
 
       {/* Sections overview */}
