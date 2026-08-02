@@ -418,16 +418,26 @@ export default function AdminMonitoring() {
                           Løst {new Date(alert.resolved_at).toLocaleString("nb-NO")}
                         </p>
                       )}
-                      {!isResolved && (
+                      <div className="flex items-center justify-end gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => resolveAlert.mutate(alert.id)}
+                          onClick={() => setDetailsAlert(alert)}
                           className="h-6 text-xs mt-1"
                         >
-                          Løs
+                          Detaljer
                         </Button>
-                      )}
+                        {!isResolved && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => resolveAlert.mutate(alert.id)}
+                            className="h-6 text-xs mt-1"
+                          >
+                            Løs
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -435,6 +445,15 @@ export default function AdminMonitoring() {
             </div>
           )}
         </motion.div>
+
+        <AlertDetailsDialog
+          open={!!detailsAlert}
+          onOpenChange={(open) => !open && setDetailsAlert(null)}
+          title={detailsAlert?.title ?? ""}
+          message={detailsAlert?.message ?? ""}
+          createdAt={detailsAlert?.created_at ?? ""}
+          details={detailsAlert?.details ?? null}
+        />
       </div>
     </AdminLayout>
   );
