@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { recordJobRun } from "../_shared/jobRun.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -42,6 +43,7 @@ interface Company {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  const jobStart = Date.now();
   console.log("Check KS2 deadlines function called");
 
   if (req.method === "OPTIONS") {
@@ -247,6 +249,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Finished processing. Sent ${emailsSent.length} emails, ${errors.length} errors.`);
 
+    await recordJobRun("check-ks2-deadlines", "success", jobStart, {
+      itemsProcessed: emailsSent.length + errors.length,
+      notificationsSent: emailsSent.length,
+      errorCount: errors.length,
+      errorMessage: errors.length ? errors.join(" | ").slice(0, 2000) : null,
+    });
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -261,6 +270,10 @@ const handler = async (req: Request): Promise<Response> => {
     );
   } catch (error: any) {
     console.error("Error in check-ks2-deadlines function:", error);
+    await recordJobRun("check-ks2-deadlines", "error", jobStart, {
+      errorCount: 1,
+      errorMessage: error?.message ?? String(error),
+    });
     return new Response(
       JSON.stringify({ error: "An unexpected error occurred" }),
       {
