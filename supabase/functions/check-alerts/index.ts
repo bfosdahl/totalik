@@ -252,6 +252,7 @@ Deno.serve(async (req) => {
             message: result.message,
             metric_value: result.metric,
             threshold_value: result.threshold,
+            details: result.details ?? null,
             status: "active",
           });
 
