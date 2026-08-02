@@ -123,20 +123,21 @@ const IkMatRisikoOgTiltak = () => {
   ];
 
   useEffect(() => {
-    if (!isLoading) {
-      if ((content.risks || []).length > 0) {
-        setRisks(content.risks);
-        setActionPlan(content.actionPlan || []);
-      } else {
-        // Auto-save example risks on first visit so they appear in the handbook
-        setRisks(exampleRisks);
-        setActionPlan(exampleActions);
-        // Save examples to DB automatically
-        saveContent('risks', exampleRisks).then(() => {
-          saveContent('actionPlan', exampleActions);
-        });
-      }
+    if (isLoading) return;
+    if ((content.risks || []).length > 0) {
+      setRisks(content.risks);
+      setActionPlan(content.actionPlan || []);
+      return;
     }
+    // Forhåndsutfyll eksempler kun én gang per økt – aldri på nytt etter at
+    // brukeren selv har slettet alle risikoer.
+    if (examplesSeededRef.current) return;
+    examplesSeededRef.current = true;
+    setRisks(exampleRisks);
+    setActionPlan(exampleActions);
+    void saveContent('risks', exampleRisks)
+      .then(() => saveContent('actionPlan', exampleActions))
+      .catch((err) => console.error('Kunne ikke lagre eksempeldata for risiko:', err));
   }, [isLoading, content.risks, content.actionPlan]);
 
   const handleAddRisk = () => {
