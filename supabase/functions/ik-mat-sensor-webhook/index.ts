@@ -41,10 +41,14 @@ function pickString(...values: unknown[]): string | null {
  * Batteri kan komme som prosent (0-100) eller som spenning (volt, typisk 2.0-4.5V
  * for LoRaWAN-sensorer). Vi konverterer volt til prosent med 3.0V = 0 % og 3.6V = 100 %.
  */
-function normaliseBattery(value: number | null): number | null {
+function normaliseBattery(value: number | null, minV = 3.0, maxV = 3.6): number | null {
   if (value === null) return null;
   if (value > 5) return Math.max(0, Math.min(100, Math.round(value)));
-  const pct = ((value - 3.0) / 0.6) * 100;
+  const lo = Number(minV);
+  const hi = Number(maxV);
+  const span = hi - lo;
+  if (!Number.isFinite(span) || span <= 0) return Math.max(0, Math.min(100, Math.round(value)));
+  const pct = ((value - lo) / span) * 100;
   return Math.max(0, Math.min(100, Math.round(pct)));
 }
 
@@ -80,7 +84,7 @@ function parseTtnUplink(item: any): Reading | null {
     externalId,
     temperature,
     measuredAt,
-    battery: normaliseBattery(rawBattery),
+    battery: rawBattery,
     name: pickString(item.end_device_ids?.device_id) ?? null,
   };
 }
@@ -140,8 +144,8 @@ function parseReadings(payload: any): Reading[] {
       externalId,
       temperature,
       measuredAt,
-      battery: normaliseBattery(
-        pickNumber(item.battery, item.battery_level, item.batteryLevel, item.battery_voltage, nested.battery),
+      battery: pickNumber(
+        item.battery, item.battery_level, item.batteryLevel, item.battery_voltage, nested.battery,
       ),
       name: pickString(item.name, item.sensor_name, item.label, item.display_name),
     });
@@ -305,10 +309,17 @@ Deno.serve(async (req) => {
         results.push({ sensor: reading.externalId, status: 'registered_unmapped' });
       }
 
+      // Batteriprosent beregnes med sensorens valgte spenningsskala
+      const batteryPct = normaliseBattery(
+        reading.battery,
+        Number(sensor.battery_min_v ?? 3.0),
+        Number(sensor.battery_max_v ?? 3.6),
+      );
+
       const sensorUpdate: Record<string, unknown> = {
         last_reading_at: reading.measuredAt,
         last_temperature: reading.temperature,
-        last_battery: reading.battery,
+        last_battery: batteryPct,
       };
       if (sensor.is_offline) {
         sensorUpdate.is_offline = false;
@@ -326,9 +337,9 @@ Deno.serve(async (req) => {
       // Lavt batteri -> varsel maks en gang per doegn
       const batteryThreshold = sensor.low_battery_threshold ?? 20;
       if (
-        reading.battery !== null &&
+        batteryPct !== null &&
         batteryThreshold > 0 &&
-        reading.battery <= batteryThreshold
+        batteryPct <= batteryThreshold
       ) {
         const lastBatteryAlert = sensor.last_battery_alert_at
           ? new Date(sensor.last_battery_alert_at).getTime()
@@ -345,7 +356,7 @@ Deno.serve(async (req) => {
             subject: `Lavt batteri pa sensor: ${sensorName}`,
             lines: [
               `Sensor: ${sensorName}`,
-              `Batterinivaa: ${reading.battery} %`,
+              `Batterinivaa: ${batteryPct} %`,
               `Varselgrense: ${batteryThreshold} %`,
               'Bytt batteri for aa unngaa hull i temperaturloggen.',
             ],
