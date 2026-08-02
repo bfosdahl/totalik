@@ -74,6 +74,7 @@ const handler = async (req: Request): Promise<Response> => {
         ks_module2_projects!inner(id, project_name, project_number, company_id)
       `)
       .in("status", ["planned", "in_progress"])
+      .eq("is_deleted", false)
       .not("deadline_date", "is", null)
       .not("responsible_user_id", "is", null);
 
