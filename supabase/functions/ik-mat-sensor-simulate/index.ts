@@ -7,7 +7,7 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 
-const SCENARIOS = ['normal', 'door_open', 'low_battery', 'offline'] as const;
+const SCENARIOS = ['normal', 'high_temp', 'low_temp', 'low_battery', 'offline'] as const;
 type Scenario = (typeof SCENARIOS)[number];
 
 function isScenario(v: unknown): v is Scenario {
