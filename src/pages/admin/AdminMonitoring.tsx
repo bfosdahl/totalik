@@ -58,6 +58,7 @@ interface SystemAlert {
   status: string;
   created_at: string;
   resolved_at: string | null;
+  details: AlertDetails | null;
 }
 
 const severityConfig: Record<string, { icon: typeof AlertTriangle; color: string; bg: string }> = {
