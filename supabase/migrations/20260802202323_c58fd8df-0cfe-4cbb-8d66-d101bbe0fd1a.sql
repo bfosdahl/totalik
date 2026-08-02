@@ -1,0 +1,1 @@
+UPDATE public.system_alerts SET status = 'resolved', resolved_at = now(), updated_at = now() WHERE status = 'active' AND created_at < now() - interval '7 days';
