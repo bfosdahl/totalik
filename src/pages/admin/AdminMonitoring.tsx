@@ -102,7 +102,7 @@ export default function AdminMonitoring() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data || []) as SystemAlert[];
+      return (data || []) as unknown as SystemAlert[];
     },
     refetchInterval: 30_000,
   });
