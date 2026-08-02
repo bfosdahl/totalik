@@ -11,7 +11,13 @@ interface AlertCheck {
   alert_type: string;
   severity: "warning" | "critical";
   title: string;
-  check: (client: any) => Promise<{ triggered: boolean; metric: number; threshold: number; message: string }>;
+  check: (client: any) => Promise<{
+    triggered: boolean;
+    metric: number;
+    threshold: number;
+    message: string;
+    details?: Record<string, unknown>;
+  }>;
 }
 
 const DEDUP_WINDOW_MINUTES = 60;
