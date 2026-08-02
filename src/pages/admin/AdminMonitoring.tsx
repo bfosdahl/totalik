@@ -70,6 +70,7 @@ const severityConfig: Record<string, { icon: typeof AlertTriangle; color: string
 export default function AdminMonitoring() {
   const queryClient = useQueryClient();
   const [showResolved, setShowResolved] = useState(false);
+  const [detailsAlert, setDetailsAlert] = useState<SystemAlert | null>(null);
 
   const {
     data: stats,
