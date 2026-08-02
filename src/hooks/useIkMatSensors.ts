@@ -298,6 +298,7 @@ export function useIkMatSensors() {
     endpoint: endpointQuery.data ?? null,
     sensors: sensorsQuery.data ?? [],
     alerts: alertsQuery.data ?? [],
+    notificationSettings: notificationSettingsQuery.data ?? null,
     isLoading: endpointQuery.isLoading || sensorsQuery.isLoading,
     createEndpoint,
     updateEndpoint,
@@ -307,6 +308,7 @@ export function useIkMatSensors() {
     deleteSensor,
     runWatchdog,
     simulateSensor,
+    updateNotificationSettings,
   };
 }
 
