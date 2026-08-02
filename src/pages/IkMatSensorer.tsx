@@ -15,6 +15,8 @@ import { Copy, RefreshCw, Radio, Plus, Trash2, Thermometer, BatteryMedium, Info,
 import { useIkMatSensors, getWebhookUrl, sensorStatus, type IkMatSensor } from '@/hooks/useIkMatSensors';
 import { useIkMatTemperature } from '@/hooks/useIkMatTemperature';
 import { SensorAlarmSettings } from '@/components/ik-mat/SensorAlarmSettings';
+import { SensorIntegrations } from '@/components/ik-mat/SensorIntegrations';
+
 
 const UNMAPPED = '__none__';
 
