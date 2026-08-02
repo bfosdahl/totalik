@@ -6,6 +6,8 @@ import { useDeviations } from './useDeviations';
 import { format, subDays, startOfDay, startOfWeek, startOfMonth, endOfDay } from 'date-fns';
 import { nb } from 'date-fns/locale';
 
+type CleaningTaskLike = { created_at?: string; frequency?: string | null };
+
 /**
  * Syncs overdue Kontroll tasks to the deviations table as ik_mat deviations.
  * Runs once per page load, creates deviations for overdue tasks that don't already have one.
@@ -67,12 +69,26 @@ export function useIkMatOverdueSync() {
       const reporterName = [profile.first_name, profile.last_name]
         .filter(Boolean).join(' ') || profile.email || 'System';
 
-      const newDeviations: any[] = [];
+      type NewDeviation = {
+        company_id: string;
+        title: string;
+        description: string;
+        category: string;
+        type: string;
+        priority: string;
+        status: string;
+        reporter_id: string;
+        reporter_name: string;
+        due_date: string;
+        department_id: string | null;
+        additional_info: string;
+      };
+      const newDeviations: NewDeviation[] = [];
 
       // Check for missed temperature logs
       if (equipment && equipment.length > 0) {
         const tempLogSet = new Set(
-          (tempLogs || []).map((l: any) => `${l.equipment_id}__${format(new Date(l.measured_at), 'yyyy-MM-dd')}`)
+          (tempLogs || []).map((l: { equipment_id: string | null; measured_at: string }) => `${l.equipment_id}__${format(new Date(l.measured_at), 'yyyy-MM-dd')}`)
         );
 
         let currentDate = new Date(lookbackStart);
@@ -82,21 +98,21 @@ export function useIkMatOverdueSync() {
 
           for (const equip of equipment) {
             // Only check from the day AFTER equipment was created
-            const equipCreatedAt = (equip as any).created_at;
+            const equipCreatedAt = equip.created_at;
             if (equipCreatedAt) {
               const equipStartDate = startOfDay(new Date(new Date(equipCreatedAt).getTime() + 86400000));
               if (currentDate < equipStartDate) continue;
             }
 
             let shouldCheck = false;
-            const freq = (equip as any).measurement_frequency;
+            const freq = equip.measurement_frequency;
             if (freq === 'daily' || freq === 'twice_daily') shouldCheck = true;
             else if (freq === 'weekly') shouldCheck = dayOfWeek === 1;
 
             if (shouldCheck) {
               const key = `${equip.id}__${dateStr}`;
               if (!tempLogSet.has(key)) {
-                const title = `Temperaturlogg ikke utført: ${(equip as any).name} (${dateStr})`;
+                const title = `Temperaturlogg ikke utført: ${equip.name} (${dateStr})`;
                 const dedupeKey = `${title}__${dateStr}`;
                 if (!existingTitles.has(dedupeKey) && !dismissedTitles.has(title)) {
                   existingTitles.add(dedupeKey);
@@ -106,7 +122,7 @@ export function useIkMatOverdueSync() {
                     company_id: company.id,
 
                     title,
-                    description: `Temperaturlogg for ${(equip as any).name} ble ikke utført ${dateStr}. Dette er et automatisk registrert avvik fra Kontroll-modulen.`,
+                    description: `Temperaturlogg for ${equip.name} ble ikke utført ${dateStr}. Dette er et automatisk registrert avvik fra Kontroll-modulen.`,
                     category: 'temperature',
                     type: 'ik_mat',
                     priority: 'medium',
@@ -139,7 +155,7 @@ export function useIkMatOverdueSync() {
         .eq('module_type', 'IK_MAT')
         .single();
 
-      const cleaningPlan = (moduleData?.settings as any)?.generatedContent?.cleaningPlan || [];
+      const cleaningPlan = (moduleData?.settings as { generatedContent?: { cleaningPlan?: CleaningTaskLike[] } } | null)?.generatedContent?.cleaningPlan || [];
       const { data: customCleaningTasks } = await supabase
         .from('ik_mat_custom_cleaning_tasks')
         .select('*')
@@ -149,12 +165,12 @@ export function useIkMatOverdueSync() {
       
       if (allCleaningTasks.length > 0) {
         const cleaningLogSet = new Set(
-          (cleaningResponses || []).map((c: any) => format(new Date(c.created_at), 'yyyy-MM-dd'))
+          (cleaningResponses || []).map((c: { created_at: string }) => format(new Date(c.created_at), 'yyyy-MM-dd'))
         );
 
         // Determine earliest cleaning task creation date (only check from the day after)
         const earliestCleaningDate = customCleaningTasks && customCleaningTasks.length > 0
-          ? startOfDay(new Date(Math.min(...customCleaningTasks.map((t: any) => new Date(t.created_at).getTime())) + 86400000))
+          ? startOfDay(new Date(Math.min(...customCleaningTasks.map((t: { created_at: string }) => new Date(t.created_at).getTime())) + 86400000))
           : moduleData?.settings ? startOfDay(new Date()) : lookbackStart;
         
         let currentDate = new Date(Math.max(lookbackStart.getTime(), earliestCleaningDate.getTime()));
@@ -163,7 +179,7 @@ export function useIkMatOverdueSync() {
           const dayOfWeek = currentDate.getDay();
 
           // Check daily cleaning
-          const hasDailyTasks = allCleaningTasks.some((t: any) => {
+          const hasDailyTasks = allCleaningTasks.some((t: CleaningTaskLike) => {
             const f = (t.frequency || 'daglig').toLowerCase();
             return f === 'daglig' || f === 'daily';
           });
@@ -213,13 +229,13 @@ export function useIkMatOverdueSync() {
 
         const completedSet = new Set(
           (completions || [])
-            .filter((c: any) => c.status === 'completed')
-            .map((c: any) => `${c.task_id}__${c.scheduled_date}`)
+            .filter((c: { status: string | null }) => c.status === 'completed')
+            .map((c: { task_id: string; scheduled_date: string }) => `${c.task_id}__${c.scheduled_date}`)
         );
 
         for (const task of scheduledTasks) {
           // Only check from the day AFTER task was created
-          const taskCreatedAt = (task as any).created_at;
+          const taskCreatedAt = task.created_at;
           const taskStartDate = taskCreatedAt 
             ? startOfDay(new Date(new Date(taskCreatedAt).getTime() + 86400000))
             : lookbackStart;
