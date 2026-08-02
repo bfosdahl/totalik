@@ -140,6 +140,34 @@ export function useIkMatSensors() {
     refetchInterval: 60_000,
   });
 
+  const notificationSettingsQuery = useQuery({
+    queryKey: ['sensor-notification-settings', company?.id],
+    queryFn: async () => {
+      if (!company?.id) return null;
+      const { data, error } = await supabase
+        .from('company_notification_settings')
+        .select('id, company_id, sensor_alarm_email, sensor_alarm_email_recipients, sensor_alarm_sms, sensor_alarm_sms_recipients')
+        .eq('company_id', company.id)
+        .maybeSingle();
+      if (error) throw error;
+      return (data as SensorNotificationSettings | null) ?? null;
+    },
+    enabled: !!company?.id,
+  });
+
+  const updateNotificationSettings = useMutation({
+    mutationFn: async (patch: Partial<SensorNotificationSettings> & { id: string }) => {
+      const { id, ...rest } = patch;
+      const { error } = await supabase.from('company_notification_settings').update(rest).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sensor-notification-settings'] });
+      toast.success('Varslingsinnstillinger oppdatert');
+    },
+    onError: (e: Error) => toast.error('Kunne ikke oppdatere varslingsinnstillinger: ' + e.message),
+  });
+
   const runWatchdog = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke('ik-mat-sensor-watchdog', { body: {} });
