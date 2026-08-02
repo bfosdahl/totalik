@@ -1,0 +1,1 @@
+ALTER TABLE public.system_alerts ADD COLUMN IF NOT EXISTS details jsonb;

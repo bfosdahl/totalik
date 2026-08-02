@@ -16425,6 +16425,7 @@ export type Database = {
         Row: {
           alert_type: string
           created_at: string
+          details: Json | null
           id: string
           message: string
           metric_value: number | null
@@ -16439,6 +16440,7 @@ export type Database = {
         Insert: {
           alert_type: string
           created_at?: string
+          details?: Json | null
           id?: string
           message: string
           metric_value?: number | null
@@ -16453,6 +16455,7 @@ export type Database = {
         Update: {
           alert_type?: string
           created_at?: string
+          details?: Json | null
           id?: string
           message?: string
           metric_value?: number | null
