@@ -18,8 +18,8 @@ export default function HrSurveys() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Medarbeiderundersøkelser</h1>
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">Medarbeiderundersøkelser</h1>
             <p className="text-muted-foreground mt-1">
               Opprett og analyser medarbeiderundersøkelser og pulsmålinger
             </p>
