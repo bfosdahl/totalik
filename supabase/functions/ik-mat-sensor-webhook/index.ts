@@ -208,7 +208,7 @@ Deno.serve(async (req) => {
     const headerSnapshot: Record<string, string> = {};
     for (const [k, v] of req.headers.entries()) {
       const lower = k.toLowerCase();
-      if (lower === 'authorization' || lower === 'x-sensor-token' || lower === 'cookie') continue;
+      if (['authorization', 'x-sensor-token', 'x-totalik-key', 'x-api-key', 'cookie'].includes(lower)) continue;
       headerSnapshot[lower] = v.slice(0, 300);
     }
 
