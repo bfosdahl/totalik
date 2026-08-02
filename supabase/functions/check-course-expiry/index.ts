@@ -91,17 +91,15 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!expiringCourses || expiringCourses.length === 0) {
       await recordJobRun("check-course-expiry", "success", jobStart, {
-      itemsProcessed: results.courses_checked ?? 0,
-      notificationsSent: results.reminders_sent ?? 0,
-      errorCount: results.errors?.length ?? 0,
-      errorMessage: results.errors?.length ? results.errors.join(" | ").slice(0, 2000) : null,
-    });
-
-    return new Response(JSON.stringify(results), {
+        itemsProcessed: results.checked,
+        notificationsSent: 0,
+      });
+      return new Response(JSON.stringify(results), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
+
 
     for (const course of expiringCourses as ExpiringCourse[]) {
       const expiryDate = new Date(course.expiry_date);
