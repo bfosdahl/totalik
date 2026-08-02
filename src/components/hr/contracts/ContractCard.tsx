@@ -83,7 +83,7 @@ export function ContractCard({
             <Badge variant="outline">{contract.employment_percentage}%</Badge>
           </div>
 
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span>
               Start: {format(new Date(contract.start_date), 'd. MMM yyyy', { locale: nb })}
             </span>
@@ -95,7 +95,7 @@ export function ContractCard({
           </div>
 
           {/* Signature status */}
-          <div className="flex items-center gap-3 mt-3 pt-3 border-t text-xs">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 pt-3 border-t text-xs">
             <div className="flex items-center gap-1">
               {contract.signed_by_employer ? (
                 <Check className="w-3 h-3 text-primary" />
@@ -115,7 +115,7 @@ export function ContractCard({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {canDownload && (
             <Button 
               size="sm" 
