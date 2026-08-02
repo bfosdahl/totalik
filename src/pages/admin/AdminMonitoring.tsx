@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { JobHealthTable } from "@/components/admin/JobHealthTable";
+import { AlertDetailsDialog, type AlertDetails } from "@/components/admin/AlertDetailsDialog";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
