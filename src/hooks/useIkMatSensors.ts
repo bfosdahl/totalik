@@ -37,6 +37,8 @@ export interface IkMatSensor {
   breach_grace_minutes: number;
   offline_after_minutes: number;
   low_battery_threshold: number;
+  battery_min_v: number;
+  battery_max_v: number;
   breach_started_at: string | null;
   last_temp_alert_at: string | null;
   last_offline_alert_at: string | null;
