@@ -227,6 +227,23 @@ export function useIkMatSensors() {
     onError: (e: Error) => toast.error('Kunne ikke oppdatere sensor: ' + e.message),
   });
 
+  const simulateSensor = useMutation({
+    mutationFn: async (input: { sensor_id: string; scenario?: string }) => {
+      const { data, error } = await supabase.functions.invoke('ik-mat-sensor-simulate', {
+        body: input,
+      });
+      if (error) throw error;
+      return data as { ok: boolean; scenario: string; sensor_id: string; webhook_status?: number; webhook_response?: unknown };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-sensors'] });
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-temperature-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-sensor-alerts'] });
+      toast.success(`Simulering ${data.scenario} fullført`);
+    },
+    onError: (e: Error) => toast.error('Kunne ikke simulere: ' + e.message),
+  });
+
   const deleteSensor = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('ik_mat_sensors').delete().eq('id', id);
@@ -251,6 +268,7 @@ export function useIkMatSensors() {
     updateSensor,
     deleteSensor,
     runWatchdog,
+    simulateSensor,
   };
 }
 
