@@ -3,6 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
+type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
+
+
 export interface SensorEndpoint {
   id: string;
   company_id: string;
@@ -28,6 +31,8 @@ export interface IkMatSensor {
   location: string | null;
   is_active: boolean;
   is_offline: boolean;
+  simulation_mode: boolean;
+  simulated_payload: Json | null;
   last_reading_at: string | null;
   last_temperature: number | null;
   last_battery: number | null;
@@ -60,6 +65,16 @@ export interface SensorAlert {
   email_status: string | null;
   created_at: string;
 }
+
+export interface SensorNotificationSettings {
+  id: string;
+  company_id: string;
+  sensor_alarm_email: boolean;
+  sensor_alarm_email_recipients: string[];
+  sensor_alarm_sms: boolean;
+}
+
+
 
 const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ik-mat-sensor-webhook`;
 
@@ -125,6 +140,34 @@ export function useIkMatSensors() {
     refetchInterval: 60_000,
   });
 
+  const notificationSettingsQuery = useQuery({
+    queryKey: ['sensor-notification-settings', company?.id],
+    queryFn: async () => {
+      if (!company?.id) return null;
+      const { data, error } = await supabase
+        .from('company_notification_settings')
+        .select('id, company_id, sensor_alarm_email, sensor_alarm_email_recipients, sensor_alarm_sms')
+        .eq('company_id', company.id)
+        .maybeSingle();
+      if (error) throw error;
+      return (data as SensorNotificationSettings | null) ?? null;
+    },
+    enabled: !!company?.id,
+  });
+
+  const updateNotificationSettings = useMutation({
+    mutationFn: async (patch: Partial<SensorNotificationSettings> & { id: string }) => {
+      const { id, ...rest } = patch;
+      const { error } = await supabase.from('company_notification_settings').update(rest).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sensor-notification-settings'] });
+      toast.success('Varslingsinnstillinger oppdatert');
+    },
+    onError: (e: Error) => toast.error('Kunne ikke oppdatere varslingsinnstillinger: ' + e.message),
+  });
+
   const runWatchdog = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke('ik-mat-sensor-watchdog', { body: {} });
@@ -160,6 +203,21 @@ export function useIkMatSensors() {
     },
     onError: (e: Error) => toast.error('Kunne ikke opprette endepunkt: ' + e.message),
   });
+
+  const getSensorLogs = async (equipment_id: string, hours: number = 24) => {
+    if (!company?.id) return [];
+    const since = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+    const { data, error } = await supabase
+      .from('ik_mat_temperature_logs')
+      .select('temperature, measured_at, is_acceptable')
+      .eq('company_id', company.id)
+      .eq('equipment_id', equipment_id)
+      .gte('measured_at', since)
+      .order('measured_at', { ascending: true })
+      .limit(500);
+    if (error) throw error;
+    return data as { temperature: number; measured_at: string; is_acceptable: boolean }[];
+  };
 
   const updateEndpoint = useMutation({
     mutationFn: async (patch: Partial<SensorEndpoint> & { id: string }) => {
@@ -222,6 +280,23 @@ export function useIkMatSensors() {
     onError: (e: Error) => toast.error('Kunne ikke oppdatere sensor: ' + e.message),
   });
 
+  const simulateSensor = useMutation({
+    mutationFn: async (input: { sensor_id: string; scenario?: string }) => {
+      const { data, error } = await supabase.functions.invoke('ik-mat-sensor-simulate', {
+        body: input,
+      });
+      if (error) throw error;
+      return data as { ok: boolean; scenario: string; sensor_id: string; webhook_status?: number; webhook_response?: unknown };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-sensors'] });
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-temperature-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['ik-mat-sensor-alerts'] });
+      toast.success(`Simulering ${data.scenario} fullført`);
+    },
+    onError: (e: Error) => toast.error('Kunne ikke simulere: ' + e.message),
+  });
+
   const deleteSensor = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('ik_mat_sensors').delete().eq('id', id);
@@ -238,6 +313,7 @@ export function useIkMatSensors() {
     endpoint: endpointQuery.data ?? null,
     sensors: sensorsQuery.data ?? [],
     alerts: alertsQuery.data ?? [],
+    notificationSettings: notificationSettingsQuery.data ?? null,
     isLoading: endpointQuery.isLoading || sensorsQuery.isLoading,
     createEndpoint,
     updateEndpoint,
@@ -246,6 +322,9 @@ export function useIkMatSensors() {
     updateSensor,
     deleteSensor,
     runWatchdog,
+    simulateSensor,
+    updateNotificationSettings,
+    getSensorLogs,
   };
 }
 

@@ -119,7 +119,7 @@ export function localDateString(d: Date): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
-/** Henter varslingsmottakere: sensor -> endepunkt -> bedriftsadministratorer. */
+/** Henter varslingsmottakere: sensor -> endepunkt -> bedriftsinnstillinger -> administratorer. */
 export async function resolveRecipients(
   supabase: any,
   companyId: string,
@@ -128,6 +128,17 @@ export async function resolveRecipients(
 ): Promise<string[]> {
   const direct = normalizeEmails(sensorEmails, endpointEmails);
   if (direct.length) return direct;
+
+  const { data: settings } = await supabase
+    .from('company_notification_settings')
+    .select('sensor_alarm_email, sensor_alarm_email_recipients')
+    .eq('company_id', companyId)
+    .maybeSingle();
+
+  if (settings?.sensor_alarm_email) {
+    const configured = normalizeEmails(settings.sensor_alarm_email_recipients);
+    if (configured.length) return configured;
+  }
 
   const { data: profiles } = await supabase
     .from('profiles')
