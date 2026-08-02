@@ -140,9 +140,13 @@ export function useSensorIntegrations() {
   const updateIntegration = useMutation({
     mutationFn: async (patch: Partial<SensorIntegration> & { id: string }) => {
       const { id, ...rest } = patch;
-      const { error } = await supabase.from('ik_mat_sensor_integrations').update(rest).eq('id', id);
+      const { error } = await supabase
+        .from('ik_mat_sensor_integrations')
+        .update(rest as never)
+        .eq('id', id);
       if (error) throw error;
     },
+
     onSuccess: () => {
       invalidate();
       toast.success('Integrasjon oppdatert');
