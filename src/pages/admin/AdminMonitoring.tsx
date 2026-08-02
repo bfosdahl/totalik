@@ -200,15 +200,26 @@ export default function AdminMonitoring() {
                           </p>
                         </div>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => resolveAlert.mutate(alert.id)}
-                        className="flex-shrink-0 gap-1.5"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        Løs
-                      </Button>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDetailsAlert(alert)}
+                          className="gap-1.5"
+                        >
+                          <Info className="w-3.5 h-3.5" />
+                          Detaljer
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => resolveAlert.mutate(alert.id)}
+                          className="gap-1.5"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Løs
+                        </Button>
+                      </div>
                     </div>
                   );
                 })}
