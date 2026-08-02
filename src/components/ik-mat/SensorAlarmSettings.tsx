@@ -22,7 +22,7 @@ const BATTERY_SCALES = [
   { value: '2.0-3.0', label: 'Alkalisk 2xAA (2,0–3,0 V)', min: 2.0, max: 3.0 },
 ] as const;
 
-const scaleValue = (sensor: { battery_min_v?: number | null; battery_max_v?: number | null }) => {
+const scaleValue = (sensor: { battery_min_v?: number | null; battery_max_v?: number | null }): string => {
   const min = Number(sensor.battery_min_v ?? 3.0);
   const max = Number(sensor.battery_max_v ?? 3.6);
   const match = BATTERY_SCALES.find((s) => s.min === min && s.max === max);
