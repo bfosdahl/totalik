@@ -52,7 +52,7 @@ export default function HrSurveys() {
 
         {/* Tabs */}
         <Tabs defaultValue="active">
-          <TabsList>
+          <TabsList className="w-full justify-start overflow-x-auto">
             <TabsTrigger value="active">Aktive</TabsTrigger>
             <TabsTrigger value="draft">Utkast</TabsTrigger>
             <TabsTrigger value="closed">Avsluttet</TabsTrigger>
