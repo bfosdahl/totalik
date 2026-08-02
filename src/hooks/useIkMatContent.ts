@@ -290,7 +290,7 @@ export const useIkMatContent = () => {
           settings: {
             ...settings,
             manualContent: updatedManualContent,
-          },
+          } as unknown as never,
           updated_at: new Date().toISOString(),
         })
         .eq('company_id', company.id)
