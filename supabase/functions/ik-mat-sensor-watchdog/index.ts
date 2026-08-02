@@ -1,17 +1,25 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
-import {
-  sendSensorAlert,
-  resolveRecipients,
-  nextDeviationNumber,
-  localDateString,
-} from '../_shared/sensorAlerts.ts';
+import { nextDeviationNumber, localDateString } from '../_shared/sensorAlerts.ts';
+import type { AlertInput } from '../_shared/sensorAlerts.ts';
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
+
+async function invokeNotify(supabase: ReturnType<typeof createClient>, alert: AlertInput) {
+  try {
+    const { error } = await supabase.functions.invoke('ik-mat-sensor-notify', {
+      body: { alert },
+    });
+    if (error) throw error;
+  } catch (e) {
+    console.error('ik-mat-sensor-notify invoke failed:', e);
+    throw e;
+  }
+}
 
 /**
  * Vakthund for IK-Mat sensorer.
@@ -64,7 +72,7 @@ Deno.serve(async (req) => {
 
     const now = Date.now();
     const results: any[] = [];
-    const companyCache = new Map<string, { name: string; endpointEmails: string[] }>();
+    const companyCache = new Map<string, string>();
 
     for (const sensor of sensors ?? []) {
       const offlineAfterMs = (sensor.offline_after_minutes ?? 120) * 60 * 1000;
@@ -97,16 +105,9 @@ Deno.serve(async (req) => {
           .select('name')
           .eq('id', sensor.company_id)
           .maybeSingle();
-        const { data: endpoints } = await supabase
-          .from('ik_mat_sensor_endpoints')
-          .select('alert_emails')
-          .eq('company_id', sensor.company_id);
-        companyCache.set(sensor.company_id, {
-          name: company?.name || 'Total-IK',
-          endpointEmails: (endpoints ?? []).flatMap((e: any) => e.alert_emails ?? []),
-        });
+        companyCache.set(sensor.company_id, company?.name || 'Total-IK');
       }
-      const companyInfo = companyCache.get(sensor.company_id)!;
+      const companyName = companyCache.get(sensor.company_id)!;
 
       let equipmentName: string | null = null;
       if (sensor.equipment_id) {
@@ -147,16 +148,9 @@ Deno.serve(async (req) => {
         department_id: sensor.department_id ?? null,
       });
 
-      const recipients = await resolveRecipients(
-        supabase,
-        sensor.company_id,
-        sensor.alert_emails,
-        companyInfo.endpointEmails,
-      );
-
-      await sendSensorAlert(supabase, {
+      await invokeNotify(supabase, {
         companyId: sensor.company_id,
-        companyName: companyInfo.name,
+        companyName,
         sensorId: sensor.id,
         sensorName,
         equipmentId: sensor.equipment_id,
@@ -173,7 +167,7 @@ Deno.serve(async (req) => {
           'Kontroller temperaturen manuelt til sensoren er tilbake.',
         ],
         deviationNumber,
-        recipients,
+        recipients: sensor.alert_emails,
       });
 
       await supabase
