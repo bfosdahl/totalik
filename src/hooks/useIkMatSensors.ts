@@ -3,6 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
+type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
+
+
 export interface SensorEndpoint {
   id: string;
   company_id: string;
