@@ -79,7 +79,7 @@ export interface CalendarEvent {
   status: 'pending' | 'completed' | 'overdue';
   taskId?: string;
   sourceId?: string;
-  details?: Record<string, unknown>;
+  details?: unknown;
   actionUrl?: string;
 }
 
@@ -90,7 +90,8 @@ export const useIkMatScheduledTasks = () => {
   const queryClient = useQueryClient();
 
   // Helper to apply department filter consistently
-  const applyDeptFilter = <T extends { eq: (col: string, val: string) => T; is: (col: string, val: null) => T }>(q: T): T =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const applyDeptFilter = <T extends { eq: any; is: any }>(q: T): T =>
     (filterDepartmentId
       ? q.eq('department_id', filterDepartmentId)
       : q.is('department_id', null)) as T;
@@ -156,7 +157,7 @@ export const useIkMatScheduledTasks = () => {
   // Get generated cleaning plan from module settings
   const generatedCleaningPlan = (() => {
     if (ikMatModule?.settings) {
-      const settings = ikMatModule.settings as Record<string, unknown> | null;
+      const settings = ikMatModule.settings as { generatedContent?: { cleaningPlan?: CleaningTaskRow[] } } | null;
       return settings.generatedContent?.cleaningPlan || [];
     }
     return [];
@@ -739,8 +740,8 @@ export const useIkMatScheduledTasks = () => {
           autoDeviationTitles.add(`Temperaturlogg ikke utført: ${equipName} (${dateStr})`);
         } else if (event.type === 'cleaning' && event.title.startsWith('🧹')) {
           autoDeviationTitles.add(`Renhold ikke utført (${dateStr})`);
-        } else if (event.type === 'task' && event.details?.title) {
-          autoDeviationTitles.add(`Oppgave ikke utført: ${event.details.title} (${dateStr})`);
+        } else if (event.type === 'task' && (event.details as ScheduledTask | undefined)?.title) {
+          autoDeviationTitles.add(`Oppgave ikke utført: ${(event.details as ScheduledTask).title} (${dateStr})`);
         }
       }
 
