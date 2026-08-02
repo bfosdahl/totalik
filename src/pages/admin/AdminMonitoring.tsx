@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   XCircle,
   ShieldAlert,
+  Info,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { JobHealthTable } from "@/components/admin/JobHealthTable";
