@@ -15,6 +15,8 @@ import { Copy, RefreshCw, Radio, Plus, Trash2, Thermometer, BatteryMedium, Info,
 import { useIkMatSensors, getWebhookUrl, sensorStatus, type IkMatSensor } from '@/hooks/useIkMatSensors';
 import { useIkMatTemperature } from '@/hooks/useIkMatTemperature';
 import { SensorAlarmSettings } from '@/components/ik-mat/SensorAlarmSettings';
+import { SensorIntegrations } from '@/components/ik-mat/SensorIntegrations';
+
 
 const UNMAPPED = '__none__';
 
@@ -409,6 +411,13 @@ export default function IkMatSensorer() {
           </CardContent>
         </Card>
 
+        <SensorIntegrations
+          endpointId={endpoint?.id ?? null}
+          signatureSecret={(endpoint as unknown as { signature_secret?: string | null })?.signature_secret ?? null}
+          signatureHeader={(endpoint as unknown as { signature_header?: string | null })?.signature_header ?? 'x-signature'}
+          debugLogging={(endpoint as unknown as { debug_logging?: boolean })?.debug_logging ?? true}
+          onUpdateEndpoint={(patch) => updateEndpoint.mutate(patch as never)}
+        />
 
 
         {/* Help */}

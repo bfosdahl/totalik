@@ -7944,12 +7944,16 @@ export type Database = {
           company_id: string
           created_at: string
           created_by: string | null
+          debug_logging: boolean
           department_id: string | null
           id: string
           is_active: boolean
           last_error: string | null
           last_received_at: string | null
           name: string | null
+          signature_algo: string
+          signature_header: string
+          signature_secret: string | null
           token: string
           updated_at: string
         }
@@ -7958,12 +7962,16 @@ export type Database = {
           company_id: string
           created_at?: string
           created_by?: string | null
+          debug_logging?: boolean
           department_id?: string | null
           id?: string
           is_active?: boolean
           last_error?: string | null
           last_received_at?: string | null
           name?: string | null
+          signature_algo?: string
+          signature_header?: string
+          signature_secret?: string | null
           token: string
           updated_at?: string
         }
@@ -7972,12 +7980,16 @@ export type Database = {
           company_id?: string
           created_at?: string
           created_by?: string | null
+          debug_logging?: boolean
           department_id?: string | null
           id?: string
           is_active?: boolean
           last_error?: string | null
           last_received_at?: string | null
           name?: string | null
+          signature_algo?: string
+          signature_header?: string
+          signature_secret?: string | null
           token?: string
           updated_at?: string
         }
@@ -7987,6 +7999,151 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_mat_sensor_integrations: {
+        Row: {
+          base_url: string | null
+          company_id: string
+          config: Json
+          created_at: string
+          credentials: Json
+          display_name: string | null
+          endpoint_id: string | null
+          has_credentials: boolean
+          id: string
+          is_active: boolean
+          last_error: string | null
+          last_sync_at: string | null
+          last_sync_status: string | null
+          mode: string
+          poll_interval_minutes: number
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          base_url?: string | null
+          company_id: string
+          config?: Json
+          created_at?: string
+          credentials?: Json
+          display_name?: string | null
+          endpoint_id?: string | null
+          has_credentials?: boolean
+          id?: string
+          is_active?: boolean
+          last_error?: string | null
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          mode?: string
+          poll_interval_minutes?: number
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          base_url?: string | null
+          company_id?: string
+          config?: Json
+          created_at?: string
+          credentials?: Json
+          display_name?: string | null
+          endpoint_id?: string | null
+          has_credentials?: boolean
+          id?: string
+          is_active?: boolean
+          last_error?: string | null
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          mode?: string
+          poll_interval_minutes?: number
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_sensor_integrations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_sensor_integrations_endpoint_id_fkey"
+            columns: ["endpoint_id"]
+            isOneToOne: false
+            referencedRelation: "ik_mat_sensor_endpoints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ik_mat_sensor_payload_log: {
+        Row: {
+          company_id: string
+          created_at: string
+          direction: string
+          endpoint_id: string | null
+          error: string | null
+          headers: Json | null
+          http_status: number | null
+          id: string
+          integration_id: string | null
+          payload: Json | null
+          reading_count: number
+          source: string | null
+          status: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          direction?: string
+          endpoint_id?: string | null
+          error?: string | null
+          headers?: Json | null
+          http_status?: number | null
+          id?: string
+          integration_id?: string | null
+          payload?: Json | null
+          reading_count?: number
+          source?: string | null
+          status?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          direction?: string
+          endpoint_id?: string | null
+          error?: string | null
+          headers?: Json | null
+          http_status?: number | null
+          id?: string
+          integration_id?: string | null
+          payload?: Json | null
+          reading_count?: number
+          source?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ik_mat_sensor_payload_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_sensor_payload_log_endpoint_id_fkey"
+            columns: ["endpoint_id"]
+            isOneToOne: false
+            referencedRelation: "ik_mat_sensor_endpoints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ik_mat_sensor_payload_log_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "ik_mat_sensor_integrations"
             referencedColumns: ["id"]
           },
         ]
