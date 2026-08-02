@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { recordJobRun } from "../_shared/jobRun.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -89,7 +90,14 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     if (!expiringCourses || expiringCourses.length === 0) {
-      return new Response(JSON.stringify(results), {
+      await recordJobRun("check-course-expiry", "success", jobStart, {
+      itemsProcessed: results.courses_checked ?? 0,
+      notificationsSent: results.reminders_sent ?? 0,
+      errorCount: results.errors?.length ?? 0,
+      errorMessage: results.errors?.length ? results.errors.join(" | ").slice(0, 2000) : null,
+    });
+
+    return new Response(JSON.stringify(results), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
@@ -229,6 +237,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Check complete:", results);
 
+    await recordJobRun("check-course-expiry", "success", jobStart, {
+      itemsProcessed: results.courses_checked ?? 0,
+      notificationsSent: results.reminders_sent ?? 0,
+      errorCount: results.errors?.length ?? 0,
+      errorMessage: results.errors?.length ? results.errors.join(" | ").slice(0, 2000) : null,
+    });
+
     return new Response(JSON.stringify(results), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -236,6 +251,10 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: unknown) {
     console.error("Error in check-course-expiry:", error);
+    await recordJobRun("check-course-expiry", "error", jobStart, {
+      errorCount: 1,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
     console.error("check-course-expiry error:", error);
     const errorMessage = "An unexpected error occurred";
     return new Response(
