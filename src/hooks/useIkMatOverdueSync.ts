@@ -280,7 +280,6 @@ export function useIkMatOverdueSync() {
         if (error) {
           console.error('Error syncing overdue tasks to deviations:', error);
         } else {
-          console.log(`Synced ${batch.length} overdue Kontroll tasks as deviations`);
           await refetch();
         }
       }

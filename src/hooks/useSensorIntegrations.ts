@@ -140,10 +140,12 @@ export function useSensorIntegrations() {
   const updateIntegration = useMutation({
     mutationFn: async (patch: Partial<SensorIntegration> & { id: string }) => {
       const { id, ...rest } = patch;
+      if (!companyId) throw new Error('Ingen bedrift valgt');
       const { error } = await supabase
         .from('ik_mat_sensor_integrations')
         .update(rest as never)
-        .eq('id', id);
+        .eq('id', id)
+        .eq('company_id', companyId);
       if (error) throw error;
     },
 
@@ -156,7 +158,12 @@ export function useSensorIntegrations() {
 
   const deleteIntegration = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('ik_mat_sensor_integrations').delete().eq('id', id);
+      if (!companyId) throw new Error('Ingen bedrift valgt');
+      const { error } = await supabase
+        .from('ik_mat_sensor_integrations')
+        .delete()
+        .eq('id', id)
+        .eq('company_id', companyId);
       if (error) throw error;
     },
     onSuccess: () => {

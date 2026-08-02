@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useIkMatContent, IkMatRisk, IkMatActionItem, calculateRiskLevel } from "@/hooks/useIkMatContent";
@@ -22,6 +22,7 @@ const IkMatRisikoOgTiltak = () => {
   const { content, isLoading, isSaving, saveContent } = useIkMatContent();
   const { employees } = useEmployees();
   
+  const examplesSeededRef = useRef(false);
   const [risks, setRisks] = useState<IkMatRisk[]>([]);
   const [actionPlan, setActionPlan] = useState<IkMatActionItem[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
@@ -123,20 +124,21 @@ const IkMatRisikoOgTiltak = () => {
   ];
 
   useEffect(() => {
-    if (!isLoading) {
-      if ((content.risks || []).length > 0) {
-        setRisks(content.risks);
-        setActionPlan(content.actionPlan || []);
-      } else {
-        // Auto-save example risks on first visit so they appear in the handbook
-        setRisks(exampleRisks);
-        setActionPlan(exampleActions);
-        // Save examples to DB automatically
-        saveContent('risks', exampleRisks).then(() => {
-          saveContent('actionPlan', exampleActions);
-        });
-      }
+    if (isLoading) return;
+    if ((content.risks || []).length > 0) {
+      setRisks(content.risks);
+      setActionPlan(content.actionPlan || []);
+      return;
     }
+    // Forhåndsutfyll eksempler kun én gang per økt – aldri på nytt etter at
+    // brukeren selv har slettet alle risikoer.
+    if (examplesSeededRef.current) return;
+    examplesSeededRef.current = true;
+    setRisks(exampleRisks);
+    setActionPlan(exampleActions);
+    void saveContent('risks', exampleRisks)
+      .then(() => saveContent('actionPlan', exampleActions))
+      .catch((err) => console.error('Kunne ikke lagre eksempeldata for risiko:', err));
   }, [isLoading, content.risks, content.actionPlan]);
 
   const handleAddRisk = () => {

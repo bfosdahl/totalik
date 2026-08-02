@@ -263,7 +263,7 @@ const IkMatAvvik = () => {
       status: deviation.status,
       assignee: deviation.assignee_name || "Ikke tildelt",
       reporter: deviation.reporter_name,
-      createdAt: deviation.created_at.split("T")[0],
+      createdAt: format(parseISO(deviation.created_at), "yyyy-MM-dd"),
       dueDate: deviation.due_date,
       type: deviation.type,
       incident_location: deviation.incident_location,
@@ -495,10 +495,12 @@ const IkMatAvvik = () => {
         }
       }
 
+      // Soft-delete (samme mønster som enkeltsletting) – bevarer audit-spor
       let deleteQuery = supabase
         .from('deviations')
-        .delete()
+        .update({ is_deleted: true, deleted_at: new Date().toISOString() })
         .eq('company_id', company.id)
+        .eq('is_deleted', false)
         .eq('type', 'ik_mat');
 
       if (filterCategory) {

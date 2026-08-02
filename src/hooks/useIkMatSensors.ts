@@ -158,7 +158,12 @@ export function useIkMatSensors() {
   const updateNotificationSettings = useMutation({
     mutationFn: async (patch: Partial<SensorNotificationSettings> & { id: string }) => {
       const { id, ...rest } = patch;
-      const { error } = await supabase.from('company_notification_settings').update(rest).eq('id', id);
+      if (!company?.id) throw new Error('Ingen bedrift valgt');
+      const { error } = await supabase
+        .from('company_notification_settings')
+        .update(rest)
+        .eq('id', id)
+        .eq('company_id', company.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -222,7 +227,12 @@ export function useIkMatSensors() {
   const updateEndpoint = useMutation({
     mutationFn: async (patch: Partial<SensorEndpoint> & { id: string }) => {
       const { id, ...rest } = patch;
-      const { error } = await supabase.from('ik_mat_sensor_endpoints').update(rest).eq('id', id);
+      if (!company?.id) throw new Error('Ingen bedrift valgt');
+      const { error } = await supabase
+        .from('ik_mat_sensor_endpoints')
+        .update(rest)
+        .eq('id', id)
+        .eq('company_id', company.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -234,10 +244,12 @@ export function useIkMatSensors() {
 
   const regenerateToken = useMutation({
     mutationFn: async (id: string) => {
+      if (!company?.id) throw new Error('Ingen bedrift valgt');
       const { error } = await supabase
         .from('ik_mat_sensor_endpoints')
         .update({ token: generateToken() })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('company_id', company.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -270,7 +282,12 @@ export function useIkMatSensors() {
   const updateSensor = useMutation({
     mutationFn: async (patch: Partial<IkMatSensor> & { id: string }) => {
       const { id, ...rest } = patch;
-      const { error } = await supabase.from('ik_mat_sensors').update(rest).eq('id', id);
+      if (!company?.id) throw new Error('Ingen bedrift valgt');
+      const { error } = await supabase
+        .from('ik_mat_sensors')
+        .update(rest)
+        .eq('id', id)
+        .eq('company_id', company.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -299,7 +316,12 @@ export function useIkMatSensors() {
 
   const deleteSensor = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('ik_mat_sensors').delete().eq('id', id);
+      if (!company?.id) throw new Error('Ingen bedrift valgt');
+      const { error } = await supabase
+        .from('ik_mat_sensors')
+        .delete()
+        .eq('id', id)
+        .eq('company_id', company.id);
       if (error) throw error;
     },
     onSuccess: () => {
