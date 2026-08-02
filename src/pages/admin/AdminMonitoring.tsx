@@ -12,9 +12,11 @@ import {
   CheckCircle2,
   XCircle,
   ShieldAlert,
+  Info,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { JobHealthTable } from "@/components/admin/JobHealthTable";
+import { AlertDetailsDialog, type AlertDetails } from "@/components/admin/AlertDetailsDialog";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,6 +60,7 @@ interface SystemAlert {
   status: string;
   created_at: string;
   resolved_at: string | null;
+  details: AlertDetails | null;
 }
 
 const severityConfig: Record<string, { icon: typeof AlertTriangle; color: string; bg: string }> = {
@@ -68,6 +71,7 @@ const severityConfig: Record<string, { icon: typeof AlertTriangle; color: string
 export default function AdminMonitoring() {
   const queryClient = useQueryClient();
   const [showResolved, setShowResolved] = useState(false);
+  const [detailsAlert, setDetailsAlert] = useState<SystemAlert | null>(null);
 
   const {
     data: stats,
@@ -99,7 +103,7 @@ export default function AdminMonitoring() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data || []) as SystemAlert[];
+      return (data || []) as unknown as SystemAlert[];
     },
     refetchInterval: 30_000,
   });
@@ -197,15 +201,26 @@ export default function AdminMonitoring() {
                           </p>
                         </div>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => resolveAlert.mutate(alert.id)}
-                        className="flex-shrink-0 gap-1.5"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        Løs
-                      </Button>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDetailsAlert(alert)}
+                          className="gap-1.5"
+                        >
+                          <Info className="w-3.5 h-3.5" />
+                          Detaljer
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => resolveAlert.mutate(alert.id)}
+                          className="gap-1.5"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Løs
+                        </Button>
+                      </div>
                     </div>
                   );
                 })}
@@ -403,16 +418,26 @@ export default function AdminMonitoring() {
                           Løst {new Date(alert.resolved_at).toLocaleString("nb-NO")}
                         </p>
                       )}
-                      {!isResolved && (
+                      <div className="flex items-center justify-end gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => resolveAlert.mutate(alert.id)}
+                          onClick={() => setDetailsAlert(alert)}
                           className="h-6 text-xs mt-1"
                         >
-                          Løs
+                          Detaljer
                         </Button>
-                      )}
+                        {!isResolved && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => resolveAlert.mutate(alert.id)}
+                            className="h-6 text-xs mt-1"
+                          >
+                            Løs
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -420,6 +445,15 @@ export default function AdminMonitoring() {
             </div>
           )}
         </motion.div>
+
+        <AlertDetailsDialog
+          open={!!detailsAlert}
+          onOpenChange={(open) => !open && setDetailsAlert(null)}
+          title={detailsAlert?.title ?? ""}
+          message={detailsAlert?.message ?? ""}
+          createdAt={detailsAlert?.created_at ?? ""}
+          details={detailsAlert?.details ?? null}
+        />
       </div>
     </AdminLayout>
   );

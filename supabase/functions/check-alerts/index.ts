@@ -11,7 +11,13 @@ interface AlertCheck {
   alert_type: string;
   severity: "warning" | "critical";
   title: string;
-  check: (client: any) => Promise<{ triggered: boolean; metric: number; threshold: number; message: string }>;
+  check: (client: any) => Promise<{
+    triggered: boolean;
+    metric: number;
+    threshold: number;
+    message: string;
+    details?: Record<string, unknown>;
+  }>;
 }
 
 const DEDUP_WINDOW_MINUTES = 60;
@@ -107,23 +113,92 @@ const ALERT_CHECKS: AlertCheck[] = [
     title: "Ingen aktivitet (heartbeat)",
     check: async (client) => {
       const threshold = 0;
-      const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
-      const [errorsResult, emailsResult] = await Promise.all([
-        client
-          .from("client_error_logs")
+      const windowHours = 6;
+      const since = new Date(Date.now() - windowHours * 60 * 60 * 1000).toISOString();
+
+      const countSince = async (table: string, column = "created_at") => {
+        const { count, error } = await client
+          .from(table)
           .select("id", { count: "exact", head: true })
-          .gte("created_at", sixHoursAgo),
-        client
-          .from("email_logs")
-          .select("id", { count: "exact", head: true })
-          .gte("created_at", sixHoursAgo),
+          .gte(column, since);
+        return error ? null : count || 0;
+      };
+
+      const lastSeen = async (table: string, column = "created_at") => {
+        const { data } = await client
+          .from(table)
+          .select(column)
+          .order(column, { ascending: false })
+          .limit(1);
+        return data?.[0]?.[column] ?? null;
+      };
+
+      const [errors, emails, jobRuns, sensorReadings, tempLogs] = await Promise.all([
+        countSince("client_error_logs"),
+        countSince("email_logs"),
+        countSince("job_run_log", "started_at"),
+        countSince("ik_mat_sensors", "last_reading_at"),
+        countSince("ik_mat_temperature_logs"),
       ]);
-      const totalActivity = (errorsResult.count || 0) + (emailsResult.count || 0);
+
+      const [lastError, lastEmail, lastJobRun, lastSensor, lastTemp] = await Promise.all([
+        lastSeen("client_error_logs"),
+        lastSeen("email_logs"),
+        lastSeen("job_run_log", "started_at"),
+        lastSeen("ik_mat_sensors", "last_reading_at"),
+        lastSeen("ik_mat_temperature_logs"),
+      ]);
+
+      const sources = [
+        { key: "client_error_logs", label: "Klientfeil-logg", count: errors, last_seen: lastError },
+        { key: "email_logs", label: "E-postlogg", count: emails, last_seen: lastEmail },
+        { key: "job_run_log", label: "Jobbkjøringer (cron)", count: jobRuns, last_seen: lastJobRun },
+        { key: "ik_mat_sensors", label: "Sensoravlesninger", count: sensorReadings, last_seen: lastSensor },
+        { key: "ik_mat_temperature_logs", label: "Temperaturlogg (IK Mat)", count: tempLogs, last_seen: lastTemp },
+      ];
+
+      const missing = sources.filter((s) => (s.count ?? 0) === 0);
+      const totalActivity = sources.reduce((sum, s) => sum + (s.count ?? 0), 0);
+
+      // Silent sensors (registered, active, but no reading in the window)
+      const { data: silentSensors } = await client
+        .from("ik_mat_sensors")
+        .select("id, name, provider, location, last_reading_at, company_id")
+        .eq("is_active", true)
+        .or(`last_reading_at.is.null,last_reading_at.lt.${since}`)
+        .limit(20);
+
+      // Jobs that have not run in the window
+      const { data: recentJobs } = await client
+        .from("job_run_log")
+        .select("job_name, started_at, status")
+        .order("started_at", { ascending: false })
+        .limit(200);
+
+      const jobLast = new Map<string, { started_at: string; status: string }>();
+      for (const row of recentJobs || []) {
+        if (!jobLast.has(row.job_name)) jobLast.set(row.job_name, row);
+      }
+      const silentJobs = Array.from(jobLast.entries())
+        .filter(([, v]) => v.started_at < since)
+        .map(([job_name, v]) => ({ job_name, last_run: v.started_at, last_status: v.status }));
+
       return {
         triggered: totalActivity === 0,
         metric: totalActivity,
         threshold,
-        message: `Ingen aktivitet registrert siste 6 timer`,
+        message:
+          totalActivity === 0
+            ? `Ingen aktivitet registrert siste ${windowHours} timer (${missing.map((m) => m.label).join(", ")})`
+            : `Aktivitet registrert siste ${windowHours} timer`,
+        details: {
+          window_hours: windowHours,
+          since,
+          sources,
+          missing_sources: missing.map((m) => m.key),
+          silent_sensors: silentSensors || [],
+          silent_jobs: silentJobs,
+        },
       };
     },
   },
@@ -177,6 +252,7 @@ Deno.serve(async (req) => {
             message: result.message,
             metric_value: result.metric,
             threshold_value: result.threshold,
+            details: result.details ?? null,
             status: "active",
           });
 
