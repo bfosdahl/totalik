@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { recordJobRun } from "../_shared/jobRun.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -133,6 +134,7 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const jobStart = Date.now();
   const cronSecret = req.headers.get("x-cron-secret");
   if (cronSecret !== Deno.env.get("CRON_SECRET")) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -236,12 +238,23 @@ Deno.serve(async (req) => {
       }
     }
 
+    const triggered = results.filter((r: any) => r.triggered).length;
+    await recordJobRun("check-alerts", "success", jobStart, {
+      itemsProcessed: results.length,
+      notificationsSent: triggered,
+      details: { results },
+    });
+
     return new Response(JSON.stringify({ success: true, results }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("check-alerts error:", err);
+    await recordJobRun("check-alerts", "error", jobStart, {
+      errorCount: 1,
+      errorMessage: err instanceof Error ? err.message : String(err),
+    });
     return new Response(JSON.stringify({ error: "An unexpected error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

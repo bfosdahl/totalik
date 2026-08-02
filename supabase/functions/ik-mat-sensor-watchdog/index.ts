@@ -2,6 +2,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { nextDeviationNumber, localDateString } from '../_shared/sensorAlerts.ts';
 import type { AlertInput } from '../_shared/sensorAlerts.ts';
+import { recordJobRun } from "../_shared/jobRun.ts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -27,6 +28,7 @@ async function invokeNotify(supabase: ReturnType<typeof createClient>, alert: Al
  * Kan ogsa kalles manuelt av en innlogget administrator (dry-run/na-sjekk).
  */
 Deno.serve(async (req) => {
+  const jobStart = Date.now();
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   const cronSecret = req.headers.get('x-cron-secret');
@@ -178,9 +180,19 @@ Deno.serve(async (req) => {
       results.push({ sensor: sensor.external_id, status: 'offline_alert', deviation: deviationNumber });
     }
 
+    await recordJobRun("ik-mat-sensor-watchdog", "success", jobStart, {
+      itemsProcessed: sensors?.length ?? 0,
+      notificationsSent: results.length,
+      details: { results },
+    });
+
     return json({ ok: true, checked: sensors?.length ?? 0, results });
   } catch (error) {
     console.error('ik-mat-sensor-watchdog error:', error);
+    await recordJobRun("ik-mat-sensor-watchdog", "error", jobStart, {
+      errorCount: 1,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
     return json({ error: error instanceof Error ? error.message : 'Ukjent feil' }, 500);
   }
 });

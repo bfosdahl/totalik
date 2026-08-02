@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { recordJobRun } from "../_shared/jobRun.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,6 +33,7 @@ interface CompanyAdmin {
 }
 
 Deno.serve(async (req) => {
+  const jobStart = Date.now();
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -223,6 +225,11 @@ Deno.serve(async (req) => {
       }
     }
 
+    await recordJobRun("check-hms-card-expiry", "success", jobStart, {
+      itemsProcessed: profiles?.length || 0,
+      notificationsSent: notifications.length,
+    });
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -236,6 +243,10 @@ Deno.serve(async (req) => {
     )
   } catch (error) {
     console.error('Error in check-hms-card-expiry:', error)
+    await recordJobRun("check-hms-card-expiry", "error", jobStart, {
+      errorCount: 1,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
     console.error('check-hms-card-expiry error:', error);
     const errorMessage = 'An unexpected error occurred'
     return new Response(

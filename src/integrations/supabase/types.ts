@@ -8645,6 +8645,51 @@ export type Database = {
           },
         ]
       }
+      job_run_log: {
+        Row: {
+          created_at: string
+          details: Json | null
+          duration_ms: number | null
+          error_count: number
+          error_message: string | null
+          finished_at: string
+          id: string
+          items_processed: number
+          job_name: string
+          notifications_sent: number
+          started_at: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          error_count?: number
+          error_message?: string | null
+          finished_at?: string
+          id?: string
+          items_processed?: number
+          job_name: string
+          notifications_sent?: number
+          started_at?: string
+          status: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          error_count?: number
+          error_message?: string | null
+          finished_at?: string
+          id?: string
+          items_processed?: number
+          job_name?: string
+          notifications_sent?: number
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       ks_calculation_items: {
         Row: {
           calculation_id: string
