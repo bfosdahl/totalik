@@ -76,6 +76,8 @@ const handler = async (req: Request): Promise<Response> => {
       .from("deviations")
       .select("id, deviation_number, title, due_date, assignee_name, assignee_id, company_id, status")
       .in("status", ["open", "in-progress"])
+      .eq("is_deleted", false)
+      .not("due_date", "is", null)
       .not("assignee_id", "is", null);
 
     if (devError) {
