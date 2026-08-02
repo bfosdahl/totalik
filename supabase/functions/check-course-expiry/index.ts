@@ -39,6 +39,7 @@ interface Company {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  const jobStart = Date.now();
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -236,7 +237,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Check complete:", results);
 
     await recordJobRun("check-course-expiry", "success", jobStart, {
-      itemsProcessed: results.courses_checked ?? 0,
+      itemsProcessed: results.checked ?? 0,
       notificationsSent: results.reminders_sent ?? 0,
       errorCount: results.errors?.length ?? 0,
       errorMessage: results.errors?.length ? results.errors.join(" | ").slice(0, 2000) : null,

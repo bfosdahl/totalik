@@ -28,6 +28,7 @@ async function invokeNotify(supabase: ReturnType<typeof createClient>, alert: Al
  * Kan ogsa kalles manuelt av en innlogget administrator (dry-run/na-sjekk).
  */
 Deno.serve(async (req) => {
+  const jobStart = Date.now();
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   const cronSecret = req.headers.get('x-cron-secret');

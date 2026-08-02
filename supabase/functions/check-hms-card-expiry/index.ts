@@ -33,6 +33,7 @@ interface CompanyAdmin {
 }
 
 Deno.serve(async (req) => {
+  const jobStart = Date.now();
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
