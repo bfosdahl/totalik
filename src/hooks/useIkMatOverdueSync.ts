@@ -291,7 +291,8 @@ export function useIkMatOverdueSync() {
         const batch = newDeviations.slice(0, 50);
         const { error } = await supabase
           .from('deviations')
-          .insert(batch);
+          // deviation_number genereres av databasetrigger
+          .insert(batch as unknown as never[]);
 
         if (error) {
           console.error('Error syncing overdue tasks to deviations:', error);
