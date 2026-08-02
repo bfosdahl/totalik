@@ -216,27 +216,32 @@ export const useIkMatContent = () => {
 
       if (error) throw error;
 
-      const settings = data?.settings as any;
-      const generated = settings?.generatedContent || {};
-      const manual = settings?.manualContent || {};
+      type ModuleSettings = {
+        generatedContent?: Record<string, unknown[]>;
+        manualContent?: Partial<Record<keyof IkMatContent, unknown>>;
+      };
+      const settings = data?.settings as ModuleSettings | null;
+      const generated = (settings?.generatedContent || {}) as Record<string, unknown[]>;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const manual = (settings?.manualContent || {}) as Record<string, any>;
 
       // Merge generated and manual content, prioritizing manual
       setContent({
         goals: manual.goals?.length > 0 ? manual.goals : 
-          (generated.goals || []).map((g: string, i: number) => ({ id: `gen-${i}`, text: g })),
+          ((generated.goals || []) as string[]).map((g: string, i: number) => ({ id: `gen-${i}`, text: g })),
         organization: manual.organization || { roles: [] },
         risks: manual.risks?.length > 0 ? manual.risks :
-          (generated.risks || []).map((r: any, i: number) => ({ 
+          (generated.risks || []).map((r: Record<string, unknown>, i: number) => ({ 
             id: `gen-${i}`, 
             ...r, 
             isHaccp: false,
             status: 'open',
           })),
         haccp: manual.haccp?.length > 0 ? manual.haccp :
-          (generated.haccp || []).map((h: any, i: number) => ({ id: `gen-${i}`, ...h })),
+          (generated.haccp || []).map((h: Record<string, unknown>, i: number) => ({ id: `gen-${i}`, ...h })),
         routines: manual.routines?.length > 0 ? manual.routines :
-          (generated.routines || []).map((r: any, i: number) => ({ id: `gen-${i}`, ...r })),
-        actionPlan: (manual.actionPlan || []).map((a: any) => ({
+          (generated.routines || []).map((r: Record<string, unknown>, i: number) => ({ id: `gen-${i}`, ...r })),
+        actionPlan: (manual.actionPlan || []).map((a: { actionType?: string }) => ({
           ...a,
           actionType: a.actionType || 'corrective',
         })),
@@ -253,7 +258,7 @@ export const useIkMatContent = () => {
     fetchContent();
   }, [fetchContent]);
 
-  const saveContent = async (section: keyof IkMatContent, data: any) => {
+  const saveContent = async (section: keyof IkMatContent, data: unknown) => {
     if (!company?.id) return false;
 
     try {
@@ -269,8 +274,8 @@ export const useIkMatContent = () => {
 
       if (fetchError) throw fetchError;
 
-      const settings = current?.settings as any || {};
-      const manualContent = settings.manualContent || {};
+      const settings = (current?.settings as Record<string, unknown> | null) || {};
+      const manualContent = (settings.manualContent as Record<string, unknown>) || {};
 
       // Update the specific section
       const updatedManualContent = {
@@ -285,7 +290,7 @@ export const useIkMatContent = () => {
           settings: {
             ...settings,
             manualContent: updatedManualContent,
-          },
+          } as unknown as never,
           updated_at: new Date().toISOString(),
         })
         .eq('company_id', company.id)
