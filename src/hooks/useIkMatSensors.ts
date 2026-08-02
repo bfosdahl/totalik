@@ -244,11 +244,12 @@ export function useIkMatSensors() {
 
   const regenerateToken = useMutation({
     mutationFn: async (id: string) => {
+      if (!company?.id) throw new Error('Ingen bedrift valgt');
       const { error } = await supabase
         .from('ik_mat_sensor_endpoints')
         .update({ token: generateToken() })
         .eq('id', id)
-        .eq('company_id', company!.id);
+        .eq('company_id', company.id);
       if (error) throw error;
     },
     onSuccess: () => {
