@@ -146,7 +146,7 @@ export function useIkMatSensors() {
       if (!company?.id) return null;
       const { data, error } = await supabase
         .from('company_notification_settings')
-        .select('id, company_id, sensor_alarm_email, sensor_alarm_email_recipients, sensor_alarm_sms, sensor_alarm_sms_recipients')
+        .select('id, company_id, sensor_alarm_email, sensor_alarm_email_recipients, sensor_alarm_sms')
         .eq('company_id', company.id)
         .maybeSingle();
       if (error) throw error;
