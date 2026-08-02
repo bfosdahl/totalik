@@ -14,6 +14,8 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
+import { JobHealthTable } from "@/components/admin/JobHealthTable";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StatsCard } from "@/components/dashboard/StatsCard";
@@ -337,7 +339,11 @@ export default function AdminMonitoring() {
           )}
         </motion.div>
 
+        {/* Job health */}
+        <JobHealthTable />
+
         {/* Alert history */}
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
