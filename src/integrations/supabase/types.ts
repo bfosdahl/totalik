@@ -2502,6 +2502,9 @@ export type Database = {
           notify_company_admin: boolean
           notify_employee: boolean
           notify_hms_responsible: boolean
+          sensor_alarm_email: boolean
+          sensor_alarm_email_recipients: string[] | null
+          sensor_alarm_sms: boolean
           updated_at: string
         }
         Insert: {
@@ -2518,6 +2521,9 @@ export type Database = {
           notify_company_admin?: boolean
           notify_employee?: boolean
           notify_hms_responsible?: boolean
+          sensor_alarm_email?: boolean
+          sensor_alarm_email_recipients?: string[] | null
+          sensor_alarm_sms?: boolean
           updated_at?: string
         }
         Update: {
@@ -2534,6 +2540,9 @@ export type Database = {
           notify_company_admin?: boolean
           notify_employee?: boolean
           notify_hms_responsible?: boolean
+          sensor_alarm_email?: boolean
+          sensor_alarm_email_recipients?: string[] | null
+          sensor_alarm_sms?: boolean
           updated_at?: string
         }
         Relationships: [
@@ -8177,6 +8186,8 @@ export type Database = {
           name: string | null
           offline_after_minutes: number
           provider: string | null
+          simulated_payload: Json | null
+          simulation_mode: boolean
           updated_at: string
         }
         Insert: {
@@ -8207,6 +8218,8 @@ export type Database = {
           name?: string | null
           offline_after_minutes?: number
           provider?: string | null
+          simulated_payload?: Json | null
+          simulation_mode?: boolean
           updated_at?: string
         }
         Update: {
@@ -8237,6 +8250,8 @@ export type Database = {
           name?: string | null
           offline_after_minutes?: number
           provider?: string | null
+          simulated_payload?: Json | null
+          simulation_mode?: boolean
           updated_at?: string
         }
         Relationships: [
