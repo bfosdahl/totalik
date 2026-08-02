@@ -101,8 +101,11 @@ Deno.serve(async (req) => {
       case 'normal':
         temperature = baseTemp + (Math.random() - 0.5) * 0.5;
         break;
-      case 'door_open':
+      case 'high_temp':
         temperature = baseTemp + 3 + Math.random() * 2;
+        break;
+      case 'low_temp':
+        temperature = baseTemp - 3 - Math.random() * 2;
         break;
       case 'low_battery':
         battery = 12;
