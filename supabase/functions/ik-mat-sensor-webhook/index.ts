@@ -37,20 +37,77 @@ function pickString(...values: unknown[]): string | null {
   return null;
 }
 
+/**
+ * Batteri kan komme som prosent (0-100) eller som spenning (volt, typisk 2.0-4.5V
+ * for LoRaWAN-sensorer). Vi konverterer volt til prosent med 3.0V = 0 % og 3.6V = 100 %.
+ */
+function normaliseBattery(value: number | null): number | null {
+  if (value === null) return null;
+  if (value > 5) return Math.max(0, Math.min(100, Math.round(value)));
+  const pct = ((value - 3.0) / 0.6) * 100;
+  return Math.max(0, Math.min(100, Math.round(pct)));
+}
+
+/** The Things Network / TTS uplink -> flat maaling. */
+function parseTtnUplink(item: any): Reading | null {
+  const uplink = item?.uplink_message;
+  if (!uplink) return null;
+  const decoded = uplink.decoded_payload ?? {};
+  const externalId = pickString(
+    item.end_device_ids?.device_id,
+    item.end_device_ids?.dev_eui,
+    item.device_id,
+  );
+  const temperature = pickNumber(
+    decoded.temperature, decoded.temperature_1, decoded.TempC_SHT,
+    decoded.tempC, decoded.temp, decoded.temperatureC,
+  );
+  if (!externalId || temperature === null) return null;
+
+  const measuredAtRaw = pickString(uplink.received_at, item.received_at);
+  let measuredAt = new Date().toISOString();
+  if (measuredAtRaw) {
+    const d = new Date(measuredAtRaw);
+    if (!Number.isNaN(d.getTime())) measuredAt = d.toISOString();
+  }
+
+  const rawBattery = pickNumber(
+    decoded.battery, decoded.battery_voltage, decoded.BatV, decoded.bat,
+    decoded.batteryVoltage, decoded.battery_level,
+  );
+
+  return {
+    externalId,
+    temperature,
+    measuredAt,
+    battery: normaliseBattery(rawBattery),
+    name: pickString(item.end_device_ids?.device_id) ?? null,
+  };
+}
+
 /** Normalises payloads from common sensor providers into a flat list of readings. */
 function parseReadings(payload: any): Reading[] {
   let items: any[] = [];
   if (Array.isArray(payload)) items = payload;
+  else if (Array.isArray(payload?.uplinks)) items = payload.uplinks;
   else if (Array.isArray(payload?.readings)) items = payload.readings;
   else if (Array.isArray(payload?.measurements)) items = payload.measurements;
   else if (Array.isArray(payload?.data)) items = payload.data;
   else if (Array.isArray(payload?.events)) items = payload.events;
   else if (payload && typeof payload === 'object') items = [payload];
 
+
   const readings: Reading[] = [];
   for (const raw of items) {
     if (!raw || typeof raw !== 'object') continue;
     const item: any = raw;
+
+    const ttn = parseTtnUplink(item);
+    if (ttn) {
+      readings.push(ttn);
+      continue;
+    }
+
     const nested = item.data ?? item.temperature_event ?? item.event ?? {};
 
     const externalId = pickString(
@@ -68,7 +125,7 @@ function parseReadings(payload: any): Reading[] {
 
     const measuredAtRaw = pickString(
       item.measured_at, item.measuredAt, item.timestamp, item.time, item.recorded_at,
-      item.datetime, nested.timestamp, nested.updateTime,
+      item.datetime, item.received_at, nested.timestamp, nested.updateTime,
     );
     let measuredAt = new Date().toISOString();
     if (measuredAtRaw) {
@@ -83,10 +140,13 @@ function parseReadings(payload: any): Reading[] {
       externalId,
       temperature,
       measuredAt,
-      battery: pickNumber(item.battery, item.battery_level, item.batteryLevel, nested.battery),
+      battery: normaliseBattery(
+        pickNumber(item.battery, item.battery_level, item.batteryLevel, item.battery_voltage, nested.battery),
+      ),
       name: pickString(item.name, item.sensor_name, item.label, item.display_name),
     });
   }
+
   return readings;
 }
 
@@ -102,15 +162,18 @@ Deno.serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    // Token may come from the path (/.../ik-mat-sensor-webhook/<token>),
-    // a query param, or an Authorization/X-Sensor-Token header.
+    // Token kan komme fra stien (/.../ik-mat-sensor-webhook/<token>), query-param
+    // eller en hemmelig header (TTN: "Additional headers" -> X-TotalIK-Key).
     const pathToken = url.pathname.split('/').filter(Boolean).pop();
     const token =
       (pathToken && pathToken !== 'ik-mat-sensor-webhook' ? pathToken : null) ||
       url.searchParams.get('token') ||
+      req.headers.get('x-totalik-key') ||
       req.headers.get('x-sensor-token') ||
+      req.headers.get('x-api-key') ||
       (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '') ||
       null;
+
 
     if (!token) return json({ error: 'Mangler token' }, 401);
 
@@ -145,7 +208,7 @@ Deno.serve(async (req) => {
     const headerSnapshot: Record<string, string> = {};
     for (const [k, v] of req.headers.entries()) {
       const lower = k.toLowerCase();
-      if (lower === 'authorization' || lower === 'x-sensor-token' || lower === 'cookie') continue;
+      if (['authorization', 'x-sensor-token', 'x-totalik-key', 'x-api-key', 'cookie'].includes(lower)) continue;
       headerSnapshot[lower] = v.slice(0, 300);
     }
 
