@@ -37,6 +37,40 @@ export interface TaskCompletion {
   task?: ScheduledTask;
 }
 
+type TempLogRow = {
+  id: string;
+  equipment_id: string | null;
+  measured_at: string;
+  temperature: number | null;
+  is_acceptable: boolean | null;
+  equipment?: { name?: string | null } | null;
+};
+
+type EquipmentRow = {
+  id: string;
+  name: string;
+  created_at?: string | null;
+  measurement_frequency?: string | null;
+};
+
+type VaremottakRow = {
+  id: string;
+  product_name: string | null;
+  receipt_date: string;
+};
+
+type CleaningResponseRow = {
+  id: string;
+  created_at: string;
+  status?: string | null;
+  frequency_type?: string | null;
+};
+
+type CleaningTaskRow = {
+  created_at?: string;
+  frequency?: string | null;
+};
+
 export interface CalendarEvent {
   id: string;
   title: string;
@@ -45,7 +79,7 @@ export interface CalendarEvent {
   status: 'pending' | 'completed' | 'overdue';
   taskId?: string;
   sourceId?: string;
-  details?: any;
+  details?: Record<string, unknown>;
   actionUrl?: string;
 }
 
@@ -56,7 +90,7 @@ export const useIkMatScheduledTasks = () => {
   const queryClient = useQueryClient();
 
   // Helper to apply department filter consistently
-  const applyDeptFilter = <T extends { eq: any; is: any }>(q: T): T =>
+  const applyDeptFilter = <T extends { eq: (col: string, val: string) => T; is: (col: string, val: null) => T }>(q: T): T =>
     (filterDepartmentId
       ? q.eq('department_id', filterDepartmentId)
       : q.is('department_id', null)) as T;
@@ -122,7 +156,7 @@ export const useIkMatScheduledTasks = () => {
   // Get generated cleaning plan from module settings
   const generatedCleaningPlan = (() => {
     if (ikMatModule?.settings) {
-      const settings = ikMatModule.settings as any;
+      const settings = ikMatModule.settings as Record<string, unknown> | null;
       return settings.generatedContent?.cleaningPlan || [];
     }
     return [];
@@ -278,7 +312,7 @@ export const useIkMatScheduledTasks = () => {
         });
 
         // Add temperature logs (completed measurements)
-        tempLogs.forEach((log: any) => {
+        tempLogs.forEach((log: TempLogRow) => {
           const eventDate = new Date(log.measured_at);
           const title = `Temp: ${log.equipment?.name || 'Ukjent'} (${log.temperature}°C)`;
           const status = log.is_acceptable ? 'completed' : 'overdue';
@@ -307,7 +341,7 @@ export const useIkMatScheduledTasks = () => {
             const dayOfWeek = currentDate.getDay();
             const dateStr = format(currentDate, 'yyyy-MM-dd');
 
-            temperatureEquipment.forEach((equip: any) => {
+            temperatureEquipment.forEach((equip: EquipmentRow) => {
               // Only show tasks from the day AFTER equipment was created
               const equipCreatedDate = equip.created_at ? startOfDay(addDays(new Date(equip.created_at), 1)) : null;
               if (equipCreatedDate && isBefore(currentDate, equipCreatedDate)) return;
@@ -324,7 +358,7 @@ export const useIkMatScheduledTasks = () => {
 
               if (shouldShow) {
                 // Check if already logged this day
-                const alreadyLogged = tempLogs.some((log: any) => 
+                const alreadyLogged = tempLogs.some((log: TempLogRow) => 
                   log.equipment_id === equip.id && 
                   isSameDay(new Date(log.measured_at), currentDate)
                 );
@@ -358,7 +392,7 @@ export const useIkMatScheduledTasks = () => {
         }
 
         // Add varemottak
-        varemottak.forEach((record: any) => {
+        varemottak.forEach((record: VaremottakRow) => {
           events.push({
             id: `vare-${record.id}`,
             title: `Varemottak: ${record.product_name}`,
@@ -371,7 +405,7 @@ export const useIkMatScheduledTasks = () => {
         });
 
         // Add cleaning responses (completed)
-        cleaning.forEach((response: any) => {
+        cleaning.forEach((response: CleaningResponseRow) => {
           const eventDate = new Date(response.created_at);
           const status = response.status === 'completed' ? 'completed' : 'pending';
           const title = 'Renhold utført';
@@ -396,7 +430,7 @@ export const useIkMatScheduledTasks = () => {
         const allCleaningTasks = [...(cleaningTasks || []), ...generatedCleaningPlan];
         if (allCleaningTasks.length > 0) {
           // Determine earliest cleaning task creation date (only check from the day after)
-          const customTaskDates = (cleaningTasks || []).map((t: any) => new Date(t.created_at).getTime());
+          const customTaskDates = (cleaningTasks || []).map((t: CleaningTaskRow) => new Date(t.created_at).getTime());
           const customStartDate = customTaskDates.length > 0
             ? startOfDay(addDays(new Date(Math.min(...customTaskDates)), 1))
             : null;
@@ -415,7 +449,7 @@ export const useIkMatScheduledTasks = () => {
             const dateStr = format(currentDate, 'yyyy-MM-dd');
 
             // Group by frequency - only show one "cleaning" task per frequency per day
-            const frequencies = new Set(allCleaningTasks.map((t: any) => t.frequency || 'daglig'));
+            const frequencies = new Set(allCleaningTasks.map((t: CleaningTaskRow) => t.frequency || 'daglig'));
 
             frequencies.forEach((frequency) => {
               let shouldShow = false;
@@ -438,14 +472,14 @@ export const useIkMatScheduledTasks = () => {
                   return lower;
                 };
                 
-                const alreadyLogged = cleaning.some((c: any) => 
+                const alreadyLogged = cleaning.some((c: CleaningResponseRow) => 
                   isSameDay(new Date(c.created_at), currentDate) &&
                   (normalizeFreq(c.frequency_type) === normalizeFreq(frequency as string) || !c.frequency_type)
                 );
 
                 if (!alreadyLogged) {
                   const isPast = isBefore(startOfDay(currentDate), startOfDay(new Date()));
-                  const eventTitle = `🧹 Renhold (${allCleaningTasks.filter((t: any) => (t.frequency || 'daglig').toLowerCase() === freqLower).length} oppgaver)`;
+                  const eventTitle = `🧹 Renhold (${allCleaningTasks.filter((t: CleaningTaskRow) => (t.frequency || 'daglig').toLowerCase() === freqLower).length} oppgaver)`;
                   const legacyDeviationTitle = `Renhold ikke utført (${dateStr})`;
 
                   // Check if this overdue event was dismissed
@@ -453,7 +487,7 @@ export const useIkMatScheduledTasks = () => {
                     return;
                   }
 
-                  const taskCount = allCleaningTasks.filter((t: any) => 
+                  const taskCount = allCleaningTasks.filter((t: CleaningTaskRow) => 
                     (t.frequency || 'daglig').toLowerCase() === freqLower
                   ).length;
 
