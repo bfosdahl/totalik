@@ -37,15 +37,65 @@ function pickString(...values: unknown[]): string | null {
   return null;
 }
 
+/**
+ * Batteri kan komme som prosent (0-100) eller som spenning (volt, typisk 2.0-4.5V
+ * for LoRaWAN-sensorer). Vi konverterer volt til prosent med 3.0V = 0 % og 3.6V = 100 %.
+ */
+function normaliseBattery(value: number | null): number | null {
+  if (value === null) return null;
+  if (value > 5) return Math.max(0, Math.min(100, Math.round(value)));
+  const pct = ((value - 3.0) / 0.6) * 100;
+  return Math.max(0, Math.min(100, Math.round(pct)));
+}
+
+/** The Things Network / TTS uplink -> flat maaling. */
+function parseTtnUplink(item: any): Reading | null {
+  const uplink = item?.uplink_message;
+  if (!uplink) return null;
+  const decoded = uplink.decoded_payload ?? {};
+  const externalId = pickString(
+    item.end_device_ids?.device_id,
+    item.end_device_ids?.dev_eui,
+    item.device_id,
+  );
+  const temperature = pickNumber(
+    decoded.temperature, decoded.temperature_1, decoded.TempC_SHT,
+    decoded.tempC, decoded.temp, decoded.temperatureC,
+  );
+  if (!externalId || temperature === null) return null;
+
+  const measuredAtRaw = pickString(uplink.received_at, item.received_at);
+  let measuredAt = new Date().toISOString();
+  if (measuredAtRaw) {
+    const d = new Date(measuredAtRaw);
+    if (!Number.isNaN(d.getTime())) measuredAt = d.toISOString();
+  }
+
+  const rawBattery = pickNumber(
+    decoded.battery, decoded.battery_voltage, decoded.BatV, decoded.bat,
+    decoded.batteryVoltage, decoded.battery_level,
+  );
+
+  return {
+    externalId,
+    temperature,
+    measuredAt,
+    battery: normaliseBattery(rawBattery),
+    name: pickString(item.end_device_ids?.device_id) ?? null,
+  };
+}
+
 /** Normalises payloads from common sensor providers into a flat list of readings. */
 function parseReadings(payload: any): Reading[] {
   let items: any[] = [];
   if (Array.isArray(payload)) items = payload;
+  else if (Array.isArray(payload?.uplinks)) items = payload.uplinks;
   else if (Array.isArray(payload?.readings)) items = payload.readings;
   else if (Array.isArray(payload?.measurements)) items = payload.measurements;
   else if (Array.isArray(payload?.data)) items = payload.data;
   else if (Array.isArray(payload?.events)) items = payload.events;
   else if (payload && typeof payload === 'object') items = [payload];
+
 
   const readings: Reading[] = [];
   for (const raw of items) {
