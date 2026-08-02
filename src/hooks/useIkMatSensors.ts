@@ -204,6 +204,21 @@ export function useIkMatSensors() {
     onError: (e: Error) => toast.error('Kunne ikke opprette endepunkt: ' + e.message),
   });
 
+  const getSensorLogs = async (equipment_id: string, hours: number = 24) => {
+    if (!company?.id) return [];
+    const since = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+    const { data, error } = await supabase
+      .from('ik_mat_temperature_logs')
+      .select('temperature, measured_at, is_acceptable')
+      .eq('company_id', company.id)
+      .eq('equipment_id', equipment_id)
+      .gte('measured_at', since)
+      .order('measured_at', { ascending: true })
+      .limit(500);
+    if (error) throw error;
+    return data as { temperature: number; measured_at: string; is_acceptable: boolean }[];
+  };
+
   const updateEndpoint = useMutation({
     mutationFn: async (patch: Partial<SensorEndpoint> & { id: string }) => {
       const { id, ...rest } = patch;
