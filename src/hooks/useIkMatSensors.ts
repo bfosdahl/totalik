@@ -324,6 +324,7 @@ export function useIkMatSensors() {
     runWatchdog,
     simulateSensor,
     updateNotificationSettings,
+    getSensorLogs,
   };
 }
 
