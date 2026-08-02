@@ -162,15 +162,18 @@ Deno.serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    // Token may come from the path (/.../ik-mat-sensor-webhook/<token>),
-    // a query param, or an Authorization/X-Sensor-Token header.
+    // Token kan komme fra stien (/.../ik-mat-sensor-webhook/<token>), query-param
+    // eller en hemmelig header (TTN: "Additional headers" -> X-TotalIK-Key).
     const pathToken = url.pathname.split('/').filter(Boolean).pop();
     const token =
       (pathToken && pathToken !== 'ik-mat-sensor-webhook' ? pathToken : null) ||
       url.searchParams.get('token') ||
+      req.headers.get('x-totalik-key') ||
       req.headers.get('x-sensor-token') ||
+      req.headers.get('x-api-key') ||
       (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '') ||
       null;
+
 
     if (!token) return json({ error: 'Mangler token' }, 401);
 
