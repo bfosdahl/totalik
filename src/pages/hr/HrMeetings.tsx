@@ -88,7 +88,7 @@ export default function HrMeetings() {
   );
 
   const renderMeetingCard = (meeting: HrMeeting) => (
-    <Card key={meeting.id} className="p-4 flex items-center justify-between gap-4">
+    <Card key={meeting.id} className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-semibold">{meeting.employee_name}</span>
@@ -180,7 +180,7 @@ export default function HrMeetings() {
         </div>
 
         <Tabs defaultValue="upcoming">
-          <TabsList>
+          <TabsList className="w-full justify-start overflow-x-auto">
             <TabsTrigger value="upcoming">Kommende</TabsTrigger>
             <TabsTrigger value="completed">Gjennomført</TabsTrigger>
             <TabsTrigger value="all">Alle</TabsTrigger>

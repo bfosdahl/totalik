@@ -101,7 +101,7 @@ export default function HrAbsence() {
 
         {/* Tabs */}
         <Tabs defaultValue="pending">
-          <TabsList>
+          <TabsList className="w-full justify-start overflow-x-auto">
             <TabsTrigger value="pending">
               Til godkjenning {pendingCount > 0 && `(${pendingCount})`}
             </TabsTrigger>
