@@ -8151,6 +8151,8 @@ export type Database = {
       ik_mat_sensors: {
         Row: {
           alert_emails: string[]
+          battery_max_v: number
+          battery_min_v: number
           breach_grace_minutes: number
           breach_started_at: string | null
           company_id: string
@@ -8179,6 +8181,8 @@ export type Database = {
         }
         Insert: {
           alert_emails?: string[]
+          battery_max_v?: number
+          battery_min_v?: number
           breach_grace_minutes?: number
           breach_started_at?: string | null
           company_id: string
@@ -8207,6 +8211,8 @@ export type Database = {
         }
         Update: {
           alert_emails?: string[]
+          battery_max_v?: number
+          battery_min_v?: number
           breach_grace_minutes?: number
           breach_started_at?: string | null
           company_id?: string
