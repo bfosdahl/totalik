@@ -17,6 +17,8 @@ import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+
 
 // Lazy imports — all other pages
 const Setup = lazy(() => import("./pages/Setup"));
@@ -198,6 +200,8 @@ const App = () => (
                 <Routes>
                   {/* Public routes */}
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+
                   <Route path="/setup-admin" element={<SetupSystemAdmin />} />
                   <Route path="/install" element={<InstallApp />} />
                   <Route path="/install/avvik" element={<InstallAvvikApp />} />
