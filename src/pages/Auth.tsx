@@ -96,13 +96,27 @@ export default function Auth() {
     }
   };
 
+  // Safe same-origin relative redirect target (used by e.g. OAuth consent flow)
+  const getNextPath = () => {
+    const raw = new URLSearchParams(window.location.search).get("next");
+    if (!raw) return null;
+    if (!raw.startsWith("/") || raw.startsWith("//")) return null;
+    return raw;
+  };
+
   useEffect(() => {
     // Don't redirect if user is in password recovery mode
     if (isPasswordRecovery || hasRecoveryTokenInUrl()) return;
     if (!authLoading && user) {
+      const next = getNextPath();
+      if (next) {
+        window.location.replace(next);
+        return;
+      }
       navigate("/", { replace: true });
     }
   }, [user, authLoading, navigate, isPasswordRecovery]);
+
 
   const handleForgotPassword = async () => {
     const validation = z.string().email(t("auth.emailInvalid")).safeParse(email);
