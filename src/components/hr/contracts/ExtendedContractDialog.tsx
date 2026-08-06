@@ -259,14 +259,17 @@ export function ExtendedContractDialog({
                   <div className="space-y-4">
                     <h3 className="font-semibold text-base border-b pb-2">Tilleggsopplysninger</h3>
                     <div className="space-y-2">
-                      <Label htmlFor="notes">Notater</Label>
+                      <Label htmlFor="notes">Særskilte vilkår / fritekst</Label>
                       <Textarea
                         id="notes"
                         value={formData.notes || ''}
                         onChange={(e) => handleChange({ notes: e.target.value })}
-                        placeholder="Eventuelle andre opplysninger som bør fremgå av avtalen..."
-                        rows={6}
+                        placeholder="Skriv fritt, f.eks. «Sesongarbeider i perioden juni-august», særskilte avtaler, tillegg eller andre opplysninger som skal fremgå av avtalen..."
+                        rows={8}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Teksten tas med i den signerte avtalen og i PDF-en.
+                      </p>
                     </div>
                   </div>
                 </TabsContent>
