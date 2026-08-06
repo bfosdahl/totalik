@@ -59,12 +59,8 @@ export function DatesSection({ formData, onChange }: DatesSectionProps) {
               size="sm"
               className="h-auto px-2 py-1 text-xs"
               onClick={() => {
-                if (isFreeText) {
-                  onChange({ temporary_reason: '' });
-                } else {
-                  setFreeText(true);
-                  onChange({ temporary_reason: '' });
-                }
+                setFreeText(!isFreeText);
+                onChange({ temporary_reason: '' });
               }}
             >
               {isFreeText ? 'Velg fra liste' : 'Skriv fritekst'}
