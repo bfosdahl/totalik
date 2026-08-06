@@ -16088,6 +16088,45 @@ export type Database = {
           },
         ]
       }
+      signature_events: {
+        Row: {
+          company_id: string | null
+          context: Json
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          error_message: string | null
+          id: string
+          signer_role: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          context?: Json
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          error_message?: string | null
+          id?: string
+          signer_role?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          context?: Json
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          error_message?: string | null
+          id?: string
+          signer_role?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       simple_project_inspections: {
         Row: {
           company_id: string
