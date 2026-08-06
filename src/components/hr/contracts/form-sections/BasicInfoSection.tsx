@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExtendedContractFormData, contractTypes } from "../ExtendedContractFormData";
 
@@ -12,6 +14,11 @@ interface BasicInfoSectionProps {
 }
 
 export function BasicInfoSection({ formData, onChange, employees, loadingEmployees }: BasicInfoSectionProps) {
+  const isKnownType = contractTypes.some((t) => t.value === formData.contract_type);
+  const [manualFreeText, setManualFreeText] = useState(false);
+  const isFreeText = manualFreeText || (!!formData.contract_type && !isKnownType);
+  const setFreeText = setManualFreeText;
+
   return (
     <div className="space-y-4">
       <h3 className="font-semibold text-base border-b pb-2">Grunnleggende informasjon</h3>
@@ -37,22 +44,50 @@ export function BasicInfoSection({ formData, onChange, employees, loadingEmploye
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="contract_type">Avtale type *</Label>
-          <Select
-            value={formData.contract_type}
-            onValueChange={(value) => onChange({ contract_type: value })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {contractTypes.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <Label htmlFor="contract_type">Avtale type *</Label>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-auto px-2 py-1 text-xs"
+              onClick={() => {
+                setFreeText(!isFreeText);
+                onChange({ contract_type: isFreeText ? 'permanent' : '' });
+              }}
+            >
+              {isFreeText ? 'Velg fra liste' : 'Skriv fritekst'}
+            </Button>
+          </div>
+
+          {isFreeText ? (
+            <Input
+              id="contract_type"
+              value={formData.contract_type}
+              onChange={(e) => onChange({ contract_type: e.target.value })}
+              placeholder="F.eks. Sesongarbeider, vikariat eller annen avtaletype"
+              required
+            />
+          ) : (
+            <Select
+              value={formData.contract_type}
+              onValueChange={(value) => onChange({ contract_type: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {contractTypes.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Jf. arbeidsmiljøloven § 14-6 a) - type ansettelse. Fritekst-avtaletyper behandles som tidsbegrenset.
+          </p>
         </div>
       </div>
 

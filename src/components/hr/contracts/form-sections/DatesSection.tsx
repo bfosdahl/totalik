@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ExtendedContractFormData, temporaryReasons } from "../ExtendedContractFormData";
+import { ExtendedContractFormData, temporaryReasons, contractTypes } from "../ExtendedContractFormData";
 
 interface DatesSectionProps {
   formData: ExtendedContractFormData;
@@ -12,7 +12,9 @@ interface DatesSectionProps {
 }
 
 export function DatesSection({ formData, onChange }: DatesSectionProps) {
-  const isTemporary = ['temporary', 'project', 'internship'].includes(formData.contract_type);
+  const isPredefinedTemporary = ['temporary', 'project', 'internship'].includes(formData.contract_type);
+  const isCustomType = !contractTypes.some((t) => t.value === formData.contract_type);
+  const isTemporary = isPredefinedTemporary || isCustomType;
   const reasonValue = formData.temporary_reason || '';
   const isKnownReason = temporaryReasons.some((r) => r.value === reasonValue);
   const [manualFreeText, setManualFreeText] = useState(false);
