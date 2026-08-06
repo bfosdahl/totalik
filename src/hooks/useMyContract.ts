@@ -44,7 +44,8 @@ export function useMyContract() {
       // Check if employer already signed
       if (contract.signed_by_employer) {
         updates.status = 'active';
-        updates.signed_date = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        updates.signed_date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       } else {
         updates.status = 'pending_signature';
       }
