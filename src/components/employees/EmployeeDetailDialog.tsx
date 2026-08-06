@@ -87,8 +87,35 @@ export function EmployeeDetailDialog({
   const [sendPasswordEmail, setSendPasswordEmail] = useState(true);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [isSendingWelcome, setIsSendingWelcome] = useState(false);
+  const [newLoginEmail, setNewLoginEmail] = useState(employee.email || "");
+  const [isChangingEmail, setIsChangingEmail] = useState(false);
 
   const updateEmployee = useUpdateEmployee();
+
+  const handleChangeEmail = async () => {
+    setIsChangingEmail(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-change-user-email", {
+        body: { userId: employee.user_id, newEmail: newLoginEmail },
+      });
+      if (error) {
+        toast.error((error as any).context?.error || error.message || "Kunne ikke endre e-post");
+        return;
+      }
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+      toast.success(`E-post endret til ${data.email}`);
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+    } catch (err) {
+      console.error("Change email error:", err);
+      toast.error("En feil oppstod ved endring av e-post");
+    } finally {
+      setIsChangingEmail(false);
+    }
+  };
+
 
   const handleSendWelcomeEmail = async () => {
     if (!employee.email) {
