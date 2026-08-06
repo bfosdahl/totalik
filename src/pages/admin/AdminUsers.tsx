@@ -1186,7 +1186,61 @@ export default function AdminUsers() {
           </DialogContent>
         </Dialog>
 
+        {/* Change email dialog */}
+        <Dialog open={isEmailDialogOpen} onOpenChange={(open) => {
+          setIsEmailDialogOpen(open);
+          if (!open) {
+            setNewEmail("");
+            setSelectedUser(null);
+          }
+        }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Endre e-post (brukernavn)</DialogTitle>
+            </DialogHeader>
+            {selectedUser && (
+              <div className="space-y-4 mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Nåværende: {selectedUser.first_name} {selectedUser.last_name} ({selectedUser.email})
+                </p>
+                <div className="space-y-2">
+                  <Label htmlFor="newEmail">Ny e-postadresse *</Label>
+                  <Input
+                    id="newEmail"
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="ny@bedrift.no"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Brukeren logger inn med den nye adressen umiddelbart. Passordet er uendret.
+                  </p>
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button variant="outline" onClick={() => setIsEmailDialogOpen(false)}>
+                    Avbryt
+                  </Button>
+                  <Button
+                    onClick={() => changeEmailMutation.mutate({
+                      userId: selectedUser.user_id,
+                      newEmail,
+                    })}
+                    disabled={
+                      changeEmailMutation.isPending ||
+                      !newEmail.includes("@") ||
+                      newEmail.trim().toLowerCase() === (selectedUser.email || "").toLowerCase()
+                    }
+                  >
+                    {changeEmailMutation.isPending ? "Lagrer..." : "Endre e-post"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Password reset dialog */}
+
         <Dialog open={isPasswordDialogOpen} onOpenChange={(open) => {
           setIsPasswordDialogOpen(open);
           if (!open) {
