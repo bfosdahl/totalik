@@ -151,7 +151,7 @@ export const temporaryReasons = [
   { value: 'praksisarbeid', label: 'Praksisarbeid' },
   { value: 'arbeidsmarkedstiltak', label: 'Arbeidsmarkedstiltak' },
   { value: 'idrett', label: 'Idrettsutøvere, trenere, dommere' },
-  { value: 'annet', label: 'Annet (spesifiser i notater)' },
+  { value: 'annet', label: 'Annet (bruk «Skriv fritekst» for å spesifisere)' },
 ];
 
 export const workTimeArrangements = [
