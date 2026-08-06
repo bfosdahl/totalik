@@ -152,11 +152,19 @@ export function JobHealthTable() {
                         <CheckCircle2 className="w-3.5 h-3.5" /> OK
                       </span>
                     )}
+                    {row.note && (
+                      <div
+                        className={`text-xs ${row.extraProblem ? "text-destructive" : "text-muted-foreground"}`}
+                      >
+                        {row.note}
+                      </div>
+                    )}
                     {row.last?.error_message && (
                       <div className="text-xs text-muted-foreground max-w-[280px] truncate">
                         {row.last.error_message}
                       </div>
                     )}
+
                   </td>
                   <td className="py-2 pr-3 whitespace-nowrap">
                     {row.last
