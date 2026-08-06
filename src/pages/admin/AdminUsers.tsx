@@ -74,6 +74,9 @@ export default function AdminUsers() {
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+
   const [isBulkImportDialogOpen, setIsBulkImportDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isCompanyDialogOpen, setIsCompanyDialogOpen] = useState(false);
