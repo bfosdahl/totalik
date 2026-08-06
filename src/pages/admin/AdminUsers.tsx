@@ -322,6 +322,33 @@ export default function AdminUsers() {
     },
   });
 
+  const changeEmailMutation = useMutation({
+    mutationFn: async ({ userId, newEmail }: { userId: string; newEmail: string }) => {
+      const { data, error } = await supabase.functions.invoke("admin-change-user-email", {
+        body: { userId, newEmail },
+      });
+      if (error) {
+        const detail = (error as any).context?.error || error.message;
+        throw new Error(detail);
+      }
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      setIsEmailDialogOpen(false);
+      setNewEmail("");
+      setSelectedUser(null);
+      toast({
+        title: "E-post endret",
+        description: `Brukeren logger nå inn med ${data.email}`,
+      });
+    },
+    onError: (error) => {
+      toast({ title: "Feil", description: error.message, variant: "destructive" });
+    },
+  });
+
   const resetPasswordMutation = useMutation({
     mutationFn: async ({ userId, newPassword, sendEmail }: { userId: string; newPassword: string; sendEmail: boolean }) => {
       const { data, error } = await supabase.functions.invoke("reset-user-password", {
