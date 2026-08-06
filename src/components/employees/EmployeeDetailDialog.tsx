@@ -470,6 +470,37 @@ export function EmployeeDetailDialog({
                       </Label>
                     </div>
 
+                    <div className="pt-4 border-t space-y-2">
+                      <p className="text-sm font-medium">Endre e-post (brukernavn)</p>
+                      <p className="text-xs text-muted-foreground">
+                        Brukeren logger inn med den nye adressen umiddelbart. Passordet er uendret.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Input
+                          type="email"
+                          value={newLoginEmail}
+                          onChange={(e) => setNewLoginEmail(e.target.value)}
+                          placeholder="ny@bedrift.no"
+                        />
+                        <Button
+                          variant="outline"
+                          onClick={handleChangeEmail}
+                          disabled={
+                            isChangingEmail ||
+                            !newLoginEmail.includes("@") ||
+                            newLoginEmail.trim().toLowerCase() === (employee.email || "").toLowerCase()
+                          }
+                        >
+                          {isChangingEmail ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Mail className="w-4 h-4 mr-2" />
+                          )}
+                          Endre e-post
+                        </Button>
+                      </div>
+                    </div>
+
                     <div className="pt-4 border-t">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div>
@@ -492,6 +523,7 @@ export function EmployeeDetailDialog({
                         </Button>
                       </div>
                     </div>
+
                   </CardContent>
                 </Card>
               )}
