@@ -22,6 +22,7 @@ const MAX_SILENT_HOURS: Record<string, number> = {
   "check-course-expiry": 26,
   "check-alerts": 3,
   "ik-mat-sensor-watchdog": 2,
+  "check-signature-health": 26,
   "monitor-job-health": 3,
 };
 
@@ -32,8 +33,10 @@ const JOB_LABELS: Record<string, string> = {
   "check-course-expiry": "Kurs utløp",
   "check-alerts": "Systemalarmer",
   "ik-mat-sensor-watchdog": "IK Mat sensorvakt",
+  "check-signature-health": "Signaturvakt",
   "monitor-job-health": "Jobbvakt",
 };
+
 
 export function JobHealthTable() {
   const { data: runs = [], isLoading } = useQuery({
@@ -51,6 +54,21 @@ export function JobHealthTable() {
     },
     refetchInterval: 60_000,
   });
+  // Signature failures (last 7 days) — surfaced on the signature watchdog row
+  const { data: signatureFailures = 0 } = useQuery({
+    queryKey: ["signature-failures-7d"],
+    queryFn: async (): Promise<number> => {
+      const since = new Date(Date.now() - 7 * 24 * 3_600_000).toISOString();
+      const { count, error } = await supabase
+        .from("signature_events")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "error")
+        .gte("created_at", since);
+      if (error) throw error;
+      return count ?? 0;
+    },
+    refetchInterval: 60_000,
+  });
 
   const jobNames = Object.keys(MAX_SILENT_HOURS);
   const rows = jobNames.map((name) => {
@@ -62,10 +80,18 @@ export function JobHealthTable() {
       : null;
     const silent = hoursSince === null || hoursSince > MAX_SILENT_HOURS[name];
     const failed = last?.status === "error";
-    return { name, last, hoursSince, silent, failed };
+    const note =
+      name === "check-signature-health"
+        ? signatureFailures > 0
+          ? `${signatureFailures} signeringsfeil siste 7 dager`
+          : "Ingen signeringsfeil siste 7 dager"
+        : null;
+    const extraProblem = name === "check-signature-health" && signatureFailures > 0;
+    return { name, last, hoursSince, silent, failed, note, extraProblem };
   });
 
-  const problems = rows.filter((r) => r.silent || r.failed).length;
+  const problems = rows.filter((r) => r.silent || r.failed || r.extraProblem).length;
+
 
   return (
     <motion.div
@@ -126,11 +152,19 @@ export function JobHealthTable() {
                         <CheckCircle2 className="w-3.5 h-3.5" /> OK
                       </span>
                     )}
+                    {row.note && (
+                      <div
+                        className={`text-xs ${row.extraProblem ? "text-destructive" : "text-muted-foreground"}`}
+                      >
+                        {row.note}
+                      </div>
+                    )}
                     {row.last?.error_message && (
                       <div className="text-xs text-muted-foreground max-w-[280px] truncate">
                         {row.last.error_message}
                       </div>
                     )}
+
                   </td>
                   <td className="py-2 pr-3 whitespace-nowrap">
                     {row.last

@@ -20,7 +20,7 @@ interface Checklist {
   id: string;
   title: string;
   deadline_date: string;
-  responsible_name: string | null;
+  responsible_user_name: string | null;
   responsible_user_id: string | null;
   status: string;
   project_id: string;
@@ -72,7 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { data: checklists, error: checklistError } = await supabase
       .from("ks_module2_checklists")
       .select(`
-        id, title, deadline_date, responsible_name, responsible_user_id, status, project_id,
+        id, title, deadline_date, responsible_user_name, responsible_user_id, status, project_id,
         ks_module2_projects!inner(id, project_name, project_number, company_id)
       `)
       .in("status", ["planned", "in_progress"])
@@ -157,7 +157,7 @@ const handler = async (req: Request): Promise<Response> => {
         .eq("id", project.company_id)
         .maybeSingle();
 
-      const responsibleName = checklist.responsible_name || profile.first_name || "Bruker";
+      const responsibleName = checklist.responsible_user_name || profile.first_name || "Bruker";
       const companyName = company?.name || "Ditt selskap";
       const formattedDueDate = new Date(checklist.deadline_date).toLocaleDateString("nb-NO", {
         day: "numeric",
