@@ -54,6 +54,21 @@ export function JobHealthTable() {
     },
     refetchInterval: 60_000,
   });
+  // Signature failures (last 7 days) — surfaced on the signature watchdog row
+  const { data: signatureFailures = 0 } = useQuery({
+    queryKey: ["signature-failures-7d"],
+    queryFn: async (): Promise<number> => {
+      const since = new Date(Date.now() - 7 * 24 * 3_600_000).toISOString();
+      const { count, error } = await supabase
+        .from("signature_events")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "error")
+        .gte("created_at", since);
+      if (error) throw error;
+      return count ?? 0;
+    },
+    refetchInterval: 60_000,
+  });
 
   const jobNames = Object.keys(MAX_SILENT_HOURS);
   const rows = jobNames.map((name) => {
@@ -65,10 +80,18 @@ export function JobHealthTable() {
       : null;
     const silent = hoursSince === null || hoursSince > MAX_SILENT_HOURS[name];
     const failed = last?.status === "error";
-    return { name, last, hoursSince, silent, failed };
+    const note =
+      name === "check-signature-health"
+        ? signatureFailures > 0
+          ? `${signatureFailures} signeringsfeil siste 7 dager`
+          : "Ingen signeringsfeil siste 7 dager"
+        : null;
+    const extraProblem = name === "check-signature-health" && signatureFailures > 0;
+    return { name, last, hoursSince, silent, failed, note, extraProblem };
   });
 
-  const problems = rows.filter((r) => r.silent || r.failed).length;
+  const problems = rows.filter((r) => r.silent || r.failed || r.extraProblem).length;
+
 
   return (
     <motion.div
