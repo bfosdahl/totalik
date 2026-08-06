@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { JobHealthTable } from "@/components/admin/JobHealthTable";
-import { SignatureHealthPanel } from "@/components/admin/SignatureHealthPanel";
 import { AlertDetailsDialog, type AlertDetails } from "@/components/admin/AlertDetailsDialog";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -359,7 +358,6 @@ export default function AdminMonitoring() {
         <JobHealthTable />
 
         {/* Signaturer */}
-        <SignatureHealthPanel />
 
         {/* Alert history */}
 
