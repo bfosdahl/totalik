@@ -22,6 +22,7 @@ const MAX_SILENT_HOURS: Record<string, number> = {
   "check-course-expiry": 26,
   "check-alerts": 3,
   "ik-mat-sensor-watchdog": 2,
+  "check-signature-health": 26,
   "monitor-job-health": 3,
 };
 
@@ -32,8 +33,10 @@ const JOB_LABELS: Record<string, string> = {
   "check-course-expiry": "Kurs utløp",
   "check-alerts": "Systemalarmer",
   "ik-mat-sensor-watchdog": "IK Mat sensorvakt",
+  "check-signature-health": "Signaturvakt",
   "monitor-job-health": "Jobbvakt",
 };
+
 
 export function JobHealthTable() {
   const { data: runs = [], isLoading } = useQuery({
