@@ -87,8 +87,35 @@ export function EmployeeDetailDialog({
   const [sendPasswordEmail, setSendPasswordEmail] = useState(true);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [isSendingWelcome, setIsSendingWelcome] = useState(false);
+  const [newLoginEmail, setNewLoginEmail] = useState(employee.email || "");
+  const [isChangingEmail, setIsChangingEmail] = useState(false);
 
   const updateEmployee = useUpdateEmployee();
+
+  const handleChangeEmail = async () => {
+    setIsChangingEmail(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-change-user-email", {
+        body: { userId: employee.user_id, newEmail: newLoginEmail },
+      });
+      if (error) {
+        toast.error((error as any).context?.error || error.message || "Kunne ikke endre e-post");
+        return;
+      }
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+      toast.success(`E-post endret til ${data.email}`);
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+    } catch (err) {
+      console.error("Change email error:", err);
+      toast.error("En feil oppstod ved endring av e-post");
+    } finally {
+      setIsChangingEmail(false);
+    }
+  };
+
 
   const handleSendWelcomeEmail = async () => {
     if (!employee.email) {
@@ -470,6 +497,37 @@ export function EmployeeDetailDialog({
                       </Label>
                     </div>
 
+                    <div className="pt-4 border-t space-y-2">
+                      <p className="text-sm font-medium">Endre e-post (brukernavn)</p>
+                      <p className="text-xs text-muted-foreground">
+                        Brukeren logger inn med den nye adressen umiddelbart. Passordet er uendret.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Input
+                          type="email"
+                          value={newLoginEmail}
+                          onChange={(e) => setNewLoginEmail(e.target.value)}
+                          placeholder="ny@bedrift.no"
+                        />
+                        <Button
+                          variant="outline"
+                          onClick={handleChangeEmail}
+                          disabled={
+                            isChangingEmail ||
+                            !newLoginEmail.includes("@") ||
+                            newLoginEmail.trim().toLowerCase() === (employee.email || "").toLowerCase()
+                          }
+                        >
+                          {isChangingEmail ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Mail className="w-4 h-4 mr-2" />
+                          )}
+                          Endre e-post
+                        </Button>
+                      </div>
+                    </div>
+
                     <div className="pt-4 border-t">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div>
@@ -492,6 +550,7 @@ export function EmployeeDetailDialog({
                         </Button>
                       </div>
                     </div>
+
                   </CardContent>
                 </Card>
               )}

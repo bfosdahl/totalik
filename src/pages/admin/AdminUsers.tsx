@@ -74,6 +74,9 @@ export default function AdminUsers() {
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+
   const [isBulkImportDialogOpen, setIsBulkImportDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isCompanyDialogOpen, setIsCompanyDialogOpen] = useState(false);
@@ -312,6 +315,33 @@ export default function AdminUsers() {
       toast({ 
         title: "Bruker opprettet", 
         description: (data.emailSent ? "E-post med innloggingslenke er sendt" : "Bruker opprettet") + moduleMsg + " og synkronisert til kurssystem"
+      });
+    },
+    onError: (error) => {
+      toast({ title: "Feil", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const changeEmailMutation = useMutation({
+    mutationFn: async ({ userId, newEmail }: { userId: string; newEmail: string }) => {
+      const { data, error } = await supabase.functions.invoke("admin-change-user-email", {
+        body: { userId, newEmail },
+      });
+      if (error) {
+        const detail = (error as any).context?.error || error.message;
+        throw new Error(detail);
+      }
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      setIsEmailDialogOpen(false);
+      setNewEmail("");
+      setSelectedUser(null);
+      toast({
+        title: "E-post endret",
+        description: `Brukeren logger nå inn med ${data.email}`,
       });
     },
     onError: (error) => {
@@ -745,6 +775,16 @@ export default function AdminUsers() {
                             <DropdownMenuItem
                               onClick={() => {
                                 setSelectedUser(profile);
+                                setNewEmail(profile.email || "");
+                                setIsEmailDialogOpen(true);
+                              }}
+                            >
+                              <Mail className="w-4 h-4 mr-2" />
+                              Endre e-post
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedUser(profile);
                                 setNewPassword("");
                                 setIsPasswordDialogOpen(true);
                               }}
@@ -752,6 +792,7 @@ export default function AdminUsers() {
                               <Key className="w-4 h-4 mr-2" />
                               Endre passord
                             </DropdownMenuItem>
+
                             <DropdownMenuItem
                               onClick={() =>
                                 toggleActiveMutation.mutate({
@@ -1145,7 +1186,61 @@ export default function AdminUsers() {
           </DialogContent>
         </Dialog>
 
+        {/* Change email dialog */}
+        <Dialog open={isEmailDialogOpen} onOpenChange={(open) => {
+          setIsEmailDialogOpen(open);
+          if (!open) {
+            setNewEmail("");
+            setSelectedUser(null);
+          }
+        }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Endre e-post (brukernavn)</DialogTitle>
+            </DialogHeader>
+            {selectedUser && (
+              <div className="space-y-4 mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Nåværende: {selectedUser.first_name} {selectedUser.last_name} ({selectedUser.email})
+                </p>
+                <div className="space-y-2">
+                  <Label htmlFor="newEmail">Ny e-postadresse *</Label>
+                  <Input
+                    id="newEmail"
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="ny@bedrift.no"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Brukeren logger inn med den nye adressen umiddelbart. Passordet er uendret.
+                  </p>
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button variant="outline" onClick={() => setIsEmailDialogOpen(false)}>
+                    Avbryt
+                  </Button>
+                  <Button
+                    onClick={() => changeEmailMutation.mutate({
+                      userId: selectedUser.user_id,
+                      newEmail,
+                    })}
+                    disabled={
+                      changeEmailMutation.isPending ||
+                      !newEmail.includes("@") ||
+                      newEmail.trim().toLowerCase() === (selectedUser.email || "").toLowerCase()
+                    }
+                  >
+                    {changeEmailMutation.isPending ? "Lagrer..." : "Endre e-post"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Password reset dialog */}
+
         <Dialog open={isPasswordDialogOpen} onOpenChange={(open) => {
           setIsPasswordDialogOpen(open);
           if (!open) {
