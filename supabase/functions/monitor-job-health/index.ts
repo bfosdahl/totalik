@@ -29,6 +29,7 @@ const JOBS: JobSpec[] = [
   { name: "check-course-expiry", maxSilentHours: 26, maxNotificationsPerRun: 200 },
   { name: "check-alerts", maxSilentHours: 3, maxNotificationsPerRun: 20 },
   { name: "ik-mat-sensor-watchdog", maxSilentHours: 2, maxNotificationsPerRun: 100 },
+  { name: "check-signature-health", maxSilentHours: 26, maxNotificationsPerRun: 20 },
 ];
 
 const esc = (s: unknown) =>

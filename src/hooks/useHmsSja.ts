@@ -4,6 +4,7 @@ import type { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { toast } from "sonner";
+import { trackSignature } from "@/utils/signatureMonitor";
 
 export interface HmsSjaRisk {
   id: string;
@@ -191,6 +192,9 @@ export function useHmsSja() {
       participantsSignatures?: { name: string; signature: string }[];
       completedByName: string;
     }) => {
+      return trackSignature(
+        { entityType: "hms_sja", entityId: id, signerRole: "leader" },
+        async () => {
       const { data, error } = await supabase
         .from("hms_sja")
         .update({
@@ -206,6 +210,8 @@ export function useHmsSja() {
       
       if (error) throw error;
       return data;
+        },
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["hms-sja", company?.id] });

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { trackSignature } from "@/utils/signatureMonitor";
 
 export interface EmploymentContract {
   id: string;
@@ -304,6 +305,9 @@ export function useEmploymentContracts() {
       signatureType: 'employee' | 'employer';
       signature: string;
     }) => {
+      return trackSignature(
+        { entityType: "employment_contract", entityId: id, signerRole: signatureType },
+        async () => {
       const updates: Record<string, unknown> = {
         [`signed_by_${signatureType}`]: true,
         [`${signatureType}_signature`]: signature,
@@ -333,6 +337,8 @@ export function useEmploymentContracts() {
 
       if (error) throw error;
       return data;
+        },
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employment-contracts'] });
