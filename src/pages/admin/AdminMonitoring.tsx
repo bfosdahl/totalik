@@ -354,13 +354,10 @@ export default function AdminMonitoring() {
           )}
         </motion.div>
 
-        {/* Job health */}
+        {/* Job health (inkl. signaturvakt) */}
         <JobHealthTable />
 
-        {/* Signaturer */}
-
         {/* Alert history */}
-
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
