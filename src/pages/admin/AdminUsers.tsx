@@ -745,6 +745,16 @@ export default function AdminUsers() {
                             <DropdownMenuItem
                               onClick={() => {
                                 setSelectedUser(profile);
+                                setNewEmail(profile.email || "");
+                                setIsEmailDialogOpen(true);
+                              }}
+                            >
+                              <Mail className="w-4 h-4 mr-2" />
+                              Endre e-post
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedUser(profile);
                                 setNewPassword("");
                                 setIsPasswordDialogOpen(true);
                               }}
@@ -752,6 +762,7 @@ export default function AdminUsers() {
                               <Key className="w-4 h-4 mr-2" />
                               Endre passord
                             </DropdownMenuItem>
+
                             <DropdownMenuItem
                               onClick={() =>
                                 toggleActiveMutation.mutate({
