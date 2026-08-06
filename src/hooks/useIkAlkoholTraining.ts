@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { trackSignature } from "@/utils/signatureMonitor";
 
 export interface TrainingRecord {
   id: string;
@@ -59,15 +60,20 @@ export function useIkAlkoholTraining() {
 
   const signRecord = useMutation({
     mutationFn: async ({ id, signature_data }: { id: string; signature_data?: string }) => {
-      const { error } = await supabase
-        .from("ik_alkohol_training_records")
-        .update({
-          signed_at: new Date().toISOString(),
-          signed_digitally: true,
-          signature_data: signature_data || null,
-        } as any)
-        .eq("id", id);
-      if (error) throw error;
+      return trackSignature(
+        { entityType: "ik_alkohol_training", entityId: id, signerRole: "employee" },
+        async () => {
+          const { error } = await supabase
+            .from("ik_alkohol_training_records")
+            .update({
+              signed_at: new Date().toISOString(),
+              signed_digitally: true,
+              signature_data: signature_data || null,
+            } as any)
+            .eq("id", id);
+          if (error) throw error;
+        },
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ik-alkohol-training"] });

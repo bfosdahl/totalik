@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { EmploymentContract } from "./useEmploymentContracts";
+import { trackSignature } from "@/utils/signatureMonitor";
 
 export function useMyContract() {
   const { profile, company } = useAuth();
@@ -35,6 +36,9 @@ export function useMyContract() {
   const signAsEmployee = useMutation({
     mutationFn: async ({ signature }: { signature: string }) => {
       if (!contract) throw new Error("Ingen kontrakt funnet");
+      return trackSignature(
+        { entityType: "employment_contract", entityId: contract.id, signerRole: "employee" },
+        async () => {
 
       const updates: Record<string, unknown> = {
         signed_by_employee: true,
@@ -59,6 +63,8 @@ export function useMyContract() {
 
       if (error) throw error;
       return data;
+        },
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-contract'] });
