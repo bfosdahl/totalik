@@ -144,7 +144,27 @@ export function generateContractPdf(contract: EmploymentContract, company: Compa
     addField("Sluttdato", format(new Date(contract.end_date), 'd. MMMM yyyy', { locale: nb }));
   }
   if (contract.temporary_reason) {
-    addField("Grunnlag midlertidig", contract.temporary_reason);
+    const temporaryReasonLabels: Record<string, string> = {
+      vikariat: 'Vikariat',
+      sesong: 'Sesongarbeid',
+      prosjekt: 'Tidsavgrenset prosjekt',
+      praksisarbeid: 'Praksisarbeid',
+      arbeidsmarkedstiltak: 'Arbeidsmarkedstiltak',
+      idrett: 'Idrettsutøvere, trenere, dommere',
+      annet: 'Annet',
+    };
+    const reasonLabel = temporaryReasonLabels[contract.temporary_reason] || contract.temporary_reason;
+    const needsSpec = contract.temporary_reason === 'annet';
+    const specification = (contract.notes || '').trim();
+
+    addParagraph(
+      "Grunnlag for midlertidig ansettelse (jf. aml § 14-9)",
+      needsSpec && specification
+        ? `${reasonLabel} – ${specification}`
+        : needsSpec
+          ? `${reasonLabel} (grunnlaget er ikke nærmere spesifisert)`
+          : reasonLabel
+    );
   }
   if (contract.probation_period_months) {
     addField("Prøvetid", `${contract.probation_period_months} måneder`);
