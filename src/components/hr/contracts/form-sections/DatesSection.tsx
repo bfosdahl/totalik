@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExtendedContractFormData, temporaryReasons } from "../ExtendedContractFormData";
 
@@ -10,6 +13,11 @@ interface DatesSectionProps {
 
 export function DatesSection({ formData, onChange }: DatesSectionProps) {
   const isTemporary = ['temporary', 'project', 'internship'].includes(formData.contract_type);
+  const reasonValue = formData.temporary_reason || '';
+  const isKnownReason = temporaryReasons.some((r) => r.value === reasonValue);
+  const [manualFreeText, setManualFreeText] = useState(false);
+  const isFreeText = manualFreeText || (!!reasonValue && !isKnownReason);
+  const setFreeText = setManualFreeText;
 
   return (
     <div className="space-y-4">
