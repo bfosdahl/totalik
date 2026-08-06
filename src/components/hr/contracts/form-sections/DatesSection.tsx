@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExtendedContractFormData, temporaryReasons } from "../ExtendedContractFormData";
 
@@ -10,6 +13,11 @@ interface DatesSectionProps {
 
 export function DatesSection({ formData, onChange }: DatesSectionProps) {
   const isTemporary = ['temporary', 'project', 'internship'].includes(formData.contract_type);
+  const reasonValue = formData.temporary_reason || '';
+  const isKnownReason = temporaryReasons.some((r) => r.value === reasonValue);
+  const [manualFreeText, setManualFreeText] = useState(false);
+  const isFreeText = manualFreeText || (!!reasonValue && !isKnownReason);
+  const setFreeText = setManualFreeText;
 
   return (
     <div className="space-y-4">
@@ -43,24 +51,49 @@ export function DatesSection({ formData, onChange }: DatesSectionProps) {
 
       {isTemporary && (
         <div className="space-y-2">
-          <Label htmlFor="temporary_reason">Grunnlag for midlertidig ansettelse *</Label>
-          <Select
-            value={formData.temporary_reason || ''}
-            onValueChange={(value) => onChange({ temporary_reason: value })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Velg grunnlag" />
-            </SelectTrigger>
-            <SelectContent>
-              {temporaryReasons.map((reason) => (
-                <SelectItem key={reason.value} value={reason.value}>
-                  {reason.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <Label htmlFor="temporary_reason">Grunnlag for midlertidig ansettelse *</Label>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-auto px-2 py-1 text-xs"
+              onClick={() => {
+                setFreeText(!isFreeText);
+                onChange({ temporary_reason: '' });
+              }}
+            >
+              {isFreeText ? 'Velg fra liste' : 'Skriv fritekst'}
+            </Button>
+          </div>
+
+          {isFreeText ? (
+            <Textarea
+              id="temporary_reason"
+              value={formData.temporary_reason || ''}
+              onChange={(e) => onChange({ temporary_reason: e.target.value })}
+              placeholder="F.eks. Sesongarbeid i sommersesongen juni-august, eller annet særskilt grunnlag"
+              rows={3}
+            />
+          ) : (
+            <Select
+              value={formData.temporary_reason || ''}
+              onValueChange={(value) => onChange({ temporary_reason: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Velg grunnlag" />
+              </SelectTrigger>
+              <SelectContent>
+                {temporaryReasons.map((reason) => (
+                  <SelectItem key={reason.value} value={reason.value}>
+                    {reason.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <p className="text-xs text-muted-foreground">
-            Jf. arbeidsmiljøloven § 14-6 e) - grunnlaget for midlertidig ansettelse
+            Jf. arbeidsmiljøloven § 14-6 e) - grunnlaget for midlertidig ansettelse. Du kan skrive fritekst hvis ingen av valgene passer.
           </p>
         </div>
       )}
