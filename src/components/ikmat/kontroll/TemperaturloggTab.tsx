@@ -117,7 +117,7 @@ export const TemperaturloggTab = () => {
           <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-950/20">
             <AlertTriangle className="h-4 w-4 text-orange-600" />
             <AlertDescription className="text-orange-700 dark:text-orange-400">
-              {equipmentNeedingLog.length} av {equipment.length} målinger gjenstår i dag
+              {equipmentNeedingLog.length} av {equipment.filter(e => e.measurement_frequency === 'daily').length} daglige målinger gjenstår i dag
             </AlertDescription>
           </Alert>
         )
