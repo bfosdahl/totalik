@@ -317,9 +317,10 @@ export function useIkMatTemperature() {
     },
   });
 
-  // Check which equipment needs logging today
+  // Check which daily equipment needs logging today
   const getEquipmentNeedingLog = () => {
-    return equipment.filter(equip => {
+    const dailyEquipment = equipment.filter(e => e.measurement_frequency === 'daily');
+    return dailyEquipment.filter(equip => {
       const hasLogToday = todaysLogs.some(log => log.equipment_id === equip.id);
       return !hasLogToday;
     });
