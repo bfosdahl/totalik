@@ -117,7 +117,7 @@ export const TemperaturloggTab = () => {
           <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-950/20">
             <AlertTriangle className="h-4 w-4 text-orange-600" />
             <AlertDescription className="text-orange-700 dark:text-orange-400">
-              {equipmentNeedingLog.length} av {equipment.length} målinger gjenstår i dag
+              {equipmentNeedingLog.length} av {equipment.filter(e => e.measurement_frequency === 'daily').length} daglige målinger gjenstår i dag
             </AlertDescription>
           </Alert>
         )
@@ -337,6 +337,10 @@ export const TemperaturloggTab = () => {
                         <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
                           {equip.location && <span>📍 {equip.location}</span>}
                           <span>🌡️ {equip.min_temp}°C – {equip.max_temp}°C</span>
+                          <span>🔄 {equip.measurement_frequency === 'daily' ? 'Daglig' :
+                            equip.measurement_frequency === 'twice_daily' ? '2x daglig' :
+                            equip.measurement_frequency === 'monthly' ? 'Månedlig' :
+                            equip.measurement_frequency === 'on_demand' ? 'Ved behov' : 'Ukentlig'}</span>
                         </div>
                       </div>
                     );
