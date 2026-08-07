@@ -337,6 +337,10 @@ export const TemperaturloggTab = () => {
                         <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
                           {equip.location && <span>📍 {equip.location}</span>}
                           <span>🌡️ {equip.min_temp}°C – {equip.max_temp}°C</span>
+                          <span>🔄 {equip.measurement_frequency === 'daily' ? 'Daglig' :
+                            equip.measurement_frequency === 'twice_daily' ? '2x daglig' :
+                            equip.measurement_frequency === 'monthly' ? 'Månedlig' :
+                            equip.measurement_frequency === 'on_demand' ? 'Ved behov' : 'Ukentlig'}</span>
                         </div>
                       </div>
                     );
