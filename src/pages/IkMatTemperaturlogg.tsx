@@ -26,6 +26,7 @@ const IkMatTemperaturlogg = () => {
     equipment, 
     todaysLogs, 
     isLoading, 
+    dailyCount,
     getEquipmentNeedingLog,
     isDailyLogComplete,
     EQUIPMENT_TYPE_DEFAULTS 
@@ -95,7 +96,7 @@ const IkMatTemperaturlogg = () => {
         </div>
 
         {/* Status Alert */}
-        {equipment.length > 0 && (
+        {dailyCount > 0 && (
           allComplete ? (
             <Alert className="border-green-500 bg-green-50 dark:bg-green-950/20">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
@@ -107,7 +108,7 @@ const IkMatTemperaturlogg = () => {
             <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-950/20">
               <AlertTriangle className="h-4 w-4 text-orange-600" />
               <AlertDescription className="text-orange-700 dark:text-orange-400">
-                {equipmentNeedingLog.length} av {equipment.length} målinger gjenstår i dag
+                {equipmentNeedingLog.length} av {dailyCount} daglige målinger gjenstår i dag
               </AlertDescription>
             </Alert>
           )
@@ -281,7 +282,9 @@ const IkMatTemperaturlogg = () => {
                             </TableCell>
                             <TableCell>
                               {equip.measurement_frequency === 'daily' ? 'Daglig' :
-                               equip.measurement_frequency === 'twice_daily' ? '2x daglig' : 'Ukentlig'}
+                               equip.measurement_frequency === 'twice_daily' ? '2x daglig' :
+                               equip.measurement_frequency === 'monthly' ? 'Månedlig' :
+                               equip.measurement_frequency === 'on_demand' ? 'Ved behov' : 'Ukentlig'}
                             </TableCell>
                             <TableCell>
                               {hasLogToday ? (
