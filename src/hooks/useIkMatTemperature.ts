@@ -317,9 +317,13 @@ export function useIkMatTemperature() {
     },
   });
 
+  // Equipment that must be measured today (daily + twice daily)
+  const dailyEquipment = equipment.filter(
+    e => e.measurement_frequency === 'daily' || e.measurement_frequency === 'twice_daily'
+  );
+
   // Check which daily equipment needs logging today
   const getEquipmentNeedingLog = () => {
-    const dailyEquipment = equipment.filter(e => e.measurement_frequency === 'daily');
     return dailyEquipment.filter(equip => {
       const hasLogToday = todaysLogs.some(log => log.equipment_id === equip.id);
       return !hasLogToday;
@@ -328,8 +332,7 @@ export function useIkMatTemperature() {
 
   // Check if all daily logs are complete
   const isDailyLogComplete = () => {
-    const dailyEquipment = equipment.filter(e => e.measurement_frequency === 'daily');
-    return dailyEquipment.every(equip => 
+    return dailyEquipment.every(equip =>
       todaysLogs.some(log => log.equipment_id === equip.id)
     );
   };
@@ -344,6 +347,8 @@ export function useIkMatTemperature() {
     logTemperature,
     updateTemperatureLog,
     fetchLogs,
+    dailyEquipment,
+    dailyCount: dailyEquipment.length,
     getEquipmentNeedingLog,
     isDailyLogComplete,
     EQUIPMENT_TYPE_DEFAULTS,
