@@ -46,7 +46,7 @@ export function ExpiryAlerts() {
 
       const { count: expiredHmsCount } = await supabase
         .from("profiles")
-        .select("*", { count: "exact", head: true })
+        .select("id", { count: "exact", head: true })
         .eq("company_id", profile.company_id)
         .eq("is_active", true)
         .eq("hms_card_required", true)
@@ -55,7 +55,7 @@ export function ExpiryAlerts() {
 
       const { count: expiringHmsCount } = await supabase
         .from("profiles")
-        .select("*", { count: "exact", head: true })
+        .select("id", { count: "exact", head: true })
         .eq("company_id", profile.company_id)
         .eq("is_active", true)
         .eq("hms_card_required", true)
