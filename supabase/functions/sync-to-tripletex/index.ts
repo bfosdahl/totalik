@@ -63,14 +63,43 @@ serve(async (req) => {
 
     const userId = claimsData.user.id;
 
+    // SECURITY: only company admins / system admins may trigger payroll sync,
+    // and the sync is always scoped to the caller's own company.
+    const admin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+
+    const { data: roles } = await admin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId);
+
+    const isAdmin = (roles || []).some(
+      (r: { role: string }) => r.role === 'company_admin' || r.role === 'system_admin'
+    );
+
+    const { data: profile } = await admin
+      .from('profiles')
+      .select('company_id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    const callerCompanyId = profile?.company_id ?? null;
+
+    if (!isAdmin || !callerCompanyId) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Parse request body
     const { timeEntryIds, startDate, endDate } = await req.json();
 
-    // Fetch time entries to sync
+    // Fetch time entries to sync — always scoped to the caller's own company
     let query = supabase
       .from('time_entries')
       .select('*')
-      .eq('status', 'approved');
+      .eq('status', 'approved')
+      .eq('company_id', callerCompanyId);
 
     if (timeEntryIds && timeEntryIds.length > 0) {
       query = query.in('id', timeEntryIds);
