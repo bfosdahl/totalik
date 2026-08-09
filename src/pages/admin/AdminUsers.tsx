@@ -108,7 +108,7 @@ export default function AdminUsers() {
       try {
         let query = supabase
           .from("profiles")
-          .select("*, companies(name)")
+          .select("id, user_id, company_id, first_name, last_name, email, phone, avatar_url, is_active, created_at, updated_at, hms_card_required, hms_card_obtained, hms_card_expiry_date, is_verneombud, is_hms_responsible, primary_department_id, status, is_assigned_to_main, preferred_language, deleted_at, companies(name)")
           .order("created_at", { ascending: false })
           .limit(500);
 
