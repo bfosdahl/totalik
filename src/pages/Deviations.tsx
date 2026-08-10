@@ -381,11 +381,11 @@ const Deviations = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => exportDeviationsToPDF(filteredDeviations)}>
+                  <DropdownMenuItem onClick={async () => exportDeviationsToPDF(await hydrateDeviations(filteredDeviations))}>
                     <FileText className="w-4 h-4 mr-2" />
                     Last ned som PDF
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => exportDeviationsToExcel(filteredDeviations)}>
+                  <DropdownMenuItem onClick={async () => exportDeviationsToExcel(await hydrateDeviations(filteredDeviations))}>
                     <FileSpreadsheet className="w-4 h-4 mr-2" />
                     Last ned som Excel
                   </DropdownMenuItem>
