@@ -1,6 +1,6 @@
 # Total-IK
 
-> Komplett internkontrollsystem for norske bedrifter. Dekker HMS, IK-MAT, IK-Alkohol, KS-Bygg og FDV med rutiner, risikovurdering, avvikshåndtering og dokumentasjon.
+> Komplett internkontrollsystem for norske bedrifter. Dekker HMS, IK-MAT, IK-Alkohol, KS-Bygg, FDV, timeregistrering, rapporter, sjekklister, risikovurdering, avvikshåndtering og digital signering.
 
 Total-IK leveres av Athena Kurs og Internkontroll AS og hjelper bedrifter å oppfylle krav i internkontrollforskriften, arbeidsmiljøloven, matloven, alkoholloven og plan- og bygningsloven.
 
