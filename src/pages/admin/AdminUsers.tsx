@@ -135,7 +135,8 @@ export default function AdminUsers() {
         .from("companies")
         .select("id, name")
         .eq("status", "active")
-        .order("name");
+        .order("name")
+        .limit(1000);
       if (error) throw error;
       return data;
     },
