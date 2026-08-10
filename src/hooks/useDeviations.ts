@@ -390,6 +390,8 @@ export function useDeviations() {
     createDeviation,
     updateDeviation,
     deleteDeviation,
+    fetchDeviationDetail,
+    hydrateDeviations,
     refetch: fetchDeviations,
   };
 }
