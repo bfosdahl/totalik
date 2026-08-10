@@ -17844,6 +17844,7 @@ export type Database = {
       is_hms_responsible: { Args: { user_id: string }; Returns: boolean }
       is_leader_or_verneombud: { Args: { p_user_id: string }; Returns: boolean }
       is_system_admin: { Args: { _user_id: string }; Returns: boolean }
+      pad_number: { Args: { p_len: number; p_num: number }; Returns: string }
       restore_deleted_record: {
         Args: { p_audit_log_id: string }
         Returns: Json
