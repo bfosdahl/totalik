@@ -35,33 +35,6 @@ export function useIkMatDeviation() {
   const { profile, company } = useAuth();
   const queryClient = useQueryClient();
 
-  const generateDeviationNumber = useCallback(async (): Promise<string> => {
-    if (!company?.id) return 'IKM-001';
-
-    try {
-      const { data } = await supabase
-        .from('deviations')
-        .select('deviation_number')
-        .eq('company_id', company.id)
-        .like('deviation_number', 'IKM-%');
-
-      if (data && data.length > 0) {
-        let maxNum = 0;
-        data.forEach((row) => {
-          const match = row.deviation_number.match(/IKM-(\d+)/);
-          if (match) {
-            const num = parseInt(match[1], 10);
-            if (num > maxNum) maxNum = num;
-          }
-        });
-        return `IKM-${String(maxNum + 1).padStart(3, '0')}`;
-      }
-      return 'IKM-001';
-    } catch {
-      return 'IKM-001';
-    }
-  }, [company?.id]);
-
   const createDeviation = useCallback(async (params: CreateIkMatDeviationParams): Promise<boolean> => {
     if (!company?.id || !profile) {
       console.error('Missing company or profile for IK-MAT deviation');
@@ -69,7 +42,6 @@ export function useIkMatDeviation() {
     }
 
     try {
-      const deviationNumber = await generateDeviationNumber();
       const reporterName = [profile.first_name, profile.last_name]
         .filter(Boolean)
         .join(' ') || profile.email || 'Ukjent';
@@ -78,11 +50,12 @@ export function useIkMatDeviation() {
       const dueDate = new Date();
       dueDate.setDate(dueDate.getDate() + 7);
 
-      const { error } = await supabase
+      // Deviation number is assigned by the DB trigger (race-safe)
+      const { data: inserted, error } = await supabase
         .from('deviations')
         .insert({
           company_id: company.id,
-          deviation_number: deviationNumber,
+          deviation_number: null,
           title: params.title,
           description: params.description,
           category: params.category,
@@ -96,24 +69,32 @@ export function useIkMatDeviation() {
           immediate_actions: params.immediateActions || null,
           additional_info: params.additionalInfo || null,
           department_id: profile.primary_department_id || null,
-        });
+        })
+        .select('deviation_number')
+        .single();
 
       if (error) throw error;
+
+      const deviationNumber = inserted?.deviation_number ?? '';
 
       // Invalidate deviations cache to refresh lists
       queryClient.invalidateQueries({ queryKey: ['deviations'] });
 
-      toast.success(`Avvik opprettet automatisk: ${deviationNumber}`, {
-        description: params.title,
-        duration: 5000,
-      });
+      toast.success(
+        deviationNumber ? `Avvik opprettet automatisk: ${deviationNumber}` : 'Avvik opprettet automatisk',
+        {
+          description: params.title,
+          duration: 5000,
+        }
+      );
 
       return true;
     } catch (error) {
       console.error('Error creating IK-MAT deviation:', error);
       return false;
     }
-  }, [company?.id, profile, generateDeviationNumber, queryClient]);
+  }, [company?.id, profile, queryClient]);
+
 
   // Specific deviation creators for different control types
   const createTemperatureDeviation = useCallback(async (
