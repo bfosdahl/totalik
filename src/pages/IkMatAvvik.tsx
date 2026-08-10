@@ -123,7 +123,7 @@ const IkMatAvvik = () => {
   const { profile, company } = useAuth();
   const navigate = useNavigate();
   const { hasModule, isLoading: modulesLoading } = useCompanyModules();
-  const { deviations, isLoading, createDeviation, updateDeviation, deleteDeviation, refetch } = useDeviations();
+  const { deviations, isLoading, createDeviation, updateDeviation, deleteDeviation, refetch, fetchDeviationDetail, hydrateDeviations } = useDeviations();
   // Auto-sync overdue Kontroll tasks as deviations
   useIkMatOverdueSync();
   const { users, getUserDisplayName } = useCompanyUsers();

@@ -115,7 +115,7 @@ interface DeviationForDialog {
 const Deviations = () => {
   const { toast } = useToast();
   const { profile } = useAuth();
-  const { deviations, isLoading, createDeviation, updateDeviation, deleteDeviation } = useDeviations();
+  const { deviations, isLoading, createDeviation, updateDeviation, deleteDeviation, fetchDeviationDetail, hydrateDeviations } = useDeviations();
   const { users, getUserDisplayName } = useCompanyUsers();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
