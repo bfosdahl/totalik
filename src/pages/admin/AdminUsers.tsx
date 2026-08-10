@@ -148,7 +148,7 @@ export default function AdminUsers() {
       try {
         const { data, error } = await supabase
           .from("user_roles")
-          .select("*")
+          .select("id, user_id, role")
           .limit(1000);
         if (error) throw error;
         return data;
