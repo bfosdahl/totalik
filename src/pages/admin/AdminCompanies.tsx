@@ -159,8 +159,11 @@ export default function AdminCompanies() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("companies")
-        .select("*, sg_approved, sg_expiry_date, sg_approval_areas")
-        .order("created_at", { ascending: false });
+        .select(
+          "id, name, org_number, address, city, postal_code, phone, email, status, created_at, employee_count, brreg_employee_count, has_departments, seller_id, industries, sg_approved, sg_expiry_date, sg_approval_areas"
+        )
+        .order("created_at", { ascending: false })
+        .limit(1000);
 
       if (error) throw error;
       return data;

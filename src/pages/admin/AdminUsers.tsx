@@ -135,7 +135,8 @@ export default function AdminUsers() {
         .from("companies")
         .select("id, name")
         .eq("status", "active")
-        .order("name");
+        .order("name")
+        .limit(1000);
       if (error) throw error;
       return data;
     },
@@ -147,7 +148,7 @@ export default function AdminUsers() {
       try {
         const { data, error } = await supabase
           .from("user_roles")
-          .select("*")
+          .select("id, user_id, role")
           .limit(1000);
         if (error) throw error;
         return data;

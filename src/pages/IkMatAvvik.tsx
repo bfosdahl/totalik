@@ -123,7 +123,7 @@ const IkMatAvvik = () => {
   const { profile, company } = useAuth();
   const navigate = useNavigate();
   const { hasModule, isLoading: modulesLoading } = useCompanyModules();
-  const { deviations, isLoading, createDeviation, updateDeviation, deleteDeviation, refetch } = useDeviations();
+  const { deviations, isLoading, createDeviation, updateDeviation, deleteDeviation, refetch, fetchDeviationDetail, hydrateDeviations } = useDeviations();
   // Auto-sync overdue Kontroll tasks as deviations
   useIkMatOverdueSync();
   const { users, getUserDisplayName } = useCompanyUsers();
@@ -187,8 +187,10 @@ const IkMatAvvik = () => {
   };
 
   const filteredDeviations = foodSafetyDeviations.filter((dev) => {
-    const matchesSearch = dev.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (dev.description || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = dev.title.toLowerCase().includes(q) ||
+      dev.deviation_number.toLowerCase().includes(q) ||
+      (dev.description || "").toLowerCase().includes(q);
     const matchesStatus = !filterStatus || dev.status === filterStatus;
     const matchesCategory = !filterCategory || dev.category === filterCategory;
     return matchesSearch && matchesStatus && matchesCategory;
@@ -252,7 +254,8 @@ const IkMatAvvik = () => {
     }
   };
 
-  const handleDeviationClick = (deviation: DeviationType) => {
+  const handleDeviationClick = async (listRow: DeviationType) => {
+    const deviation = (await fetchDeviationDetail(listRow.id)) || listRow;
     const dialogDeviation: DeviationForDialog = {
       id: deviation.id,
       deviation_number: deviation.deviation_number,
@@ -601,11 +604,11 @@ const IkMatAvvik = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => exportDeviationsToPDF(filteredDeviations)}>
+                  <DropdownMenuItem onClick={async () => exportDeviationsToPDF(await hydrateDeviations(filteredDeviations))}>
                     <FileText className="w-4 h-4 mr-2" />
                     Last ned som PDF
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => exportDeviationsToExcel(filteredDeviations)}>
+                  <DropdownMenuItem onClick={async () => exportDeviationsToExcel(await hydrateDeviations(filteredDeviations))}>
                     <FileSpreadsheet className="w-4 h-4 mr-2" />
                     Last ned som Excel
                   </DropdownMenuItem>

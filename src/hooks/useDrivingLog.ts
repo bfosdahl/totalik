@@ -76,7 +76,9 @@ export function useDrivingLog() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("driving_log_entries")
-        .select("*")
+        .select(
+          "id, user_id, company_id, trip_date, purpose, start_location, end_location, via_locations, odometer_start, odometer_end, distance_km, vehicle_type, vehicle_registration, vehicle_description, trip_type, passenger_count, passengers, notes, status, created_at, updated_at"
+        )
         .order("trip_date", { ascending: false })
         .order("created_at", { ascending: false });
 

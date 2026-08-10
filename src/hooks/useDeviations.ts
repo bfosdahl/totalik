@@ -103,6 +103,14 @@ function normalizeDeviationRow(row: Record<string, unknown>): Deviation {
   } as Deviation;
 }
 
+/**
+ * Columns needed for the list view. Heavy free-text fields
+ * (description, root_cause_analysis, preventive_measures, ...) are
+ * fetched lazily via fetchDeviationDetail / hydrateDeviations.
+ */
+const LIST_COLUMNS =
+  "id, deviation_number, title, category, priority, status, assignee_id, assignee_name, reporter_id, reporter_name, due_date, created_at, updated_at, type, incident_location, severity, department_id";
+
 export function useDeviations() {
   const { profile } = useAuth();
   const { toast } = useToast();
@@ -113,7 +121,7 @@ export function useDeviations() {
   const companyId = profile?.company_id;
   const departmentId = profile?.primary_department_id;
 
-  // Fetch deviations
+  // Fetch deviations (list projection only)
   const fetchDeviations = useCallback(async () => {
     if (!companyId) {
       setIsLoading(false);
@@ -123,7 +131,7 @@ export function useDeviations() {
     try {
       const { data, error } = await supabase
         .from("deviations")
-        .select("*")
+        .select(LIST_COLUMNS)
         .eq("company_id", companyId)
         .eq("is_deleted", false)
         .order("created_at", { ascending: false });
@@ -143,6 +151,60 @@ export function useDeviations() {
       setIsLoading(false);
     }
   }, [companyId, toast]);
+
+  /** Lazy-load the full row for a single deviation (detail dialog). */
+  const fetchDeviationDetail = useCallback(async (id: string): Promise<Deviation | null> => {
+    try {
+      const { data, error } = await supabase
+        .from("deviations")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) return null;
+
+      const full = normalizeDeviationRow(data as Record<string, unknown>);
+      setDeviations((prev) => prev.map((d) => (d.id === id ? { ...d, ...full } : d)));
+      return full;
+    } catch (error) {
+      console.error("Error fetching deviation detail:", error);
+      toast({
+        title: "Feil ved henting",
+        description: "Kunne ikke hente detaljer for avviket.",
+        variant: "destructive",
+      });
+      return null;
+    }
+  }, [toast]);
+
+  /** Batch-hydrate full rows (used by PDF/Excel exports). */
+  const hydrateDeviations = useCallback(async (rows: Deviation[]): Promise<Deviation[]> => {
+    const ids = rows.map((r) => r.id);
+    if (ids.length === 0) return rows;
+
+    try {
+      const hydrated: Deviation[] = [];
+      const CHUNK = 200;
+      for (let i = 0; i < ids.length; i += CHUNK) {
+        const { data, error } = await supabase
+          .from("deviations")
+          .select("*")
+          .in("id", ids.slice(i, i + CHUNK));
+        if (error) throw error;
+        (data || []).forEach((row) =>
+          hydrated.push(normalizeDeviationRow(row as Record<string, unknown>))
+        );
+      }
+
+      const byId = new Map(hydrated.map((d) => [d.id, d]));
+      return rows.map((r) => ({ ...r, ...(byId.get(r.id) || {}) }));
+    } catch (error) {
+      console.error("Error hydrating deviations:", error);
+      return rows;
+    }
+  }, []);
+
 
   useEffect(() => {
     fetchDeviations();
@@ -328,6 +390,8 @@ export function useDeviations() {
     createDeviation,
     updateDeviation,
     deleteDeviation,
+    fetchDeviationDetail,
+    hydrateDeviations,
     refetch: fetchDeviations,
   };
 }

@@ -115,7 +115,7 @@ interface DeviationForDialog {
 const Deviations = () => {
   const { toast } = useToast();
   const { profile } = useAuth();
-  const { deviations, isLoading, createDeviation, updateDeviation, deleteDeviation } = useDeviations();
+  const { deviations, isLoading, createDeviation, updateDeviation, deleteDeviation, fetchDeviationDetail, hydrateDeviations } = useDeviations();
   const { users, getUserDisplayName } = useCompanyUsers();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
@@ -168,8 +168,10 @@ const Deviations = () => {
   };
 
   const filteredDeviations = deviations.filter((dev) => {
-    const matchesSearch = dev.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (dev.description || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = dev.title.toLowerCase().includes(q) ||
+      dev.deviation_number.toLowerCase().includes(q) ||
+      (dev.description || "").toLowerCase().includes(q);
     const matchesFilter = !filterStatus || dev.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
@@ -223,7 +225,9 @@ const Deviations = () => {
     }
   };
 
-  const handleDeviationClick = (deviation: DeviationType) => {
+  const handleDeviationClick = async (listRow: DeviationType) => {
+    // Heavy fields are lazy-loaded for the detail dialog
+    const deviation = (await fetchDeviationDetail(listRow.id)) || listRow;
     // Convert to dialog format with all fields
     const dialogDeviation: DeviationForDialog = {
       id: deviation.id,
@@ -379,11 +383,11 @@ const Deviations = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => exportDeviationsToPDF(filteredDeviations)}>
+                  <DropdownMenuItem onClick={async () => exportDeviationsToPDF(await hydrateDeviations(filteredDeviations))}>
                     <FileText className="w-4 h-4 mr-2" />
                     Last ned som PDF
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => exportDeviationsToExcel(filteredDeviations)}>
+                  <DropdownMenuItem onClick={async () => exportDeviationsToExcel(await hydrateDeviations(filteredDeviations))}>
                     <FileSpreadsheet className="w-4 h-4 mr-2" />
                     Last ned som Excel
                   </DropdownMenuItem>
