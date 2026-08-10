@@ -168,8 +168,10 @@ const Deviations = () => {
   };
 
   const filteredDeviations = deviations.filter((dev) => {
-    const matchesSearch = dev.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (dev.description || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = dev.title.toLowerCase().includes(q) ||
+      dev.deviation_number.toLowerCase().includes(q) ||
+      (dev.description || "").toLowerCase().includes(q);
     const matchesFilter = !filterStatus || dev.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
