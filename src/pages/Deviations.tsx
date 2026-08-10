@@ -223,7 +223,9 @@ const Deviations = () => {
     }
   };
 
-  const handleDeviationClick = (deviation: DeviationType) => {
+  const handleDeviationClick = async (listRow: DeviationType) => {
+    // Heavy fields are lazy-loaded for the detail dialog
+    const deviation = (await fetchDeviationDetail(listRow.id)) || listRow;
     // Convert to dialog format with all fields
     const dialogDeviation: DeviationForDialog = {
       id: deviation.id,
