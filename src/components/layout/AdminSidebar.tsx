@@ -25,6 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { t } from "@/i18n/t";
 
 const adminNavItems = [
   { icon: LayoutDashboard, label: "Oversikt", path: "/admin", color: undefined },
@@ -164,7 +165,7 @@ function SidebarContent({ collapsed, onCollapse, onNavClick }: SidebarContentPro
           ) : (
             <>
               <ChevronLeft className="w-4 h-4" />
-              <span>Minimer</span>
+              <span>{t("auto.minimer")}</span>
             </>
           )}
         </Button>
@@ -191,7 +192,7 @@ export function AdminSidebar() {
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="p-0 w-[280px] bg-sidebar border-sidebar-border">
-          <SheetTitle className="sr-only">Admin navigasjon</SheetTitle>
+          <SheetTitle className="sr-only">{t("auto.admin_navigasjon")}</SheetTitle>
           <SidebarContent
             collapsed={false}
             onCollapse={() => {}}

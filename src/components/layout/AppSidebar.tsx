@@ -21,6 +21,7 @@ import { SubmitAnonymousMessageDialog } from "@/components/anonymous/SubmitAnony
 import { OrderModuleDialog } from "@/components/modules/OrderModuleDialog";
 import { useModulePricing } from "@/hooks/useModulePricing";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
+import { t } from "@/i18n/t";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 interface NavItem {
@@ -476,7 +477,7 @@ const EmployeeSimpleNav = memo(function EmployeeSimpleNav({
         )}
       >
         <ShieldCheck className="w-5 h-5 flex-shrink-0 text-teal-500" />
-        {!collapsed && <span className="font-medium text-sm">Send anonym melding</span>}
+        {!collapsed && <span className="font-medium text-sm">{t("auto.send_anonym_melding")}</span>}
       </button>
 
       <NavLink
@@ -490,7 +491,7 @@ const EmployeeSimpleNav = memo(function EmployeeSimpleNav({
         )}
       >
         <Settings className="w-5 h-5 flex-shrink-0 text-slate-400" />
-        {!collapsed && <span className="font-medium text-sm">Innstillinger</span>}
+        {!collapsed && <span className="font-medium text-sm">{t("auto.innstillinger")}</span>}
       </NavLink>
     </>
   );
@@ -696,7 +697,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           <div>
             <SectionHeaderButton
               icon={Shield}
-              label="IK/HMS"
+              label={t("auto.ik_hms")}
               color="text-green-500"
               dotColor="bg-green-500"
               isExpanded={expandedSections.has('ikHms')}
@@ -774,7 +775,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
 
           {/* ── IK/MAT ── */}
           <ModuleSection
-            sectionKey="ikMat" moduleType="IK_MAT" icon={ShieldCheck} label="IK/MAT"
+            sectionKey="ikMat" moduleType="IK_MAT" icon={ShieldCheck} label={t("auto.ik_mat")}
             color="text-red-500" dotColor="bg-red-500" hasModule={hasIkMat}
             isExpanded={expandedSections.has('ikMat')} collapsed={collapsed}
             onToggle={toggleSection} onLockedClick={handleLockedModuleClick}
@@ -786,7 +787,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
 
           {/* ── IK/Alkohol ── */}
           <ModuleSection
-            sectionKey="ikAlkohol" moduleType="IK_ALKOHOL" icon={Wine} label="IK/Alkohol"
+            sectionKey="ikAlkohol" moduleType="IK_ALKOHOL" icon={Wine} label={t("auto.ik_alkohol")}
             color="text-amber-500" dotColor="bg-amber-500" hasModule={hasIkAlkohol}
             isExpanded={expandedSections.has('ikAlkohol')} collapsed={collapsed}
             onToggle={toggleSection} onLockedClick={handleLockedModuleClick}
@@ -798,7 +799,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
 
           {/* ── KS Bygg ── */}
           <ModuleSection
-            sectionKey="ks" moduleType="IK_BYGG" icon={HardHat} label="KS Bygg"
+            sectionKey="ks" moduleType="IK_BYGG" icon={HardHat} label={t("auto.ks_bygg")}
             color="text-purple-500" dotColor="bg-purple-500" hasModule={hasKsBygg}
             isExpanded={expandedSections.has('ks')} collapsed={collapsed}
             onToggle={toggleSection} onLockedClick={handleLockedModuleClick}
@@ -849,7 +850,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
 
           {/* ── IK/FDV ── */}
           <ModuleSection
-            sectionKey="ikFdv" moduleType="IK_FDV" icon={Building2} label="IK/FDV"
+            sectionKey="ikFdv" moduleType="IK_FDV" icon={Building2} label={t("auto.ik_fdv")}
             color="text-teal-500" dotColor="bg-teal-500" hasModule={hasIkFdv}
             isExpanded={expandedSections.has('ikFdv')} collapsed={collapsed}
             onToggle={toggleSection} onLockedClick={handleLockedModuleClick}
@@ -863,7 +864,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
 
           {/* ── Personalhåndbok ── */}
           <ModuleSection
-            sectionKey="personalhandbok" moduleType="PERSONALHANDBOK" icon={BookOpen} label="Personalhåndbok"
+            sectionKey="personalhandbok" moduleType="PERSONALHANDBOK" icon={BookOpen} label={t("auto.personalhaandbok")}
             color="text-rose-500" dotColor="bg-rose-500" hasModule={hasPersonalhandbok}
             isExpanded={expandedSections.has('personalhandbok')} collapsed={collapsed}
             onToggle={toggleSection} onLockedClick={handleLockedModuleClick}
@@ -878,7 +879,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             <>
               <div className="pt-4 pb-2">
                 {!collapsed && (
-                  <span className="px-3 text-xs font-medium text-sidebar-foreground/50 uppercase">Administrasjon</span>
+                  <span className="px-3 text-xs font-medium text-sidebar-foreground/50 uppercase">{t("auto.administrasjon")}</span>
                 )}
               </div>
               {isSystemAdmin && (

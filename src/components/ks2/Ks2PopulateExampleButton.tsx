@@ -45,7 +45,7 @@ export function Ks2PopulateExampleButton({ projectId, onComplete }: Ks2PopulateE
           window.location.reload();
         }, 1500);
       } else {
-        toast.error("Kunne ikke legge til eksempeldata: " + result.error);
+        toast.error("Kunne ikke legge til eksempeldata:" + result.error);
       }
     } catch (error) {
       console.error("Error populating project:", error);

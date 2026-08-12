@@ -217,7 +217,7 @@ export default function TimeOversikt() {
       toast.success("Excel lastet ned");
     } catch (e: any) {
       console.error(e);
-      toast.error("Kunne ikke laste ned Excel: " + (e?.message || "ukjent feil"));
+      toast.error("Kunne ikke laste ned Excel:" + (e?.message || "ukjent feil"));
     } finally {
       setExporting(false);
     }

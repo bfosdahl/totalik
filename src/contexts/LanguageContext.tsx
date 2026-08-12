@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useAuth } from "./AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import i18n from "@/i18n";
 
 export type SupportedLanguage = "no" | "pl" | "lt" | "lv" | "en";
 
@@ -32,6 +33,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       const stored = localStorage.getItem("preferred_language") as SupportedLanguage;
       if (stored && LANGUAGE_CONFIG[stored]) {
         setLanguageState(stored);
+        void i18n.changeLanguage(stored);
       }
 
       // Then load from profile if logged in
@@ -45,6 +47,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         if (data?.preferred_language && LANGUAGE_CONFIG[data.preferred_language as SupportedLanguage]) {
           const lang = data.preferred_language as SupportedLanguage;
           setLanguageState(lang);
+          void i18n.changeLanguage(lang);
           localStorage.setItem("preferred_language", lang);
         }
       }
@@ -57,6 +60,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     setIsChanging(true);
     try {
       setLanguageState(lang);
+      await i18n.changeLanguage(lang);
       localStorage.setItem("preferred_language", lang);
 
       // Save to profile if logged in
@@ -73,7 +77,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, isChanging }}>
-      {children}
+      {/* key forces a remount so every t() call re-evaluates on language change */}
+      <div key={language} className="contents">
+        {children}
+      </div>
     </LanguageContext.Provider>
   );
 }

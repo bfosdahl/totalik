@@ -12,6 +12,7 @@ import { useNotificationLog } from "@/hooks/useNotificationLog";
 import { formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
+import { t } from "@/i18n/t";
 
 const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
   deadline: "Frist",
@@ -56,7 +57,7 @@ export function NotificationBell() {
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between p-3 border-b">
-          <h4 className="font-semibold">Varsler</h4>
+          <h4 className="font-semibold">{t("auto.varsler")}</h4>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
