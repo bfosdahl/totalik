@@ -75,6 +75,8 @@ import {
   formatDateForPdf,
   loadImageAsBase64,
 } from "@/utils/handbookPdfSanitizer";
+import { getHandbookPdfLabels } from "@/utils/handbookPdfLabels";
+import { registerPdfFont, PDF_FONT } from "@/utils/pdfFont";
 
 const statusConfig = {
   complete: {
@@ -1087,6 +1089,9 @@ const Handbook = () => {
     setIsGeneratingPdf(true);
     try {
       const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      // Unicode font so Latvian/Lithuanian/Polish diacritics render correctly
+      await registerPdfFont(doc);
+      const L = getHandbookPdfLabels(currentTranslationLang);
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       const margin = 20;
@@ -1114,7 +1119,7 @@ const Handbook = () => {
         doc.rect(margin, yPos, contentWidth, 10, "F");
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(14);
-        doc.setFont("helvetica", "bold");
+        doc.setFont(PDF_FONT, "bold");
         doc.text(title, margin + 5, yPos + 7);
         doc.setTextColor(0, 0, 0);
         yPos += 15;
@@ -1141,7 +1146,7 @@ const Handbook = () => {
         let tocY = margin + 20;
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(12);
-        doc.setFont("helvetica", "normal");
+        doc.setFont(PDF_FONT, "normal");
 
         tocEntries.forEach((item) => {
           if (tocY > pageHeight - margin - 10) return;
@@ -1169,23 +1174,23 @@ const Handbook = () => {
 
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(28);
-      doc.setFont("helvetica", "bold");
+      doc.setFont(PDF_FONT, "bold");
       // Translate cover page titles
-      const coverTitle1 = isTranslationActive ? "INTERNAL CONTROL" : "INTERNKONTROLL";
-      const coverTitle2 = isTranslationActive ? "HSE HANDBOOK" : "HMS-HÅNDBOK";
+      const coverTitle1 = L.coverTitle1;
+      const coverTitle2 = L.coverTitle2;
       doc.text(coverTitle1, pageWidth / 2, 35, { align: "center" });
       doc.setFontSize(20);
       doc.text(coverTitle2, pageWidth / 2, 50, { align: "center" });
 
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(22);
-      doc.setFont("helvetica", "bold");
+      doc.setFont(PDF_FONT, "bold");
       const companyName = companyInfo?.name || "Bedriftsnavn";
       const nameY = logoBase64 ? 130 : 110;
       doc.text(companyName, pageWidth / 2, nameY, { align: "center" });
 
       doc.setFontSize(11);
-      doc.setFont("helvetica", "normal");
+      doc.setFont(PDF_FONT, "normal");
       let detailsY = logoBase64 ? 145 : 125;
       if (companyInfo?.org_number) {
         doc.text(`Org.nr: ${companyInfo.org_number}`, pageWidth / 2, detailsY, { align: "center" });
@@ -1200,14 +1205,12 @@ const Handbook = () => {
       }
 
       doc.setFontSize(12);
-      const dateLabel = isTranslationActive ? "Date" : "Dato";
+      const dateLabel = L.date;
       doc.text(`${dateLabel}: ${formatDateForPdf(new Date())}`, pageWidth / 2, pageHeight - 40, { align: "center" });
 
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
-      const footerText = isTranslationActive 
-        ? "Prepared in accordance with regulations on systematic health, safety and environmental work" 
-        : "Utarbeidet i henhold til forskrift om systematisk helse-, miljø- og sikkerhetsarbeid";
+      const footerText = L.footer;
       doc.text(footerText, pageWidth / 2, pageHeight - 25, { align: "center" });
 
       // TABLE OF CONTENTS (filled in at the end so page numbers and links are correct)
@@ -1216,8 +1219,8 @@ const Handbook = () => {
       yPos = margin;
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(20);
-      doc.setFont("helvetica", "bold");
-      const tocTitle = isTranslationActive ? "Table of Contents" : "Innholdsfortegnelse";
+      doc.setFont(PDF_FONT, "bold");
+      const tocTitle = L.toc;
       doc.text(tocTitle, margin, yPos);
       yPos += 15;
       // (entries are rendered later by renderToc())
@@ -1234,21 +1237,21 @@ const Handbook = () => {
         addSectionHeader(`${sectionNumber}. Egenerklæring om HMS`);
         
         doc.setFontSize(11);
-        doc.setFont("helvetica", "normal");
+        doc.setFont(PDF_FONT, "normal");
         doc.text("Virksomheten erklærer at det er etablert systematisk HMS-arbeid.", margin, yPos);
         yPos += 12;
         
         // Company info
-        doc.setFont("helvetica", "bold");
+        doc.setFont(PDF_FONT, "bold");
         doc.text("Bedrift:", margin, yPos);
-        doc.setFont("helvetica", "normal");
+        doc.setFont(PDF_FONT, "normal");
         doc.text(selfDeclaration.company_name || companyName, margin + 25, yPos);
         yPos += 7;
         
         if (selfDeclaration.company_address) {
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("Adresse:", margin, yPos);
-          doc.setFont("helvetica", "normal");
+          doc.setFont(PDF_FONT, "normal");
           doc.text(selfDeclaration.company_address, margin + 25, yPos);
           yPos += 7;
         }
@@ -1266,9 +1269,9 @@ const Handbook = () => {
           doc.setFillColor(248, 250, 252);
           doc.roundedRect(margin, yPos, contentWidth, 40, 2, 2, "F");
           
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("Daglig leder:", margin + 5, yPos + 8);
-          doc.setFont("helvetica", "normal");
+          doc.setFont(PDF_FONT, "normal");
           if (selfDeclaration.manager_name) {
             doc.text(selfDeclaration.manager_name, margin + 35, yPos + 8);
           }
@@ -1296,9 +1299,9 @@ const Handbook = () => {
           doc.setFillColor(248, 250, 252);
           doc.roundedRect(margin, yPos, contentWidth, 40, 2, 2, "F");
           
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("Ansattrepresentant:", margin + 5, yPos + 8);
-          doc.setFont("helvetica", "normal");
+          doc.setFont(PDF_FONT, "normal");
           if (selfDeclaration.employee_rep_name) {
             doc.text(selfDeclaration.employee_rep_name, margin + 50, yPos + 8);
           }
@@ -1330,31 +1333,31 @@ const Handbook = () => {
         addSectionHeader(`${sectionNumber}. Avtale om fritak fra verneombud`);
         
         doc.setFontSize(11);
-        doc.setFont("helvetica", "normal");
+        doc.setFont(PDF_FONT, "normal");
         doc.text("Virksomheten har inngått avtale om fritak fra kravet om verneombud.", margin, yPos);
         yPos += 12;
         
         // Agreement info
         if (verneombudExemption.total_employees) {
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("Antall ansatte:", margin, yPos);
-          doc.setFont("helvetica", "normal");
+          doc.setFont(PDF_FONT, "normal");
           doc.text(String(verneombudExemption.total_employees), margin + 40, yPos);
           yPos += 7;
         }
         
         if (verneombudExemption.agreement_date) {
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("Avtaledato:", margin, yPos);
-          doc.setFont("helvetica", "normal");
+          doc.setFont(PDF_FONT, "normal");
           doc.text(formatDateForPdf(new Date(verneombudExemption.agreement_date)), margin + 40, yPos);
           yPos += 7;
         }
         
         if (verneombudExemption.valid_until) {
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("Gyldig til:", margin, yPos);
-          doc.setFont("helvetica", "normal");
+          doc.setFont(PDF_FONT, "normal");
           doc.text(formatDateForPdf(new Date(verneombudExemption.valid_until)), margin + 40, yPos);
           yPos += 7;
         }
@@ -1367,9 +1370,9 @@ const Handbook = () => {
           doc.setFillColor(248, 250, 252);
           doc.roundedRect(margin, yPos, contentWidth, 40, 2, 2, "F");
           
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("Arbeidsgiver:", margin + 5, yPos + 8);
-          doc.setFont("helvetica", "normal");
+          doc.setFont(PDF_FONT, "normal");
           if (verneombudExemption.employer_name) {
             doc.text(verneombudExemption.employer_name, margin + 35, yPos + 8);
           }
@@ -1394,7 +1397,7 @@ const Handbook = () => {
         // Employee signatures
         if (verneombudExemption.employee_signatures && verneombudExemption.employee_signatures.length > 0) {
           checkPageBreak(20);
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("Ansatte som har signert avtalen:", margin, yPos);
           yPos += 10;
           
@@ -1403,7 +1406,7 @@ const Handbook = () => {
             doc.setFillColor(248, 250, 252);
             doc.roundedRect(margin, yPos, contentWidth / 2 - 5, 35, 2, 2, "F");
             
-            doc.setFont("helvetica", "normal");
+            doc.setFont(PDF_FONT, "normal");
             doc.setFontSize(10);
             doc.text(`${index + 1}. ${emp.name}`, margin + 5, yPos + 8);
             
@@ -1435,37 +1438,37 @@ const Handbook = () => {
         addSectionHeader(`${sectionNumber}. Valg av verneombud`);
         
         doc.setFontSize(11);
-        doc.setFont("helvetica", "normal");
+        doc.setFont(PDF_FONT, "normal");
         doc.text("Virksomheten har valgt verneombud i henhold til arbeidsmiljøloven.", margin, yPos);
         yPos += 12;
         
         // Verneombud info
-        doc.setFont("helvetica", "bold");
+        doc.setFont(PDF_FONT, "bold");
         doc.text("Verneombud:", margin, yPos);
-        doc.setFont("helvetica", "normal");
+        doc.setFont(PDF_FONT, "normal");
         doc.text(verneombudAgreement.verneombud_name, margin + 35, yPos);
         yPos += 7;
         
         if (verneombudAgreement.verneombud_email) {
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("E-post:", margin, yPos);
-          doc.setFont("helvetica", "normal");
+          doc.setFont(PDF_FONT, "normal");
           doc.text(verneombudAgreement.verneombud_email, margin + 35, yPos);
           yPos += 7;
         }
         
         if (verneombudAgreement.verneombud_phone) {
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("Telefon:", margin, yPos);
-          doc.setFont("helvetica", "normal");
+          doc.setFont(PDF_FONT, "normal");
           doc.text(verneombudAgreement.verneombud_phone, margin + 35, yPos);
           yPos += 7;
         }
         
         if (verneombudAgreement.election_method) {
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("Valgmetode:", margin, yPos);
-          doc.setFont("helvetica", "normal");
+          doc.setFont(PDF_FONT, "normal");
           const methodText = verneombudAgreement.election_method === "election" ? "Valg blant ansatte" :
                             verneombudAgreement.election_method === "appointment" ? "Utpekt av arbeidsgiver" :
                             verneombudAgreement.election_method === "volunteer" ? "Frivillig" : 
@@ -1475,17 +1478,17 @@ const Handbook = () => {
         }
         
         if (verneombudAgreement.term_start) {
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("Periode fra:", margin, yPos);
-          doc.setFont("helvetica", "normal");
+          doc.setFont(PDF_FONT, "normal");
           doc.text(formatDateForPdf(new Date(verneombudAgreement.term_start)), margin + 35, yPos);
           yPos += 7;
         }
         
         if (verneombudAgreement.term_end) {
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("Periode til:", margin, yPos);
-          doc.setFont("helvetica", "normal");
+          doc.setFont(PDF_FONT, "normal");
           doc.text(formatDateForPdf(new Date(verneombudAgreement.term_end)), margin + 35, yPos);
           yPos += 7;
         }
@@ -1494,14 +1497,14 @@ const Handbook = () => {
           yPos += 5;
           doc.setFillColor(220, 252, 231);
           doc.roundedRect(margin, yPos, contentWidth, 12, 2, 2, "F");
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.setTextColor(22, 101, 52);
           doc.text("✓ Verneombudet har gjennomført påkrevd opplæring (40 timer)", margin + 5, yPos + 8);
           doc.setTextColor(0, 0, 0);
           yPos += 17;
           
           if (verneombudAgreement.training_date) {
-            doc.setFont("helvetica", "normal");
+            doc.setFont(PDF_FONT, "normal");
             doc.text(`Opplæring gjennomført: ${formatDateForPdf(new Date(verneombudAgreement.training_date))}`, margin, yPos);
             yPos += 10;
           }
@@ -1515,7 +1518,7 @@ const Handbook = () => {
           doc.setFillColor(248, 250, 252);
           doc.roundedRect(margin, yPos, contentWidth, 40, 2, 2, "F");
           
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("Verneombudets signatur:", margin + 5, yPos + 8);
           
           try {
@@ -1525,7 +1528,7 @@ const Handbook = () => {
           }
           
           if (verneombudAgreement.verneombud_signed_at) {
-            doc.setFont("helvetica", "normal");
+            doc.setFont(PDF_FONT, "normal");
             doc.setFontSize(9);
             doc.text(`Signert: ${formatDateForPdf(new Date(verneombudAgreement.verneombud_signed_at))}`, margin + 5, yPos + 36);
             doc.setFontSize(11);
@@ -1540,9 +1543,9 @@ const Handbook = () => {
           doc.setFillColor(248, 250, 252);
           doc.roundedRect(margin, yPos, contentWidth, 40, 2, 2, "F");
           
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("Arbeidsgiver:", margin + 5, yPos + 8);
-          doc.setFont("helvetica", "normal");
+          doc.setFont(PDF_FONT, "normal");
           if (verneombudAgreement.employer_name) {
             doc.text(verneombudAgreement.employer_name, margin + 35, yPos + 8);
           }
@@ -1566,10 +1569,10 @@ const Handbook = () => {
         
         if (verneombudAgreement.notes) {
           checkPageBreak(30);
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.text("Merknader:", margin, yPos);
           yPos += 7;
-          doc.setFont("helvetica", "normal");
+          doc.setFont(PDF_FONT, "normal");
           const noteLines = doc.splitTextToSize(verneombudAgreement.notes, contentWidth);
           doc.text(noteLines, margin, yPos);
           yPos += noteLines.length * 5 + 5;
@@ -1579,15 +1582,13 @@ const Handbook = () => {
       // SECTION: GOALS - use translated content if available
       doc.addPage();
       sectionNumber++;
-      const goalsSectionTitle = isTranslationActive ? "Goals for Internal Control" : "Mål for internkontroll";
+      const goalsSectionTitle = L.goalsTitle;
       addTocEntry(`${sectionNumber}. ${goalsSectionTitle}`);
       yPos = margin;
       addSectionHeader(`${sectionNumber}. ${goalsSectionTitle}`);
       doc.setFontSize(11);
-      doc.setFont("helvetica", "normal");
-      const goalsIntroText = isTranslationActive 
-        ? "The company has established the following goals for its systematic HSE work:" 
-        : "Bedriften har fastsatt følgende mål for sitt systematiske HMS-arbeid:";
+      doc.setFont(PDF_FONT, "normal");
+      const goalsIntroText = L.goalsIntro;
       doc.text(goalsIntroText, margin, yPos);
       yPos += 10;
       if (goals.length > 0) {
@@ -1606,7 +1607,7 @@ const Handbook = () => {
         });
       } else {
         doc.setTextColor(150, 150, 150);
-        const noGoalsText = isTranslationActive ? "No goals defined." : "Ingen mål er definert.";
+        const noGoalsText = L.noGoals;
         doc.text(noGoalsText, margin, yPos);
         doc.setTextColor(0, 0, 0);
       }
@@ -1614,7 +1615,7 @@ const Handbook = () => {
       // SECTION 2: ORGANIZATION - use translated content if available
       doc.addPage();
       sectionNumber++;
-      const orgSectionTitle = isTranslationActive ? "Organization and Responsibilities" : "Organisering og ansvar";
+      const orgSectionTitle = L.orgTitle;
       addTocEntry(`${sectionNumber}. ${orgSectionTitle}`);
       yPos = margin;
       addSectionHeader(`${sectionNumber}. ${orgSectionTitle}`);
@@ -1627,8 +1628,8 @@ const Handbook = () => {
       if (pdfOrgRoles.length > 0) {
         // Draw visual org chart
         doc.setFontSize(11);
-        doc.setFont("helvetica", "bold");
-        const orgChartLabel = isTranslationActive ? "Organization Chart" : "Organisasjonskart";
+        doc.setFont(PDF_FONT, "bold");
+        const orgChartLabel = L.orgChart;
         doc.text(orgChartLabel, margin, yPos);
         yPos += 10;
         
@@ -1669,15 +1670,15 @@ const Handbook = () => {
           
           // Role title
           doc.setFontSize(10);
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.setTextColor(0, 0, 0);
-          const titleText = role.title || (isTranslationActive ? "Untitled" : "Uten tittel");
+          const titleText = role.title || L.untitled;
           doc.text(titleText, boxX + boxWidth / 2, yPos + 8, { align: "center" });
           
           // Person name
           if (role.personName) {
             doc.setFontSize(8);
-            doc.setFont("helvetica", "normal");
+            doc.setFont(PDF_FONT, "normal");
             doc.setTextColor(100, 100, 100);
             doc.text(role.personName, boxX + boxWidth / 2, yPos + 14, { align: "center" });
           }
@@ -1691,8 +1692,8 @@ const Handbook = () => {
         
         // Draw role descriptions
         doc.setFontSize(11);
-        doc.setFont("helvetica", "bold");
-        const rolesLabel = isTranslationActive ? "Roles and Responsibilities" : "Roller og ansvar";
+        doc.setFont(PDF_FONT, "bold");
+        const rolesLabel = L.roles;
         doc.text(rolesLabel, margin, yPos);
         yPos += 8;
         
@@ -1702,7 +1703,7 @@ const Handbook = () => {
             
             // Role title with person name
             doc.setFontSize(10);
-            doc.setFont("helvetica", "bold");
+            doc.setFont(PDF_FONT, "bold");
             let roleHeader = role.title;
             if (role.personName) {
               roleHeader += ` (${role.personName})`;
@@ -1711,7 +1712,7 @@ const Handbook = () => {
             yPos += 6;
             
             // Description
-            doc.setFont("helvetica", "normal");
+            doc.setFont(PDF_FONT, "normal");
             doc.setFontSize(9);
             const descLines = doc.splitTextToSize(role.description, contentWidth - 5);
             descLines.forEach((line: string) => {
@@ -1728,11 +1729,11 @@ const Handbook = () => {
           checkPageBreak(20);
           yPos += 5;
           doc.setFontSize(11);
-          doc.setFont("helvetica", "bold");
-          const generalDescLabel = isTranslationActive ? "General Description" : "Generell beskrivelse";
+          doc.setFont(PDF_FONT, "bold");
+          const generalDescLabel = L.generalDescription;
           doc.text(generalDescLabel, margin, yPos);
           yPos += 8;
-          doc.setFont("helvetica", "normal");
+          doc.setFont(PDF_FONT, "normal");
           doc.setFontSize(10);
           const descLines = doc.splitTextToSize(pdfOrgDescription, contentWidth);
           descLines.forEach((line: string) => {
@@ -1752,7 +1753,7 @@ const Handbook = () => {
         });
       } else {
         doc.setTextColor(150, 150, 150);
-        const noOrgText = isTranslationActive ? "Organization structure not defined." : "Organisasjonsstruktur er ikke definert.";
+        const noOrgText = L.noOrg;
         doc.text(noOrgText, margin, yPos);
         doc.setTextColor(0, 0, 0);
       }
@@ -1760,14 +1761,12 @@ const Handbook = () => {
       // SECTION 3: RISK ASSESSMENT - use translated content if available
       doc.addPage();
       sectionNumber++;
-      const riskSectionTitle = isTranslationActive ? "Risk Assessment" : "Risikovurdering";
+      const riskSectionTitle = L.riskTitle;
       addTocEntry(`${sectionNumber}. ${riskSectionTitle}`);
       yPos = margin;
       addSectionHeader(`${sectionNumber}. ${riskSectionTitle}`);
       doc.setFontSize(11);
-      const riskMethodText = isTranslationActive 
-        ? "Risk = Probability × Consequence (Norwegian Labour Inspection methodology)" 
-        : "Risiko = Sannsynlighet × Konsekvens (Arbeidstilsynets metodikk)";
+      const riskMethodText = L.riskMethod;
       doc.text(riskMethodText, margin, yPos);
       yPos += 10;
       // Use sanitized risk data to prevent undefined errors
@@ -1786,9 +1785,7 @@ const Handbook = () => {
             risk.riskLevel,
           ];
         });
-        const riskTableHeaders = isTranslationActive 
-          ? [["Description", "P", "C", "R", "Level"]]
-          : [["Beskrivelse", "S", "K", "R", "Nivå"]];
+        const riskTableHeaders = [L.riskHeaders];
         autoTable(doc, {
           startY: yPos,
           head: riskTableHeaders,
@@ -1818,7 +1815,7 @@ const Handbook = () => {
         yPos = (doc as any).lastAutoTable.finalY + 10;
       } else {
         doc.setTextColor(150, 150, 150);
-        const noRisksText = isTranslationActive ? "No risk assessments performed." : "Ingen risikovurderinger utført.";
+        const noRisksText = L.noRisks;
         doc.text(noRisksText, margin, yPos);
         doc.setTextColor(0, 0, 0);
       }
@@ -1826,7 +1823,7 @@ const Handbook = () => {
       // SECTION 4: ACTION PLAN - use translated content if available
       doc.addPage();
       sectionNumber++;
-      const actionSectionTitle = isTranslationActive ? "Action Plan" : "Handlingsplan";
+      const actionSectionTitle = L.actionTitle;
       addTocEntry(`${sectionNumber}. ${actionSectionTitle}`);
       yPos = margin;
       addSectionHeader(`${sectionNumber}. ${actionSectionTitle}`);
@@ -1845,9 +1842,7 @@ const Handbook = () => {
             action.statusLabel,
           ];
         });
-        const actionTableHeaders = isTranslationActive 
-          ? [["Action", "Responsible", "Deadline", "Status"]]
-          : [["Tiltak", "Ansvarlig", "Frist", "Status"]];
+        const actionTableHeaders = [L.actionHeaders];
         autoTable(doc, {
           startY: yPos,
           head: actionTableHeaders,
@@ -1860,7 +1855,7 @@ const Handbook = () => {
         yPos = (doc as any).lastAutoTable.finalY + 10;
       } else {
         doc.setTextColor(150, 150, 150);
-        const noActionsText = isTranslationActive ? "No actions registered." : "Ingen tiltak registrert.";
+        const noActionsText = L.noActions;
         doc.text(noActionsText, margin, yPos);
         doc.setTextColor(0, 0, 0);
       }
@@ -1869,7 +1864,7 @@ const Handbook = () => {
       doc.addPage();
       sectionNumber++;
       const routinesSectionNum = sectionNumber;
-      const routinesSectionTitle = isTranslationActive ? "Routines and Procedures" : "Rutiner og prosedyrer";
+      const routinesSectionTitle = L.routinesTitle;
       addTocEntry(`${sectionNumber}. ${routinesSectionTitle}`);
       yPos = margin;
       addSectionHeader(`${sectionNumber}. ${routinesSectionTitle}`);
@@ -1878,9 +1873,7 @@ const Handbook = () => {
       const sanitizedRoutinesList = sanitizeRoutines(routines);
 
       // Label translations
-      const routineLabels = isTranslationActive 
-        ? { purpose: "Purpose", responsibility: "Responsibility", procedure: "Procedure", examples: "Examples", remember: "Remember", notSpecified: "Not specified" }
-        : { purpose: "Formål", responsibility: "Ansvar", procedure: "Fremgangsmåte", examples: "Eksempler", remember: "Husk", notSpecified: "Ikke spesifisert" };
+      const routineLabels = L.routine;
 
       const renderLabeledBlock = (label: string, value: string) => {
         const clean = (value || "").trim();
@@ -1888,13 +1881,13 @@ const Handbook = () => {
 
         // Label
         checkPageBreak(12);
-        doc.setFont("helvetica", "bold");
+        doc.setFont(PDF_FONT, "bold");
         doc.setFontSize(9);
         doc.text(`${label}:`, margin + 6, yPos);
         yPos += 4.5;
 
         // Text
-        doc.setFont("helvetica", "normal");
+        doc.setFont(PDF_FONT, "normal");
         const lines = doc.splitTextToSize(clean, contentWidth - 12);
 
         // Render line-by-line to ensure page breaks work reliably
@@ -1921,7 +1914,7 @@ const Handbook = () => {
           checkPageBreak(22);
           doc.setFillColor(248, 250, 252);
           doc.roundedRect(margin, yPos, contentWidth, 14, 2, 2, "F");
-          doc.setFont("helvetica", "bold");
+          doc.setFont(PDF_FONT, "bold");
           doc.setFontSize(11);
           doc.text(
             `${routinesSectionNum}.${index + 1} ${routine.routine_number}: ${routineName}`,
@@ -1941,7 +1934,7 @@ const Handbook = () => {
         });
       } else {
         doc.setTextColor(150, 150, 150);
-        const noRoutinesText = isTranslationActive ? "No routines registered." : "Ingen rutiner registrert.";
+        const noRoutinesText = L.noRoutines;
         doc.text(noRoutinesText, margin, yPos);
         doc.setTextColor(0, 0, 0);
       }
@@ -2175,7 +2168,7 @@ const Handbook = () => {
                   doc.setFillColor(240, 249, 255);
                   doc.roundedRect(margin, yPos, contentWidth, 8, 1, 1, "F");
                   doc.setFontSize(10);
-                  doc.setFont("helvetica", "bold");
+                  doc.setFont(PDF_FONT, "bold");
                   doc.setTextColor(59, 130, 246);
                   doc.text(sectionTitles[sectionId] || section.title || sectionId, margin + 3, yPos + 5.5);
                   doc.setTextColor(0, 0, 0);
@@ -2239,7 +2232,7 @@ const Handbook = () => {
                 checkPageBreak(40);
                 yPos += 5;
                 doc.setFontSize(10);
-                doc.setFont("helvetica", "bold");
+                doc.setFont(PDF_FONT, "bold");
                 doc.text("Oppsummering:", margin, yPos);
                 yPos += 8;
 
@@ -2254,7 +2247,7 @@ const Handbook = () => {
 
                 const completionPercent = (totalYes + totalNo) > 0 ? Math.round((totalYes / (totalYes + totalNo)) * 100) : 0;
 
-                doc.setFont("helvetica", "normal");
+                doc.setFont(PDF_FONT, "normal");
                 doc.setFillColor(34, 197, 94);
                 doc.rect(margin, yPos - 3, 4, 4, "F");
                 doc.text(`Ja: ${totalYes}`, margin + 7, yPos);
@@ -2275,10 +2268,10 @@ const Handbook = () => {
               if (formData.auditorSignature || formData.managerSignature) {
                 checkPageBreak(25);
                 yPos += 5;
-                doc.setFont("helvetica", "bold");
+                doc.setFont(PDF_FONT, "bold");
                 doc.text("Signaturer:", margin, yPos);
                 yPos += 6;
-                doc.setFont("helvetica", "normal");
+                doc.setFont(PDF_FONT, "normal");
                 if (formData.auditorSignature) {
                   doc.text(`Revisjonsleder: ${formData.auditorSignature}`, margin + 5, yPos);
                   yPos += 5;
@@ -2293,10 +2286,10 @@ const Handbook = () => {
               if (formData.otherComments && typeof formData.otherComments === 'string' && formData.otherComments.trim()) {
                 checkPageBreak(20);
                 yPos += 5;
-                doc.setFont("helvetica", "bold");
+                doc.setFont(PDF_FONT, "bold");
                 doc.text("Andre kommentarer:", margin, yPos);
                 yPos += 6;
-                doc.setFont("helvetica", "normal");
+                doc.setFont(PDF_FONT, "normal");
                 const commentLines = doc.splitTextToSize(formData.otherComments, contentWidth);
                 commentLines.forEach((line: string) => {
                   checkPageBreak(5);
@@ -2326,12 +2319,12 @@ const Handbook = () => {
       const langSuffix = isTranslationActive ? `_${currentTranslationLang.toUpperCase()}` : "";
       const fileName = `IK-Handbok${langSuffix}_${companyName.replace(/[^a-zA-Z0-9æøåÆØÅ]/g, "_")}_${format(new Date(), "yyyy-MM-dd")}.pdf`;
       doc.save(fileName);
-      const successMsg = isTranslationActive ? "PDF downloaded!" : "PDF lastet ned!";
+      const successMsg = L.downloaded;
       toast.success(successMsg);
       setShowExportOptions(false);
     } catch (error) {
       console.error("Error generating PDF:", error);
-      const errorMsg = isTranslationActive ? "Could not generate PDF" : "Kunne ikke generere PDF";
+      const errorMsg = getHandbookPdfLabels(currentTranslationLang).downloadFailed;
       toast.error(errorMsg);
     } finally {
       setIsGeneratingPdf(false);
