@@ -40,7 +40,6 @@ const isUiText = (s) => {
   if (/^[a-z0-9_-]+$/.test(t)) return false;            // css class / id / enum
   if (/https?:|@|\.(tsx?|json|png|jpg|svg|pdf)$/i.test(t)) return false;
   if (/[{}<>$`=;"\\|]/.test(t)) return false;
-  if (/\n/.test(s)) return false;
   if (/\b(const|let|return|function|useState|import|export|null|undefined|true|false)\b/.test(t)) return false;
   if (/^[A-Z0-9_]+$/.test(t)) return false;             // CONSTANT
   if (/\w\(/.test(t)) return false;                     // function call
@@ -57,18 +56,19 @@ for (const file of process.argv.slice(2)) {
   const before = src;
   let used = false;
 
-  const wrap = (text) => {
+  const wrap = (raw) => {
+    const text = raw.replace(/\s+/g, " ");
     used = true;
     totalKeys++;
     return `t(${JSON.stringify(`auto.${keyFor(text.trim())}`)})`;
   };
 
   // 1. JSX text nodes: >Tekst<
-  src = src.replace(/([^\s=\-+*/&|!])>([^<>{}\n]+)</g, (m, prev, text) => {
+  src = src.replace(/([^\s=\-+*/&|!])>([^<>{}]+)</g, (m, prev, text) => {
     if (!isUiText(text)) return m;
     const lead = text.match(/^\s*/)[0];
     const tail = text.match(/\s*$/)[0];
-    return `${prev}>${lead}{${wrap(text)}}${tail}<`;
+    return `${prev}>${lead}{${wrap(text.replace(/\s+/g, " "))}}${tail}<`;
   });
 
   // 2. String props

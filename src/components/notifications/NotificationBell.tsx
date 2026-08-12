@@ -73,7 +73,7 @@ export function NotificationBell() {
         <ScrollArea className="h-[300px]">
           {isLoading ? (
             <div className="p-4 text-center text-muted-foreground">
-              Laster varsler...
+              {t("auto.laster_varsler")}
             </div>
           ) : notifications && notifications.length > 0 ? (
             <div className="divide-y">
@@ -123,7 +123,7 @@ export function NotificationBell() {
             </div>
           ) : (
             <div className="p-4 text-center text-muted-foreground">
-              Ingen varsler
+              {t("auto.ingen_varsler")}
             </div>
           )}
         </ScrollArea>

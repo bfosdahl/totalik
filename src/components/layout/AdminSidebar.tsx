@@ -69,10 +69,10 @@ function SidebarContent({ collapsed, onCollapse, onNavClick }: SidebarContentPro
               className="flex flex-col"
             >
               <span className="font-bold text-sidebar-foreground text-lg tracking-tight">
-                Admin Panel
+                {t("auto.admin_panel")}
               </span>
               <span className="text-xs text-sidebar-foreground/60">
-                Systemadministrasjon
+                {t("auto.systemadministrasjon")}
               </span>
             </motion.div>
           )}

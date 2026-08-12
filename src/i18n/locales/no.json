@@ -457,6 +457,15 @@
     "statusendringer": "Statusendringer",
     "paaminnelse_foer_frist": "Påminnelse før frist",
     "dashboard": "Dashboard",
-    "total_ik_dashboard_oversikt_over_samsvar": "Total-IK dashboard – oversikt over samsvar, avvik, fullførte tiltak og forfallende oppgaver i bedriftens internkontrollsystem."
+    "total_ik_dashboard_oversikt_over_samsvar": "Total-IK dashboard – oversikt over samsvar, avvik, fullførte tiltak og forfallende oppgaver i bedriftens internkontrollsystem.",
+    "admin_panel": "Admin Panel",
+    "systemadministrasjon": "Systemadministrasjon",
+    "kontakt_bedriftsadmin_for_aa_aktivere": "Kontakt bedriftsadmin for å aktivere",
+    "loennsgrunnlag": "Lønnsgrunnlag",
+    "se_alle": "Se alle",
+    "laster_varsler": "Laster varsler...",
+    "ingen_varsler": "Ingen varsler",
+    "motta_varsler_om_frister_tildelinger_og_": "Motta varsler om frister, tildelinger og statusendringer",
+    "aktiv": "Aktiv"
   }
 }

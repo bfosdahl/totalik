@@ -38,7 +38,7 @@ export function AdminHoursWidget() {
           </div>
         </div>
         <Button variant="ghost" size="sm" onClick={() => navigate("/timer/oversikt")}>
-          Se alle <ArrowRight className="h-4 w-4 ml-1" />
+          {t("auto.se_alle")} <ArrowRight className="h-4 w-4 ml-1" />
         </Button>
       </div>
 

@@ -65,7 +65,7 @@ export function NotificationSettingsCard() {
           Push-varsler
         </CardTitle>
         <CardDescription>
-          Motta varsler om frister, tildelinger og statusendringer
+          {t("auto.motta_varsler_om_frister_tildelinger_og_")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -86,7 +86,7 @@ export function NotificationSettingsCard() {
           <div className="flex items-center gap-2">
             {isSubscribed && (
               <Badge variant="secondary" className="bg-green-100 text-green-800">
-                Aktiv
+                {t("auto.aktiv")}
               </Badge>
             )}
             <Button

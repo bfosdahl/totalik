@@ -293,7 +293,7 @@ const LockedModulePanel = memo(function LockedModulePanel({
             </Button>
           ) : (
             <p className="text-xs text-muted-foreground">
-              Kontakt bedriftsadmin for å aktivere
+              {t("auto.kontakt_bedriftsadmin_for_aa_aktivere")}
             </p>
           )}
         </div>
@@ -897,7 +897,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                   <AnimatePresence mode="wait">
                     {!collapsed && (
                       <motion.span initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="font-medium text-sm">
-                        Admin Panel
+                        {t("auto.admin_panel")}
                       </motion.span>
                     )}
                   </AnimatePresence>
@@ -917,7 +917,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                 <AnimatePresence mode="wait">
                   {!collapsed && (
                     <motion.span initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="font-medium text-sm">
-                      Lønnsgrunnlag
+                      {t("auto.loennsgrunnlag")}
                     </motion.span>
                   )}
                 </AnimatePresence>
