@@ -4,12 +4,14 @@ import { initReactI18next } from "react-i18next";
 import noTranslations from "./locales/no.json";
 import plTranslations from "./locales/pl.json";
 import ltTranslations from "./locales/lt.json";
+import lvTranslations from "./locales/lv.json";
 import enTranslations from "./locales/en.json";
 
 const resources = {
   no: { translation: noTranslations },
   pl: { translation: plTranslations },
   lt: { translation: ltTranslations },
+  lv: { translation: lvTranslations },
   en: { translation: enTranslations },
 };
 
@@ -17,7 +19,7 @@ const resources = {
 const getInitialLanguage = () => {
   if (typeof window !== "undefined") {
     const stored = localStorage.getItem("preferred_language");
-    if (stored && ["no", "pl", "lt", "en"].includes(stored)) {
+    if (stored && ["no", "pl", "lt", "lv", "en"].includes(stored)) {
       return stored;
     }
   }

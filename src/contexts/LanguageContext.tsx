@@ -2,12 +2,13 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { useAuth } from "./AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
-export type SupportedLanguage = "no" | "pl" | "lt" | "en";
+export type SupportedLanguage = "no" | "pl" | "lt" | "lv" | "en";
 
 export const LANGUAGE_CONFIG: Record<SupportedLanguage, { flag: string; name: string; nativeName: string }> = {
   no: { flag: "🇳🇴", name: "Norsk", nativeName: "Norsk" },
   pl: { flag: "🇵🇱", name: "Polsk", nativeName: "Polski" },
   lt: { flag: "🇱🇹", name: "Litauisk", nativeName: "Lietuvių" },
+  lv: { flag: "🇱🇻", name: "Latvisk", nativeName: "Latviešu" },
   en: { flag: "🇬🇧", name: "Engelsk", nativeName: "English" },
 };
 
